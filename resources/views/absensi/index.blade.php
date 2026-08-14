@@ -286,8 +286,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-600">
                                     <div class="space-y-1 text-[11px]">
-                                        <div><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: '-') }}</div>
-                                        <div><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: '-') }}</div>
+                                        <div><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: ($absensi->waktu_masuk ? 'SISTEM PWA' : '-')) }}</div>
+                                        <div><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600 max-w-xs text-[11px]">
@@ -299,14 +299,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($absensi->foto_masuk)
-                                            <a href="{{ asset($absensi->foto_masuk) }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
-                                                <img src="{{ asset($absensi->foto_masuk) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ asset(str_starts_with($absensi->foto_masuk, 'uploads/') ? $absensi->foto_masuk : 'uploads/' . $absensi->foto_masuk) }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
+                                                <img src="{{ asset(str_starts_with($absensi->foto_masuk, 'uploads/') ? $absensi->foto_masuk : 'uploads/' . $absensi->foto_masuk) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-green-600 text-white font-bold px-0.5 rounded shadow">IN</span>
                                             </a>
                                         @endif
                                         @if($absensi->foto_pulang)
-                                            <a href="{{ asset($absensi->foto_pulang) }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
-                                                <img src="{{ asset($absensi->foto_pulang) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ asset(str_starts_with($absensi->foto_pulang, 'uploads/') ? $absensi->foto_pulang : 'uploads/' . $absensi->foto_pulang) }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
+                                                <img src="{{ asset(str_starts_with($absensi->foto_pulang, 'uploads/') ? $absensi->foto_pulang : 'uploads/' . $absensi->foto_pulang) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-red-600 text-white font-bold px-0.5 rounded shadow">OUT</span>
                                             </a>
                                         @endif
