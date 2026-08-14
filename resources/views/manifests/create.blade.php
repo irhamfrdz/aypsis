@@ -246,9 +246,10 @@
                         </div>
                         <div class="relative">
                             <div class="dropdown-container-consignee">
-                                <input type="text" id="search_consignee" placeholder="Search consignee..." autocomplete="off"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm">
-                                <select name="penerima" id="penerima_id" class="hidden">
+                                <input type="text" name="penerima" id="search_consignee" placeholder="Search consignee..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm"
+                                       value="{{ old('penerima') }}">
+                                <select id="penerima_id" class="hidden">
                                     <option value="">- Pilih Consignee -</option>
                                     @if(old('penerima'))
                                         <option value="{{ old('penerima') }}" selected>{{ old('penerima') }}</option>
