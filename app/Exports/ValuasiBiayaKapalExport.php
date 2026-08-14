@@ -79,7 +79,16 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
         $displayVoyage = $row->display_no_voyage;
 
         if ($this->kapal && is_array($row->nama_kapal)) {
-            $kplIdx = array_search($this->kapal, $row->nama_kapal);
+            $normalizedReq = preg_replace('/[^a-z0-9]/', '', strtolower(trim($this->kapal)));
+            $kplIdx = false;
+            foreach ($row->nama_kapal as $idx => $n) {
+                $normN = preg_replace('/[^a-z0-9]/', '', strtolower(trim($n)));
+                if ($normN === $normalizedReq || ($normN !== '' && $normalizedReq !== '' && (str_contains($normN, $normalizedReq) || str_contains($normalizedReq, $normN)))) {
+                    $kplIdx = $idx;
+                    break;
+                }
+            }
+
             if ($kplIdx !== false) {
                 $displayKapal = $row->nama_kapal[$kplIdx];
                 $displayVoyage = is_array($row->no_voyage) && isset($row->no_voyage[$kplIdx]) ? $row->no_voyage[$kplIdx] : '-';

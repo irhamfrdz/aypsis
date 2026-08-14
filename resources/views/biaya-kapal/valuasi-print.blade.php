@@ -72,7 +72,16 @@
                                 $isJoint = false;
 
                                 if ($request->kapal && is_array($biaya->nama_kapal)) {
-                                    $kplIdx = array_search($request->kapal, $biaya->nama_kapal);
+                                    $normalizedReq = preg_replace('/[^a-z0-9]/', '', strtolower(trim($request->kapal)));
+                                    $kplIdx = false;
+                                    foreach ($biaya->nama_kapal as $idx => $n) {
+                                        $normN = preg_replace('/[^a-z0-9]/', '', strtolower(trim($n)));
+                                        if ($normN === $normalizedReq || ($normN !== '' && $normalizedReq !== '' && (str_contains($normN, $normalizedReq) || str_contains($normalizedReq, $normN)))) {
+                                            $kplIdx = $idx;
+                                            break;
+                                        }
+                                    }
+
                                     if ($kplIdx !== false) {
                                         $displayKapal = $biaya->nama_kapal[$kplIdx];
                                         $displayVoyage = is_array($biaya->no_voyage) && isset($biaya->no_voyage[$kplIdx]) ? $biaya->no_voyage[$kplIdx] : '-';

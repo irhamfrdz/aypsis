@@ -6227,14 +6227,16 @@ class BiayaKapalController extends Controller
 
         if ($request->filled('kapal')) {
             $kapalLower = strtolower(trim($request->kapal));
+            $normalizedRequestKapal = preg_replace('/[^a-z0-9]/', '', $kapalLower);
+            
             foreach ($biayaKapals as $biaya) {
                 if (is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1) {
                     $shipNominal = 0;
                     foreach ($relationsToFilter as $rel) {
                         if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
-                            $filtered = $biaya->{$rel}->filter(function($detail) use ($kapalLower) {
-                                $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
-                                return $dKapal === $kapalLower;
+                            $filtered = $biaya->{$rel}->filter(function($detail) use ($normalizedRequestKapal) {
+                                $dKapal = isset($detail->kapal) ? preg_replace('/[^a-z0-9]/', '', strtolower(trim($detail->kapal))) : '';
+                                return $dKapal === $normalizedRequestKapal || ($dKapal !== '' && $normalizedRequestKapal !== '' && (str_contains($dKapal, $normalizedRequestKapal) || str_contains($normalizedRequestKapal, $dKapal)));
                             });
                             
                             foreach ($filtered as $item) {
