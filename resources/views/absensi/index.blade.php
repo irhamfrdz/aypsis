@@ -92,7 +92,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
                     <!-- Search Karyawan -->
                     <div>
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -121,6 +121,18 @@
                             <option value="">Semua Penempatan</option>
                             @foreach($penempatans as $penempatan)
                                 <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Cabang -->
+                    <div>
+                        <label for="cabang" class="block text-xs font-semibold text-gray-700 mb-1">Cabang</label>
+                        <select name="cabang" id="cabang"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Cabang</option>
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ strtoupper($cabang) }}</option>
                             @endforeach
                         </select>
                     </div>

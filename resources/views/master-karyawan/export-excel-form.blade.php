@@ -4,31 +4,32 @@
     <meta charset="utf-8">
     <title>Export Karyawan</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 5px; vertical-align: top; }
-        .title { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 20px; }
-        .section-title { font-size: 14px; font-weight: bold; margin-top: 15px; margin-bottom: 10px; }
-        .label-col { width: 40%; background-color: #f7fafc; font-weight: bold; }
+        body { font-family: 'Calibri', Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        td, th { padding: 6px 8px; vertical-align: top; border: 1px solid #000000; }
+        .title { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 20px; background-color: #4472C4; color: #FFFFFF; }
+        .section-title { font-size: 12px; font-weight: bold; margin-top: 15px; margin-bottom: 10px; background-color: #D9E1F2; }
+        .label-col { width: 40%; background-color: #D9E1F2; font-weight: bold; }
         .value-col { width: 60%; }
-        .border-all td, .border-all th { border: 1px solid #000000; }
+        .no-border td { border: none; padding: 4px; }
         .text-center { text-align: center; }
         .text-bold { font-weight: bold; }
+        .footer-text { font-size: 11px; font-style: italic; }
     </style>
 </head>
 <body>
     @php use Carbon\Carbon; @endphp
 
-    <table>
+    <table class="no-border">
         <tr>
-            <td colspan="2" class="title" style="text-align: center; font-size: 18px; font-weight: bold; height: 30px; vertical-align: middle;">FORM DATA KARYAWAN</td>
+            <td colspan="2" class="title" style="height: 35px; vertical-align: middle;">FORM DATA KARYAWAN</td>
         </tr>
         <tr>
             <td colspan="2"><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }}</td>
         </tr>
     </table>
 
-    <table class="border-all" border="1">
+    <table>
         <tr>
             <td class="label-col">1. NIK Karyawan</td>
             <td class="value-col" style="text-align: left;">{{ $karyawan->nik ?? '-' }}</td>
@@ -120,45 +121,49 @@
             <td class="value-col">{{ $karyawan->pekerjaan ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">23. Supervisor</td>
+            <td class="label-col">23. Posisi</td>
+            <td class="value-col">{{ $karyawan->posisi ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">24. Supervisor</td>
             <td class="value-col">{{ $karyawan->supervisor ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">24. Kantor Cabang</td>
+            <td class="label-col">25. Kantor Cabang AYP</td>
             <td class="value-col">{{ $karyawan->cabang ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">25. Status Pajak</td>
+            <td class="label-col">26. Status Pajak</td>
             <td class="value-col">{{ $karyawan->status_pajak ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">26. Nama Bank</td>
+            <td class="label-col">27. Nama Bank</td>
             <td class="value-col">{{ $karyawan->nama_bank ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">27. Cabang Bank</td>
+            <td class="label-col">28. Cabang Bank</td>
             <td class="value-col">{{ $karyawan->bank_cabang ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">28. Nomor Rekening</td>
+            <td class="label-col">29. Nomor Rekening</td>
             <td class="value-col" style="text-align: left;">{{ $karyawan->akun_bank ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">29. Atas Nama Rekening</td>
+            <td class="label-col">30. Atas Nama Rekening</td>
             <td class="value-col">{{ $karyawan->atas_nama ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label-col">30. Catatan</td>
+            <td class="label-col">31. Catatan</td>
             <td class="value-col">{{ $karyawan->catatan ?? '-' }}</td>
         </tr>
     </table>
 
     <br>
 
-    <table>
+    <table class="no-border">
         <tr>
-            <td colspan="2">
-                <em>Dengan ini menyatakan bahwa apa yang telah saya beritahukan di atas adalah benar dan dapat dipertanggungjawabkan.</em>
+            <td colspan="2" class="footer-text">
+                Dengan ini menyatakan bahwa apa yang telah saya beritahukan di atas adalah benar dan dapat dipertanggungjawabkan.
             </td>
         </tr>
         <tr>
@@ -176,25 +181,25 @@
 
     <br>
 
-    <table>
+    <table class="no-border">
         <tr>
-            <td colspan="7" class="title" style="text-align: center; font-size: 16px; font-weight: bold; height: 30px; vertical-align: middle;">SUSUNAN KELUARGA</td>
+            <td colspan="7" class="title" style="height: 30px; vertical-align: middle;">SUSUNAN KELUARGA</td>
         </tr>
         <tr>
             <td colspan="7"><strong>NIK:</strong> {{ $karyawan->nik ?? '-' }} &nbsp;&nbsp; <strong>Nama:</strong> {{ $karyawan->nama_lengkap ?? '-' }}</td>
         </tr>
     </table>
 
-    <table class="border-all">
+    <table>
         <thead>
-            <tr style="background-color: #f7fafc;">
-                <th class="text-center" style="width: 30px; font-weight: bold;">NO.</th>
-                <th class="text-center" style="width: 100px; font-weight: bold;">HUBUNGAN</th>
-                <th class="text-center" style="width: 150px; font-weight: bold;">NAMA</th>
-                <th class="text-center" style="width: 100px; font-weight: bold;">TGL. LAHIR</th>
-                <th class="text-center" style="width: 150px; font-weight: bold;">ALAMAT</th>
-                <th class="text-center" style="width: 100px; font-weight: bold;">NO. TELEPON</th>
-                <th class="text-center" style="width: 120px; font-weight: bold;">NO. NIK/KTP</th>
+            <tr style="background-color: #D9E1F2;">
+                <th class="text-center" style="width: 50px; font-weight: bold;">NO.</th>
+                <th class="text-center" style="width: 120px; font-weight: bold;">HUBUNGAN</th>
+                <th class="text-center" style="width: 180px; font-weight: bold;">NAMA</th>
+                <th class="text-center" style="width: 120px; font-weight: bold;">TGL. LAHIR</th>
+                <th class="text-center" style="width: 200px; font-weight: bold;">ALAMAT</th>
+                <th class="text-center" style="width: 120px; font-weight: bold;">NO. TELEPON</th>
+                <th class="text-center" style="width: 150px; font-weight: bold;">NO. NIK/KTP</th>
             </tr>
         </thead>
         <tbody>

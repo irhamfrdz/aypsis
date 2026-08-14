@@ -206,6 +206,11 @@
                 </div>
 
                 <div>
+                    <label for="posisi" class="{{ $labelClasses }}">Posisi</label>
+                    <input type="text" name="posisi" id="posisi" class="{{ $inputClasses }}" placeholder="Masukkan posisi" value="{{ old('posisi', $karyawan->posisi) }}">
+                </div>
+
+                <div>
                     <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
                     <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Penempatan --</option>

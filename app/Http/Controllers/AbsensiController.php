@@ -152,6 +152,14 @@ class AbsensiController extends Controller
             });
         }
 
+        // Filter by Cabang
+        if ($request->filled('cabang')) {
+            $cabang = $request->cabang;
+            $query->whereHas('karyawan', function ($kQ) use ($cabang) {
+                $kQ->where('cabang', $cabang);
+            });
+        }
+
         // Build the daily grouped query
         $query->selectRaw('
             karyawan_id,
@@ -204,11 +212,12 @@ class AbsensiController extends Controller
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+        $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $mesins = Mesin::all()->keyBy('id');
         $karyawanList = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
         $nonKaryawanList = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
 
-        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
+        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'cabangs', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
     }
 
     public function exportExcel(Request $request)
@@ -260,6 +269,14 @@ class AbsensiController extends Controller
             $divisi = $request->divisi;
             $query->whereHas('karyawan', function ($kQ) use ($divisi) {
                 $kQ->where('divisi', $divisi);
+            });
+        }
+
+        // Filter by Cabang
+        if ($request->filled('cabang')) {
+            $cabang = $request->cabang;
+            $query->whereHas('karyawan', function ($kQ) use ($cabang) {
+                $kQ->where('cabang', $cabang);
             });
         }
 
