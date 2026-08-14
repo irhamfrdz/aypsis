@@ -67,6 +67,22 @@
                             $totalNominal += $biaya->nominal;
                         @endphp
                         <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                            @php
+                                $displayKapal = $biaya->display_nama_kapal;
+                                $displayVoyage = $biaya->display_no_voyage;
+                                $isJoint = false;
+
+                                if ($request->kapal && is_array($biaya->nama_kapal)) {
+                                    $kplIdx = array_search($request->kapal, $biaya->nama_kapal);
+                                    if ($kplIdx !== false) {
+                                        $displayKapal = $biaya->nama_kapal[$kplIdx];
+                                        $displayVoyage = is_array($biaya->no_voyage) && isset($biaya->no_voyage[$kplIdx]) ? $biaya->no_voyage[$kplIdx] : '-';
+                                        if (count($biaya->nama_kapal) > 1) {
+                                            $isJoint = true;
+                                        }
+                                    }
+                                }
+                            @endphp
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border">{{ $index + 1 }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border">{{ $biaya->tanggal ? $biaya->tanggal->format('d/m/Y') : '-' }}</td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
@@ -74,8 +90,12 @@
                                 <div class="text-gray-500 text-xs">{{ $biaya->nomor_referensi ?? '' }}</div>
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
-                                <div class="font-medium">{{ $biaya->display_nama_kapal }}</div>
-                                <div class="text-xs text-gray-500">Voy: {{ $biaya->display_no_voyage }}</div>
+                                <div class="font-medium">{{ $displayKapal }}
+                                    @if($isJoint)
+                                        <span class="text-[10px] bg-blue-100 text-blue-700 px-1 py-0.5 rounded ml-1">Gabungan</span>
+                                    @endif
+                                </div>
+                                <div class="text-xs text-gray-500">Voy: {{ $displayVoyage }}</div>
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
                                 {{ $biaya->klasifikasiBiaya ? $biaya->klasifikasiBiaya->nama : ($biaya->jenis_biaya ?? '-') }}

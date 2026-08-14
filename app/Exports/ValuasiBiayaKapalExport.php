@@ -70,13 +70,28 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
     public function map($row): array
     {
         static $no = 1;
+
+        $displayKapal = $row->display_nama_kapal;
+        $displayVoyage = $row->display_no_voyage;
+
+        if ($this->kapal && is_array($row->nama_kapal)) {
+            $kplIdx = array_search($this->kapal, $row->nama_kapal);
+            if ($kplIdx !== false) {
+                $displayKapal = $row->nama_kapal[$kplIdx];
+                $displayVoyage = is_array($row->no_voyage) && isset($row->no_voyage[$kplIdx]) ? $row->no_voyage[$kplIdx] : '-';
+                if (count($row->nama_kapal) > 1) {
+                    $displayKapal .= ' (Gabungan)';
+                }
+            }
+        }
+
         return [
             $no++,
             $row->tanggal ? $row->tanggal->format('d/M/Y') : '-',
             $row->nomor_invoice ?? '-',
             $row->nomor_referensi ?? '-',
-            $row->display_nama_kapal,
-            $row->display_no_voyage,
+            $displayKapal,
+            $displayVoyage,
             $row->display_no_bl,
             $row->klasifikasiBiaya ? $row->klasifikasiBiaya->nama : ($row->jenis_biaya ?? '-'),
             $row->vendor ? $row->vendor->nama : ($row->nama_vendor ?? '-'),
