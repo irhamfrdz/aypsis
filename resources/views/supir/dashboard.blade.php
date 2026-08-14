@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
+                <div onclick="openModal('modalLaporanSuratJalan')" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
                     <div>
                         <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Surat Jalan</p>
                         <h3 class="text-3xl font-black text-amber-600">{{ $reportMingguan['surat_jalan'] }}</h3>
@@ -120,7 +120,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
+                <div onclick="openModal('modalLaporanPermohonan')" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
                     <div>
                         <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Memo Permohonan</p>
                         <h3 class="text-3xl font-black text-indigo-600">{{ $reportMingguan['permohonan'] }}</h3>
@@ -130,6 +130,60 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Laporan: Surat Jalan -->
+<div id="modalLaporanSuratJalan" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden transform transition-all max-h-[80vh] flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-amber-50">
+            <h3 class="text-xl font-black text-amber-700 flex items-center">
+                <i class="fas fa-truck mr-3 text-amber-500"></i> Detail Surat Jalan (7 Hari)
+            </h3>
+            <button onclick="closeModal('modalLaporanSuratJalan')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            @forelse($listSuratJalanMerged as $sj)
+                <div class="mb-4 p-4 rounded-xl border border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-gray-800">{{ $sj->no_surat_jalan ?? $sj->nomor_surat_jalan }}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ \Carbon\Carbon::parse($sj->tanggal_checkpoint)->format('d M Y H:i') }} - {{ $sj->no_kontainer ?? $sj->nomor_kontainer ?? 'Tanpa Kontainer' }}</div>
+                    </div>
+                    <span class="px-2 py-1 text-[10px] font-black rounded uppercase bg-green-100 text-green-700 border border-green-200">Selesai</span>
+                </div>
+            @empty
+                <div class="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-xl">Tidak ada surat jalan diselesaikan dalam 7 hari terakhir.</div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Laporan: Memo Permohonan -->
+<div id="modalLaporanPermohonan" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden transform transition-all max-h-[80vh] flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+            <h3 class="text-xl font-black text-indigo-700 flex items-center">
+                <i class="fas fa-envelope-open-text mr-3 text-indigo-500"></i> Detail Memo Permohonan (7 Hari)
+            </h3>
+            <button onclick="closeModal('modalLaporanPermohonan')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            @forelse($listPermohonan as $memo)
+                <div class="mb-4 p-4 rounded-xl border border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-gray-800">{{ $memo->nomor_memo }}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ \Carbon\Carbon::parse($memo->updated_at)->format('d M Y H:i') }} - {{ $kegiatanMap[$memo->kegiatan] ?? ucfirst($memo->kegiatan) }} ke {{ $memo->tujuan }}</div>
+                    </div>
+                    <span class="px-2 py-1 text-[10px] font-black rounded uppercase bg-green-100 text-green-700 border border-green-200">Selesai</span>
+                </div>
+            @empty
+                <div class="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-xl">Tidak ada memo permohonan diselesaikan dalam 7 hari terakhir.</div>
+            @endforelse
         </div>
     </div>
 </div>

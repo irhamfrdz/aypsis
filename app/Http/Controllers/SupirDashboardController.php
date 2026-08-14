@@ -88,36 +88,41 @@ class SupirDashboardController extends Controller
         // Hitung report kerja 1 minggu terakhir
         $startOfWeek = now()->subDays(7)->startOfDay();
         
-        $reportPermohonan = Permohonan::where('supir_id', $supirId)
+        $listPermohonan = Permohonan::where('supir_id', $supirId)
             ->where('status', 'Selesai')
             ->where('updated_at', '>=', $startOfWeek)
-            ->count();
+            ->latest('updated_at')
+            ->get();
 
-        $reportSuratJalan = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+        $listSuratJalan = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
             $query->where('supir', $supirNamaLengkap)
                 ->orWhere('supir', $supirUsername)
                 ->orWhere('supir', $supirName);
         })
             ->whereNotNull('tanggal_checkpoint')
             ->where('tanggal_checkpoint', '>=', $startOfWeek)
-            ->count();
+            ->latest('tanggal_checkpoint')
+            ->get();
             
-        $reportBongkaran = SuratJalanBongkaran::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+        $listBongkaran = SuratJalanBongkaran::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
             $query->where('supir', $supirNamaLengkap)
                 ->orWhere('supir', $supirUsername)
                 ->orWhere('supir', $supirName);
         })
             ->whereNotNull('tanggal_checkpoint')
             ->where('tanggal_checkpoint', '>=', $startOfWeek)
-            ->count();
+            ->latest('tanggal_checkpoint')
+            ->get();
+
+        $listSuratJalanMerged = $listSuratJalan->concat($listBongkaran)->sortByDesc('tanggal_checkpoint');
 
         $reportMingguan = [
-            'permohonan' => $reportPermohonan,
-            'surat_jalan' => $reportSuratJalan + $reportBongkaran,
-            'total' => $reportPermohonan + $reportSuratJalan + $reportBongkaran,
+            'permohonan' => $listPermohonan->count(),
+            'surat_jalan' => $listSuratJalanMerged->count(),
+            'total' => $listPermohonan->count() + $listSuratJalanMerged->count(),
         ];
 
-        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap', 'reportMingguan'));
+        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap', 'reportMingguan', 'listPermohonan', 'listSuratJalanMerged'));
     }
 
     public function obMuat()
