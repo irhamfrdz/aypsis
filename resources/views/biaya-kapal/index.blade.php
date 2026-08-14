@@ -18,6 +18,12 @@
                     <i class="fas fa-file-excel mr-2"></i>
                     Export Biaya Buruh
                 </button>
+                
+                <button type="button" onclick="openValuasiModal()"
+                   class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                    <i class="fas fa-chart-pie mr-2"></i>
+                    Valuasi Biaya
+                </button>
                 @endcan
 
                 @can('biaya-kapal-create')
@@ -436,5 +442,72 @@
     function closeExportModal() {
         document.getElementById('export_modal').classList.add('hidden');
     }
+
+    function openValuasiModal() {
+        document.getElementById('valuasi_modal').classList.remove('hidden');
+    }
+
+    function closeValuasiModal() {
+        document.getElementById('valuasi_modal').classList.add('hidden');
+    }
 </script>
+
+<!-- Valuasi Modal -->
+<div id="valuasi_modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-valuasi" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="closeValuasiModal()"></div>
+
+        <!-- Modal panel -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-purple-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                    <i class="text-purple-600 fas fa-chart-pie"></i>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title-valuasi">
+                        Valuasi Biaya Kapal
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 mb-4">
+                            Pilih kapal dan rentang tanggal untuk valuasi biaya.
+                        </p>
+                        
+                        <form action="{{ route('biaya-kapal.export-valuasi') }}" method="POST" id="valuasi_form">
+                            @csrf
+                            <div class="mb-4 text-left">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
+                                <select name="kapal" id="valuasi_kapal_select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" required>
+                                    <option value="">-- Semua Kapal --</option>
+                                    @foreach(\App\Models\MasterKapal::orderBy('nama_kapal')->get() as $kpl)
+                                        <option value="{{ $kpl->nama_kapal }}">{{ $kpl->nama_kapal }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                                    <input type="date" name="tanggal_mulai" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                                    <input type="date" name="tanggal_akhir" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" required>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="document.getElementById('valuasi_form').submit(); closeValuasiModal();" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-purple-600 border border-transparent rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cetak Valuasi
+                </button>
+                <button type="button" onclick="closeValuasiModal()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

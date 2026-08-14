@@ -6183,4 +6183,13 @@ class BiayaKapalController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+    /**
+     * Export Valuasi Biaya Kapal (Placeholder)
+     */
+    public function exportValuasi(Request $request)
+    {
+        // TODO: Implement export valuasi logic based on kapal, tanggal_mulai, and tanggal_akhir
+        return redirect()->back()->with('success', 'Fitur cetak valuasi biaya kapal dalam tahap pengembangan.');
+    }
 }

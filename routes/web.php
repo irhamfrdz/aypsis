@@ -2159,6 +2159,10 @@ Route::middleware([
         Route::post('biaya-kapal/export-buruh-range', [\App\Http\Controllers\BiayaKapalController::class, 'exportBuruhRange'])
             ->name('biaya-kapal.export-buruh-range')
             ->middleware('can:biaya-kapal-view');
+            
+        Route::post('biaya-kapal/export-valuasi', [\App\Http\Controllers\BiayaKapalController::class, 'exportValuasi'])
+            ->name('biaya-kapal.export-valuasi')
+            ->middleware('can:biaya-kapal-view');
 
         Route::get('biaya-kapal/{biayaKapal}/export-buruh', [\App\Http\Controllers\BiayaKapalController::class, 'exportBuruh'])
             ->name('biaya-kapal.export-buruh')
