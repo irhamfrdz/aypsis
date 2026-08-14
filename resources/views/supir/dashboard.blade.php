@@ -232,6 +232,12 @@
 
 @push('scripts')
 <script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
         modal.classList.add('hidden');
