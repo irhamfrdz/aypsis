@@ -35,8 +35,6 @@ class AbsensiExport implements FromCollection, WithHeadings, WithMapping
             'Istirahat Masuk',
             'Lembur Masuk',
             'Lembur Pulang',
-            'Status Masuk',
-            'Status Pulang',
         ];
     }
 
@@ -55,8 +53,6 @@ class AbsensiExport implements FromCollection, WithHeadings, WithMapping
             $absen->waktu_istirahat_masuk ? \Carbon\Carbon::parse($absen->waktu_istirahat_masuk)->format('H:i:s') : '-',
             $absen->waktu_lembur_masuk ? \Carbon\Carbon::parse($absen->waktu_lembur_masuk)->format('H:i:s') : '-',
             $absen->waktu_lembur_pulang ? \Carbon\Carbon::parse($absen->waktu_lembur_pulang)->format('H:i:s') : '-',
-            $absen->status_masuk ?? '-',
-            $absen->status_pulang ?? '-',
         ];
     }
 }
