@@ -524,8 +524,11 @@
                 </div>
             </div>
             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                <button type="button" onclick="document.getElementById('valuasi_form').submit(); closeValuasiModal();" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-purple-600 border border-transparent rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    Cetak Valuasi
+                <button type="submit" form="valuasi_form" name="action" value="print" formtarget="_blank" onclick="setTimeout(closeValuasiModal, 100)" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-purple-600 border border-transparent rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <i class="fas fa-print mr-2 mt-1"></i> Cetak Valuasi
+                </button>
+                <button type="submit" form="valuasi_form" name="action" value="excel" onclick="setTimeout(closeValuasiModal, 100)" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <i class="fas fa-file-excel mr-2 mt-1"></i> Download Excel
                 </button>
                 <button type="button" onclick="closeValuasiModal()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:w-auto sm:text-sm">
                     Batal

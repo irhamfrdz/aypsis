@@ -6185,11 +6185,42 @@ class BiayaKapalController extends Controller
     }
 
     /**
-     * Export Valuasi Biaya Kapal (Placeholder)
+     * Export Valuasi Biaya Kapal (Excel / Print)
      */
     public function exportValuasi(Request $request)
     {
-        // TODO: Implement export valuasi logic based on kapal, tanggal_mulai, and tanggal_akhir
-        return redirect()->back()->with('success', 'Fitur cetak valuasi biaya kapal dalam tahap pengembangan.');
+        $request->validate([
+            'tanggal_mulai' => 'required|date',
+            'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
+            'action' => 'required|in:print,excel'
+        ]);
+
+        $query = BiayaKapal::with(['klasifikasiBiaya', 'vendor'])
+            ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir]);
+
+        if ($request->filled('kapal')) {
+            $kapal = $request->kapal;
+            $query->where(function ($q) use ($kapal) {
+                $q->whereJsonContains('nama_kapal', $kapal)
+                  ->orWhere('nama_kapal', 'like', "%\"{$kapal}\"%")
+                  ->orWhere('nama_kapal', 'like', "%{$kapal}%");
+            });
+        }
+
+        if ($request->filled('jenis_biaya')) {
+            $query->where('jenis_biaya', $request->jenis_biaya);
+        }
+
+        $biayaKapals = $query->orderBy('tanggal', 'asc')->get();
+
+        if ($biayaKapals->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada data valuasi biaya pada filter tersebut.');
+        }
+
+        if ($request->action === 'excel') {
+            return \Excel::download(new \App\Exports\ValuasiBiayaKapalExport($request->kapal, $request->jenis_biaya, $request->tanggal_mulai, $request->tanggal_akhir), 'valuasi-biaya-kapal-'.date('Ymd').'.xlsx');
+        }
+
+        return view('biaya-kapal.valuasi-print', compact('biayaKapals', 'request'));
     }
 }
