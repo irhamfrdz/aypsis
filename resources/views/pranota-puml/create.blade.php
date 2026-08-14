@@ -61,7 +61,12 @@
                             </div>
                             <div class="ml-4 flex-1">
                                 <div class="flex justify-between items-center mb-1">
-                                    <p class="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">{{ $um->nomor_pranota }}</p>
+                                    <div class="flex items-center space-x-2">
+                                        <p class="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">{{ $um->nomor_pranota }}</p>
+                                        <a href="{{ route('pranota-uang-makan.show', $um->id) }}" target="_blank" onclick="event.stopPropagation()" class="text-emerald-500 hover:text-emerald-700 p-1 rounded hover:bg-emerald-50 transition-colors" title="Lihat Isi Pranota">
+                                            <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        </a>
+                                    </div>
                                     <span class="text-xs font-medium text-gray-500">{{ $um->tanggal_pranota->format('d M Y') }}</span>
                                 </div>
                                 <p class="text-sm font-semibold text-emerald-600">Rp {{ number_format($um->total_nominal, 0, ',', '.') }}</p>
@@ -100,7 +105,12 @@
                             </div>
                             <div class="ml-4 flex-1">
                                 <div class="flex justify-between items-center mb-1">
-                                    <p class="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors">{{ $lm->nomor_pranota }}</p>
+                                    <div class="flex items-center space-x-2">
+                                        <p class="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors">{{ $lm->nomor_pranota }}</p>
+                                        <a href="{{ route('pranota-lembur-karyawan.show', $lm->id) }}" target="_blank" onclick="event.stopPropagation()" class="text-orange-500 hover:text-orange-700 p-1 rounded hover:bg-orange-50 transition-colors" title="Lihat Isi Pranota">
+                                            <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        </a>
+                                    </div>
                                     <span class="text-xs font-medium text-gray-500">{{ $lm->tanggal_pranota->format('d M Y') }}</span>
                                 </div>
                                 <p class="text-sm font-semibold text-orange-600">Rp {{ number_format($lm->total_setelah_adjustment, 0, ',', '.') }}</p>
