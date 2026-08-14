@@ -85,7 +85,39 @@ class SupirDashboardController extends Controller
         $kegiatanRows = \App\Models\MasterKegiatan::all();
         $kegiatanMap = $kegiatanRows->pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
 
-        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap'));
+        // Hitung report kerja 1 minggu terakhir
+        $startOfWeek = now()->subDays(7)->startOfDay();
+        
+        $reportPermohonan = Permohonan::where('supir_id', $supirId)
+            ->where('status', 'Selesai')
+            ->where('updated_at', '>=', $startOfWeek)
+            ->count();
+
+        $reportSuratJalan = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+            $query->where('supir', $supirNamaLengkap)
+                ->orWhere('supir', $supirUsername)
+                ->orWhere('supir', $supirName);
+        })
+            ->whereNotNull('tanggal_checkpoint')
+            ->where('tanggal_checkpoint', '>=', $startOfWeek)
+            ->count();
+            
+        $reportBongkaran = SuratJalanBongkaran::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+            $query->where('supir', $supirNamaLengkap)
+                ->orWhere('supir', $supirUsername)
+                ->orWhere('supir', $supirName);
+        })
+            ->whereNotNull('tanggal_checkpoint')
+            ->where('tanggal_checkpoint', '>=', $startOfWeek)
+            ->count();
+
+        $reportMingguan = [
+            'permohonan' => $reportPermohonan,
+            'surat_jalan' => $reportSuratJalan + $reportBongkaran,
+            'total' => $reportPermohonan + $reportSuratJalan + $reportBongkaran,
+        ];
+
+        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap', 'reportMingguan'));
     }
 
     public function obMuat()
