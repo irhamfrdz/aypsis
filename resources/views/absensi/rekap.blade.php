@@ -170,7 +170,7 @@
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
+                    <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[9px]">
                         <tr>
                             <th class="px-6 py-3 text-left">No</th>
                             <th class="px-6 py-3 text-left">NIK</th>
@@ -188,7 +188,7 @@
                             <th class="px-6 py-3 text-center">Alpha</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
+                    <tbody class="bg-white divide-y divide-gray-200 text-[10px] text-gray-900">
                         @forelse($karyawans as $index => $karyawan)
                             @php
                                 $stats = $rekapData[$karyawan->id] ?? [
@@ -213,22 +213,22 @@
                                     {{ $karyawan->penempatan ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_hadir'] ?? []) }}" class="btn-detail-hadir inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                                    <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_hadir'] ?? []) }}" class="btn-detail-hadir inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
                                         {{ $stats['total_masuk'] }} Hari
                                     </button>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['terlambat_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_terlambat'] ?? []) }}" class="btn-detail-terlambat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_terlambat'] ?? []) }}" class="btn-detail-terlambat inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200">
                                             {{ $stats['terlambat_kali'] }}x ({{ $stats['terlambat_menit'] }}m)
                                         </button>
                                     @else
                                         <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['pulang_cepat_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_pulang_cepat'] ?? []) }}" class="btn-detail-pulang-cepat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 bg-amber-100 text-amber-800 hover:bg-amber-200">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_pulang_cepat'] ?? []) }}" class="btn-detail-pulang-cepat inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 bg-amber-100 text-amber-800 hover:bg-amber-200">
                                             {{ $stats['pulang_cepat_kali'] }}x ({{ $stats['pulang_cepat_menit'] }}m)
                                         </button>
                                     @else
@@ -237,34 +237,34 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     @if($stats['lembur_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_lembur'] ?? []) }}" class="btn-detail-lembur inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_lembur'] ?? []) }}" class="btn-detail-lembur inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
                                             {{ $stats['lembur_kali'] }}x {{ $stats['lembur_jam'] > 0 ? '(' . $stats['lembur_jam'] . ' Jam)' : '' }}
                                         </button>
                                     @else
-                                        <span class="text-xs font-medium text-gray-500">-</span>
+                                        <span class="text-[10px] font-medium text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['tidak_absen_masuk_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_masuk'] ?? []) }}" class="btn-detail-tdk-masuk inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Tidak Absen Masuk">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_masuk'] ?? []) }}" class="btn-detail-tdk-masuk inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Tidak Absen Masuk">
                                             {{ $stats['tidak_absen_masuk_kali'] }}x
                                         </button>
                                     @else
                                         <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['tidak_absen_pulang_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_pulang'] ?? []) }}" class="btn-detail-tdk-pulang inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 bg-orange-100 text-orange-800 hover:bg-orange-200" title="Tidak Absen Pulang">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_pulang'] ?? []) }}" class="btn-detail-tdk-pulang inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 bg-orange-100 text-orange-800 hover:bg-orange-200" title="Tidak Absen Pulang">
                                             {{ $stats['tidak_absen_pulang_kali'] }}x
                                         </button>
                                     @else
                                         <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['tidak_absen_istirahat_kali'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_istirahat'] ?? []) }}" class="btn-detail-tdk-istirahat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 bg-yellow-100 text-yellow-800 hover:bg-yellow-200" title="Tidak Absen Istirahat">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_istirahat'] ?? []) }}" class="btn-detail-tdk-istirahat inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 bg-yellow-100 text-yellow-800 hover:bg-yellow-200" title="Tidak Absen Istirahat">
                                             {{ $stats['tidak_absen_istirahat_kali'] }}x
                                         </button>
                                     @else
@@ -272,22 +272,22 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
                                         {{ $stats['sakit'] }} Hari
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['izin'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500' }}">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $stats['izin'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500' }}">
                                         {{ $stats['izin'] }} Hari
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['alpha'] > 0)
-                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_alpha'] ?? []) }}" class="btn-detail-alpha inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Alpha">
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_alpha'] ?? []) }}" class="btn-detail-alpha inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Alpha">
                                             {{ $stats['alpha'] }}x
                                         </button>
                                     @else
-                                        <span class="text-xs font-medium text-gray-500">-</span>
+                                        <span class="text-[10px] font-medium text-gray-500">-</span>
                                     @endif
                                 </td>
                             </tr>
@@ -299,7 +299,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada data karyawan</h3>
-                                        <p class="text-xs text-gray-500">Tidak ada karyawan yang terdaftar dengan filter ini.</p>
+                                        <p class="text-[10px] text-gray-500">Tidak ada karyawan yang terdaftar dengan filter ini.</p>
                                     </div>
                                 </td>
                             </tr>
