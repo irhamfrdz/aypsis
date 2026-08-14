@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class PembayaranPranotaObController extends Controller
 {
-    protected $coaTransactionService;
+    protected CoaTransactionService $coaTransactionService;
 
     public function __construct(CoaTransactionService $coaTransactionService)
     {
@@ -30,7 +30,7 @@ class PembayaranPranotaObController extends Controller
         return view('pembayaran-pranota-ob.index', compact('pembayaranList'));
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         $pembayaran = PembayaranPranotaOb::with('pembayaranOb')->findOrFail($id);
 
@@ -249,8 +249,8 @@ class PembayaranPranotaObController extends Controller
             }
 
             // Get account names for journaling
-            $akunBiaya = \App\Models\Coa::findOrFail($request->akun_coa_id);
-            $akunBank = \App\Models\Coa::findOrFail($request->akun_bank_id);
+            $akunBiaya = Coa::findOrFail($request->akun_coa_id);
+            $akunBank = Coa::findOrFail($request->akun_bank_id);
 
             // Create pembayaran record
             $pembayaran = PembayaranPranotaOb::create([
@@ -341,14 +341,14 @@ class PembayaranPranotaObController extends Controller
         }
     }
 
-    public function print($id)
+    public function print(string $id)
     {
         $pembayaran = PembayaranPranotaOb::with(['pranotaObs'])->findOrFail($id);
 
         return view('pembayaran-pranota-ob.print', compact('pembayaran'));
     }
 
-    public function edit($id)
+    public function edit(string $id)
     {
         $pembayaran = PembayaranPranotaOb::with('pembayaranOb')->findOrFail($id);
 
@@ -368,7 +368,7 @@ class PembayaranPranotaObController extends Controller
         return view('pembayaran-pranota-ob.edit', compact('pembayaran', 'akunBank', 'akunBiaya'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
@@ -449,7 +449,7 @@ class PembayaranPranotaObController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
         // Check permission
         if (! Gate::allows('pembayaran-pranota-ob-delete')) {
@@ -517,8 +517,8 @@ class PembayaranPranotaObController extends Controller
 
             // 2. Prepare data for re-sync
             $totalPembayaran = $pembayaranPranotaOb->total_setelah_penyesuaian ?? $pembayaranPranotaOb->total_pembayaran;
-            $akunBank = \App\Models\Coa::find($pembayaranPranotaOb->akun_bank_id);
-            $akunBiaya = \App\Models\Coa::find($pembayaranPranotaOb->akun_coa_id);
+            $akunBank = Coa::find($pembayaranPranotaOb->akun_bank_id);
+            $akunBiaya = Coa::find($pembayaranPranotaOb->akun_coa_id);
 
             if (! $akunBank || ! $akunBiaya) {
                 throw new \Exception('Data Akun Bank atau Akun Biaya tidak ditemukan di database.');

@@ -121,7 +121,7 @@ class PembayaranPranotaCatController extends Controller
             if ($pranota->status !== 'approved') {
                 return redirect()->back()->with('error', "Pranota {$pranota->nomor_pranota} statusnya bukan approved atau tidak dapat diproses");
             }
-            $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_perbaikan_kontainer_id', $pranota->id)->exists();
+            $isPaid = PembayaranPranotaCatItem::where('pranota_perbaikan_kontainer_id', $pranota->id)->exists();
             if ($isPaid) {
                 return redirect()->back()->with('error', "Pranota {$pranota->nomor_pranota} sudah dibayar");
             }
@@ -132,7 +132,7 @@ class PembayaranPranotaCatController extends Controller
             if ($pranota->status !== 'unpaid') {
                 return redirect()->back()->with('error', "Pranota Tagihan {$pranota->no_invoice} statusnya bukan unpaid atau tidak dapat diproses");
             }
-            $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
+            $isPaid = PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
             if ($isPaid) {
                 return redirect()->back()->with('error', "Pranota Tagihan {$pranota->no_invoice} sudah dibayar");
             }
@@ -210,7 +210,7 @@ class PembayaranPranotaCatController extends Controller
                 if ($pranota->status !== 'approved') {
                     throw new \Exception("Pranota {$pranota->nomor_pranota} statusnya bukan approved atau tidak dapat diproses");
                 }
-                $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_perbaikan_kontainer_id', $pranota->id)->exists();
+                $isPaid = PembayaranPranotaCatItem::where('pranota_perbaikan_kontainer_id', $pranota->id)->exists();
                 if ($isPaid) {
                     throw new \Exception("Pranota {$pranota->nomor_pranota} sudah dibayar");
                 }
@@ -222,7 +222,7 @@ class PembayaranPranotaCatController extends Controller
                 if ($pranota->status !== 'unpaid') {
                     throw new \Exception("Pranota Tagihan {$pranota->no_invoice} statusnya bukan unpaid atau tidak dapat diproses");
                 }
-                $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
+                $isPaid = PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
                 if ($isPaid) {
                     throw new \Exception("Pranota Tagihan {$pranota->no_invoice} sudah dibayar");
                 }
@@ -326,7 +326,7 @@ class PembayaranPranotaCatController extends Controller
 
         $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);
 
-        $akunCoa = \App\Models\Coa::where(function ($query) {
+        $akunCoa = Coa::where(function ($query) {
             $query->where('tipe_akun', 'Kas/Bank')
                 ->orWhere('tipe_akun', 'Bank/Kas')
                 ->orWhere('tipe_akun', 'LIKE', '%Kas%')
