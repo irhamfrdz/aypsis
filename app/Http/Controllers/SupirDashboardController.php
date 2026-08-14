@@ -39,7 +39,7 @@ class SupirDashboardController extends Controller
                 ->orWhere('supir', $supirUsername)
                 ->orWhere('supir', $supirName);
         })
-            ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
+            ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed', 'sudah_checkpoint'])
             ->whereDoesntHave('tandaTerima')
             ->where(function ($query) {
                 // Untuk kegiatan bongkar, tidak perlu cek pembayaran
@@ -47,7 +47,6 @@ class SupirDashboardController extends Controller
                 $query->where('kegiatan', 'BK')
                     ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
             })
-            ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
             ->latest()
             ->get();
 
@@ -59,7 +58,6 @@ class SupirDashboardController extends Controller
                 ->orWhere('supir', $supirName);
         })
             ->whereDoesntHave('tandaTerima')
-            ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
             ->latest()
             ->get()
             ->map(function ($item) {

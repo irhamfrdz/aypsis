@@ -86,7 +86,7 @@
                 @forelse($suratJalans as $suratJalan)
                     @php
                         $needsCheckpoint = $suratJalan->status === 'belum masuk checkpoint';
-                        $checkpointCompleted = $suratJalan->status === 'checkpoint_completed';
+                        $checkpointCompleted = in_array($suratJalan->status, ['checkpoint_completed', 'sudah_checkpoint']);
                         $isBongkaran = isset($suratJalan->is_bongkaran) && $suratJalan->is_bongkaran;
                         $checkpointRoute = $isBongkaran 
                             ? route('supir.checkpoint.create-surat-jalan-bongkaran', $suratJalan->id)
