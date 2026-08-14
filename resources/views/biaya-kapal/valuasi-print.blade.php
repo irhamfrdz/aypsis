@@ -55,7 +55,6 @@
                         <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Kapal & Voyage</th>
                         <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Jenis Biaya</th>
                         <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border">Nominal</th>
-                        <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -108,19 +107,10 @@
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-medium text-gray-900 border">
                                 Rp {{ number_format($biaya->nominal, 0, ',', '.') }}
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm text-center border">
-                                @if($biaya->status_pembayaran === 'paid')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Lunas</span>
-                                @elseif($biaya->status_pembayaran === 'cancelled')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Dibatalkan</span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                @endif
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center border">
+                            <td colspan="6" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center border">
                                 Tidak ada data yang ditemukan.
                             </td>
                         </tr>
@@ -130,7 +120,6 @@
                     <tr>
                         <td colspan="5" class="px-4 py-3 text-right text-sm text-gray-900 border">Total Keseluruhan</td>
                         <td class="px-4 py-3 text-right text-sm text-purple-700 border">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
-                        <td class="border"></td>
                     </tr>
                 </tfoot>
             </table>

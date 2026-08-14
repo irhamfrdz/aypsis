@@ -6195,7 +6195,15 @@ class BiayaKapalController extends Controller
             'action' => 'required|in:print,excel'
         ]);
 
-        $query = BiayaKapal::with(['klasifikasiBiaya', 'vendor'])
+        $relationsToFilter = [
+            'barangDetails', 'airDetails', 'tkbmDetails', 'operasionalDetails',
+            'truckingDetails', 'stuffingDetails', 'perlengkapanDetails',
+            'labuhTambatDetails', 'oppOptDetails', 'thcDetails', 'loloDetails',
+            'storageDetails', 'freightDetails', 'perijinanDetails', 'meratusDetails',
+            'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails', 'dokumens'
+        ];
+
+        $query = BiayaKapal::with(array_merge(['klasifikasiBiaya', 'vendor'], $relationsToFilter))
             ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir]);
 
         if ($request->filled('kapal')) {
@@ -6217,8 +6225,42 @@ class BiayaKapalController extends Controller
             return redirect()->back()->with('error', 'Tidak ada data valuasi biaya pada filter tersebut.');
         }
 
+        if ($request->filled('kapal')) {
+            $kapalLower = strtolower(trim($request->kapal));
+            foreach ($biayaKapals as $biaya) {
+                if (is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1) {
+                    $shipNominal = 0;
+                    foreach ($relationsToFilter as $rel) {
+                        if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
+                            $filtered = $biaya->{$rel}->filter(function($detail) use ($kapalLower) {
+                                $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
+                                return $dKapal === $kapalLower;
+                            });
+                            
+                            foreach ($filtered as $item) {
+                                if (isset($item->grand_total)) {
+                                    $shipNominal += $item->grand_total;
+                                } elseif (isset($item->total_nominal)) {
+                                    $shipNominal += $item->total_nominal;
+                                } elseif (isset($item->total_biaya)) {
+                                    $shipNominal += $item->total_biaya;
+                                } elseif (isset($item->sub_total)) {
+                                    $shipNominal += $item->sub_total;
+                                } elseif (isset($item->nominal)) {
+                                    $shipNominal += $item->nominal;
+                                }
+                            }
+                        }
+                    }
+                    if ($shipNominal > 0) {
+                        $biaya->nominal = $shipNominal;
+                    }
+                }
+            }
+        }
+
         if ($request->action === 'excel') {
-            return \Excel::download(new \App\Exports\ValuasiBiayaKapalExport($request->kapal, $request->jenis_biaya, $request->tanggal_mulai, $request->tanggal_akhir), 'valuasi-biaya-kapal-'.date('Ymd').'.xlsx');
+            return \Excel::download(new \App\Exports\ValuasiBiayaKapalExport($request->kapal, $request->jenis_biaya, $request->tanggal_mulai, $request->tanggal_akhir, $biayaKapals), 'valuasi-biaya-kapal-'.date('Ymd').'.xlsx');
         }
 
         return view('biaya-kapal.valuasi-print', compact('biayaKapals', 'request'));

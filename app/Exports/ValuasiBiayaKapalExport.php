@@ -16,17 +16,22 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
     protected $jenisBiaya;
     protected $tanggalMulai;
     protected $tanggalAkhir;
+    protected $biayaKapals;
 
-    public function __construct($kapal, $jenisBiaya, $tanggalMulai, $tanggalAkhir)
+    public function __construct($kapal, $jenisBiaya, $tanggalMulai, $tanggalAkhir, $biayaKapals = null)
     {
         $this->kapal = $kapal;
         $this->jenisBiaya = $jenisBiaya;
         $this->tanggalMulai = $tanggalMulai;
         $this->tanggalAkhir = $tanggalAkhir;
+        $this->biayaKapals = $biayaKapals;
     }
 
     public function collection()
     {
+        if ($this->biayaKapals) {
+            return collect($this->biayaKapals);
+        }
         $query = BiayaKapal::with(['klasifikasiBiaya', 'vendor'])
             ->whereBetween('tanggal', [$this->tanggalMulai, $this->tanggalAkhir]);
 
@@ -62,8 +67,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             'Nominal',
             'PPN',
             'PPh',
-            'Total Biaya',
-            'Status Pembayaran'
+            'Total Biaya'
         ];
     }
 
@@ -99,8 +103,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             $row->nominal ?? 0,
             $row->ppn ?? 0,
             $row->pph ?? 0,
-            $row->total_biaya ?? 0,
-            $row->status_pembayaran === 'paid' ? 'Lunas' : ($row->status_pembayaran === 'cancelled' ? 'Dibatalkan' : 'Pending')
+            $row->total_biaya ?? 0
         ];
     }
 
