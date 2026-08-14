@@ -107,7 +107,7 @@
                                 <div class="text-xs text-gray-500">Voy: {{ $displayVoyage }}</div>
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
-                                {{ $biaya->klasifikasiBiaya ? $biaya->klasifikasiBiaya->nama : ($biaya->jenis_biaya ?? '-') }}
+                                {{ isset($biaya->jenis_biaya_override) ? $biaya->jenis_biaya_override : ($biaya->klasifikasiBiaya ? $biaya->klasifikasiBiaya->nama : ($biaya->jenis_biaya ?? '-')) }}
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
                                 @if(isset($biaya->dynamic_vendor))

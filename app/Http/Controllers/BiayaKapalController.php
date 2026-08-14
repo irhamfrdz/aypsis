@@ -6215,8 +6215,14 @@ class BiayaKapalController extends Controller
             });
         }
 
+        $isAirTawarOnly = false;
         if ($request->filled('jenis_biaya')) {
-            $query->where('jenis_biaya', $request->jenis_biaya);
+            if ($request->jenis_biaya === 'KB035_air_tawar') {
+                $query->where('jenis_biaya', 'KB035');
+                $isAirTawarOnly = true;
+            } else {
+                $query->where('jenis_biaya', $request->jenis_biaya);
+            }
         }
 
         $biayaKapals = $query->orderBy('tanggal', 'asc')->get();
@@ -6225,19 +6231,34 @@ class BiayaKapalController extends Controller
             return redirect()->back()->with('error', 'Tidak ada data valuasi biaya pada filter tersebut.');
         }
 
-        if ($request->filled('kapal')) {
-            $kapalLower = strtolower(trim($request->kapal));
-            $normalizedRequestKapal = preg_replace('/[^a-z0-9]/', '', $kapalLower);
+        if ($request->filled('kapal') || $isAirTawarOnly) {
+            $kapalLower = $request->filled('kapal') ? strtolower(trim($request->kapal)) : null;
+            $normalizedRequestKapal = $kapalLower ? preg_replace('/[^a-z0-9]/', '', $kapalLower) : null;
             
             foreach ($biayaKapals as $biaya) {
-                if (is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1) {
+                $isJoint = is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1;
+                
+                if (($normalizedRequestKapal && $isJoint) || $isAirTawarOnly) {
                     $shipNominal = 0;
                     $shipVendor = null;
                     foreach ($relationsToFilter as $rel) {
                         if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
-                            $filtered = $biaya->{$rel}->filter(function($detail) use ($normalizedRequestKapal) {
-                                $dKapal = isset($detail->kapal) ? preg_replace('/[^a-z0-9]/', '', strtolower(trim($detail->kapal))) : '';
-                                return $dKapal === $normalizedRequestKapal || ($dKapal !== '' && $normalizedRequestKapal !== '' && (str_contains($dKapal, $normalizedRequestKapal) || str_contains($normalizedRequestKapal, $dKapal)));
+                            $filtered = $biaya->{$rel}->filter(function($detail) use ($normalizedRequestKapal, $isAirTawarOnly) {
+                                $kapalMatch = true;
+                                if ($normalizedRequestKapal) {
+                                    $dKapal = isset($detail->kapal) ? preg_replace('/[^a-z0-9]/', '', strtolower(trim($detail->kapal))) : '';
+                                    $kapalMatch = ($dKapal === $normalizedRequestKapal || ($dKapal !== '' && $normalizedRequestKapal !== '' && (str_contains($dKapal, $normalizedRequestKapal) || str_contains($normalizedRequestKapal, $dKapal))));
+                                }
+                                
+                                $airTawarMatch = true;
+                                if ($isAirTawarOnly) {
+                                    $tipe = isset($detail->type_keterangan) ? strtolower(trim($detail->type_keterangan)) : '';
+                                    if (!str_contains($tipe, 'air') && !str_contains($tipe, 'galon')) {
+                                        $airTawarMatch = false;
+                                    }
+                                }
+                                
+                                return $kapalMatch && $airTawarMatch;
                             });
                             
                             foreach ($filtered as $item) {
@@ -6266,13 +6287,21 @@ class BiayaKapalController extends Controller
                             }
                         }
                     }
-                    if ($shipNominal > 0) {
-                        $biaya->nominal = $shipNominal;
+                    
+                    if ($isAirTawarOnly && $shipNominal == 0) {
+                        $biaya->is_empty_air = true;
+                    } else {
+                        if ($shipNominal > 0 || $isAirTawarOnly) {
+                            $biaya->nominal = $shipNominal;
+                        }
+                        if (!empty($shipVendor)) {
+                            $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
+                        }
+                        if ($isAirTawarOnly) {
+                            $biaya->jenis_biaya_override = 'Biaya Agen (Khusus Air Tawar)';
+                        }
                     }
-                    if (!empty($shipVendor)) {
-                        $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
-                    }
-                } else {
+                } else if ($normalizedRequestKapal && !$isJoint) {
                     // For single ship invoice, also try to find vendor from details if header doesn't have it
                     if (!$biaya->vendor && !$biaya->nama_vendor) {
                         $shipVendor = null;
@@ -6299,6 +6328,10 @@ class BiayaKapalController extends Controller
                 }
             }
         }
+        
+        $biayaKapals = $biayaKapals->reject(function ($biaya) {
+            return isset($biaya->is_empty_air) && $biaya->is_empty_air;
+        });
 
         if ($request->action === 'excel') {
             return \Excel::download(new \App\Exports\ValuasiBiayaKapalExport($request->kapal, $request->jenis_biaya, $request->tanggal_mulai, $request->tanggal_akhir, $biayaKapals), 'valuasi-biaya-kapal-'.date('Ymd').'.xlsx');

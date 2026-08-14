@@ -115,7 +115,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             $displayKapal,
             $displayVoyage,
             $row->display_no_bl,
-            $row->klasifikasiBiaya ? $row->klasifikasiBiaya->nama : ($row->jenis_biaya ?? '-'),
+            isset($row->jenis_biaya_override) ? $row->jenis_biaya_override : ($row->klasifikasiBiaya ? $row->klasifikasiBiaya->nama : ($row->jenis_biaya ?? '-')),
             $vendorName,
             $row->keterangan ?? '-',
             $row->nominal ?? 0,

@@ -498,6 +498,7 @@
                                     @foreach($klasifikasiBiayas as $kb)
                                         <option value="{{ $kb->kode }}">{{ $kb->nama }} ({{ $kb->kode }})</option>
                                     @endforeach
+                                    <option value="KB035_air_tawar">Biaya Agen (Khusus Air Tawar)</option>
                                 </select>
                             </div>
                             <div class="mb-4 text-left">
