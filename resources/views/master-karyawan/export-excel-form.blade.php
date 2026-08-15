@@ -156,24 +156,48 @@
             <td class="label-col">31. Catatan</td>
             <td class="value-col">{{ $karyawan->catatan ?? '-' }}</td>
         </tr>
-        @php
-            $grupList = is_string($karyawan->grup) ? json_decode($karyawan->grup, true) : (is_array($karyawan->grup) ? $karyawan->grup : []);
-            if (!is_array($grupList)) $grupList = [];
+        @php   
+            $rawGrup = $karyawan->grup;
+            $grupList = [];
+            if (is_array($rawGrup)) {
+                $grupList = $rawGrup;
+            } elseif (is_string($rawGrup)) {
+                $decoded = json_decode($rawGrup, true);
+                if (is_array($decoded)) {
+                    $grupList = $decoded;
+                } elseif (!empty(trim($rawGrup))) {
+                    $grupList = [$rawGrup];
+                }
+            }
             
             $grupFormatted = [];
             foreach ($grupList as $g) {
-                $parts = explode(':', $g, 2);
-                $grupFormatted[] = $parts[0] . (isset($parts[1]) && $parts[1] !== '' ? ' (' . $parts[1] . ')' : '');
+                if (is_string($g) && !empty(trim($g))) {
+                    $parts = explode(':', $g, 2);
+                    $grupFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                }
             }
             $grupStr = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
 
-            $grupBpjsList = is_string($karyawan->grup_bpjs) ? json_decode($karyawan->grup_bpjs, true) : (is_array($karyawan->grup_bpjs) ? $karyawan->grup_bpjs : []);
-            if (!is_array($grupBpjsList)) $grupBpjsList = [];
+            $rawGrupBpjs = $karyawan->grup_bpjs;
+            $grupBpjsList = [];
+            if (is_array($rawGrupBpjs)) {
+                $grupBpjsList = $rawGrupBpjs;
+            } elseif (is_string($rawGrupBpjs)) {
+                $decoded = json_decode($rawGrupBpjs, true);
+                if (is_array($decoded)) {
+                    $grupBpjsList = $decoded;
+                } elseif (!empty(trim($rawGrupBpjs))) {
+                    $grupBpjsList = [$rawGrupBpjs];
+                }
+            }
             
             $grupBpjsFormatted = [];
             foreach ($grupBpjsList as $g) {
-                $parts = explode(':', $g, 2);
-                $grupBpjsFormatted[] = $parts[0] . (isset($parts[1]) && $parts[1] !== '' ? ' (' . $parts[1] . ')' : '');
+                if (is_string($g) && !empty(trim($g))) {
+                    $parts = explode(':', $g, 2);
+                    $grupBpjsFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                }
             }
             $grupBpjsStr = empty($grupBpjsFormatted) ? '-' : implode(', ', $grupBpjsFormatted);
         @endphp
