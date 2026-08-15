@@ -348,6 +348,11 @@
                             <input type="hidden" name="export" value="1">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <input type="hidden" name="pekerjaan" value="{{ request('pekerjaan') }}">
+                            <input type="hidden" name="grup" value="{{ request('grup') }}">
+                            <input type="hidden" name="sub_grup" value="{{ request('sub_grup') }}">
+                            <input type="hidden" name="grup_bpjs" value="{{ request('grup_bpjs') }}">
+                            <input type="hidden" name="sub_grup_bpjs" value="{{ request('sub_grup_bpjs') }}">
+                            <input type="hidden" name="kehadiran" value="{{ request('kehadiran') }}">
 
                             <div class="space-y-4">
 
@@ -659,6 +664,20 @@
                 option.text = sub;
                 subGrupSelect.appendChild(option);
             });
+        } else {
+            // Populate all sub groups if no group is selected
+            let allSubs = new Set();
+            for (const key in grupMap) {
+                grupMap[key].forEach(sub => allSubs.add(sub));
+            }
+            // Sort
+            allSubs = Array.from(allSubs).sort();
+            allSubs.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.text = sub;
+                subGrupSelect.appendChild(option);
+            });
         }
     }
 
@@ -673,6 +692,20 @@
         if (selectedGrupBpjs && grupBpjsMap[selectedGrupBpjs]) {
             const subs = grupBpjsMap[selectedGrupBpjs];
             subs.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.text = sub;
+                subGrupBpjsSelect.appendChild(option);
+            });
+        } else {
+            // Populate all sub groups bpjs if no group is selected
+            let allSubs = new Set();
+            for (const key in grupBpjsMap) {
+                grupBpjsMap[key].forEach(sub => allSubs.add(sub));
+            }
+            // Sort
+            allSubs = Array.from(allSubs).sort();
+            allSubs.forEach(sub => {
                 const option = document.createElement('option');
                 option.value = sub;
                 option.text = sub;

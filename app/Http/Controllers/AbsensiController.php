@@ -655,6 +655,9 @@ class AbsensiController extends Controller
                       ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
                 });
             }
+        } elseif ($request->filled('sub_grup')) {
+            $subGrupReq = $request->sub_grup;
+            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
         }
 
         if ($request->filled('grup_bpjs')) {
@@ -669,6 +672,9 @@ class AbsensiController extends Controller
                       ->orWhere('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . '"%');
                 });
             }
+        } elseif ($request->filled('sub_grup_bpjs')) {
+            $subGrupBpjsReq = $request->sub_grup_bpjs;
+            $karyawansQuery->where('grup_bpjs', 'LIKE', '%:' . $subGrupBpjsReq . '"%');
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -992,12 +998,14 @@ class AbsensiController extends Controller
         $divisi = $request->input('divisi');
         $cabang = $request->input('cabang');
         $tempat = $request->input('tempat');
+        $grup = $request->input('grup');
+        $subGrup = $request->input('sub_grup');
 
         $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat) . '-' : '';
         $fileName = 'rekap-absensi-' . $tempatSlug . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup),
             $fileName
         );
     }

@@ -25,13 +25,15 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     protected $divisi;
     protected $cabang;
     protected $tempat;
+    protected $grup;
+    protected $subGrup;
 
     protected $totalDays;
     protected $dayHeaders;
     protected $rekapData;
     protected $periodText;
 
-    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null)
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
@@ -40,6 +42,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->divisi = $divisi;
         $this->cabang = $cabang;
         $this->tempat = $tempat;
+        $this->grup = $grup;
+        $this->subGrup = $subGrup;
 
         $this->prepareData();
     }
@@ -79,6 +83,22 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         }
         if (!empty($this->tempat)) {
             $karyawansQuery->where('penempatan', $this->tempat);
+        }
+        if (!empty($this->grup)) {
+            $grupReq = $this->grup;
+            if (!empty($this->subGrup)) {
+                $subGrupReq = $this->subGrup;
+                $searchStr = $grupReq . ':' . $subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+            } else {
+                $karyawansQuery->where(function($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
+                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                });
+            }
+        } elseif (!empty($this->subGrup)) {
+            $subGrupReq = $this->subGrup;
+            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
