@@ -601,6 +601,10 @@ class AbsensiController extends Controller
             $karyawansQuery->where('penempatan', $request->penempatan);
         }
 
+        if ($request->filled('pekerjaan')) {
+            $karyawansQuery->where('pekerjaan', $request->pekerjaan);
+        }
+
         if ($request->filled('divisi')) {
             $karyawansQuery->where('divisi', $request->divisi);
         }
@@ -1097,6 +1101,9 @@ class AbsensiController extends Controller
         if ($request->filled('penempatan')) {
             $karyawansQuery->where('penempatan', $request->penempatan);
         }
+        if ($request->filled('pekerjaan')) {
+            $karyawansQuery->where('pekerjaan', $request->pekerjaan);
+        }
         if ($request->filled('divisi')) {
             $karyawansQuery->where('divisi', $request->divisi);
         }
@@ -1181,6 +1188,9 @@ class AbsensiController extends Controller
         $titleParts = [];
         if ($request->filled('penempatan')) {
             $titleParts[] = strtoupper($request->penempatan);
+        }
+        if ($request->filled('pekerjaan')) {
+            $titleParts[] = strtoupper($request->pekerjaan);
         }
         if ($request->filled('divisi')) {
             $titleParts[] = strtoupper($request->divisi);

@@ -156,6 +156,35 @@
             <td class="label-col">31. Catatan</td>
             <td class="value-col">{{ $karyawan->catatan ?? '-' }}</td>
         </tr>
+        @php
+            $grupList = is_string($karyawan->grup) ? json_decode($karyawan->grup, true) : (is_array($karyawan->grup) ? $karyawan->grup : []);
+            if (!is_array($grupList)) $grupList = [];
+            
+            $grupFormatted = [];
+            foreach ($grupList as $g) {
+                $parts = explode(':', $g, 2);
+                $grupFormatted[] = $parts[0] . (isset($parts[1]) && $parts[1] !== '' ? ' (' . $parts[1] . ')' : '');
+            }
+            $grupStr = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
+
+            $grupBpjsList = is_string($karyawan->grup_bpjs) ? json_decode($karyawan->grup_bpjs, true) : (is_array($karyawan->grup_bpjs) ? $karyawan->grup_bpjs : []);
+            if (!is_array($grupBpjsList)) $grupBpjsList = [];
+            
+            $grupBpjsFormatted = [];
+            foreach ($grupBpjsList as $g) {
+                $parts = explode(':', $g, 2);
+                $grupBpjsFormatted[] = $parts[0] . (isset($parts[1]) && $parts[1] !== '' ? ' (' . $parts[1] . ')' : '');
+            }
+            $grupBpjsStr = empty($grupBpjsFormatted) ? '-' : implode(', ', $grupBpjsFormatted);
+        @endphp
+        <tr>
+            <td class="label-col">32. Group</td>
+            <td class="value-col">{{ $grupStr }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">33. Group BPJS</td>
+            <td class="value-col">{{ $grupBpjsStr }}</td>
+        </tr>
     </table>
 
     <br>

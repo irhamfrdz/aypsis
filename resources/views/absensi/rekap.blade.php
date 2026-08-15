@@ -100,6 +100,18 @@
                         </select>
                     </div>
 
+                    <!-- Pekerjaan -->
+                    <div class="md:col-span-1">
+                        <label for="pekerjaan" class="block text-xs font-semibold text-gray-700 mb-1">Pekerjaan</label>
+                        <select name="pekerjaan" id="pekerjaan"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Pekerjaan</option>
+                            @foreach($pekerjaans as $pekerjaan)
+                                <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ strtoupper($pekerjaan) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Tingkat Kehadiran -->
                     <div class="md:col-span-1">
                         <label for="kehadiran" class="block text-xs font-semibold text-gray-700 mb-1">Filter Lupa Absen</label>
