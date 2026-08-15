@@ -447,7 +447,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
         ];
 
         $fileName = 'karyawans_excel_export_'.date('Ymd_His').'.csv';
@@ -473,7 +473,28 @@ class KaryawanController extends Controller
                         $line = [];
                         foreach ($columns as $col) {
                             $val = $r->{$col} ?? '';
-                            if ($val instanceof \DateTimeInterface) {
+                            if (in_array($col, ['grup', 'grup_bpjs'])) {
+                                $rawGrup = $val;
+                                $grupList = [];
+                                if (is_array($rawGrup)) {
+                                    $grupList = $rawGrup;
+                                } elseif (is_string($rawGrup)) {
+                                    $decoded = json_decode($rawGrup, true);
+                                    if (is_array($decoded)) {
+                                        $grupList = $decoded;
+                                    } elseif (!empty(trim($rawGrup))) {
+                                        $grupList = [$rawGrup];
+                                    }
+                                }
+                                $grupFormatted = [];
+                                foreach ($grupList as $g) {
+                                    if (is_string($g) && !empty(trim($g))) {
+                                        $parts = explode(':', $g, 2);
+                                        $grupFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                                    }
+                                }
+                                $val = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
+                            } elseif ($val instanceof \DateTimeInterface) {
                                 $val = $val->format('d/M/Y');
                             } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
                                 if (! empty($val)) {
@@ -804,7 +825,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
         ];
 
         $fileName = 'karyawans_excel_indonesia_'.date('Ymd_His').'.csv';
@@ -831,7 +852,28 @@ class KaryawanController extends Controller
                             $val = $r->{$col} ?? '';
 
                             // Format dates to dd/mmm/yyyy for Excel export
-                            if ($val instanceof \DateTimeInterface) {
+                            if (in_array($col, ['grup', 'grup_bpjs'])) {
+                                $rawGrup = $val;
+                                $grupList = [];
+                                if (is_array($rawGrup)) {
+                                    $grupList = $rawGrup;
+                                } elseif (is_string($rawGrup)) {
+                                    $decoded = json_decode($rawGrup, true);
+                                    if (is_array($decoded)) {
+                                        $grupList = $decoded;
+                                    } elseif (!empty(trim($rawGrup))) {
+                                        $grupList = [$rawGrup];
+                                    }
+                                }
+                                $grupFormatted = [];
+                                foreach ($grupList as $g) {
+                                    if (is_string($g) && !empty(trim($g))) {
+                                        $parts = explode(':', $g, 2);
+                                        $grupFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                                    }
+                                }
+                                $val = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
+                            } elseif ($val instanceof \DateTimeInterface) {
                                 $val = $val->format('d/M/Y');
                             } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
                                 // Handle date fields - format if not empty, keep empty if null
