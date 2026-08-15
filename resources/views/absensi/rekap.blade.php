@@ -172,6 +172,9 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[9px]">
                         <tr>
+                            <th class="px-6 py-3 text-center w-10">
+                                <input type="checkbox" id="selectAllKaryawan" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            </th>
                             <th class="px-6 py-3 text-left">No</th>
                             <th class="px-6 py-3 text-left">NIK</th>
                             <th class="px-6 py-3 text-left">Nama Lengkap</th>
@@ -200,6 +203,9 @@
                                 ];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <input type="checkbox" name="selected_karyawan[]" value="{{ $karyawan->id }}" form="filterForm" class="karyawan-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" {{ is_array(request('selected_karyawan')) && in_array($karyawan->id, request('selected_karyawan')) ? 'checked' : '' }}>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500">
                                     {{ $karyawans->firstItem() + $index }}
                                 </td>
@@ -293,7 +299,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="px-6 py-10 text-center">
+                                <td colspan="15" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -742,6 +748,17 @@
                 allowClear: true,
                 width: '100%',
                 dropdownParent: $('#izinModal')
+            });
+        }
+
+        // Select All Karyawan
+        const selectAllCheckbox = document.getElementById('selectAllKaryawan');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.karyawan-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAllCheckbox.checked;
+                });
             });
         }
 

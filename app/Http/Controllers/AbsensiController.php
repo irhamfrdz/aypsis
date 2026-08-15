@@ -1112,6 +1112,13 @@ class AbsensiController extends Controller
                       ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
                 });
             }
+        } elseif ($request->filled('sub_grup')) {
+            $subGrupReq = $request->sub_grup;
+            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
+        }
+
+        if ($request->filled('selected_karyawan') && is_array($request->selected_karyawan)) {
+            $karyawansQuery->whereIn('id', $request->selected_karyawan);
         }
 
         $karyawans = $karyawansQuery->get();
