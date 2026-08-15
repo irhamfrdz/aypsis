@@ -1091,6 +1091,14 @@
             // Validasi sebelum submit
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    // Pastikan semua field grup diupdate sebelum submit
+                    document.querySelectorAll('.grup-row').forEach(row => {
+                        if (typeof updateGrupHidden === 'function') updateGrupHidden(row);
+                    });
+                    document.querySelectorAll('.grup-bpjs-row').forEach(row => {
+                        if (typeof updateGrupBpjsHidden === 'function') updateGrupBpjsHidden(row);
+                    });
+
                     let isValid = true;
 
                     // Validasi NIK (skip jika readonly)
