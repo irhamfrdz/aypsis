@@ -1178,13 +1178,42 @@ class AbsensiController extends Controller
             ];
         }
 
+        $titleParts = [];
+        if ($request->filled('penempatan')) {
+            $titleParts[] = strtoupper($request->penempatan);
+        }
+        if ($request->filled('divisi')) {
+            $titleParts[] = strtoupper($request->divisi);
+        }
+        if ($request->filled('grup')) {
+            $grupText = strtoupper($request->grup);
+            if ($request->filled('sub_grup')) {
+                $grupText .= ' - ' . strtoupper($request->sub_grup);
+            }
+            $titleParts[] = $grupText;
+        } elseif ($request->filled('sub_grup')) {
+            $titleParts[] = strtoupper($request->sub_grup);
+        }
+        if ($request->filled('grup_bpjs')) {
+            $grupBpjsText = strtoupper($request->grup_bpjs);
+            if ($request->filled('sub_grup_bpjs')) {
+                $grupBpjsText .= ' - ' . strtoupper($request->sub_grup_bpjs);
+            }
+            $titleParts[] = $grupBpjsText;
+        } elseif ($request->filled('sub_grup_bpjs')) {
+            $titleParts[] = strtoupper($request->sub_grup_bpjs);
+        }
+
+        $filterTitle = !empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
+        $filename = 'Data_Scan_Karyawan' . (!empty($titleParts) ? '_' . \Illuminate\Support\Str::slug(implode('_', $titleParts)) : '') . '.pdf';
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.rekap-pdf', [
             'startDate' => $startDate,
             'endDate' => $endDate,
             'pdfData' => $pdfData,
-            'cabangTitle' => $request->penempatan ?: 'Kantor',
+            'cabangTitle' => $filterTitle,
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download('Data_Scan_Karyawan.pdf');
+        return $pdf->download($filename);
     }
 }
