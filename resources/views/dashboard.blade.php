@@ -405,9 +405,14 @@
                                 <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada SJ tertunda > 3 hari"></i>
                             @endif
                         </div>
-                        @if(isset($data->is_customer) && $data->is_customer)
-                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">NON-AYP</span>
-                        @endif
+                        <div class="flex flex-wrap items-center justify-center gap-1">
+                            @if(isset($data->is_customer) && $data->is_customer)
+                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">NON-AYP</span>
+                            @endif
+                            @if(isset($data->is_vendor) && $data->is_vendor)
+                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 font-medium">VENDOR</span>
+                            @endif
+                        </div>
                     </div>
                     
                     @if($data->total > 0)

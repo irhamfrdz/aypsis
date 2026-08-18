@@ -169,20 +169,53 @@ class DashboardController extends Controller
         foreach ($supirCustomer as $data) {
             // Cek apakah supir sudah ada di koleksi
             $existing = $rekapSupirBelumTandaTerima->firstWhere('supir', $data->supir);
-            if (! $existing) {
+            if (!$existing) {
                 $pending = $pendingTandaTerima->firstWhere('supir', $data->supir);
-                $rekapSupirBelumTandaTerima->push((object) [
+                $rekapSupirBelumTandaTerima->push((object)[
                     'supir' => $data->supir,
-                    'nama_lengkap' => $data->supir.' (Non-AYP)',
+                    'nama_lengkap' => $data->supir . ' (Non-AYP)',
                     'total' => $pending ? $pending->total : 0,
                     'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
                     'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
                     'is_jakarta' => false,
                     'is_customer' => true,
+                    'is_vendor' => false
                 ]);
             } else {
                 $existing->is_customer = true;
-                $existing->nama_lengkap = $existing->nama_lengkap.' (Non-AYP)';
+                $existing->nama_lengkap = $existing->nama_lengkap . ' (Non-AYP)';
+            }
+        }
+
+        // 4. Masukkan supir vendor
+        $supirVendor = DB::table('surat_jalans')
+            ->join('tagihan_supir_vendors', 'surat_jalans.id', '=', 'tagihan_supir_vendors.surat_jalan_id')
+            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->whereNotNull('surat_jalans.supir')
+            ->where('surat_jalans.supir', '!=', '')
+            ->select('surat_jalans.supir', DB::raw('MAX(surat_jalans.tanggal_surat_jalan) as terakhir_surat_jalan'))
+            ->groupBy('surat_jalans.supir')
+            ->get();
+            
+        foreach ($supirVendor as $data) {
+            $existing = $rekapSupirBelumTandaTerima->firstWhere('supir', $data->supir);
+            if (!$existing) {
+                $pending = $pendingTandaTerima->firstWhere('supir', $data->supir);
+                $rekapSupirBelumTandaTerima->push((object)[
+                    'supir' => $data->supir,
+                    'nama_lengkap' => $data->supir . ' (Vendor)',
+                    'total' => $pending ? $pending->total : 0,
+                    'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
+                    'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
+                    'is_jakarta' => false,
+                    'is_customer' => false,
+                    'is_vendor' => true
+                ]);
+            } else {
+                $existing->is_vendor = true;
+                if (!str_contains($existing->nama_lengkap, '(Vendor)')) {
+                    $existing->nama_lengkap = $existing->nama_lengkap . ' (Vendor)';
+                }
             }
         }
 
