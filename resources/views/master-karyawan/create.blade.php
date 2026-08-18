@@ -239,7 +239,12 @@
 
                     <div>
                         <label for="posisi" class="{{ $labelClasses }}">Posisi</label>
-                        <input type="text" name="posisi" id="posisi" class="{{ $inputClasses }}" placeholder="Masukkan posisi" value="{{ old('posisi') }}">
+                        <select name="posisi" id="posisi" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Posisi --</option>
+                            @foreach($posisis as $pos)
+                            <option value="{{ $pos->nama_posisi }}" {{ old('posisi') == $pos->nama_posisi ? 'selected' : '' }}>{{ $pos->nama_posisi }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div>

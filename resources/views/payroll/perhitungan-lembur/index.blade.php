@@ -368,9 +368,18 @@
                         <i class="fas fa-list text-indigo-600"></i>
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailTitle">
-                            Rincian Lembur
-                        </h3>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2 sm:mb-0" id="detailTitle">
+                                Rincian Lembur
+                            </h3>
+                            <div class="flex items-center space-x-2">
+                                <label for="filterDetailTanggal" class="text-xs font-medium text-gray-700">Filter:</label>
+                                <input type="text" id="filterDetailTanggal" placeholder="Cari tanggal..." class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 w-32 sm:w-48">
+                                <button type="button" id="btnRefreshDetail" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-2 py-1.5 rounded-md transition-colors flex items-center font-medium" title="Refresh & Reset Centang">
+                                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
                         <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailContent">
                             <!-- Content will be injected here -->
                         </div>
@@ -395,13 +404,83 @@
             let details = [];
             try {
                 details = JSON.parse(this.getAttribute('data-detail'));
+                // Cek apakah data sudah pernah diinisialisasi (sudah ada properti selected)
+                let hasInitialized = details.some(r => r.hasOwnProperty('selected'));
+                if (!hasInitialized) {
+                    details.forEach(r => r.selected = false); // Default tidak terceklis
+                    this.setAttribute('data-detail', JSON.stringify(details));
+                }
             } catch (e) {
                 console.error("Gagal parse details", e);
             }
             
             const btnEl = this;
+            const filterInput = document.getElementById('filterDetailTanggal');
+            filterInput.value = ''; // Reset filter when opening new modal
+            
+            // Recreate input to clear old event listeners
+            const newFilterInput = filterInput.cloneNode(true);
+            filterInput.parentNode.replaceChild(newFilterInput, filterInput);
+            
+            newFilterInput.addEventListener('input', function() {
+                renderDetail();
+            });
+
+            // Set up Refresh Button
+            const btnRefresh = document.getElementById('btnRefreshDetail');
+            const newBtnRefresh = btnRefresh.cloneNode(true);
+            btnRefresh.parentNode.replaceChild(newBtnRefresh, btnRefresh);
+
+            newBtnRefresh.addEventListener('click', async function() {
+                const icon = this.querySelector('i');
+                icon.classList.add('fa-spin');
+                
+                try {
+                    // Fetch latest data from server
+                    const currentUrl = new URL(window.location.href);
+                    
+                    // Add search param for this employee's NIK
+                    const tr = btnEl.closest('tr');
+                    const nik = tr.querySelector('td:nth-child(3)').innerText.trim();
+                    const karyawanId = tr.querySelector('.row-checkbox').value;
+                    
+                    currentUrl.searchParams.set('search', nik);
+                    
+                    const response = await fetch(currentUrl.toString());
+                    const htmlText = await response.text();
+                    
+                    // Parse HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    
+                    // Find the button for this employee using checkbox value
+                    const newCheckbox = doc.querySelector(`input.row-checkbox[value="${karyawanId}"]`);
+                    if (newCheckbox) {
+                        const newBtn = newCheckbox.closest('tr').querySelector('.btn-detail');
+                        if (newBtn) {
+                            let newDetails = JSON.parse(newBtn.getAttribute('data-detail'));
+                            
+                            // Kembalikan ke default (tidak terceklis)
+                            newDetails.forEach(r => r.selected = false);
+                            
+                            // Update current button's attribute and details array
+                            btnEl.setAttribute('data-detail', JSON.stringify(newDetails));
+                            details = newDetails;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Gagal merefresh data:', e);
+                    alert('Gagal mengambil data terbaru dari server.');
+                }
+                
+                newFilterInput.value = '';
+                icon.classList.remove('fa-spin');
+                renderDetail();
+            });
             
             function renderDetail() {
+                const filterVal = newFilterInput.value.toLowerCase().trim();
+                
                 let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
                 html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
                 html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th></tr></thead><tbody class="divide-y divide-gray-200">';
@@ -411,11 +490,35 @@
                 let totalBiasa = 0;
                 let totalLibur = 0;
                 let allChecked = true;
+                let rowCount = 0;
+                
+                // Hitung total dari SEMUA data (tidak terpengaruh filter pencarian)
+                if (details.length > 0) {
+                    details.forEach((row) => {
+                        let isChecked = (row.selected !== false);
+                        if (!isChecked) allChecked = false;
+                        
+                        if (isChecked) {
+                            total += Number(row.nominal);
+                            totalJam += Number(row.durasi_jam);
+                            if (row.tipe_hari === 'Hari Biasa') {
+                                totalBiasa += Number(row.durasi_jam);
+                            } else {
+                                totalLibur += Number(row.durasi_jam);
+                            }
+                        }
+                    });
+                }
                 
                 if (details.length > 0) {
                     details.forEach((row, i) => {
+                        // Apply filter untuk tampilan saja
+                        if (filterVal && !String(row.tanggal).toLowerCase().includes(filterVal)) {
+                            return; // Skip if filter doesn't match
+                        }
+                        
+                        rowCount++;
                         let isChecked = (row.selected !== false);
-                        if (!isChecked) allChecked = false;
                         
                         html += `<tr>
                             <td class="px-4 py-2 text-center">
@@ -428,22 +531,16 @@
                             <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
                         </tr>`;
-                        
-                        if (isChecked) {
-                            total += Number(row.nominal);
-                            totalJam += Number(row.durasi_jam);
-                            if (row.tipe_hari === 'Hari Biasa') {
-                                totalBiasa += Number(row.durasi_jam);
-                            } else {
-                                totalLibur += Number(row.durasi_jam);
-                            }
-                        }
                     });
                     
-                    html += `<tr class="bg-gray-50">
-                        <td colspan="6" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH</td>
-                        <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
-                    </tr>`;
+                    if (rowCount > 0) {
+                        html += `<tr class="bg-gray-50">
+                            <td colspan="6" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
+                            <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
+                        </tr>`;
+                    } else {
+                        html += '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
+                    }
                 } else {
                     html += '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
                 }

@@ -924,16 +924,17 @@ class KaryawanController extends Controller
      */
     public function create()
     {
-        $pelamar = null;
-        if (request()->has('pelamar_id')) {
-            $pelamar = \App\Models\PelamarKaryawan::find(request()->pelamar_id);
-        }
-
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
         $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $pajaks = Pajak::orderBy('nama_status')->get();
         $cabangs = Cabang::orderBy('nama_cabang')->get();
         $banks = Bank::orderBy('name')->get();
+        $posisis = \App\Models\Posisi::where('is_active', true)->orderBy('nama_posisi')->get();
+
+        $pelamar = null;
+        if (request()->has('pelamar_id')) {
+            $pelamar = \App\Models\PelamarKaryawan::find(request()->pelamar_id);
+        }
 
         // Group pekerjaan by divisi for JavaScript
         $pekerjaanByDivisi = [];
@@ -948,7 +949,7 @@ class KaryawanController extends Controller
         // Generate next NIK for auto-fill (Optional, but user want to remove automatic feature)
         $nextNik = ''; // Karyawan::generateNextNik();
 
-        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar'));
+        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis'));
     }
 
     /**
@@ -1110,6 +1111,7 @@ class KaryawanController extends Controller
         $pajaks = Pajak::orderBy('nama_status')->get();
         $cabangs = Cabang::orderBy('nama_cabang')->get();
         $banks = Bank::orderBy('name')->get();
+        $posisis = \App\Models\Posisi::where('is_active', true)->orderBy('nama_posisi')->get();
 
         // Group pekerjaan by divisi for JavaScript
         $pekerjaanByDivisi = [];
@@ -1121,7 +1123,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi'));
+        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis'));
     }
 
     /**
