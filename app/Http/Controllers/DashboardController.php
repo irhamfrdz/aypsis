@@ -243,8 +243,50 @@ class DashboardController extends Controller
             return $score;
         })->values();
 
+        // Mutasi Uang Jalan per supir (jika supir dipilih)
+        $mutasiUangJalan = null;
+        if (request('supir')) {
+            $selectedSupir = request('supir');
+            
+            // Tentukan nama-nama supir yang difilter
+            $filterSupirNames = [];
+            if ($selectedSupir === 'NON_AYP') {
+                $filterSupirNames = $supirNonAypNames;
+            } else {
+                $filterSupirNames = [$selectedSupir];
+            }
+
+            // Total uang jalan yang diterima supir (DEBIT = uang keluar dari perusahaan ke supir)
+            $totalDebit = DB::table('uang_jalans')
+                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+                ->whereIn('surat_jalans.supir', $filterSupirNames)
+                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
+                ->whereNull('uang_jalans.deleted_at')
+                ->sum('uang_jalans.jumlah_total');
+
+            // Total uang jalan yang sudah dikembalikan/selesai (KREDIT = tanda terima sudah ada)
+            $totalKredit = DB::table('uang_jalans')
+                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+                ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
+                ->whereIn('surat_jalans.supir', $filterSupirNames)
+                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
+                ->whereDate('tanda_terimas.created_at', '<=', $hariIni)
+                ->whereNull('uang_jalans.deleted_at')
+                ->sum('uang_jalans.jumlah_total');
+
+            $mutasiUangJalan = (object)[
+                'supir' => $selectedSupir,
+                'total_debit' => $totalDebit,
+                'total_kredit' => $totalKredit,
+                'saldo_awal' => 0, // Karena ini akumulasi dari awal
+                'saldo_akhir' => $totalDebit - $totalKredit,
+            ];
+        }
+
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima', 'filterDate'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima', 'filterDate', 'mutasiUangJalan'));
     }
 
     /**

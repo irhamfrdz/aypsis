@@ -565,5 +565,53 @@
         </div>
         @endif
     </div>
+
+    {{-- Mutasi Uang Jalan per Supir --}}
+    @if(isset($mutasiUangJalan) && $mutasiUangJalan)
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
+        <div class="bg-blue-50 px-4 py-3 border-b border-blue-200">
+            <h3 class="text-base font-semibold text-blue-800 flex items-center">
+                <i class="fas fa-wallet mr-2 text-blue-600"></i>
+                Rekap Uang Jalan — {{ $mutasiUangJalan->supir === 'NON_AYP' ? 'Supir Non-AYP' : $mutasiUangJalan->supir }}
+            </h3>
+            <p class="text-xs text-blue-600">Ringkasan mutasi uang jalan sampai dengan {{ \Carbon\Carbon::parse($filterDate ?? now())->format('d/m/Y') }}</p>
+        </div>
+        
+        <div class="p-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {{-- Saldo Awal --}}
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
+                    <span class="text-xs text-gray-500 font-medium uppercase tracking-wider block mb-1">Saldo Awal</span>
+                    <span class="text-lg font-bold text-gray-800">Rp {{ number_format($mutasiUangJalan->saldo_awal, 0, ',', '.') }}</span>
+                </div>
+                
+                {{-- Total Debit (Uang Jalan Keluar) --}}
+                <div class="bg-red-50 rounded-lg p-4 border border-red-200 text-center">
+                    <span class="text-xs text-red-500 font-medium uppercase tracking-wider block mb-1">
+                        <i class="fas fa-arrow-up mr-1"></i> Debit (UJ Keluar)
+                    </span>
+                    <span class="text-lg font-bold text-red-700">Rp {{ number_format($mutasiUangJalan->total_debit, 0, ',', '.') }}</span>
+                </div>
+                
+                {{-- Total Kredit (Sudah Tanda Terima) --}}
+                <div class="bg-green-50 rounded-lg p-4 border border-green-200 text-center">
+                    <span class="text-xs text-green-500 font-medium uppercase tracking-wider block mb-1">
+                        <i class="fas fa-arrow-down mr-1"></i> Kredit (Selesai TT)
+                    </span>
+                    <span class="text-lg font-bold text-green-700">Rp {{ number_format($mutasiUangJalan->total_kredit, 0, ',', '.') }}</span>
+                </div>
+                
+                {{-- Saldo Akhir --}}
+                <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200 text-center">
+                    <span class="text-xs text-indigo-500 font-medium uppercase tracking-wider block mb-1">Saldo Akhir (Outstanding)</span>
+                    <span class="text-lg font-bold {{ $mutasiUangJalan->saldo_akhir > 0 ? 'text-red-700' : 'text-green-700' }}">
+                        Rp {{ number_format($mutasiUangJalan->saldo_akhir, 0, ',', '.') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 @endsection
