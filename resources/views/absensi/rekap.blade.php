@@ -290,20 +290,38 @@
                                         <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
-                                        {{ $stats['sakit'] }} Hari
-                                    </span>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
+                                    @if($stats['sakit'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_sakit'] ?? []) }}" class="btn-detail-sakit inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 bg-blue-100 text-blue-800 hover:bg-blue-200" title="Detail Sakit">
+                                            {{ $stats['sakit'] }} Hari
+                                        </button>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">
+                                            {{ $stats['sakit'] }} Hari
+                                        </span>
+                                    @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $stats['izin'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500' }}">
-                                        {{ $stats['izin'] }} Hari
-                                    </span>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
+                                    @if($stats['izin'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_izin'] ?? []) }}" class="btn-detail-izin inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 bg-amber-100 text-amber-800 hover:bg-amber-200" title="Detail Izin">
+                                            {{ $stats['izin'] }} Hari
+                                        </button>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">
+                                            {{ $stats['izin'] }} Hari
+                                        </span>
+                                    @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ ($stats['cuti'] ?? 0) > 0 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-500' }}">
-                                        {{ $stats['cuti'] ?? 0 }} Hari
-                                    </span>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
+                                    @if(($stats['cuti'] ?? 0) > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_cuti'] ?? []) }}" class="btn-detail-cuti inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 bg-purple-100 text-purple-800 hover:bg-purple-200" title="Detail Cuti">
+                                            {{ $stats['cuti'] ?? 0 }} Hari
+                                        </button>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">
+                                            {{ $stats['cuti'] ?? 0 }} Hari
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
                                     @if($stats['alpha'] > 0)
@@ -873,6 +891,36 @@
                 let dates = [];
                 try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
                 showDetailLupaAbsen(nama, dates, 'Alpha');
+            });
+        });
+
+        // Event listener for Sakit
+        document.querySelectorAll('.btn-detail-sakit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Sakit');
+            });
+        });
+
+        // Event listener for Izin
+        document.querySelectorAll('.btn-detail-izin').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Izin');
+            });
+        });
+
+        // Event listener for Cuti
+        document.querySelectorAll('.btn-detail-cuti').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Cuti');
             });
         });
 

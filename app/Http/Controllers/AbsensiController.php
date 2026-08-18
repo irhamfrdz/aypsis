@@ -818,8 +818,11 @@ class AbsensiController extends Controller
             $detail_terlambat = [];
             $detail_pulang_cepat = [];
             $sakit = 0;
+            $detail_sakit = [];
             $izin = 0;
+            $detail_izin = [];
             $cuti = 0;
+            $detail_cuti = [];
             $alpha = 0;
             $detail_alpha = [];
             $terlambatKali = 0;
@@ -857,10 +860,13 @@ class AbsensiController extends Controller
                     $jenis = strtolower($matchedPerm->jenis_izin);
                     if (str_contains($jenis, 'sakit')) {
                         $sakit++;
+                        $detail_sakit[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     } elseif (str_contains($jenis, 'cuti')) {
                         $cuti++;
+                        $detail_cuti[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')';
                     } else {
                         $izin++;
+                        $detail_izin[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')';
                     }
                 } elseif (in_array($dateStr, $presentDates)) {
                     $hadir++;
@@ -969,14 +975,17 @@ class AbsensiController extends Controller
                 'lembur_kali' => $lemburKali,
                 'tidak_absen_masuk_kali' => $tidakAbsenMasukKali,
                 'tidak_absen_pulang_kali' => $tidakAbsenPulangKali,
+                'detail_tidak_absen_pulang' => $detail_tidak_absen_pulang,
                 'tidak_absen_istirahat_kali' => $tidakAbsenIstirahatKali,
+                'detail_tidak_absen_istirahat' => $detail_tidak_absen_istirahat,
+                'detail_sakit' => $detail_sakit,
+                'detail_izin' => $detail_izin,
+                'detail_cuti' => $detail_cuti,
                 'detail_hadir' => $detail_hadir,
                 'detail_lembur' => $detail_lembur,
                 'detail_terlambat' => $detail_terlambat,
                 'detail_pulang_cepat' => $detail_pulang_cepat,
                 'detail_tidak_absen_masuk' => $detail_tidak_absen_masuk,
-                'detail_tidak_absen_pulang' => $detail_tidak_absen_pulang,
-                'detail_tidak_absen_istirahat' => $detail_tidak_absen_istirahat,
             ];
         }
 
