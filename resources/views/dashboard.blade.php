@@ -466,21 +466,21 @@
 
                     @if(isset($data->mutasi))
                     <div class="mt-2 pt-2 border-t {{ $isVeryIdle ? 'border-red-200' : ($isIdle ? 'border-orange-200' : 'border-gray-200') }} w-full grid grid-cols-2 gap-x-2 gap-y-2 text-left">
-                        <div class="bg-white/50 rounded px-1 py-0.5">
-                            <div class="text-[9px] text-gray-500 font-medium uppercase tracking-wider">Awal</div>
-                            <div class="font-bold text-gray-800 text-[11px] truncate" title="Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}</div>
+                        <div class="bg-white/50 rounded px-1.5 py-1">
+                            <div class="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Awal</div>
+                            <div class="font-bold text-gray-800 text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}</div>
                         </div>
-                        <div class="bg-red-50/50 rounded px-1 py-0.5">
-                            <div class="text-[9px] text-red-500 font-medium uppercase tracking-wider">Debit</div>
-                            <div class="font-bold text-red-700 text-[11px] truncate" title="Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}</div>
+                        <div class="bg-red-50/50 rounded px-1.5 py-1">
+                            <div class="text-[9px] text-red-500 font-medium uppercase tracking-wider mb-0.5">Debit</div>
+                            <div class="font-bold text-red-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}</div>
                         </div>
-                        <div class="bg-green-50/50 rounded px-1 py-0.5">
-                            <div class="text-[9px] text-green-500 font-medium uppercase tracking-wider">Kredit</div>
-                            <div class="font-bold text-green-700 text-[11px] truncate" title="Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}</div>
+                        <div class="bg-green-50/50 rounded px-1.5 py-1">
+                            <div class="text-[9px] text-green-500 font-medium uppercase tracking-wider mb-0.5">Kredit</div>
+                            <div class="font-bold text-green-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}</div>
                         </div>
-                        <div class="bg-indigo-50/50 rounded px-1 py-0.5">
-                            <div class="text-[9px] text-indigo-500 font-medium uppercase tracking-wider">Akhir</div>
-                            <div class="font-bold {{ $data->mutasi->saldo_akhir > 0 ? 'text-red-700' : 'text-green-700' }} text-[13px] truncate" title="Rp {{ number_format($data->mutasi->saldo_akhir, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_akhir, 0, ',', '.') }}</div>
+                        <div class="bg-indigo-50/50 rounded px-1.5 py-1">
+                            <div class="text-[9px] text-indigo-500 font-medium uppercase tracking-wider mb-0.5">Akhir</div>
+                            <div class="font-bold {{ $data->mutasi->saldo_akhir > 0 ? 'text-red-700' : 'text-green-700' }} text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_akhir, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_akhir, 0, ',', '.') }}</div>
                         </div>
                     </div>
                     @endif
