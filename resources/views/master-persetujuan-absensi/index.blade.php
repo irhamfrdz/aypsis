@@ -278,7 +278,7 @@
                 const typeBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">IZIN: ${typeLabel.toUpperCase()}</span>`;
 
                 return `
-                    <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.id}">
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.tabel_sumber}-${item.id}">
                         <!-- Attachment Photo Preview -->
                         ${item.lampiran 
                             ? `
@@ -321,10 +321,10 @@
 
                             <!-- Actions -->
                             <div class="flex gap-3 mt-4 pt-3 border-t border-gray-100">
-                                <button onclick="rejectPermission(${item.id})" class="flex-1 py-1.5 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-transparent rounded-md transition flex items-center justify-center gap-1.5">
+                                <button onclick="rejectPermission(${item.id}, '${item.tabel_sumber}')" class="flex-1 py-1.5 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-transparent rounded-md transition flex items-center justify-center gap-1.5">
                                     <i class="fa-solid fa-xmark"></i> Tolak
                                 </button>
-                                <button onclick="approvePermission(${item.id})" class="flex-1 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md transition shadow-sm flex items-center justify-center gap-1.5">
+                                <button onclick="approvePermission(${item.id}, '${item.tabel_sumber}')" class="flex-1 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md transition shadow-sm flex items-center justify-center gap-1.5">
                                     <i class="fa-solid fa-check"></i> Setujui
                                 </button>
                             </div>
@@ -349,7 +349,7 @@
             if (!response.ok) throw new Error(resData.error || 'Gagal menyetujui.');
 
             showToast('✅', 'Absensi berhasil disetujui.', 'emerald');
-            removeCardFromUI(id);
+            removeCardFromUI(`card-${id}`);
         } catch (err) {
             showToast('❌', err.message, 'rose');
         }
@@ -368,51 +368,51 @@
             if (!response.ok) throw new Error(resData.error || 'Gagal menolak.');
 
             showToast('✖', 'Absensi berhasil ditolak.', 'rose');
-            removeCardFromUI(id);
+            removeCardFromUI(`card-${id}`);
         } catch (err) {
             showToast('❌', err.message, 'rose');
         }
     }
 
-    async function approvePermission(id) {
+    async function approvePermission(id, tabel_sumber) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/admin/permissions/approve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ permission_id: id })
+                body: JSON.stringify({ permission_id: id, tabel_sumber: tabel_sumber })
             });
             const resData = await response.json();
             
             if (!response.ok) throw new Error(resData.error || 'Gagal menyetujui.');
 
             showToast('✅', 'Permohonan izin berhasil disetujui.', 'emerald');
-            removeCardFromUI(id);
+            removeCardFromUI(`card-${tabel_sumber}-${id}`);
         } catch (err) {
             showToast('❌', err.message, 'rose');
         }
     }
 
-    async function rejectPermission(id) {
+    async function rejectPermission(id, tabel_sumber) {
         if (!confirm('Apakah Anda yakin ingin menolak permohonan izin ini?')) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/admin/permissions/reject`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ permission_id: id })
+                body: JSON.stringify({ permission_id: id, tabel_sumber: tabel_sumber })
             });
             const resData = await response.json();
             
             if (!response.ok) throw new Error(resData.error || 'Gagal menolak.');
 
             showToast('✖', 'Permohonan izin ditolak.', 'rose');
-            removeCardFromUI(id);
+            removeCardFromUI(`card-${tabel_sumber}-${id}`);
         } catch (err) {
             showToast('❌', err.message, 'rose');
         }
     }
 
-    function removeCardFromUI(id) {
-        const card = document.getElementById(`card-${id}`);
+    function removeCardFromUI(cardId) {
+        const card = document.getElementById(cardId);
         if (card) {
             card.style.transform = 'scale(0.9) translateY(20px)';
             card.style.opacity = '0';

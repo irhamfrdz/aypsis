@@ -119,6 +119,18 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ->groupBy('karyawan_id');
 
         // Fetch all approved permissions/leaves
+        $cutis = \Illuminate\Support\Facades\DB::table('cutis')
+            ->where('status', 'APPROVED')
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhere(function($sub) use ($startDate, $endDate) {
+                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                  });
+            })
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_cuti as jenis_izin');
+
         $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
             ->where('status', 'APPROVED')
             ->where(function($q) use ($startDate, $endDate) {
@@ -129,6 +141,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                           ->where('tanggal_selesai', '>=', $endDate->toDateString());
                   });
             })
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin')
+            ->union($cutis)
             ->get()
             ->groupBy('karyawan_id');
 

@@ -328,33 +328,83 @@ Route::post('/attendance/reject', function(Request $request) {
 });
 
 Route::get('/admin/pending-permissions', function() {
+    $cutis = DB::table('cutis')
+        ->join('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
+        ->whereIn('cutis.status', ['PENDING', 'Pending', 'pending'])
+        ->select(
+            'cutis.id',
+            'cutis.karyawan_id',
+            'karyawans.nik',
+            'karyawans.nama_lengkap as nama',
+            'karyawans.divisi',
+            'cutis.jenis_cuti as jenis_izin',
+            'cutis.tanggal_mulai',
+            'cutis.tanggal_selesai',
+            DB::raw("NULL as waktu"),
+            'cutis.keterangan as alasan',
+            DB::raw("NULL as lampiran"),
+            'cutis.status',
+            'cutis.created_at',
+            'cutis.updated_at',
+            DB::raw("'cutis' as tabel_sumber")
+        );
+
     $rows = DB::table('permohonan_izins')
         ->whereIn('status', ['PENDING', 'Pending', 'pending'])
+        ->select(
+            'id',
+            'karyawan_id',
+            'nik',
+            'nama',
+            'divisi',
+            'jenis_izin',
+            'tanggal_mulai',
+            'tanggal_selesai',
+            'waktu',
+            'alasan',
+            'lampiran',
+            'status',
+            'created_at',
+            'updated_at',
+            DB::raw("'permohonan_izins' as tabel_sumber")
+        )
+        ->union($cutis)
         ->orderBy('created_at', 'desc')
         ->get();
+        
     return response()->json($rows);
 });
 
 Route::post('/admin/permissions/approve', function(Request $request) {
-    $data = $request->validate(['permission_id' => 'required|integer']);
+    $data = $request->validate([
+        'permission_id' => 'required|integer',
+        'tabel_sumber' => 'nullable|string'
+    ]);
     
-    DB::table('permohonan_izins')->where('id', $data['permission_id'])->update([
+    $table = $data['tabel_sumber'] ?? 'permohonan_izins';
+    
+    DB::table($table)->where('id', $data['permission_id'])->update([
         'status' => 'APPROVED',
         'updated_at' => now()
     ]);
     
-    return response()->json(['message' => 'Permohonan izin berhasil disetujui.']);
+    return response()->json(['message' => 'Permohonan berhasil disetujui.']);
 });
 
 Route::post('/admin/permissions/reject', function(Request $request) {
-    $data = $request->validate(['permission_id' => 'required|integer']);
+    $data = $request->validate([
+        'permission_id' => 'required|integer',
+        'tabel_sumber' => 'nullable|string'
+    ]);
     
-    DB::table('permohonan_izins')->where('id', $data['permission_id'])->update([
+    $table = $data['tabel_sumber'] ?? 'permohonan_izins';
+    
+    DB::table($table)->where('id', $data['permission_id'])->update([
         'status' => 'REJECTED',
         'updated_at' => now()
     ]);
     
-    return response()->json(['message' => 'Permohonan izin ditolak.']);
+    return response()->json(['message' => 'Permohonan ditolak.']);
 });
 
 // Stowage Plan API routes
