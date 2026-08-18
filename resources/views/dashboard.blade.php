@@ -463,6 +463,15 @@
                             @endif
                         </span>
                     </div>
+
+                    @if(isset($data->mutasi))
+                    <div class="mt-2 pt-2 border-t {{ $isVeryIdle ? 'border-red-200' : ($isIdle ? 'border-orange-200' : 'border-gray-200') }} w-full grid grid-cols-2 gap-x-1 gap-y-1.5 text-[9px] text-left">
+                        <div class="text-gray-500 leading-tight">Awal:<br><span class="font-bold text-gray-700 text-[10px]">Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}</span></div>
+                        <div class="text-gray-500 leading-tight">Debit:<br><span class="font-bold text-red-600 text-[10px]">Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}</span></div>
+                        <div class="text-gray-500 leading-tight">Kredit:<br><span class="font-bold text-green-600 text-[10px]">Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}</span></div>
+                        <div class="text-gray-500 leading-tight">Akhir:<br><span class="font-bold {{ $data->mutasi->saldo_akhir > 0 ? 'text-red-700' : 'text-green-700' }} text-[10px]">Rp {{ number_format($data->mutasi->saldo_akhir, 0, ',', '.') }}</span></div>
+                    </div>
+                    @endif
                 </a>
                 @endforeach
             </div>

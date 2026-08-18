@@ -156,7 +156,51 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('nama_panggilan');
 
+        // Rekap Mutasi Uang Jalan (Debit) untuk semua supir
+        $debitAllDrivers = DB::table('uang_jalans')
+            ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->whereNull('uang_jalans.deleted_at')
+            ->select(
+                'surat_jalans.supir',
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as total_debit"),
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as debit_sebelumnya")
+            )
+            ->groupBy('surat_jalans.supir')
+            ->get()
+            ->keyBy('supir');
+
+        // Rekap Mutasi Uang Jalan (Kredit) untuk semua supir
+        $kreditAllDrivers = DB::table('uang_jalans')
+            ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+            ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
+            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->whereNull('uang_jalans.deleted_at')
+            ->select(
+                'surat_jalans.supir',
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' AND DATE(tanda_terimas.created_at) <= '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as total_kredit"),
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' AND DATE(tanda_terimas.created_at) < '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as kredit_sebelumnya")
+            )
+            ->groupBy('surat_jalans.supir')
+            ->get()
+            ->keyBy('supir');
+
         $rekapSupirBelumTandaTerima = collect();
+
+        $getMutasi = function($nama) use ($debitAllDrivers, $kreditAllDrivers) {
+            $d = $debitAllDrivers->get($nama);
+            $k = $kreditAllDrivers->get($nama);
+            $debitSeb = $d ? $d->debit_sebelumnya : 0;
+            $kreditSeb = $k ? $k->kredit_sebelumnya : 0;
+            $totalDebit = $d ? $d->total_debit : 0;
+            $totalKredit = $k ? $k->total_kredit : 0;
+            return (object) [
+                'saldo_awal' => $debitSeb - $kreditSeb,
+                'debit' => $totalDebit,
+                'kredit' => $totalKredit,
+                'saldo_akhir' => $totalDebit - $totalKredit
+            ];
+        };
 
         // 1. Masukkan semua supir Jakarta
         foreach ($supirJakarta as $nama => $data) {
@@ -171,6 +215,7 @@ class DashboardController extends Controller
                 'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
                 'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
                 'is_jakarta' => true,
+                'mutasi' => $getMutasi($nama)
             ]);
         }
 
@@ -201,7 +246,8 @@ class DashboardController extends Controller
                     'terakhir_surat_jalan' => $lastSj,
                     'is_jakarta' => false,
                     'is_customer' => false,
-                    'is_vendor' => false
+                    'is_vendor' => false,
+                    'mutasi' => $getMutasi($pending->supir)
                 ]);
             }
         }
@@ -213,6 +259,20 @@ class DashboardController extends Controller
                 ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
                 ->max('tanggal_surat_jalan');
 
+            $debitSebNonAyp = 0;
+            $kreditSebNonAyp = 0;
+            $totalDebitNonAyp = 0;
+            $totalKreditNonAyp = 0;
+
+            foreach ($supirNonAypNames as $nama) {
+                $d = $debitAllDrivers->get($nama);
+                $k = $kreditAllDrivers->get($nama);
+                $debitSebNonAyp += $d ? $d->debit_sebelumnya : 0;
+                $kreditSebNonAyp += $k ? $k->kredit_sebelumnya : 0;
+                $totalDebitNonAyp += $d ? $d->total_debit : 0;
+                $totalKreditNonAyp += $k ? $k->total_kredit : 0;
+            }
+
             $rekapSupirBelumTandaTerima->push((object) [
                 'supir' => 'NON_AYP', // Used for filtering
                 'nama_lengkap' => 'SUPIR NON-AYP',
@@ -222,7 +282,13 @@ class DashboardController extends Controller
                 'is_jakarta' => false,
                 'is_customer' => false,
                 'is_vendor' => false,
-                'is_non_ayp_group' => true
+                'is_non_ayp_group' => true,
+                'mutasi' => (object) [
+                    'saldo_awal' => $debitSebNonAyp - $kreditSebNonAyp,
+                    'debit' => $totalDebitNonAyp,
+                    'kredit' => $totalKreditNonAyp,
+                    'saldo_akhir' => $totalDebitNonAyp - $totalKreditNonAyp
+                ]
             ]);
         }
 
@@ -276,11 +342,31 @@ class DashboardController extends Controller
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
+            // Total debit sebelum hari ini (kemarin)
+            $debitSebelumnya = DB::table('uang_jalans')
+                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+                ->whereIn('surat_jalans.supir', $filterSupirNames)
+                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
+                ->whereNull('uang_jalans.deleted_at')
+                ->sum('uang_jalans.jumlah_total');
+
+            // Total kredit sebelum hari ini (kemarin)
+            $kreditSebelumnya = DB::table('uang_jalans')
+                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
+                ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
+                ->whereIn('surat_jalans.supir', $filterSupirNames)
+                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
+                ->whereDate('tanda_terimas.created_at', '<', $hariIni)
+                ->whereNull('uang_jalans.deleted_at')
+                ->sum('uang_jalans.jumlah_total');
+
             $mutasiUangJalan = (object)[
                 'supir' => $selectedSupir,
                 'total_debit' => $totalDebit,
                 'total_kredit' => $totalKredit,
-                'saldo_awal' => 0, // Karena ini akumulasi dari awal
+                'saldo_awal' => $debitSebelumnya - $kreditSebelumnya,
                 'saldo_akhir' => $totalDebit - $totalKredit,
             ];
         }
