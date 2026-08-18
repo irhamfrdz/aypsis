@@ -37,6 +37,46 @@
             </div>
         </div>
 
+        <!-- Ticker Hari Libur -->
+        @if(isset($allHariLiburs) && $allHariLiburs->count() > 0)
+        <div class="bg-rose-50 border border-rose-100 rounded-xl shadow-sm overflow-hidden mb-6 flex items-center px-4 py-3 relative group">
+            <div class="flex-shrink-0 mr-3 z-10 bg-rose-50 pr-2">
+                <div class="flex items-center text-rose-600 font-bold text-sm">
+                    <svg class="h-5 w-5 mr-1.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    INFO LIBUR
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-hidden relative h-5">
+                <style>
+                    @keyframes ticker-scroll {
+                        0% { left: 100%; transform: translateX(0); }
+                        100% { left: 0; transform: translateX(-100%); }
+                    }
+                    .animate-ticker {
+                        display: inline-block;
+                        white-space: nowrap;
+                        animation: ticker-scroll 25s linear infinite;
+                    }
+                    .group:hover .animate-ticker {
+                        animation-play-state: paused;
+                    }
+                </style>
+                <div class="absolute top-0 animate-ticker">
+                    @foreach($allHariLiburs as $libur)
+                        <span class="text-rose-700 text-sm mx-4">
+                            <span class="font-bold">{{ \Carbon\Carbon::parse($libur->tanggal)->translatedFormat('d F Y') }}</span> 
+                            <span class="text-rose-500">({{ $libur->keterangan }})</span>
+                            @if(!$loop->last) <span class="mx-2 text-rose-300">•</span> @endif
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.rekap') }}" method="GET" class="space-y-4" id="filterForm">
