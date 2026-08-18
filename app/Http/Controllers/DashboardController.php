@@ -256,56 +256,32 @@ class DashboardController extends Controller
                 $filterSupirNames = [$selectedSupir];
             }
 
-            // 1. SALDO AWAL (Outstanding uang jalan dari hari-hari sebelum tanggal filter)
-            $awalDebit = DB::table('uang_jalans')
+            // Total uang jalan yang diterima supir (DEBIT = uang keluar dari perusahaan ke supir)
+            $totalDebit = DB::table('uang_jalans')
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
-                ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
+                ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
-            $awalKredit = DB::table('uang_jalans')
-                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-                ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
-                ->whereIn('surat_jalans.supir', $filterSupirNames)
-                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
-                ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
-                ->whereDate('tanda_terimas.created_at', '<', $hariIni)
-                ->whereNull('uang_jalans.deleted_at')
-                ->sum('uang_jalans.jumlah_total');
-
-            $saldoAwal = $awalDebit - $awalKredit;
-
-            // 2. DEBIT (Uang jalan yang diberikan tepat pada tanggal filter)
-            $debitHariIni = DB::table('uang_jalans')
-                ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-                ->whereIn('surat_jalans.supir', $filterSupirNames)
-                ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
-                ->whereDate('uang_jalans.tanggal_uang_jalan', '=', $hariIni)
-                ->whereNull('uang_jalans.deleted_at')
-                ->sum('uang_jalans.jumlah_total');
-
-            // 3. KREDIT (Tanda terima yang diserahkan/diselesaikan tepat pada tanggal filter)
-            $kreditHariIni = DB::table('uang_jalans')
+            // Total uang jalan yang sudah dikembalikan/selesai (KREDIT = tanda terima sudah ada)
+            $totalKredit = DB::table('uang_jalans')
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
-                ->whereDate('tanda_terimas.created_at', '=', $hariIni)
+                ->whereDate('tanda_terimas.created_at', '<=', $hariIni)
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
-            // 4. SALDO AKHIR
-            $saldoAkhir = $saldoAwal + $debitHariIni - $kreditHariIni;
-
             $mutasiUangJalan = (object)[
                 'supir' => $selectedSupir,
-                'total_debit' => $debitHariIni,
-                'total_kredit' => $kreditHariIni,
-                'saldo_awal' => $saldoAwal, 
-                'saldo_akhir' => $saldoAkhir,
+                'total_debit' => $totalDebit,
+                'total_kredit' => $totalKredit,
+                'saldo_awal' => 0, // Karena ini akumulasi dari awal
+                'saldo_akhir' => $totalDebit - $totalKredit,
             ];
         }
 
