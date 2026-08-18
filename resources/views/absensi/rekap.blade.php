@@ -21,6 +21,12 @@
                         </svg>
                         Tambah Izin Karyawan
                     </button>
+                    <button type="button" onclick="openHariLiburModal()" class="inline-flex items-center justify-center px-4 py-2 border border-rose-300 bg-rose-50 text-rose-700 text-sm font-medium rounded-lg hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Kelola Hari Libur
+                    </button>
                     <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -680,6 +686,87 @@
     </div>
 </div>
 
+<!-- Modal Kelola Hari Libur -->
+<div id="hariLiburModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeHariLiburModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Kelola Hari Libur Nasional</h3>
+                        <p class="text-sm text-gray-500">Tanggal yang didaftarkan di sini tidak akan dihitung sebagai Alpha.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-4 py-5 sm:p-6 space-y-6">
+                <!-- Form Tambah -->
+                <form action="{{ route('absensi.hari_libur.store') }}" method="POST" class="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    @csrf
+                    <h4 class="text-sm font-semibold text-gray-700">Tambah Hari Libur</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="tanggal_libur" class="block text-xs font-medium text-gray-700 mb-1">Tanggal</label>
+                            <input type="date" name="tanggal" id="tanggal_libur" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="keterangan_libur" class="block text-xs font-medium text-gray-700 mb-1">Keterangan</label>
+                            <input type="text" name="keterangan" id="keterangan_libur" required placeholder="Contoh: Tahun Baru"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-rose-600 text-sm font-medium text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500">
+                            Simpan Hari Libur
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tabel Daftar -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Daftar Hari Libur (Terbaru)</h4>
+                    <div class="max-h-60 overflow-y-auto">
+                        @if(isset($allHariLiburs) && $allHariLiburs->count() > 0)
+                            <ul class="space-y-2">
+                                @foreach($allHariLiburs as $libur)
+                                <li class="flex items-center justify-between text-sm bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                    <div>
+                                        <div class="font-bold text-gray-800">{{ \Carbon\Carbon::parse($libur->tanggal)->translatedFormat('d M Y') }}</div>
+                                        <div class="text-xs text-gray-500">{{ $libur->keterangan }}</div>
+                                    </div>
+                                    <form action="{{ route('absensi.hari_libur.destroy', $libur->id) }}" method="POST" onsubmit="return confirm('Hapus hari libur ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded-md hover:bg-red-100 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">Belum ada hari libur yang didaftarkan.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
+                <button type="button" onclick="closeHariLiburModal()" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     const grupMap = @json($grupMap ?? []);
@@ -932,6 +1019,14 @@
     
     function closeIzinModal() {
         document.getElementById('izinModal').classList.add('hidden');
+    }
+
+    function openHariLiburModal() {
+        document.getElementById('hariLiburModal').classList.remove('hidden');
+    }
+    
+    function closeHariLiburModal() {
+        document.getElementById('hariLiburModal').classList.add('hidden');
     }
 
     function showDetailHadir(nama, dates) {

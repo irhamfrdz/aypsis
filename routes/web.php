@@ -1731,6 +1731,14 @@ Route::middleware([
         Route::post('absensi/izin', [AbsensiController::class, 'storeIzin'])
             ->name('absensi.izin.store')
             ->middleware('can:absensi-rekap');
+
+        Route::post('absensi/hari-libur', [AbsensiController::class, 'storeHariLibur'])
+            ->name('absensi.hari_libur.store')
+            ->middleware('can:absensi-rekap');
+            
+        Route::delete('absensi/hari-libur/{id}', [AbsensiController::class, 'destroyHariLibur'])
+            ->name('absensi.hari_libur.destroy')
+            ->middleware('can:absensi-rekap');
     });
 
     // Additional Master Data Routes with required middleware

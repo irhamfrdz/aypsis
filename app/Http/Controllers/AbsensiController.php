@@ -996,7 +996,9 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'allKaryawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap'));
+        $allHariLiburs = \App\Models\HariLibur::orderBy('tanggal', 'desc')->get();
+
+        return view('absensi.rekap', compact('karyawans', 'allKaryawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap', 'allHariLiburs'));
     }
 
     /**
@@ -1267,5 +1269,34 @@ class AbsensiController extends Controller
         ])->setPaper('A4', 'portrait');
 
         return $pdf->download($filename);
+    }
+    
+    /**
+     * Store new Hari Libur from rekap page.
+     */
+    public function storeHariLibur(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'tanggal' => 'required|date|unique:hari_liburs,tanggal',
+            'keterangan' => 'required|string|max:255',
+        ]);
+
+        \App\Models\HariLibur::create([
+            'tanggal' => $request->tanggal,
+            'keterangan' => $request->keterangan,
+        ]);
+
+        return redirect()->back()->with('success', 'Hari libur berhasil ditambahkan.');
+    }
+
+    /**
+     * Destroy Hari Libur from rekap page.
+     */
+    public function destroyHariLibur($id)
+    {
+        $libur = \App\Models\HariLibur::findOrFail($id);
+        $libur->delete();
+
+        return redirect()->back()->with('success', 'Hari libur berhasil dihapus.');
     }
 }
