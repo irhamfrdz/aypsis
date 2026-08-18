@@ -173,13 +173,12 @@ class DashboardController extends Controller
         // Rekap Mutasi Uang Jalan (Kredit) untuk semua supir
         $kreditAllDrivers = DB::table('uang_jalans')
             ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-            ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->whereNull('uang_jalans.deleted_at')
             ->select(
                 'surat_jalans.supir',
-                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' AND DATE(tanda_terimas.created_at) <= '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as total_kredit"),
-                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' AND DATE(tanda_terimas.created_at) < '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as kredit_sebelumnya")
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND DATE(tanda_terimas.created_at) <= '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as total_kredit"),
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND DATE(tanda_terimas.created_at) < '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as kredit_sebelumnya")
             )
             ->groupBy('surat_jalans.supir')
             ->get()
@@ -331,14 +330,18 @@ class DashboardController extends Controller
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
-            // Total uang jalan yang sudah dikembalikan/selesai (KREDIT = tanda terima sudah ada)
+            // Total kredit (sudah Tanda Terima) akumulasi
             $totalKredit = DB::table('uang_jalans')
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-                ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
-                ->whereDate('tanda_terimas.created_at', '<=', $hariIni)
+                ->whereExists(function ($query) use ($hariIni) {
+                    $query->select(DB::raw(1))
+                          ->from('tanda_terimas')
+                          ->whereColumn('tanda_terimas.surat_jalan_id', 'surat_jalans.id')
+                          ->whereDate('tanda_terimas.created_at', '<=', $hariIni);
+                })
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
@@ -354,11 +357,15 @@ class DashboardController extends Controller
             // Total kredit sebelum hari ini (kemarin)
             $kreditSebelumnya = DB::table('uang_jalans')
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-                ->join('tanda_terimas', 'surat_jalans.id', '=', 'tanda_terimas.surat_jalan_id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
-                ->whereDate('tanda_terimas.created_at', '<', $hariIni)
+                ->whereExists(function ($query) use ($hariIni) {
+                    $query->select(DB::raw(1))
+                          ->from('tanda_terimas')
+                          ->whereColumn('tanda_terimas.surat_jalan_id', 'surat_jalans.id')
+                          ->whereDate('tanda_terimas.created_at', '<', $hariIni);
+                })
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
