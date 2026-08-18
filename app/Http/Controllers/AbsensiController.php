@@ -805,6 +805,7 @@ class AbsensiController extends Controller
             $detail_pulang_cepat = [];
             $sakit = 0;
             $izin = 0;
+            $cuti = 0;
             $alpha = 0;
             $detail_alpha = [];
             $terlambatKali = 0;
@@ -911,9 +912,11 @@ class AbsensiController extends Controller
 
                     if ($matchedPerm) {
                         $jenis = strtolower($matchedPerm->jenis_izin);
-                        if ($jenis === 'sakit') {
+                        if (str_contains($jenis, 'sakit')) {
                             $sakit++;
-                        } else {
+                        } elseif (str_contains($jenis, 'cuti')) {
+                            $cuti++;
+                        } elseif (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat')) {
                             $izin++;
                         }
                     } else {
@@ -933,6 +936,7 @@ class AbsensiController extends Controller
                 'detail_hadir' => $detail_hadir,
                 'sakit' => $sakit,
                 'izin' => $izin,
+                'cuti' => $cuti,
                 'alpha' => $alpha,
                 'detail_alpha' => $detail_alpha,
                 'terlambat_kali' => $terlambatKali,

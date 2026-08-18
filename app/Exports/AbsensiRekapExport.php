@@ -179,6 +179,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $riilDays = 0;
             $sakitDays = 0;
             $izinDays = 0;
+            $cutiDays = 0;
             $alphaDays = 0;
             $totalLateMinutes = 0;
             $totalEarlyMinutes = 0;
@@ -199,10 +200,13 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
                         if ($matchedPerm) {
                             $jenis = strtolower($matchedPerm->jenis_izin);
-                            if ($jenis === 'sakit') {
+                            if (str_contains($jenis, 'sakit')) {
                                 $sakitDays++;
                                 $dailyStatus[$dateString] = 'S';
-                            } else {
+                            } elseif (str_contains($jenis, 'cuti')) {
+                                $cutiDays++;
+                                $dailyStatus[$dateString] = 'C';
+                            } elseif (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat')) {
                                 $izinDays++;
                                 $dailyStatus[$dateString] = 'I';
                             }
@@ -268,6 +272,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 'absenDays' => $alphaDays,
                 'sakitDays' => $sakitDays,
                 'izinDays' => $izinDays,
+                'cutiDays' => $cutiDays,
                 'lateMinutes' => $totalLateMinutes,
                 'earlyMinutes' => $totalEarlyMinutes,
                 'overtimeMinutes' => $totalOvertimeMinutes,
@@ -301,7 +306,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         foreach ($this->dayHeaders as $h) {
             $header1[] = $h['date'];
         }
-        $header1 = array_merge($header1, ['Normal Hari', 'Masuk Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Sakit', 'Ijin', 'Alpha']);
+        $header1 = array_merge($header1, ['Normal Hari', 'Masuk Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Sakit', 'Ijin', 'Cuti', 'Alpha']);
         $rows[] = $header1;
         
         // Row 5: Header 2
@@ -328,6 +333,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $row[] = $data['overtimeMinutes'] ?: '';
             $row[] = $data['sakitDays'] ?: '';
             $row[] = $data['izinDays'] ?: '';
+            $row[] = $data['cutiDays'] ?: '';
             $row[] = $data['absenDays'] ?: '';
             $rows[] = $row;
         }

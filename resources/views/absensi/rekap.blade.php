@@ -199,7 +199,8 @@
                             <th class="px-6 py-3 text-center">Tdk Pulang</th>
                             <th class="px-6 py-3 text-center">Tdk Istirahat</th>
                             <th class="px-6 py-3 text-center">Sakit</th>
-                            <th class="px-6 py-3 text-center">Izin / Cuti</th>
+                            <th class="px-6 py-3 text-center">Izin</th>
+                            <th class="px-6 py-3 text-center">Cuti</th>
                             <th class="px-6 py-3 text-center">Alpha</th>
                         </tr>
                     </thead>
@@ -207,7 +208,7 @@
                         @forelse($karyawans as $index => $karyawan)
                             @php
                                 $stats = $rekapData[$karyawan->id] ?? [
-                                    'total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0,
+                                    'total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'cuti' => 0, 'alpha' => 0,
                                     'terlambat_kali' => 0, 'terlambat_menit' => 0,
                                     'pulang_cepat_kali' => 0, 'pulang_cepat_menit' => 0,
                                     'lembur_jam' => 0, 'lembur_kali' => 0,
@@ -297,6 +298,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $stats['izin'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500' }}">
                                         {{ $stats['izin'] }} Hari
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ ($stats['cuti'] ?? 0) > 0 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $stats['cuti'] ?? 0 }} Hari
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium">
