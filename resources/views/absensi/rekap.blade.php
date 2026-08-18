@@ -898,9 +898,9 @@
         document.querySelectorAll('.btn-detail-sakit').forEach(btn => {
             btn.addEventListener('click', function() {
                 const nama = this.getAttribute('data-nama');
-                let dates = [];
-                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
-                showDetailLupaAbsen(nama, dates, 'Sakit');
+                let data = [];
+                try { data = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailIzinCuti(nama, data, 'Sakit', 'blue');
             });
         });
 
@@ -908,9 +908,9 @@
         document.querySelectorAll('.btn-detail-izin').forEach(btn => {
             btn.addEventListener('click', function() {
                 const nama = this.getAttribute('data-nama');
-                let dates = [];
-                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
-                showDetailLupaAbsen(nama, dates, 'Izin');
+                let data = [];
+                try { data = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailIzinCuti(nama, data, 'Izin', 'amber');
             });
         });
 
@@ -918,9 +918,9 @@
         document.querySelectorAll('.btn-detail-cuti').forEach(btn => {
             btn.addEventListener('click', function() {
                 const nama = this.getAttribute('data-nama');
-                let dates = [];
-                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
-                showDetailLupaAbsen(nama, dates, 'Cuti');
+                let data = [];
+                try { data = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailIzinCuti(nama, data, 'Cuti', 'purple');
             });
         });
 
@@ -1053,6 +1053,36 @@
                 `;
             });
             html += '</ul>';
+        }
+        
+        document.getElementById('detailLupaAbsenTitle').innerText = `Detail ${typeLabel}: ${nama}`;
+        document.getElementById('detailLupaAbsenContent').innerHTML = html;
+        document.getElementById('detailLupaAbsenModal').classList.remove('hidden');
+    }
+
+    function showDetailIzinCuti(nama, data, typeLabel, colorPrefix) {
+        let html = '';
+        if (!data || data.length === 0) {
+            html = `<p class="text-sm text-gray-500 text-center py-4">Tidak ada data ${typeLabel}.</p>`;
+        } else {
+            html = '<div class="space-y-3">';
+            data.forEach((item, index) => {
+                html += `
+                    <div class="flex items-start text-sm bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <span class="w-7 h-7 rounded-full bg-${colorPrefix}-100 text-${colorPrefix}-700 flex items-center justify-center text-xs font-bold mr-3 shrink-0 mt-0.5">${index + 1}</span>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-gray-800">${item.tanggal}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-${colorPrefix}-50 text-${colorPrefix}-700 border border-${colorPrefix}-100">
+                                    ${item.jenis}
+                                </span>
+                            </div>
+                            <div class="text-gray-500 text-xs mt-1 bg-gray-50 p-2 rounded-lg border border-gray-100 whitespace-pre-wrap"><strong>Alasan:</strong> ${item.alasan}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
         }
         
         document.getElementById('detailLupaAbsenTitle').innerText = `Detail ${typeLabel}: ${nama}`;

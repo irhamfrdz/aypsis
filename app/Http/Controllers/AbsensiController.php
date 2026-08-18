@@ -858,16 +858,18 @@ class AbsensiController extends Controller
 
                 if ($isFullDayPerm) {
                     $jenis = strtolower($matchedPerm->jenis_izin);
-                    $alasan = $matchedPerm->alasan ? ' - ' . $matchedPerm->alasan : '';
+                    $alasan = $matchedPerm->alasan ?: '-';
+                    $tanggal = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                    
                     if (str_contains($jenis, 'sakit')) {
                         $sakit++;
-                        $detail_sakit[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . $alasan;
+                        $detail_sakit[] = ['tanggal' => $tanggal, 'jenis' => $matchedPerm->jenis_izin, 'alasan' => $alasan];
                     } elseif (str_contains($jenis, 'cuti')) {
                         $cuti++;
-                        $detail_cuti[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')' . $alasan;
+                        $detail_cuti[] = ['tanggal' => $tanggal, 'jenis' => $matchedPerm->jenis_izin, 'alasan' => $alasan];
                     } else {
                         $izin++;
-                        $detail_izin[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')' . $alasan;
+                        $detail_izin[] = ['tanggal' => $tanggal, 'jenis' => $matchedPerm->jenis_izin, 'alasan' => $alasan];
                     }
                 } elseif (in_array($dateStr, $presentDates)) {
                     $hadir++;
