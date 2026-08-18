@@ -396,12 +396,17 @@
                 @endphp
                 <a href="{{ route('dashboard', array_merge(request()->except('page'), ['supir' => $isActive ? null : $data->supir])) }}" 
                    class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group relative">
-                    <div class="flex items-center justify-center gap-1 mb-1">
-                        <span class="text-xs {{ $supirClass }} font-semibold uppercase tracking-wider truncate max-w-[100px]" title="{{ $data->nama_lengkap ?? $data->supir }}">
-                            {{ $data->supir ?: 'Tanpa Nama' }}
-                        </span>
-                        @if($hasOverdue)
-                            <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada SJ tertunda > 3 hari"></i>
+                    <div class="flex flex-col items-center justify-center gap-1 mb-1">
+                        <div class="flex items-center justify-center gap-1">
+                            <span class="text-xs {{ $supirClass }} font-semibold uppercase tracking-wider truncate max-w-[100px]" title="{{ $data->nama_lengkap ?? $data->supir }}">
+                                {{ $data->supir ?: 'Tanpa Nama' }}
+                            </span>
+                            @if($hasOverdue)
+                                <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada SJ tertunda > 3 hari"></i>
+                            @endif
+                        </div>
+                        @if(isset($data->is_customer) && $data->is_customer)
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">NON-AYP</span>
                         @endif
                     </div>
                     

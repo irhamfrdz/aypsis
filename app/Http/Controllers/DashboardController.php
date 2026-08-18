@@ -109,9 +109,9 @@ class DashboardController extends Controller
             ->where('karyawans.status', 'active')
             ->whereNull('karyawans.tanggal_berhenti')
             ->where('karyawans.nama_panggilan', '!=', 'IBP')
-            ->leftJoin('surat_jalans', function($join) {
+            ->leftJoin('surat_jalans', function ($join) {
                 $join->on('karyawans.nama_panggilan', '=', 'surat_jalans.supir')
-                     ->whereNotIn('surat_jalans.status', ['cancelled', 'draft']);
+                    ->whereNotIn('surat_jalans.status', ['cancelled', 'draft']);
             })
             ->select(
                 'karyawans.nama_panggilan',
@@ -127,31 +127,62 @@ class DashboardController extends Controller
         // 1. Masukkan semua supir Jakarta
         foreach ($supirJakarta as $nama => $data) {
             $pending = $pendingTandaTerima->firstWhere('supir', $nama);
-            $rekapSupirBelumTandaTerima->push((object)[
+            $rekapSupirBelumTandaTerima->push((object) [
                 'supir' => $nama,
                 'nama_lengkap' => $data->nama_lengkap,
                 'total' => $pending ? $pending->total : 0,
                 'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
                 'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
-                'is_jakarta' => true
+                'is_jakarta' => true,
             ]);
         }
 
         // 2. Masukkan supir lain (non-Jakarta) yang punya pending tanda terima
         foreach ($pendingTandaTerima as $pending) {
-            if (!isset($supirJakarta[$pending->supir])) {
+            if (! isset($supirJakarta[$pending->supir])) {
                 $lastSj = \App\Models\SuratJalan::where('supir', $pending->supir)
                     ->whereNotIn('status', ['cancelled', 'draft'])
                     ->max('tanggal_surat_jalan');
-                    
-                $rekapSupirBelumTandaTerima->push((object)[
+
+                $rekapSupirBelumTandaTerima->push((object) [
                     'supir' => $pending->supir,
                     'nama_lengkap' => $pending->supir,
                     'total' => $pending->total,
                     'oldest_uang_jalan' => $pending->oldest_uang_jalan,
                     'terakhir_surat_jalan' => $lastSj,
-                    'is_jakarta' => false
+                    'is_jakarta' => false,
+                    'is_customer' => false,
                 ]);
+            }
+        }
+
+        // 3. Masukkan supir non-AYP (customer) dari riwayat surat jalan
+        $supirCustomer = DB::table('surat_jalans')
+            ->where('is_supir_customer', true)
+            ->whereNotIn('status', ['cancelled', 'draft'])
+            ->whereNotNull('supir')
+            ->where('supir', '!=', '')
+            ->select('supir', DB::raw('MAX(tanggal_surat_jalan) as terakhir_surat_jalan'))
+            ->groupBy('supir')
+            ->get();
+
+        foreach ($supirCustomer as $data) {
+            // Cek apakah supir sudah ada di koleksi
+            $existing = $rekapSupirBelumTandaTerima->firstWhere('supir', $data->supir);
+            if (! $existing) {
+                $pending = $pendingTandaTerima->firstWhere('supir', $data->supir);
+                $rekapSupirBelumTandaTerima->push((object) [
+                    'supir' => $data->supir,
+                    'nama_lengkap' => $data->supir.' (Non-AYP)',
+                    'total' => $pending ? $pending->total : 0,
+                    'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
+                    'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
+                    'is_jakarta' => false,
+                    'is_customer' => true,
+                ]);
+            } else {
+                $existing->is_customer = true;
+                $existing->nama_lengkap = $existing->nama_lengkap.' (Non-AYP)';
             }
         }
 
@@ -161,13 +192,14 @@ class DashboardController extends Controller
             // Prioritas 2: Jika 0, maka urutkan berdasarkan paling lama tidak SJ
             $score = $item->total * 100000;
             if ($item->total == 0) {
-                if (!$item->terakhir_surat_jalan) {
+                if (! $item->terakhir_surat_jalan) {
                     $score = 99999; // Belum pernah dapat SJ, taruh di atas yang nol
                 } else {
                     $days = \Carbon\Carbon::parse($item->terakhir_surat_jalan)->startOfDay()->diffInDays(now()->startOfDay());
                     $score = $days; // Semakin lama tidak SJ, semakin atas
                 }
             }
+
             return $score;
         })->values();
 
