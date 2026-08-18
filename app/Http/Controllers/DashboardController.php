@@ -195,11 +195,22 @@ class DashboardController extends Controller
             $kreditSeb = $k ? $k->kredit_sebelumnya : 0;
             $totalDebit = $d ? $d->total_debit : 0;
             $totalKredit = $k ? $k->total_kredit : 0;
+            
+            $saldoAkhir = $totalDebit - $totalKredit;
+            $saldoAwal = $debitSeb - $kreditSeb;
+
+            // Jika saldo akhir lunas (0), reset semua tampilan menjadi 0
+            if ($saldoAkhir == 0) {
+                $saldoAwal = 0;
+                $totalDebit = 0;
+                $totalKredit = 0;
+            }
+
             return (object) [
-                'saldo_awal' => $debitSeb - $kreditSeb,
+                'saldo_awal' => $saldoAwal,
                 'debit' => $totalDebit,
                 'kredit' => $totalKredit,
-                'saldo_akhir' => $totalDebit - $totalKredit
+                'saldo_akhir' => $saldoAkhir
             ];
         };
 
@@ -274,6 +285,15 @@ class DashboardController extends Controller
                 $totalKreditNonAyp += $k ? $k->total_kredit : 0;
             }
 
+            $saldoAkhirNonAyp = $totalDebitNonAyp - $totalKreditNonAyp;
+            $saldoAwalNonAyp = $debitSebNonAyp - $kreditSebNonAyp;
+
+            if ($saldoAkhirNonAyp == 0) {
+                $saldoAwalNonAyp = 0;
+                $totalDebitNonAyp = 0;
+                $totalKreditNonAyp = 0;
+            }
+
             $rekapSupirBelumTandaTerima->push((object) [
                 'supir' => 'NON_AYP', // Used for filtering
                 'nama_lengkap' => 'SUPIR NON-AYP',
@@ -285,10 +305,10 @@ class DashboardController extends Controller
                 'is_vendor' => false,
                 'is_non_ayp_group' => true,
                 'mutasi' => (object) [
-                    'saldo_awal' => $debitSebNonAyp - $kreditSebNonAyp,
+                    'saldo_awal' => $saldoAwalNonAyp,
                     'debit' => $totalDebitNonAyp,
                     'kredit' => $totalKreditNonAyp,
-                    'saldo_akhir' => $totalDebitNonAyp - $totalKreditNonAyp
+                    'saldo_akhir' => $saldoAkhirNonAyp
                 ]
             ]);
         }
@@ -375,12 +395,21 @@ class DashboardController extends Controller
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
 
+            $saldoAkhirDetail = $totalDebit - $totalKredit;
+            $saldoAwalDetail = $debitSebelumnya - $kreditSebelumnya;
+
+            if ($saldoAkhirDetail == 0) {
+                $saldoAwalDetail = 0;
+                $totalDebit = 0;
+                $totalKredit = 0;
+            }
+
             $mutasiUangJalan = (object)[
                 'supir' => $selectedSupir,
                 'total_debit' => $totalDebit,
                 'total_kredit' => $totalKredit,
-                'saldo_awal' => $debitSebelumnya - $kreditSebelumnya,
-                'saldo_akhir' => $totalDebit - $totalKredit,
+                'saldo_awal' => $saldoAwalDetail,
+                'saldo_akhir' => $saldoAkhirDetail,
             ];
         }
 
