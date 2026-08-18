@@ -800,6 +800,10 @@ class AbsensiController extends Controller
             ->get()
             ->groupBy('karyawan_id');
 
+        $hariLiburs = \App\Models\HariLibur::whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->pluck('tanggal')
+            ->toArray();
+
         // Calculate rekap statistics for each employee
         $rekapData = [];
         foreach ($karyawans as $karyawan) {
@@ -951,8 +955,8 @@ class AbsensiController extends Controller
 
                 } else {
                     // No permission, no scan -> Alpha
-                    // Jangan hitung alpha jika tanggalnya belum terjadi (future dates) atau jika hari libur (Minggu)
-                    if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday()) {
+                    // Jangan hitung alpha jika tanggalnya belum terjadi (future dates), atau jika hari libur (Minggu & Nasional)
+                    if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday() && !in_array($dateStr, $hariLiburs)) {
                         $alpha++;
                         $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }

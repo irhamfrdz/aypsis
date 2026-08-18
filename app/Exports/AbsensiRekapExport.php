@@ -146,6 +146,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ->get()
             ->groupBy('karyawan_id');
 
+        $hariLiburs = \App\Models\HariLibur::whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->pluck('tanggal')
+            ->toArray();
+
         $this->rekapData = [];
         
         $dayMap = [
@@ -229,7 +233,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $dailyStatus[$dateString] = 'I';
                     }
                 } elseif (!$log || (!$log->waktu_masuk && !$log->waktu_pulang)) {
-                    if ($isWeekend) {
+                    if ($isWeekend || in_array($dateString, $hariLiburs) || $dateString > \Carbon\Carbon::today()->toDateString()) {
                         $dailyStatus[$dateString] = '';
                     } else {
                         $alphaDays++;
