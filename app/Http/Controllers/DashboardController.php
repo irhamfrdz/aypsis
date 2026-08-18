@@ -160,6 +160,7 @@ class DashboardController extends Controller
         $debitAllDrivers = DB::table('uang_jalans')
             ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
             ->whereNull('uang_jalans.deleted_at')
             ->select(
                 'surat_jalans.supir',
@@ -174,6 +175,7 @@ class DashboardController extends Controller
         $kreditAllDrivers = DB::table('uang_jalans')
             ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
             ->whereNull('uang_jalans.deleted_at')
             ->select(
                 'surat_jalans.supir',
@@ -326,6 +328,7 @@ class DashboardController extends Controller
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
@@ -335,6 +338,7 @@ class DashboardController extends Controller
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<=', $hariIni)
                 ->whereExists(function ($query) use ($hariIni) {
                     $query->select(DB::raw(1))
@@ -350,6 +354,7 @@ class DashboardController extends Controller
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
                 ->whereNull('uang_jalans.deleted_at')
                 ->sum('uang_jalans.jumlah_total');
@@ -359,6 +364,7 @@ class DashboardController extends Controller
                 ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
                 ->whereIn('surat_jalans.supir', $filterSupirNames)
                 ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
                 ->whereDate('uang_jalans.tanggal_uang_jalan', '<', $hariIni)
                 ->whereExists(function ($query) use ($hariIni) {
                     $query->select(DB::raw(1))
