@@ -329,7 +329,7 @@ Route::post('/attendance/reject', function(Request $request) {
 
 Route::get('/admin/pending-permissions', function() {
     $rows = DB::table('permohonan_izins')
-        ->where('status', 'PENDING')
+        ->whereIn('status', ['PENDING', 'Pending', 'pending'])
         ->orderBy('created_at', 'desc')
         ->get();
     return response()->json($rows);
