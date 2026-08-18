@@ -129,7 +129,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                           ->where('tanggal_selesai', '>=', $endDate->toDateString());
                   });
             })
-            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_cuti as jenis_izin');
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"));
 
         $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
             ->where('status', 'APPROVED')
