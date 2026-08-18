@@ -189,31 +189,37 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $isWeekend = $dayInfo['isWeekend'];
                 $log = $logsByDay->get($dateString);
 
-                if (!$log || (!$log->waktu_masuk && !$log->waktu_pulang)) {
+                // Check if they had an approved permission on this day FIRST
+                $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateString) {
+                    return $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
+                });
+
+                $isFullDayPerm = false;
+                if ($matchedPerm) {
+                    $jenis = strtolower($matchedPerm->jenis_izin);
+                    if (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat') && !str_contains($jenis, 'dinas_luar')) {
+                        $isFullDayPerm = true;
+                    }
+                }
+
+                if ($isFullDayPerm) {
+                    $jenis = strtolower($matchedPerm->jenis_izin);
+                    if (str_contains($jenis, 'sakit')) {
+                        $sakitDays++;
+                        $dailyStatus[$dateString] = 'S';
+                    } elseif (str_contains($jenis, 'cuti')) {
+                        $cutiDays++;
+                        $dailyStatus[$dateString] = 'C';
+                    } else {
+                        $izinDays++;
+                        $dailyStatus[$dateString] = 'I';
+                    }
+                } elseif (!$log || (!$log->waktu_masuk && !$log->waktu_pulang)) {
                     if ($isWeekend) {
                         $dailyStatus[$dateString] = '';
                     } else {
-                        // Check if they had an approved permission on this day
-                        $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateString) {
-                            return $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
-                        });
-
-                        if ($matchedPerm) {
-                            $jenis = strtolower($matchedPerm->jenis_izin);
-                            if (str_contains($jenis, 'sakit')) {
-                                $sakitDays++;
-                                $dailyStatus[$dateString] = 'S';
-                            } elseif (str_contains($jenis, 'cuti')) {
-                                $cutiDays++;
-                                $dailyStatus[$dateString] = 'C';
-                            } elseif (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat')) {
-                                $izinDays++;
-                                $dailyStatus[$dateString] = 'I';
-                            }
-                        } else {
-                            $alphaDays++;
-                            $dailyStatus[$dateString] = 'A';
-                        }
+                        $alphaDays++;
+                        $dailyStatus[$dateString] = 'A';
                     }
                 } else {
                     if (!$isWeekend) {

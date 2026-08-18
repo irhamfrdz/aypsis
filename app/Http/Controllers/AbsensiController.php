@@ -826,7 +826,29 @@ class AbsensiController extends Controller
             while ($tempDate->lte($endDate)) {
                 $dateStr = $tempDate->toDateString();
 
-                if (in_array($dateStr, $presentDates)) {
+                // Check if they had an approved permission on this day FIRST
+                $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateStr) {
+                    return $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
+                });
+
+                $isFullDayPerm = false;
+                if ($matchedPerm) {
+                    $jenis = strtolower($matchedPerm->jenis_izin);
+                    if (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat') && !str_contains($jenis, 'dinas_luar')) {
+                        $isFullDayPerm = true;
+                    }
+                }
+
+                if ($isFullDayPerm) {
+                    $jenis = strtolower($matchedPerm->jenis_izin);
+                    if (str_contains($jenis, 'sakit')) {
+                        $sakit++;
+                    } elseif (str_contains($jenis, 'cuti')) {
+                        $cuti++;
+                    } else {
+                        $izin++;
+                    }
+                } elseif (in_array($dateStr, $presentDates)) {
                     $hadir++;
                     $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
@@ -905,28 +927,14 @@ class AbsensiController extends Controller
                     }
 
                 } else {
-                    // Check if they had an approved permission on this day
-                    $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateStr) {
-                        return $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
-                    });
-
-                    if ($matchedPerm) {
-                        $jenis = strtolower($matchedPerm->jenis_izin);
-                        if (str_contains($jenis, 'sakit')) {
-                            $sakit++;
-                        } elseif (str_contains($jenis, 'cuti')) {
-                            $cuti++;
-                        } elseif (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat')) {
-                            $izin++;
-                        }
-                    } else {
-                        // Jangan hitung alpha jika tanggalnya belum terjadi (future dates) atau jika hari libur (Minggu)
-                        if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday()) {
-                            $alpha++;
-                            $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
-                        }
+                    // No permission, no scan -> Alpha
+                    // Jangan hitung alpha jika tanggalnya belum terjadi (future dates) atau jika hari libur (Minggu)
+                    if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday()) {
+                        $alpha++;
+                        $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
                 }
+                
                 
                 $tempDate->addDay();
             }
