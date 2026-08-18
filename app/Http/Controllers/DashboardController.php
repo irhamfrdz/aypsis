@@ -79,13 +79,30 @@ class DashboardController extends Controller
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
 
+        // Ambil daftar nama supir Non-AYP (Customer + Vendor)
+        $supirNonAypNames = DB::table('surat_jalans')
+            ->leftJoin('tagihan_supir_vendors', 'surat_jalans.id', '=', 'tagihan_supir_vendors.surat_jalan_id')
+            ->where(function($q) {
+                $q->where('surat_jalans.is_supir_customer', true)
+                  ->orWhereNotNull('tagihan_supir_vendors.id');
+            })
+            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->whereNotNull('surat_jalans.supir')
+            ->where('surat_jalans.supir', '!=', '')
+            ->distinct()
+            ->pluck('surat_jalans.supir')
+            ->toArray();
+
         // Data Surat Jalan yang belum ada tanda terimanya (hanya yang sudah bayar uang jalan)
         $perPage = request('per_page', 10);
         $suratJalanBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
             ->with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
-            ->when(request('supir'), function ($q) {
+            ->when(request('supir'), function ($q) use ($supirNonAypNames) {
+                if (request('supir') === 'NON_AYP') {
+                    return $q->whereIn('supir', $supirNonAypNames);
+                }
                 return $q->where('supir', request('supir'));
             })
             ->orderBy('tanggal_surat_jalan', 'desc')
@@ -126,6 +143,9 @@ class DashboardController extends Controller
 
         // 1. Masukkan semua supir Jakarta
         foreach ($supirJakarta as $nama => $data) {
+            // Jangan masukkan jika dia termasuk supir Non-AYP
+            if (in_array($nama, $supirNonAypNames)) continue;
+            
             $pending = $pendingTandaTerima->firstWhere('supir', $nama);
             $rekapSupirBelumTandaTerima->push((object) [
                 'supir' => $nama,
@@ -138,7 +158,18 @@ class DashboardController extends Controller
         }
 
         // 2. Masukkan supir lain (non-Jakarta) yang punya pending tanda terima
+        $totalPendingNonAyp = 0;
+        $oldestUjNonAyp = null;
+
         foreach ($pendingTandaTerima as $pending) {
+            if (in_array($pending->supir, $supirNonAypNames)) {
+                $totalPendingNonAyp += $pending->total;
+                if (!$oldestUjNonAyp || $pending->oldest_uang_jalan < $oldestUjNonAyp) {
+                    $oldestUjNonAyp = $pending->oldest_uang_jalan;
+                }
+                continue;
+            }
+
             if (! isset($supirJakarta[$pending->supir])) {
                 $lastSj = \App\Models\SuratJalan::where('supir', $pending->supir)
                     ->whereNotIn('status', ['cancelled', 'draft'])
@@ -152,71 +183,28 @@ class DashboardController extends Controller
                     'terakhir_surat_jalan' => $lastSj,
                     'is_jakarta' => false,
                     'is_customer' => false,
-                ]);
-            }
-        }
-
-        // 3. Masukkan supir non-AYP (customer) dari riwayat surat jalan
-        $supirCustomer = DB::table('surat_jalans')
-            ->where('is_supir_customer', true)
-            ->whereNotIn('status', ['cancelled', 'draft'])
-            ->whereNotNull('supir')
-            ->where('supir', '!=', '')
-            ->select('supir', DB::raw('MAX(tanggal_surat_jalan) as terakhir_surat_jalan'))
-            ->groupBy('supir')
-            ->get();
-
-        foreach ($supirCustomer as $data) {
-            // Cek apakah supir sudah ada di koleksi
-            $existing = $rekapSupirBelumTandaTerima->firstWhere('supir', $data->supir);
-            if (!$existing) {
-                $pending = $pendingTandaTerima->firstWhere('supir', $data->supir);
-                $rekapSupirBelumTandaTerima->push((object)[
-                    'supir' => $data->supir,
-                    'nama_lengkap' => $data->supir . ' (Non-AYP)',
-                    'total' => $pending ? $pending->total : 0,
-                    'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
-                    'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
-                    'is_jakarta' => false,
-                    'is_customer' => true,
                     'is_vendor' => false
                 ]);
-            } else {
-                $existing->is_customer = true;
-                $existing->nama_lengkap = $existing->nama_lengkap . ' (Non-AYP)';
             }
         }
 
-        // 4. Masukkan supir vendor
-        $supirVendor = DB::table('surat_jalans')
-            ->join('tagihan_supir_vendors', 'surat_jalans.id', '=', 'tagihan_supir_vendors.surat_jalan_id')
-            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
-            ->whereNotNull('surat_jalans.supir')
-            ->where('surat_jalans.supir', '!=', '')
-            ->select('surat_jalans.supir', DB::raw('MAX(surat_jalans.tanggal_surat_jalan) as terakhir_surat_jalan'))
-            ->groupBy('surat_jalans.supir')
-            ->get();
-            
-        foreach ($supirVendor as $data) {
-            $existing = $rekapSupirBelumTandaTerima->firstWhere('supir', $data->supir);
-            if (!$existing) {
-                $pending = $pendingTandaTerima->firstWhere('supir', $data->supir);
-                $rekapSupirBelumTandaTerima->push((object)[
-                    'supir' => $data->supir,
-                    'nama_lengkap' => $data->supir . ' (Vendor)',
-                    'total' => $pending ? $pending->total : 0,
-                    'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
-                    'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
-                    'is_jakarta' => false,
-                    'is_customer' => false,
-                    'is_vendor' => true
-                ]);
-            } else {
-                $existing->is_vendor = true;
-                if (!str_contains($existing->nama_lengkap, '(Vendor)')) {
-                    $existing->nama_lengkap = $existing->nama_lengkap . ' (Vendor)';
-                }
-            }
+        // 3. Masukkan grup Supir Non-AYP (Customer & Vendor) sebagai satu card
+        if (!empty($supirNonAypNames)) {
+            $terakhirSjNonAyp = \App\Models\SuratJalan::whereIn('supir', $supirNonAypNames)
+                ->whereNotIn('status', ['cancelled', 'draft'])
+                ->max('tanggal_surat_jalan');
+
+            $rekapSupirBelumTandaTerima->push((object) [
+                'supir' => 'NON_AYP', // Used for filtering
+                'nama_lengkap' => 'SUPIR NON-AYP',
+                'total' => $totalPendingNonAyp,
+                'oldest_uang_jalan' => $oldestUjNonAyp,
+                'terakhir_surat_jalan' => $terakhirSjNonAyp,
+                'is_jakarta' => false,
+                'is_customer' => false,
+                'is_vendor' => false,
+                'is_non_ayp_group' => true
+            ]);
         }
 
         // Sorting: Yang punya pending SJ paling banyak di atas, lalu yang paling lama nganggur
