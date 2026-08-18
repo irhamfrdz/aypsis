@@ -43,6 +43,10 @@ class DashboardController extends Controller
             return view('welcome');
         }
 
+        // Parameter Tanggal Filter
+        $filterDate = request('tanggal_dashboard', Carbon::today()->format('Y-m-d'));
+        $hariIni = Carbon::parse($filterDate)->startOfDay();
+
         // Data prospek berdasarkan kombinasi tujuan dan ukuran kontainer
         $prospekData = [
             'Jakarta' => [
@@ -63,18 +67,17 @@ class DashboardController extends Controller
         ];
 
         // Data Asset Asuransi
-        $today = Carbon::today();
-        $oneMonthLater = Carbon::today()->addMonth();
+        $oneMonthLater = $hariIni->copy()->addMonth();
 
         // Asset yang asuransinya sudah lewat (expired)
         $assetsExpired = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
-            ->whereDate('tanggal_jatuh_tempo_asuransi', '<', $today)
+            ->whereDate('tanggal_jatuh_tempo_asuransi', '<', $hariIni)
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
 
         // Asset yang asuransinya akan jatuh tempo dalam 1 bulan
         $assetsExpiringSoon = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
-            ->whereDate('tanggal_jatuh_tempo_asuransi', '>=', $today)
+            ->whereDate('tanggal_jatuh_tempo_asuransi', '>=', $hariIni)
             ->whereDate('tanggal_jatuh_tempo_asuransi', '<=', $oneMonthLater)
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
@@ -89,16 +92,23 @@ class DashboardController extends Controller
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->whereNotNull('surat_jalans.supir')
             ->where('surat_jalans.supir', '!=', '')
+            ->whereDate('surat_jalans.tanggal_surat_jalan', '<=', $hariIni)
             ->distinct()
             ->pluck('surat_jalans.supir')
             ->toArray();
 
         // Data Surat Jalan yang belum ada tanda terimanya (hanya yang sudah bayar uang jalan)
         $perPage = request('per_page', 10);
-        $suratJalanBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
-            ->with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
+        $suratJalanBelumTandaTerima = \App\Models\SuratJalan::with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
+            ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
+            ->where(function($q) use ($hariIni) {
+                $q->doesntHave('tandaTerima')
+                  ->orWhereHas('tandaTerima', function($q2) use ($hariIni) {
+                      $q2->whereDate('created_at', '>', $hariIni);
+                  });
+            })
             ->when(request('supir'), function ($q) use ($supirNonAypNames) {
                 if (request('supir') === 'NON_AYP') {
                     return $q->whereIn('supir', $supirNonAypNames);
@@ -110,11 +120,17 @@ class DashboardController extends Controller
             ->appends(request()->all());
 
         // Rekap jumlah surat jalan per supir yang belum ada tanda terima
-        $pendingTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
-            ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
+        $pendingTandaTerima = \App\Models\SuratJalan::leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
-            ->select('surat_jalans.supir', DB::raw('count(*) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
+            ->whereDate('surat_jalans.tanggal_surat_jalan', '<=', $hariIni)
+            ->where(function($q) use ($hariIni) {
+                $q->doesntHave('tandaTerima')
+                  ->orWhereHas('tandaTerima', function($q2) use ($hariIni) {
+                      $q2->whereDate('created_at', '>', $hariIni);
+                  });
+            })
+            ->select('surat_jalans.supir', DB::raw('count(surat_jalans.id) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
             ->groupBy('surat_jalans.supir')
             ->get();
 
@@ -126,9 +142,10 @@ class DashboardController extends Controller
             ->where('karyawans.status', 'active')
             ->whereNull('karyawans.tanggal_berhenti')
             ->where('karyawans.nama_panggilan', '!=', 'IBP')
-            ->leftJoin('surat_jalans', function ($join) {
+            ->leftJoin('surat_jalans', function ($join) use ($hariIni) {
                 $join->on('karyawans.nama_panggilan', '=', 'surat_jalans.supir')
-                    ->whereNotIn('surat_jalans.status', ['cancelled', 'draft']);
+                    ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+                    ->whereDate('surat_jalans.tanggal_surat_jalan', '<=', $hariIni);
             })
             ->select(
                 'karyawans.nama_panggilan',
@@ -173,6 +190,7 @@ class DashboardController extends Controller
             if (! isset($supirJakarta[$pending->supir])) {
                 $lastSj = \App\Models\SuratJalan::where('supir', $pending->supir)
                     ->whereNotIn('status', ['cancelled', 'draft'])
+                    ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
                     ->max('tanggal_surat_jalan');
 
                 $rekapSupirBelumTandaTerima->push((object) [
@@ -192,6 +210,7 @@ class DashboardController extends Controller
         if (!empty($supirNonAypNames)) {
             $terakhirSjNonAyp = \App\Models\SuratJalan::whereIn('supir', $supirNonAypNames)
                 ->whereNotIn('status', ['cancelled', 'draft'])
+                ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
                 ->max('tanggal_surat_jalan');
 
             $rekapSupirBelumTandaTerima->push((object) [
@@ -208,7 +227,7 @@ class DashboardController extends Controller
         }
 
         // Sorting: Yang punya pending SJ paling banyak di atas, lalu yang paling lama nganggur
-        $rekapSupirBelumTandaTerima = $rekapSupirBelumTandaTerima->sortByDesc(function ($item) {
+        $rekapSupirBelumTandaTerima = $rekapSupirBelumTandaTerima->sortByDesc(function ($item) use ($hariIni) {
             // Prioritas 1: Jumlah pending (desc)
             // Prioritas 2: Jika 0, maka urutkan berdasarkan paling lama tidak SJ
             $score = $item->total * 100000;
@@ -216,7 +235,7 @@ class DashboardController extends Controller
                 if (! $item->terakhir_surat_jalan) {
                     $score = 99999; // Belum pernah dapat SJ, taruh di atas yang nol
                 } else {
-                    $days = \Carbon\Carbon::parse($item->terakhir_surat_jalan)->startOfDay()->diffInDays(now()->startOfDay());
+                    $days = \Carbon\Carbon::parse($item->terakhir_surat_jalan)->startOfDay()->diffInDays($hariIni);
                     $score = $days; // Semakin lama tidak SJ, semakin atas
                 }
             }
@@ -225,7 +244,7 @@ class DashboardController extends Controller
         })->values();
 
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima', 'filterDate'));
     }
 
     /**

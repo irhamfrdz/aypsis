@@ -7,11 +7,30 @@
 @section('content')
 <div class="space-y-8">
     <!-- Welcome Message & Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-semibold text-gray-800">Selamat Datang, {{ Auth::user()->name }}!</h2>
             <p class="text-gray-500">Berikut adalah ringkasan aktivitas sistem Anda.</p>
         </div>
+        
+        <div class="flex items-center gap-3">
+            <form action="{{ route('dashboard') }}" method="GET" class="flex items-center gap-2">
+                @foreach(request()->except(['tanggal_dashboard', 'page']) as $key => $value)
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endforeach
+                <label for="tanggal_dashboard" class="text-sm text-gray-600 font-medium whitespace-nowrap">Lihat per Tanggal:</label>
+                <input type="date" id="tanggal_dashboard" name="tanggal_dashboard" 
+                       value="{{ $filterDate ?? date('Y-m-d') }}" 
+                       class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1.5">
+                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors">
+                    <i class="fas fa-filter mr-1"></i> Filter
+                </button>
+                @if(request('tanggal_dashboard'))
+                    <a href="{{ route('dashboard', request()->except(['tanggal_dashboard', 'page'])) }}" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors" title="Reset Tanggal">
+                        <i class="fas fa-times"></i>
+                    </a>
+                @endif
+            </form>
         
         @if(auth()->check() && strtolower(auth()->user()->username) === 'kiky')
         <div class="mt-4 sm:mt-0 flex space-x-2">
@@ -31,7 +50,9 @@
                 Backup Database
             </a>
         </div>
-
+        @endif
+        </div>
+    </div>
         <!-- Modal Reset Permission -->
         <div id="resetPermissionModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -359,12 +380,12 @@
                     $hasOverdue = false;
                     if ($data->oldest_uang_jalan) {
                         $tanggalUj = \Carbon\Carbon::parse($data->oldest_uang_jalan)->startOfDay();
-                        $hariIni = now()->startOfDay();
+                        $hariIni = \Carbon\Carbon::parse($filterDate ?? now())->startOfDay();
                         $hasOverdue = $tanggalUj->diffInDays($hariIni) > 3 && $tanggalUj->isBefore($hariIni);
                     }
                     
                     // Logic for work status
-                    $hariIni = now()->startOfDay();
+                    $hariIni = \Carbon\Carbon::parse($filterDate ?? now())->startOfDay();
                     $lamaTidakKerja = 0;
                     $isIdle = false;
                     $isVeryIdle = false;
