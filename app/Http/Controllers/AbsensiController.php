@@ -783,7 +783,7 @@ class AbsensiController extends Controller
                           ->where('tanggal_selesai', '>=', $endDate->toDateString());
                   });
             })
-            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"));
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"), 'keterangan as alasan');
 
         $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
             ->where('status', 'APPROVED')
@@ -795,7 +795,7 @@ class AbsensiController extends Controller
                           ->where('tanggal_selesai', '>=', $endDate->toDateString());
                   });
             })
-            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin')
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin', 'alasan')
             ->union($cutis)
             ->get()
             ->groupBy('karyawan_id');
@@ -858,15 +858,16 @@ class AbsensiController extends Controller
 
                 if ($isFullDayPerm) {
                     $jenis = strtolower($matchedPerm->jenis_izin);
+                    $alasan = $matchedPerm->alasan ? ' - ' . $matchedPerm->alasan : '';
                     if (str_contains($jenis, 'sakit')) {
                         $sakit++;
-                        $detail_sakit[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        $detail_sakit[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . $alasan;
                     } elseif (str_contains($jenis, 'cuti')) {
                         $cuti++;
-                        $detail_cuti[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')';
+                        $detail_cuti[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')' . $alasan;
                     } else {
                         $izin++;
-                        $detail_izin[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')';
+                        $detail_izin[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $matchedPerm->jenis_izin . ')' . $alasan;
                     }
                 } elseif (in_array($dateStr, $presentDates)) {
                     $hadir++;
