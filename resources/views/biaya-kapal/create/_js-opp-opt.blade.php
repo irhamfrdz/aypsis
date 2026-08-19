@@ -295,6 +295,13 @@
         
         container.appendChild(inputGroup);
         
+        // Initialize select2 if available
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $(inputGroup).find('.opp-opt-barang-select-item').select2({
+                width: '100%'
+            });
+        }
+        
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
         
@@ -367,6 +374,13 @@
         `;
         
         container.appendChild(inputGroup);
+        
+        // Initialize select2 if available
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $(inputGroup).find('.opp-opt-barang-select-item').select2({
+                width: '100%'
+            });
+        }
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
