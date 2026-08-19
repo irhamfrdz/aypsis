@@ -32,28 +32,7 @@
 
     <main class="container mx-auto mt-8 px-4 sm:px-6 flex-grow">
         <div class="space-y-6">
-            {{-- Notifikasi Sukses --}}
-            @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4" role="alert">
-                    <p>{{ session('success') }}</p>
-                </div>
-            @endif
-            {{-- Notifikasi Error --}}
-            @if(session('error'))
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
-                    <p>{{ session('error') }}</p>
-                </div>
-            @endif
-            {{-- Notifikasi Validasi --}}
-            @if ($errors->any())
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            {{-- Alert Notifikasi kini dipindahkan ke SweetAlert di bagian bawah (script) --}}
 
             {{-- Detail Permohonan atau Surat Jalan --}}
             <div class="bg-white shadow-md rounded-lg p-6">
@@ -911,6 +890,43 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // SweetAlert Notifications
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#10b981', // green-500
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Gagal membuat checkpoint karena: {{ session('error') }}',
+                    confirmButtonColor: '#ef4444', // red-500
+                    confirmButtonText: 'Mengerti'
+                });
+            @endif
+
+            @if($errors->any())
+                let errorHtml = '<div style="text-align: left; font-size: 0.9em; margin-top: 10px;">Gagal membuat checkpoint karena alasan berikut:<ul style="list-style-type: disc; padding-left: 20px; margin-top: 10px;">';
+                @foreach ($errors->all() as $error)
+                    errorHtml += '<li>{{ $error }}</li>';
+                @endforeach
+                errorHtml += '</ul></div>';
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    html: errorHtml,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Mengerti'
+                });
+            @endif
+
             // Get data attributes for filtering
             @if(isset($permohonan))
                 const ukuran = '{{ $permohonan->ukuran }}';
