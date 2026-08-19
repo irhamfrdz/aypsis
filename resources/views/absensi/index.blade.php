@@ -187,18 +187,18 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
                         <tr>
-                            <th class="px-6 py-3 text-left">No</th>
-                            <th class="px-6 py-3 text-left">NIK</th>
-                            <th class="px-6 py-3 text-left">Nama Lengkap</th>
-                            <th class="px-6 py-3 text-left">Pekerjaan</th>
-                            <th class="px-6 py-3 text-left">Divisi</th>
-                            <th class="px-6 py-3 text-left">Tanggal</th>
-                            <th class="px-6 py-3 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
-                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
-                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
-                            <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
-                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
-                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
+                            <th class="px-2 py-2 text-left">No</th>
+                            <th class="px-2 py-2 text-left">NIK</th>
+                            <th class="px-2 py-2 text-left">Nama Lengkap</th>
+                            <th class="px-2 py-2 text-left">Pekerjaan</th>
+                            <th class="px-2 py-2 text-left">Divisi</th>
+                            <th class="px-2 py-2 text-left">Tanggal</th>
+                            <th class="px-2 py-2 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
+                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
+                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
+                            <th class="px-2 py-2 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
+                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
+                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
 
                             <th class="px-2 py-2 text-center">Aksi</th>
                         </tr>
