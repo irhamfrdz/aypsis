@@ -1095,15 +1095,101 @@
         let selectedFilesPermohonan = [];
         let selectedFilesSuratJalan = [];
 
+        // === CLIENT-SIDE IMAGE COMPRESSION ===
+        // Kompres gambar agar tidak melebihi batas upload server
+        const MAX_IMAGE_SIZE = 1.8 * 1024 * 1024; // 1.8MB target (server limit 2MB)
+        const MAX_IMAGE_DIMENSION = 1920; // max width/height
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                // Skip non-image files (e.g. PDF)
+                if (!file.type.startsWith('image/')) {
+                    resolve(file);
+                    return;
+                }
+                // Skip if already small enough
+                if (file.size <= MAX_IMAGE_SIZE) {
+                    resolve(file);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Scale down if too large
+                        if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+                            if (width > height) {
+                                height = Math.round(height * MAX_IMAGE_DIMENSION / width);
+                                width = MAX_IMAGE_DIMENSION;
+                            } else {
+                                width = Math.round(width * MAX_IMAGE_DIMENSION / height);
+                                height = MAX_IMAGE_DIMENSION;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Try progressively lower quality until under size limit
+                        let quality = 0.7;
+                        const tryCompress = () => {
+                            canvas.toBlob((blob) => {
+                                if (blob.size > MAX_IMAGE_SIZE && quality > 0.2) {
+                                    quality -= 0.1;
+                                    tryCompress();
+                                } else {
+                                    const compressedFile = new File([blob], file.name, {
+                                        type: 'image/jpeg',
+                                        lastModified: file.lastModified
+                                    });
+                                    console.log(`Compressed ${file.name}: ${(file.size/1024/1024).toFixed(2)}MB -> ${(compressedFile.size/1024/1024).toFixed(2)}MB (quality: ${quality.toFixed(1)})`);
+                                    resolve(compressedFile);
+                                }
+                            }, 'image/jpeg', quality);
+                        };
+                        tryCompress();
+                    };
+                    img.onerror = () => reject(new Error('Gagal memproses gambar: ' + file.name));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('Gagal membaca file: ' + file.name));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function compressFiles(files) {
+            const compressed = [];
+            for (const file of files) {
+                try {
+                    const result = await compressImage(file);
+                    compressed.push(result);
+                } catch (err) {
+                    console.error(err);
+                    compressed.push(file); // fallback to original
+                }
+            }
+            return compressed;
+        }
+
         // Preview file function untuk Permohonan (Multiple files)
-        function previewFilePermohonan(input) {
+        async function previewFilePermohonan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-permohonan');
             const previewSection = document.getElementById('file-preview-permohonan');
             
             if (files.length > 0) {
-                // Add new files to the list
-                selectedFilesPermohonan = selectedFilesPermohonan.concat(files);
+                // Compress images before adding
+                const compressedFiles = await compressFiles(files);
+                
+                // Add compressed files to the list
+                selectedFilesPermohonan = selectedFilesPermohonan.concat(compressedFiles);
                 
                 // Clear and rebuild preview
                 previewContainer.innerHTML = '';
@@ -1201,14 +1287,17 @@
         }
 
         // Preview file function untuk Surat Jalan (Multiple files)
-        function previewFileSuratJalan(input) {
+        async function previewFileSuratJalan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-surat-jalan');
             const previewSection = document.getElementById('file-preview-surat-jalan');
             
             if (files.length > 0) {
-                // Add new files to the list
-                selectedFilesSuratJalan = selectedFilesSuratJalan.concat(files);
+                // Compress images before adding
+                const compressedFiles = await compressFiles(files);
+                
+                // Add compressed files to the list
+                selectedFilesSuratJalan = selectedFilesSuratJalan.concat(compressedFiles);
                 
                 // Clear and rebuild preview
                 previewContainer.innerHTML = '';
@@ -1313,13 +1402,14 @@
         let selectedFilesBuktiTimbanganMuatSuratJalan = [];
 
         // Preview Bukti Muat Permohonan
-        function previewBuktiMuatPermohonan(input) {
+        async function previewBuktiMuatPermohonan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-muat-permohonan');
             const previewSection = document.getElementById('file-preview-bukti-muat-permohonan');
             
             if (files.length > 0) {
-                selectedFilesBuktiMuatPermohonan = selectedFilesBuktiMuatPermohonan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiMuatPermohonan = selectedFilesBuktiMuatPermohonan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiMuatPermohonan.forEach((file, index) => {
@@ -1406,13 +1496,14 @@
         }
 
         // Preview Bukti Muat Surat Jalan
-        function previewBuktiMuatSuratJalan(input) {
+        async function previewBuktiMuatSuratJalan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-muat-surat-jalan');
             const previewSection = document.getElementById('file-preview-bukti-muat-surat-jalan');
             
             if (files.length > 0) {
-                selectedFilesBuktiMuatSuratJalan = selectedFilesBuktiMuatSuratJalan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiMuatSuratJalan = selectedFilesBuktiMuatSuratJalan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiMuatSuratJalan.forEach((file, index) => {
@@ -1499,13 +1590,14 @@
         }
 
         // Preview Bukti Timbangan Permohonan
-        function previewBuktiTimbanganPermohonan(input) {
+        async function previewBuktiTimbanganPermohonan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-timbangan-permohonan');
             const previewSection = document.getElementById('file-preview-bukti-timbangan-permohonan');
             
             if (files.length > 0) {
-                selectedFilesBuktiTimbanganPermohonan = selectedFilesBuktiTimbanganPermohonan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiTimbanganPermohonan = selectedFilesBuktiTimbanganPermohonan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiTimbanganPermohonan.forEach((file, index) => {
@@ -1592,13 +1684,14 @@
         }
 
         // Preview Bukti Timbangan Surat Jalan
-        function previewBuktiTimbanganSuratJalan(input) {
+        async function previewBuktiTimbanganSuratJalan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-timbangan-surat-jalan');
             const previewSection = document.getElementById('file-preview-bukti-timbangan-surat-jalan');
             
             if (files.length > 0) {
-                selectedFilesBuktiTimbanganSuratJalan = selectedFilesBuktiTimbanganSuratJalan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiTimbanganSuratJalan = selectedFilesBuktiTimbanganSuratJalan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiTimbanganSuratJalan.forEach((file, index) => {
@@ -1685,13 +1778,14 @@
         }
 
         // Preview Bukti Timbangan Muat Permohonan
-        function previewBuktiTimbanganMuatPermohonan(input) {
+        async function previewBuktiTimbanganMuatPermohonan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-timbangan-muat-permohonan');
             const previewSection = document.getElementById('file-preview-bukti-timbangan-muat-permohonan');
             
             if (files.length > 0) {
-                selectedFilesBuktiTimbanganMuatPermohonan = selectedFilesBuktiTimbanganMuatPermohonan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiTimbanganMuatPermohonan = selectedFilesBuktiTimbanganMuatPermohonan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiTimbanganMuatPermohonan.forEach((file, index) => {
@@ -1778,13 +1872,14 @@
         }
 
         // Preview Bukti Timbangan Muat Surat Jalan
-        function previewBuktiTimbanganMuatSuratJalan(input) {
+        async function previewBuktiTimbanganMuatSuratJalan(input) {
             const files = Array.from(input.files);
             const previewContainer = document.getElementById('preview-list-bukti-timbangan-muat-surat-jalan');
             const previewSection = document.getElementById('file-preview-bukti-timbangan-muat-surat-jalan');
             
             if (files.length > 0) {
-                selectedFilesBuktiTimbanganMuatSuratJalan = selectedFilesBuktiTimbanganMuatSuratJalan.concat(files);
+                const compressedFiles = await compressFiles(files);
+                selectedFilesBuktiTimbanganMuatSuratJalan = selectedFilesBuktiTimbanganMuatSuratJalan.concat(compressedFiles);
                 previewContainer.innerHTML = '';
                 
                 selectedFilesBuktiTimbanganMuatSuratJalan.forEach((file, index) => {

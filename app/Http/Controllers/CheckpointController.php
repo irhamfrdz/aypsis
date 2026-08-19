@@ -156,7 +156,17 @@ class CheckpointController extends Controller
             $rules['nomor_kontainer.*'] = ['required', 'string', 'distinct'];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'gambar.*.max' => 'Foto :attribute terlalu besar (maks 5MB). Coba foto ulang dengan resolusi lebih rendah.',
+            'gambar.*.mimes' => 'Format file :attribute tidak didukung. Gunakan JPEG, PNG, atau PDF.',
+            'gambar.*.uploaded' => 'Foto gagal diupload. Ukuran file terlalu besar untuk server. Coba foto ulang dengan kualitas lebih rendah.',
+            'bukti_muat.*.max' => 'Foto bukti muat terlalu besar (maks 5MB).',
+            'bukti_muat.*.uploaded' => 'Bukti muat gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan.*.max' => 'Foto bukti timbangan terlalu besar (maks 10MB).',
+            'bukti_timbangan.*.uploaded' => 'Bukti timbangan gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan_muat.*.max' => 'Foto bukti timbangan muat terlalu besar (maks 10MB).',
+            'bukti_timbangan_muat.*.uploaded' => 'Bukti timbangan muat gagal diupload. Ukuran file terlalu besar.',
+        ]);
 
         DB::beginTransaction();
         try {
@@ -510,7 +520,17 @@ class CheckpointController extends Controller
             $rules['no_seal.*'] = 'nullable|string|max:255';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'gambar.*.max' => 'Foto :attribute terlalu besar (maks 5MB). Coba foto ulang dengan resolusi lebih rendah.',
+            'gambar.*.mimes' => 'Format file :attribute tidak didukung. Gunakan JPEG, PNG, atau PDF.',
+            'gambar.*.uploaded' => 'Foto gagal diupload. Ukuran file terlalu besar untuk server. Coba foto ulang dengan kualitas lebih rendah.',
+            'bukti_muat.*.max' => 'Foto bukti muat terlalu besar (maks 5MB).',
+            'bukti_muat.*.uploaded' => 'Bukti muat gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan.*.max' => 'Foto bukti timbangan terlalu besar (maks 10MB).',
+            'bukti_timbangan.*.uploaded' => 'Bukti timbangan gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan_muat.*.max' => 'Foto bukti timbangan muat terlalu besar (maks 10MB).',
+            'bukti_timbangan_muat.*.uploaded' => 'Bukti timbangan muat gagal diupload. Ukuran file terlalu besar.',
+        ]);
 
         try {
             DB::beginTransaction();
@@ -977,7 +997,17 @@ class CheckpointController extends Controller
             $rules['no_seal.*'] = 'nullable|string|max:255';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'gambar.*.max' => 'Foto :attribute terlalu besar (maks 5MB). Coba foto ulang dengan resolusi lebih rendah.',
+            'gambar.*.mimes' => 'Format file :attribute tidak didukung. Gunakan JPEG, PNG, atau PDF.',
+            'gambar.*.uploaded' => 'Foto gagal diupload. Ukuran file terlalu besar untuk server. Coba foto ulang dengan kualitas lebih rendah.',
+            'bukti_muat.*.max' => 'Foto bukti muat terlalu besar (maks 5MB).',
+            'bukti_muat.*.uploaded' => 'Bukti muat gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan.*.max' => 'Foto bukti timbangan terlalu besar (maks 10MB).',
+            'bukti_timbangan.*.uploaded' => 'Bukti timbangan gagal diupload. Ukuran file terlalu besar.',
+            'bukti_timbangan_muat.*.max' => 'Foto bukti timbangan muat terlalu besar (maks 10MB).',
+            'bukti_timbangan_muat.*.uploaded' => 'Bukti timbangan muat gagal diupload. Ukuran file terlalu besar.',
+        ]);
 
         try {
             DB::beginTransaction();
