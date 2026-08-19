@@ -224,6 +224,29 @@ class AbsensiController extends Controller
         return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'cabangs', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
     }
 
+    /**
+     * Tampilkan detail absensi untuk seorang karyawan pada tanggal tertentu.
+     */
+    public function show($nik, $tanggal)
+    {
+        // Cari karyawan
+        $karyawan = Karyawan::where('nik', $nik)->first();
+        if (!$karyawan) {
+            $karyawan = \App\Models\KaryawanTidakTetap::where('nik', $nik)->first();
+        }
+
+        // Ambil semua log absensi karyawan tersebut pada tanggal yang dipilih
+        // (Waktu di database dikurangi 6 jam untuk shift, persis seperti logic index)
+        $absensis = Absensi::where('nik', $nik)
+            ->whereDate(\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'), $tanggal)
+            ->orderBy('waktu', 'asc')
+            ->get();
+            
+        $mesins = Mesin::all()->keyBy('id');
+
+        return view('absensi.show', compact('karyawan', 'tanggal', 'absensis', 'mesins', 'nik'));
+    }
+
     public function exportExcel(Request $request)
     {
         $query = Absensi::with(['karyawan']);

@@ -1684,6 +1684,10 @@ Route::middleware([
             ->name('absensi.index')
             ->middleware('can:absensi-view');
 
+        Route::get('absensi/{nik}/{tanggal}', [AbsensiController::class, 'show'])
+            ->name('absensi.show')
+            ->middleware('can:absensi-view');
+
         Route::post('absensi/import', [AbsensiImportController::class, 'import'])
             ->name('absensi.import')
             ->middleware('can:absensi-view'); // Gunakan permission yang ada
