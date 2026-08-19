@@ -448,14 +448,18 @@ class CheckpointController extends Controller
             abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: '.$userName.', Surat Jalan Supir: '.$suratJalan->supir);
         }
 
+        // Support both "40" and "40ft" formats
+        $ukuranValue = str_replace('ft', '', strtolower(trim($suratJalan->size ?? '')));
+        $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+
         // Untuk surat jalan, ambil kontainer dengan status Tersedia
-        $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
+        $kontainerList = Kontainer::whereIn('ukuran', $ukuranValues)
             ->where('status', 'Tersedia')
             ->orderBy('nomor_seri_gabungan')
             ->get();
 
-        // Ambil stock kontainer berdasarkan ukuran surat jalan (20ft atau 40ft)
-        $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalan->size)
+        // Ambil stock kontainer berdasarkan ukuran surat jalan
+        $stockKontainers = \App\Models\StockKontainer::whereIn('ukuran', $ukuranValues)
             ->where('status', '!=', 'inactive')
             ->orderBy('nomor_seri_gabungan')
             ->get();
@@ -917,14 +921,18 @@ class CheckpointController extends Controller
             abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: '.$userName.', Surat Jalan Bongkaran Supir: '.$suratJalanBongkaran->supir);
         }
 
+        // Support both "40" and "40ft" formats
+        $ukuranValue = str_replace('ft', '', strtolower(trim($suratJalanBongkaran->size ?? '')));
+        $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+
         // Untuk surat jalan bongkaran, ambil kontainer dengan status Tersedia
-        $kontainerList = Kontainer::where('ukuran', $suratJalanBongkaran->size)
+        $kontainerList = Kontainer::whereIn('ukuran', $ukuranValues)
             ->where('status', 'Tersedia')
             ->orderBy('nomor_seri_gabungan')
             ->get();
 
         // Ambil stock kontainer berdasarkan ukuran surat jalan bongkaran
-        $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalanBongkaran->size)
+        $stockKontainers = \App\Models\StockKontainer::whereIn('ukuran', $ukuranValues)
             ->where('status', '!=', 'inactive')
             ->orderBy('nomor_seri_gabungan')
             ->get();

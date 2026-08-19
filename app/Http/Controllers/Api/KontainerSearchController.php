@@ -26,7 +26,10 @@ class KontainerSearchController extends Controller
             $kontainerQuery = Kontainer::where('nomor_seri_gabungan', 'like', '%'.$query.'%');
 
             if ($ukuran) {
-                $kontainerQuery->where('ukuran', $ukuran);
+                $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
+                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+                
+                $kontainerQuery->whereIn('ukuran', $ukuranValues);
             }
 
             // Show all containers regardless of status, filtered by size only
@@ -50,7 +53,10 @@ class KontainerSearchController extends Controller
                 ->where('status', '!=', 'inactive');
 
             if ($ukuran) {
-                $stockQuery->where('ukuran', $ukuran);
+                $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
+                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+                
+                $stockQuery->whereIn('ukuran', $ukuranValues);
             }
 
             $stocks = $stockQuery->orderBy('nomor_seri_gabungan')
@@ -72,8 +78,11 @@ class KontainerSearchController extends Controller
             $stockQuery = StockKontainer::where('status', '!=', 'inactive');
 
             if ($ukuran) {
-                $kontainerQuery->where('ukuran', $ukuran);
-                $stockQuery->where('ukuran', $ukuran);
+                $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
+                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+                
+                $kontainerQuery->whereIn('ukuran', $ukuranValues);
+                $stockQuery->whereIn('ukuran', $ukuranValues);
             }
 
             // Show all containers regardless of status, filtered by size only
