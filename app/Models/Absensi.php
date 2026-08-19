@@ -29,6 +29,7 @@ class Absensi extends Model
         'tipe',
         'mesin_id',
         'keterangan',
+        'verify_mode',
         'latitude',
         'longitude',
         'device',

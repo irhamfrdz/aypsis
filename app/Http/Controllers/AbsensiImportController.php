@@ -118,6 +118,15 @@ class AbsensiImportController extends Controller
                     $type = 'Pulang';
                 }
 
+                $verifyMethodRaw = isset($parts[3]) ? (int)trim($parts[3]) : null;
+                $verifyMode = null;
+                if ($verifyMethodRaw !== null) {
+                    if ($verifyMethodRaw === 1) $verifyMode = 'Fingerprint';
+                    elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) $verifyMode = 'Face';
+                    elseif ($verifyMethodRaw === 0) $verifyMode = 'Password';
+                    elseif ($verifyMethodRaw === 2) $verifyMode = 'Card';
+                }
+
                 $key = $nik . '_' . $waktu;
                 if (!isset($existingLogs[$key])) {
                     Absensi::create([
@@ -126,6 +135,7 @@ class AbsensiImportController extends Controller
                         'tipe' => $type,
                         'karyawan_id' => $employees[$nik] ?? null,
                         'keterangan' => 'Import File Log (.dat)',
+                        'verify_mode' => $verifyMode,
                     ]);
                     
                     $existingLogs[$key] = true;

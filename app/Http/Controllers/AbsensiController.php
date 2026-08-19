@@ -186,7 +186,9 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN keterangan ELSE NULL END) as keterangan_masuk,
-            MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN keterangan ELSE NULL END) as keterangan_pulang
+            MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN keterangan ELSE NULL END) as keterangan_pulang,
+            MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN verify_mode ELSE NULL END) as verify_mode_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN verify_mode ELSE NULL END) as verify_mode_pulang
         ')
         ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
 
@@ -205,6 +207,8 @@ class AbsensiController extends Controller
                 $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
             } elseif ($status_absen === 'ada_lembur') {
                 $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
+            } elseif ($status_absen === 'luar_radius') {
+                $query->havingRaw('lokasi_masuk LIKE "%(Di luar radius%" OR lokasi_pulang LIKE "%(Di luar radius%"');
             }
         }
 

@@ -149,6 +149,7 @@
                             <option value="ada_istirahat" {{ request('status_absen') == 'ada_istirahat' ? 'selected' : '' }}>Ada Absen Istirahat</option>
                             <option value="lengkap" {{ request('status_absen') == 'lengkap' ? 'selected' : '' }}>Masuk & Pulang Lengkap</option>
                             <option value="ada_lembur" {{ request('status_absen') == 'ada_lembur' ? 'selected' : '' }}>Ada Absen Lembur</option>
+                            <option value="luar_radius" {{ request('status_absen') == 'luar_radius' ? 'selected' : '' }}>Di Luar Radius</option>
                         </select>
                     </div>
 
@@ -186,21 +187,21 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
                         <tr>
-                            <th class="px-2 py-2 text-left">No</th>
-                            <th class="px-2 py-2 text-left">NIK</th>
-                            <th class="px-2 py-2 text-left">Nama Lengkap</th>
-                            <th class="px-2 py-2 text-left">Pekerjaan</th>
-                            <th class="px-2 py-2 text-left">Divisi</th>
-                            <th class="px-2 py-2 text-left">Tanggal</th>
-                            <th class="px-2 py-2 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
-                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
-                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
-                            <th class="px-2 py-2 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
-                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
-                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
-                            <th class="px-2 py-2 text-left">Perangkat (IN / OUT)</th>
-                            <th class="px-2 py-2 text-left">Detail Lokasi</th>
-                            <th class="px-2 py-2 text-center">Foto</th>
+                            <th class="px-6 py-3 text-left">No</th>
+                            <th class="px-6 py-3 text-left">NIK</th>
+                            <th class="px-6 py-3 text-left">Nama Lengkap</th>
+                            <th class="px-6 py-3 text-left">Pekerjaan</th>
+                            <th class="px-6 py-3 text-left">Divisi</th>
+                            <th class="px-6 py-3 text-left">Tanggal</th>
+                            <th class="px-6 py-3 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
+                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
+                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
+                            <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
+                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
+                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
+                            <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
+                            <th class="px-6 py-3 text-left">Detail Lokasi</th>
+                            <th class="px-6 py-3 text-center">Foto</th>
 
                             <th class="px-2 py-2 text-center">Aksi</th>
                         </tr>
@@ -304,14 +305,56 @@
                                 </td>
                                 <td class="px-2 py-2 text-gray-600">
                                     <div class="space-y-1 text-[11px]">
-                                        <div><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: ($absensi->waktu_masuk ? 'SISTEM PWA' : '-')) }}</div>
-                                        <div><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}</div>
+                                        <div class="flex items-center">
+                                            <span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>
+                                            {{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: ($absensi->waktu_masuk ? 'SISTEM PWA' : '-')) }}
+                                            @if($absensi->verify_mode_masuk)
+                                                <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Metode Verifikasi Masuk">
+                                                    @if($absensi->verify_mode_masuk == 'Face')
+                                                        <i class="fa-solid fa-user-check text-blue-500 mr-0.5"></i> Face
+                                                    @elseif($absensi->verify_mode_masuk == 'Fingerprint')
+                                                        <i class="fa-solid fa-fingerprint text-purple-500 mr-0.5"></i> Finger
+                                                    @else
+                                                        {{ $absensi->verify_mode_masuk }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>
+                                            {{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}
+                                            @if($absensi->verify_mode_pulang)
+                                                <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Metode Verifikasi Pulang">
+                                                    @if($absensi->verify_mode_pulang == 'Face')
+                                                        <i class="fa-solid fa-user-check text-blue-500 mr-0.5"></i> Face
+                                                    @elseif($absensi->verify_mode_pulang == 'Fingerprint')
+                                                        <i class="fa-solid fa-fingerprint text-purple-500 mr-0.5"></i> Finger
+                                                    @else
+                                                        {{ $absensi->verify_mode_pulang }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-2 py-2 text-gray-600 max-w-[120px] text-[10px] whitespace-normal break-words">
                                     <div class="space-y-1">
-                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_masuk }}"><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->lokasi_masuk ?: '-' }}</div>
-                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_pulang }}"><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->lokasi_pulang ?: '-' }}</div>
+                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_masuk }}">
+                                            <span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>
+                                            @if($absensi->lokasi_masuk && str_contains($absensi->lokasi_masuk, '(Di luar radius'))
+                                                {!! str_replace('(Di luar radius', '<span class="text-red-600 font-bold">(Di luar radius', $absensi->lokasi_masuk) !!}</span>
+                                            @else
+                                                {{ $absensi->lokasi_masuk ?: '-' }}
+                                            @endif
+                                        </div>
+                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_pulang }}">
+                                            <span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>
+                                            @if($absensi->lokasi_pulang && str_contains($absensi->lokasi_pulang, '(Di luar radius'))
+                                                {!! str_replace('(Di luar radius', '<span class="text-red-600 font-bold">(Di luar radius', $absensi->lokasi_pulang) !!}</span>
+                                            @else
+                                                {{ $absensi->lokasi_pulang ?: '-' }}
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-2 py-2 whitespace-nowrap text-center">

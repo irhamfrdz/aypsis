@@ -242,6 +242,16 @@ class ADMSController extends Controller
                     $type = 'Pulang';
                 }
 
+                // VerifyMethod biasanya di index 4 atau 3 jika tidak ada state yang panjang
+                $verifyMethodRaw = isset($parts[4]) ? (int) $parts[4] : (isset($parts[3]) ? (int) $parts[3] : null);
+                $verifyMode = null;
+                if ($verifyMethodRaw !== null) {
+                    if ($verifyMethodRaw === 1) $verifyMode = 'Fingerprint';
+                    elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) $verifyMode = 'Face';
+                    elseif ($verifyMethodRaw === 0) $verifyMode = 'Password';
+                    elseif ($verifyMethodRaw === 2) $verifyMode = 'Card';
+                }
+
                 // Cegah duplikasi log yang sama persis (berdasarkan NIK dan waktu spesifik)
                 // Hal ini memastikan semua tarikan punch (meskipun user lupa ganti state) tetap tersimpan
                 $exists = Absensi::where('nik', $nik)
@@ -256,6 +266,7 @@ class ADMSController extends Controller
                         'karyawan_id' => $employees[$nik] ?? null,
                         'mesin_id' => $mesinId,
                         'keterangan' => 'ADMS Push (SN: ' . $sn . ')',
+                        'verify_mode' => $verifyMode,
                     ]);
                 }
             }
