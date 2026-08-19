@@ -231,7 +231,7 @@
                                 <button type="button" id="add_shipper_btn" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah Data">Tambah</button>
                                 <a href="#" id="edit_shipper_link"
                                    class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
-                                   title="Edit" target="_blank">
+                                   title="Edit">
                                     Edit
                                 </a>
                             </div>
@@ -273,7 +273,7 @@
                                 <button type="button" id="add_consignee_btn" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah Data">Tambah</button>
                                 <a href="#" id="edit_consignee_link"
                                    class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
-                                   title="Edit" target="_blank">
+                                   title="Edit">
                                     Edit
                                 </a>
                             </div>
@@ -742,8 +742,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editShipperLink) {
         editShipperLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if (editShipperLink.href && editShipperLink.href !== window.location.href && !editShipperLink.href.endsWith('#')) {
+            const hrefAttr = editShipperLink.getAttribute('href');
+            console.log('Edit Shipper clicked. href:', hrefAttr);
+            if (hrefAttr && hrefAttr !== '#') {
                 openModalForEdit(editShipperLink.href);
+            } else {
+                alert('Pilih data shipper terlebih dahulu.');
             }
         });
     }
@@ -751,8 +755,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editConsigneeLink) {
         editConsigneeLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if (editConsigneeLink.href && editConsigneeLink.href !== window.location.href && !editConsigneeLink.href.endsWith('#')) {
+            const hrefAttr = editConsigneeLink.getAttribute('href');
+            console.log('Edit Consignee clicked. href:', hrefAttr);
+            if (hrefAttr && hrefAttr !== '#') {
                 openModalForEdit(editConsigneeLink.href);
+            } else {
+                alert('Pilih data consignee terlebih dahulu.');
             }
         });
     }
