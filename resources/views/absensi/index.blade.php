@@ -186,41 +186,41 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
                         <tr>
-                            <th class="px-6 py-3 text-left">No</th>
-                            <th class="px-6 py-3 text-left">NIK</th>
-                            <th class="px-6 py-3 text-left">Nama Lengkap</th>
-                            <th class="px-6 py-3 text-left">Pekerjaan</th>
-                            <th class="px-6 py-3 text-left">Divisi</th>
-                            <th class="px-6 py-3 text-left">Tanggal</th>
-                            <th class="px-6 py-3 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
-                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
-                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
-                            <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
-                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
-                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
-                            <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
-                            <th class="px-6 py-3 text-left">Detail Lokasi</th>
-                            <th class="px-6 py-3 text-center">Foto</th>
+                            <th class="px-2 py-2 text-left">No</th>
+                            <th class="px-2 py-2 text-left">NIK</th>
+                            <th class="px-2 py-2 text-left">Nama Lengkap</th>
+                            <th class="px-2 py-2 text-left">Pekerjaan</th>
+                            <th class="px-2 py-2 text-left">Divisi</th>
+                            <th class="px-2 py-2 text-left">Tanggal</th>
+                            <th class="px-2 py-2 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
+                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
+                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
+                            <th class="px-2 py-2 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
+                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
+                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
+                            <th class="px-2 py-2 text-left">Perangkat (IN / OUT)</th>
+                            <th class="px-2 py-2 text-left">Detail Lokasi</th>
+                            <th class="px-2 py-2 text-center">Foto</th>
 
-                            <th class="px-6 py-3 text-center">Aksi</th>
+                            <th class="px-2 py-2 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                         @forelse($absensis as $index => $absensi)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500">
+                                <td class="px-2 py-2 whitespace-nowrap font-medium text-gray-500">
                                     {{ $absensis->firstItem() + $index }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-semibold font-mono text-indigo-600">
+                                <td class="px-2 py-2 whitespace-nowrap font-semibold font-mono text-indigo-600">
                                     {{ $absensi->nik }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                <td class="px-2 py-2 font-medium">
                                     {{ $absensi->karyawan ? $absensi->karyawan->nama_lengkap : 'Karyawan Tidak Terdaftar' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                                <td class="px-2 py-2 text-gray-500">
                                     {{ $absensi->karyawan ? $absensi->karyawan->pekerjaan : '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                                <td class="px-2 py-2 text-gray-500">
                                     @if($absensi->karyawan && $absensi->karyawan->divisi && $absensi->karyawan->divisi !== '0')
                                         <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
                                             {{ strtolower($absensi->karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
@@ -233,10 +233,10 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
+                                <td class="px-2 py-2 whitespace-nowrap font-mono text-gray-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative">
                                     {{ $absensi->waktu_masuk ? Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam masuk ini?')">
@@ -251,13 +251,13 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
                                     {{ $absensi->waktu_istirahat_keluar ? Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i:s') : '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
                                     {{ $absensi->waktu_istirahat_masuk ? Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i:s') : '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
                                     {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam pulang ini?')">
@@ -272,7 +272,7 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
                                     {{ $absensi->waktu_lembur_masuk ? Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_lembur_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur masuk ini?')">
@@ -287,7 +287,7 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
                                     {{ $absensi->waktu_lembur_pulang ? Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_lembur_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur pulang ini?')">
@@ -302,19 +302,19 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-600">
+                                <td class="px-2 py-2 text-gray-600">
                                     <div class="space-y-1 text-[11px]">
                                         <div><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: ($absensi->waktu_masuk ? 'SISTEM PWA' : '-')) }}</div>
                                         <div><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}</div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600 max-w-xs text-[11px]">
+                                <td class="px-2 py-2 text-gray-600 max-w-xs text-[11px]">
                                     <div class="space-y-1">
                                         <div class="truncate" title="{{ $absensi->lokasi_masuk }}"><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->lokasi_masuk ?: '-' }}</div>
                                         <div class="truncate" title="{{ $absensi->lokasi_pulang }}"><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->lokasi_pulang ?: '-' }}</div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <td class="px-2 py-2 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($absensi->foto_masuk)
                                             <a href="{{ asset(ltrim($absensi->foto_masuk, '/')) }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
@@ -334,7 +334,7 @@
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <td class="px-2 py-2 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex justify-center space-x-2">
                                         @can('absensi-edit')
                                         <button type="button" 
@@ -376,7 +376,7 @@
 
             <!-- Pagination -->
             @if ($absensis->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="px-2 py-2 border-t border-gray-200 bg-gray-50">
                 {{ $absensis->links() }}
             </div>
             @endif
