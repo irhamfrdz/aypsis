@@ -890,27 +890,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // SweetAlert Notifications
-            @if(session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: '{{ session('success') }}',
-                    confirmButtonColor: '#10b981', // green-500
-                    confirmButtonText: 'OK'
-                });
-            @endif
-
-            @if(session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: 'Gagal membuat checkpoint karena: {{ session('error') }}',
-                    confirmButtonColor: '#ef4444', // red-500
-                    confirmButtonText: 'Mengerti'
-                });
-            @endif
-
+            // SweetAlert Notifications for Validation Errors
             @if($errors->any())
                 let errorHtml = '<div style="text-align: left; font-size: 0.9em; margin-top: 10px;">Gagal membuat checkpoint karena alasan berikut:<ul style="list-style-type: disc; padding-left: 20px; margin-top: 10px;">';
                 @foreach ($errors->all() as $error)
