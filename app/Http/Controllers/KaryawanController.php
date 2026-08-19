@@ -811,6 +811,36 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Download template for DPP import
+     */
+    public function downloadDppTemplate()
+    {
+        $columns = ['nik', 'dpp_jkn', 'dpp_bp_jamsostek'];
+        $fileName = 'template_dpp_karyawan.csv';
+
+        $callback = function () use ($columns) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write header only with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns)."\r\n");
+            
+            // Add one empty row for user to start entering data
+            $emptyRow = array_fill(0, count($columns), '');
+            fwrite($out, implode(';', $emptyRow)."\r\n");
+            
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
      * Export karyawan dengan format Excel Indonesia (koma delimiter, quotes untuk koma dalam data)
      */
     public function exportExcelIndonesia()

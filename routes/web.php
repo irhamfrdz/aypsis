@@ -632,6 +632,10 @@ Route::middleware([
         Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
             ->name('karyawan.simple-excel-template');
 
+        // Download DPP template
+        Route::get('karyawan/dpp-template', [KaryawanController::class, 'downloadDppTemplate'])
+            ->name('karyawan.dpp-template');
+
         // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
             ->name('karyawan.crew-checklist')

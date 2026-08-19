@@ -1005,6 +1005,8 @@
                 </form>
             </div>
         </div>
+    </div>
+</div>
 <!-- Import DPP Modal -->
 <div id="importDppModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -1028,12 +1030,21 @@
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
                                 <p>Silakan unggah file Excel yang berisi data NIK, DPP JKN, dan DPP BP Jamsostek.</p>
                                 <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
-                                    <p class="font-semibold text-blue-800 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel:</p>
-                                    <ul class="list-disc list-inside text-xs text-blue-700 ml-1">
-                                        <li><strong>nik</strong> (Wajib)</li>
-                                        <li><strong>dpp_jkn</strong> (Opsional)</li>
-                                        <li><strong>dpp_bp_jamsostek</strong> (Opsional)</li>
-                                    </ul>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <p class="font-semibold text-blue-800 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel:</p>
+                                            <ul class="list-disc list-inside text-xs text-blue-700 ml-1">
+                                                <li><strong>nik</strong> (Wajib)</li>
+                                                <li><strong>dpp_jkn</strong> (Opsional)</li>
+                                                <li><strong>dpp_bp_jamsostek</strong> (Opsional)</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <a href="{{ route('master.karyawan.dpp-template') }}" class="inline-flex items-center px-3 py-2 border border-blue-200 shadow-sm text-xs font-bold rounded-md text-blue-700 bg-white hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                                <i class="fas fa-download mr-1.5"></i> Download Template
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="mt-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
@@ -1061,20 +1072,13 @@
 function openImportDppModal() {
     const modal = document.getElementById('importDppModal');
     modal.classList.remove('hidden');
-    // small delay to allow transition
-    setTimeout(() => {
-        modal.querySelector('.transform').classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
-        modal.querySelector('.transform').classList.add('opacity-100', 'translate-y-0', 'sm:scale-100');
-    }, 10);
+    document.body.style.overflow = 'hidden';
 }
 
 function closeImportDppModal() {
     const modal = document.getElementById('importDppModal');
-    modal.querySelector('.transform').classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
-    modal.querySelector('.transform').classList.remove('opacity-100', 'translate-y-0', 'sm:scale-100');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 // Enhanced Delete Modal Functions
