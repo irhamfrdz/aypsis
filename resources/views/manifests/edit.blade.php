@@ -438,6 +438,14 @@
                             <label for="new_hs_code" class="block text-xs font-semibold text-gray-700 mb-1">HS Code</label>
                             <input type="text" id="new_hs_code" name="hs_code" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
                         </div>
+                        <div>
+                            <label for="new_commodity" class="block text-xs font-semibold text-gray-700 mb-1">Commodity</label>
+                            <input type="text" id="new_commodity" name="commodity" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_delivery_address" class="block text-xs font-semibold text-gray-700 mb-1">Delivery Address & Contact Person</label>
+                            <textarea id="new_delivery_address" name="delivery_address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
