@@ -6038,6 +6038,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 Route::get('/api/manifests/search-shippers', [App\Http\Controllers\ManifestController::class, 'searchShippers']);
 Route::get('/api/manifests/search-consignees', [App\Http\Controllers\ManifestController::class, 'searchConsignees']);
 Route::get('/api/manifests/search-prospeks', [App\Http\Controllers\ManifestController::class, 'searchProspeks']);
+Route::get('/api/master/karyawans/search', [App\Http\Controllers\KaryawanController::class, 'searchApi'])->name('api.karyawan.search');
 Route::get('/api/manifests/voyages/{namaKapal}', [App\Http\Controllers\ManifestController::class, 'getVoyagesByShip']);
 Route::get('/api/kwitansi/voyages/{namaKapal}', [App\Http\Controllers\KwitansiController::class, 'getVoyagesByShip']);
 

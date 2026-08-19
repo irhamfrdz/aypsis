@@ -1070,6 +1070,32 @@ class KaryawanController extends Controller
         return redirect()->route('master.karyawan.index')->with('success', 'Data karyawan berhasil ditambahkan');
     }
 
+    public function searchApi(Request $request)
+    {
+        $term = $request->get('q');
+        $query = Karyawan::whereNotNull('nik');
+        
+        if ($term) {
+            $query->where(function($q) use ($term) {
+                $q->where('nik', 'like', "%{$term}%")
+                  ->orWhere('nama_lengkap', 'like', "%{$term}%");
+            });
+        }
+        
+        $karyawans = $query->take(20)->get(['nik', 'nama_lengkap']);
+        
+        $results = [];
+        foreach ($karyawans as $k) {
+            $results[] = [
+                'id' => $k->nik,
+                'text' => $k->nik . ' - ' . $k->nama_lengkap,
+                'nama_lengkap' => $k->nama_lengkap
+            ];
+        }
+        
+        return response()->json(['results' => $results]);
+    }
+
     /**
      * Menampilkan detail satu karyawan.
      */

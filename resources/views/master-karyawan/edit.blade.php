@@ -343,7 +343,11 @@
 
                 <div>
                     <label for="nik_supervisor" class="{{ $labelClasses }}">NIK Supervisor</label>
-                    <input type="text" name="nik_supervisor" id="nik_supervisor" class="{{ $inputClasses }}" placeholder="NIK supervisor" value="{{ old('nik_supervisor', $karyawan->nik_supervisor) }}">
+                    <select name="nik_supervisor" id="nik_supervisor" class="{{ $inputClasses }} select2-karyawan">
+                        @if(old('nik_supervisor', $karyawan->nik_supervisor))
+                            <option value="{{ old('nik_supervisor', $karyawan->nik_supervisor) }}" selected>{{ old('nik_supervisor', $karyawan->nik_supervisor) }}</option>
+                        @endif
+                    </select>
                 </div>
 
                 <div>
@@ -1374,5 +1378,28 @@
                 
                 container.appendChild(firstRow);
             });
+            if ($.fn.select2) {
+                $('.select2-karyawan').select2({
+                    placeholder: 'Cari NIK / Nama Supervisor',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('api.karyawan.search') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return { q: params.term };
+                        },
+                        processResults: function (data) {
+                            return { results: data.results };
+                        },
+                        cache: true
+                    }
+                }).on('select2:select', function (e) {
+                    var data = e.params.data;
+                    document.getElementById('supervisor').value = data.nama_lengkap;
+                }).on('select2:clear', function() {
+                    document.getElementById('supervisor').value = '';
+                });
+            }
         });
     </script>
