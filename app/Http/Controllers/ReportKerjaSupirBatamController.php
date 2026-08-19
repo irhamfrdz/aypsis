@@ -148,6 +148,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $ritVal = is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0;
                     $totalRit += $ritVal;
                     $waybills[] = [
+                        'id' => $sj->id,
                         'tanggal_sort' => $sj->tanggal_surat_jalan->format('Y-m-d H:i:s'),
                         'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                         'tipe' => 'SJ Reguler',
@@ -165,6 +166,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $ritVal = is_numeric($sj->uang_jalan_nominal) ? (float) $sj->uang_jalan_nominal : 0;
                     $totalRit += $ritVal;
                     $waybills[] = [
+                        'id' => $sj->id,
                         'tanggal_sort' => $sj->tanggal_surat_jalan->format('Y-m-d H:i:s'),
                         'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                         'tipe' => 'SJ Bongkaran',
@@ -184,6 +186,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $tujuan = $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-';
                     $ring = $ringMapping[strtolower(trim($tujuan))] ?? '-';
                     $waybills[] = [
+                        'id' => $sj->id,
                         'tanggal_sort' => $sj->tanggal_surat_jalan->format('Y-m-d H:i:s'),
                         'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                         'tipe' => ($sj->f_e === 'Full') ? 'SJ Tarik Full' : 'SJ Tarik Kosong',
@@ -203,6 +206,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $tujuan = $langsir->ke ?? '-';
                     $ring = $ringMapping[strtolower(trim($tujuan))] ?? '-';
                     $waybills[] = [
+                        'id' => $langsir->id,
                         'tanggal_sort' => $langsir->tanggal->format('Y-m-d H:i:s'),
                         'tanggal' => $langsir->tanggal->format('d/m/Y'),
                         'tipe' => 'Langsir Batam',

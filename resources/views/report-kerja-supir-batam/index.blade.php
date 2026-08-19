@@ -97,6 +97,7 @@
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">No. Surat Jalan</th>
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">No. Kontainer</th>
                     <th scope="col" class="px-6 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Uang Jalan / Biaya</th>
+                    <th scope="col" class="px-6 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider no-print">Aksi</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -127,10 +128,41 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-gray-900">
                             Rp {{ number_format($item['uang_jalan'], 0, ',', '.') }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium no-print">
+                            @php
+                                $showUrl = '#';
+                                $deleteUrl = '#';
+                                if (isset($item['id'])) {
+                                    if ($item['tipe'] == 'SJ Reguler') {
+                                        $showUrl = url('surat-jalan-batam/' . $item['id']);
+                                        $deleteUrl = url('surat-jalan-batam/' . $item['id']);
+                                    } elseif ($item['tipe'] == 'SJ Bongkaran') {
+                                        $showUrl = url('surat-jalan-bongkaran-batam/' . $item['id']);
+                                        $deleteUrl = url('surat-jalan-bongkaran-batam/' . $item['id']);
+                                    } elseif ($item['tipe'] == 'SJ Tarik Kosong' || $item['tipe'] == 'SJ Tarik Full') {
+                                        $showUrl = url('surat-jalan-tarik-kosong-batam/' . $item['id']);
+                                        $deleteUrl = url('surat-jalan-tarik-kosong-batam/' . $item['id']);
+                                    } elseif ($item['tipe'] == 'Langsir Batam') {
+                                        $showUrl = url('langsir-batam/' . $item['id']);
+                                        $deleteUrl = url('langsir-batam/' . $item['id']);
+                                    }
+                                }
+                            @endphp
+                            <a href="{{ $showUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 mx-1 bg-indigo-50 p-1.5 rounded" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <form action="{{ $deleteUrl }}" method="POST" class="inline-block m-0 p-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900 mx-1 bg-red-50 p-1.5 rounded" title="Hapus Data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="10" class="px-6 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-3 text-gray-300"></i>
                             <p>Tidak ada data pekerjaan ditemukan pada rentang tanggal tersebut.</p>
                         </td>
@@ -141,6 +173,7 @@
                 <tr>
                     <td colspan="8" class="px-6 py-4 text-right text-gray-800 uppercase tracking-wider text-xs">Total Pendapatan Supir:</td>
                     <td class="px-6 py-4 text-right text-indigo-700 text-base">Rp {{ number_format($totalRit, 0, ',', '.') }}</td>
+                    <td class="no-print"></td>
                 </tr>
             </tfoot>
         </table>
