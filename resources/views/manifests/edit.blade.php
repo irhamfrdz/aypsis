@@ -667,8 +667,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const addShipperBtn = document.getElementById('add_shipper_btn');
     const addConsigneeBtn = document.getElementById('add_consignee_btn');
-    const editShipperLink = document.getElementById('edit_shipper_link');
-    const editConsigneeLink = document.getElementById('edit_consignee_link');
+    // Using existing editLink (for shipper) and editConsigneeLink variables
+    const editShipperLink = editLink; 
     
     const closeAddShipperModal = document.getElementById('closeAddShipperModal');
     const addShipperForm = document.getElementById('addShipperForm');
