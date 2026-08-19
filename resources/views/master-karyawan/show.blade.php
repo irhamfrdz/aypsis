@@ -616,6 +616,10 @@
                 <p class="font-semibold text-gray-600">JKN</p>
                 <p class="text-gray-800">{{ $karyawan->jkn ?? '-' }}</p>
             </div>
+            <div>
+                <p class="font-semibold text-gray-600">DPP JKN</p>
+                <p class="text-gray-800">{{ $karyawan->dpp_jkn ?? '-' }}</p>
+            </div>
 
             <div>
                 <p class="font-semibold text-gray-600">Status JKN</p>

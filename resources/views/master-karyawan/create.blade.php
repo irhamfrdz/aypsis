@@ -499,7 +499,7 @@
                     <div>
                         <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
                         <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
-                            <option value="">-- Pilih Status Pajak --</option>
+                                                <option value="">-- Pilih Status Pajak --</option>
                             @foreach($pajaks as $pajak)
                             <option value="{{ $pajak->nama_status }}">{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
                             @endforeach
@@ -509,6 +509,11 @@
                     <div>
                         <label for="jkn" class="{{ $labelClasses }}">JKN</label>
                         <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS" value="{{ old('jkn', $pelamar?->no_bpjs_kesehatan) }}">
+                    </div>
+
+                    <div>
+                        <label for="dpp_jkn" class="{{ $labelClasses }}">DPP JKN</label>
+                        <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn') }}">
                     </div>
 
                     <div>

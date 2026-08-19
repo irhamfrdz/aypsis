@@ -489,6 +489,11 @@
                 </div>
 
                 <div>
+                    <label for="dpp_jkn" class="{{ $labelClasses }}">DPP JKN</label>
+                    <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn', $karyawan->dpp_jkn) }}">
+                </div>
+
+                <div>
                     <label for="status_jkn" class="{{ $labelClasses }}">Status JKN</label>
                     <select name="status_jkn" id="status_jkn" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Status JKN --</option>
