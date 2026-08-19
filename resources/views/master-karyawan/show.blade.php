@@ -755,7 +755,7 @@
                                     <td class="border border-gray-300 px-3 py-2">{{ $saldo->keterangan ?? '-' }}</td>
                                     @can('master-karyawan-update')
                                     <td class="border border-gray-300 px-3 py-2 text-center">
-                                        <button onclick="openEditSaldoCutiModal({{ $saldo->id }}, {{ $saldo->tahun }}, {{ $saldo->total_cuti }}, {{ $saldo->cuti_terpakai }}, '{{ $saldo->keterangan }}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Edit">
+                                        <button onclick="openEditSaldoCutiModal({{ $saldo->id }}, {{ $saldo->tahun }}, {{ $saldo->total_cuti }}, {{ $saldo->sisa_cuti }}, {{ $saldo->cuti_terpakai }}, '{{ $saldo->keterangan }}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <form action="{{ route('master.saldo-cuti.destroy', $saldo->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus data saldo cuti tahun {{ $saldo->tahun }}?')">
@@ -817,6 +817,10 @@
                             <input type="number" name="total_cuti" value="12" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Sisa Cuti <span class="text-red-500">*</span></label>
+                            <input type="number" name="sisa_cuti" value="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Cuti Terpakai <span class="text-red-500">*</span></label>
                             <input type="number" name="cuti_terpakai" value="0" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
@@ -857,6 +861,10 @@
                             <input type="number" id="edit_total_cuti" name="total_cuti" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Sisa Cuti <span class="text-red-500">*</span></label>
+                            <input type="number" id="edit_sisa_cuti" name="sisa_cuti" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Cuti Terpakai <span class="text-red-500">*</span></label>
                             <input type="number" id="edit_cuti_terpakai" name="cuti_terpakai" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
@@ -888,9 +896,10 @@
         document.getElementById('createSaldoCutiModal').classList.add('hidden');
     }
 
-    function openEditSaldoCutiModal(id, tahun, total, terpakai, ket) {
+    function openEditSaldoCutiModal(id, tahun, total, sisa, terpakai, ket) {
         document.getElementById('edit_tahun_label').innerText = tahun;
         document.getElementById('edit_total_cuti').value = total;
+        document.getElementById('edit_sisa_cuti').value = sisa;
         document.getElementById('edit_cuti_terpakai').value = terpakai;
         document.getElementById('edit_keterangan').value = ket;
         document.getElementById('editSaldoCutiForm').action = '/master/saldo-cuti/' + id;

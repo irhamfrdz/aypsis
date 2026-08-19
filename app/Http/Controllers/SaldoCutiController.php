@@ -14,6 +14,7 @@ class SaldoCutiController extends Controller
             'karyawan_id' => 'required|exists:karyawans,id',
             'tahun' => 'required|integer',
             'total_cuti' => 'required|integer|min:0',
+            'sisa_cuti' => 'required|integer',
             'cuti_terpakai' => 'required|integer|min:0',
             'keterangan' => 'nullable|string'
         ]);
@@ -36,6 +37,7 @@ class SaldoCutiController extends Controller
     {
         $validated = $request->validate([
             'total_cuti' => 'required|integer|min:0',
+            'sisa_cuti' => 'required|integer',
             'cuti_terpakai' => 'required|integer|min:0',
             'keterangan' => 'nullable|string'
         ]);
