@@ -210,6 +210,12 @@
                                     <p class="text-[9px] text-amber-800 font-bold uppercase tracking-wider">Alasan Diluar Area:</p>
                                     <p class="text-xs text-amber-700 font-medium italic mt-0.5">"${item.keterangan || 'Tidak menuliskan alasan'}"</p>
                                 </div>
+                                
+                                <!-- Admin Attachment -->
+                                <div class="mt-3">
+                                    <label for="admin_lampiran_absen_${item.id}" class="block text-[10px] font-medium text-gray-700 mb-1">Unggah Dokumen Admin (Opsional)</label>
+                                    <input type="file" id="admin_lampiran_absen_${item.id}" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 border border-gray-200 rounded-md bg-gray-50 cursor-pointer">
+                                </div>
                             </div>
 
                             <!-- Actions -->
@@ -263,9 +269,19 @@
             emptyState.classList.add('hidden');
             
             container.innerHTML = data.map(item => {
-                const startDate = new Date(item.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                const endDate = new Date(item.tanggal_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                const dateRange = startDate === endDate ? startDate : `${startDate} s/d ${endDate}`;
+                const startObj = new Date(item.tanggal_mulai);
+                const endObj = new Date(item.tanggal_selesai);
+                
+                const d1 = new Date(startObj.getFullYear(), startObj.getMonth(), startObj.getDate());
+                const d2 = new Date(endObj.getFullYear(), endObj.getMonth(), endObj.getDate());
+                const diffTime = Math.abs(d2 - d1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                const startDate = startObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                const endDate = endObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                const dateRange = startDate === endDate 
+                    ? `${startDate} <span class="text-blue-600 font-bold ml-1">(1 Hari)</span>` 
+                    : `${startDate} s/d ${endDate} <span class="text-blue-600 font-bold ml-1">(${diffDays} Hari)</span>`;
                 const submitDate = new Date(item.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
                 let typeLabel = '';
@@ -276,6 +292,24 @@
                 else typeLabel = item.jenis_izin;
 
                 const typeBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">IZIN: ${typeLabel.toUpperCase()}</span>`;
+
+                let leaveWarningHTML = '';
+                if (item.jenis_izin && item.jenis_izin.toLowerCase() === 'tahunan' && item.sisa_cuti !== undefined) {
+                    if (diffDays > item.sisa_cuti) {
+                        const minus = item.sisa_cuti - diffDays;
+                        leaveWarningHTML = `
+                            <div class="mt-1.5 flex items-center text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-1 rounded w-fit">
+                                <i class="fa-solid fa-circle-exclamation mr-1.5"></i> Peringatan: Melebihi sisa cuti (akan menjadi ${minus} hari)
+                            </div>
+                        `;
+                    } else {
+                        leaveWarningHTML = `
+                            <div class="mt-1.5 flex items-center text-[10px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded w-fit">
+                                <i class="fa-solid fa-circle-check mr-1.5"></i> Sisa cuti: ${item.sisa_cuti} hari
+                            </div>
+                        `;
+                    }
+                }
 
                 return `
                     <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.tabel_sumber}-${item.id}">
@@ -304,6 +338,7 @@
                                     <div>
                                         <span class="text-gray-400 font-medium"><i class="fa-solid fa-calendar-days mr-1.5"></i></span>
                                         Tanggal: <span class="font-semibold text-gray-800">${dateRange}</span>
+                                        ${leaveWarningHTML}
                                     </div>
                                     ${item.waktu ? `<div><span class="text-gray-400 font-medium"><i class="fa-solid fa-clock mr-1.5"></i></span>Waktu: <span class="font-semibold text-gray-800">${item.waktu}</span></div>` : ''}
                                     <div>
@@ -316,6 +351,12 @@
                                 <div class="mt-3 bg-slate-50 border-l-2 border-slate-400 p-2.5 rounded-r-md">
                                     <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Alasan Izin:</p>
                                     <p class="text-xs text-slate-700 font-medium italic mt-0.5">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
+                                </div>
+                                
+                                <!-- Admin Attachment -->
+                                <div class="mt-3">
+                                    <label for="admin_lampiran_izin_${item.tabel_sumber}_${item.id}" class="block text-[10px] font-medium text-gray-700 mb-1">Unggah Dokumen Admin (Opsional)</label>
+                                    <input type="file" id="admin_lampiran_izin_${item.tabel_sumber}_${item.id}" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 border border-gray-200 rounded-md bg-gray-50 cursor-pointer">
                                 </div>
                             </div>
 
@@ -339,10 +380,17 @@
 
     async function approveAttendance(id) {
         try {
+            const formData = new FormData();
+            formData.append('attendance_id', id);
+            
+            const fileInput = document.getElementById(`admin_lampiran_absen_${id}`);
+            if (fileInput && fileInput.files[0]) {
+                formData.append('admin_lampiran', fileInput.files[0]);
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/attendance/approve`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ attendance_id: id })
+                body: formData
             });
             const resData = await response.json();
             
@@ -358,10 +406,17 @@
     async function rejectAttendance(id) {
         if (!confirm('Apakah Anda yakin ingin menolak absensi ini?')) return;
         try {
+            const formData = new FormData();
+            formData.append('attendance_id', id);
+            
+            const fileInput = document.getElementById(`admin_lampiran_absen_${id}`);
+            if (fileInput && fileInput.files[0]) {
+                formData.append('admin_lampiran', fileInput.files[0]);
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/attendance/reject`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ attendance_id: id })
+                body: formData
             });
             const resData = await response.json();
             
@@ -376,10 +431,18 @@
 
     async function approvePermission(id, tabel_sumber) {
         try {
+            const formData = new FormData();
+            formData.append('permission_id', id);
+            formData.append('tabel_sumber', tabel_sumber);
+            
+            const fileInput = document.getElementById(`admin_lampiran_izin_${tabel_sumber}_${id}`);
+            if (fileInput && fileInput.files[0]) {
+                formData.append('admin_lampiran', fileInput.files[0]);
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/admin/permissions/approve`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ permission_id: id, tabel_sumber: tabel_sumber })
+                body: formData
             });
             const resData = await response.json();
             
@@ -395,10 +458,18 @@
     async function rejectPermission(id, tabel_sumber) {
         if (!confirm('Apakah Anda yakin ingin menolak permohonan izin ini?')) return;
         try {
+            const formData = new FormData();
+            formData.append('permission_id', id);
+            formData.append('tabel_sumber', tabel_sumber);
+            
+            const fileInput = document.getElementById(`admin_lampiran_izin_${tabel_sumber}_${id}`);
+            if (fileInput && fileInput.files[0]) {
+                formData.append('admin_lampiran', fileInput.files[0]);
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/admin/permissions/reject`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ permission_id: id, tabel_sumber: tabel_sumber })
+                body: formData
             });
             const resData = await response.json();
             

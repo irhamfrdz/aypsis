@@ -308,10 +308,19 @@ Route::get('/admin/pending-attendance', function() {
 Route::post('/attendance/approve', function(Request $request) {
     $data = $request->validate(['attendance_id' => 'required|integer']);
     
-    DB::table('absensis')->where('id', $data['attendance_id'])->update([
+    $updateData = [
         'status' => 'HADIR',
         'updated_at' => now()
-    ]);
+    ];
+    
+    if ($request->hasFile('admin_lampiran')) {
+        $file = $request->file('admin_lampiran');
+        $filename = time() . '_approve_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/admin_attachments'), $filename);
+        $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+    }
+    
+    DB::table('absensis')->where('id', $data['attendance_id'])->update($updateData);
     
     return response()->json(['message' => 'Absensi berhasil disetujui, status berubah menjadi HADIR.']);
 });
@@ -319,10 +328,19 @@ Route::post('/attendance/approve', function(Request $request) {
 Route::post('/attendance/reject', function(Request $request) {
     $data = $request->validate(['attendance_id' => 'required|integer']);
     
-    DB::table('absensis')->where('id', $data['attendance_id'])->update([
+    $updateData = [
         'status' => 'DITOLAK',
         'updated_at' => now()
-    ]);
+    ];
+    
+    if ($request->hasFile('admin_lampiran')) {
+        $file = $request->file('admin_lampiran');
+        $filename = time() . '_reject_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/admin_attachments'), $filename);
+        $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+    }
+    
+    DB::table('absensis')->where('id', $data['attendance_id'])->update($updateData);
     
     return response()->json(['message' => 'Absensi berhasil ditolak, status berubah menjadi DITOLAK.']);
 });
@@ -372,6 +390,18 @@ Route::get('/admin/pending-permissions', function() {
         ->orderBy('created_at', 'desc')
         ->get();
         
+    foreach ($rows as $row) {
+        if (strtolower($row->jenis_izin) === 'tahunan') {
+            $tahun = date('Y', strtotime($row->tanggal_mulai));
+            $saldo = DB::table('saldo_cutis')
+                ->where('karyawan_id', $row->karyawan_id)
+                ->where('tahun', $tahun)
+                ->first();
+            
+            $row->sisa_cuti = $saldo ? $saldo->sisa_cuti : 12;
+        }
+    }
+        
     return response()->json($rows);
 });
 
@@ -383,10 +413,53 @@ Route::post('/admin/permissions/approve', function(Request $request) {
     
     $table = $data['tabel_sumber'] ?? 'permohonan_izins';
     
-    DB::table($table)->where('id', $data['permission_id'])->update([
+    $permission = DB::table($table)->where('id', $data['permission_id'])->first();
+    if (!$permission) {
+        return response()->json(['error' => 'Permohonan tidak ditemukan.'], 404);
+    }
+    
+    // Jika permohonan sebelumnya belum APPROVED dan jenisnya adalah tahunan
+    $jenis = $table === 'cutis' ? $permission->jenis_cuti : $permission->jenis_izin;
+    if (strtoupper($permission->status) !== 'APPROVED' && strtolower($jenis) === 'tahunan') {
+        $karyawan_id = $permission->karyawan_id;
+        $tahun = date('Y', strtotime($permission->tanggal_mulai));
+        
+        $start = \Carbon\Carbon::parse($permission->tanggal_mulai)->startOfDay();
+        $end = \Carbon\Carbon::parse($permission->tanggal_selesai)->startOfDay();
+        $diffDays = $start->diffInDays($end) + 1;
+        
+        $saldo = \App\Models\SaldoCuti::where('karyawan_id', $karyawan_id)
+                    ->where('tahun', $tahun)
+                    ->first();
+                    
+        if ($saldo) {
+            $saldo->cuti_terpakai += $diffDays;
+            $saldo->sisa_cuti = $saldo->total_cuti - $saldo->cuti_terpakai;
+            $saldo->save();
+        } else {
+            \App\Models\SaldoCuti::create([
+                'karyawan_id' => $karyawan_id,
+                'tahun' => $tahun,
+                'total_cuti' => 12,
+                'cuti_terpakai' => $diffDays,
+                'sisa_cuti' => 12 - $diffDays
+            ]);
+        }
+    }
+    
+    $updateData = [
         'status' => 'APPROVED',
         'updated_at' => now()
-    ]);
+    ];
+    
+    if ($request->hasFile('admin_lampiran')) {
+        $file = $request->file('admin_lampiran');
+        $filename = time() . '_approve_izin_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/admin_attachments'), $filename);
+        $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+    }
+    
+    DB::table($table)->where('id', $data['permission_id'])->update($updateData);
     
     return response()->json(['message' => 'Permohonan berhasil disetujui.']);
 });
@@ -399,10 +472,19 @@ Route::post('/admin/permissions/reject', function(Request $request) {
     
     $table = $data['tabel_sumber'] ?? 'permohonan_izins';
     
-    DB::table($table)->where('id', $data['permission_id'])->update([
+    $updateData = [
         'status' => 'REJECTED',
         'updated_at' => now()
-    ]);
+    ];
+    
+    if ($request->hasFile('admin_lampiran')) {
+        $file = $request->file('admin_lampiran');
+        $filename = time() . '_reject_izin_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/admin_attachments'), $filename);
+        $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+    }
+    
+    DB::table($table)->where('id', $data['permission_id'])->update($updateData);
     
     return response()->json(['message' => 'Permohonan ditolak.']);
 });

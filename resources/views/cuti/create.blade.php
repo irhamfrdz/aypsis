@@ -42,8 +42,8 @@
                                     @foreach($karyawans as $karyawan)
                                         <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-penempatan="{{ $karyawan->penempatan }}" data-search="{{ strtolower($karyawan->nama_lengkap . ' ' . $karyawan->nik) }}">
                                             <input type="checkbox" name="karyawan_id[]" value="{{ $karyawan->id }}" id="karyawan_{{ $karyawan->id }}" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array($karyawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
-                                            <label for="karyawan_{{ $karyawan->id }}" class="ml-3 block text-sm font-medium text-gray-700">
-                                                {{ $karyawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $karyawan->nik }})</span>
+                                            <label for="karyawan_{{ $karyawan->id }}" class="ml-3 flex-1 flex justify-between items-center text-sm font-medium text-gray-700">
+                                                <span>{{ $karyawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $karyawan->nik }})</span></span><span class="text-xs text-gray-500 font-normal ml-2">Sisa Cuti: <b>{{ $karyawan->saldoCutis->first()?->sisa_cuti ?? 0 }}</b> | Terpakai: <b>{{ $karyawan->saldoCutis->first()?->cuti_terpakai ?? 0 }}</b></span>
                                             </label>
                                         </div>
                                     @endforeach

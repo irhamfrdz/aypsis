@@ -25,7 +25,7 @@ class CutiController extends Controller
 
     public function create()
     {
-        $karyawans = \App\Models\Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
+        $karyawans = \App\Models\Karyawan::with('saldoCutis')->whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
         $penempatans = $karyawans->pluck('penempatan')->filter()->unique()->values();
         return view('cuti.create', compact('karyawans', 'penempatans'));
     }
