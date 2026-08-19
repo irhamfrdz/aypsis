@@ -199,9 +199,6 @@
                             <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
                             <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
                             <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
-                            <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
-                            <th class="px-6 py-3 text-left">Detail Lokasi</th>
-                            <th class="px-6 py-3 text-center">Foto</th>
 
                             <th class="px-2 py-2 text-center">Aksi</th>
                         </tr>
@@ -303,79 +300,7 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 text-gray-600">
-                                    <div class="space-y-1 text-[11px]">
-                                        <div class="flex items-center">
-                                            <span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>
-                                            {{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: ($absensi->waktu_masuk ? 'SISTEM PWA' : '-')) }}
-                                            @if($absensi->verify_mode_masuk)
-                                                <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Metode Verifikasi Masuk">
-                                                    @if($absensi->verify_mode_masuk == 'Face')
-                                                        <i class="fa-solid fa-user-check text-blue-500 mr-0.5"></i> Face
-                                                    @elseif($absensi->verify_mode_masuk == 'Fingerprint')
-                                                        <i class="fa-solid fa-fingerprint text-purple-500 mr-0.5"></i> Finger
-                                                    @else
-                                                        {{ $absensi->verify_mode_masuk }}
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>
-                                            {{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}
-                                            @if($absensi->verify_mode_pulang)
-                                                <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Metode Verifikasi Pulang">
-                                                    @if($absensi->verify_mode_pulang == 'Face')
-                                                        <i class="fa-solid fa-user-check text-blue-500 mr-0.5"></i> Face
-                                                    @elseif($absensi->verify_mode_pulang == 'Fingerprint')
-                                                        <i class="fa-solid fa-fingerprint text-purple-500 mr-0.5"></i> Finger
-                                                    @else
-                                                        {{ $absensi->verify_mode_pulang }}
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-2 py-2 text-gray-600 max-w-[120px] text-[10px] whitespace-normal break-words">
-                                    <div class="space-y-1">
-                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_masuk }}">
-                                            <span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>
-                                            @if($absensi->lokasi_masuk && str_contains($absensi->lokasi_masuk, '(Di luar radius'))
-                                                {!! str_replace('(Di luar radius', '<span class="text-red-600 font-bold">(Di luar radius', $absensi->lokasi_masuk) !!}</span>
-                                            @else
-                                                {{ $absensi->lokasi_masuk ?: '-' }}
-                                            @endif
-                                        </div>
-                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_pulang }}">
-                                            <span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>
-                                            @if($absensi->lokasi_pulang && str_contains($absensi->lokasi_pulang, '(Di luar radius'))
-                                                {!! str_replace('(Di luar radius', '<span class="text-red-600 font-bold">(Di luar radius', $absensi->lokasi_pulang) !!}</span>
-                                            @else
-                                                {{ $absensi->lokasi_pulang ?: '-' }}
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        @if($absensi->foto_masuk)
-                                            <a href="{{ asset(ltrim($absensi->foto_masuk, '/')) }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
-                                                <img src="{{ asset(ltrim($absensi->foto_masuk, '/')) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
-                                                <span class="absolute -bottom-1 -right-1 text-[8px] bg-green-600 text-white font-bold px-0.5 rounded shadow">IN</span>
-                                            </a>
-                                        @endif
-                                        @if($absensi->foto_pulang)
-                                            <a href="{{ asset(ltrim($absensi->foto_pulang, '/')) }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
-                                                <img src="{{ asset(ltrim($absensi->foto_pulang, '/')) }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
-                                                <span class="absolute -bottom-1 -right-1 text-[8px] bg-red-600 text-white font-bold px-0.5 rounded shadow">OUT</span>
-                                            </a>
-                                        @endif
-                                        @if(!$absensi->foto_masuk && !$absensi->foto_pulang)
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </div>
-                                </td>
+
 
                                 <td class="px-2 py-2 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex justify-center space-x-2">
@@ -406,7 +331,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="16" class="px-6 py-10 text-center">
+                                <td colspan="13" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
