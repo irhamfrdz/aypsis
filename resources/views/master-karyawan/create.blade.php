@@ -532,6 +532,11 @@
                     </div>
 
                     <div>
+                        <label for="dpp_bp_jamsostek" class="{{ $labelClasses }}">DPP BP Jamsostek</label>
+                        <input type="text" name="dpp_bp_jamsostek" id="dpp_bp_jamsostek" class="{{ $inputClasses }}" placeholder="DPP BP Jamsostek" value="{{ old('dpp_bp_jamsostek') }}">
+                    </div>
+
+                    <div>
                         <label for="status_bp_jamsostek" class="{{ $labelClasses }}">Status BP Jamsostek</label>
                         <select name="status_bp_jamsostek" id="status_bp_jamsostek" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Status BP Jamsostek --</option>

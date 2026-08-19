@@ -629,6 +629,10 @@
                 <p class="font-semibold text-gray-600">BP Jamsostek</p>
                 <p class="text-gray-800">{{ $karyawan->no_ketenagakerjaan ?? '-' }}</p>
             </div>
+            <div>
+                <p class="font-semibold text-gray-600">DPP BP Jamsostek</p>
+                <p class="text-gray-800">{{ $karyawan->dpp_bp_jamsostek ?? '-' }}</p>
+            </div>
 
             <div>
                 <p class="font-semibold text-gray-600">Status BP Jamsostek</p>

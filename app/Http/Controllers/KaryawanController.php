@@ -164,6 +164,7 @@ class KaryawanController extends Controller
                     ->orWhere('jkn', 'LIKE', "%{$search}%")
                     ->orWhere('dpp_jkn', 'LIKE', "%{$search}%")
                     ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('dpp_bp_jamsostek', 'LIKE', "%{$search}%")
                     ->orWhere('cabang', 'LIKE', "%{$search}%")
                     ->orWhere('supervisor', 'LIKE', "%{$search}%")
                     ->orWhere('catatan', 'LIKE', "%{$search}%")
@@ -174,7 +175,7 @@ class KaryawanController extends Controller
         // Handle sorting
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'catatan_pekerjaan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'catatan_pekerjaan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
 
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
@@ -362,7 +363,7 @@ class KaryawanController extends Controller
         $isTemplate = $request->query('template', false);
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_'.date('Ymd_His').'.csv';
@@ -411,7 +412,7 @@ class KaryawanController extends Controller
                                         $val = '';
                                     }
                                 }
-                                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek']) && ! empty($val)) {
                                     $val = "\u{200B}".$val;
                                 }
                                 $line[] = $val;
@@ -448,7 +449,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
         ];
 
         $fileName = 'karyawans_excel_export_'.date('Ymd_His').'.csv';
@@ -510,7 +511,7 @@ class KaryawanController extends Controller
                                     $val = '';
                                 }
                             }
-                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek']) && ! empty($val)) {
                                 $val = "\u{200B}".$val;
                             }
                             $val = str_replace(["\r", "\n"], ' ', $val);
@@ -569,7 +570,7 @@ class KaryawanController extends Controller
     {
         // Generate template manually to ensure proper formatting
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $sampleData = [
@@ -697,7 +698,7 @@ class KaryawanController extends Controller
     public function downloadExcelTemplate()
     {
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $instructionData = [
@@ -781,7 +782,7 @@ class KaryawanController extends Controller
     public function downloadSimpleExcelTemplate()
     {
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         // Create simple Excel-compatible CSV file with headers only
@@ -826,7 +827,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor', 'grup', 'grup_bpjs',
         ];
 
         $fileName = 'karyawans_excel_indonesia_'.date('Ymd_His').'.csv';
@@ -895,7 +896,7 @@ class KaryawanController extends Controller
 
                             // For numeric fields, add invisible zero-width space to prevent scientific notation
                             // This forces Excel to treat as text without showing visible characters
-                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek']) && ! empty($val)) {
                                 $val = "\u{200B}".$val; // Zero-width space
                             }
 
@@ -1012,6 +1013,7 @@ class KaryawanController extends Controller
             'jkn' => 'nullable|string|max:255',
             'dpp_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'dpp_bp_jamsostek' => 'nullable|string|max:255',
             'no_sim' => 'nullable|string|max:255',
             'sim_berlaku_mulai' => 'nullable|date',
             'sim_berlaku_sampai' => 'nullable|date',
@@ -1247,6 +1249,7 @@ class KaryawanController extends Controller
             'jkn' => 'nullable|string|max:255',
             'dpp_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'dpp_bp_jamsostek' => 'nullable|string|max:255',
             'no_sim' => 'nullable|string|max:255',
             'sim_berlaku_mulai' => 'nullable|date',
             'sim_berlaku_sampai' => 'nullable|date',
@@ -1441,6 +1444,7 @@ class KaryawanController extends Controller
             'jkn' => 'nullable|string|max:255',
             'dpp_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'dpp_bp_jamsostek' => 'nullable|string|max:255',
             'catatan' => 'nullable|string|max:1000',
             'catatan_pekerjaan' => 'nullable|string|max:1000',
             'no_sim' => 'nullable|string|max:255',
@@ -1553,6 +1557,7 @@ class KaryawanController extends Controller
                     ->orWhere('jkn', 'LIKE', "%{$search}%")
                     ->orWhere('dpp_jkn', 'LIKE', "%{$search}%")
                     ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('dpp_bp_jamsostek', 'LIKE', "%{$search}%")
                     ->orWhere('status_pajak', 'LIKE', "%{$search}%");
             });
         }
@@ -1561,7 +1566,7 @@ class KaryawanController extends Controller
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
@@ -1630,6 +1635,7 @@ class KaryawanController extends Controller
                     ->orWhere('jkn', 'LIKE', "%{$search}%")
                     ->orWhere('dpp_jkn', 'LIKE', "%{$search}%")
                     ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('dpp_bp_jamsostek', 'LIKE', "%{$search}%")
                     ->orWhere('status_pajak', 'LIKE', "%{$search}%");
             });
         }
@@ -1638,7 +1644,7 @@ class KaryawanController extends Controller
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
@@ -1869,7 +1875,7 @@ class KaryawanController extends Controller
                     'nik', 'nama_lengkap', 'nama_panggilan', 'email', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'status_perkawinan', 'no_hp',
                     'ktp', 'kk', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'nik_supervisor', 'supervisor', 'cabang', 'plat',
                     'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap',
-                    'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'status_pajak', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan',
+                    'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'status_pajak', 'jkn', 'dpp_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan',
                 ];
                 $payload = [];
                 // Build payload using case-insensitive header names
