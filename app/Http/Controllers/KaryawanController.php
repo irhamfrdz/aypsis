@@ -2195,6 +2195,54 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Process mass update of DPP JKN and DPP BP Jamsostek from Excel.
+     */
+    public function importDpp(Request $request)
+    {
+        $request->validate([
+            'excel_file_dpp' => 'required|file|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        try {
+            $import = new \App\Imports\KaryawanDppImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file_dpp'));
+            
+            $messages = [];
+            $hasErrors = count($import->failedRows) > 0;
+            $hasSuccess = $import->successCount > 0;
+
+            if ($hasSuccess) {
+                $messages[] = "✅ {$import->successCount} data DPP berhasil diperbarui.";
+            }
+
+            if ($hasErrors) {
+                $totalFailed = count($import->failedRows);
+                $messages[] = "⚠️ {$totalFailed} baris data gagal diproses:";
+                
+                $failedPreview = array_slice($import->failedRows, 0, 10);
+                foreach ($failedPreview as $fail) {
+                    $messages[] = "- Baris {$fail['row']} (NIK: {$fail['nik']}): {$fail['reason']}";
+                }
+                
+                if ($totalFailed > 10) {
+                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                }
+            }
+
+            if ($hasErrors && !$hasSuccess) {
+                return redirect()->back()->with('error', implode("\n", $messages));
+            } elseif ($hasErrors && $hasSuccess) {
+                return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
+            } else {
+                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data DPP berhasil diperbarui secara massal.');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memproses file Excel DPP: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show crew checklist form for ABK employees
      */
     public function crewChecklist($id)

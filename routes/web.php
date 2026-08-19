@@ -584,6 +584,9 @@ Route::middleware([
             ->name('karyawan.import-update')
             ->middleware(['auth', 'can:master-karyawan-update']);
             
+        Route::post('karyawan/import-dpp', [KaryawanController::class, 'importDpp'])
+            ->name('karyawan.import-dpp')
+            ->middleware(['auth', 'can:master-karyawan-update']);
         Route::get('karyawan/import-update/template', [KaryawanController::class, 'downloadUpdateTemplate'])
             ->name('karyawan.import-update.template')
             ->middleware(['auth', 'can:master-karyawan-update']);
