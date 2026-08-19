@@ -308,10 +308,10 @@
                                         <div><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->mesin_id_pulang && $mesins->get($absensi->mesin_id_pulang) ? $mesins->get($absensi->mesin_id_pulang)->nama_mesin : ($absensi->device_pulang ?: ($absensi->waktu_pulang ? 'SISTEM PWA' : '-')) }}</div>
                                     </div>
                                 </td>
-                                <td class="px-2 py-2 text-gray-600 max-w-xs text-[11px]">
+                                <td class="px-2 py-2 text-gray-600 max-w-[120px] text-[10px] whitespace-normal break-words">
                                     <div class="space-y-1">
-                                        <div class="truncate" title="{{ $absensi->lokasi_masuk }}"><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->lokasi_masuk ?: '-' }}</div>
-                                        <div class="truncate" title="{{ $absensi->lokasi_pulang }}"><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->lokasi_pulang ?: '-' }}</div>
+                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_masuk }}"><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->lokasi_masuk ?: '-' }}</div>
+                                        <div class="line-clamp-2" title="{{ $absensi->lokasi_pulang }}"><span class="text-[9px] font-extrabold uppercase text-red-600 bg-red-100/80 px-1 py-0.5 rounded mr-1">OUT</span>{{ $absensi->lokasi_pulang ?: '-' }}</div>
                                     </div>
                                 </td>
                                 <td class="px-2 py-2 whitespace-nowrap text-center">
