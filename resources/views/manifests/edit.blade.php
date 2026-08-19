@@ -350,26 +350,101 @@
 </div>
 
 <!-- Modal Tambah Shipper/Consignee -->
-<div id="addShipperModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tambah Shipper / Consignee</h3>
+<div id="addShipperModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Tambah Data Shipper / Consignee</h3>
         <form id="addShipperForm">
             @csrf
-            <div class="mb-4">
-                <label for="new_shipper_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Shipper</label>
-                <input type="text" id="new_shipper_name" name="shipper" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Informasi Shipper -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Informasi Shipper</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="new_shipper_name" class="block text-xs font-semibold text-gray-700 mb-1">Nama Shipper</label>
+                            <input type="text" id="new_shipper_name" name="shipper" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_alamat_shipper" class="block text-xs font-semibold text-gray-700 mb-1">Alamat Shipper</label>
+                            <textarea id="new_alamat_shipper" name="alamat_shipper" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="new_npwp_shipper" class="block text-xs font-semibold text-gray-700 mb-1">NPWP Shipper</label>
+                            <input type="text" id="new_npwp_shipper" name="npwp_shipper" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_nitku_shipper" class="block text-xs font-semibold text-gray-700 mb-1">NITKU Shipper</label>
+                            <input type="text" id="new_nitku_shipper" name="nitku_shipper" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informasi Consignee -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Informasi Consignee</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="new_consignee_name" class="block text-xs font-semibold text-gray-700 mb-1">Nama Consignee</label>
+                            <input type="text" id="new_consignee_name" name="consignee" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_alamat_consignee" class="block text-xs font-semibold text-gray-700 mb-1">Alamat Consignee</label>
+                            <textarea id="new_alamat_consignee" name="alamat_consignee" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="new_npwp_consignee" class="block text-xs font-semibold text-gray-700 mb-1">NPWP Consignee</label>
+                            <input type="text" id="new_npwp_consignee" name="npwp_consignee" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_nitku_consignee" class="block text-xs font-semibold text-gray-700 mb-1">NITKU Consignee</label>
+                            <input type="text" id="new_nitku_consignee" name="nitku_consignee" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informasi Notify Party -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Informasi Notify Party</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="new_notify_party" class="block text-xs font-semibold text-gray-700 mb-1">Notify Party</label>
+                            <input type="text" id="new_notify_party" name="notify_party" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_alamat_notify_party" class="block text-xs font-semibold text-gray-700 mb-1">Alamat Notify Party</label>
+                            <textarea id="new_alamat_notify_party" name="alamat_notify_party" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="new_npwp_notify_party" class="block text-xs font-semibold text-gray-700 mb-1">NPWP Notify Party</label>
+                            <input type="text" id="new_npwp_notify_party" name="npwp_notify_party" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informasi Umum -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Informasi Umum</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="new_telepon" class="block text-xs font-semibold text-gray-700 mb-1">Telepon</label>
+                            <input type="text" id="new_telepon" name="telepon" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_alamat_email" class="block text-xs font-semibold text-gray-700 mb-1">Alamat Email</label>
+                            <input type="email" id="new_alamat_email" name="alamat_email" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label for="new_hs_code" class="block text-xs font-semibold text-gray-700 mb-1">HS Code</label>
+                            <input type="text" id="new_hs_code" name="hs_code" class="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-4">
-                <label for="new_consignee_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Consignee</label>
-                <input type="text" id="new_consignee_name" name="consignee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-            </div>
-            <div class="mb-4">
-                <label for="new_alamat" class="block text-sm font-medium text-gray-700 mb-2">Alamat Shipper</label>
-                <textarea id="new_alamat" name="alamat_shipper" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"></textarea>
-            </div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button type="button" id="closeAddShipperModal" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">Batal</button>
-                <button type="submit" id="saveAddShipperBtn" class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700">Simpan</button>
+            
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+                <button type="button" id="closeAddShipperModal" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">Batal</button>
+                <button type="submit" id="saveAddShipperBtn" class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">Simpan Data</button>
             </div>
         </form>
     </div>
