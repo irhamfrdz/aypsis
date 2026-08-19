@@ -62,6 +62,8 @@ class SuratJalanBongkaran extends Model
         'input_by',
         'input_date',
         'status',
+        'tanggal_checkpoint',
+        'lokasi_gps',
         'status_pembayaran',
         'status_pembayaran_uang_rit',
         'status_pembayaran_uang_rit_kenek',
@@ -86,6 +88,7 @@ class SuratJalanBongkaran extends Model
     protected $casts = [
         'tanggal_surat_jalan' => 'date',
         'tanggal_muat' => 'date',
+        'tanggal_checkpoint' => 'date',
         'input_date' => 'datetime',
         'waktu_berangkat' => 'datetime',
         'uang_jalan' => 'decimal:2',
