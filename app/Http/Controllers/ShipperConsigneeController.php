@@ -39,7 +39,15 @@ class ShipperConsigneeController extends Controller
             'consignee' => 'nullable|string|max:255',
         ]);
 
-        ShipperConsignee::create($request->all());
+        $shipperConsignee = ShipperConsignee::create($request->all());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $shipperConsignee,
+                'message' => 'Data Shipper / Consignee berhasil ditambahkan.'
+            ]);
+        }
 
         return redirect()->route('master.shipper-consignee.index')
             ->with('success', 'Data Shipper / Consignee berhasil ditambahkan.');

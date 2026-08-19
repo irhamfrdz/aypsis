@@ -227,11 +227,14 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label for="pengirim" class="text-sm font-medium text-gray-700">SHIPPER</label>
-                            <a href="#" id="edit_shipper_link"
-                               class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
-                               title="Edit" target="_blank">
-                                Edit
-                            </a>
+                            <div class="flex gap-2">
+                                <button type="button" id="add_shipper_btn" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah Data">Tambah</button>
+                                <a href="#" id="edit_shipper_link"
+                                   class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                                   title="Edit" target="_blank">
+                                    Edit
+                                </a>
+                            </div>
                         </div>
                         <div class="relative">
                             <div class="dropdown-container-shipper">
@@ -244,7 +247,7 @@
                                     @if($manifest->pengirim)
                                         <option value="{{ $manifest->pengirim }}" 
                                                 data-alamat="{{ $manifest->alamat_pengirim }}"
-                                                data-edit-url="{{ route('pengirim.index') /* Fallback URL */ }}"
+                                                data-edit-url="{{ $manifest->shipper_id ? route('master.shipper-consignee.edit', $manifest->shipper_id) : '#' }}"
                                                 selected>
                                             {{ $manifest->pengirim }}
                                         </option>
@@ -266,11 +269,14 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label for="penerima" class="text-sm font-medium text-gray-700">CONSIGNEE</label>
-                            <a href="#" id="edit_consignee_link"
-                               class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
-                               title="Edit" target="_blank">
-                                Edit
-                            </a>
+                            <div class="flex gap-2">
+                                <button type="button" id="add_consignee_btn" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah Data">Tambah</button>
+                                <a href="#" id="edit_consignee_link"
+                                   class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                                   title="Edit" target="_blank">
+                                    Edit
+                                </a>
+                            </div>
                         </div>
                         <div class="relative">
                             <div class="dropdown-container-consignee">
@@ -338,6 +344,32 @@
                         class="px-6 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200">
                     Perbarui Manifest
                 </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Tambah Shipper/Consignee -->
+<div id="addShipperModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tambah Shipper / Consignee</h3>
+        <form id="addShipperForm">
+            @csrf
+            <div class="mb-4">
+                <label for="new_shipper_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Shipper</label>
+                <input type="text" id="new_shipper_name" name="shipper" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+            </div>
+            <div class="mb-4">
+                <label for="new_consignee_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Consignee</label>
+                <input type="text" id="new_consignee_name" name="consignee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+            </div>
+            <div class="mb-4">
+                <label for="new_alamat" class="block text-sm font-medium text-gray-700 mb-2">Alamat Shipper</label>
+                <textarea id="new_alamat" name="alamat_shipper" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" id="closeAddShipperModal" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">Batal</button>
+                <button type="submit" id="saveAddShipperBtn" class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700">Simpan</button>
             </div>
         </form>
     </div>
@@ -542,6 +574,79 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial state for edit link
     updateEditLink();
     updateEditConsigneeLink();
+
+    // Modal Logic
+    const addShipperModal = document.getElementById('addShipperModal');
+    const addShipperBtn = document.getElementById('add_shipper_btn');
+    const addConsigneeBtn = document.getElementById('add_consignee_btn');
+    const closeAddShipperModal = document.getElementById('closeAddShipperModal');
+    const addShipperForm = document.getElementById('addShipperForm');
+    const saveAddShipperBtn = document.getElementById('saveAddShipperBtn');
+
+    if (addShipperBtn) {
+        addShipperBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('new_shipper_name').value = document.getElementById('search_shipper').value;
+            addShipperModal.classList.remove('hidden');
+        });
+    }
+
+    if (addConsigneeBtn) {
+        addConsigneeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('new_consignee_name').value = document.getElementById('search_consignee').value;
+            addShipperModal.classList.remove('hidden');
+        });
+    }
+
+    closeAddShipperModal.addEventListener('click', () => {
+        addShipperModal.classList.add('hidden');
+    });
+
+    addShipperForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAddShipperBtn.disabled = true;
+        saveAddShipperBtn.innerText = 'Menyimpan...';
+
+        const formData = new FormData(this);
+
+        fetch("{{ route('master.shipper-consignee.store') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            saveAddShipperBtn.disabled = false;
+            saveAddShipperBtn.innerText = 'Simpan';
+            
+            if (data.success) {
+                addShipperModal.classList.add('hidden');
+                addShipperForm.reset();
+                alert(data.message);
+                
+                // Optionally select the new shipper
+                if (data.data.shipper) {
+                    const searchShipper = document.getElementById('search_shipper');
+                    if (searchShipper) searchShipper.value = data.data.shipper;
+                }
+                if (data.data.consignee) {
+                    const searchConsignee = document.getElementById('search_consignee');
+                    if (searchConsignee) searchConsignee.value = data.data.consignee;
+                }
+            } else {
+                alert('Terjadi kesalahan saat menyimpan data.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Terjadi kesalahan jaringan.');
+            saveAddShipperBtn.disabled = false;
+            saveAddShipperBtn.innerText = 'Simpan';
+        });
+    });
 });
 </script>
 @endpush
