@@ -352,9 +352,10 @@
 <!-- Modal Tambah Shipper/Consignee -->
 <div id="addShipperModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Tambah Data Shipper / Consignee</h3>
+        <h3 id="modalShipperTitle" class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Tambah Data Shipper / Consignee</h3>
         <form id="addShipperForm">
             @csrf
+            <input type="hidden" name="_method" id="form_method" value="POST">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Informasi Shipper -->
@@ -660,25 +661,99 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal Logic
     const addShipperModal = document.getElementById('addShipperModal');
+    const modalShipperTitle = document.getElementById('modalShipperTitle');
+    const formMethod = document.getElementById('form_method');
+    let currentFormUrl = "{{ route('master.shipper-consignee.store') }}";
+
     const addShipperBtn = document.getElementById('add_shipper_btn');
     const addConsigneeBtn = document.getElementById('add_consignee_btn');
+    const editShipperLink = document.getElementById('edit_shipper_link');
+    const editConsigneeLink = document.getElementById('edit_consignee_link');
+    
     const closeAddShipperModal = document.getElementById('closeAddShipperModal');
     const addShipperForm = document.getElementById('addShipperForm');
     const saveAddShipperBtn = document.getElementById('saveAddShipperBtn');
 
+    function openModalForAdd(defaultName, type) {
+        addShipperForm.reset();
+        modalShipperTitle.innerText = 'Tambah Data Shipper / Consignee';
+        formMethod.value = 'POST';
+        currentFormUrl = "{{ route('master.shipper-consignee.store') }}";
+        if (type === 'shipper') document.getElementById('new_shipper_name').value = defaultName;
+        if (type === 'consignee') document.getElementById('new_consignee_name').value = defaultName;
+        addShipperModal.classList.remove('hidden');
+    }
+
+    function openModalForEdit(editUrl) {
+        const resourceUrl = editUrl.replace(/\/edit$/, '');
+        
+        fetch(resourceUrl, {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            addShipperForm.reset();
+            modalShipperTitle.innerText = 'Edit Data Shipper / Consignee';
+            formMethod.value = 'PUT';
+            currentFormUrl = resourceUrl;
+            
+            document.getElementById('new_shipper_name').value = data.shipper || '';
+            document.getElementById('new_alamat_shipper').value = data.alamat_shipper || '';
+            document.getElementById('new_npwp_shipper').value = data.npwp_shipper || '';
+            document.getElementById('new_nitku_shipper').value = data.nitku_shipper || '';
+            
+            document.getElementById('new_consignee_name').value = data.consignee || '';
+            document.getElementById('new_alamat_consignee').value = data.alamat_consignee || '';
+            document.getElementById('new_npwp_consignee').value = data.npwp_consignee || '';
+            document.getElementById('new_nitku_consignee').value = data.nitku_consignee || '';
+            
+            document.getElementById('new_notify_party').value = data.notify_party || '';
+            document.getElementById('new_alamat_notify_party').value = data.alamat_notify_party || '';
+            document.getElementById('new_npwp_notify_party').value = data.npwp_notify_party || '';
+            
+            document.getElementById('new_telepon').value = data.telepon || '';
+            document.getElementById('new_alamat_email').value = data.alamat_email || '';
+            document.getElementById('new_hs_code').value = data.hs_code || '';
+            document.getElementById('new_commodity').value = data.commodity || '';
+            document.getElementById('new_delivery_address').value = data.delivery_address || '';
+
+            addShipperModal.classList.remove('hidden');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal mengambil data untuk di-edit.');
+        });
+    }
+
     if (addShipperBtn) {
         addShipperBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('new_shipper_name').value = document.getElementById('search_shipper').value;
-            addShipperModal.classList.remove('hidden');
+            openModalForAdd(document.getElementById('search_shipper').value, 'shipper');
         });
     }
 
     if (addConsigneeBtn) {
         addConsigneeBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('new_consignee_name').value = document.getElementById('search_consignee').value;
-            addShipperModal.classList.remove('hidden');
+            openModalForAdd(document.getElementById('search_consignee').value, 'consignee');
+        });
+    }
+
+    if (editShipperLink) {
+        editShipperLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (editShipperLink.href && editShipperLink.href !== window.location.href && !editShipperLink.href.endsWith('#')) {
+                openModalForEdit(editShipperLink.href);
+            }
+        });
+    }
+
+    if (editConsigneeLink) {
+        editConsigneeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (editConsigneeLink.href && editConsigneeLink.href !== window.location.href && !editConsigneeLink.href.endsWith('#')) {
+                openModalForEdit(editConsigneeLink.href);
+            }
         });
     }
 
@@ -693,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const formData = new FormData(this);
 
-        fetch("{{ route('master.shipper-consignee.store') }}", {
+        fetch(currentFormUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -703,14 +778,13 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(res => res.json())
         .then(data => {
             saveAddShipperBtn.disabled = false;
-            saveAddShipperBtn.innerText = 'Simpan';
+            saveAddShipperBtn.innerText = 'Simpan Data';
             
             if (data.success) {
                 addShipperModal.classList.add('hidden');
                 addShipperForm.reset();
                 alert(data.message);
                 
-                // Optionally select the new shipper
                 if (data.data.shipper) {
                     const searchShipper = document.getElementById('search_shipper');
                     if (searchShipper) searchShipper.value = data.data.shipper;
@@ -727,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(err);
             alert('Terjadi kesalahan jaringan.');
             saveAddShipperBtn.disabled = false;
-            saveAddShipperBtn.innerText = 'Simpan';
+            saveAddShipperBtn.innerText = 'Simpan Data';
         });
     });
 });

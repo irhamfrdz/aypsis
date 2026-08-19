@@ -53,8 +53,11 @@ class ShipperConsigneeController extends Controller
             ->with('success', 'Data Shipper / Consignee berhasil ditambahkan.');
     }
 
-    public function show(ShipperConsignee $shipper_consignee)
+    public function show(Request $request, ShipperConsignee $shipper_consignee)
     {
+        if ($request->wantsJson()) {
+            return response()->json($shipper_consignee);
+        }
         return view('master.shipper-consignee.show', compact('shipper_consignee'));
     }
 
@@ -71,6 +74,14 @@ class ShipperConsigneeController extends Controller
         ]);
 
         $shipper_consignee->update($request->all());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $shipper_consignee,
+                'message' => 'Data Shipper / Consignee berhasil diperbarui.'
+            ]);
+        }
 
         return redirect()->route('master.shipper-consignee.index')
             ->with('success', 'Data Shipper / Consignee berhasil diperbarui.');
