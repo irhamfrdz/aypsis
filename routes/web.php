@@ -680,6 +680,11 @@ Route::middleware([
             ->name('karyawan.destroy')
             ->middleware('can:master-karyawan-delete');
 
+        // Saldo Cuti Routes
+        Route::post('saldo-cuti', [\App\Http\Controllers\SaldoCutiController::class, 'store'])->name('saldo-cuti.store')->middleware('can:master-karyawan-update');
+        Route::put('saldo-cuti/{saldoCuti}', [\App\Http\Controllers\SaldoCutiController::class, 'update'])->name('saldo-cuti.update')->middleware('can:master-karyawan-update');
+        Route::delete('saldo-cuti/{saldoCuti}', [\App\Http\Controllers\SaldoCutiController::class, 'destroy'])->name('saldo-cuti.destroy')->middleware('can:master-karyawan-update');
+
         // Master kontainer routes (with master prefix) - granular permissions
         Route::get('kontainer', [KontainerController::class, 'index'])
             ->name('kontainer.index')

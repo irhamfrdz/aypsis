@@ -84,6 +84,11 @@ class Karyawan extends Model
         return $this->hasMany(KaryawanFamilyMember::class);
     }
 
+    public function saldoCutis()
+    {
+        return $this->hasMany(SaldoCuti::class)->orderBy('tahun', 'desc');
+    }
+
     public function isAbk(): bool
     {
         return strtolower((string) ($this->divisi ?? '')) === 'abk' || strtolower((string) ($this->pekerjaan ?? '')) === 'abk';
