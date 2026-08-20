@@ -216,12 +216,26 @@ class Manifest extends Model
     {
         parent::boot();
 
+        static::creating(function ($manifest) {
+            if (str_ends_with(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+                $manifest->pengirim = null;
+                $manifest->alamat_pengirim = null;
+                $manifest->penerima = null;
+                $manifest->alamat_penerima = null;
+                $manifest->notify_party = null;
+                $manifest->alamat_notify_party = null;
+            }
+        });
+
         static::saving(function ($manifest) {
             if (empty($manifest->notify_party)) {
                 $related = $manifest->getRelatedNotifyParty();
                 if ($related) {
-                    $manifest->notify_party = $related['notify_party'];
-                    $manifest->alamat_notify_party = $related['alamat_notify_party'];
+                    // Check if it's not a JB voyage without shipper before auto-filling notify_party
+                    if (!(str_ends_with(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id))) {
+                        $manifest->notify_party = $related['notify_party'];
+                        $manifest->alamat_notify_party = $related['alamat_notify_party'];
+                    }
                 }
             }
         });

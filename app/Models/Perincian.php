@@ -203,12 +203,26 @@ class Perincian extends Model
     {
         parent::boot();
 
+        static::creating(function ($perincian) {
+            if (str_ends_with(strtoupper((string) $perincian->no_voyage), 'JB') && empty($perincian->shipper_id)) {
+                $perincian->pengirim = null;
+                $perincian->alamat_pengirim = null;
+                $perincian->penerima = null;
+                $perincian->alamat_penerima = null;
+                $perincian->notify_party = null;
+                $perincian->alamat_notify_party = null;
+            }
+        });
+
         static::saving(function ($perincian) {
             if (empty($perincian->notify_party)) {
                 $related = $perincian->getRelatedNotifyParty();
                 if ($related) {
-                    $perincian->notify_party = $related['notify_party'];
-                    $perincian->alamat_notify_party = $related['alamat_notify_party'];
+                    // Check if it's not a JB voyage without shipper before auto-filling notify_party
+                    if (!(str_ends_with(strtoupper((string) $perincian->no_voyage), 'JB') && empty($perincian->shipper_id))) {
+                        $perincian->notify_party = $related['notify_party'];
+                        $perincian->alamat_notify_party = $related['alamat_notify_party'];
+                    }
                 }
             }
         });
