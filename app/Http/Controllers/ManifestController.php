@@ -1187,7 +1187,7 @@ class ManifestController extends Controller
     {
         $q = $request->get('q');
 
-        $shippers = \App\Models\ShipperConsignee::select('id', 'shipper as name', 'alamat_shipper as alamat', 'consignee', 'notify_party', 'alamat_notify_party')
+        $shippers = \App\Models\ShipperConsignee::select('id', 'shipper as name', 'alamat_shipper as alamat', 'consignee', 'notify_party_consignee as notify_party', 'alamat_notify_party_consignee as alamat_notify_party')
             ->whereNotNull('shipper')
             ->where('shipper', '!=', '')
             ->where('shipper', 'LIKE', "%$q%")
@@ -1225,7 +1225,7 @@ class ManifestController extends Controller
     {
         $q = $request->get('q');
 
-        $consignees = \App\Models\ShipperConsignee::select('id', 'consignee as name', 'alamat_consignee as alamat', 'notify_party', 'alamat_notify_party')
+        $consignees = \App\Models\ShipperConsignee::select('id', 'consignee as name', 'alamat_consignee as alamat', 'notify_party_consignee as notify_party', 'alamat_notify_party_consignee as alamat_notify_party')
             ->whereNotNull('consignee')
             ->where('consignee', '!=', '')
             ->where('consignee', 'LIKE', "%$q%")
