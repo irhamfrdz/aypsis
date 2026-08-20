@@ -226,6 +226,16 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($perincians as $index => $perincian)
+                        @php
+                            if (str_ends_with(strtoupper($perincian->no_voyage), 'JB') && empty($perincian->shipper_id)) {
+                                $perincian->pengirim = null;
+                                $perincian->alamat_pengirim = null;
+                                $perincian->penerima = null;
+                                $perincian->alamat_penerima = null;
+                                $perincian->notify_party = null;
+                                $perincian->alamat_notify_party = null;
+                            }
+                        @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-3">
                                 <div class="text-[11px] text-gray-500 mb-1">#{{ ($perincians->currentPage() - 1) * $perincians->perPage() + $index + 1 }}</div>

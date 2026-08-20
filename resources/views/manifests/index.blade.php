@@ -226,6 +226,16 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($manifests as $index => $manifest)
+                        @php
+                            if (str_ends_with(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+                                $manifest->pengirim = null;
+                                $manifest->alamat_pengirim = null;
+                                $manifest->penerima = null;
+                                $manifest->alamat_penerima = null;
+                                $manifest->notify_party = null;
+                                $manifest->alamat_notify_party = null;
+                            }
+                        @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-3">
                                 <div class="text-[11px] text-gray-500 mb-1">#{{ ($manifests->currentPage() - 1) * $manifests->perPage() + $index + 1 }}</div>
