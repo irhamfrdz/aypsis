@@ -711,7 +711,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (! empty($namaBarangArray)) {
                 $uniqueNames = array_filter(array_unique(array_map('trim', $namaBarangArray)));
                 if (! empty($uniqueNames)) {
-                    $combinedNames = implode(', ', $uniqueNames);
+                    $combinedNames = \Illuminate\Support\Str::limit(implode(', ', $uniqueNames), 250, '...');
                     $tandaTerima->update([
                         'nama_barang' => $combinedNames,
                         'jenis_barang' => $combinedNames
@@ -1178,7 +1178,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 // Update scalar fallback values
                 if (! empty($namaBarangArray)) {
                     $uniqueNames = array_filter(array_unique(array_map('trim', $namaBarangArray)));
-                    $validated['nama_barang'] = !empty($uniqueNames) ? implode(', ', $uniqueNames) : ($validated['nama_barang'] ?? null);
+                    $validated['nama_barang'] = !empty($uniqueNames) ? \Illuminate\Support\Str::limit(implode(', ', $uniqueNames), 250, '...') : ($validated['nama_barang'] ?? null);
                     $validated['jenis_barang'] = $validated['nama_barang'];
                 } else {
                     unset($validated['nama_barang']); // Remove array field if not used
@@ -1287,6 +1287,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'no_seal' => $tandaTerimaTanpaSuratJalan->no_seal,
                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
+                        'nama_barang' => $tandaTerimaTanpaSuratJalan->nama_barang ?? $tandaTerimaTanpaSuratJalan->jenis_barang ?? 'Barang',
                         'updated_by' => Auth::id(),
                     ]);
 
