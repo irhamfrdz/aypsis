@@ -83,18 +83,18 @@
         </div>
 
         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Informasi Notify Party</h3>
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Informasi Notify Party (Consignee)</h3>
             <div class="mb-4">
-                <label class="block text-gray-500 text-xs font-bold mb-1">Notify Party</label>
-                <p class="text-gray-900 font-medium">{{ $shipper_consignee->notify_party ?: '-' }}</p>
+                <label class="block text-gray-500 text-xs font-bold mb-1">Notify Party (Consignee)</label>
+                <p class="text-gray-900 font-medium">{{ $shipper_consignee->notify_party_consignee ?: '-' }}</p>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-500 text-xs font-bold mb-1">Alamat Notify Party</label>
-                <p class="text-gray-900">{{ $shipper_consignee->alamat_notify_party ?: '-' }}</p>
+                <label class="block text-gray-500 text-xs font-bold mb-1">Alamat Notify Party (Consignee)</label>
+                <p class="text-gray-900">{{ $shipper_consignee->alamat_notify_party_consignee ?: '-' }}</p>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-500 text-xs font-bold mb-1">NPWP Notify Party</label>
-                <p class="text-gray-900">{{ $shipper_consignee->npwp_notify_party ?: '-' }}</p>
+                <label class="block text-gray-500 text-xs font-bold mb-1">NPWP Notify Party (Consignee)</label>
+                <p class="text-gray-900">{{ $shipper_consignee->npwp_notify_party_consignee ?: '-' }}</p>
             </div>
         </div>
     </div>

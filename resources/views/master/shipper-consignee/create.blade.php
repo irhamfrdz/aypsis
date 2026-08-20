@@ -115,16 +115,16 @@
                 <h3 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Informasi Notify Party (Consignee)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="notify_party" class="block text-xs font-semibold text-gray-700 mb-1">Notify Party (Consignee)</label>
-                        <input type="text" name="notify_party" id="notify_party" value="{{ old('notify_party') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                        <label for="notify_party_consignee" class="block text-xs font-semibold text-gray-700 mb-1">Notify Party (Consignee)</label>
+                        <input type="text" name="notify_party_consignee" id="notify_party_consignee" value="{{ old('notify_party_consignee') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
                     </div>
                     <div>
-                        <label for="npwp_notify_party" class="block text-xs font-semibold text-gray-700 mb-1">No Identitas (Notify Party Consignee)</label>
-                        <input type="text" name="npwp_notify_party" id="npwp_notify_party" value="{{ old('npwp_notify_party') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                        <label for="npwp_notify_party_consignee" class="block text-xs font-semibold text-gray-700 mb-1">No Identitas (Notify Party Consignee)</label>
+                        <input type="text" name="npwp_notify_party_consignee" id="npwp_notify_party_consignee" value="{{ old('npwp_notify_party_consignee') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
                     </div>
                     <div class="md:col-span-2">
-                        <label for="alamat_notify_party" class="block text-xs font-semibold text-gray-700 mb-1">Address (Notify Party Consignee)</label>
-                        <textarea name="alamat_notify_party" id="alamat_notify_party" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">{{ old('alamat_notify_party') }}</textarea>
+                        <label for="alamat_notify_party_consignee" class="block text-xs font-semibold text-gray-700 mb-1">Address (Notify Party Consignee)</label>
+                        <textarea name="alamat_notify_party_consignee" id="alamat_notify_party_consignee" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">{{ old('alamat_notify_party_consignee') }}</textarea>
                     </div>
                 </div>
             </div>
