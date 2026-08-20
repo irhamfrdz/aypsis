@@ -8,6 +8,7 @@ use App\Models\Manifest;
 use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ManifestController extends Controller
@@ -404,7 +405,7 @@ class ManifestController extends Controller
         }
 
         $count = 0;
-        \DB::transaction(function () use ($namaKapal, $noVoyage, &$count) {
+        DB::transaction(function () use ($namaKapal, $noVoyage, &$count) {
             $count = $this->processAutoUpdateNomorUrut($namaKapal, $noVoyage);
         });
 
@@ -440,7 +441,7 @@ class ManifestController extends Controller
             ->get();
 
         $updatedCount = 0;
-        \DB::transaction(function () use ($manifests, &$updatedCount) {
+        DB::transaction(function () use ($manifests, &$updatedCount) {
             foreach ($manifests as $manifest) {
                 $cleanNomor = str_replace([' ', '-'], '', $manifest->nomor_kontainer);
                 $foundUkuran = null;
@@ -518,7 +519,7 @@ class ManifestController extends Controller
         $totalUpdated = 0;
 
         // Menggunakan DB transaction agar proses UPDATE tidak dicommit satu-satu (mempercepat query)
-        \DB::transaction(function () use ($voyages, &$totalUpdated) {
+        DB::transaction(function () use ($voyages, &$totalUpdated) {
             foreach ($voyages as $v) {
                 $totalUpdated += $this->processAutoUpdateNomorUrut($v->nama_kapal, $v->no_voyage);
             }

@@ -356,8 +356,8 @@
                 </div>
 
                 <div>
-                    <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
-                    <select name="cabang" id="cabang" class="{{ $selectClasses }}">
+                    <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP <span class="text-red-500">*</span></label>
+                    <select name="cabang" id="cabang" class="{{ $selectClasses }}" required>
                         <option value="">-- Pilih Kantor Cabang AYP --</option>
                         @foreach($cabangs as $cabang)
                         <option value="{{ $cabang->nama_cabang }}" {{ (old('cabang', $karyawan->cabang) == $cabang->nama_cabang || strtoupper(old('cabang', $karyawan->cabang)) == strtoupper($cabang->nama_cabang)) ? 'selected' : '' }}>{{ $cabang->nama_cabang }}</option>
