@@ -217,7 +217,7 @@ class Manifest extends Model
         parent::boot();
 
         static::creating(function ($manifest) {
-            if (str_ends_with(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+            if (str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
                 $manifest->pengirim = null;
                 $manifest->alamat_pengirim = null;
                 $manifest->penerima = null;
@@ -232,7 +232,7 @@ class Manifest extends Model
                 $related = $manifest->getRelatedNotifyParty();
                 if ($related) {
                     // Check if it's not a JB voyage without shipper before auto-filling notify_party
-                    if (!(str_ends_with(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id))) {
+                    if (!(str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id))) {
                         $manifest->notify_party = $related['notify_party'];
                         $manifest->alamat_notify_party = $related['alamat_notify_party'];
                     }

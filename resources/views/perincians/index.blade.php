@@ -227,7 +227,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($perincians as $index => $perincian)
                         @php
-                            if (str_ends_with(strtoupper($perincian->no_voyage), 'JB') && empty($perincian->shipper_id)) {
+                            if (str_contains(strtoupper($perincian->no_voyage), 'JB') && empty($perincian->shipper_id)) {
                                 $perincian->pengirim = null;
                                 $perincian->alamat_pengirim = null;
                                 $perincian->penerima = null;

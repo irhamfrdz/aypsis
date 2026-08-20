@@ -206,7 +206,7 @@
 
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
+        <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -227,7 +227,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($manifests as $index => $manifest)
                         @php
-                            if (str_ends_with(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+                            if (str_contains(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
                                 $manifest->pengirim = null;
                                 $manifest->alamat_pengirim = null;
                                 $manifest->penerima = null;
