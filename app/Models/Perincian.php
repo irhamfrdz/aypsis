@@ -46,11 +46,13 @@ class Perincian extends Model
         'alamat_notify_party',
         'created_by',
         'updated_by',
+        'estimasi_tiba',
     ];
 
     protected $casts = [
         'tanggal_berangkat' => 'date',
         'penerimaan' => 'date',
+        'estimasi_tiba' => 'date',
         'tonnage' => 'decimal:3',
         'tonnage_perincian' => 'decimal:3',
         'volume' => 'decimal:3',
