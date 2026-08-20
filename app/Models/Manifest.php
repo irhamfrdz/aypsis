@@ -63,6 +63,11 @@ class Manifest extends Model
         return $this->belongsTo(Prospek::class);
     }
 
+    public function shipperConsignee()
+    {
+        return $this->belongsTo(ShipperConsignee::class, 'shipper_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -183,6 +183,78 @@
             </div>
         </div>
 
+        @if($manifest->shipperConsignee)
+        <!-- Informasi Detail Master Shipper & Consignee -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b">Detail Shipper & Consignee (Master Data)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Umum -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Telepon</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->telepon ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Alamat Email</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->alamat_email ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">HS Code</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->hs_code ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Commodity</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->commodity ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Document PPFTZ-03</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->document_ppftz_03 ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Condition</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->condition ?? '-' }}</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-500 mb-1">IP BP Kawasan</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->ip_bp_kawasan ?? '-' }}</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Delivery Address & Contact Person (Master)</label>
+                    <p class="text-base text-gray-900 whitespace-pre-line">{{ $manifest->shipperConsignee->delivery_address ?? '-' }}</p>
+                </div>
+
+                <!-- Shipper -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">No Identitas (NPWP Shipper)</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->npwp_shipper ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">NITKU Shipper</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->nitku_shipper ?? '-' }}</p>
+                </div>
+
+                <!-- Consignee -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">No Identitas (NPWP Consignee)</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->npwp_consignee ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">NPWP Consignee (16 Digit)</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->npwp_consignee_16_digit ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">NITKU Consignee</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->nitku_consignee ?? '-' }}</p>
+                </div>
+
+                <!-- Notify Party -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">No Identitas (Notify Party Consignee)</label>
+                    <p class="text-base text-gray-900">{{ $manifest->shipperConsignee->npwp_notify_party_consignee ?? '-' }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Informasi Sistem -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b">Informasi Sistem</h2>
