@@ -26,6 +26,10 @@ class ShipperConsignee extends Model
         'npwp_notify_party_consignee',
         'delivery_address',
         'nitku_consignee',
+        'document_ppftz_03',
+        'condition',
+        'ip_bp_kawasan',
+        'npwp_consignee_16_digit',
         'status',
     ];
 }

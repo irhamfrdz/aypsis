@@ -37,6 +37,18 @@
                 <p class="text-gray-900">{{ $shipper_consignee->delivery_address ?: '-' }}</p>
             </div>
             <div class="mb-4">
+                <label class="block text-gray-500 text-xs font-bold mb-1">Document PPFTZ-03</label>
+                <p class="text-gray-900">{{ $shipper_consignee->document_ppftz_03 ?: '-' }}</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-500 text-xs font-bold mb-1">Condition</label>
+                <p class="text-gray-900">{{ $shipper_consignee->condition ?: '-' }}</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-500 text-xs font-bold mb-1">IP BP Kawasan</label>
+                <p class="text-gray-900">{{ $shipper_consignee->ip_bp_kawasan ?: '-' }}</p>
+            </div>
+            <div class="mb-4">
                 <label class="block text-gray-500 text-xs font-bold mb-1">Status</label>
                 <p class="text-gray-900">{{ $shipper_consignee->status ?: '-' }}</p>
             </div>
@@ -75,6 +87,10 @@
             <div class="mb-4">
                 <label class="block text-gray-500 text-xs font-bold mb-1">NPWP Consignee</label>
                 <p class="text-gray-900">{{ $shipper_consignee->npwp_consignee ?: '-' }}</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-500 text-xs font-bold mb-1">NPWP Consignee (16 Digit)</label>
+                <p class="text-gray-900">{{ $shipper_consignee->npwp_consignee_16_digit ?: '-' }}</p>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-500 text-xs font-bold mb-1">NITKU Consignee</label>

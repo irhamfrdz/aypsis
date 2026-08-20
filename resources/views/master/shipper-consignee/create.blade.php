@@ -57,6 +57,18 @@
                         <label for="commodity" class="block text-xs font-semibold text-gray-700 mb-1">Commodity</label>
                         <input type="text" name="commodity" id="commodity" value="{{ old('commodity') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
                     </div>
+                    <div>
+                        <label for="document_ppftz_03" class="block text-xs font-semibold text-gray-700 mb-1">Document PPFTZ-03</label>
+                        <input type="text" name="document_ppftz_03" id="document_ppftz_03" value="{{ old('document_ppftz_03') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                    </div>
+                    <div>
+                        <label for="condition" class="block text-xs font-semibold text-gray-700 mb-1">Condition</label>
+                        <input type="text" name="condition" id="condition" value="{{ old('condition') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="ip_bp_kawasan" class="block text-xs font-semibold text-gray-700 mb-1">IP BP Kawasan</label>
+                        <input type="text" name="ip_bp_kawasan" id="ip_bp_kawasan" value="{{ old('ip_bp_kawasan') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                    </div>
                     <div class="md:col-span-2">
                         <label for="delivery_address" class="block text-xs font-semibold text-gray-700 mb-1">Delivery Address & Contact Person</label>
                         <textarea name="delivery_address" id="delivery_address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">{{ old('delivery_address') }}</textarea>
@@ -102,6 +114,10 @@
                     <div>
                         <label for="npwp_consignee" class="block text-xs font-semibold text-gray-700 mb-1">No Identitas (NPWP Consignee)</label>
                         <input type="text" name="npwp_consignee" id="npwp_consignee" value="{{ old('npwp_consignee') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
+                    </div>
+                    <div>
+                        <label for="npwp_consignee_16_digit" class="block text-xs font-semibold text-gray-700 mb-1">NPWP Consignee (16 Digit)</label>
+                        <input type="text" name="npwp_consignee_16_digit" id="npwp_consignee_16_digit" value="{{ old('npwp_consignee_16_digit') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs">
                     </div>
                     <div>
                         <label for="nitku_consignee" class="block text-xs font-semibold text-gray-700 mb-1">NITKU Consignee</label>

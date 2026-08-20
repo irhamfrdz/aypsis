@@ -28,6 +28,10 @@ class ShipperConsigneeTemplateExport implements FromArray, WithHeadings, ShouldA
                 '03.456.789.0-000.000',
                 'JL. DELIVERY NO. 1',
                 'NITKU-456',
+                'DOC-1234',
+                'GOOD',
+                'IP-5678',
+                '1234567890123456',
                 'Aktif'
             ]
         ];
@@ -52,6 +56,10 @@ class ShipperConsigneeTemplateExport implements FromArray, WithHeadings, ShouldA
             'NPWP Notify Party (Consignee)',
             'Delivery Address',
             'NITKU Consignee',
+            'Document PPFTZ-03',
+            'Condition',
+            'IP BP Kawasan',
+            'NPWP Consignee (16 Digit)',
             'Status'
         ];
     }

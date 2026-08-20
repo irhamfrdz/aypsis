@@ -35,6 +35,10 @@ class ShipperConsigneeImport implements ToModel, WithHeadingRow
             'npwp_notify_party_consignee' => $row['npwp_notify_party_consignee'] ?? ($row['npwp_notify_party'] ?? null),
             'delivery_address' => $row['delivery_address'] ?? null,
             'nitku_consignee' => $row['nitku_consignee'] ?? null,
+            'document_ppftz_03' => $row['document_ppftz_03'] ?? null,
+            'condition' => $row['condition'] ?? null,
+            'ip_bp_kawasan' => $row['ip_bp_kawasan'] ?? null,
+            'npwp_consignee_16_digit' => $row['npwp_consignee_16_digit'] ?? null,
             'status' => $status,
         ]);
     }
