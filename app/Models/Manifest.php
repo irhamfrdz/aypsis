@@ -25,8 +25,7 @@ class Manifest extends Model
         'nama_kapal',
         'tanggal_berangkat',
         'nama_barang',
-        'asal_kontainer',
-        'ke',
+
         'pengirim',
         'alamat_pengirim',
         'penerima',

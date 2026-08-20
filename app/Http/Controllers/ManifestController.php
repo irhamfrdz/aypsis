@@ -232,8 +232,7 @@ class ManifestController extends Controller
             'nama_kapal' => 'nullable|string|max:255',
             'tanggal_berangkat' => 'nullable|date',
             'nama_barang' => 'nullable|string',
-            'asal_kontainer' => 'nullable|string|max:255',
-            'ke' => 'nullable|string|max:255',
+
             'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
@@ -316,8 +315,7 @@ class ManifestController extends Controller
             'nama_kapal' => 'nullable|string|max:255',
             'tanggal_berangkat' => 'nullable|date',
             'nama_barang' => 'nullable|string',
-            'asal_kontainer' => 'nullable|string|max:255',
-            'ke' => 'nullable|string|max:255',
+
             'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
@@ -896,8 +894,6 @@ class ManifestController extends Controller
                             'kuantitas' => $kuantitas ?: $existing->kuantitas,
                             'pelabuhan_muat' => $pelabuhanMuat ?: $existing->pelabuhan_muat,
                             'pelabuhan_bongkar' => $pelabuhanBongkar ?: $existing->pelabuhan_bongkar,
-                            'asal_kontainer' => $asalKontainer ?: $existing->asal_kontainer,
-                            'ke' => $ke ?: $existing->ke,
                         ]);
                     } else {
                         // Create new
@@ -934,8 +930,6 @@ class ManifestController extends Controller
                             'kuantitas' => $kuantitas ?: null,
                             'pelabuhan_muat' => $pelabuhanMuat,
                             'pelabuhan_bongkar' => $pelabuhanBongkar,
-                            'asal_kontainer' => $asalKontainer,
-                            'ke' => $ke,
                             'created_by' => Auth::id(),
                         ]);
                     }

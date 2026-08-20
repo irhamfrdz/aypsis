@@ -171,14 +171,7 @@
                         <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ $manifest->alamat_notify_party }}</p>
                     @endif
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Asal Kontainer</label>
-                    <p class="text-base text-gray-900">{{ $manifest->asal_kontainer ?? '-' }}</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Ke</label>
-                    <p class="text-base text-gray-900">{{ $manifest->ke ?? '-' }}</p>
-                </div>
+
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-500 mb-1">Alamat Pengiriman</label>
                     <p class="text-base text-gray-900 whitespace-pre-line">{{ $manifest->alamat_pengiriman ?? '-' }}</p>
