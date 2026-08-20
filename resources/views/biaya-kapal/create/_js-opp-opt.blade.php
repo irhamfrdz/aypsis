@@ -272,7 +272,7 @@
             </div>
             <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
                 </select>
             </div>
@@ -298,7 +298,9 @@
         // Initialize select2 if available
         if (typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
-                width: '100%'
+                width: '100%',
+                placeholder: 'Pilih Kontainer / BL (Bisa Lebih Dari 1)',
+                allowClear: true
             });
         }
         
@@ -410,7 +412,7 @@
         inputGroups.forEach((group, newIndex) => {
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
             if (barangSelect) {
-                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id]`;
+                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id][]`;
             }
             const tarifInput = group.querySelector('.opp-opt-tarif-input-item');
             if (tarifInput) {

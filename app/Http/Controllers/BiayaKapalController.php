@@ -2050,23 +2050,27 @@ class BiayaKapalController extends Controller
 
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
-                            $manifestId = $item['manifest_id'] ?? null;
+                            $manifestIds = $item['manifest_id'] ?? [];
+                            if (!is_array($manifestIds)) {
+                                $manifestIds = [$manifestIds];
+                            }
+                            $manifestIds = array_filter($manifestIds);
+                            
                             $tarif = floatval($item['tarif'] ?? 0);
-                            $jumlah = 1; // Forced to 1 as per new spec
+                            $jumlah = count($manifestIds);
                             $vendor = $item['vendor'] ?? null;
                             $catatan = $item['catatan'] ?? null;
 
-                            if (empty($manifestId) || $tarif <= 0) {
+                            if (empty($manifestIds) || $tarif <= 0) {
                                 continue;
                             }
 
-                            $subtotal = $tarif; // tarif * 1
+                            $subtotal = $tarif * $jumlah;
 
-                            \App\Models\BiayaKapalOppOpt::create([
+                            $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
                                 'pricelist_opp_opt_id' => null, // Not used anymore
-                                'manifest_id' => $manifestId,
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
                                 'vendor' => $vendor,
@@ -2078,6 +2082,8 @@ class BiayaKapalController extends Controller
                                 'dp' => $sectionDp,
                                 'sisa_pembayaran' => $sectionSisa,
                             ]);
+                            
+                            $oppOpt->manifests()->sync($manifestIds);
 
                             $sectionHasData = true;
                         }
@@ -4047,23 +4053,27 @@ class BiayaKapalController extends Controller
 
                         if (isset($section['barang']) && is_array($section['barang'])) {
                             foreach ($section['barang'] as $item) {
-                                $manifestId = $item['manifest_id'] ?? null;
+                                $manifestIds = $item['manifest_id'] ?? [];
+                                if (!is_array($manifestIds)) {
+                                    $manifestIds = [$manifestIds];
+                                }
+                                $manifestIds = array_filter($manifestIds);
+                                
                                 $tarif = floatval($item['tarif'] ?? 0);
-                                $jumlah = 1; // Forced to 1 as per new spec
+                                $jumlah = count($manifestIds);
                                 $vendor = $item['vendor'] ?? null;
                                 $catatan = $item['catatan'] ?? null;
 
-                                if (empty($manifestId) || $tarif <= 0) {
+                                if (empty($manifestIds) || $tarif <= 0) {
                                     continue;
                                 }
 
-                                $subtotal = $tarif; // tarif * 1
+                                $subtotal = $tarif * $jumlah;
 
-                                \App\Models\BiayaKapalOppOpt::create([
+                                $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
                                     'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
                                     'pricelist_opp_opt_id' => null, // Not used anymore
-                                    'manifest_id' => $manifestId,
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,
                                     'vendor' => $vendor,
@@ -4075,6 +4085,8 @@ class BiayaKapalController extends Controller
                                     'dp' => $sectionDp,
                                     'sisa_pembayaran' => $sectionSisa,
                                 ]);
+                                
+                                $oppOpt->manifests()->sync($manifestIds);
 
                                 $sectionHasData = true;
                             }

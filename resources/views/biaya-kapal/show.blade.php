@@ -874,19 +874,20 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($details as $item)
-                                        @if($item->manifest_id)
+                                        @if(isset($item->manifests) && $item->manifests->count() > 0)
                                         @php
-                                            $manifestLabel = '';
-                                            $manifest = \App\Models\Manifest::find($item->manifest_id);
-                                            if ($manifest) {
-                                                if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
-                                                if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
-                                                if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
-                                                $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                                            $manifestLabels = [];
+                                            foreach($item->manifests as $manifest) {
+                                                $label = '';
+                                                if (!empty($manifest->nomor_kontainer)) $label .= 'Kontainer: ' . $manifest->nomor_kontainer;
+                                                if (!empty($manifest->nomor_bl)) $label .= ($label ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
+                                                if (empty($label)) $label = 'Manifest ID: ' . $manifest->id;
+                                                $label .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                                                $manifestLabels[] = $label;
                                             }
                                         @endphp
                                         <tr>
-                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $manifestLabel ?: 'Manifest ID: '.$item->manifest_id }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{!! implode('<br>', $manifestLabels) !!}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600">{{ $item->vendor ?: '-' }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600">{{ $item->catatan ?: '-' }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
@@ -894,7 +895,7 @@
                                         </tr>
                                         @endif
                                     @endforeach
-                                    @if($details->whereNotNull('manifest_id')->count() == 0)
+                                    @if(!isset($details->first()->manifests) || $details->sum(function($item) { return $item->manifests ? $item->manifests->count() : 0; }) == 0)
                                         <tr>
                                             <td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
                                         </tr>

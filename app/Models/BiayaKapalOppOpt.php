@@ -12,7 +12,6 @@ class BiayaKapalOppOpt extends Model
         'biaya_kapal_id',
         'klasifikasi_biaya_id',
         'pricelist_opp_opt_id',
-        'manifest_id',
         'kapal',
         'voyage',
         'vendor',
@@ -49,5 +48,12 @@ class BiayaKapalOppOpt extends Model
     public function pricelistOppOpt()
     {
         return $this->belongsTo(PricelistOppOpt::class, 'pricelist_opp_opt_id');
+    }
+
+    // Relationship to Manifests (Many-to-Many via Pivot)
+    public function manifests()
+    {
+        return $this->belongsToMany(Manifest::class, 'biaya_kapal_opp_opt_manifest', 'opp_opt_id', 'manifest_id')
+            ->withTimestamps();
     }
 }

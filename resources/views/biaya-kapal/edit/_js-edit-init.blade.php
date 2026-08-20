@@ -151,21 +151,26 @@
                          'sisa_pembayaran' => $firstItem->sisa_pembayaran ?? 0,
                          'barang' => $items->map(function($i){
                              // Ambil label dari relasi manifest jika ada
-                             $manifestLabel = '';
-                             if ($i->manifest_id) {
-                                 $manifest = \App\Models\Manifest::find($i->manifest_id);
-                                 if ($manifest) {
-                                     if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
-                                     if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
-                                     if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
-                                     $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                             $manifestIds = [];
+                             $manifestLabels = [];
+                             
+                             if (isset($i->manifests) && $i->manifests->count() > 0) {
+                                 foreach ($i->manifests as $manifest) {
+                                     $label = '';
+                                     if (!empty($manifest->nomor_kontainer)) $label .= 'Kontainer: ' . $manifest->nomor_kontainer;
+                                     if (!empty($manifest->nomor_bl)) $label .= ($label ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
+                                     if (empty($label)) $label = 'Manifest ID: ' . $manifest->id;
+                                     $label .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                                     
+                                     $manifestIds[] = $manifest->id;
+                                     $manifestLabels[] = $label;
                                  }
                              }
                              
                              return [
                                  'klasifikasi_biaya_id' => $i->klasifikasi_biaya_id ?? null,
-                                 'manifest_id' => $i->manifest_id,
-                                 'manifest_label' => $manifestLabel,
+                                 'manifest_id' => $manifestIds,
+                                 'manifest_label' => implode(' | ', $manifestLabels),
                                  'tarif' => (float)$i->tarif,
                                  'vendor' => $i->vendor ?? '',
                                  'catatan' => $i->catatan ?? ''

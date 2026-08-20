@@ -375,19 +375,22 @@
             manifestsData = JSON.parse(section.getAttribute('data-manifests') || '[]');
         } catch (e) {}
 
-        let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
-        let found = false;
+        let barangOptions = '';
+        const selectedIds = Array.isArray(manifestId) ? manifestId : (manifestId ? [manifestId] : []);
+        
         manifestsData.forEach(manifest => {
-            const selected = manifest.id == manifestId ? 'selected' : '';
-            if (manifest.id == manifestId) found = true;
+            const selected = selectedIds.includes(manifest.id) ? 'selected' : '';
             barangOptions += `<option value="${manifest.id}" ${selected}>${manifest.label}</option>`;
         });
         
-        // If manifestId exists but not in current options, just add it as an option
-        if (manifestId && !found) {
-            const label = manifestLabel || `Manifest ID: ${manifestId}`;
-            barangOptions += `<option value="${manifestId}" selected>${label}</option>`;
-        }
+        // For multiple, if there are IDs not in manifestsData, we should add them
+        selectedIds.forEach(id => {
+            if (!manifestsData.find(m => m.id == id)) {
+                // We don't have individual labels for missing IDs easily here in multiple mode, 
+                // but we can just use the provided manifestLabel or a fallback.
+                barangOptions += `<option value="${id}" selected>${manifestLabel || 'Manifest ID: ' + id}</option>`;
+            }
+        });
         
         let biayaOptions = '<option value="">Pilih Biaya</option>';
         @if(isset($klasifikasiBiayas))
@@ -407,7 +410,7 @@
             </div>
             <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
                 </select>
             </div>
@@ -430,10 +433,11 @@
         
         container.appendChild(inputGroup);
         
-        // Initialize select2 if available
         if (typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
-                width: '100%'
+                width: '100%',
+                placeholder: 'Pilih Kontainer / BL (Bisa Lebih Dari 1)',
+                allowClear: true
             });
         }
         
@@ -465,7 +469,7 @@
         inputGroups.forEach((group, newIndex) => {
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
             if (barangSelect) {
-                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id]`;
+                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id][]`;
             }
             const tarifInput = group.querySelector('.opp-opt-tarif-input-item');
             if (tarifInput) {

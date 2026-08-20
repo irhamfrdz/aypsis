@@ -488,31 +488,39 @@
             @elseif($biayaKapal->oppOptDetails && $biayaKapal->oppOptDetails->count() > 0)
                 {{-- Biaya OPP/OPT: Gabungkan semua barang --}}
                 @php
-                    $combinedBarang = $biayaKapal->oppOptDetails
-                        ->filter(function($item) {
-                            return $item->manifest_id !== null;
-                        })
-                        ->groupBy('manifest_id')
-                        ->map(function($items) {
-                            $first = $items->first();
-                            
-                            $manifestLabel = '';
-                            $manifest = \App\Models\Manifest::find($first->manifest_id);
-                            if ($manifest) {
+                    $rawBarang = collect();
+                    foreach ($biayaKapal->oppOptDetails as $item) {
+                        if (isset($item->manifests) && $item->manifests->count() > 0) {
+                            foreach ($item->manifests as $manifest) {
+                                $manifestLabel = '';
                                 if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
                                 if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
                                 if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
                                 $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+
+                                $rawBarang->push([
+                                    'manifest_id' => $manifest->id,
+                                    'barang' => $manifestLabel,
+                                    'vendor' => $item->vendor ?: '-',
+                                    'catatan' => $item->catatan ?: '-',
+                                    'harga_satuan' => $item->tarif ?? 0,
+                                    'subtotal' => $item->tarif ?? 0, // In multi-select, 1 manifest = 1x tarif
+                                ]);
                             }
-                            
-                            return [
-                                'barang' => $manifestLabel ?: 'Manifest ID: '.$first->manifest_id,
-                                'vendor' => $first->vendor ?: '-',
-                                'catatan' => $first->catatan ?: '-',
-                                'harga_satuan' => $first->tarif ?? 0,
-                                'subtotal' => $items->sum('subtotal'),
-                            ];
-                        })->values();
+                        }
+                    }
+
+                    $combinedBarang = $rawBarang->groupBy('manifest_id')->map(function($items) {
+                        $first = $items->first();
+                        return [
+                            'barang' => $first['barang'],
+                            'vendor' => $first['vendor'],
+                            'catatan' => $first['catatan'],
+                            'harga_satuan' => $first['harga_satuan'],
+                            'subtotal' => $items->sum('subtotal'),
+                        ];
+                    })->values();
+
                     $overallTotal = $combinedBarang->sum('subtotal');
                 @endphp
 
