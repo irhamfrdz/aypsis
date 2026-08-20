@@ -707,6 +707,20 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             Log::info('Dimensi items count after creation', ['count' => $tandaTerima->dimensiItems()->count()]);
 
+            // Update main record's nama_barang and jenis_barang with aggregated names
+            if (! empty($namaBarangArray)) {
+                $uniqueNames = array_filter(array_unique(array_map('trim', $namaBarangArray)));
+                if (! empty($uniqueNames)) {
+                    $combinedNames = implode(', ', $uniqueNames);
+                    $tandaTerima->update([
+                        'nama_barang' => $combinedNames,
+                        'jenis_barang' => $combinedNames
+                    ]);
+                    $validated['nama_barang'] = $combinedNames;
+                    $validated['jenis_barang'] = $combinedNames;
+                }
+            }
+
             // UPDATE STOCK KONTAINER LOCATION
             if ($request->filled('gudang_id') && $request->filled('no_kontainer')) {
                 $gudangId = $request->input('gudang_id');
@@ -1163,7 +1177,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
                 // Update scalar fallback values
                 if (! empty($namaBarangArray)) {
-                    $validated['nama_barang'] = $namaBarangArray[0] ?? $validated['nama_barang'] ?? null;
+                    $uniqueNames = array_filter(array_unique(array_map('trim', $namaBarangArray)));
+                    $validated['nama_barang'] = !empty($uniqueNames) ? implode(', ', $uniqueNames) : ($validated['nama_barang'] ?? null);
+                    $validated['jenis_barang'] = $validated['nama_barang'];
                 } else {
                     unset($validated['nama_barang']); // Remove array field if not used
                 }
