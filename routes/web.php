@@ -6048,6 +6048,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('manifests/{id}/print-document', [App\Http\Controllers\ManifestController::class, 'printDocument'])->name('manifests.print-document');
     Route::get('manifests/{id}/print-ba', [App\Http\Controllers\ManifestController::class, 'printBa'])->name('manifests.print-ba');
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
+
+    // Perincian
+    Route::get('perincians/select-ship', [App\Http\Controllers\PerincianController::class, 'selectShip'])->name('perincians.select-ship');
+    Route::get('perincians/export', [App\Http\Controllers\PerincianController::class, 'export'])->name('perincians.export');
+    Route::resource('perincians', App\Http\Controllers\PerincianController::class);
 });
 
 // API Routes for AJAX calls (no middleware needed for these specific routes)
@@ -6056,6 +6061,7 @@ Route::get('/api/manifests/search-consignees', [App\Http\Controllers\ManifestCon
 Route::get('/api/manifests/search-prospeks', [App\Http\Controllers\ManifestController::class, 'searchProspeks']);
 Route::get('/api/master/karyawans/search', [App\Http\Controllers\KaryawanController::class, 'searchApi'])->name('api.karyawan.search');
 Route::get('/api/manifests/voyages/{namaKapal}', [App\Http\Controllers\ManifestController::class, 'getVoyagesByShip']);
+Route::get('/api/perincians/voyages/{namaKapal}', [App\Http\Controllers\PerincianController::class, 'getVoyagesByShip']);
 Route::get('/api/kwitansi/voyages/{namaKapal}', [App\Http\Controllers\KwitansiController::class, 'getVoyagesByShip']);
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -3420,6 +3420,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Perincian --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Perincian</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[perincian][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perincian']['view']) && $userMatrixPermissions['perincian']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perincian][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perincian']['create']) && $userMatrixPermissions['perincian']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perincian][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perincian']['update']) && $userMatrixPermissions['perincian']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perincian][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perincian']['delete']) && $userMatrixPermissions['perincian']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Daftar Tagihan Kontainer Sewa --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

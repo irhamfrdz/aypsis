@@ -2751,6 +2751,15 @@ class ObController extends Controller
                 }
 
                 \App\Models\Manifest::create($manifestData);
+
+                // Also create Perincian with same data
+                $existingPerincian = \App\Models\Perincian::where('nomor_kontainer', $bl->nomor_kontainer)
+                    ->where('no_voyage', $bl->no_voyage)
+                    ->where('nama_kapal', $bl->nama_kapal)
+                    ->first();
+                if (! $existingPerincian) {
+                    \App\Models\Perincian::create($manifestData);
+                }
             }
 
             DB::commit();
@@ -3093,6 +3102,9 @@ class ObController extends Controller
                         }
 
                         \App\Models\Manifest::create($manifestData);
+
+                        // Also create Perincian with same data
+                        \App\Models\Perincian::create($manifestData);
                     }
                 }
             } else {
@@ -3199,6 +3211,16 @@ class ObController extends Controller
                     }
 
                     \App\Models\Manifest::create($manifestData);
+
+                    // Also create Perincian with same data
+                    $existingPerincian = \App\Models\Perincian::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                        ->where('no_voyage', $naikKapal->no_voyage)
+                        ->where('nama_kapal', $naikKapal->nama_kapal)
+                        ->first();
+                    if ($isCargoTL || ! $existingPerincian) {
+                        \App\Models\Perincian::create($manifestData);
+                    }
+
                     \Log::info('✅ Created manifest in processTL for '.($isCargoTL ? 'CARGO' : 'FCL'), [
                         'nomor_kontainer' => $naikKapal->nomor_kontainer,
                         'nama_barang' => $naikKapal->jenis_barang,
