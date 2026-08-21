@@ -83,7 +83,25 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
-                            {{ $log->detail_lokasi ?: '-' }}
+                            @php
+                                $lokasi = $log->detail_lokasi ?: '-';
+                                $replacements = [
+                                    'North Jakarta' => 'Jakarta Utara',
+                                    'South Jakarta' => 'Jakarta Selatan',
+                                    'East Jakarta' => 'Jakarta Timur',
+                                    'West Jakarta' => 'Jakarta Barat',
+                                    'Central Jakarta' => 'Jakarta Pusat',
+                                    'Special Capital Region of Jakarta' => 'DKI Jakarta',
+                                    'West Java' => 'Jawa Barat',
+                                    'East Java' => 'Jawa Timur',
+                                    'Central Java' => 'Jawa Tengah',
+                                    'Banten' => 'Banten',
+                                    'Regency' => 'Kabupaten',
+                                    'City' => 'Kota'
+                                ];
+                                $lokasiId = str_replace(array_keys($replacements), array_values($replacements), $lokasi);
+                            @endphp
+                            {{ $lokasiId }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
                             @if($log->mesin_id && $mesins->has($log->mesin_id))
