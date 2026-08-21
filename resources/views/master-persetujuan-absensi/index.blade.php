@@ -143,7 +143,7 @@
         `;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/pending-attendance`);
+            const response = await fetch(`${API_BASE_URL}/master/api/admin/pending-attendance`);
             if (!response.ok) throw new Error('Gagal mengambil data.');
             
             const data = await response.json();
@@ -254,7 +254,7 @@
         `;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/pending-permissions`);
+            const response = await fetch(`${API_BASE_URL}/master/api/admin/pending-permissions`);
             if (!response.ok) throw new Error('Gagal mengambil data.');
             
             const data = await response.json();
@@ -388,8 +388,11 @@
                 formData.append('admin_lampiran', fileInput.files[0]);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/attendance/approve`, {
+            const response = await fetch(`${API_BASE_URL}/master/api/attendance/approve`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
                 body: formData
             });
             const resData = await response.json();
@@ -414,8 +417,11 @@
                 formData.append('admin_lampiran', fileInput.files[0]);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/attendance/reject`, {
+            const response = await fetch(`${API_BASE_URL}/master/api/attendance/reject`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
                 body: formData
             });
             const resData = await response.json();
@@ -440,8 +446,11 @@
                 formData.append('admin_lampiran', fileInput.files[0]);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/admin/permissions/approve`, {
+            const response = await fetch(`${API_BASE_URL}/master/api/admin/permissions/approve`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
                 body: formData
             });
             const resData = await response.json();
@@ -467,8 +476,11 @@
                 formData.append('admin_lampiran', fileInput.files[0]);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/admin/permissions/reject`, {
+            const response = await fetch(`${API_BASE_URL}/master/api/admin/permissions/reject`, {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
                 body: formData
             });
             const resData = await response.json();
