@@ -122,7 +122,7 @@
     <!-- Results Card -->
     @if($isGenerated)
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-bold text-gray-900">
                     Hasil Kalkulasi: {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
@@ -131,8 +131,16 @@
             </div>
             
             @if(count($payrolls) > 0)
-            <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0">
-                <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <!-- Search Table Input -->
+                <div class="relative flex-1 md:w-56">
+                    <input type="text" id="table-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-full" placeholder="Cari Nama atau NIK...">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0 flex items-center gap-2">
                     @csrf
                     <input type="hidden" name="start_date" value="{{ $startDate->format('Y-m-d') }}">
                     <input type="hidden" name="end_date" value="{{ $endDate->format('Y-m-d') }}">
@@ -149,15 +157,16 @@
                     <input type="hidden" name="tipe_karyawan" value="{{ request('tipe_karyawan') }}">
                     @endif
                     
-                    <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                    <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
                         <i class="fas fa-file-invoice mr-1.5"></i>
                         Masukkan Pranota
                     </button>
                     <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                        Simpan Data Payout
+                        Simpan Data
                     </button>
-                </div>
+                </form>
+            </div>
             @endif
         </div>
         
@@ -427,6 +436,34 @@
                 rows.forEach(row => {
                     const nameNode = row.querySelector('td:nth-child(1) .font-bold');
                     const nikNode = row.querySelector('td:nth-child(1) .text-\\[10px\\]');
+                    
+                    if (nameNode && nikNode) {
+                        const name = nameNode.innerText.toLowerCase();
+                        const nik = nikNode.innerText.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+
+        // Table Search Logic
+        const tableSearchInput = document.getElementById('table-search-input');
+        if (tableSearchInput) {
+            tableSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('table.min-w-full > tbody > tr');
+                
+                rows.forEach(row => {
+                    // Cek jika ini baris kosong
+                    if (row.querySelector('td[colspan]')) return;
+                    
+                    const nameNode = row.querySelector('td:nth-child(3) .font-medium');
+                    const nikNode = row.querySelector('td:nth-child(3) .text-xs');
                     
                     if (nameNode && nikNode) {
                         const name = nameNode.innerText.toLowerCase();
