@@ -128,7 +128,6 @@
                                     <span class="text-gray-300">-</span>
                                     <input type="date" name="tanggal_masuk_end" value="{{ request('tanggal_masuk_end') }}" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-28 shadow-xs">
                                 </div>
-                                </div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Nama:</span>
