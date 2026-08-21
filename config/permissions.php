@@ -197,6 +197,14 @@ return [
                 'report-kerja-supir-batam-view' => 'View Report Kerja Supir Batam',
             ],
         ],
+        'report-history-cuti' => [
+            'name' => 'Report History Cuti',
+            'description' => 'Menu Report History Cuti',
+            'required' => true,
+            'sub_modules' => [
+                'report-history-cuti-view' => 'View Report History Cuti',
+            ],
+        ],
         'payroll' => [
             'name' => 'Payroll',
             'description' => 'Menu Payroll Karyawan',
@@ -305,6 +313,9 @@ return [
 
         // Report Kerja Supir Batam - butuh report-kerja-supir-batam-view
         'report-kerja-supir-batam' => ['report-kerja-supir-batam-view'],
+
+        // Report History Cuti
+        'report-history-cuti' => ['report-history-cuti-view'],
 
         // Payroll
         'payroll' => ['payroll-view'],

@@ -795,6 +795,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Report History Cuti --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-indigo-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Report History Cuti</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[report-history-cuti][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['report-history-cuti']['view']) && $userMatrixPermissions['report-history-cuti']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

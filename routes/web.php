@@ -349,6 +349,14 @@ Route::middleware([
     // Vendor Kontainer Sewa (Master Vendor - existing CRUD)
     Route::resource('vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class);
 
+    // Report History Cuti
+    Route::get('report-history-cuti', [\App\Http\Controllers\Report\HistoryCutiController::class, 'selectKaryawan'])
+        ->name('report-history-cuti.select-karyawan')
+        ->middleware('can:report-history-cuti-view');
+    Route::get('report-history-cuti/data', [\App\Http\Controllers\Report\HistoryCutiController::class, 'index'])
+        ->name('report-history-cuti.index')
+        ->middleware('can:report-history-cuti-view');
+
     /*
     |===========================================================================
     | 🏠 DASHBOARD & CORE SYSTEM ROUTES
