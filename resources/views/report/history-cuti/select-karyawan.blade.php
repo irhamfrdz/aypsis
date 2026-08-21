@@ -35,7 +35,7 @@
                     required>
                 <option value="">-- Pilih Karyawan --</option>
                 @foreach($karyawanList as $karyawan)
-                    <option value="{{ $karyawan->id }}">{{ $karyawan->nama }} {{ $karyawan->nik ? '('.$karyawan->nik.')' : '' }}</option>
+                    <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }} {{ $karyawan->nik ? '('.$karyawan->nik.')' : '' }}</option>
                 @endforeach
             </select>
         </div>

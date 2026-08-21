@@ -11,7 +11,7 @@ class HistoryCutiController extends Controller
 {
     public function selectKaryawan()
     {
-        $karyawanList = Karyawan::orderBy('nama', 'asc')->get();
+        $karyawanList = Karyawan::orderBy('nama_lengkap', 'asc')->get();
         return view('report.history-cuti.select-karyawan', compact('karyawanList'));
     }
 

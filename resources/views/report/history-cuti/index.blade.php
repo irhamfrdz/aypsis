@@ -7,7 +7,7 @@
 <div class="bg-white shadow-lg rounded-lg p-6 max-w-6xl mx-auto printable-area">
     <div class="mb-6 flex justify-between items-center no-print">
         <div>
-            <h3 class="text-xl font-bold text-gray-800">History Cuti: {{ $karyawan->nama }}</h3>
+            <h3 class="text-xl font-bold text-gray-800">History Cuti: {{ $karyawan->nama_lengkap }}</h3>
             <p class="text-sm text-gray-600">NIK: {{ $karyawan->nik ?? '-' }} | Posisi: {{ $karyawan->posisi ?? '-' }}</p>
         </div>
         <div>
@@ -18,7 +18,7 @@
     
     <div class="hidden print-header mb-6">
         <h2 class="text-2xl font-bold text-center">REPORT HISTORY CUTI</h2>
-        <p class="text-center mt-2"><strong>Nama Karyawan:</strong> {{ $karyawan->nama }} ({{ $karyawan->nik ?? '-' }})</p>
+        <p class="text-center mt-2"><strong>Nama Karyawan:</strong> {{ $karyawan->nama_lengkap }} ({{ $karyawan->nik ?? '-' }})</p>
         <p class="text-center"><strong>Posisi:</strong> {{ $karyawan->posisi ?? '-' }}</p>
         @if(request('start_date') && request('end_date'))
             <p class="text-center mt-1">Periode: {{ \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') }}</p>
