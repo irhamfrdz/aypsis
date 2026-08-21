@@ -113,7 +113,7 @@
                                     </a>
                                 </div>
                                 <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-bold uppercase hover:bg-gray-800 transition-colors"><i class="fas fa-filter mr-1"></i> Filter</button>
-                                @if(request()->anyFilled(['search', 'divisi', 'cabang', 'penempatan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'tunjangan']))
+                                @if(request()->anyFilled(['search', 'search_nama', 'search_nik', 'divisi', 'cabang', 'penempatan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'tunjangan']))
                                     <a href="{{ route('master.karyawan.index') }}" class="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase hover:bg-red-100 transition-colors" title="Reset Filter"><i class="fas fa-undo mr-1"></i> Reset</a>
                                 @endif
                             </div>
@@ -128,6 +128,15 @@
                                     <span class="text-gray-300">-</span>
                                     <input type="date" name="tanggal_masuk_end" value="{{ request('tanggal_masuk_end') }}" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-28 shadow-xs">
                                 </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Nama:</span>
+                                <input type="text" name="search_nama" value="{{ request('search_nama') }}" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" placeholder="Cari Nama...">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">NIK:</span>
+                                <input type="text" name="search_nik" value="{{ request('search_nik') }}" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" placeholder="Cari NIK...">
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-red-400 uppercase tracking-tighter">Tgl Berhenti:</span>

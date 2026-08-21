@@ -83,7 +83,7 @@ class KaryawanController extends Controller
         } elseif ($request->filled('show_berhenti')) {
             // Tampilkan hanya yang berhenti
             $query->whereNotNull('tanggal_berhenti');
-        } elseif ($request->filled('search')) {
+        } elseif ($request->filled('search') || $request->filled('search_nama') || $request->filled('search_nik')) {
             // Jika mencari tanpa tombol status diklik, cari di semua data (Aktif & Berhenti)
         } else {
             // Default: hanya tampilkan karyawan aktif
@@ -170,6 +170,19 @@ class KaryawanController extends Controller
                     ->orWhere('catatan', 'LIKE', "%{$search}%")
                     ->orWhere('catatan_pekerjaan', 'LIKE', "%{$search}%");
             });
+        }
+
+        if ($request->filled('search_nama')) {
+            $searchNama = $request->search_nama;
+            $query->where(function ($q) use ($searchNama) {
+                $q->where('nama_lengkap', 'LIKE', "%{$searchNama}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
+            });
+        }
+
+        if ($request->filled('search_nik')) {
+            $searchNik = $request->search_nik;
+            $query->where('nik', 'LIKE', "%{$searchNik}%");
         }
 
         // Handle sorting
@@ -304,6 +317,19 @@ class KaryawanController extends Controller
                     ->orWhere('no_hp', 'LIKE', "%{$search}%")
                     ->orWhere('alamat', 'LIKE', "%{$search}%");
             });
+        }
+
+        if ($request->filled('search_nama')) {
+            $searchNama = $request->search_nama;
+            $query->where(function ($q) use ($searchNama) {
+                $q->where('nama_lengkap', 'LIKE', "%{$searchNama}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
+            });
+        }
+
+        if ($request->filled('search_nik')) {
+            $searchNik = $request->search_nik;
+            $query->where('nik', 'LIKE', "%{$searchNik}%");
         }
 
         // Handle sorting
