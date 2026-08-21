@@ -343,7 +343,18 @@ class AbsensiController extends Controller
 
         $absensis = $query->orderBy('tanggal', 'desc')->get();
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis), 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.xlsx');
+        $filters = [
+            'start_date' => $startDateObj->format('d-m-Y'),
+            'end_date' => $endDateObj->format('d-m-Y'),
+            'search' => $request->input('search'),
+            'pekerjaan' => $request->input('pekerjaan'),
+            'penempatan' => $request->input('penempatan'),
+            'divisi' => $request->input('divisi'),
+            'cabang' => $request->input('cabang'),
+            'status_absen' => $request->input('status_absen'),
+        ];
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis, $filters), 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.xlsx');
     }
 
     /**
