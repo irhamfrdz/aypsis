@@ -91,4 +91,116 @@
         </div>
     </div>
 </div>
+
+@php
+    $authUser = auth()->user();
+    $karyawan = $authUser->karyawan;
+    $isAuthorizedApprover = false;
+    
+    if ($karyawan) {
+        $pekerjaan = strtoupper($karyawan->pekerjaan ?? '');
+        if (in_array($pekerjaan, ['HRD', 'IT'])) {
+            $isAuthorizedApprover = true;
+        } else {
+            // Check if they are a supervisor (have subordinates)
+            $subordinatesCount = \App\Models\Karyawan::where('nik_supervisor', $karyawan->nik)->count();
+            if ($subordinatesCount > 0) {
+                $isAuthorizedApprover = true;
+            }
+        }
+    }
+    
+    // Also allow super-admin or specific users
+    if ($authUser->hasRole('super-admin') || $authUser->username === 'kiky') {
+        $isAuthorizedApprover = true;
+    }
+@endphp
+
+@if($isAuthorizedApprover)
+    <!-- Modal Notifikasi Persetujuan Absensi -->
+    <div id="approvalNotifModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-blue-600 px-4 py-4 flex items-center justify-center relative">
+                <div class="absolute -top-6 -right-6 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
+                <div class="absolute -bottom-6 -left-6 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-2 shadow-inner">
+                        <i class="fas fa-bell text-3xl text-blue-600 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white text-center">Permintaan Persetujuan</h3>
+                </div>
+            </div>
+            
+            <div class="p-6 text-center">
+                <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    Terdapat <strong id="approvalNotifCount" class="text-blue-600 text-lg">0</strong> permohonan izin/absensi yang menunggu persetujuan Anda.
+                </p>
+                
+                <div class="flex flex-col gap-2">
+                    <a href="{{ route('master.persetujuan-absensi.index') }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors flex items-center justify-center">
+                        <i class="fas fa-external-link-alt mr-2"></i> Tinjau Sekarang
+                    </a>
+                    <button onclick="closeApprovalNotifModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                        Nanti Saja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check session storage so we don't spam the user every time they go to dashboard
+            if (sessionStorage.getItem('approval_notif_shown')) {
+                return;
+            }
+
+            try {
+                // Fetch attendance requests
+                const resAtt = await fetch('{{ url("/master/api/admin/pending-attendance") }}');
+                const dataAtt = await resAtt.json();
+                
+                // Fetch permission/leave requests
+                const resPerm = await fetch('{{ url("/master/api/admin/pending-permissions") }}');
+                const dataPerm = await resPerm.json();
+                
+                const totalPending = dataAtt.length + dataPerm.length;
+                
+                if (totalPending > 0) {
+                    const modal = document.getElementById('approvalNotifModal');
+                    document.getElementById('approvalNotifCount').innerText = totalPending;
+                    
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        modal.querySelector('.transform').classList.remove('scale-95');
+                        modal.querySelector('.transform').classList.add('scale-100');
+                    }, 50);
+                    
+                    // Mark as shown for this session
+                    sessionStorage.setItem('approval_notif_shown', 'true');
+                }
+            } catch (err) {
+                console.error('Error fetching pending approvals:', err);
+            }
+        });
+
+        function closeApprovalNotifModal() {
+            const modal = document.getElementById('approvalNotifModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.remove('scale-100');
+            modal.querySelector('.transform').classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+@endif
+
 @endsection
