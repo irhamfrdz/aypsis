@@ -650,6 +650,8 @@ Route::middleware([
         // Download DPP template
         Route::get('karyawan/dpp-template', [KaryawanController::class, 'downloadDppTemplate'])
             ->name('karyawan.dpp-template');
+        Route::get('karyawan/supervisor-template', [KaryawanController::class, 'downloadSupervisorTemplate'])
+            ->name('karyawan.supervisor-template');
 
         // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])

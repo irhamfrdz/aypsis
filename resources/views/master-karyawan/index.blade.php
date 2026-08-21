@@ -1090,10 +1090,22 @@
                             </h3>
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
                                 <p>Silakan upload file Excel (.xlsx, .csv) dengan format kolom:</p>
-                                <ul class="list-disc pl-5 font-mono bg-gray-50 p-2 rounded">
-                                    <li>nik</li>
-                                    <li>nik_supervisor</li>
-                                </ul>
+                                <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <p class="font-semibold text-blue-800 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel:</p>
+                                            <ul class="list-disc list-inside text-xs text-blue-700 ml-1">
+                                                <li><strong>nik</strong> (Wajib)</li>
+                                                <li><strong>nik_supervisor</strong> (Wajib)</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <a href="{{ route('master.karyawan.supervisor-template') }}" class="inline-flex items-center px-3 py-2 border border-blue-200 shadow-sm text-xs font-bold rounded-md text-blue-700 bg-white hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                                <i class="fas fa-download mr-1.5"></i> Download Template
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="mt-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
                                     <input type="file" name="excel_file_supervisor" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 border border-gray-300 rounded-md" required>
