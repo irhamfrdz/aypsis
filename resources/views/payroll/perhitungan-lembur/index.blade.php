@@ -569,6 +569,11 @@
                 });
                 
                 updateMainTable(totalJam, totalBiasa, totalLibur, total);
+                
+                const cb = tr.querySelector('.row-checkbox');
+                if (cb && cb.checked && typeof updateCartFromRow === 'function') {
+                    updateCartFromRow(cb);
+                }
             }
             
             function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal) {
@@ -604,38 +609,102 @@
     }
 
     // --- LOGIKA PRANOTA MODAL ---
+    let pranotaCart = JSON.parse(sessionStorage.getItem('lembur_pranota_cart')) || {};
+
+    function saveCart() {
+        sessionStorage.setItem('lembur_pranota_cart', JSON.stringify(pranotaCart));
+    }
+
+    function updateCartFromRow(cb) {
+        const tr = cb.closest('tr');
+        const karyawanId = cb.value;
+        
+        if (cb.checked) {
+            const karyawanNik = tr.querySelector('td:nth-child(3)').innerText.trim();
+            const nameTd = tr.querySelector('td:nth-child(4)');
+            const karyawanName = nameTd.childNodes[0].textContent.trim() || nameTd.innerText.split('\n')[0].trim();
+            const penempatanNode = nameTd.querySelector('div.text-xs');
+            const penempatan = penempatanNode ? penempatanNode.innerText.trim() : '-';
+            const payoutTd = tr.querySelector('.total-payout-text');
+            const totalJam = payoutTd.getAttribute('data-jam-lembur');
+            const payoutText = payoutTd.innerText;
+            const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+
+            pranotaCart[karyawanId] = {
+                id: karyawanId,
+                nik: karyawanNik,
+                name: karyawanName,
+                penempatan: penempatan,
+                totalJam: totalJam,
+                basePayoutVal: basePayoutVal
+            };
+        } else {
+            delete pranotaCart[karyawanId];
+        }
+        saveCart();
+        document.dispatchEvent(new Event('cartUpdated'));
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const checkAll = document.getElementById('check-all');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox');
         const btnPranota = document.getElementById('btn-masukkan-pranota');
 
         function togglePranotaButton() {
-            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
-            if (anyChecked) {
+            if (!btnPranota) return;
+            const cartKeys = Object.keys(pranotaCart);
+            if (cartKeys.length > 0) {
                 btnPranota.classList.remove('hidden');
+                btnPranota.innerHTML = `<i class="fas fa-file-invoice mr-1.5"></i> Masukkan Pranota (${cartKeys.length})`;
             } else {
                 btnPranota.classList.add('hidden');
             }
         }
 
+        document.addEventListener('cartUpdated', togglePranotaButton);
+
+        // Restore checkboxes state on load
+        rowCheckboxes.forEach(cb => {
+            if (pranotaCart[cb.value]) {
+                cb.checked = true;
+            }
+        });
+
+        // Update check-all state initially
+        if (checkAll && rowCheckboxes.length > 0) {
+            checkAll.checked = Array.from(rowCheckboxes).every(cb => cb.checked);
+        }
+        
+        togglePranotaButton();
+
         if (checkAll) {
             checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(cb => cb.checked = this.checked);
-                togglePranotaButton();
+                const isChecked = this.checked;
+                rowCheckboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                    updateCartFromRow(cb);
+                });
             });
         }
 
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
-                if (!this.checked) checkAll.checked = false;
-                if (Array.from(rowCheckboxes).every(c => c.checked)) checkAll.checked = true;
-                togglePranotaButton();
+                updateCartFromRow(this);
+                if (!this.checked && checkAll) checkAll.checked = false;
+                if (Array.from(rowCheckboxes).every(c => c.checked) && checkAll) checkAll.checked = true;
             });
         });
 
         if (btnPranota) {
             btnPranota.addEventListener('click', function() {
                 openPranotaModal();
+            });
+        }
+
+        const formPayout = document.getElementById('form-payout');
+        if (formPayout) {
+            formPayout.addEventListener('submit', function() {
+                sessionStorage.removeItem('lembur_pranota_cart');
             });
         }
 
@@ -668,30 +737,18 @@
     function openPranotaModal() {
         const modalList = document.getElementById('modal-item-list');
         const countSpan = document.getElementById('modal-item-count');
-        const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
         
         modalList.innerHTML = '';
         
-        rowCheckboxes.forEach(cb => {
-            const tr = cb.closest('tr');
-            const karyawanId = cb.value;
-            
-            const karyawanNik = tr.querySelector('td:nth-child(3)').innerText.trim();
-            const nameTd = tr.querySelector('td:nth-child(4)');
-            
-            // Extract Name (it's the first text node before the penempatan div)
-            const karyawanName = nameTd.childNodes[0].textContent.trim() || nameTd.innerText.split('\n')[0].trim();
-            
-            // Extract Penempatan
-            const penempatanNode = nameTd.querySelector('div.text-xs');
-            const penempatan = penempatanNode ? penempatanNode.innerText.trim() : '-';
-            
-            const payoutTd = tr.querySelector('.total-payout-text');
-            const totalJam = payoutTd.getAttribute('data-jam-lembur') + ' Jam';
-            const payoutText = payoutTd.innerText;
-            
-            // Parse Rp 325.000 to integer 325000
-            const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+        const cartItems = Object.values(pranotaCart);
+        
+        cartItems.forEach(item => {
+            const karyawanId = item.id;
+            const karyawanNik = item.nik;
+            const karyawanName = item.name;
+            const penempatan = item.penempatan;
+            const totalJam = item.totalJam + ' Jam';
+            const basePayoutVal = item.basePayoutVal;
             
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
@@ -719,7 +776,7 @@
             modalList.appendChild(trModal);
         });
         
-        countSpan.innerText = rowCheckboxes.length;
+        countSpan.innerText = cartItems.length;
         updateModalTotal();
         
         // Add event listeners to adjustment inputs
