@@ -1235,7 +1235,7 @@ class BlController extends Controller
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if ($autoFilledSize['warning'] === 'not_found_in_db') {
-                            $warnings[] = "Baris {$rowNumber}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). " . (empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.') . " ({$rowPreview})";
+                            $warnings[] = "Baris {$rowNumber}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). ".(empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.')." ({$rowPreview})";
                         } elseif (empty($autoFilledSize['size']) && stripos($nomorKontainer, 'cargo') === false && stripos($nomorKontainer, 'kargo') === false) {
                             // If size is still null and it's not a cargo, maybe it was found in DB but size was null
                             $warnings[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
@@ -1510,7 +1510,7 @@ class BlController extends Controller
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if ($autoFilledSize['warning'] === 'not_found_in_db') {
-                            $warnings[] = "Baris {$row}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). " . (empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.') . " ({$rowPreview})";
+                            $warnings[] = "Baris {$row}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). ".(empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.')." ({$rowPreview})";
                         } elseif (empty($autoFilledSize['size']) && stripos($nomorKontainer, 'cargo') === false && stripos($nomorKontainer, 'kargo') === false) {
                             $warnings[] = "Baris {$row}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
@@ -2102,7 +2102,7 @@ class BlController extends Controller
         // Skip auto-fill for auto-generated cargo containers (case-insensitive)
         if (stripos($nomorKontainer, 'cargo') !== false || stripos($nomorKontainer, 'kargo') !== false) {
             return [
-                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : null,
+                'size' => ! empty($sizeFromFile) ? trim($sizeFromFile) : null,
                 'warning' => null,
             ];
         }
@@ -2144,8 +2144,9 @@ class BlController extends Controller
 
         if ($stockKontainer) {
             \Log::info('Found in stock_kontainers: '.($stockKontainer->ukuran ?? 'NULL'));
+
             return [
-                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : $stockKontainer->ukuran,
+                'size' => ! empty($sizeFromFile) ? trim($sizeFromFile) : $stockKontainer->ukuran,
                 'warning' => null,
             ];
         }
@@ -2180,8 +2181,9 @@ class BlController extends Controller
 
         if ($kontainer) {
             \Log::info('Found in kontainers: '.($kontainer->ukuran ?? 'NULL'));
+
             return [
-                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : $kontainer->ukuran,
+                'size' => ! empty($sizeFromFile) ? trim($sizeFromFile) : $kontainer->ukuran,
                 'warning' => null,
             ];
         }
@@ -2190,7 +2192,7 @@ class BlController extends Controller
 
         // If container not found in either table, do not stop import — return the size from file if provided, otherwise null, and a warning
         return [
-            'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : null,
+            'size' => ! empty($sizeFromFile) ? trim($sizeFromFile) : null,
             'warning' => 'not_found_in_db',
         ];
     }
@@ -2537,16 +2539,17 @@ class BlController extends Controller
                 // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
                 $pengirimRaw = $item->pengirim ?? '';
                 $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
-                
+
                 $satuan = strtolower(trim($item->satuan ?? 'Package'));
-                
+
                 if ($pengirim === '') {
                     $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
-                    $groupKey = 'nama|' . $namaBarang;
+                    $groupKey = 'nama|'.$namaBarang;
                 } else {
-                    $groupKey = 'pengirim|' . $pengirim;
+                    $groupKey = 'pengirim|'.$pengirim;
                 }
-                return 'cargo|' . $groupKey . '|' . $satuan;
+
+                return 'cargo|'.$groupKey.'|colly';
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2565,7 +2568,7 @@ class BlController extends Controller
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $satuan = $group->first()->satuan ?: 'Package';
+                $satuan = 'Colly';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $distinctNames = $group->pluck('nama_barang')
@@ -2577,7 +2580,7 @@ class BlController extends Controller
                 if ($distinctNames->count() > 1) {
                     $namaBarang = $distinctNames->implode(', ');
                     if (strlen($namaBarang) > 150) {
-                        $namaBarang = substr($namaBarang, 0, 147) . '...';
+                        $namaBarang = substr($namaBarang, 0, 147).'...';
                     }
                 } else {
                     $namaBarang = $distinctNames->first() ?: 'Cargo';
@@ -2649,17 +2652,25 @@ class BlController extends Controller
         // -----------------------------------------------------------------------
         $items = $items->sortBy(function ($item) {
             $nomor = $item['nomor_bl'] ?? '';
-            if ($nomor === '' || $nomor === '-') return 999999;
-            
+            if ($nomor === '' || $nomor === '-') {
+                return 999999;
+            }
+
             preg_match('/\d+/', $nomor, $matches);
-            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+
+            return isset($matches[0]) ? (int) $matches[0] : 999998;
         })->sortBy(function ($item) {
             $namaBarang = $item['nama_barang'] ?? '';
             $isContainer = stripos($namaBarang, 'Container') !== false;
             $isForklift = stripos($namaBarang, 'forklift') !== false;
 
-            if ($isContainer) return 3;
-            if ($isForklift) return 2;
+            if ($isContainer) {
+                return 3;
+            }
+            if ($isForklift) {
+                return 2;
+            }
+
             return 1;
         })->values();
 
@@ -2740,16 +2751,17 @@ class BlController extends Controller
                 // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
                 $pengirimRaw = $item->pengirim ?? '';
                 $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
-                
+
                 $satuan = strtolower(trim($item->satuan ?? 'Package'));
-                
+
                 if ($pengirim === '') {
                     $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
-                    $groupKey = 'nama|' . $namaBarang;
+                    $groupKey = 'nama|'.$namaBarang;
                 } else {
-                    $groupKey = 'pengirim|' . $pengirim;
+                    $groupKey = 'pengirim|'.$pengirim;
                 }
-                return 'cargo|' . $groupKey . '|' . $satuan;
+
+                return 'cargo|'.$groupKey.'|colly';
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2768,7 +2780,7 @@ class BlController extends Controller
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $satuan = $group->first()->satuan ?: 'Package';
+                $satuan = 'Colly';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $distinctNames = $group->pluck('nama_barang')
@@ -2780,7 +2792,7 @@ class BlController extends Controller
                 if ($distinctNames->count() > 1) {
                     $namaBarang = $distinctNames->implode(', ');
                     if (strlen($namaBarang) > 150) {
-                        $namaBarang = substr($namaBarang, 0, 147) . '...';
+                        $namaBarang = substr($namaBarang, 0, 147).'...';
                     }
                 } else {
                     $namaBarang = $distinctNames->first() ?: 'Cargo';
@@ -2854,17 +2866,25 @@ class BlController extends Controller
         // -----------------------------------------------------------------------
         $items = $items->sortBy(function ($item) {
             $nomor = $item['nomor_bl'] ?? '';
-            if ($nomor === '' || $nomor === '-') return 999999;
-            
+            if ($nomor === '' || $nomor === '-') {
+                return 999999;
+            }
+
             preg_match('/\d+/', $nomor, $matches);
-            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+
+            return isset($matches[0]) ? (int) $matches[0] : 999998;
         })->sortBy(function ($item) {
             $namaBarang = $item['nama_barang'] ?? '';
             $isContainer = stripos($namaBarang, 'Container') !== false;
             $isForklift = stripos($namaBarang, 'forklift') !== false;
 
-            if ($isContainer) return 3;
-            if ($isForklift) return 2;
+            if ($isContainer) {
+                return 3;
+            }
+            if ($isForklift) {
+                return 2;
+            }
+
             return 1;
         })->values();
 
@@ -3141,12 +3161,14 @@ class BlController extends Controller
             // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
             $pengirimRaw = $item->pengirim ?? '';
             $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
-            
+
             if ($pengirim === '') {
                 $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
-                return 'nama|' . $namaBarang;
+
+                return 'nama|'.$namaBarang;
             }
-            return 'pengirim|' . $pengirim;
+
+            return 'pengirim|'.$pengirim;
         })->map(function ($group, $key) {
             // Sum kuantitas across all grouped rows
             $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
@@ -3161,7 +3183,7 @@ class BlController extends Controller
             if ($distinctNames->count() > 1) {
                 $namaBarang = $distinctNames->implode(', ');
                 if (strlen($namaBarang) > 150) {
-                    $namaBarang = substr($namaBarang, 0, 147) . '...';
+                    $namaBarang = substr($namaBarang, 0, 147).'...';
                 }
             } else {
                 $namaBarang = $distinctNames->first() ?? 'Cargo';
@@ -3199,26 +3221,34 @@ class BlController extends Controller
         $cargoRows = $cargoRows->sortBy(function ($row) {
             // Ambil angka dari nomor BL untuk pengurutan yang benar (agar 10 lebih besar dari 2)
             $nomor = $row['nomor_bl'] ?? '';
-            if ($nomor === '-') return 999999; // Taruh yang tidak punya BL di akhir sebelum container
-            
+            if ($nomor === '-') {
+                return 999999;
+            } // Taruh yang tidak punya BL di akhir sebelum container
+
             preg_match('/\d+/', $nomor, $matches);
-            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+
+            return isset($matches[0]) ? (int) $matches[0] : 999998;
         })->sortBy(function ($row) {
             $namaBarang = $row['nama_barang'] ?? '';
             $isForklift = stripos($namaBarang, 'forklift') !== false;
 
-            if ($isForklift) return 2;
+            if ($isForklift) {
+                return 2;
+            }
+
             return 1;
         })->values();
 
         return $cargoRows->concat($containerRows);
     }
+
     /**
      * Show the selection form for Rekap Bongkaran Kontainer.
      */
     public function rekapBongkaranKontainerSelect()
     {
         $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
+
         return view('bl.rekap_bongkaran_kontainer_select', compact('masterKapals'));
     }
 
@@ -3309,12 +3339,17 @@ class BlController extends Controller
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
                 $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
-                if (empty($size)) $size = '20';
+                if (empty($size)) {
+                    $size = '20';
+                }
                 $status = $isEmpty ? 'empty' : 'full';
+
                 return 'container|'.$size.'|'.$status;
             }
         })->map(function ($group, $key) {
-            if ($key === 'cargo') return null; // We will filter this out
+            if ($key === 'cargo') {
+                return null;
+            } // We will filter this out
 
             $parts = explode('|', $key);
             $size = $parts[1];
@@ -3413,12 +3448,17 @@ class BlController extends Controller
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
                 $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
-                if (empty($size)) $size = '20';
+                if (empty($size)) {
+                    $size = '20';
+                }
                 $status = $isEmpty ? 'empty' : 'full';
+
                 return 'container|'.$size.'|'.$status;
             }
         })->map(function ($group, $key) {
-            if ($key === 'cargo') return null; // We will filter this out
+            if ($key === 'cargo') {
+                return null;
+            } // We will filter this out
 
             $parts = explode('|', $key);
             $size = $parts[1];
@@ -3447,5 +3487,4 @@ class BlController extends Controller
 
         return view('bl.rekap_bongkaran_kontainer_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount'));
     }
-
 }
