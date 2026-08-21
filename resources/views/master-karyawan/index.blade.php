@@ -35,6 +35,7 @@
                                 <a href="{{ route('master.karyawan.import') }}" class="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Import Data"><i class="fas fa-file-import border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <a href="{{ route('master.karyawan.import-update') }}" class="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="Import Update Data"><i class="fas fa-sync-alt border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
+                                <button type="button" onclick="openImportSupervisorModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal Supervisor"><i class="fas fa-user-tie border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <div class="flex items-center ml-1 bg-gray-100/50 rounded-md px-1">
                                     <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Daftar (List)"><i class="fas fa-list-ul"></i></a>
@@ -1067,6 +1068,53 @@
     </div>
 </div>
 
+<!-- Import Supervisor Modal -->
+<div id="importSupervisorModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImportSupervisorModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-t-4 border-teal-500">
+            <form action="{{ route('master.karyawan.import-supervisor') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-user-tie text-teal-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
+                                Update Massal Supervisor
+                            </h3>
+                            <div class="mt-2 text-sm text-gray-500 space-y-2">
+                                <p>Silakan upload file Excel (.xlsx, .csv) dengan format kolom:</p>
+                                <ul class="list-disc pl-5 font-mono bg-gray-50 p-2 rounded">
+                                    <li>nik</li>
+                                    <li>nik_supervisor</li>
+                                </ul>
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                                    <input type="file" name="excel_file_supervisor" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 border border-gray-300 rounded-md" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-upload mr-2 mt-1"></i> Upload & Update
+                    </button>
+                    <button type="button" onclick="closeImportSupervisorModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 function openImportDppModal() {
@@ -1079,6 +1127,21 @@ function closeImportDppModal() {
     const modal = document.getElementById('importDppModal');
     modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
+    // Reset file input when closing
+    modal.querySelector('input[type="file"]').value = '';
+}
+
+function openImportSupervisorModal() {
+    const modal = document.getElementById('importSupervisorModal');
+    modal.classList.remove('hidden');
+}
+
+function closeImportSupervisorModal() {
+    const modal = document.getElementById('importSupervisorModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    // Reset file input when closing
+    modal.querySelector('input[type="file"]').value = '';
 }
 
 // Enhanced Delete Modal Functions

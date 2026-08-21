@@ -583,6 +583,13 @@ Route::middleware([
             ->name('karyawan.import')
             ->middleware(['auth', 'can:master-karyawan-create']);
 
+        Route::post('karyawan/import-dpp', [KaryawanController::class, 'importDpp'])
+            ->name('karyawan.import-dpp')
+            ->middleware(['auth', 'can:master-karyawan-update']);
+        Route::post('karyawan/import-supervisor', [KaryawanController::class, 'importSupervisor'])
+            ->name('karyawan.import-supervisor')
+            ->middleware(['auth', 'can:master-karyawan-update']);
+
         Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
             ->name('karyawan.import.store')
             ->middleware(['auth', 'can:master-karyawan-create']);
