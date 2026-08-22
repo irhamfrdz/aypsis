@@ -325,6 +325,7 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
                                         <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kehadiran</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal/Hari</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
@@ -584,6 +585,9 @@
             const kehadiran = tr.querySelector('td:nth-child(5)').innerText.trim();
             const payoutText = tr.querySelector('.total-payout-text').innerText;
             
+            const nominalInput = tr.querySelector('.nominal-input');
+            const nominalPerHari = nominalInput ? parseInt(nominalInput.value) || 0 : 0;
+            
             // Parse Rp 325.000 to integer 325000
             const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             
@@ -597,6 +601,10 @@
                 <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
                     ${kehadiran}
                     <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${kehadiran}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="text" value="Rp ${new Intl.NumberFormat('id-ID').format(nominalPerHari)}" class="w-24 px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-500 text-right font-medium" readonly title="Nominal Per Hari">
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_per_hari]" value="${nominalPerHari}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
                     Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}
