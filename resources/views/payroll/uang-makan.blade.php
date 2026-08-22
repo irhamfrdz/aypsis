@@ -425,10 +425,38 @@
             const currentResultsCard = document.getElementById('results-card');
             
             if (newResultsCard && currentResultsCard) {
+                // Simpan state checkbox yang sudah dicentang
+                const checkedCheckboxes = Array.from(currentResultsCard.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                
+                // Simpan text pencarian jika ada
+                const searchInput = currentResultsCard.querySelector('#table-search-input');
+                const searchValue = searchInput ? searchInput.value : '';
+
                 currentResultsCard.innerHTML = newResultsCard.innerHTML;
                 
                 // Re-initialize all table events on the new HTML
                 initTableEvents();
+                
+                // Kembalikan state checkbox yang sudah dicentang
+                if (checkedCheckboxes.length > 0) {
+                    const newCheckboxes = currentResultsCard.querySelectorAll('.row-checkbox');
+                    newCheckboxes.forEach(cb => {
+                        if (checkedCheckboxes.includes(cb.value)) {
+                            cb.checked = true;
+                            // Trigger change event to update button state & select all
+                            cb.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+
+                // Kembalikan text pencarian jika ada
+                if (searchValue) {
+                    const newSearchInput = currentResultsCard.querySelector('#table-search-input');
+                    if (newSearchInput) {
+                        newSearchInput.value = searchValue;
+                        newSearchInput.dispatchEvent(new Event('input'));
+                    }
+                }
             }
         } catch (error) {
             console.error('Error refreshing data:', error);
