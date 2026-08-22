@@ -199,7 +199,7 @@
                         @forelse($rekapData as $id => $data)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" data-uang-makan="{{ $data['karyawan']->nominal_uang_makan ?? 0 }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $loop->iteration }}
@@ -315,6 +315,7 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
                                         <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Jam</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Uang Makan/Hari</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
@@ -629,6 +630,7 @@
             const totalJam = payoutTd.getAttribute('data-jam-lembur');
             const payoutText = payoutTd.innerText;
             const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+            const uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
 
             pranotaCart[karyawanId] = {
                 id: karyawanId,
@@ -636,7 +638,8 @@
                 name: karyawanName,
                 penempatan: penempatan,
                 totalJam: totalJam,
-                basePayoutVal: basePayoutVal
+                basePayoutVal: basePayoutVal,
+                uangMakan: uangMakan
             };
         } else {
             delete pranotaCart[karyawanId];
@@ -749,6 +752,7 @@
             const penempatan = item.penempatan;
             const totalJam = item.totalJam + ' Jam';
             const basePayoutVal = item.basePayoutVal;
+            const uangMakan = item.uangMakan || 0;
             
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
@@ -760,6 +764,10 @@
                 <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
                     ${totalJam}
                     <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${totalJam}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="text" value="Rp ${new Intl.NumberFormat('id-ID').format(uangMakan)}" class="w-24 px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-500 text-right font-medium" readonly title="Uang Makan Per Hari">
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_per_hari]" value="${uangMakan}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
                     Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}
