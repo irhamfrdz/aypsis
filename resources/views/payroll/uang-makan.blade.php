@@ -121,7 +121,7 @@
 
     <!-- Results Card -->
     @if($isGenerated)
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div id="results-card" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-bold text-gray-900">
@@ -157,6 +157,10 @@
                     <input type="hidden" name="tipe_karyawan" value="{{ request('tipe_karyawan') }}">
                     @endif
                     
+                    <button type="button" id="btn-refresh-data" class="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold rounded-lg focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer border border-indigo-200">
+                        <i class="fas fa-sync-alt mr-1.5"></i>
+                        Refresh
+                    </button>
                     <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
                         <i class="fas fa-file-invoice mr-1.5"></i>
                         Masukkan Pranota
@@ -365,67 +369,8 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.nominal-input');
+        initTableEvents();
         
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const kehadiran = parseFloat(this.getAttribute('data-kehadiran')) || 0;
-                const multiplier = parseFloat(this.getAttribute('data-multiplier')) || 1;
-                const isSatpamPelabuhan = this.getAttribute('data-is-satpam-pelabuhan') === '1';
-                const nominal = parseFloat(this.value) || 0;
-                
-                const total = isSatpamPelabuhan ? (multiplier * nominal) : (kehadiran * multiplier * nominal);
-                
-                // Cari td target di row (tr) yang sama
-                const targetTd = this.closest('tr').querySelector('.total-payout-text');
-                if (targetTd) {
-                    // Format ke Rupiah
-                    targetTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
-                }
-            });
-        });
-
-        // Checkbox logic
-        const checkAll = document.getElementById('check-all');
-        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-        const btnPranota = document.getElementById('btn-masukkan-pranota');
-
-        function togglePranotaButton() {
-            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
-            if (anyChecked) {
-                btnPranota.classList.remove('hidden');
-            } else {
-                btnPranota.classList.add('hidden');
-            }
-        }
-
-        if (checkAll) {
-            checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(cb => cb.checked = this.checked);
-                togglePranotaButton();
-            });
-        }
-
-        rowCheckboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                if (!this.checked) checkAll.checked = false;
-                
-                // If all are checked, check the check-all box
-                if (Array.from(rowCheckboxes).every(c => c.checked)) {
-                    checkAll.checked = true;
-                }
-                
-                togglePranotaButton();
-            });
-        });
-
-        // Modal Logic
-        if (btnPranota) {
-            btnPranota.addEventListener('click', function() {
-                openPranotaModal();
-            });
-        }
-
         // Modal Search Logic
         const modalSearchInput = document.getElementById('modal-search-input');
         if (modalSearchInput) {
@@ -450,13 +395,121 @@
                 });
             });
         }
+    });
+
+    async function refreshTableData() {
+        const btn = document.getElementById('btn-refresh-data');
+        if (!btn) return;
+        
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.add('fa-spin');
+        
+        try {
+            // Re-fetch current URL
+            const url = window.location.href;
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const htmlText = await response.text();
+            
+            // Parse and extract the new results-card
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            
+            const newResultsCard = doc.getElementById('results-card');
+            const currentResultsCard = document.getElementById('results-card');
+            
+            if (newResultsCard && currentResultsCard) {
+                currentResultsCard.innerHTML = newResultsCard.innerHTML;
+                
+                // Re-initialize all table events on the new HTML
+                initTableEvents();
+            }
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            alert('Gagal merefresh data. Silakan coba muat ulang halaman.');
+        } finally {
+            if (icon) icon.classList.remove('fa-spin');
+        }
+    }
+
+    function initTableEvents() {
+        const resultsCard = document.getElementById('results-card');
+        if (!resultsCard) return;
+
+        const inputs = resultsCard.querySelectorAll('.nominal-input');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const kehadiran = parseFloat(this.getAttribute('data-kehadiran')) || 0;
+                const multiplier = parseFloat(this.getAttribute('data-multiplier')) || 1;
+                const isSatpamPelabuhan = this.getAttribute('data-is-satpam-pelabuhan') === '1';
+                const nominal = parseFloat(this.value) || 0;
+                
+                const total = isSatpamPelabuhan ? (multiplier * nominal) : (kehadiran * multiplier * nominal);
+                
+                // Cari td target di row (tr) yang sama
+                const targetTd = this.closest('tr').querySelector('.total-payout-text');
+                if (targetTd) {
+                    // Format ke Rupiah
+                    targetTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+                }
+            });
+        });
+
+        // Checkbox logic
+        const checkAll = resultsCard.querySelector('#check-all');
+        const rowCheckboxes = resultsCard.querySelectorAll('.row-checkbox');
+        const btnPranota = resultsCard.querySelector('#btn-masukkan-pranota');
+
+        function togglePranotaButton() {
+            if (!btnPranota) return;
+            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+            if (anyChecked) {
+                btnPranota.classList.remove('hidden');
+            } else {
+                btnPranota.classList.add('hidden');
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                togglePranotaButton();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked && checkAll) checkAll.checked = false;
+                
+                // If all are checked, check the check-all box
+                if (Array.from(rowCheckboxes).every(c => c.checked) && checkAll) {
+                    checkAll.checked = true;
+                }
+                
+                togglePranotaButton();
+            });
+        });
+
+        // Modal Logic
+        if (btnPranota) {
+            btnPranota.addEventListener('click', function() {
+                openPranotaModal();
+            });
+        }
 
         // Table Search Logic
-        const tableSearchInput = document.getElementById('table-search-input');
+        const tableSearchInput = resultsCard.querySelector('#table-search-input');
         if (tableSearchInput) {
             tableSearchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
-                const rows = document.querySelectorAll('table.min-w-full > tbody > tr');
+                const rows = resultsCard.querySelectorAll('table.min-w-full > tbody > tr');
                 
                 rows.forEach(row => {
                     // Cek jika ini baris kosong
@@ -478,7 +531,13 @@
                 });
             });
         }
-    });
+
+        // Refresh Button Binding
+        const btnRefresh = resultsCard.querySelector('#btn-refresh-data');
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', refreshTableData);
+        }
+    }
 
     function openPranotaModal() {
         const modalList = document.getElementById('modal-item-list');
