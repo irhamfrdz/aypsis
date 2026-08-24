@@ -502,16 +502,22 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     // Apply pre-calculated styles manually
                     $applyStyles = function($cells, $bgColor, $textColor = null, $bold = false) use ($sheet) {
                         if (empty($cells)) return;
-                        foreach (array_chunk($cells, 100) as $chunk) {
-                            $range = implode(',', $chunk);
-                            $style = $sheet->getStyle($range);
-                            $style->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($bgColor);
-                            if ($textColor) {
-                                $style->getFont()->getColor()->setARGB($textColor);
-                            }
-                            if ($bold) {
-                                $style->getFont()->setBold(true);
-                            }
+                        
+                        $styleArray = [
+                            'fill' => [
+                                'fillType' => Fill::FILL_SOLID,
+                                'startColor' => ['argb' => $bgColor],
+                            ],
+                        ];
+                        if ($textColor) {
+                            $styleArray['font'] = ['color' => ['argb' => $textColor]];
+                        }
+                        if ($bold) {
+                            $styleArray['font']['bold'] = true;
+                        }
+                        
+                        foreach ($cells as $cellCoord) {
+                            $sheet->getStyle($cellCoord)->applyFromArray($styleArray);
                         }
                     };
 
