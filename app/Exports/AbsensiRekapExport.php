@@ -32,6 +32,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     protected $dayHeaders;
     protected $rekapData;
     protected $periodText;
+    protected $styleRanges = [];
 
     public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null)
     {
@@ -44,6 +45,17 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->tempat = $tempat;
         $this->grup = $grup;
         $this->subGrup = $subGrup;
+        
+        $this->styleRanges = [
+            'sakit' => [],
+            'alpha' => [],
+            'cuti' => [],
+            'izin' => [],
+            'tidak_masuk' => [],
+            'tidak_pulang' => [],
+            'terlambat' => [],
+            'pulang_cepat' => [],
+        ];
 
         $this->prepareData();
     }
@@ -342,13 +354,47 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $rows[] = $header2;
         
         // Data Rows (Starting at row 6)
+        $currentRow = 6;
         foreach ($this->rekapData as $data) {
             $row = [
                  $data['karyawan']->nama_lengkap . ' (' . $data['karyawan']->nik . ')',
                  $data['karyawan']->nik
             ];
+            
+            $colIndex = 3;
             foreach ($this->dayHeaders as $date => $h) {
-                 $row[] = $data['dailyStatus'][$date];
+                 $val = $data['dailyStatus'][$date];
+                 $row[] = $val;
+                 
+                 // Store coordinates for styling
+                 $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                 $cellCoord = $colLetter . $currentRow;
+
+                 if ($val === 'S') {
+                     $this->styleRanges['sakit'][] = $cellCoord;
+                 } elseif ($val === 'A') {
+                     $this->styleRanges['alpha'][] = $cellCoord;
+                 } elseif ($val === 'C') {
+                     $this->styleRanges['cuti'][] = $cellCoord;
+                 } elseif ($val === 'I') {
+                     $this->styleRanges['izin'][] = $cellCoord;
+                 } elseif (strpos($val, ' - ') !== false) {
+                     $parts = explode(' - ', $val);
+                     $masuk = trim($parts[0]);
+                     $pulang = trim($parts[1]);
+                     
+                     $isTidakMasuk = ($masuk === '-');
+                     $isTidakPulang = ($pulang === '-');
+                     $isTerlambat = (!$isTidakMasuk && $masuk > '09:05');
+                     $isPulangCepat = (!$isTidakPulang && $pulang < '17:00');
+                     
+                     if ($isTidakMasuk) $this->styleRanges['tidak_masuk'][] = $cellCoord;
+                     if ($isTidakPulang) $this->styleRanges['tidak_pulang'][] = $cellCoord;
+                     if ($isTerlambat) $this->styleRanges['terlambat'][] = $cellCoord;
+                     if ($isPulangCepat) $this->styleRanges['pulang_cepat'][] = $cellCoord;
+                 }
+                 
+                 $colIndex++;
             }
             $row[] = $data['normalDays'];
             $row[] = $data['riilDays'];
@@ -360,6 +406,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $row[] = $data['cutiDays'] ?: '';
             $row[] = $data['absenDays'] ?: '';
             $rows[] = $row;
+            
+            $currentRow++;
         }
         
         $rows[] = [''];
@@ -447,18 +495,45 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     $weekendRule->getStyle()->getFill()
                                 ->setFillType(Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('FFD1D5DB'); // Gray
+                                
+                    // Apply weekend style base
+                    $sheet->setConditionalStyles($gridRange, [$weekendRule]);
 
-                    // 2. Absence Rule: cell value equals "A"
-                    $absenceRule = new Conditional();
-                    $absenceRule->setConditionType(Conditional::CONDITION_CELLIS);
-                    $absenceRule->setOperatorType(Conditional::OPERATOR_EQUAL);
-                    $absenceRule->addCondition('"A"');
-                    $absenceRule->getStyle()->getFill()
-                                ->setFillType(Fill::FILL_SOLID)
-                                ->getStartColor()->setARGB('FFFECACA'); // Light red
+                    // Apply pre-calculated styles manually
+                    $applyStyles = function($cells, $bgColor, $textColor = null, $bold = false) use ($sheet) {
+                        if (empty($cells)) return;
+                        foreach (array_chunk($cells, 100) as $chunk) {
+                            $range = implode(',', $chunk);
+                            $style = $sheet->getStyle($range);
+                            $style->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($bgColor);
+                            if ($textColor) {
+                                $style->getFont()->getColor()->setARGB($textColor);
+                            }
+                            if ($bold) {
+                                $style->getFont()->setBold(true);
+                            }
+                        }
+                    };
 
-                    // Apply conditional styles
-                    $sheet->setConditionalStyles($gridRange, [$weekendRule, $absenceRule]);
+                    // Alpha: Red bg, Dark red text
+                    $applyStyles($this->styleRanges['alpha'], 'FFFECACA', 'FF9C0006');
+                    
+                    // Sakit: Yellow bg, Dark yellow text
+                    $applyStyles($this->styleRanges['sakit'], 'FFFFF0B3', 'FF9C5700');
+                    
+                    // Cuti: Blue bg, Dark blue text
+                    $applyStyles($this->styleRanges['cuti'], 'FFBFDBFE', 'FF00008B');
+                    
+                    // Izin: Orange bg
+                    $applyStyles($this->styleRanges['izin'], 'FFFED7AA', 'FFB45309');
+                    
+                    // Tidak Absen Masuk & Pulang: Purple/Pink bg
+                    $applyStyles($this->styleRanges['tidak_masuk'], 'FFFBCFE8', 'FFBE185D');
+                    $applyStyles($this->styleRanges['tidak_pulang'], 'FFFBCFE8', 'FFBE185D');
+                    
+                    // Terlambat & Pulang Cepat: Peach/Amber bg
+                    $applyStyles($this->styleRanges['terlambat'], 'FFFDE68A', 'FF92400E', true);
+                    $applyStyles($this->styleRanges['pulang_cepat'], 'FFFDE68A', 'FF92400E', true);
 
                     // Remove borders and formatting for the legend rows at the bottom
                     $lastDataRow = $totalRows;
