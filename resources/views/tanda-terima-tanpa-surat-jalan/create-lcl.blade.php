@@ -759,7 +759,7 @@
                                 <p class="pl-1">atau drag and drop</p>
                             </div>
                             <p class="text-xs text-gray-500">
-                                PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                                PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file
                             </p>
                         </div>
                     </div>
@@ -2099,8 +2099,7 @@
         if (input.files && input.files.length > 0) {
             previewContainer.classList.remove('hidden');
             
-            // Limit to 5 files maximum
-            const filesToProcess = Array.from(input.files).slice(0, 5);
+            const filesToProcess = Array.from(input.files);
             processedImages = new Array(filesToProcess.length);
             let loadedCount = 0;
             
@@ -2156,9 +2155,6 @@
                 }
             }
             
-            if (input.files.length > 5) {
-                alert('Maksimal 5 gambar yang dapat diupload. Hanya 5 gambar pertama yang akan diproses.');
-            }
         }
     }
 
