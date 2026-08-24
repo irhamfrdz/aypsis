@@ -464,15 +464,15 @@
                     <div class="mt-2 pt-2 border-t {{ $isVeryIdle ? 'border-red-200' : ($isIdle ? 'border-orange-200' : 'border-gray-200') }} w-full grid grid-cols-2 gap-x-2 gap-y-2 text-left">
                         <div class="bg-white/50 rounded px-1.5 py-1">
                             <div class="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Awal</div>
-                            <div class="font-bold text-gray-800 text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_awal, 0, ',', '.') }}</div>
+                            <div class="font-bold text-gray-800 text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->saldo_awal, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->saldo_awal, 0, ',', '.') }}</div>
                         </div>
                         <div class="bg-red-50/50 rounded px-1.5 py-1">
                             <div class="text-[9px] text-red-500 font-medium uppercase tracking-wider mb-0.5">Debit</div>
-                            <div class="font-bold text-red-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->debit, 0, ',', '.') }}</div>
+                            <div class="font-bold text-red-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->debit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->debit, 0, ',', '.') }}</div>
                         </div>
                         <div class="bg-green-50/50 rounded px-1.5 py-1">
                             <div class="text-[9px] text-green-500 font-medium uppercase tracking-wider mb-0.5">Kredit</div>
-                            <div class="font-bold text-green-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->kredit, 0, ',', '.') }}</div>
+                            <div class="font-bold text-green-700 text-xs truncate" title="Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->kredit, 0, ',', '.') }}">Rp {{ number_format($data->mutasi->saldo_akhir <= 0 ? 0 : $data->mutasi->kredit, 0, ',', '.') }}</div>
                         </div>
                         <div class="bg-indigo-50/50 rounded px-1.5 py-1">
                             <div class="text-[9px] text-indigo-500 font-medium uppercase tracking-wider mb-0.5">Akhir</div>
@@ -599,7 +599,7 @@
                 {{-- Saldo Awal --}}
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
                     <span class="text-xs text-gray-500 font-medium uppercase tracking-wider block mb-1">Saldo Awal</span>
-                    <span class="text-lg font-bold text-gray-800">Rp {{ number_format($mutasiUangJalan->saldo_awal, 0, ',', '.') }}</span>
+                    <span class="text-lg font-bold text-gray-800">Rp {{ number_format($mutasiUangJalan->saldo_akhir <= 0 ? 0 : $mutasiUangJalan->saldo_awal, 0, ',', '.') }}</span>
                 </div>
                 
                 {{-- Total Debit (Uang Jalan Keluar) --}}
@@ -607,7 +607,7 @@
                     <span class="text-xs text-red-500 font-medium uppercase tracking-wider block mb-1">
                         <i class="fas fa-arrow-up mr-1"></i> Debit (UJ Keluar)
                     </span>
-                    <span class="text-lg font-bold text-red-700">Rp {{ number_format($mutasiUangJalan->total_debit, 0, ',', '.') }}</span>
+                    <span class="text-lg font-bold text-red-700">Rp {{ number_format($mutasiUangJalan->saldo_akhir <= 0 ? 0 : $mutasiUangJalan->total_debit, 0, ',', '.') }}</span>
                 </div>
                 
                 {{-- Total Kredit (Sudah Tanda Terima) --}}
@@ -615,7 +615,7 @@
                     <span class="text-xs text-green-500 font-medium uppercase tracking-wider block mb-1">
                         <i class="fas fa-arrow-down mr-1"></i> Kredit (Selesai TT)
                     </span>
-                    <span class="text-lg font-bold text-green-700">Rp {{ number_format($mutasiUangJalan->total_kredit, 0, ',', '.') }}</span>
+                    <span class="text-lg font-bold text-green-700">Rp {{ number_format($mutasiUangJalan->saldo_akhir <= 0 ? 0 : $mutasiUangJalan->total_kredit, 0, ',', '.') }}</span>
                 </div>
                 
                 {{-- Saldo Akhir --}}
