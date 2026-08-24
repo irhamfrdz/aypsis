@@ -121,8 +121,8 @@
 
     <!-- Results Card -->
     @if($isGenerated)
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+    <div id="results-card" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h3 class="text-sm font-bold text-gray-900">
                     Hasil Kalkulasi: {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
@@ -131,8 +131,16 @@
             </div>
             
             @if(count($payrolls) > 0)
-            <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0">
-                <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <!-- Search Table Input -->
+                <div class="relative flex-1 md:w-56">
+                    <input type="text" id="table-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-full" placeholder="Cari Nama atau NIK...">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0 flex items-center gap-2">
                     @csrf
                     <input type="hidden" name="start_date" value="{{ $startDate->format('Y-m-d') }}">
                     <input type="hidden" name="end_date" value="{{ $endDate->format('Y-m-d') }}">
@@ -149,15 +157,20 @@
                     <input type="hidden" name="tipe_karyawan" value="{{ request('tipe_karyawan') }}">
                     @endif
                     
-                    <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                    <button type="button" id="btn-refresh-data" class="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold rounded-lg focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer border border-indigo-200">
+                        <i class="fas fa-sync-alt mr-1.5"></i>
+                        Refresh
+                    </button>
+                    <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
                         <i class="fas fa-file-invoice mr-1.5"></i>
                         Masukkan Pranota
                     </button>
                     <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                        Simpan Data Payout
+                        Simpan Data
                     </button>
-                </div>
+                </form>
+            </div>
             @endif
         </div>
         
@@ -312,6 +325,7 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
                                         <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kehadiran</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal/Hari</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
@@ -356,67 +370,8 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.nominal-input');
+        initTableEvents();
         
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const kehadiran = parseFloat(this.getAttribute('data-kehadiran')) || 0;
-                const multiplier = parseFloat(this.getAttribute('data-multiplier')) || 1;
-                const isSatpamPelabuhan = this.getAttribute('data-is-satpam-pelabuhan') === '1';
-                const nominal = parseFloat(this.value) || 0;
-                
-                const total = isSatpamPelabuhan ? (multiplier * nominal) : (kehadiran * multiplier * nominal);
-                
-                // Cari td target di row (tr) yang sama
-                const targetTd = this.closest('tr').querySelector('.total-payout-text');
-                if (targetTd) {
-                    // Format ke Rupiah
-                    targetTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
-                }
-            });
-        });
-
-        // Checkbox logic
-        const checkAll = document.getElementById('check-all');
-        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-        const btnPranota = document.getElementById('btn-masukkan-pranota');
-
-        function togglePranotaButton() {
-            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
-            if (anyChecked) {
-                btnPranota.classList.remove('hidden');
-            } else {
-                btnPranota.classList.add('hidden');
-            }
-        }
-
-        if (checkAll) {
-            checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(cb => cb.checked = this.checked);
-                togglePranotaButton();
-            });
-        }
-
-        rowCheckboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                if (!this.checked) checkAll.checked = false;
-                
-                // If all are checked, check the check-all box
-                if (Array.from(rowCheckboxes).every(c => c.checked)) {
-                    checkAll.checked = true;
-                }
-                
-                togglePranotaButton();
-            });
-        });
-
-        // Modal Logic
-        if (btnPranota) {
-            btnPranota.addEventListener('click', function() {
-                openPranotaModal();
-            });
-        }
-
         // Modal Search Logic
         const modalSearchInput = document.getElementById('modal-search-input');
         if (modalSearchInput) {
@@ -443,6 +398,176 @@
         }
     });
 
+    async function refreshTableData() {
+        const btn = document.getElementById('btn-refresh-data');
+        if (!btn) return;
+        
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.add('fa-spin');
+        
+        try {
+            // Re-fetch current URL
+            const url = window.location.href;
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const htmlText = await response.text();
+            
+            // Parse and extract the new results-card
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            
+            const newResultsCard = doc.getElementById('results-card');
+            const currentResultsCard = document.getElementById('results-card');
+            
+            if (newResultsCard && currentResultsCard) {
+                // Simpan state checkbox yang sudah dicentang
+                const checkedCheckboxes = Array.from(currentResultsCard.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                
+                // Simpan text pencarian jika ada
+                const searchInput = currentResultsCard.querySelector('#table-search-input');
+                const searchValue = searchInput ? searchInput.value : '';
+
+                currentResultsCard.innerHTML = newResultsCard.innerHTML;
+                
+                // Re-initialize all table events on the new HTML
+                initTableEvents();
+                
+                // Kembalikan state checkbox yang sudah dicentang
+                if (checkedCheckboxes.length > 0) {
+                    const newCheckboxes = currentResultsCard.querySelectorAll('.row-checkbox');
+                    newCheckboxes.forEach(cb => {
+                        if (checkedCheckboxes.includes(cb.value)) {
+                            cb.checked = true;
+                            // Trigger change event to update button state & select all
+                            cb.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+
+                // Kembalikan text pencarian jika ada
+                if (searchValue) {
+                    const newSearchInput = currentResultsCard.querySelector('#table-search-input');
+                    if (newSearchInput) {
+                        newSearchInput.value = searchValue;
+                        newSearchInput.dispatchEvent(new Event('input'));
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            alert('Gagal merefresh data. Silakan coba muat ulang halaman.');
+        } finally {
+            if (icon) icon.classList.remove('fa-spin');
+        }
+    }
+
+    function initTableEvents() {
+        const resultsCard = document.getElementById('results-card');
+        if (!resultsCard) return;
+
+        const inputs = resultsCard.querySelectorAll('.nominal-input');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const kehadiran = parseFloat(this.getAttribute('data-kehadiran')) || 0;
+                const multiplier = parseFloat(this.getAttribute('data-multiplier')) || 1;
+                const isSatpamPelabuhan = this.getAttribute('data-is-satpam-pelabuhan') === '1';
+                const nominal = parseFloat(this.value) || 0;
+                
+                const total = isSatpamPelabuhan ? (multiplier * nominal) : (kehadiran * multiplier * nominal);
+                
+                // Cari td target di row (tr) yang sama
+                const targetTd = this.closest('tr').querySelector('.total-payout-text');
+                if (targetTd) {
+                    // Format ke Rupiah
+                    targetTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+                }
+            });
+        });
+
+        // Checkbox logic
+        const checkAll = resultsCard.querySelector('#check-all');
+        const rowCheckboxes = resultsCard.querySelectorAll('.row-checkbox');
+        const btnPranota = resultsCard.querySelector('#btn-masukkan-pranota');
+
+        function togglePranotaButton() {
+            if (!btnPranota) return;
+            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+            if (anyChecked) {
+                btnPranota.classList.remove('hidden');
+            } else {
+                btnPranota.classList.add('hidden');
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                togglePranotaButton();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked && checkAll) checkAll.checked = false;
+                
+                // If all are checked, check the check-all box
+                if (Array.from(rowCheckboxes).every(c => c.checked) && checkAll) {
+                    checkAll.checked = true;
+                }
+                
+                togglePranotaButton();
+            });
+        });
+
+        // Modal Logic
+        if (btnPranota) {
+            btnPranota.addEventListener('click', function() {
+                openPranotaModal();
+            });
+        }
+
+        // Table Search Logic
+        const tableSearchInput = resultsCard.querySelector('#table-search-input');
+        if (tableSearchInput) {
+            tableSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = resultsCard.querySelectorAll('table.min-w-full > tbody > tr');
+                
+                rows.forEach(row => {
+                    // Cek jika ini baris kosong
+                    if (row.querySelector('td[colspan]')) return;
+                    
+                    const nameNode = row.querySelector('td:nth-child(3) .font-medium');
+                    const nikNode = row.querySelector('td:nth-child(3) .text-xs');
+                    
+                    if (nameNode && nikNode) {
+                        const name = nameNode.innerText.toLowerCase();
+                        const nik = nikNode.innerText.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+
+        // Refresh Button Binding
+        const btnRefresh = resultsCard.querySelector('#btn-refresh-data');
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', refreshTableData);
+        }
+    }
+
     function openPranotaModal() {
         const modalList = document.getElementById('modal-item-list');
         const countSpan = document.getElementById('modal-item-count');
@@ -460,6 +585,9 @@
             const kehadiran = tr.querySelector('td:nth-child(5)').innerText.trim();
             const payoutText = tr.querySelector('.total-payout-text').innerText;
             
+            const nominalInput = tr.querySelector('.nominal-input');
+            const nominalPerHari = nominalInput ? parseInt(nominalInput.value) || 0 : 0;
+            
             // Parse Rp 325.000 to integer 325000
             const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             
@@ -473,6 +601,10 @@
                 <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
                     ${kehadiran}
                     <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${kehadiran}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="text" value="Rp ${new Intl.NumberFormat('id-ID').format(nominalPerHari)}" class="w-24 px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-500 text-right font-medium" readonly title="Nominal Per Hari">
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_per_hari]" value="${nominalPerHari}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
                     Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}

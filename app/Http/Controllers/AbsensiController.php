@@ -343,7 +343,18 @@ class AbsensiController extends Controller
 
         $absensis = $query->orderBy('tanggal', 'desc')->get();
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis), 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.xlsx');
+        $filters = [
+            'start_date' => $startDateObj->format('d-m-Y'),
+            'end_date' => $endDateObj->format('d-m-Y'),
+            'search' => $request->input('search'),
+            'pekerjaan' => $request->input('pekerjaan'),
+            'penempatan' => $request->input('penempatan'),
+            'divisi' => $request->input('divisi'),
+            'cabang' => $request->input('cabang'),
+            'status_absen' => $request->input('status_absen'),
+        ];
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis, $filters), 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.xlsx');
     }
 
     /**
@@ -444,7 +455,7 @@ class AbsensiController extends Controller
 
             $tipeLower = strtolower($tipe);
             
-            $existingLog = Absensi::where('nik', $nik)
+            $existingLogQuery = Absensi::where('nik', $nik)
                 ->where(function($q) use ($tipeLower) {
                     if ($tipeLower === 'masuk') $q->whereRaw('LOWER(tipe) = ?', ['masuk']);
                     elseif (in_array($tipeLower, ['pulang', 'keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['pulang', 'keluar']);
@@ -454,8 +465,13 @@ class AbsensiController extends Controller
                     elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur']);
                     else $q->whereRaw('LOWER(tipe) = ?', [$tipeLower]);
                 })
-                ->whereBetween('waktu', [$startDateObj, $endDateObj])
-                ->first();
+                ->whereBetween('waktu', [$startDateObj, $endDateObj]);
+
+            if (in_array($tipeLower, ['pulang', 'keluar', 'istirahat_masuk', 'istirahat masuk', 'lembur_pulang', 'lembur pulang', 'selesai lembur'])) {
+                $existingLog = $existingLogQuery->orderBy('waktu', 'desc')->first();
+            } else {
+                $existingLog = $existingLogQuery->orderBy('waktu', 'asc')->first();
+            }
 
             // Update data jika sudah ada, atau hapus jika kosong
             if ($existingLog) {
@@ -464,11 +480,32 @@ class AbsensiController extends Controller
                     if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
                         $waktu->addDay(); 
                     }
-                    $existingLog->update([
-                        'waktu' => $waktu,
-                        'status' => 'Manual',
-                        'keterangan' => 'Diperbarui dari edit manual',
-                    ]);
+                    
+                    try {
+                        $existingLog->update([
+                            'waktu' => $waktu,
+                            'status' => 'Manual',
+                            'keterangan' => 'Diperbarui dari edit manual',
+                        ]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        if ($e->errorInfo[1] == 1062) {
+                            $conflictLog = Absensi::where('nik', $nik)
+                                ->where('tipe', $existingLog->tipe)
+                                ->where('waktu', $waktu)
+                                ->where('id', '!=', $existingLog->id)
+                                ->first();
+                                
+                            if ($conflictLog) {
+                                $conflictLog->update([
+                                    'status' => 'Manual',
+                                    'keterangan' => 'Diperbarui dari edit manual',
+                                ]);
+                                $existingLog->delete();
+                            }
+                        } else {
+                            throw $e;
+                        }
+                    }
                 } else {
                     // Jika di-kosongkan dari form, hapus data jam tersebut
                     $existingLog->delete();
@@ -483,14 +520,28 @@ class AbsensiController extends Controller
                     $waktu->addDay(); 
                 }
 
-                Absensi::create([
-                    'karyawan_id' => $karyawan_id,
-                    'nik' => $nik,
-                    'waktu' => $waktu,
-                    'tipe' => $tipe,
-                    'status' => 'Manual',
-                    'keterangan' => 'Ditambahkan dari edit manual',
-                ]);
+                try {
+                    Absensi::create([
+                        'karyawan_id' => $karyawan_id,
+                        'nik' => $nik,
+                        'waktu' => $waktu,
+                        'tipe' => $tipe,
+                        'status' => 'Manual',
+                        'keterangan' => 'Ditambahkan dari edit manual',
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->errorInfo[1] == 1062) {
+                        Absensi::where('nik', $nik)
+                            ->where('tipe', $tipe)
+                            ->where('waktu', $waktu)
+                            ->update([
+                                'status' => 'Manual',
+                                'keterangan' => 'Diperbarui dari edit manual',
+                            ]);
+                    } else {
+                        throw $e;
+                    }
+                }
             }
         }
 
