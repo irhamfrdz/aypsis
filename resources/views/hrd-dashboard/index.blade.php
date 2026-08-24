@@ -34,7 +34,7 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <!-- Total Karyawan Aktif -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -54,6 +54,17 @@
             <div>
                 <p class="text-sm font-medium text-gray-500">Belum Absen Masuk</p>
                 <p class="text-3xl font-bold text-red-600">{{ number_format($karyawanBelumAbsen->count()) }}</p>
+            </div>
+        </div>
+
+        <!-- Belum Absen Pulang -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-running text-2xl text-yellow-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Belum Absen Pulang</p>
+                <p class="text-3xl font-bold text-yellow-600">{{ number_format($karyawanBelumAbsenPulang->count()) }}</p>
             </div>
         </div>
 
@@ -81,7 +92,7 @@
     </div>
 
     <!-- Details Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Tabel Belum Absen -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
@@ -115,6 +126,44 @@
                 <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
                     <i class="fas fa-check-circle text-4xl text-green-300 mb-2"></i>
                     <p>Semua karyawan telah melakukan absensi.</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Tabel Belum Absen Pulang -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+            <div class="bg-yellow-50 border-b border-yellow-100 px-4 py-3 flex justify-between items-center">
+                <h3 class="font-semibold text-yellow-800 flex items-center">
+                    <i class="fas fa-running mr-2 text-yellow-600"></i> Belum Absen Pulang
+                </h3>
+                <span class="bg-yellow-200 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanBelumAbsenPulang->count() }} Orang</span>
+            </div>
+            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+                @if($karyawanBelumAbsenPulang->count() > 0)
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">NIK</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Nama</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($karyawanBelumAbsenPulang as $k)
+                        <tr class="hover:bg-yellow-50/50">
+                            <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
+                            <td class="px-4 py-2">
+                                <div class="font-medium text-gray-800">{{ $k->nama_lengkap }}</div>
+                                <div class="text-xs text-gray-500">{{ $k->divisi ?: '-' }}</div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+                    <i class="fas fa-check-circle text-4xl text-green-300 mb-2"></i>
+                    <p>Semua karyawan (yang absen masuk) telah absen pulang.</p>
                 </div>
                 @endif
             </div>

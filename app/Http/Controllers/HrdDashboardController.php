@@ -26,7 +26,7 @@ class HrdDashboardController extends Controller
         // 2. Karyawan Absen Masuk Hari Ini
         $absensiMasuk = Absensi::with('karyawan')
             ->whereDate('waktu', $filterDate)
-            ->where('tipe', 'IN')
+            ->where('tipe', 'Masuk')
             ->get();
 
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
@@ -56,13 +56,28 @@ class HrdDashboardController extends Controller
             ->where('status', 'approved')
             ->get();
 
+        // 6. Karyawan Belum Absen Pulang
+        // Yaitu karyawan yang SUDAH absen masuk hari ini, tapi BELUM absen pulang hari ini
+        $absensiPulang = Absensi::whereDate('waktu', $filterDate)
+            ->where('tipe', 'Pulang')
+            ->pluck('karyawan_id')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $karyawanBelumAbsenPulang = Karyawan::whereIn('id', $karyawanIdsAbsen)
+            ->whereNotIn('id', $absensiPulang)
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+
         return view('hrd-dashboard.index', compact(
             'filterDate',
             'jamBatas',
             'totalKaryawanAktif',
             'karyawanBelumAbsen',
             'karyawanTerlambat',
-            'karyawanCuti'
+            'karyawanCuti',
+            'karyawanBelumAbsenPulang'
         ));
     }
 }
