@@ -28,6 +28,16 @@ class DashboardController extends Controller
             return redirect()->route('supir.dashboard');
         }
 
+        // Check if user is HRD - redirect to hrd dashboard
+        if ($user->karyawan) {
+            $divisi = strtoupper(trim($user->karyawan->divisi ?? ''));
+            $pekerjaan = strtoupper(trim($user->karyawan->pekerjaan ?? ''));
+            
+            if (in_array('HRD', [$divisi, $pekerjaan])) {
+                return redirect()->route('hrd.dashboard');
+            }
+        }
+
         // Check if user has any meaningful permissions (exclude basic auth permissions)
         $meaningfulPermissions = $user->permissions
             ->whereNotIn('name', ['login', 'logout']) // Exclude basic auth permissions

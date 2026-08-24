@@ -374,6 +374,10 @@ Route::middleware([
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+    // Dashboard khusus divisi HRD
+    Route::get('/hrd-dashboard', [\App\Http\Controllers\HrdDashboardController::class, 'index'])
+        ->name('hrd.dashboard');
+
     // Dashboard asuransi asset
     Route::get('/dashboard/asset-insurance', [AssetDashboardController::class, 'index'])
         ->middleware(['auth'])
