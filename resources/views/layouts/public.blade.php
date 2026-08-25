@@ -99,9 +99,9 @@
                             <a href="{{ route('public.layanan.fcl') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">FCL</a>
                             <a href="{{ route('public.layanan.lcl') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">LCL</a>
                             <a href="{{ route('public.layanan.door-to-door') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Door-to-Door</a>
-                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Project Cargo</a>
-                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Inland Transportation</a>
-                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Customs & FTZ</a>
+                            <a href="{{ route('public.layanan.project-cargo') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Project Cargo</a>
+                            <a href="{{ route('public.layanan.inland-transportation') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Inland Transportation</a>
+                            <a href="{{ route('public.layanan.customs-ftz') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Customs & FTZ</a>
                         </div>
                     </div>
                     <a href="{{ route('home') }}#rute" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
@@ -156,9 +156,9 @@
                         <a href="{{ route('public.layanan.fcl') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">FCL</a>
                         <a href="{{ route('public.layanan.lcl') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">LCL</a>
                         <a href="{{ route('public.layanan.door-to-door') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Door-to-Door</a>
-                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Project Cargo</a>
-                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Inland Transportation</a>
-                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Customs & FTZ</a>
+                        <a href="{{ route('public.layanan.project-cargo') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Project Cargo</a>
+                        <a href="{{ route('public.layanan.inland-transportation') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Inland Transportation</a>
+                        <a href="{{ route('public.layanan.customs-ftz') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Customs & FTZ</a>
                     </div>
                 </div>
                 <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
@@ -224,7 +224,7 @@
                         <li><a href="#" class="hover:text-blue-400 transition-colors">Door-to-Door</a></li>
                         <li><a href="#" class="hover:text-blue-400 transition-colors">Project Cargo</a></li>
                         <li><a href="#" class="hover:text-blue-400 transition-colors">Inland Transportation</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition-colors">Customs & FTZ</a></li>
+                        <li><a href="{{ route('public.layanan.customs-ftz') }}" class="hover:text-blue-400 transition-colors">Customs & FTZ</a></li>
                     </ul>
                 </div>
                 

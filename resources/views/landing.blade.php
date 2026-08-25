@@ -91,47 +91,104 @@
                 <p class="text-slate-600 text-lg" data-lang-en="End-to-end logistics solutions designed to support your business efficiency across the archipelago." data-lang-zh="旨在支持您在整个群岛的业务效率的端到端物流解决方案。">Solusi logistik end-to-end yang dirancang untuk mendukung efisiensi bisnis Anda di seluruh nusantara.</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Service 1 -->
-                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100">
-                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-ship text-3xl text-blue-600"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1: Sea Freight -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-ship text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
                     </div>
-                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Shipping" data-lang-zh="海运">Shipping</h4>
-                    <p class="text-slate-600 leading-relaxed mb-6" data-lang-en="Inter-island sea container shipping services with a reliable fleet and timely departure schedules." data-lang-zh="拥有可靠船队和准时出发时间表的岛际海运集装箱服务。">
-                        Layanan pengiriman peti kemas via laut antar pulau dengan armada kapal yang handal dan jadwal keberangkatan yang tepat waktu.
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Sea Freight" data-lang-zh="海运">Sea Freight</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Reliable inter-island sea cargo shipping services with comprehensive routes across the archipelago." data-lang-zh="可靠的岛际海运货物运输服务，航线遍布群岛。">
+                        Layanan pengiriman kargo via laut antar pulau dengan rute komprehensif untuk mendukung distribusi efisien di seluruh Nusantara.
                     </p>
-                    <a href="#" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
-                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right"></i>
+                    <a href="{{ route('public.layanan.sea-freight') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 </div>
-                
-                <!-- Service 2 -->
-                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-truck-fast text-3xl text-blue-600"></i>
+
+                <!-- Service 2: FCL -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-box text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
                     </div>
-                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Logistics & Trucking" data-lang-zh="物流与卡车运输">Logistics & Trucking</h4>
-                    <p class="text-slate-600 leading-relaxed mb-6" data-lang-en="Door-to-door delivery services supported by a well-maintained truck fleet to ensure your cargo arrives safely at its final destination." data-lang-zh="由维护良好的卡车车队支持的门到门送货服务，确保您的货物安全抵达最终目的地。">
-                        Layanan pengiriman door-to-door yang didukung oleh armada truk terawat untuk memastikan kargo Anda aman sampai tujuan akhir.
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="FCL (Full Container)" data-lang-zh="整箱货 (FCL)">FCL (Full Container)</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Full container shipping solutions for high-volume cargo with maximum security and privacy." data-lang-zh="针对大宗货物的整箱运输解决方案，提供最大程度的安全性和隐私。">
+                        Solusi sewa kontainer penuh (20ft & 40ft) untuk kargo bervolume besar dengan tingkat keamanan dan privasi yang maksimal.
                     </p>
-                    <a href="#" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
-                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right"></i>
+                    <a href="{{ route('public.layanan.fcl') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 </div>
-                
-                <!-- Service 3 -->
-                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100">
-                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-warehouse text-3xl text-blue-600"></i>
+
+                <!-- Service 3: LCL -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-boxes-stacked text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
                     </div>
-                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Depot & Storage" data-lang-zh="堆场与仓储">Depot & Storage</h4>
-                    <p class="text-slate-600 leading-relaxed mb-6" data-lang-en="Safe, spacious container stacking and storage facilities equipped with a computerized management system." data-lang-zh="配备计算机化管理系统的安全、宽敞的集装箱堆放和存储设施。">
-                        Fasilitas penumpukan dan penyimpanan peti kemas yang aman, luas, dan dilengkapi dengan sistem manajemen yang terkomputerisasi.
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="LCL (Less Container)" data-lang-zh="拼箱货 (LCL)">LCL (Less Container)</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Cost-effective shipping option for smaller cargo where you only pay for the space you use." data-lang-zh="针对小件货物的经济高效的运输选择，您只需为您使用的空间付费。">
+                        Opsi pengiriman ekonomis untuk kargo skala kecil (konsolidasi), di mana Anda hanya perlu membayar ruang peti kemas yang digunakan.
                     </p>
-                    <a href="#" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
-                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right"></i>
+                    <a href="{{ route('public.layanan.lcl') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Service 4: Door-to-Door -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-house-chimney text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Door-to-Door" data-lang-zh="门到门">Door-to-Door</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Integrated logistics from pickup point to final destination without the hassle of multi-modal documents." data-lang-zh="从接货点到最终目的地的综合物流，免去了多式联运单证的麻烦。">
+                        Layanan terpadu dari titik penjemputan awal hingga lokasi tujuan akhir tanpa perlu repot mengurus administrasi antar moda.
+                    </p>
+                    <a href="{{ route('public.layanan.door-to-door') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Service 5: Project Cargo -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-truck-ramp-box text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Project Cargo" data-lang-zh="项目货物">Project Cargo</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Specialized logistics handling for heavy machinery, oversized cargo, and construction materials." data-lang-zh="针对重型机械、超大货物和建筑材料的专业物流处理。">
+                        Penanganan logistik khusus untuk alat berat, kargo *oversized*, dan material konstruksi dengan perencanaan rute presisi.
+                    </p>
+                    <a href="{{ route('public.layanan.project-cargo') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Service 6: Inland Transportation -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-truck-fast text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Inland Transport" data-lang-zh="内陆运输">Inland Transport</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Modern truck fleet ready to distribute your cargo via land routes with extensive area coverage." data-lang-zh="现代化的卡车车队随时准备通过陆路运输您的货物，覆盖范围广泛。">
+                        Armada truk angkutan darat modern (trailer & box) yang siap mendistribusikan kargo Anda dengan cakupan wilayah operasional yang luas.
+                    </p>
+                    <a href="{{ route('public.layanan.inland-transportation') }}" class="text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Service 7: Customs & FTZ -->
+                <div class="service-card bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-amber-200 transition-all group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="w-14 h-14 bg-amber-100 group-hover:bg-amber-500 rounded-xl flex items-center justify-center mb-6 transition-colors">
+                        <i class="fa-solid fa-stamp text-2xl text-amber-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3" data-lang-en="Customs & FTZ" data-lang-zh="海关与自由贸易区">Customs & FTZ</h4>
+                    <p class="text-slate-600 leading-relaxed mb-6 text-sm" data-lang-en="Official customs clearance services and utilization of Batam Free Trade Zone facilities." data-lang-zh="官方清关服务和利用巴淡岛自由贸易区设施。">
+                        Layanan PPJK resmi untuk kepengurusan dokumen pabean yang cepat dan terintegrasi sistem EDI, serta pemanfaatan fasilitas Batam FTZ.
+                    </p>
+                    <a href="{{ route('public.layanan.customs-ftz') }}" class="text-amber-600 font-semibold flex items-center gap-2 hover:text-amber-800 transition-colors text-sm" data-lang-en='Learn More <i class="fa-solid fa-arrow-right"></i>' data-lang-zh='了解更多 <i class="fa-solid fa-arrow-right"></i>'>
+                        Pelajari Lebih Lanjut <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 </div>
             </div>

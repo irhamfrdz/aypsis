@@ -171,6 +171,18 @@ Route::get('/layanan/door-to-door', function () {
     return view('layanan.door-to-door');
 })->name('public.layanan.door-to-door');
 
+Route::get('/layanan/project-cargo', function () {
+    return view('layanan.project-cargo');
+})->name('public.layanan.project-cargo');
+
+Route::get('/layanan/inland-transportation', function () {
+    return view('layanan.inland-transportation');
+})->name('public.layanan.inland-transportation');
+
+Route::get('/layanan/customs-ftz', function () {
+    return view('layanan.customs-ftz');
+})->name('public.layanan.customs-ftz');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
