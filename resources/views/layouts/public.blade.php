@@ -86,7 +86,21 @@
                 </div>
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="{{ route('home') }}#beranda" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Home" data-lang-zh="首页">Beranda</a>
-                    <a href="{{ route('home') }}#layanan" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Services" data-lang-zh="服务">Layanan</a>
+                    <!-- Layanan Dropdown -->
+                    <div class="relative group">
+                        <a href="{{ route('home') }}#layanan" class="flex items-center gap-1 nav-link font-medium hover:text-blue-400 transition-colors focus:outline-none">
+                            <span data-lang-en="Services" data-lang-zh="服务">Layanan</span> <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+                        </a>
+                        <div class="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 py-2 border border-slate-100 z-50 text-slate-800">
+                            <a href="{{ route('public.layanan.sea-freight') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Sea Freight</a>
+                            <a href="{{ route('public.layanan.fcl') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">FCL</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">LCL</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Door-to-Door</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Project Cargo</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Inland Transportation</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Customs & FTZ</a>
+                        </div>
+                    </div>
                     <a href="{{ route('home') }}#rute" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
                     <a href="{{ route('public.pelabuhan') }}" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
                     <a href="{{ route('home') }}#mitra" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
@@ -126,7 +140,24 @@
         <div id="mobile-menu" class="hidden bg-white text-slate-800 absolute w-full shadow-xl mt-4 pb-4">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
                 <a href="{{ route('home') }}#beranda" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Home" data-lang-zh="首页">Beranda</a>
-                <a href="{{ route('home') }}#layanan" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Services" data-lang-zh="服务">Layanan</a>
+                <!-- Layanan Mobile Menu -->
+                <div>
+                    <div class="flex items-center justify-between w-full pr-4 hover:bg-slate-50">
+                        <a href="{{ route('home') }}#layanan" class="block flex-grow px-3 py-2 text-base font-medium hover:text-blue-600" data-lang-en="Services" data-lang-zh="服务">Layanan</a>
+                        <button onclick="document.getElementById('mobile-layanan-submenu').classList.toggle('hidden')" class="p-2 text-slate-500 hover:text-blue-600 focus:outline-none">
+                            <i class="fa-solid fa-chevron-down text-sm"></i>
+                        </button>
+                    </div>
+                    <div id="mobile-layanan-submenu" class="hidden pl-6 pr-3 py-2 space-y-1 bg-slate-50/50">
+                        <a href="{{ route('public.layanan.sea-freight') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Sea Freight</a>
+                        <a href="{{ route('public.layanan.fcl') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">FCL</a>
+                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">LCL</a>
+                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Door-to-Door</a>
+                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Project Cargo</a>
+                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Inland Transportation</a>
+                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Customs & FTZ</a>
+                    </div>
+                </div>
                 <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
                 <a href="{{ route('public.pelabuhan') }}" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
                 <a href="{{ route('home') }}#mitra" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
@@ -186,10 +217,11 @@
                 <div>
                     <h4 class="text-white font-bold text-lg mb-6">Layanan</h4>
                     <ul class="space-y-3">
-                        <li><a href="#" class="hover:text-blue-400 transition-colors">Domestic Shipping</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition-colors">Logistics Solutions</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition-colors">Container Storage</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition-colors">Trucking & Transport</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Sea Freight (FCL & LCL)</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Door-to-Door</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Project Cargo</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Inland Transportation</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Customs & FTZ</a></li>
                     </ul>
                 </div>
                 

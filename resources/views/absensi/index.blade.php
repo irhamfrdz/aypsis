@@ -153,17 +153,10 @@
                         </select>
                     </div>
 
-                    <!-- Dari Tanggal -->
+                    <!-- Tanggal -->
                     <div>
-                        <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
+                        <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
                         <input type="date" name="start_date" id="start_date" value="{{ $startDate }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                    </div>
-
-                    <!-- Hingga Tanggal -->
-                    <div>
-                        <label for="end_date" class="block text-xs font-semibold text-gray-700 mb-1">Hingga Tanggal</label>
-                        <input type="date" name="end_date" id="end_date" value="{{ $endDate }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                     </div>
                 </div>
@@ -172,7 +165,7 @@
                     <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
                         Filter Data
                     </button>
-                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'status_absen', 'start_date', 'end_date']))
+                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'status_absen', 'start_date']))
                         <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
                             Reset
                         </a>

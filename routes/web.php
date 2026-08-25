@@ -153,6 +153,16 @@ Route::get('/pelabuhan-tujuan', function () {
     return view('pelabuhan-tujuan', compact('pelabuhans'));
 })->name('public.pelabuhan');
 
+// Public Layanan - Sea Freight
+Route::get('/layanan/sea-freight', function () {
+    return view('layanan.sea-freight');
+})->name('public.layanan.sea-freight');
+
+// Public Layanan - FCL
+Route::get('/layanan/fcl', function () {
+    return view('layanan.fcl');
+})->name('public.layanan.fcl');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
