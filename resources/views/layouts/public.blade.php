@@ -15,6 +15,9 @@
     
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
         body {
@@ -94,8 +97,8 @@
                         <div class="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 py-2 border border-slate-100 z-50 text-slate-800">
                             <a href="{{ route('public.layanan.sea-freight') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Sea Freight</a>
                             <a href="{{ route('public.layanan.fcl') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">FCL</a>
-                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">LCL</a>
-                            <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Door-to-Door</a>
+                            <a href="{{ route('public.layanan.lcl') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">LCL</a>
+                            <a href="{{ route('public.layanan.door-to-door') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Door-to-Door</a>
                             <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Project Cargo</a>
                             <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Inland Transportation</a>
                             <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Customs & FTZ</a>
@@ -151,8 +154,8 @@
                     <div id="mobile-layanan-submenu" class="hidden pl-6 pr-3 py-2 space-y-1 bg-slate-50/50">
                         <a href="{{ route('public.layanan.sea-freight') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Sea Freight</a>
                         <a href="{{ route('public.layanan.fcl') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">FCL</a>
-                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">LCL</a>
-                        <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Door-to-Door</a>
+                        <a href="{{ route('public.layanan.lcl') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">LCL</a>
+                        <a href="{{ route('public.layanan.door-to-door') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Door-to-Door</a>
                         <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Project Cargo</a>
                         <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Inland Transportation</a>
                         <a href="#" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Customs & FTZ</a>
@@ -371,6 +374,19 @@
             updateLanguageUI();
         }
         document.addEventListener('DOMContentLoaded', updateLanguageUI);
+    </script>
+    
+    <!-- AOS Animation Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 50,
+                easing: 'ease-out-cubic'
+            });
+        });
     </script>
     
     @yield('scripts')

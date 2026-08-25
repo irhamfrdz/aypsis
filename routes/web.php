@@ -163,6 +163,14 @@ Route::get('/layanan/fcl', function () {
     return view('layanan.fcl');
 })->name('public.layanan.fcl');
 
+Route::get('/layanan/lcl', function () {
+    return view('layanan.lcl');
+})->name('public.layanan.lcl');
+
+Route::get('/layanan/door-to-door', function () {
+    return view('layanan.door-to-door');
+})->name('public.layanan.door-to-door');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
