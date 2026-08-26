@@ -814,15 +814,15 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Total Cuti <span class="text-red-500">*</span></label>
-                            <input type="number" name="total_cuti" value="12" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" name="total_cuti" value="12" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Sisa Cuti <span class="text-red-500">*</span></label>
-                            <input type="number" name="sisa_cuti" value="0" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" name="sisa_cuti" value="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Cuti Terpakai <span class="text-red-500">*</span></label>
-                            <input type="number" name="cuti_terpakai" value="0" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" name="cuti_terpakai" value="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Keterangan (Opsional)</label>
@@ -858,15 +858,15 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Total Cuti <span class="text-red-500">*</span></label>
-                            <input type="number" id="edit_total_cuti" name="total_cuti" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" id="edit_total_cuti" name="total_cuti" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Sisa Cuti <span class="text-red-500">*</span></label>
-                            <input type="number" id="edit_sisa_cuti" name="sisa_cuti" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" id="edit_sisa_cuti" name="sisa_cuti" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Cuti Terpakai <span class="text-red-500">*</span></label>
-                            <input type="number" id="edit_cuti_terpakai" name="cuti_terpakai" min="0" oninput="if(this.value < 0) this.value = 0;" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
+                            <input type="number" id="edit_cuti_terpakai" name="cuti_terpakai" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Keterangan (Opsional)</label>
