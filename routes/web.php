@@ -733,8 +733,8 @@ Route::middleware([
                 }
                 
                 // Jika permohonan sebelumnya belum APPROVED dan jenisnya adalah tahunan
-                $jenis = $table === 'cutis' ? $permission->jenis_cuti : $permission->jenis_izin;
-                if (strtoupper($permission->status) !== 'APPROVED' && strtolower($jenis) === 'tahunan') {
+                $jenis = $table === 'cutis' ? $permission->jenis_cuti : ($table === 'persetujuan_absensi_lupas' ? $permission->tipe_absen : $permission->jenis_izin);
+                if (strtoupper($permission->status) !== 'APPROVED' && strtolower((string)$jenis) === 'tahunan') {
                     $karyawan_id = $permission->karyawan_id;
                     $tahun = date('Y', strtotime($permission->tanggal_mulai));
                     
