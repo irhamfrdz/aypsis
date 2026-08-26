@@ -447,6 +447,10 @@ Route::middleware([
             return view('master-persetujuan-absensi.index');
         })->name('persetujuan-absensi.index')->middleware('can:approval-absensi-view');
 
+        Route::get('persetujuan-absensi/riwayat', function () {
+            return view('master-persetujuan-absensi.riwayat');
+        })->name('persetujuan-absensi.riwayat')->middleware('can:approval-absensi-view');
+
         // Persetujuan Absensi Lupa
         Route::group(['prefix' => 'persetujuan-absensi-lupa', 'as' => 'persetujuan-absensi-lupa.'], function () {
             Route::get('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'index'])->name('index')->middleware('can:approval-absensi-lupa-view');
@@ -662,6 +666,115 @@ Route::middleware([
                     ->union($cutis)
                     ->union($lupas)
                     ->orderBy('created_at', 'desc')
+                    ->get();
+                    
+                foreach ($rows as $row) {
+                    if (strtolower($row->jenis_izin) === 'tahunan') {
+                        $tahun = date('Y', strtotime($row->tanggal_mulai));
+                        $saldo = DB::table('saldo_cutis')
+                            ->where('karyawan_id', $row->karyawan_id)
+                            ->where('tahun', $tahun)
+                            ->first();
+                        
+                        $row->sisa_cuti = $saldo ? $saldo->sisa_cuti : 12;
+                    }
+                }
+                    
+                return response()->json($rows);
+            });
+
+            Route::get('/admin/history-permissions', function() {
+                $user = auth()->user();
+                $karyawanUser = $user->karyawan;
+                
+                $canApproveAll = false;
+                $userNik = null;
+                if ($karyawanUser) {
+                    $userNik = $karyawanUser->nik;
+                    $pekerjaan = strtoupper($karyawanUser->pekerjaan ?? '');
+                    if (in_array($pekerjaan, ['HRD', 'IT'])) {
+                        $canApproveAll = true;
+                    }
+                }
+                if ($user->hasRole('super-admin') || $user->username === 'kiky') {
+                    $canApproveAll = true;
+                }
+
+                $cutis = DB::table('cutis')
+                    ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
+                    ->whereNotIn('cutis.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
+                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                        $query->where('karyawans.nik_supervisor', $userNik);
+                    })
+                    ->select(
+                        'cutis.id',
+                        'cutis.karyawan_id',
+                        'karyawans.nik',
+                        'karyawans.nama_lengkap as nama',
+                        'karyawans.divisi',
+                        'cutis.jenis_cuti as jenis_izin',
+                        'cutis.tanggal_mulai',
+                        'cutis.tanggal_selesai',
+                        DB::raw("NULL as waktu"),
+                        'cutis.keterangan as alasan',
+                        DB::raw("NULL as lampiran"),
+                        'cutis.status',
+                        'cutis.created_at',
+                        'cutis.updated_at',
+                        DB::raw("'cutis' as tabel_sumber")
+                    );
+
+                $lupas = DB::table('persetujuan_absensi_lupas')
+                    ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
+                    ->whereNotIn('persetujuan_absensi_lupas.status', ['pending'])
+                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                        $query->where('karyawans.nik_supervisor', $userNik);
+                    })
+                    ->select(
+                        'persetujuan_absensi_lupas.id',
+                        'persetujuan_absensi_lupas.karyawan_id',
+                        'karyawans.nik',
+                        'karyawans.nama_lengkap as nama',
+                        'karyawans.divisi',
+                        'persetujuan_absensi_lupas.tipe_absen as jenis_izin',
+                        'persetujuan_absensi_lupas.tanggal as tanggal_mulai',
+                        'persetujuan_absensi_lupas.tanggal as tanggal_selesai',
+                        'persetujuan_absensi_lupas.waktu',
+                        'persetujuan_absensi_lupas.alasan',
+                        DB::raw("NULL as lampiran"),
+                        'persetujuan_absensi_lupas.status',
+                        'persetujuan_absensi_lupas.created_at',
+                        'persetujuan_absensi_lupas.updated_at',
+                        DB::raw("'persetujuan_absensi_lupas' as tabel_sumber")
+                    );
+
+                $rows = DB::table('permohonan_izins')
+                    ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
+                    ->whereNotIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
+                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                        $query->where('karyawans.nik_supervisor', $userNik);
+                    })
+                    ->select(
+                        'permohonan_izins.id',
+                        'permohonan_izins.karyawan_id',
+                        'permohonan_izins.nik',
+                        'permohonan_izins.nama',
+                        'permohonan_izins.divisi',
+                        'permohonan_izins.jenis_izin',
+                        'permohonan_izins.tanggal_mulai',
+                        'permohonan_izins.tanggal_selesai',
+                        'permohonan_izins.waktu',
+                        'permohonan_izins.alasan',
+                        'permohonan_izins.lampiran',
+                        'permohonan_izins.status',
+                        'permohonan_izins.created_at',
+                        'permohonan_izins.updated_at',
+                        DB::raw("'permohonan_izins' as tabel_sumber")
+                    )
+                    ->union($cutis)
+                    ->union($lupas)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(200)
                     ->get();
                     
                 foreach ($rows as $row) {

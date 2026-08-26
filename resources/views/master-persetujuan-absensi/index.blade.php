@@ -35,9 +35,14 @@
         </h1>
         <p class="text-xs text-gray-500 mt-1">Daftar karyawan yang melakukan absensi di luar radius kantor dan membutuhkan verifikasi.</p>
     </div>
-    <button onclick="refreshData()" class="px-3.5 py-1.5 rounded-md bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 transition flex items-center gap-2 shadow-sm">
-        <i class="fa-solid fa-arrows-rotate"></i> Segarkan Data
-    </button>
+    <div class="flex items-center gap-2 mt-3 sm:mt-0">
+        <a href="{{ route('persetujuan-absensi.riwayat') }}" class="px-3.5 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Izin
+        </a>
+        <button onclick="refreshData()" class="px-3.5 py-1.5 rounded-md bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 transition flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-arrows-rotate"></i> Segarkan Data
+        </button>
+    </div>
 </div>
 
 <!-- Tab Selector -->
