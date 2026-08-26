@@ -15,13 +15,12 @@
         }
         .page {
             width: 297mm; /* Landscape A4 */
-            height: 180mm; /* Fixed height agar tidak melebihi 1 halaman */
+            height: 185mm; /* Fixed height agar tidak melebihi 1 halaman */
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
             border: 2px solid #000;
             position: relative;
-            overflow: hidden;
         }
         .page::before {
             content: '';
@@ -101,7 +100,7 @@
         .content-columns {
             display: flex;
             position: relative;
-            min-height: 200px;
+            min-height: 150px;
         }
         .hr-col {
             width: 40%;
