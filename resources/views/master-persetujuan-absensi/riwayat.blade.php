@@ -46,15 +46,17 @@
 </div>
 
 <!-- List Container -->
-<div id="attendance-list" class="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
+<div id="attendance-list" class="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
     <!-- Loading Skeletons -->
-    <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-        <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
-        <div class="flex-1 space-y-3">
-            <div class="h-4 bg-gray-200 rounded w-1/3"></div>
-            <div class="h-6 bg-gray-200 rounded w-3/4"></div>
-            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div class="h-8 bg-gray-200 rounded w-full mt-4"></div>
+    <div class="bg-white p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-4 animate-pulse">
+        <div class="hidden sm:block w-12 h-12 bg-gray-200 rounded-full flex-shrink-0"></div>
+        <div class="flex-1 space-y-3 w-full">
+            <div class="flex justify-between items-center">
+                <div class="h-5 bg-gray-200 rounded w-1/3"></div>
+                <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+            </div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-16 bg-gray-200 rounded w-full mt-4"></div>
         </div>
     </div>
 </div>
@@ -97,13 +99,15 @@
         const countBadge = document.getElementById('history-count-badge');
         
         container.innerHTML = `
-            <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-                <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
-                <div class="flex-1 space-y-3">
-                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
-                    <div class="h-6 bg-gray-200 rounded w-3/4"></div>
-                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div class="h-8 bg-gray-200 rounded w-full mt-4"></div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-4 animate-pulse">
+                <div class="hidden sm:block w-12 h-12 bg-gray-200 rounded-full flex-shrink-0"></div>
+                <div class="flex-1 space-y-3 w-full">
+                    <div class="flex justify-between items-center">
+                        <div class="h-5 bg-gray-200 rounded w-1/3"></div>
+                        <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-16 bg-gray-200 rounded w-full mt-4"></div>
                 </div>
             </div>
         `;
@@ -178,56 +182,67 @@
                 let statusBadge = '';
                 const itemStatus = (item.status || '').toUpperCase();
                 if (itemStatus === 'APPROVED' || itemStatus === 'DISETUJUI') {
-                    statusBadge = `<span class="px-3 py-1 rounded-md text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-check mr-1"></i> Disetujui</span>`;
+                    statusBadge = `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-check mr-1"></i> DISETUJUI</span>`;
                 } else if (itemStatus === 'REJECTED' || itemStatus === 'DITOLAK') {
-                    statusBadge = `<span class="px-3 py-1 rounded-md text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300"><i class="fa-solid fa-xmark mr-1"></i> Ditolak</span>`;
+                    statusBadge = `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200"><i class="fa-solid fa-xmark mr-1"></i> DITOLAK</span>`;
                 } else {
-                    statusBadge = `<span class="px-3 py-1 rounded-md text-xs font-bold bg-gray-100 text-gray-800 border border-gray-300">${item.status}</span>`;
+                    statusBadge = `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${item.status}</span>`;
                 }
 
                 return `
-                    <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.tabel_sumber}-${item.id}">
-                        <!-- Attachment Photo Preview -->
-                        ${item.lampiran 
-                            ? `
-                            <div style="width: 112px; height: 144px;" class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
-                                <img src="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" style="width: 100%; height: 100%; object-fit: cover;" class="animate-fade-in" alt="Lampiran Izin Karyawan" onclick="window.open(this.src, '_blank')" style="cursor: zoom-in;" />
-                            </div>
-                            `
-                            : ''
-                        }
+                    <div class="bg-white hover:bg-gray-50 p-4 sm:p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-4 transition-all duration-200 shadow-sm card-animate" id="card-${item.tabel_sumber}-${item.id}">
+                        <!-- Avatar / Icon -->
+                        <div class="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-full bg-slate-50 border border-slate-200 flex-shrink-0 shadow-sm mt-1">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400 text-lg"></i>
+                        </div>
 
-                        <!-- Details -->
-                        <div class="flex-1 flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start gap-2 mb-2">
-                                    <div class="flex flex-col gap-1 items-start">
+                        <!-- Main Content -->
+                        <div class="flex-1 w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                                <div class="flex-1">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
                                         ${typeBadge}
                                         ${statusBadge}
                                     </div>
-                                    <span class="text-[10px] font-medium text-gray-400 text-right">Diajukan:<br/>${submitDate}</span>
+                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 mb-1">
+                                        ${item.nama || 'Karyawan Tanpa Nama'}
+                                    </h3>
+                                    <p class="text-[11px] text-gray-500 flex flex-wrap items-center gap-1.5">
+                                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium border border-gray-200">NIK: ${item.nik}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="fa-solid fa-sitemap mr-1 opacity-70"></i> Divisi: ${item.divisi || 'Umum'}</span>
+                                    </p>
+                                </div>
+                                <div class="text-[10px] font-medium text-gray-400 whitespace-nowrap text-left sm:text-right bg-slate-50 px-2 py-1 rounded border border-slate-100 mt-2 sm:mt-0">
+                                    <i class="fa-solid fa-paper-plane mr-1"></i> Diajukan:<br/><span class="text-gray-500 font-semibold">${submitDate}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-100 mt-4">
+                                <div class="md:col-span-5 flex flex-col gap-1.5 text-xs text-gray-700">
+                                    <div class="flex items-start">
+                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-calendar-days"></i></div>
+                                        <span><span class="text-slate-500">Tanggal:</span> <span class="font-semibold text-gray-800">${dateRange}</span></span>
+                                    </div>
+                                    ${item.waktu ? `
+                                    <div class="flex items-start">
+                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-clock"></i></div>
+                                        <span><span class="text-slate-500">Waktu:</span> <span class="font-semibold text-gray-800">${item.waktu}</span></span>
+                                    </div>` : ''}
+                                    ${leaveWarningHTML}
                                 </div>
                                 
-                                <h3 class="text-sm font-bold text-gray-900 leading-snug mt-2">${item.nama || 'Karyawan Tanpa Nama'}</h3>
-                                <p class="text-[11px] text-gray-500 mt-0.5">NIK: ${item.nik} &bull; Divisi: ${item.divisi || 'Umum'}</p>
-                                
-                                <div class="mt-2.5 flex flex-col gap-1 text-xs text-gray-700 font-medium">
-                                    <div>
-                                        <span class="text-gray-400 font-medium"><i class="fa-solid fa-calendar-days mr-1.5"></i></span>
-                                        Tanggal: <span class="font-semibold text-gray-800">${dateRange}</span>
-                                        ${leaveWarningHTML}
+                                <div class="md:col-span-7 flex flex-col gap-1 text-xs text-gray-700 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</span>
+                                    <p class="font-medium italic text-slate-600 leading-relaxed">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
+                                    
+                                    ${item.lampiran ? `
+                                    <div class="mt-2.5">
+                                        <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded transition-colors group">
+                                            <i class="fa-solid fa-paperclip group-hover:scale-110 transition-transform"></i> Lihat Lampiran
+                                        </a>
                                     </div>
-                                    ${item.waktu ? `<div><span class="text-gray-400 font-medium"><i class="fa-solid fa-clock mr-1.5"></i></span>Waktu: <span class="font-semibold text-gray-800">${item.waktu}</span></div>` : ''}
-                                    <div>
-                                        <span class="text-gray-400 font-medium"><i class="fa-solid fa-paperclip mr-1.5"></i></span>
-                                        Lampiran: <span class="font-semibold ${item.lampiran ? 'text-emerald-600' : 'text-gray-500'}">${item.lampiran ? 'Ada (Klik foto)' : 'Tidak ada'}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Reason -->
-                                <div class="mt-3 bg-slate-50 border-l-2 border-slate-400 p-2.5 rounded-r-md">
-                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</p>
-                                    <p class="text-xs text-slate-700 font-medium italic mt-0.5">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
