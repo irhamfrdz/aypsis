@@ -158,7 +158,10 @@ class GajiSupirBatamController extends Controller
         $gaji = GajiSupirBatam::with('karyawan')->findOrFail($id);
 
         $karyawan = $gaji->karyawan;
-        $namaPanggilan = $karyawan->nama_panggilan;
+        $supirNames = array_unique(array_filter([
+            $karyawan->nama_panggilan,
+            $karyawan->nama_lengkap
+        ]));
 
         $startDate = $gaji->tanggal_mulai;
         $endDate = $gaji->tanggal_selesai;
@@ -180,29 +183,29 @@ class GajiSupirBatamController extends Controller
             $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
         }
 
-        $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
+        $regularSJs = \App\Models\SuratJalanBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
+        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $obList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+        $obList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', '!=', 'ANTAR GUDANG')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        $obAntarGudangList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+        $obAntarGudangList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', 'ANTAR GUDANG')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        $langsirBatamList = \App\Models\LangsirBatam::where('supir', $namaPanggilan)
+        $langsirBatamList = \App\Models\LangsirBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
 
@@ -282,7 +285,10 @@ class GajiSupirBatamController extends Controller
         $gaji = GajiSupirBatam::with('karyawan')->findOrFail($id);
 
         $karyawan = $gaji->karyawan;
-        $namaPanggilan = $karyawan->nama_panggilan;
+        $supirNames = array_unique(array_filter([
+            $karyawan->nama_panggilan,
+            $karyawan->nama_lengkap
+        ]));
 
         $startDate = $gaji->tanggal_mulai;
         $endDate = $gaji->tanggal_selesai;
@@ -304,29 +310,29 @@ class GajiSupirBatamController extends Controller
             $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
         }
 
-        $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
+        $regularSJs = \App\Models\SuratJalanBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
+        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $obList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+        $obList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', '!=', 'ANTAR GUDANG')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        $obAntarGudangList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+        $obAntarGudangList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', 'ANTAR GUDANG')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        $langsirBatamList = \App\Models\LangsirBatam::where('supir', $namaPanggilan)
+        $langsirBatamList = \App\Models\LangsirBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
 
