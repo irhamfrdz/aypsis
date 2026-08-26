@@ -646,6 +646,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-blue-600">
                                     {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
+                                    @if($ban->nomor_pakai)
+                                        <div class="text-[10px] text-gray-500 font-normal mt-0.5">NP: {{ $ban->nomor_pakai }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
@@ -2322,6 +2325,11 @@
                             <label class="form-label-premium">Tanggal Digunakan</label>
                             <input type="date" name="tanggal_digunakan" value="{{ date('Y-m-d') }}" class="form-input-premium">
                         </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label-premium">Nomor Pakai</label>
+                        <input type="text" name="nomor_pakai" class="form-input-premium w-full" placeholder="Contoh: NP-001" autocomplete="off">
                     </div>
 
                     <div class="mb-4">

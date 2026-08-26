@@ -874,7 +874,6 @@
                                 </div>
                                 @endif
 
-
                                 <!-- Upload Gambar Checkpoint Baru -->
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-2">
