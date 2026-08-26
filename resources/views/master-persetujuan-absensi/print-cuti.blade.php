@@ -230,22 +230,22 @@
                 <div class="form-row">
                     <div class="form-label">Hak Cuti Tahunan</div>
                     <div class="form-separator">:</div>
-                    <div class="form-value"></div>
+                    <div class="form-value" style="text-align: center; font-weight: bold;">{{ $data->saldo ? $data->saldo->total_cuti . ' Hari' : '' }}</div>
                 </div>
                 <div class="form-row">
                     <div class="form-label">Telah diambil</div>
                     <div class="form-separator">:</div>
-                    <div class="form-value"></div>
+                    <div class="form-value" style="text-align: center; font-weight: bold;">{{ $data->saldo ? $data->saldo->cuti_terpakai . ' Hari' : '' }}</div>
                 </div>
                 <div class="form-row">
                     <div class="form-label">Permohonan Cuti</div>
                     <div class="form-separator">:</div>
-                    <div class="form-value"></div>
+                    <div class="form-value" style="text-align: center; font-weight: bold;">{{ $data->lama_cuti ? $data->lama_cuti . ' Hari' : '' }}</div>
                 </div>
                 <div class="form-row">
                     <div class="form-label">Sisa Hak Cuti Tahunan</div>
                     <div class="form-separator">:</div>
-                    <div class="form-value"></div>
+                    <div class="form-value" style="text-align: center; font-weight: bold;">{{ $data->saldo ? $data->saldo->sisa_cuti . ' Hari' : '' }}</div>
                 </div>
             </div>
             

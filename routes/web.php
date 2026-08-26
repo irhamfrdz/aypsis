@@ -464,6 +464,29 @@ Route::middleware([
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
 
+                // Hitung Lama Cuti
+                $tanggal_mulai = \Carbon\Carbon::parse($data->tanggal_mulai);
+                $tanggal_selesai = \Carbon\Carbon::parse($data->tanggal_selesai);
+                
+                $lama_cuti = 0;
+                $currentDate = $tanggal_mulai->copy();
+                while ($currentDate <= $tanggal_selesai) {
+                    if (!$currentDate->isWeekend()) {
+                        $lama_cuti++;
+                    }
+                    $currentDate->addDay();
+                }
+                $data->lama_cuti = $lama_cuti;
+                
+                // Ambil Saldo Cuti
+                $tahun = $tanggal_mulai->format('Y');
+                $saldo = DB::table('saldo_cutis')
+                    ->where('karyawan_id', $data->karyawan_id)
+                    ->where('tahun', $tahun)
+                    ->first();
+                $data->saldo = $saldo;
+
+
                 return view('master-persetujuan-absensi.print-cuti', compact('data'));
             } else if ($type === 'permohonan_izins') {
                 $data = DB::table('permohonan_izins')
