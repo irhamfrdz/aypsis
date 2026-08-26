@@ -35,13 +35,25 @@
         </h1>
         <p class="text-xs text-gray-500 mt-1">Daftar riwayat permohonan izin/cuti karyawan yang telah diproses.</p>
     </div>
-    <div class="flex items-center gap-2">
-        <a href="{{ route('master.persetujuan-absensi.index') }}" class="px-3.5 py-1.5 rounded-md bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 transition flex items-center gap-2 shadow-sm">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-        <button onclick="refreshData()" class="px-3.5 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition flex items-center gap-2 shadow-sm">
-            <i class="fa-solid fa-arrows-rotate"></i> Segarkan Data
-        </button>
+    <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+        <select id="filter-jenis" onchange="refreshData()" class="px-3.5 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+            <option value="">Semua Jenis Izin</option>
+            <option value="cuti">Cuti</option>
+            <option value="Sakit">Izin: Sakit</option>
+            <option value="Pulang Cepat">Izin: Pulang Cepat</option>
+            <option value="Datang Terlambat">Izin: Datang Terlambat</option>
+            <option value="Dinas Luar">Izin: Dinas Luar</option>
+            <option value="lupa">Lupa Absen</option>
+        </select>
+        
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-md bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+            <button onclick="refreshData()" class="flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-arrows-rotate"></i> Segarkan Data
+            </button>
+        </div>
     </div>
 </div>
 
@@ -113,7 +125,9 @@
         `;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/master/api/admin/history-permissions`);
+            const filterValue = document.getElementById('filter-jenis')?.value || '';
+            const queryParams = filterValue ? `?filter_jenis=${encodeURIComponent(filterValue)}` : '';
+            const response = await fetch(`${API_BASE_URL}/master/api/admin/history-permissions${queryParams}`);
             if (!response.ok) throw new Error('Gagal mengambil data riwayat.');
             
             const data = await response.json();
