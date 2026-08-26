@@ -15,7 +15,7 @@
         }
         .page {
             width: 210mm;
-            min-height: 260mm;
+            min-height: 148mm; /* Setengah A4 */
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
@@ -25,10 +25,10 @@
         .page::before {
             content: '';
             position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
             border: 1px solid #000;
             pointer-events: none;
         }
@@ -62,15 +62,15 @@
         /* Title */
         .title {
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 20px 0 30px;
+            margin: 10px 0 20px;
             text-transform: uppercase;
         }
         /* Form Content */
         .form-row {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             align-items: flex-start;
         }
         .form-label {
@@ -127,29 +127,33 @@
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 60px;
+            margin-top: 30px;
             text-align: center;
         }
         .signature-box {
             width: 30%;
         }
         .signature-title {
-            margin-bottom: 80px;
+            margin-bottom: 50px;
         }
         
         /* Note */
         .note {
-            margin-top: 50px;
-            font-size: 12px;
+            margin-top: 20px;
+            font-size: 11px;
         }
 
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        
         @media print {
             body {
                 background: none;
             }
             .page {
                 margin: 0;
-                width: 100%;
             }
             .no-print {
                 display: none !important;
