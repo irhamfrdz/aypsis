@@ -6,7 +6,22 @@
     const pricelistThcsData = @json($pricelistThcs ?? []);
     const allBuruhsData = @json($allBuruhs ?? []);
 
+    let currentLokasi = 'jakarta';
+    const lokasiBuruhSelect = document.getElementById('lokasi_buruh_select');
+    const inputLokasiHidden = document.getElementById('input_lokasi_hidden');
+
+    if (lokasiBuruhSelect) {
+        lokasiBuruhSelect.addEventListener('change', function() {
+            currentLokasi = this.value;
+            inputLokasiHidden.value = this.value;
+            
+            // Re-render semua section dengan mode baru
+            initializeKapalSections();
+        });
+    }
+
     function initializeKapalSections() {
+        if (!kapalSectionsContainer) return;
         kapalSectionsContainer.innerHTML = '';
         kapalSectionCounter = 0;
         addKapalSection();
@@ -34,78 +49,166 @@
         allKapalsData.forEach(kapal => {
             kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
-        
-        section.innerHTML = `
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex}</h3>
-                ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
-            </div>
-            
-            <!-- Hidden inputs for section totals -->
-            <input type="hidden" name="kapal_sections[${sectionIndex}][total_nominal]" class="section-total-hidden" value="0">
-            <input type="hidden" name="kapal_sections[${sectionIndex}][dp]" class="section-dp-hidden" value="0">
-            <input type="hidden" name="kapal_sections[${sectionIndex}][sisa_pembayaran]" class="section-sisa-hidden" value="0">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
-                    <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
-                        ${kapalOptions}
-                    </select>
+
+        if (currentLokasi === 'batam') {
+            // ========================================
+            // LAYOUT BATAM (Kontainer/BL + Nominal Manual)
+            // ========================================
+            section.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Mode Batam</span></h3>
+                    ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
-                    <div class="flex gap-2">
-                        <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
-                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                        <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
+                            ${kapalOptions}
                         </select>
-                        <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
-                        <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
-                            <i class="fas fa-keyboard"></i>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2">
+                            <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
+                                <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                            </select>
+                            <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
+                            <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                                <i class="fas fa-keyboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kontainer Selection -->
+                <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-indigo-300">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Kontainer <span class="text-xs text-gray-500 font-normal">(Opsional)</span></label>
+                    <p class="text-xs text-gray-400 mb-3"><i class="fas fa-info-circle mr-1"></i>Kontainer akan muncul setelah memilih No. Voyage</p>
+
+                    <!-- Search box -->
+                    <div class="kontainer-search-wrap hidden mb-3 relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400 text-sm"><i class="fas fa-search"></i></span>
+                        <input type="text"
+                            class="kontainer-search w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Cari nomor kontainer...">
+                    </div>
+
+                    <!-- Loading indicator -->
+                    <div class="kontainer-loading hidden py-4 text-center text-gray-500 text-sm">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer...
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="kontainer-empty hidden py-4 text-center text-gray-400 text-sm">
+                        <i class="fas fa-inbox text-3xl mb-2 block"></i>Tidak ada kontainer untuk voyage ini
+                    </div>
+
+                    <!-- Kontainer checklist -->
+                    <div class="kontainer-list space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+                    <!-- Hidden inputs container -->
+                    <div class="kontainer-hidden-inputs"></div>
+                </div>
+
+                <!-- Nominal Per Kapal Display -->
+                <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nominal (Input Manual) <span class="text-red-500">*</span></label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][nominal_manual]" class="nominal-manual-input w-full px-3 py-2 border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm font-semibold" placeholder="0" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan Adjustment</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-blue-100 pt-2">
+                        <span class="text-sm font-semibold text-gray-700">Total Nominal Kapal ${sectionIndex}:</span>
+                        <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // ========================================
+            // LAYOUT JAKARTA (Default Lama)
+            // ========================================
+            section.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex}</h3>
+                    ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
+                </div>
+                
+                <!-- Hidden inputs for section totals -->
+                <input type="hidden" name="kapal_sections[${sectionIndex}][total_nominal]" class="section-total-hidden" value="0">
+                <input type="hidden" name="kapal_sections[${sectionIndex}][dp]" class="section-dp-hidden" value="0">
+                <input type="hidden" name="kapal_sections[${sectionIndex}][sisa_pembayaran]" class="section-sisa-hidden" value="0">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                        <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
+                            ${kapalOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2">
+                            <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
+                                <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                            </select>
+                            <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
+                            <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                                <i class="fas fa-keyboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang</label>
+                    <div class="barang-container-section" data-section="${sectionIndex}"></div>
+                    <button type="button" onclick="addBarangToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition">
+                        <i class="fas fa-plus mr-1"></i> Tambah Barang
+                    </button>
+                </div>
+                
+                <div class="mb-3 p-3 bg-gray-100 border border-gray-200 rounded-lg">
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Tenaga Kerja / Buruh</label>
+                    <div class="buruh-container-section" data-section="${sectionIndex}"></div>
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition shadow-sm">
+                            <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
+                        </button>
+                        <button type="button" onclick="randomizeBuruhForSection(${sectionIndex})" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-lg transition shadow-sm" title="Pilih buruh & nominal secara acak">
+                            <i class="fas fa-dice mr-1"></i> Randomize Buruh
                         </button>
                     </div>
                 </div>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang</label>
-                <div class="barang-container-section" data-section="${sectionIndex}"></div>
-                <button type="button" onclick="addBarangToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-plus mr-1"></i> Tambah Barang
-                </button>
-            </div>
-            
-            <div class="mb-3 p-3 bg-gray-100 border border-gray-200 rounded-lg">
-                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Tenaga Kerja / Buruh</label>
-                <div class="buruh-container-section" data-section="${sectionIndex}"></div>
-                <div class="flex gap-2 mt-2">
-                    <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition shadow-sm">
-                        <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
-                    </button>
-                    <button type="button" onclick="randomizeBuruhForSection(${sectionIndex})" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-lg transition shadow-sm" title="Pilih buruh & nominal secara acak">
-                        <i class="fas fa-dice mr-1"></i> Randomize Buruh
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Nominal Per Kapal Display -->
-            <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
-                        <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                
+                <!-- Nominal Per Kapal Display -->
+                <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan Adjustment</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Catatan Adjustment</label>
-                        <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
+                    <div class="flex justify-between items-center border-t border-blue-100 pt-2">
+                        <span class="text-sm font-semibold text-gray-700">Nominal Kapal ${sectionIndex}:</span>
+                        <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
                     </div>
                 </div>
-                <div class="flex justify-between items-center border-t border-blue-100 pt-2">
-                    <span class="text-sm font-semibold text-gray-700">Nominal Kapal ${sectionIndex}:</span>
-                    <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
-                </div>
-            </div>
-        `;
+            `;
+        }
         
         kapalSectionsContainer.appendChild(section);
         
@@ -128,7 +231,11 @@
             const voyageValue = this.value;
             console.log('Voyage changed in section:', currentIndex, 'Kapal:', kapalNama, 'Voyage:', voyageValue);
             if (kapalNama && voyageValue) {
-                autoFillBarangForSection(currentIndex, kapalNama, voyageValue);
+                if (currentLokasi === 'batam') {
+                    loadContainersForBuruhSection(currentSection, currentIndex, voyageValue);
+                } else {
+                    autoFillBarangForSection(currentIndex, kapalNama, voyageValue);
+                }
             }
         });
 
@@ -136,15 +243,29 @@
         const voyageInput = section.querySelector('.voyage-input');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn');
         const adjustmentInput = section.querySelector('.adjustment-input');
+        const nominalManualInput = section.querySelector('.nominal-manual-input');
 
-        adjustmentInput.addEventListener('input', function() {
-            // Apply currency formatting
-            let val = this.value.replace(/\./g, '');
-            if (!isNaN(val) && val !== '') {
-                this.value = Math.round(val).toLocaleString('id-ID');
-            }
-            calculateTotalFromAllSections();
-        });
+        if (adjustmentInput) {
+            adjustmentInput.addEventListener('input', function() {
+                // Apply currency formatting
+                let val = this.value.replace(/\./g, '');
+                if (!isNaN(val) && val !== '') {
+                    this.value = Math.round(val).toLocaleString('id-ID');
+                }
+                calculateTotalFromAllSections();
+            });
+        }
+        
+        if (nominalManualInput) {
+            nominalManualInput.addEventListener('input', function() {
+                // Apply currency formatting
+                let val = this.value.replace(/\./g, '');
+                if (!isNaN(val) && val !== '') {
+                    this.value = Math.round(val).toLocaleString('id-ID');
+                }
+                calculateTotalFromAllSections();
+            });
+        }
 
         voyageManualBtn.addEventListener('click', function() {
             if (voyageInput.classList.contains('hidden')) {
@@ -173,8 +294,10 @@
             }
         });
         
-        // Add first barang input
-        addBarangToSection(sectionIndex);
+        // Add first barang input for Jakarta
+        if (currentLokasi !== 'batam') {
+            addBarangToSection(sectionIndex);
+        }
     }
     
     // Auto-fill barang based on container counts from BL table
@@ -639,22 +762,31 @@
         let grandTotal = 0;
         
         document.querySelectorAll('.kapal-section').forEach(section => {
-            const barangSelects = section.querySelectorAll('.barang-select-item');
-            const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
             const adjustmentInput = section.querySelector('.adjustment-input');
             const nominalDisplay = section.querySelector('.section-nominal-display');
             const sectionTotalHidden = section.querySelector('.section-total-hidden');
             
             let sectionTotal = 0;
             
-            barangSelects.forEach((select, index) => {
-                const selectedOption = select.options[select.selectedIndex];
-                const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
-                // Convert comma to period for proper decimal parsing (Indonesian format)
-                const jumlahRaw = (jumlahInputs[index].value || '0').replace(',', '.');
-                const jumlah = parseFloat(jumlahRaw) || 0;
-                sectionTotal += tarif * jumlah;
-            });
+            if (currentLokasi === 'batam') {
+                const nominalManualInput = section.querySelector('.nominal-manual-input');
+                if (nominalManualInput) {
+                    const nominalRaw = (nominalManualInput.value || '0').replace(/\./g, '').replace(',', '.');
+                    sectionTotal += parseFloat(nominalRaw) || 0;
+                }
+            } else {
+                const barangSelects = section.querySelectorAll('.barang-select-item');
+                const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+                
+                barangSelects.forEach((select, index) => {
+                    const selectedOption = select.options[select.selectedIndex];
+                    const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+                    // Convert comma to period for proper decimal parsing (Indonesian format)
+                    const jumlahRaw = (jumlahInputs[index].value || '0').replace(',', '.');
+                    const jumlah = parseFloat(jumlahRaw) || 0;
+                    sectionTotal += tarif * jumlah;
+                });
+            }
 
             // Add adjustment
             if (adjustmentInput) {
@@ -683,4 +815,105 @@
         } else {
             nominalInput.value = '';
         }
+    }
+    
+    // --- KONTAINER BATAM LOGIC ---
+    function loadContainersForBuruhSection(section, sectionIndex, voyageValue) {
+        const kontainerList = section.querySelector('.kontainer-list');
+        const kontainerLoading = section.querySelector('.kontainer-loading');
+        const kontainerEmpty = section.querySelector('.kontainer-empty');
+        const hiddenInputsContainer = section.querySelector('.kontainer-hidden-inputs');
+        const kontainerSearchWrap = section.querySelector('.kontainer-search-wrap');
+        const kontainerSearch = section.querySelector('.kontainer-search');
+
+        if (!kontainerList) return;
+
+        // Clear previous state
+        kontainerList.innerHTML = '';
+        hiddenInputsContainer.innerHTML = '';
+        kontainerLoading.classList.remove('hidden');
+        kontainerEmpty.classList.add('hidden');
+        kontainerSearchWrap.classList.add('hidden');
+        if (kontainerSearch) kontainerSearch.value = '';
+
+        if (!voyageValue) {
+            kontainerLoading.classList.add('hidden');
+            return;
+        }
+        
+        // Filter search logic setup
+        if (kontainerSearch && !kontainerSearch.dataset.listenerAdded) {
+            kontainerSearch.addEventListener('input', function() {
+                const q = this.value.toLowerCase().trim();
+                kontainerList.querySelectorAll('label').forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = (!q || text.includes(q)) ? '' : 'none';
+                });
+            });
+            kontainerSearch.dataset.listenerAdded = 'true';
+        }
+
+        fetch(`{{ url('biaya-kapal/get-manifest-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageValue)}`)
+            .then(res => res.json())
+            .then(data => {
+                kontainerLoading.classList.add('hidden');
+
+                if (!data.success || !data.containers || data.containers.length === 0) {
+                    kontainerEmpty.classList.remove('hidden');
+                    return;
+                }
+
+                kontainerSearchWrap.classList.remove('hidden');
+                
+                data.containers.forEach((kontainer) => {
+                    const row = document.createElement('label');
+                    row.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-indigo-50 rounded-lg cursor-pointer border border-gray-200 hover:border-indigo-300 transition-all';
+                    row.innerHTML = `
+                        <input type="checkbox"
+                               class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                               data-bl-id="${kontainer.id}"
+                               data-nomor="${kontainer.nomor_kontainer}"
+                               data-size="${kontainer.size_kontainer}">
+                        <div class="flex-1">
+                            <div class="font-semibold text-sm text-gray-800">
+                                <i class="fas fa-cube text-indigo-500 mr-1"></i>
+                                ${kontainer.nomor_kontainer}
+                                <span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                <span class="mr-3"><i class="fas fa-file-alt text-blue-400 mr-1"></i>BL: <span class="font-semibold text-gray-700">${kontainer.no_bl || '-'}</span></span>
+                                <span class="mr-3"><i class="fas fa-box text-orange-400 mr-1"></i>${kontainer.nama_barang || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', function() {
+                        const blId = this.dataset.blId;
+                        const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"]`);
+
+                        if (this.checked) {
+                            if (!existingInput) {
+                                const hiddenGroup = document.createElement('div');
+                                hiddenGroup.setAttribute('data-bl-id', blId);
+                                hiddenGroup.innerHTML = `
+                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
+                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
+                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
+                                `;
+                                hiddenInputsContainer.appendChild(hiddenGroup);
+                            }
+                        } else {
+                            if (existingInput) existingInput.remove();
+                        }
+                    });
+
+                    kontainerList.appendChild(row);
+                });
+            })
+            .catch(e => {
+                console.error(e);
+                kontainerLoading.classList.add('hidden');
+                kontainerList.innerHTML = '<div class="p-3 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat kontainer</div>';
+            });
     }

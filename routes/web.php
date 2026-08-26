@@ -2611,6 +2611,9 @@ Route::middleware([
             ->name('biaya-kapal.get-voyages');
         Route::get('biaya-kapal/get-voyages-by-date', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByDateRange'])
             ->name('biaya-kapal.get-voyages-by-date');
+        Route::get('biaya-kapal/get-manifest-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getManifestContainersByVoyage']);
+        Route::get('biaya-kapal/get-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
+            ->name('biaya-kapal.get-containers-by-voyage');
         Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
             ->name('biaya-kapal.get-bls-by-voyages');
         Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])

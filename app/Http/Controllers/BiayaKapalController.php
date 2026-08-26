@@ -646,10 +646,11 @@ class BiayaKapalController extends Controller
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
-            'no_voyage.*' => 'string',
+            'no_voyage.*' => 'string|max:255',
             'no_bl' => 'nullable|array',
-            'no_bl.*' => 'string',
-            'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
+            'no_bl.*' => 'string|max:255',
+            'jenis_biaya' => 'required|string|max:255',
+            'lokasi' => 'nullable|in:jakarta,batam',
             'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
             'nominal' => 'nullable|numeric|min:0',
             'penerima' => 'nullable|string|max:255',
@@ -674,17 +675,23 @@ class BiayaKapalController extends Controller
             'kapal_sections' => 'nullable|array',
             'kapal_sections.*.kapal' => 'required_with:kapal_sections|string|max:255',
             'kapal_sections.*.voyage' => 'required_with:kapal_sections|string|max:255',
-            'kapal_sections.*.barang' => 'required_with:kapal_sections|array',
-            'kapal_sections.*.barang.*.barang_id' => 'required|exists:pricelist_buruh,id',
-            'kapal_sections.*.barang.*.jumlah' => 'required|numeric|min:0',
+            // Untuk Jakarta
+            'kapal_sections.*.barang' => 'nullable|array',
+            'kapal_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_buruh,id',
+            'kapal_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+            // Untuk Batam
+            'kapal_sections.*.kontainer' => 'nullable|array',
+            'kapal_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'kapal_sections.*.nominal_manual' => 'nullable|numeric|min:0',
+            
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.dp' => 'nullable|numeric|min:0',
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'kapal_sections.*.adjustment' => 'nullable|numeric',
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
-            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
-            'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
+            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'nullable|exists:buruhs,id',
+            'kapal_sections.*.tenaga_kerja.*.nominal' => 'nullable|numeric|min:0',
             // Biaya Air sections structure
             'air' => 'nullable|array',
             'air.*.kapal' => 'nullable|string|max:255',
@@ -1898,136 +1905,186 @@ class BiayaKapalController extends Controller
 
             // NEW STRUCTURE: kapal sections (for multi-kapal biaya buruh)
             if ($request->has('kapal_sections') && ! empty($request->kapal_sections)) {
+                $lokasi = $request->input('lokasi', 'jakarta');
+                
                 // Debug log: Log all kapal sections received
                 Log::info('Kapal sections received in store method', [
                     'biaya_kapal_id' => $biayaKapal->id,
+                    'lokasi' => $lokasi,
                     'sections_count' => count($request->kapal_sections),
-                    'sections_data' => $request->kapal_sections,
                 ]);
 
-                foreach ($request->kapal_sections as $sectionIndex => $section) {
-                    // Debug: Log raw section data
-                    Log::info("Raw section data for index $sectionIndex", ['section' => $section]);
+                if ($lokasi === 'batam') {
+                    // MODE BATAM: Simpan ke tabel biaya_kapal_buruh_batams (tanpa barang/tenaga kerja)
+                    foreach ($request->kapal_sections as $sectionIndex => $section) {
+                        $kapalName = $section['kapal'] ?? null;
+                        $voyageName = $section['voyage'] ?? null;
+                        
+                        // Kumpulkan kontainer ids
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (!empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id' => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size' => $k['size'] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+                        
+                        $cleanNum = function ($val) {
+                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                        };
+                        
+                        $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                        $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                        $notesAdjustment = $section['notes_adjustment'] ?? null;
+                        $totalNominal = $nominal + $adjustment;
+                        
+                        \App\Models\BiayaKapalBuruhBatam::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                            'kontainer_ids' => $kontainerIds,
+                            'nominal' => $nominal,
+                            'adjustment' => $adjustment,
+                            'notes_adjustment' => $notesAdjustment,
+                            'total_nominal' => $totalNominal,
+                        ]);
+                    }
+                    
+                    // Auto calculate total for Batam
+                    $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
+                    $biayaKapal->update(['nominal' => $totalBatam]);
+                    
+                } else {
+                    // MODE JAKARTA: Behavior lama
+                    foreach ($request->kapal_sections as $sectionIndex => $section) {
+                        // Debug: Log raw section data
+                        Log::info("Raw section data for index $sectionIndex", ['section' => $section]);
 
-                    $kapalName = $section['kapal'] ?? null;
-                    $voyageName = $section['voyage'] ?? null;
-                    $sectionTotalNominal = $section['total_nominal'] ?? 0;
-                    $sectionDp = $section['dp'] ?? 0;
-                    $sectionSisa = $section['sisa_pembayaran'] ?? 0;
-                    $sectionAdjustment = $section['adjustment'] ?? 0;
-                    $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
+                        $kapalName = $section['kapal'] ?? null;
+                        $voyageName = $section['voyage'] ?? null;
+                        $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                        $sectionDp = $section['dp'] ?? 0;
+                        $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                        $sectionAdjustment = $section['adjustment'] ?? 0;
+                        $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
 
-                    Log::info("Processing kapal section $sectionIndex", [
-                        'kapal' => $kapalName,
-                        'voyage' => $voyageName,
-                        'total_nominal' => $sectionTotalNominal,
-                        'barang_count' => isset($section['barang']) ? count($section['barang']) : 0,
-                    ]);
+                        Log::info("Processing kapal section $sectionIndex", [
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                            'total_nominal' => $sectionTotalNominal,
+                            'barang_count' => isset($section['barang']) ? count($section['barang']) : 0,
+                        ]);
 
-                    $sectionHasData = false; // Track if section has any saved items
+                        $sectionHasData = false; // Track if section has any saved items
 
-                    if (isset($section['barang']) && is_array($section['barang'])) {
-                        foreach ($section['barang'] as $item) {
-                            // Normalize inputs (trim strings, convert decimals)
-                            $barangIdRaw = $item['barang_id'] ?? null;
-                            $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
+                        if (isset($section['barang']) && is_array($section['barang'])) {
+                            foreach ($section['barang'] as $item) {
+                                // Normalize inputs (trim strings, convert decimals)
+                                $barangIdRaw = $item['barang_id'] ?? null;
+                                $barangId = is_string($barangIdRaw) ? trim($barangIdRaw) : $barangIdRaw;
 
-                            $jumlah = floatval($item['jumlah'] ?? 0);
+                                $jumlah = floatval($item['jumlah'] ?? 0);
 
-                            // Basic validation: skip if missing barang id or non-positive jumlah
-                            if (empty($barangId) || $jumlah <= 0) {
+                                // Basic validation: skip if missing barang id or non-positive jumlah
+                                if (empty($barangId) || $jumlah <= 0) {
 
-                                // Log skipped items for easier debugging
+                                    // Log skipped items for easier debugging
 
-                                Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
-                                    'biaya_kapal_id' => $biayaKapal->id ?? null,
-                                    'section_index' => $sectionIndex,
+                                    Log::warning('Skipping kapal section barang during save: missing barang_id or jumlah <= 0', [
+                                        'biaya_kapal_id' => $biayaKapal->id ?? null,
+                                        'section_index' => $sectionIndex,
+                                        'kapal' => $kapalName,
+                                        'voyage' => $voyageName,
+                                        'item' => $item,
+                                    ]);
+
+                                    continue;
+                                }
+
+                                $barang = PricelistBuruh::find($barangId);
+                                if (! $barang) {
+                                    Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
+
+                                    continue;
+                                }
+
+                                $subtotal = $barang->tarif * $jumlah;
+
+                                // Save to biaya_kapal_barang table with kapal, voyage, and DP info
+                                BiayaKapalBarang::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'pricelist_buruh_id' => $barang->id,
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,
-                                    'item' => $item,
+                                    'jumlah' => $jumlah,
+                                    'tarif' => $barang->tarif,
+                                    'subtotal' => $subtotal,
+                                    'total_nominal' => $sectionTotalNominal,
+                                    'dp' => $sectionDp,
+                                    'sisa_pembayaran' => $sectionSisa,
+                                    'adjustment' => $sectionAdjustment,
+                                    'notes_adjustment' => $sectionNotesAdjustment,
                                 ]);
 
-                                continue;
+                                $sectionHasData = true; // Mark that section has saved data
+
+                                // Build keterangan string with kapal, voyage, and DP info
+                                $barangDetails[] = "[$kapalName - Voyage $voyageName] ".$barang->barang.' x '.$jumlah.' = Rp '.number_format($subtotal, 0, ',', '.');
                             }
 
-                            $barang = PricelistBuruh::find($barangId);
-                            if (! $barang) {
-                                Log::warning('PricelistBuruh not found for barang_id while saving kapal section', ['barang_id' => $barangId, 'item' => $item]);
-
-                                continue;
+                            // Add section summary to barang details
+                            if ($sectionDp > 0 || $sectionSisa > 0) {
+                                $barangDetails[] = '  → Total: Rp '.number_format($sectionTotalNominal, 0, ',', '.').
+                                                ' | DP: Rp '.number_format($sectionDp, 0, ',', '.').
+                                                ' | Sisa: Rp '.number_format($sectionSisa, 0, ',', '.');
                             }
+                        }
 
-                            $subtotal = $barang->tarif * $jumlah;
+                        // SAVE TENAGA KERJA / BURUH workers
+                        if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                            foreach ($section['tenaga_kerja'] as $tk) {
+                                if (! empty($tk['buruh_id']) && ! empty($tk['nominal'])) {
+                                    \App\Models\BiayaKapalTenagaKerja::create([
+                                        'biaya_kapal_id' => $biayaKapal->id,
+                                        'buruh_id' => $tk['buruh_id'],
+                                        'nominal' => $tk['nominal'],
+                                        'kapal' => $kapalName,
+                                        'voyage' => $voyageName,
+                                    ]);
+                                    $sectionHasData = true;
+                                }
+                            }
+                        }
 
-                            // Save to biaya_kapal_barang table with kapal, voyage, and DP info
-                            BiayaKapalBarang::create([
-                                'biaya_kapal_id' => $biayaKapal->id,
-                                'pricelist_buruh_id' => $barang->id,
+                        // IMPORTANT: If section has kapal/voyage but no valid barang data saved,
+                        // create a placeholder record so the kapal appears in print
+                        if (! $sectionHasData && ! empty($kapalName) && ! empty($voyageName)) {
+                            Log::warning("Section $sectionIndex has no barang data, creating placeholder", [
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
-                                'jumlah' => $jumlah,
-                                'tarif' => $barang->tarif,
-                                'subtotal' => $subtotal,
+                            ]);
+
+                            // Create placeholder with null pricelist_buruh_id and 0 values
+                            BiayaKapalBarang::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_buruh_id' => null,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => 0,
+                                'tarif' => 0,
+                                'subtotal' => 0,
                                 'total_nominal' => $sectionTotalNominal,
                                 'dp' => $sectionDp,
                                 'sisa_pembayaran' => $sectionSisa,
                                 'adjustment' => $sectionAdjustment,
                                 'notes_adjustment' => $sectionNotesAdjustment,
                             ]);
-
-                            $sectionHasData = true; // Mark that section has saved data
-
-                            // Build keterangan string with kapal, voyage, and DP info
-                            $barangDetails[] = "[$kapalName - Voyage $voyageName] ".$barang->barang.' x '.$jumlah.' = Rp '.number_format($subtotal, 0, ',', '.');
                         }
-
-                        // Add section summary to barang details
-                        if ($sectionDp > 0 || $sectionSisa > 0) {
-                            $barangDetails[] = '  → Total: Rp '.number_format($sectionTotalNominal, 0, ',', '.').
-                                             ' | DP: Rp '.number_format($sectionDp, 0, ',', '.').
-                                             ' | Sisa: Rp '.number_format($sectionSisa, 0, ',', '.');
-                        }
-                    }
-
-                    // SAVE TENAGA KERJA / BURUH workers
-                    if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
-                        foreach ($section['tenaga_kerja'] as $tk) {
-                            if (! empty($tk['buruh_id']) && ! empty($tk['nominal'])) {
-                                \App\Models\BiayaKapalTenagaKerja::create([
-                                    'biaya_kapal_id' => $biayaKapal->id,
-                                    'buruh_id' => $tk['buruh_id'],
-                                    'nominal' => $tk['nominal'],
-                                    'kapal' => $kapalName,
-                                    'voyage' => $voyageName,
-                                ]);
-                                $sectionHasData = true;
-                            }
-                        }
-                    }
-
-                    // IMPORTANT: If section has kapal/voyage but no valid barang data saved,
-                    // create a placeholder record so the kapal appears in print
-                    if (! $sectionHasData && ! empty($kapalName) && ! empty($voyageName)) {
-                        Log::warning("Section $sectionIndex has no barang data, creating placeholder", [
-                            'kapal' => $kapalName,
-                            'voyage' => $voyageName,
-                        ]);
-
-                        // Create placeholder with null pricelist_buruh_id and 0 values
-                        BiayaKapalBarang::create([
-                            'biaya_kapal_id' => $biayaKapal->id,
-                            'pricelist_buruh_id' => null,
-                            'kapal' => $kapalName,
-                            'voyage' => $voyageName,
-                            'jumlah' => 0,
-                            'tarif' => 0,
-                            'subtotal' => 0,
-                            'total_nominal' => $sectionTotalNominal,
-                            'dp' => $sectionDp,
-                            'sisa_pembayaran' => $sectionSisa,
-                            'adjustment' => $sectionAdjustment,
-                            'notes_adjustment' => $sectionNotesAdjustment,
-                        ]);
                     }
                 }
             }
@@ -5102,81 +5159,131 @@ class BiayaKapalController extends Controller
 
             // BURUH UPDATE
             if ($request->has('kapal_sections')) {
+                $lokasi = $request->input('lokasi', 'jakarta');
+                
                 BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalTenagaKerja::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                
                 if (! empty($request->kapal_sections)) {
-                    foreach ($request->kapal_sections as $sectionIndex => $section) {
-                        $kapalName = $section['kapal'] ?? null;
-                        $voyageName = $section['voyage'] ?? null;
+                    if ($lokasi === 'batam') {
+                        // MODE BATAM
+                        foreach ($request->kapal_sections as $sectionIndex => $section) {
+                            $kapalName = $section['kapal'] ?? null;
+                            $voyageName = $section['voyage'] ?? null;
+                            
+                            $kontainerIds = [];
+                            if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                                foreach ($section['kontainer'] as $k) {
+                                    if (!empty($k['bl_id'])) {
+                                        $kontainerIds[] = [
+                                            'bl_id' => $k['bl_id'],
+                                            'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                            'size' => $k['size'] ?? null,
+                                        ];
+                                    }
+                                }
+                            }
+                            
+                            $cleanNum = function ($val) {
+                                return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                            };
+                            
+                            $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                            $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                            $notesAdjustment = $section['notes_adjustment'] ?? null;
+                            $totalNominal = $nominal + $adjustment;
+                            
+                            \App\Models\BiayaKapalBuruhBatam::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'kontainer_ids' => $kontainerIds,
+                                'nominal' => $nominal,
+                                'adjustment' => $adjustment,
+                                'notes_adjustment' => $notesAdjustment,
+                                'total_nominal' => $totalNominal,
+                            ]);
+                        }
+                        
+                        $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
+                        $biayaKapal->update(['nominal' => $totalBatam]);
+                        
+                    } else {
+                        // MODE JAKARTA
+                        foreach ($request->kapal_sections as $sectionIndex => $section) {
+                            $kapalName = $section['kapal'] ?? null;
+                            $voyageName = $section['voyage'] ?? null;
 
-                        $sectionTotalNominal = $section['total_nominal'] ?? 0;
-                        $sectionDp = $section['dp'] ?? 0;
-                        $sectionSisa = $section['sisa_pembayaran'] ?? 0;
-                        $sectionAdjustment = $section['adjustment'] ?? 0;
-                        $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
+                            $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                            $sectionDp = $section['dp'] ?? 0;
+                            $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                            $sectionAdjustment = $section['adjustment'] ?? 0;
+                            $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
 
-                        $sectionHasData = false;
-                        if (isset($section['barang']) && is_array($section['barang'])) {
-                            foreach ($section['barang'] as $item) {
-                                $barangId = $item['barang_id'] ?? null;
-                                $jumlahRaw = ($item['jumlah'] ?? '0');
-                                $jumlah = is_string($jumlahRaw) ? $this->cleanDecimal($jumlahRaw) : floatval($jumlahRaw);
+                            $sectionHasData = false;
+                            if (isset($section['barang']) && is_array($section['barang'])) {
+                                foreach ($section['barang'] as $item) {
+                                    $barangId = $item['barang_id'] ?? null;
+                                    $jumlahRaw = ($item['jumlah'] ?? '0');
+                                    $jumlah = is_string($jumlahRaw) ? $this->cleanDecimal($jumlahRaw) : floatval($jumlahRaw);
 
-                                if ($barangId && $jumlah > 0) {
-                                    $barang = PricelistBuruh::find($barangId);
-                                    if ($barang) {
-                                        $subtotal = $barang->tarif * $jumlah;
-                                        BiayaKapalBarang::create([
+                                    if ($barangId && $jumlah > 0) {
+                                        $barang = PricelistBuruh::find($barangId);
+                                        if ($barang) {
+                                            $subtotal = $barang->tarif * $jumlah;
+                                            BiayaKapalBarang::create([
+                                                'biaya_kapal_id' => $biayaKapal->id,
+                                                'pricelist_buruh_id' => $barang->id,
+                                                'kapal' => $kapalName,
+                                                'voyage' => $voyageName,
+                                                'jumlah' => $jumlah,
+                                                'tarif' => $barang->tarif,
+                                                'subtotal' => $subtotal,
+                                                'total_nominal' => $sectionTotalNominal,
+                                                'dp' => $sectionDp,
+                                                'sisa_pembayaran' => $sectionSisa,
+                                                'adjustment' => $sectionAdjustment,
+                                                'notes_adjustment' => $sectionNotesAdjustment,
+                                            ]);
+                                            $sectionHasData = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // UPDATE TENAGA KERJA / BURUH workers
+                            if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                                foreach ($section['tenaga_kerja'] as $tk) {
+                                    if (! empty($tk['buruh_id']) && ! empty($tk['nominal'])) {
+                                        \App\Models\BiayaKapalTenagaKerja::create([
                                             'biaya_kapal_id' => $biayaKapal->id,
-                                            'pricelist_buruh_id' => $barang->id,
+                                            'buruh_id' => $tk['buruh_id'],
+                                            'nominal' => $tk['nominal'],
                                             'kapal' => $kapalName,
                                             'voyage' => $voyageName,
-                                            'jumlah' => $jumlah,
-                                            'tarif' => $barang->tarif,
-                                            'subtotal' => $subtotal,
-                                            'total_nominal' => $sectionTotalNominal,
-                                            'dp' => $sectionDp,
-                                            'sisa_pembayaran' => $sectionSisa,
-                                            'adjustment' => $sectionAdjustment,
-                                            'notes_adjustment' => $sectionNotesAdjustment,
                                         ]);
                                         $sectionHasData = true;
                                     }
                                 }
                             }
-                        }
 
-                        // UPDATE TENAGA KERJA / BURUH workers
-                        if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
-                            foreach ($section['tenaga_kerja'] as $tk) {
-                                if (! empty($tk['buruh_id']) && ! empty($tk['nominal'])) {
-                                    \App\Models\BiayaKapalTenagaKerja::create([
-                                        'biaya_kapal_id' => $biayaKapal->id,
-                                        'buruh_id' => $tk['buruh_id'],
-                                        'nominal' => $tk['nominal'],
-                                        'kapal' => $kapalName,
-                                        'voyage' => $voyageName,
-                                    ]);
-                                    $sectionHasData = true;
-                                }
+                            if (! $sectionHasData && ! empty($kapalName) && ! empty($voyageName)) {
+                                BiayaKapalBarang::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'pricelist_buruh_id' => null,
+                                    'kapal' => $kapalName,
+                                    'voyage' => $voyageName,
+                                    'jumlah' => 0,
+                                    'tarif' => 0,
+                                    'subtotal' => 0,
+                                    'total_nominal' => $sectionTotalNominal,
+                                    'dp' => $sectionDp,
+                                    'sisa_pembayaran' => $sectionSisa,
+                                    'adjustment' => $sectionAdjustment,
+                                    'notes_adjustment' => $sectionNotesAdjustment,
+                                ]);
                             }
-                        }
-
-                        if (! $sectionHasData && ! empty($kapalName) && ! empty($voyageName)) {
-                            BiayaKapalBarang::create([
-                                'biaya_kapal_id' => $biayaKapal->id,
-                                'pricelist_buruh_id' => null,
-                                'kapal' => $kapalName,
-                                'voyage' => $voyageName,
-                                'jumlah' => 0,
-                                'tarif' => 0,
-                                'subtotal' => 0,
-                                'total_nominal' => $sectionTotalNominal,
-                                'dp' => $sectionDp,
-                                'sisa_pembayaran' => $sectionSisa,
-                                'adjustment' => $sectionAdjustment,
-                                'notes_adjustment' => $sectionNotesAdjustment,
-                            ]);
                         }
                     }
                 }
@@ -5930,6 +6037,71 @@ class BiayaKapalController extends Controller
                     'type' => 'tanda_terima',
                     'data' => $tt,
                 ]);
+        }
+    }
+
+    /**
+     * Get containers from manifests table by voyage number (for Batam Buruh section)
+     */
+    public function getManifestContainersByVoyage(Request $request)
+    {
+        try {
+            $voyage = $request->input('voyage');
+
+            if (empty($voyage)) {
+                return response()->json([
+                    'success' => true,
+                    'containers' => [],
+                ]);
+            }
+
+            $containers = DB::table('manifests')
+                ->select(
+                    'id',
+                    'nomor_bl',
+                    'nomor_kontainer',
+                    'no_seal',
+                    'tipe_kontainer',
+                    'nama_barang'
+                )
+                ->where('no_voyage', $voyage)
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->orderBy('nomor_kontainer')
+                ->get()
+                ->map(function ($manifest) {
+                    $size = '-';
+                    if (stripos($manifest->tipe_kontainer, '20') !== false) {
+                        $size = '20';
+                    } elseif (stripos($manifest->tipe_kontainer, '40') !== false) {
+                        $size = '40';
+                    }
+
+                    return [
+                        'id' => $manifest->id,
+                        'bl_id' => $manifest->id,
+                        'no_bl' => $manifest->nomor_bl ?? '-',
+                        'nomor_kontainer' => $manifest->nomor_kontainer,
+                        'no_seal' => $manifest->no_seal ?? '-',
+                        'tipe_kontainer' => $manifest->tipe_kontainer ?? '-',
+                        'size' => $size,
+                        'size_kontainer' => $size,
+                        'nama_barang' => $manifest->nama_barang ?? '-',
+                        'pengirim' => '-',
+                        'penerima' => '-',
+                        'display_text' => $manifest->nomor_kontainer.($size !== '-' ? ' ('.$size.')' : ''),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'containers' => $containers,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data kontainer dari manifest: '.$e->getMessage(),
+            ], 500);
         }
     }
 

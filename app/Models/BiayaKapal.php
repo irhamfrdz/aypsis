@@ -20,6 +20,7 @@ class BiayaKapal extends Model
         'no_voyage',
         'no_bl',
         'jenis_biaya',
+        'lokasi',
         'vendor_id',
         'nominal',
         'adjustment',
@@ -303,6 +304,11 @@ class BiayaKapal extends Model
     public function buruhBongkar()
     {
         return $this->hasOne(BiayaKapalBuruhBongkar::class, 'biaya_kapal_id');
+    }
+
+    public function buruhBatamDetails()
+    {
+        return $this->hasMany(BiayaKapalBuruhBatam::class, 'biaya_kapal_id');
     }
 
     public function bank()
