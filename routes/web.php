@@ -486,6 +486,15 @@ Route::middleware([
                     ->first();
                 $data->saldo = $saldo;
 
+                // HRD Name
+                $data->nama_hrd = '';
+                if (!empty($data->approved_by_hrd)) {
+                    $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
+                    if ($hrdUser) {
+                        $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
+                        $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->name;
+                    }
+                }
 
                 return view('master-persetujuan-absensi.print-cuti', compact('data'));
             } else if ($type === 'permohonan_izins') {

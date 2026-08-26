@@ -313,7 +313,7 @@
             </div>
             <div class="signature-box">
                 <div class="signature-title">HRD</div>
-                <div>( .................................... )</div>
+                <div>( {{ !empty($data->nama_hrd) ? str_pad($data->nama_hrd, 30, '.', STR_PAD_BOTH) : '....................................' }} )</div>
             </div>
         </div>
     </div>
