@@ -42,7 +42,8 @@ class TidakHadirSheet implements FromCollection, WithHeadings, WithTitle, WithSt
         $hariLiburs = HariLibur::whereBetween('tanggal', [$this->startDate, $this->endDate])->pluck('tanggal')->toArray();
 
         // Get Permissions
-        $izins = PersetujuanAbsensi::where('status', 'approved')
+        $izins = \Illuminate\Support\Facades\DB::table('permohonan_izins')
+            ->where('status', 'APPROVED')
             ->where(function($q) {
                 $q->whereBetween('tanggal_mulai', [$this->startDate, $this->endDate])
                   ->orWhereBetween('tanggal_selesai', [$this->startDate, $this->endDate])
@@ -53,7 +54,8 @@ class TidakHadirSheet implements FromCollection, WithHeadings, WithTitle, WithSt
             })
             ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin');
 
-        $cutis = Cuti::where('status', 'approved')
+        $cutis = \Illuminate\Support\Facades\DB::table('cutis')
+            ->where('status', 'APPROVED')
             ->where(function($q) {
                 $q->whereBetween('tanggal_mulai', [$this->startDate, $this->endDate])
                   ->orWhereBetween('tanggal_selesai', [$this->startDate, $this->endDate])
@@ -62,7 +64,7 @@ class TidakHadirSheet implements FromCollection, WithHeadings, WithTitle, WithSt
                           ->where('tanggal_selesai', '>=', $this->endDate);
                   });
             })
-            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_cuti as jenis_izin');
+            ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"));
 
         $permissions = $izins->union($cutis)->get()->groupBy('karyawan_id');
 
