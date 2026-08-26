@@ -51,7 +51,7 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
             $batasPulang = $tanggal->copy()->setHour($jamBatasPulang)->setMinute(0)->setSecond(0);
 
             if ($waktuPulang->lessThan($batasPulang)) {
-                $menitCepat = $waktuPulang->diffInMinutes($batasPulang);
+                $menitCepat = round($waktuPulang->diffInMinutes($batasPulang, true));
                 $karyawan = $karyawans[$log->karyawan_id];
 
                 $data[] = [

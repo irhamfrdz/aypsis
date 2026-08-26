@@ -52,7 +52,7 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
             $batasTerlambat = $tanggal->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
 
             if ($waktuMasuk->greaterThan($batasTerlambat)) {
-                $menitTerlambat = $batasTerlambat->copy()->setMinute(0)->diffInMinutes($waktuMasuk);
+                $menitTerlambat = round($batasTerlambat->copy()->setMinute(0)->diffInMinutes($waktuMasuk, true));
                 $karyawan = $karyawans[$log->karyawan_id];
 
                 $data[] = [
