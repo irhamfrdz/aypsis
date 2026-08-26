@@ -104,6 +104,7 @@
                 <p class="text-3xl font-bold text-red-600">{{ number_format($absensiLuarRadius->count()) }}</p>
             </div>
         </div>
+    </div>
 
     <!-- Details Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
