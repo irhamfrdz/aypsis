@@ -28,12 +28,12 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
     {
         $karyawans = Karyawan::where('status', 'active')->get()->keyBy('id');
 
-        $absensiRaw = Absensi::whereBetween('waktu', [
-                $this->startDate . ' 00:00:00',
-                $this->endDate . ' 23:59:59'
-            ])
-            ->selectRaw('karyawan_id, DATE(waktu) as tanggal, MIN(CASE WHEN tipe IN ("Masuk", "Check In") THEN waktu END) as waktu_masuk')
-            ->groupBy('karyawan_id', 'tanggal')
+        $startDateTime = Carbon::parse($this->startDate)->setTime(6, 0, 0);
+        $endDateTime = Carbon::parse($this->endDate)->addDay()->setTime(5, 59, 59);
+
+        $absensiRaw = Absensi::whereBetween('waktu', [$startDateTime, $endDateTime])
+            ->selectRaw('karyawan_id, DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal, MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu END) as waktu_masuk')
+            ->groupBy('karyawan_id', \Illuminate\Support\Facades\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'))
             ->get();
 
         $data = [];

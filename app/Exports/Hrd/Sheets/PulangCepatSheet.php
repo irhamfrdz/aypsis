@@ -27,12 +27,12 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
     {
         $karyawans = Karyawan::where('status', 'active')->get()->keyBy('id');
 
-        $absensiRaw = Absensi::whereBetween('waktu', [
-                $this->startDate . ' 00:00:00',
-                $this->endDate . ' 23:59:59'
-            ])
-            ->selectRaw('karyawan_id, DATE(waktu) as tanggal, MAX(CASE WHEN tipe IN ("Pulang", "Keluar", "Check Out", "Selesai") THEN waktu END) as waktu_pulang')
-            ->groupBy('karyawan_id', 'tanggal')
+        $startDateTime = Carbon::parse($this->startDate)->setTime(6, 0, 0);
+        $endDateTime = Carbon::parse($this->endDate)->addDay()->setTime(5, 59, 59);
+
+        $absensiRaw = Absensi::whereBetween('waktu', [$startDateTime, $endDateTime])
+            ->selectRaw('karyawan_id, DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal, MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar", "check out", "selesai") THEN waktu END) as waktu_pulang')
+            ->groupBy('karyawan_id', \Illuminate\Support\Facades\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'))
             ->get();
 
         $data = [];
