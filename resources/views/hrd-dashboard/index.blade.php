@@ -116,7 +116,9 @@
                         @foreach($karyawanBelumAbsen as $k)
                         <tr class="hover:bg-red-50/50">
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
-                            <td class="px-4 py-2 font-medium text-gray-800">{{ $k->nama_lengkap }}</td>
+                            <td class="px-4 py-2 font-medium text-gray-800">
+                                <a href="{{ route('master.karyawan.show', $k->id) }}" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
+                            </td>
                             <td class="px-4 py-2 text-gray-500 text-xs uppercase">{{ $k->divisi ?: '-' }}</td>
                         </tr>
                         @endforeach
@@ -154,7 +156,13 @@
                         <tr class="hover:bg-green-50/50">
                             <td class="px-4 py-2 text-gray-600">{{ $absen->karyawan->nik ?? '-' }}</td>
                             <td class="px-4 py-2">
-                                <div class="font-medium text-gray-800">{{ $absen->karyawan->nama_lengkap ?? 'N/A' }}</div>
+                                <div class="font-medium text-gray-800">
+                                    @if($absen->karyawan)
+                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
+                                    @else
+                                        N/A
+                                    @endif
+                                </div>
                                 <div class="text-xs text-gray-500">{{ $absen->karyawan->divisi ?? '-' }}</div>
                             </td>
                             <td class="px-4 py-2 font-semibold text-green-700">
@@ -195,7 +203,9 @@
                         <tr class="hover:bg-yellow-50/50">
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
                             <td class="px-4 py-2">
-                                <div class="font-medium text-gray-800">{{ $k->nama_lengkap }}</div>
+                                <div class="font-medium text-gray-800">
+                                    <a href="{{ route('master.karyawan.show', $k->id) }}" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
+                                </div>
                                 <div class="text-xs text-gray-500">{{ $k->divisi ?: '-' }}</div>
                             </td>
                         </tr>
@@ -235,7 +245,13 @@
                             @foreach($karyawanTerlambat as $absen)
                             <tr class="hover:bg-orange-50/50">
                                 <td class="px-4 py-2">
-                                    <div class="font-medium text-gray-800">{{ $absen->karyawan->nama_lengkap ?? 'N/A' }}</div>
+                                    <div class="font-medium text-gray-800">
+                                        @if($absen->karyawan)
+                                            <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </div>
                                     <div class="text-xs text-gray-500">{{ $absen->karyawan->divisi ?? '-' }}</div>
                                 </td>
                                 <td class="px-4 py-2">
@@ -278,7 +294,13 @@
                             @foreach($karyawanCuti as $cuti)
                             <tr class="hover:bg-purple-50/50">
                                 <td class="px-4 py-2">
-                                    <div class="font-medium text-gray-800">{{ $cuti->karyawan->nama_lengkap ?? 'N/A' }}</div>
+                                    <div class="font-medium text-gray-800">
+                                        @if($cuti->karyawan)
+                                            <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </div>
                                     <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d/m/Y') }}</div>
                                 </td>
                                 <td class="px-4 py-2">
