@@ -190,67 +190,75 @@
                 }
 
                 return `
-                    <div class="bg-white hover:bg-gray-50 p-4 sm:p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-4 transition-all duration-200 shadow-sm card-animate" id="card-${item.tabel_sumber}-${item.id}">
-                        <!-- Avatar / Icon -->
-                        <div class="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-full bg-slate-50 border border-slate-200 flex-shrink-0 shadow-sm mt-1">
-                            <i class="fa-solid fa-clock-rotate-left text-slate-400 text-lg"></i>
+                    <div class="bg-white hover:bg-gray-50/80 p-5 sm:p-6 rounded-2xl border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md card-animate group" id="card-${item.tabel_sumber}-${item.id}">
+                        <!-- Header Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-gray-100 pb-4">
+                            <div class="flex flex-wrap items-center gap-2">
+                                ${typeBadge}
+                                ${statusBadge}
+                                <span class="hidden sm:inline-block text-gray-300 mx-1">|</span>
+                                <span class="text-xs font-medium text-gray-500"><i class="fa-solid fa-paper-plane mr-1.5 opacity-70"></i> Diajukan: <span class="text-gray-700">${submitDate}</span></span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                ${item.lampiran ? `
+                                <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors" title="Lihat Lampiran">
+                                    <i class="fa-solid fa-paperclip"></i> Lampiran
+                                </a>
+                                ` : ''}
+                                
+                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
+                                <a href="${API_BASE_URL}/master/persetujuan-absensi/print/${item.tabel_sumber}/${item.id}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors" title="Cetak Form">
+                                    <i class="fa-solid fa-print"></i> Cetak Form
+                                </a>
+                                ` : ''}
+                            </div>
                         </div>
 
-                        <!-- Main Content -->
-                        <div class="flex-1 w-full">
-                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                                <div class="flex-1">
-                                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                                        ${typeBadge}
-                                        ${statusBadge}
-                                    </div>
-                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 mb-1">
+                        <!-- Main Content Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            
+                            <!-- Kolom 1: Karyawan Info -->
+                            <div class="md:col-span-4 flex items-start gap-4">
+                                <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">
+                                    <i class="fa-solid fa-user-tag text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1.5 leading-tight">
                                         ${item.nama || 'Karyawan Tanpa Nama'}
                                     </h3>
-                                    <p class="text-[11px] text-gray-500 flex flex-wrap items-center gap-1.5">
-                                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium border border-gray-200">NIK: ${item.nik}</span>
-                                        <span>&bull;</span>
-                                        <span><i class="fa-solid fa-sitemap mr-1 opacity-70"></i> Divisi: ${item.divisi || 'Umum'}</span>
-                                    </p>
-                                </div>
-                                <div class="text-[10px] font-medium text-gray-400 whitespace-nowrap text-left sm:text-right bg-slate-50 px-2 py-1 rounded border border-slate-100 mt-2 sm:mt-0">
-                                    <i class="fa-solid fa-paper-plane mr-1"></i> Diajukan:<br/><span class="text-gray-500 font-semibold">${submitDate}</span>
+                                    <div class="text-xs text-gray-500 space-y-1.5">
+                                        <div class="flex items-center gap-2"><i class="fa-solid fa-id-badge w-3.5 text-center text-gray-400"></i> NIK: <span class="font-semibold text-gray-700">${item.nik}</span></div>
+                                        <div class="flex items-center gap-2"><i class="fa-solid fa-sitemap w-3.5 text-center text-gray-400"></i> ${item.divisi || 'Umum'}</div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-100 mt-4">
-                                <div class="md:col-span-5 flex flex-col gap-1.5 text-xs text-gray-700">
-                                    <div class="flex items-start">
-                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-calendar-days"></i></div>
-                                        <span><span class="text-slate-500">Tanggal:</span> <span class="font-semibold text-gray-800">${dateRange}</span></span>
+                            <!-- Kolom 2: Jadwal Waktu -->
+                            <div class="md:col-span-4 border-t md:border-t-0 border-l-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+                                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Detail Waktu</span>
+                                <div class="space-y-2.5 text-sm text-gray-700">
+                                    <div class="flex items-start gap-2.5 bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                                        <i class="fa-solid fa-calendar-day text-blue-500 mt-0.5 shrink-0"></i>
+                                        <span class="font-semibold text-gray-800 text-xs">${dateRange}</span>
                                     </div>
                                     ${item.waktu ? `
-                                    <div class="flex items-start">
-                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-clock"></i></div>
-                                        <span><span class="text-slate-500">Waktu:</span> <span class="font-semibold text-gray-800">${item.waktu}</span></span>
+                                    <div class="flex items-start gap-2.5">
+                                        <i class="fa-solid fa-clock text-blue-400 mt-0.5 shrink-0"></i>
+                                        <span class="font-medium text-gray-700 text-xs">${item.waktu}</span>
                                     </div>` : ''}
-                                    ${leaveWarningHTML}
-                                </div>
-                                
-                                <div class="md:col-span-7 flex flex-col gap-1 text-xs text-gray-700 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</span>
-                                    <p class="font-medium italic text-slate-600 leading-relaxed">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
-                                    
-                                    <div class="mt-3 flex items-center justify-end gap-2 w-full">
-                                        ${item.lampiran ? `
-                                        <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded transition-colors group">
-                                            <i class="fa-solid fa-paperclip group-hover:scale-110 transition-transform"></i> Lihat Lampiran
-                                        </a>
-                                        ` : ''}
-                                        
-                                        ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
-                                        <a href="${API_BASE_URL}/master/persetujuan-absensi/print/${item.tabel_sumber}/${item.id}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors group">
-                                            <i class="fa-solid fa-print group-hover:scale-110 transition-transform"></i> Cetak Form
-                                        </a>
-                                        ` : ''}
-                                    </div>
+                                    ${leaveWarningHTML ? `<div class="mt-3">${leaveWarningHTML}</div>` : ''}
                                 </div>
                             </div>
+
+                            <!-- Kolom 3: Alasan -->
+                            <div class="md:col-span-4 border-t md:border-t-0 border-l-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+                                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen' : 'Alasan Izin'}</span>
+                                <div class="text-[13px] font-medium italic text-slate-600 bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 leading-relaxed min-h-[60px]">
+                                    "${item.alasan || 'Tidak menuliskan alasan'}"
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                 `;
