@@ -2329,7 +2329,7 @@
 
                     <div class="mb-4">
                         <label class="form-label-premium">Nomor Pakai</label>
-                        <input type="text" name="nomor_pakai" class="form-input-premium w-full" placeholder="Contoh: NP-001" autocomplete="off">
+                        <input type="text" name="nomor_pakai" class="form-input-premium w-full" placeholder="Contoh: P-26-08-2026" autocomplete="off">
                     </div>
 
                     <div class="mb-4">
