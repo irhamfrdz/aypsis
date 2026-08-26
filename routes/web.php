@@ -455,14 +455,14 @@ Route::middleware([
             if ($type === 'cutis') {
                 $data = DB::table('cutis')
                     ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
-                    ->select('cutis.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik')
+                    ->select('cutis.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
                     ->where('cutis.id', $id)
                     ->first();
                 if (!$data) abort(404);
                 
                 // Get supervisor name
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
-                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
+                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
 
                 // Hitung Lama Cuti
                 $tanggal_mulai = \Carbon\Carbon::parse($data->tanggal_mulai);
