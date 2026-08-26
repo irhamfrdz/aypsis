@@ -15,7 +15,7 @@
         }
         .page {
             width: 297mm; /* Landscape A4 */
-            min-height: 210mm;
+            min-height: 170mm;
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
@@ -197,7 +197,7 @@
         <!-- Header -->
         <div class="header">
             <div class="logo">
-                <img src="/img/logo.png" alt="Logo" style="width: 100%;" onerror="this.style.display='none'">
+                <img src="/images/logo.png" alt="Logo" style="width: 100%;" onerror="this.style.display='none'">
             </div>
             <div class="company-info">
                 <p>Perusahaan Pelayaran Nasional</p>

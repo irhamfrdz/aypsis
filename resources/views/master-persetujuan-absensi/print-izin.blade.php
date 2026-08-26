@@ -15,7 +15,7 @@
         }
         .page {
             width: 210mm;
-            min-height: 297mm;
+            min-height: 260mm;
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
@@ -167,7 +167,7 @@
         <!-- Header -->
         <div class="header">
             <div class="logo">
-                <img src="/img/logo.png" alt="Logo" style="width: 100%;" onerror="this.style.display='none'">
+                <img src="/images/logo.png" alt="Logo" style="width: 100%;" onerror="this.style.display='none'">
             </div>
             <div class="header-text">
                 <p>Perusahaan Pelayaran Nasional</p>
@@ -213,6 +213,10 @@
                 <div class="checkbox-item">
                     <span class="checkbox-circle {{ $jenis == 'dinas_luar' || $jenis == 'dinas luar' ? 'active' : '' }}">d.</span>
                     <span>Dinas Luar</span>
+                </div>
+                <div class="checkbox-item">
+                    <span class="checkbox-circle {{ $jenis == 'sakit    ' || $jenis == 'sakit' ? 'active' : '' }}">e.</span>
+                    <span>Sakit</span>
                 </div>
             </div>
         </div>
