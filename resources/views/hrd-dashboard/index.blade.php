@@ -110,14 +110,14 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         
         <!-- Tabel Belum Absen -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
             <div class="bg-red-50 border-b border-red-100 px-4 py-3 flex justify-between items-center">
                 <h3 class="font-semibold text-red-800 flex items-center">
                     <i class="fas fa-user-times mr-2 text-red-600"></i> Karyawan Belum Absen
                 </h3>
                 <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanBelumAbsen->count() }} Orang</span>
             </div>
-            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+            <div class="p-0 flex-1 overflow-y-auto">
                 @if($karyawanBelumAbsen->count() > 0)
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 sticky top-0">
@@ -149,14 +149,14 @@
         </div>
 
         <!-- Tabel Sudah Absen Masuk -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
             <div class="bg-green-50 border-b border-green-100 px-4 py-3 flex justify-between items-center">
                 <h3 class="font-semibold text-green-800 flex items-center">
                     <i class="fas fa-check-circle mr-2 text-green-600"></i> Sudah Absen Masuk
                 </h3>
                 <span class="bg-green-200 text-green-800 text-xs font-bold px-2 py-1 rounded-full">{{ $absensiMasuk->count() }} Orang</span>
             </div>
-            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+            <div class="p-0 flex-1 overflow-y-auto">
                 @if($absensiMasuk->count() > 0)
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 sticky top-0">
@@ -197,14 +197,14 @@
         </div>
 
         <!-- Tabel Belum Absen Pulang -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
             <div class="bg-yellow-50 border-b border-yellow-100 px-4 py-3 flex justify-between items-center">
                 <h3 class="font-semibold text-yellow-800 flex items-center">
                     <i class="fas fa-running mr-2 text-yellow-600"></i> Belum Absen Pulang
                 </h3>
                 <span class="bg-yellow-200 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanBelumAbsenPulang->count() }} Orang</span>
             </div>
-            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+            <div class="p-0 flex-1 overflow-y-auto">
                 @if($karyawanBelumAbsenPulang->count() > 0)
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 sticky top-0">
@@ -237,10 +237,10 @@
         </div>
 
         <!-- Container for Terlambat & Cuti (Stacked) -->
-        <div class="flex flex-col gap-8 h-full">
+        <div class="flex flex-col gap-8 h-[500px]">
             
             <!-- Tabel Terlambat -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 max-h-96">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
                 <div class="bg-orange-50 border-b border-orange-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="font-semibold text-orange-800 flex items-center">
                         <i class="fas fa-clock mr-2 text-orange-600"></i> Karyawan Terlambat ( {{ sprintf('%02d:00', $jamBatas) }})
@@ -286,7 +286,7 @@
             </div>
 
             <!-- Tabel Cuti / Izin -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 max-h-96">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
                 <div class="bg-purple-50 border-b border-purple-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="font-semibold text-purple-800 flex items-center">
                         <i class="fas fa-calendar-alt mr-2 text-purple-600"></i> Karyawan Cuti / Izin
@@ -332,14 +332,14 @@
         </div>
         
         <!-- Tabel Absen Luar Radius -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full col-span-1 xl:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px] col-span-1 xl:col-span-2">
             <div class="bg-red-50 border-b border-red-100 px-4 py-3 flex justify-between items-center">
                 <h3 class="font-semibold text-red-800 flex items-center">
                     <i class="fas fa-map-marker-alt mr-2 text-red-600"></i> Karyawan Absen Luar Radius
                 </h3>
                 <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-full">{{ $absensiLuarRadius->count() }} Orang</span>
             </div>
-            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+            <div class="p-0 flex-1 overflow-y-auto">
                 @if($absensiLuarRadius->count() > 0)
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 sticky top-0">
