@@ -15,20 +15,21 @@
         }
         .page {
             width: 297mm; /* Landscape A4 */
-            min-height: 170mm;
+            height: 180mm; /* Fixed height agar tidak melebihi 1 halaman */
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
             border: 2px solid #000;
             position: relative;
+            overflow: hidden;
         }
         .page::before {
             content: '';
             position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
             border: 1px solid #000;
             pointer-events: none;
         }
@@ -163,23 +164,25 @@
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 50px;
+            margin-top: 20px;
             text-align: center;
         }
         .signature-box {
             width: 30%;
         }
         .signature-title {
-            margin-bottom: 70px;
+            margin-bottom: 50px;
         }
         
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
         @media print {
-            @page { size: landscape; }
             body { background: none; }
             .page {
-                border: 2px solid #000 !important;
                 margin: 0;
-                width: 100%;
             }
             .no-print {
                 display: none !important;
