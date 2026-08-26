@@ -285,13 +285,22 @@
                 const submitDate = new Date(item.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
                 let typeLabel = '';
-                if (item.jenis_izin === 'tidak_masuk') typeLabel = 'Tidak Masuk';
-                else if (item.jenis_izin === 'datang_terlambat') typeLabel = 'Datang Terlambat';
-                else if (item.jenis_izin === 'pulang_cepat') typeLabel = 'Pulang Cepat';
-                else if (item.jenis_izin === 'dinas_luar') typeLabel = 'Dinas Luar';
-                else typeLabel = item.jenis_izin;
+                let badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                let badgePrefix = 'IZIN:';
+                
+                if (item.tabel_sumber === 'persetujuan_absensi_lupas') {
+                    badgePrefix = 'LUPA ABSEN:';
+                    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                    typeLabel = item.jenis_izin || 'Lupa Absen';
+                } else {
+                    if (item.jenis_izin === 'tidak_masuk') typeLabel = 'Tidak Masuk';
+                    else if (item.jenis_izin === 'datang_terlambat') typeLabel = 'Datang Terlambat';
+                    else if (item.jenis_izin === 'pulang_cepat') typeLabel = 'Pulang Cepat';
+                    else if (item.jenis_izin === 'dinas_luar') typeLabel = 'Dinas Luar';
+                    else typeLabel = item.jenis_izin;
+                }
 
-                const typeBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">IZIN: ${typeLabel.toUpperCase()}</span>`;
+                const typeBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}">${badgePrefix} ${typeLabel ? typeLabel.toUpperCase() : ''}</span>`;
 
                 let leaveWarningHTML = '';
                 if (item.jenis_izin && item.jenis_izin.toLowerCase() === 'tahunan' && item.sisa_cuti !== undefined) {
@@ -349,7 +358,7 @@
 
                                 <!-- Reason -->
                                 <div class="mt-3 bg-slate-50 border-l-2 border-slate-400 p-2.5 rounded-r-md">
-                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Alasan Izin:</p>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</p>
                                     <p class="text-xs text-slate-700 font-medium italic mt-0.5">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
                                 </div>
                                 
