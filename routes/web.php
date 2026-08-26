@@ -612,6 +612,30 @@ Route::middleware([
                         DB::raw("'cutis' as tabel_sumber")
                     );
 
+                $lupas = DB::table('persetujuan_absensi_lupas')
+                    ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
+                    ->whereIn('persetujuan_absensi_lupas.status', ['pending'])
+                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                        $query->where('karyawans.nik_supervisor', $userNik);
+                    })
+                    ->select(
+                        'persetujuan_absensi_lupas.id',
+                        'persetujuan_absensi_lupas.karyawan_id',
+                        'karyawans.nik',
+                        'karyawans.nama_lengkap as nama',
+                        'karyawans.divisi',
+                        'persetujuan_absensi_lupas.tipe_absen as jenis_izin',
+                        'persetujuan_absensi_lupas.tanggal as tanggal_mulai',
+                        'persetujuan_absensi_lupas.tanggal as tanggal_selesai',
+                        'persetujuan_absensi_lupas.waktu',
+                        'persetujuan_absensi_lupas.alasan',
+                        DB::raw("NULL as lampiran"),
+                        'persetujuan_absensi_lupas.status',
+                        'persetujuan_absensi_lupas.created_at',
+                        'persetujuan_absensi_lupas.updated_at',
+                        DB::raw("'persetujuan_absensi_lupas' as tabel_sumber")
+                    );
+
                 $rows = DB::table('permohonan_izins')
                     ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                     ->whereIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
@@ -636,6 +660,7 @@ Route::middleware([
                         DB::raw("'permohonan_izins' as tabel_sumber")
                     )
                     ->union($cutis)
+                    ->union($lupas)
                     ->orderBy('created_at', 'desc')
                     ->get();
                     
@@ -737,7 +762,7 @@ Route::middleware([
                 }
                 
                 $updateData = [
-                    'status' => 'APPROVED',
+                    'status' => $table === 'persetujuan_absensi_lupas' ? 'approved' : 'APPROVED',
                     'updated_at' => now()
                 ];
                 
@@ -762,7 +787,7 @@ Route::middleware([
                 $table = $data['tabel_sumber'] ?? 'permohonan_izins';
                 
                 $updateData = [
-                    'status' => 'REJECTED',
+                    'status' => $table === 'persetujuan_absensi_lupas' ? 'rejected' : 'REJECTED',
                     'updated_at' => now()
                 ];
                 
