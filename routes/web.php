@@ -590,7 +590,7 @@ Route::middleware([
 
                 $cutis = DB::table('cutis')
                     ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
-                    ->whereIn('cutis.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu'])
+                    ->whereIn('cutis.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
                     ->when(!$canApproveAll, function($query) use ($userNik) {
                         $query->where('karyawans.nik_supervisor', $userNik);
                     })
@@ -614,7 +614,7 @@ Route::middleware([
 
                 $rows = DB::table('permohonan_izins')
                     ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
-                    ->whereIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu'])
+                    ->whereIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
                     ->when(!$canApproveAll, function($query) use ($userNik) {
                         $query->where('karyawans.nik_supervisor', $userNik);
                     })
