@@ -101,12 +101,15 @@ class AbsensiController extends Controller
     {
         $query = Absensi::with(['karyawan']);
 
-        // Filter by Date Range safely
-        $defaultStart = Carbon::now()->startOfMonth()->toDateString();
-        $defaultEnd = Carbon::now()->endOfMonth()->toDateString();
+        // Filter by Date (Single Date)
+        $defaultDate = Carbon::now()->toDateString();
 
-        $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultStart);
-        $endDateObj = $this->parseDateSafe($request->input('end_date'), $defaultEnd);
+        $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultDate);
+        
+        // If end_date is provided (via URL or other forms), use it. Otherwise, match start_date.
+        $endDateObj = $request->filled('end_date') 
+            ? $this->parseDateSafe($request->input('end_date'), $startDateObj->toDateString())
+            : $startDateObj->copy();
 
         $startDate = $startDateObj->toDateString();
         $endDate = $endDateObj->toDateString();

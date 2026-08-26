@@ -153,6 +153,36 @@ Route::get('/pelabuhan-tujuan', function () {
     return view('pelabuhan-tujuan', compact('pelabuhans'));
 })->name('public.pelabuhan');
 
+// Public Layanan - Sea Freight
+Route::get('/layanan/sea-freight', function () {
+    return view('layanan.sea-freight');
+})->name('public.layanan.sea-freight');
+
+// Public Layanan - FCL
+Route::get('/layanan/fcl', function () {
+    return view('layanan.fcl');
+})->name('public.layanan.fcl');
+
+Route::get('/layanan/lcl', function () {
+    return view('layanan.lcl');
+})->name('public.layanan.lcl');
+
+Route::get('/layanan/door-to-door', function () {
+    return view('layanan.door-to-door');
+})->name('public.layanan.door-to-door');
+
+Route::get('/layanan/project-cargo', function () {
+    return view('layanan.project-cargo');
+})->name('public.layanan.project-cargo');
+
+Route::get('/layanan/inland-transportation', function () {
+    return view('layanan.inland-transportation');
+})->name('public.layanan.inland-transportation');
+
+Route::get('/layanan/customs-ftz', function () {
+    return view('layanan.customs-ftz');
+})->name('public.layanan.customs-ftz');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
