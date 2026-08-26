@@ -243,7 +243,7 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 max-h-96">
                 <div class="bg-orange-50 border-b border-orange-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="font-semibold text-orange-800 flex items-center">
-                        <i class="fas fa-clock mr-2 text-orange-600"></i> Karyawan Terlambat (> {{ sprintf('%02d:00', $jamBatas) }})
+                        <i class="fas fa-clock mr-2 text-orange-600"></i> Karyawan Terlambat ( {{ sprintf('%02d:00', $jamBatas) }})
                     </h3>
                     <span class="bg-orange-200 text-orange-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanTerlambat->count() }} Orang</span>
                 </div>
