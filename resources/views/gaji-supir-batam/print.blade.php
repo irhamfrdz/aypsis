@@ -145,7 +145,29 @@
 
     @php
         $totalLiter = isset($bensinList) ? $bensinList->sum('liter') : 0;
+        $totalBiaya = isset($bensinList) ? $bensinList->sum('biaya') : 0;
+        $totalBiayaSupir = $totalLiter * 13800;
     @endphp
+
+    @if(isset($bensinList) && $bensinList->count() > 0)
+    <div style="font-weight: bold; margin-bottom: 5px;">Rincian Pembelian Bensin :</div>
+    <table class="rincian-table">
+        <thead>
+            <tr>
+                <th>Total Liter</th>
+                <th class="text-right">Total Biaya Supir</th>
+                <th class="text-right">Total Biaya (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold">{{ str_replace('.', ',', $totalLiter) }} L</td>
+                <td class="text-right font-bold">Rp {{ number_format($totalBiayaSupir, 0, ',', '.') }}</td>
+                <td class="text-right font-bold">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
+            </tr>
+        </tbody>
+    </table>
+    @endif
 
     <div style="font-weight: bold; margin-bottom: 5px;">Rincian Gaji :</div>
     <table class="rincian-table">
@@ -160,7 +182,7 @@
         </tr>
         @endif
         <tr>
-            <td>Potongan Biaya Bensin @if(isset($totalLiter) && $totalLiter > 0) (Total: {{ str_replace('.', ',', $totalLiter) }} L) @endif</td>
+            <td>Potongan Biaya Bensin @if(isset($totalLiter) && $totalLiter > 0) (Total: {{ str_replace('.', ',', $totalLiter) }} L / Rp {{ number_format($totalBiaya, 0, ',', '.') }}) @endif</td>
             <td class="text-right font-bold">Rp {{ number_format($gaji->biaya_bensin ?? 0, 0, ',', '.') }}</td>
         </tr>
         <tr>
