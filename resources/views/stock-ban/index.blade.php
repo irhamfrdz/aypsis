@@ -552,7 +552,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Tgl Digunakan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Nomor Pakai</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Nomor Bukti Pakai</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
@@ -652,7 +652,7 @@
                                     {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-blue-600">
-                                    {{ $ban->nomor_pakai ?? '-' }}
+                                    {{ $ban->nomor_bukti_pakai ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
@@ -1140,7 +1140,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Tgl Digunakan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Nomor Pakai</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Nomor Bukti Pakai</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
@@ -1237,7 +1237,7 @@
                                     {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-blue-600">
-                                    {{ $ban->nomor_pakai ?? '-' }}
+                                    {{ $ban->nomor_bukti_pakai ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
@@ -2336,8 +2336,8 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label-premium">Nomor Pakai</label>
-                        <input type="text" name="nomor_pakai" class="form-input-premium w-full" placeholder="Contoh: P-26-08-2026" autocomplete="off">
+                        <label class="form-label-premium">Nomor Bukti Pakai</label>
+                        <input type="text" name="nomor_bukti_pakai" class="form-input-premium w-full" placeholder="Contoh: P-26-08-2026" autocomplete="off">
                     </div>
 
                     <div class="mb-4">

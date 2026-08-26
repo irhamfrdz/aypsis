@@ -41,6 +41,8 @@ class StockBan extends Model
         'status_ban_luar',
         'status_masak',
         'jumlah_masak',
+        'nomor_bukti_pakai',
+        'nomor_kirim',
     ];
 
     public function namaStockBan()

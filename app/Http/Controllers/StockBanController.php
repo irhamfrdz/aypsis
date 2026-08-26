@@ -553,7 +553,7 @@ class StockBanController extends Controller
             'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'tanggal_keluar' => 'required|date',
             'tanggal_digunakan' => 'nullable|date',
-            'nomor_pakai' => 'nullable|string|max:255',
+            'nomor_bukti_pakai' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ], [
             'mobil_id.required' => 'Wajib memilih Mobil atau Alat Berat.',
@@ -570,7 +570,7 @@ class StockBanController extends Controller
             'penerima_manual' => $request->penerima_manual,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tanggal_digunakan' => $request->tanggal_digunakan ?? $request->tanggal_keluar,
-            'nomor_pakai' => $request->nomor_pakai,
+            'nomor_bukti_pakai' => $request->nomor_bukti_pakai,
             'keterangan' => $request->keterangan ? ($stockBan->keterangan."\n".'[Pemakaian: '.$request->keterangan.']') : $stockBan->keterangan,
         ];
 
