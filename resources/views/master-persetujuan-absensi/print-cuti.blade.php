@@ -160,18 +160,17 @@
             margin-bottom: 8px;
         }
 
-        /* Signatures */
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 25px;
             text-align: center;
         }
         .signature-box {
             width: 30%;
         }
         .signature-title {
-            margin-bottom: 50px;
+            margin-bottom: 70px;
         }
         
         @page {
