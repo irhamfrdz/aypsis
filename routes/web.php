@@ -451,6 +451,37 @@ Route::middleware([
             return view('master-persetujuan-absensi.riwayat');
         })->name('persetujuan-absensi.riwayat')->middleware('can:approval-absensi-view');
 
+        Route::get('persetujuan-absensi/print/{type}/{id}', function ($type, $id) {
+            if ($type === 'cutis') {
+                $data = DB::table('cutis')
+                    ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
+                    ->select('cutis.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik')
+                    ->where('cutis.id', $id)
+                    ->first();
+                if (!$data) abort(404);
+                
+                // Get supervisor name
+                $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
+
+                return view('master-persetujuan-absensi.print-cuti', compact('data'));
+            } else if ($type === 'permohonan_izins') {
+                $data = DB::table('permohonan_izins')
+                    ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
+                    ->select('permohonan_izins.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik_supervisor')
+                    ->where('permohonan_izins.id', $id)
+                    ->first();
+                if (!$data) abort(404);
+                
+                // Get supervisor name
+                $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
+                
+                return view('master-persetujuan-absensi.print-izin', compact('data'));
+            }
+            abort(404);
+        })->name('persetujuan-absensi.print')->middleware('can:approval-absensi-view');
+
         // Persetujuan Absensi Lupa
         Route::group(['prefix' => 'persetujuan-absensi-lupa', 'as' => 'persetujuan-absensi-lupa.'], function () {
             Route::get('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'index'])->name('index')->middleware('can:approval-absensi-lupa-view');

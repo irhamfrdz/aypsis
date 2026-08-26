@@ -190,64 +190,66 @@
                 }
 
                 return `
-                    <div class="bg-white hover:bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col md:flex-row gap-6 transition-all duration-200 shadow-sm card-animate relative overflow-hidden" id="card-${item.tabel_sumber}-${item.id}">
-                        
-                        <!-- Bagian Kiri: Profil & Waktu -->
-                        <div class="flex-1 min-w-0 md:pr-6 md:border-r border-gray-100 flex gap-4">
-                            <!-- Icon/Avatar -->
-                            <div class="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex-shrink-0 text-blue-500">
-                                <i class="fa-solid fa-user-clock text-lg"></i>
-                            </div>
-                            
-                            <!-- Info Utama -->
-                            <div class="flex-1">
-                                <div class="flex flex-wrap items-center gap-2 mb-2">
-                                    ${typeBadge}
-                                    ${statusBadge}
-                                </div>
-                                <h3 class="text-base font-bold text-gray-900 truncate mb-1" title="${item.nama || 'Karyawan Tanpa Nama'}">
-                                    ${item.nama || 'Karyawan Tanpa Nama'}
-                                </h3>
-                                <p class="text-xs text-gray-500 mb-3.5 flex flex-wrap items-center gap-2">
-                                    <span class="font-semibold text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">NIK: ${item.nik}</span>
-                                    <span class="text-gray-300">|</span>
-                                    <span class="truncate"><i class="fa-solid fa-sitemap mr-1 opacity-70"></i> ${item.divisi || 'Umum'}</span>
-                                </p>
-                                
-                                <div class="space-y-1.5 text-xs text-gray-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 inline-block w-full sm:w-auto pr-6">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fa-solid fa-calendar-days text-slate-400 mt-0.5 w-4 text-center"></i>
-                                        <div><span class="text-slate-500">Tanggal:</span> <span class="font-semibold text-gray-800">${dateRange}</span></div>
-                                    </div>
-                                    ${item.waktu ? `
-                                    <div class="flex items-start gap-2">
-                                        <i class="fa-solid fa-clock text-slate-400 mt-0.5 w-4 text-center"></i>
-                                        <div><span class="text-slate-500">Waktu:</span> <span class="font-semibold text-gray-800">${item.waktu}</span></div>
-                                    </div>` : ''}
-                                </div>
-                                ${leaveWarningHTML ? `<div class="mt-2">${leaveWarningHTML}</div>` : ''}
-                            </div>
+                    <div class="bg-white hover:bg-gray-50 p-4 sm:p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-4 transition-all duration-200 shadow-sm card-animate" id="card-${item.tabel_sumber}-${item.id}">
+                        <!-- Avatar / Icon -->
+                        <div class="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-full bg-slate-50 border border-slate-200 flex-shrink-0 shadow-sm mt-1">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400 text-lg"></i>
                         </div>
 
-                        <!-- Bagian Kanan: Alasan & Lampiran -->
-                        <div class="w-full md:w-[45%] flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</span>
-                                    <span class="text-[10px] font-medium text-gray-400 text-right"><i class="fa-solid fa-paper-plane mr-1"></i> Diajukan: ${submitDate}</span>
+                        <!-- Main Content -->
+                        <div class="flex-1 w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                                <div class="flex-1">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                        ${typeBadge}
+                                        ${statusBadge}
+                                    </div>
+                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 mb-1">
+                                        ${item.nama || 'Karyawan Tanpa Nama'}
+                                    </h3>
+                                    <p class="text-[11px] text-gray-500 flex flex-wrap items-center gap-1.5">
+                                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium border border-gray-200">NIK: ${item.nik}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="fa-solid fa-sitemap mr-1 opacity-70"></i> Divisi: ${item.divisi || 'Umum'}</span>
+                                    </p>
                                 </div>
-                                <p class="text-sm font-medium italic text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 min-h-[60px]" title="${item.alasan || 'Tidak menuliskan alasan'}">
-                                    "${item.alasan || 'Tidak menuliskan alasan'}"
-                                </p>
+                                <div class="text-[10px] font-medium text-gray-400 whitespace-nowrap text-left sm:text-right bg-slate-50 px-2 py-1 rounded border border-slate-100 mt-2 sm:mt-0">
+                                    <i class="fa-solid fa-paper-plane mr-1"></i> Diajukan:<br/><span class="text-gray-500 font-semibold">${submitDate}</span>
+                                </div>
                             </div>
                             
-                            <div class="mt-4 flex justify-between items-end">
-                                <div></div> <!-- Spacer -->
-                                ${item.lampiran ? `
-                                <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors shadow-sm group">
-                                    <i class="fa-solid fa-paperclip group-hover:scale-110 transition-transform"></i> Lihat Lampiran
-                                </a>
-                                ` : '<span class="text-[10px] text-gray-400 px-2 py-1 bg-gray-50 rounded border border-gray-100"><i class="fa-solid fa-paperclip mr-1"></i> Tidak ada lampiran</span>'}
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-100 mt-4">
+                                <div class="md:col-span-5 flex flex-col gap-1.5 text-xs text-gray-700">
+                                    <div class="flex items-start">
+                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-calendar-days"></i></div>
+                                        <span><span class="text-slate-500">Tanggal:</span> <span class="font-semibold text-gray-800">${dateRange}</span></span>
+                                    </div>
+                                    ${item.waktu ? `
+                                    <div class="flex items-start">
+                                        <div class="w-6 text-center text-slate-400 mt-0.5 shrink-0"><i class="fa-solid fa-clock"></i></div>
+                                        <span><span class="text-slate-500">Waktu:</span> <span class="font-semibold text-gray-800">${item.waktu}</span></span>
+                                    </div>` : ''}
+                                    ${leaveWarningHTML}
+                                </div>
+                                
+                                <div class="md:col-span-7 flex flex-col gap-1 text-xs text-gray-700 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</span>
+                                    <p class="font-medium italic text-slate-600 leading-relaxed">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
+                                    
+                                    <div class="mt-2.5 flex items-center gap-2">
+                                        ${item.lampiran ? `
+                                        <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded transition-colors group">
+                                            <i class="fa-solid fa-paperclip group-hover:scale-110 transition-transform"></i> Lihat Lampiran
+                                        </a>
+                                        ` : ''}
+                                        
+                                        ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
+                                        <a href="${API_BASE_URL}/master/persetujuan-absensi/print/${item.tabel_sumber}/${item.id}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors group">
+                                            <i class="fa-solid fa-print group-hover:scale-110 transition-transform"></i> Cetak Form
+                                        </a>
+                                        ` : ''}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
