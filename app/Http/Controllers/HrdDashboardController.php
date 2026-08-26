@@ -7,6 +7,8 @@ use App\Models\Cuti;
 use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\HrdAbsensiExport;
 
 class HrdDashboardController extends Controller
 {
@@ -80,5 +82,18 @@ class HrdDashboardController extends Controller
             'karyawanBelumAbsenPulang',
             'absensiMasuk'
         ));
+    }
+
+    /**
+     * Export rekap absensi HRD (4 sheets).
+     */
+    public function exportExcel(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+
+        $fileName = 'Rekap_Absensi_HRD_' . str_replace('-', '', $startDate) . '_' . str_replace('-', '', $endDate) . '.xlsx';
+
+        return Excel::download(new HrdAbsensiExport($startDate, $endDate), $fileName);
     }
 }

@@ -407,6 +407,9 @@ Route::middleware([
     // Dashboard khusus divisi HRD
     Route::get('/hrd-dashboard', [\App\Http\Controllers\HrdDashboardController::class, 'index'])
         ->name('hrd.dashboard');
+        
+    Route::get('/hrd-dashboard/export', [\App\Http\Controllers\HrdDashboardController::class, 'exportExcel'])
+        ->name('hrd.dashboard.export');
 
     // Dashboard asuransi asset
     Route::get('/dashboard/asset-insurance', [AssetDashboardController::class, 'index'])
