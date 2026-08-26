@@ -3230,8 +3230,8 @@
                     kondisi = kondisiSpan ? kondisiSpan.textContent.trim().toLowerCase() : '';
                     mobil = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || '';
                     tanggalDigunakan = row.querySelector('td:nth-child(9)')?.textContent.toLowerCase() || '';
-                    penerima = row.querySelector('td:nth-child(10)')?.textContent.toLowerCase() || '';
-                    lokasi = row.querySelector('td:nth-child(11)')?.textContent.toLowerCase() || '';
+                    penerima = row.querySelector('td:nth-child(11)')?.textContent.toLowerCase() || '';
+                    lokasi = row.querySelector('td:nth-child(12)')?.textContent.toLowerCase() || '';
                 }
 
                 const textMatch = nomorSeri.includes(searchTerm) || merk.includes(searchTerm) || lokasi.includes(searchTerm) || mobil.includes(searchTerm) || tanggalDigunakan.includes(searchTerm) || penerima.includes(searchTerm);
