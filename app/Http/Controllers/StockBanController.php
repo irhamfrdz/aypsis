@@ -622,6 +622,7 @@ class StockBanController extends Controller
             'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'kapal_id' => 'required|exists:master_kapals,id',
             'tanggal_kirim' => 'required|date',
+            'nomor_kirim' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ], [
             'penerima_id.required_without' => 'Wajib memilih Penerima atau ketik manual.',
@@ -641,6 +642,7 @@ class StockBanController extends Controller
             'penerima_manual' => $request->penerima_manual,
             'kapal_id' => $request->kapal_id,
             'tanggal_kirim' => $request->tanggal_kirim,
+            'nomor_kirim' => $request->nomor_kirim,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$keteranganNote) : $keteranganNote,
         ]);
 

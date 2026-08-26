@@ -638,6 +638,9 @@
                                         @if($ban->tanggal_kirim)
                                             <div class="text-[10px] text-gray-500 mt-1">
                                                 Tgl: {{ $ban->tanggal_kirim->format('d-m-Y') }}
+                                                @if($ban->nomor_kirim)
+                                                    <br>NK: {{ $ban->nomor_kirim }}
+                                                @endif
                                             </div>
                                         @endif
                                     @else
@@ -3757,6 +3760,11 @@ function closeJualBanModal() {
                                 <div>
                                     <label for="kirim_tanggal" class="form-label-premium">Tanggal Kirim <span class="text-red-500">*</span></label>
                                     <input type="date" name="tanggal_kirim" id="kirim_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="kirim_nomor" class="form-label-premium">Nomor Kirim</label>
+                                    <input type="text" name="nomor_kirim" id="kirim_nomor" class="form-input-premium" placeholder="Contoh: NK-26-08-2026" autocomplete="off">
                                 </div>
 
                                 <div>
