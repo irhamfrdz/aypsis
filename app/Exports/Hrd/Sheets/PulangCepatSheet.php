@@ -46,8 +46,8 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
             $tanggal = $waktuPulang->copy()->startOfDay();
             $isSaturday = $tanggal->isSaturday();
 
-            // Batas pulang cepat: 17:00 (Senin-Jumat) atau 14:00 (Sabtu)
-            $jamBatasPulang = $isSaturday ? 14 : 17;
+            // Batas pulang cepat: 17:00 (Senin-Jumat) atau 13:00 (Sabtu)
+            $jamBatasPulang = $isSaturday ? 13 : 17;
             $batasPulang = $tanggal->copy()->setHour($jamBatasPulang)->setMinute(0)->setSecond(0);
 
             if ($waktuPulang->lessThan($batasPulang)) {
