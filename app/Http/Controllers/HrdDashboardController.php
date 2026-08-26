@@ -72,6 +72,13 @@ class HrdDashboardController extends Controller
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
+        // 7. Absensi Luar Radius
+        $absensiLuarRadius = Absensi::with('karyawan')
+            ->whereDate('waktu', $filterDate)
+            ->where('detail_lokasi', 'like', '%Di luar radius%')
+            ->orderBy('waktu', 'asc')
+            ->get();
+
         return view('hrd-dashboard.index', compact(
             'filterDate',
             'jamBatas',
@@ -80,7 +87,8 @@ class HrdDashboardController extends Controller
             'karyawanTerlambat',
             'karyawanCuti',
             'karyawanBelumAbsenPulang',
-            'absensiMasuk'
+            'absensiMasuk',
+            'absensiLuarRadius'
         ));
     }
 

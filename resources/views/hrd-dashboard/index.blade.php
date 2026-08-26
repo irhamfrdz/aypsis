@@ -38,7 +38,7 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <!-- Total Karyawan Aktif -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -93,7 +93,17 @@
                 <p class="text-3xl font-bold text-purple-600">{{ number_format($karyawanCuti->count()) }}</p>
             </div>
         </div>
-    </div>
+
+        <!-- Luar Radius -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-map-marker-alt text-2xl text-red-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Absen Luar Radius</p>
+                <p class="text-3xl font-bold text-red-600">{{ number_format($absensiLuarRadius->count()) }}</p>
+            </div>
+        </div>
 
     <!-- Details Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
@@ -258,10 +268,8 @@
                                     </div>
                                     <div class="text-xs text-gray-500">{{ $absen->karyawan->divisi ?? '-' }}</div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    <span class="text-orange-700 font-bold bg-orange-100 px-2 py-1 rounded">
-                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }}
-                                    </span>
+                                <td class="px-4 py-2 font-semibold text-orange-700">
+                                    {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i') }}
                                 </td>
                             </tr>
                             @endforeach
@@ -280,9 +288,9 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 max-h-96">
                 <div class="bg-purple-50 border-b border-purple-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="font-semibold text-purple-800 flex items-center">
-                        <i class="fas fa-calendar-alt mr-2 text-purple-600"></i> Karyawan Cuti & Izin
+                        <i class="fas fa-calendar-alt mr-2 text-purple-600"></i> Karyawan Cuti / Izin
                     </h3>
-                    <span class="bg-purple-200 text-purple-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanCuti->count() }} Permohonan</span>
+                    <span class="bg-purple-200 text-purple-800 text-xs font-bold px-2 py-1 rounded-full">{{ $karyawanCuti->count() }} Orang</span>
                 </div>
                 <div class="p-0 flex-1 overflow-y-auto">
                     @if($karyawanCuti->count() > 0)
@@ -290,7 +298,6 @@
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
                                 <th class="px-4 py-2 text-left font-medium text-gray-500">Nama</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Jenis</th>
                                 <th class="px-4 py-2 text-left font-medium text-gray-500">Keterangan</th>
                             </tr>
                         </thead>
@@ -299,21 +306,14 @@
                             <tr class="hover:bg-purple-50/50">
                                 <td class="px-4 py-2">
                                     <div class="font-medium text-gray-800">
-                                        @if($cuti->karyawan)
-                                            <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
-                                        @else
-                                            N/A
-                                        @endif
+                                        <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
                                     </div>
-                                    <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d/m/Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ $cuti->karyawan->divisi ?: '-' }}</div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    <span class="text-purple-700 font-semibold bg-purple-100 px-2 py-1 rounded text-xs">
-                                        {{ $cuti->jenis_cuti ?: 'Cuti/Izin' }}
+                                <td class="px-4 py-2 text-gray-600">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                        {{ $cuti->jenis_cuti }}
                                     </span>
-                                </td>
-                                <td class="px-4 py-2 text-gray-600 text-xs italic">
-                                    {{ Str::limit($cuti->keterangan ?? '-', 30) }}
                                 </td>
                             </tr>
                             @endforeach
@@ -321,16 +321,68 @@
                     </table>
                     @else
                     <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
-                        <i class="fas fa-info-circle text-4xl text-gray-300 mb-2"></i>
-                        <p>Tidak ada karyawan yang cuti atau izin hari ini.</p>
+                        <i class="fas fa-check-circle text-4xl text-green-300 mb-2"></i>
+                        <p>Tidak ada karyawan yang sedang cuti atau izin.</p>
                     </div>
                     @endif
                 </div>
             </div>
-
+            
         </div>
+        
+        <!-- Tabel Absen Luar Radius -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full xl:col-span-4">
+            <div class="bg-red-50 border-b border-red-100 px-4 py-3 flex justify-between items-center">
+                <h3 class="font-semibold text-red-800 flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2 text-red-600"></i> Karyawan Absen Luar Radius
+                </h3>
+                <span class="bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-full">{{ $absensiLuarRadius->count() }} Orang</span>
+            </div>
+            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+                @if($absensiLuarRadius->count() > 0)
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Nama</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Waktu</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Detail Lokasi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($absensiLuarRadius as $absen)
+                        <tr class="hover:bg-red-50/50">
+                            <td class="px-4 py-2">
+                                <div class="font-medium text-gray-800">
+                                    @if($absen->karyawan)
+                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
+                                    @else
+                                        N/A
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-4 py-2 font-semibold text-red-700">
+                                {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i') }}
+                                <span class="text-xs font-normal text-gray-500 block">{{ $absen->tipe }}</span>
+                            </td>
+                            <td class="px-4 py-2 text-gray-600 text-xs">
+                                {{ $absen->detail_lokasi }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+                    <i class="fas fa-check-circle text-4xl text-green-300 mb-2"></i>
+                    <p>Tidak ada karyawan yang absen di luar radius.</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
     </div>
-</div>
+
+    <!-- Attendance Trends Chart --></div>
 
 <!-- Modal Export Rekap Absen -->
 <div id="exportModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
