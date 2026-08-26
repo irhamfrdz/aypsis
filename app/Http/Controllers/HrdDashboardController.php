@@ -77,7 +77,8 @@ class HrdDashboardController extends Controller
             'karyawanBelumAbsen',
             'karyawanTerlambat',
             'karyawanCuti',
-            'karyawanBelumAbsenPulang'
+            'karyawanBelumAbsenPulang',
+            'absensiMasuk'
         ));
     }
 }

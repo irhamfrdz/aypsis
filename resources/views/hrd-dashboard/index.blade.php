@@ -92,7 +92,7 @@
     </div>
 
     <!-- Details Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
         
         <!-- Tabel Belum Absen -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
@@ -126,6 +126,48 @@
                 <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
                     <i class="fas fa-check-circle text-4xl text-green-300 mb-2"></i>
                     <p>Semua karyawan telah melakukan absensi.</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Tabel Sudah Absen Masuk -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+            <div class="bg-green-50 border-b border-green-100 px-4 py-3 flex justify-between items-center">
+                <h3 class="font-semibold text-green-800 flex items-center">
+                    <i class="fas fa-check-circle mr-2 text-green-600"></i> Sudah Absen Masuk
+                </h3>
+                <span class="bg-green-200 text-green-800 text-xs font-bold px-2 py-1 rounded-full">{{ $absensiMasuk->count() }} Orang</span>
+            </div>
+            <div class="p-0 flex-1 max-h-96 overflow-y-auto">
+                @if($absensiMasuk->count() > 0)
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">NIK</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Nama</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Jam</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($absensiMasuk->sortByDesc('waktu') as $absen)
+                        <tr class="hover:bg-green-50/50">
+                            <td class="px-4 py-2 text-gray-600">{{ $absen->karyawan->nik ?? '-' }}</td>
+                            <td class="px-4 py-2">
+                                <div class="font-medium text-gray-800">{{ $absen->karyawan->nama_lengkap ?? 'N/A' }}</div>
+                                <div class="text-xs text-gray-500">{{ $absen->karyawan->divisi ?? '-' }}</div>
+                            </td>
+                            <td class="px-4 py-2 font-semibold text-green-700">
+                                {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i') }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+                    <i class="fas fa-info-circle text-4xl text-gray-300 mb-2"></i>
+                    <p>Belum ada karyawan yang absen masuk.</p>
                 </div>
                 @endif
             </div>
