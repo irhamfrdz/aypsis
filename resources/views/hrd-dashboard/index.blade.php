@@ -117,7 +117,7 @@
                         <tr class="hover:bg-red-50/50">
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
                             <td class="px-4 py-2 font-medium text-gray-800">
-                                <a href="{{ route('master.karyawan.show', $k->id) }}" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
+                                <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
                             </td>
                             <td class="px-4 py-2 text-gray-500 text-xs uppercase">{{ $k->divisi ?: '-' }}</td>
                         </tr>
@@ -158,7 +158,7 @@
                             <td class="px-4 py-2">
                                 <div class="font-medium text-gray-800">
                                     @if($absen->karyawan)
-                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
+                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
                                     @else
                                         N/A
                                     @endif
@@ -204,7 +204,7 @@
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
                             <td class="px-4 py-2">
                                 <div class="font-medium text-gray-800">
-                                    <a href="{{ route('master.karyawan.show', $k->id) }}" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
+                                    <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
                                 </div>
                                 <div class="text-xs text-gray-500">{{ $k->divisi ?: '-' }}</div>
                             </td>
@@ -247,7 +247,7 @@
                                 <td class="px-4 py-2">
                                     <div class="font-medium text-gray-800">
                                         @if($absen->karyawan)
-                                            <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
+                                            <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $absen->karyawan->nama_lengkap }}</a>
                                         @else
                                             N/A
                                         @endif
@@ -296,7 +296,7 @@
                                 <td class="px-4 py-2">
                                     <div class="font-medium text-gray-800">
                                         @if($cuti->karyawan)
-                                            <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
+                                            <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
                                         @else
                                             N/A
                                         @endif
