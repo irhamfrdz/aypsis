@@ -15,7 +15,8 @@
         }
         .page {
             width: 297mm; /* Landscape A4 */
-            height: 185mm; /* Fixed height agar tidak melebihi 1 halaman */
+            min-height: 170mm;
+            height: auto;
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
