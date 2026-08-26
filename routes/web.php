@@ -1989,10 +1989,6 @@ Route::middleware([
             ->name('absensi.index')
             ->middleware('can:absensi-view');
 
-        Route::get('absensi/{nik}/{tanggal}', [AbsensiController::class, 'show'])
-            ->name('absensi.show')
-            ->middleware('can:absensi-view');
-
         Route::post('absensi/import', [AbsensiImportController::class, 'import'])
             ->name('absensi.import')
             ->middleware('can:absensi-view'); // Gunakan permission yang ada
@@ -2036,6 +2032,10 @@ Route::middleware([
         Route::get('absensi/rekap/export', [AbsensiController::class, 'exportRekap'])
             ->name('absensi.rekap.export')
             ->middleware('can:absensi-rekap');
+
+        Route::get('absensi/{nik}/{tanggal}', [AbsensiController::class, 'show'])
+            ->name('absensi.show')
+            ->middleware('can:absensi-view');
 
         Route::post('absensi/izin', [AbsensiController::class, 'storeIzin'])
             ->name('absensi.izin.store')
