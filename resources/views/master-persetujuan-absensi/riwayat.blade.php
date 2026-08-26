@@ -236,7 +236,7 @@
                                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${item.tabel_sumber === 'persetujuan_absensi_lupas' ? 'Alasan Lupa Absen:' : 'Alasan Izin:'}</span>
                                     <p class="font-medium italic text-slate-600 leading-relaxed">"${item.alasan || 'Tidak menuliskan alasan'}"</p>
                                     
-                                    <div class="mt-2.5 flex items-center gap-2">
+                                    <div class="mt-3 flex items-center justify-end gap-2 w-full">
                                         ${item.lampiran ? `
                                         <a href="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded transition-colors group">
                                             <i class="fa-solid fa-paperclip group-hover:scale-110 transition-transform"></i> Lihat Lampiran
