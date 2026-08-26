@@ -356,9 +356,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         // Data Rows (Starting at row 6)
         $currentRow = 6;
         foreach ($this->rekapData as $data) {
+            $karyawan = $data['karyawan'];
             $row = [
-                 $data['karyawan']->nama_lengkap . ' (' . $data['karyawan']->nik . ')',
-                 $data['karyawan']->nik
+                 $karyawan ? ($karyawan->nama_lengkap . ' (' . $karyawan->nik . ')') : 'Unknown',
+                 $karyawan ? $karyawan->nik : 'Unknown'
             ];
             
             $colIndex = 3;
