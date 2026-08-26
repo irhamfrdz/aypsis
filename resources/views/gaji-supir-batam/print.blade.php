@@ -143,6 +143,51 @@
         </tbody>
     </table>
 
+    @if(isset($bensinList) && $bensinList->count() > 0)
+    <div style="font-weight: bold; margin-bottom: 5px;">Rincian Pembelian Bensin :</div>
+    <table class="rincian-table">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 40px;">No.</th>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th class="text-right">Liter</th>
+                <th class="text-right">Biaya Supir</th>
+                <th class="text-right">Biaya (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $totalLiter = 0; $totalBiayaSupir = 0; $totalBiaya = 0; @endphp
+            @foreach($bensinList as $index => $b)
+                @php 
+                    $liter = (float)$b->liter;
+                    $biaya = is_numeric($b->biaya) ? (float)$b->biaya : 0;
+                    $biayaSupir = $liter * 13800;
+                    $totalLiter += $liter;
+                    $totalBiayaSupir += $biayaSupir;
+                    $totalBiaya += $biaya;
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td>{{ \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y') }}</td>
+                    <td>{{ $b->keterangan ?? '-' }}</td>
+                    <td class="text-right">{{ str_replace('.', ',', $liter) }} L</td>
+                    <td class="text-right">Rp {{ number_format($biayaSupir, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($biaya, 0, ',', '.') }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-right">Total:</th>
+                <th class="text-right">{{ str_replace('.', ',', $totalLiter) }} L</th>
+                <th class="text-right">Rp {{ number_format($totalBiayaSupir, 0, ',', '.') }}</th>
+                <th class="text-right">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</th>
+            </tr>
+        </tfoot>
+    </table>
+    @endif
+
     <div style="font-weight: bold; margin-bottom: 5px;">Rincian Gaji :</div>
     <table class="rincian-table">
         <tr>
@@ -156,7 +201,7 @@
         </tr>
         @endif
         <tr>
-            <td>Potongan Biaya Bensin</td>
+            <td>Potongan Biaya Bensin @if(isset($totalLiter) && $totalLiter > 0) (Total: {{ str_replace('.', ',', $totalLiter) }} L) @endif</td>
             <td class="text-right font-bold">Rp {{ number_format($gaji->biaya_bensin ?? 0, 0, ',', '.') }}</td>
         </tr>
         <tr>

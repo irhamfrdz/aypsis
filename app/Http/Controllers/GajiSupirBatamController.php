@@ -404,7 +404,12 @@ class GajiSupirBatamController extends Controller
             ];
         }
 
-        return view('gaji-supir-batam.print', compact('gaji', 'waybills'));
+        $bensinList = \App\Models\BiayaBensin::where('karyawan_id', $karyawan->id)
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->orderBy('tanggal')
+            ->get();
+
+        return view('gaji-supir-batam.print', compact('gaji', 'waybills', 'bensinList'));
     }
 
     /**
