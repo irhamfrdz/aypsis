@@ -332,7 +332,7 @@
         </div>
         
         <!-- Tabel Absen Luar Radius -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full xl:col-span-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full col-span-1 lg:col-span-2 xl:col-span-4">
             <div class="bg-red-50 border-b border-red-100 px-4 py-3 flex justify-between items-center">
                 <h3 class="font-semibold text-red-800 flex items-center">
                     <i class="fas fa-map-marker-alt mr-2 text-red-600"></i> Karyawan Absen Luar Radius
