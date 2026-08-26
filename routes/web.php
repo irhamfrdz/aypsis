@@ -183,6 +183,39 @@ Route::get('/layanan/customs-ftz', function () {
     return view('layanan.customs-ftz');
 })->name('public.layanan.customs-ftz');
 
+// Public Rute
+Route::get('/rute/jakarta-jabodetabek', function () {
+    return view('rute.jakarta-jabodetabek');
+})->name('public.rute.jakarta-jabodetabek');
+
+Route::get('/rute/batam', function () {
+    return view('rute.batam'); // Placeholder for later
+})->name('public.rute.batam');
+
+Route::get('/rute/tanjung-pinang-bintan', function () {
+    return view('rute.tanjung-pinang-bintan'); // Placeholder for later
+})->name('public.rute.tanjung-pinang-bintan');
+
+Route::get('/rute/karimun', function () {
+    return view('rute.karimun'); // Placeholder for later
+})->name('public.rute.karimun');
+
+Route::get('/rute/lingga', function () {
+    return view('rute.lingga'); // Placeholder for later
+})->name('public.rute.lingga');
+
+Route::get('/rute/anambas', function () {
+    return view('rute.anambas'); // Placeholder for later
+})->name('public.rute.anambas');
+
+Route::get('/rute/natuna', function () {
+    return view('rute.natuna'); // Placeholder for later
+})->name('public.rute.natuna');
+
+Route::get('/rute/other-destination', function () {
+    return view('rute.other-destination'); // Placeholder for later
+})->name('public.rute.other-destination');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

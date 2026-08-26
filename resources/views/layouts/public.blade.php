@@ -104,7 +104,22 @@
                             <a href="{{ route('public.layanan.customs-ftz') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Customs & FTZ</a>
                         </div>
                     </div>
-                    <a href="{{ route('home') }}#rute" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
+                    <!-- Rute Dropdown -->
+                    <div class="relative group">
+                        <a href="{{ route('home') }}#rute" class="flex items-center gap-1 nav-link font-medium hover:text-blue-400 transition-colors focus:outline-none">
+                            <span data-lang-en="Routes" data-lang-zh="航线">Rute</span> <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+                        </a>
+                        <div class="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 py-2 border border-slate-100 z-50 text-slate-800">
+                            <a href="{{ route('public.rute.jakarta-jabodetabek') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Jakarta & Jabodetabek</a>
+                            <a href="{{ route('public.rute.batam') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Batam</a>
+                            <a href="{{ route('public.rute.tanjung-pinang-bintan') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Tanjung Pinang & Bintan</a>
+                            <a href="{{ route('public.rute.karimun') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Karimun</a>
+                            <a href="{{ route('public.rute.lingga') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Lingga</a>
+                            <a href="{{ route('public.rute.anambas') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Anambas</a>
+                            <a href="{{ route('public.rute.natuna') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors">Rute Natuna</a>
+                            <a href="{{ route('public.rute.other-destination') }}" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors border-t border-slate-100 mt-1 pt-2">Other Destination</a>
+                        </div>
+                    </div>
                     <a href="{{ route('public.pelabuhan') }}" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
                     <a href="{{ route('home') }}#mitra" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
                     
@@ -161,7 +176,24 @@
                         <a href="{{ route('public.layanan.customs-ftz') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Customs & FTZ</a>
                     </div>
                 </div>
-                <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
+                <div class="group">
+                    <div class="flex items-center justify-between">
+                        <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50 w-full" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
+                        <button onclick="document.getElementById('mobile-rute-submenu').classList.toggle('hidden')" class="p-2 text-slate-500 hover:text-blue-600 focus:outline-none">
+                            <i class="fa-solid fa-chevron-down text-sm"></i>
+                        </button>
+                    </div>
+                    <div id="mobile-rute-submenu" class="hidden pl-6 pr-3 py-2 space-y-1 bg-slate-50/50">
+                        <a href="{{ route('public.rute.jakarta-jabodetabek') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Jakarta & Jabodetabek</a>
+                        <a href="{{ route('public.rute.batam') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Batam</a>
+                        <a href="{{ route('public.rute.tanjung-pinang-bintan') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Tanjung Pinang & Bintan</a>
+                        <a href="{{ route('public.rute.karimun') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Karimun</a>
+                        <a href="{{ route('public.rute.lingga') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Lingga</a>
+                        <a href="{{ route('public.rute.anambas') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Anambas</a>
+                        <a href="{{ route('public.rute.natuna') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md">Rute Natuna</a>
+                        <a href="{{ route('public.rute.other-destination') }}" class="block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md border-t border-slate-200 mt-1 pt-1.5">Other Destination</a>
+                    </div>
+                </div>
                 <a href="{{ route('public.pelabuhan') }}" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
                 <a href="{{ route('home') }}#mitra" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
                 
