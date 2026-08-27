@@ -2,8 +2,6 @@
     let kapalSectionCounter = 0;
     const kapalSectionsContainer = document.getElementById('kapal_sections_container');
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
-    const pricelistThcVendorsData = @json($pricelistThcVendors ?? []);
-    const pricelistThcsData = @json($pricelistThcs ?? []);
     const allBuruhsData = @json($allBuruhs ?? []);
 
     let currentLokasi = 'jakarta';
