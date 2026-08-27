@@ -998,7 +998,20 @@
             $(kontainerSelect).on('select2:select', function (e) {
                 const selectedOption = $(this).find(':selected');
                 nomorHidden.value = selectedOption.attr('data-nomor') || '';
-                sizeHidden.value = selectedOption.attr('data-size') || '';
+                const size = selectedOption.attr('data-size') || '';
+                sizeHidden.value = size;
+
+                // Auto-fill nominal for Buruh Bongkar
+                if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
+                    if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
+                        const pricelist = pricelistBuruhBongkarData.find(p => String(p.size) === String(size));
+                        if (pricelist) {
+                            const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+                            nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
+                            calculateTotalFromAllSections();
+                        }
+                    }
+                }
             });
             
             $(kontainerSelect).on('select2:unselect', function (e) {
@@ -1009,7 +1022,20 @@
             kontainerSelect.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
                 nomorHidden.value = selectedOption.getAttribute('data-nomor') || '';
-                sizeHidden.value = selectedOption.getAttribute('data-size') || '';
+                const size = selectedOption.getAttribute('data-size') || '';
+                sizeHidden.value = size;
+
+                // Auto-fill nominal for Buruh Bongkar
+                if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
+                    if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
+                        const pricelist = pricelistBuruhBongkarData.find(p => String(p.size) === String(size));
+                        if (pricelist) {
+                            const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+                            nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
+                            calculateTotalFromAllSections();
+                        }
+                    }
+                }
             });
         }
         

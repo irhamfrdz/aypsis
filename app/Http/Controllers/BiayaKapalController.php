@@ -162,6 +162,9 @@ class BiayaKapalController extends Controller
         // Get active pricelist OPP/OPT
         $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
 
+        // Get pricelist Buruh Bongkar
+        $pricelistBuruhBongkars = \App\Models\PricelistBuruhBongkar::where('status', 'aktif')->get();
+
         $pricelistThcs = \App\Models\PricelistThc::where('status', 'Aktif')
             ->orderBy('vendor')
             ->get();

@@ -34,3 +34,6 @@
 
     // Store pricelist tanto data
     const pricelistTantoData = {!! json_encode($pricelistTanto ?? []) !!};
+
+    // Store pricelist Buruh Bongkar data
+    const pricelistBuruhBongkarData = {!! json_encode($pricelistBuruhBongkars ?? []) !!};

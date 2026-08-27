@@ -256,3 +256,6 @@
     var pricelistBiayaDokumenData = {!! json_encode($pricelistBiayaDokumen ?? []) !!};
 
     // Format nominal input with thousand separator
+
+    // Store pricelist Buruh Bongkar data
+    const pricelistBuruhBongkarData = {!! json_encode($pricelistBuruhBongkars ?? []) !!};
