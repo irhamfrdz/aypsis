@@ -568,7 +568,13 @@
             const lokasiSelect = document.getElementById('lokasi_buruh_select');
             if (lokasiSelect && hasBatam) {
                 lokasiSelect.value = 'batam';
-                $(lokasiSelect).trigger('change');
+                if (typeof currentLokasi !== 'undefined') {
+                    currentLokasi = 'batam';
+                }
+                const inputLokasiHidden = document.getElementById('input_lokasi_hidden');
+                if (inputLokasiHidden) {
+                    inputLokasiHidden.value = 'batam';
+                }
             }
             
             existingKapalSections.forEach(myData => {
