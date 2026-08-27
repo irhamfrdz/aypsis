@@ -137,6 +137,26 @@
                         </div>
                     </div>
                 </div>
+                </div>
+
+                <!-- PPh Section -->
+                <div class="mt-4 pt-3 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">PPh</label>
+                            <select name="kapal_sections[${sectionIndex}][pph_percent]" class="pph-percent-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                                <option value="0">0%</option>
+                                <option value="0.5">0.5%</option>
+                                <option value="2">2%</option>
+                                <option value="2.5">2.5%</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][pph_amount]" class="pph-amount-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm bg-gray-100" placeholder="0" readonly>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="flex justify-between items-center border-t border-blue-100 pt-2 mt-2">
                     <span class="text-sm font-semibold text-gray-700">Total Nominal Kapal ${sectionIndex}:</span>
@@ -175,6 +195,13 @@
         const voyageManualBtn = section.querySelector('.voyage-manual-btn');
         const adjustmentInput = section.querySelector('.adjustment-input');
         const nominalManualInput = section.querySelector('.nominal-manual-input');
+        const pphPercentSelect = section.querySelector('.pph-percent-select');
+
+        if (pphPercentSelect) {
+            pphPercentSelect.addEventListener('change', function() {
+                if(typeof calculateTotalFromAllSections === 'function') calculateTotalFromAllSections();
+            });
+        }
 
         if (adjustmentInput) {
             adjustmentInput.addEventListener('input', function() {

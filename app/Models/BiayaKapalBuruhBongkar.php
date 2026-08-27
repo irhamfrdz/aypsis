@@ -14,6 +14,8 @@ class BiayaKapalBuruhBongkar extends Model
         'nominal',
         'adjustment',
         'notes_adjustment',
+        'pph_percent',
+        'pph_amount',
         'total_nominal',
         'nomor_bukti',
         'penerima',
@@ -26,6 +28,8 @@ class BiayaKapalBuruhBongkar extends Model
         'kontainer_ids' => 'array',
         'nominal' => 'decimal:2',
         'adjustment' => 'decimal:2',
+        'pph_percent' => 'decimal:2',
+        'pph_amount' => 'decimal:2',
         'total_nominal' => 'decimal:2',
     ];
 

@@ -1946,7 +1946,11 @@ class BiayaKapalController extends Controller
                         $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
-                        $totalNominal = $nominal + $adjustment;
+                        
+                        $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                        $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                        
+                        $totalNominal = ($nominal + $adjustment) - $pphAmount;
                         
                         \App\Models\BiayaKapalBuruhBongkar::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -1956,6 +1960,8 @@ class BiayaKapalController extends Controller
                             'nominal' => $nominal,
                             'adjustment' => $adjustment,
                             'notes_adjustment' => $notesAdjustment,
+                            'pph_percent' => $pphPercent,
+                            'pph_amount' => $pphAmount,
                             'total_nominal' => $totalNominal,
                             'nomor_bukti' => $section['nomor_bukti'] ?? null,
                             'penerima' => $section['penerima'] ?? null,
@@ -2000,7 +2006,11 @@ class BiayaKapalController extends Controller
                         $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
-                        $totalNominal = $nominal + $adjustment;
+                        
+                        $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                        $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                        
+                        $totalNominal = ($nominal + $adjustment) - $pphAmount;
                         
                         \App\Models\BiayaKapalBuruhBatam::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -2010,6 +2020,8 @@ class BiayaKapalController extends Controller
                             'nominal' => $nominal,
                             'adjustment' => $adjustment,
                             'notes_adjustment' => $notesAdjustment,
+                            'pph_percent' => $pphPercent,
+                            'pph_amount' => $pphAmount,
                             'total_nominal' => $totalNominal,
                             'nomor_bukti' => $section['nomor_bukti'] ?? null,
                             'penerima' => $section['penerima'] ?? null,
@@ -5333,7 +5345,11 @@ class BiayaKapalController extends Controller
                             $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                             $adjustment = $cleanNum($section['adjustment'] ?? 0);
                             $notesAdjustment = $section['notes_adjustment'] ?? null;
-                            $totalNominal = $nominal + $adjustment;
+                            
+                            $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                            $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                            
+                            $totalNominal = ($nominal + $adjustment) - $pphAmount;
                             
                             \App\Models\BiayaKapalBuruhBatam::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -5343,6 +5359,8 @@ class BiayaKapalController extends Controller
                                 'nominal' => $nominal,
                                 'adjustment' => $adjustment,
                                 'notes_adjustment' => $notesAdjustment,
+                                'pph_percent' => $pphPercent,
+                                'pph_amount' => $pphAmount,
                                 'total_nominal' => $totalNominal,
                                 'nomor_bukti' => $section['nomor_bukti'] ?? null,
                                 'penerima' => $section['penerima'] ?? null,
