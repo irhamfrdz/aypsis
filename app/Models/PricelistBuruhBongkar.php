@@ -14,6 +14,7 @@ class PricelistBuruhBongkar extends Model
 
     protected $fillable = [
         'size',
+        'lokasi',
         'nominal',
         'status',
         'keterangan',

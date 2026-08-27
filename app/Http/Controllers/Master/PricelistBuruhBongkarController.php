@@ -18,7 +18,8 @@ class PricelistBuruhBongkarController extends Controller
         // Search
         if ($search = $request->get('q')) {
             $query->where(function ($q) use ($search) {
-                $q->where('size', 'like', "%{$search}%");
+                $q->where('size', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
@@ -48,9 +49,12 @@ class PricelistBuruhBongkarController extends Controller
         try {
             $data = $request->validate([
                 'size' => 'nullable|string|max:255',
+                'lokasi' => 'required|in:Batam,Jakarta',
                 'nominal' => 'required|numeric|min:0',
                 'keterangan' => 'nullable|string',
             ], [
+                'lokasi.required' => 'Lokasi wajib dipilih.',
+                'lokasi.in' => 'Lokasi harus Batam atau Jakarta.',
                 'nominal.required' => 'Nominal wajib diisi.',
                 'nominal.numeric' => 'Nominal harus berupa angka.',
                 'nominal.min' => 'Nominal tidak boleh kurang dari 0.',
@@ -89,9 +93,12 @@ class PricelistBuruhBongkarController extends Controller
         try {
             $data = $request->validate([
                 'size' => 'nullable|string|max:255',
+                'lokasi' => 'required|in:Batam,Jakarta',
                 'nominal' => 'required|numeric|min:0',
                 'keterangan' => 'nullable|string',
             ], [
+                'lokasi.required' => 'Lokasi wajib dipilih.',
+                'lokasi.in' => 'Lokasi harus Batam atau Jakarta.',
                 'nominal.required' => 'Nominal wajib diisi.',
                 'nominal.numeric' => 'Nominal harus berupa angka.',
                 'nominal.min' => 'Nominal tidak boleh kurang dari 0.',

@@ -1,6 +1,22 @@
 @csrf
 
 <div class="space-y-4">
+    <!-- Lokasi -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+            Lokasi <span class="text-red-500">*</span>
+        </label>
+        <select name="lokasi" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lokasi') border-red-500 @enderror" required>
+            <option value="">-- Pilih Lokasi --</option>
+            <option value="Batam" {{ old('lokasi', $item->lokasi ?? '') == 'Batam' ? 'selected' : '' }}>Batam</option>
+            <option value="Jakarta" {{ old('lokasi', $item->lokasi ?? '') == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+        </select>
+        @error('lokasi')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     <!-- Size -->
     <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
