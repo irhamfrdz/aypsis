@@ -552,6 +552,9 @@
     function initializeEditMode() {
         console.log("Initializing Edit Mode Data...");
         
+        // Set flag to prevent initializeKapalSections from running during edit init
+        window.isEditModeInitializing = true;
+        
         // 1. Jenis Biaya
         const currentJenis = "{{ $biayaKapal->jenis_biaya }}";
         const jbOption = Array.from(document.querySelectorAll('.jenis-biaya-option')).find(o => o.getAttribute('data-kode') === currentJenis);
@@ -648,14 +651,76 @@
                                 });
                             }
                         } else {
-                            // Populate Batam data (Wait a bit for containers to load after voyage change)
+                            // Populate Batam data - directly create container rows with saved data
+                            // Don't depend on async container fetch; use stored data instead
                             setTimeout(() => {
                                 const kontainerContainer = section.querySelector('.kontainer-container-section');
                                 if (kontainerContainer) kontainerContainer.innerHTML = '';
                                 
                                 if (myData.kontainer && myData.kontainer.length > 0) {
-                                    myData.kontainer.forEach(k => {
-                                        addKontainerToSectionWithValue(sectionIndex, k.bl_id, k.nominal, k.nomor_kontainer, k.size);
+                                    myData.kontainer.forEach((k, idx) => {
+                                        // Create kontainer row directly with saved data
+                                        const inputGroup = document.createElement('div');
+                                        inputGroup.className = 'flex items-end gap-2 mb-2 animate-fade-in';
+                                        
+                                        // Build options from sectionContainers if available, otherwise use saved data
+                                        let kontainerOptions = '<option value="">Pilih Kontainer</option>';
+                                        if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
+                                            window.sectionContainers[sectionIndex].forEach(c => {
+                                                const selected = c.id == k.bl_id ? 'selected' : '';
+                                                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}" ${selected}>${c.nomor_kontainer} (BL: ${c.no_bl || '-'})</option>`;
+                                            });
+                                        }
+                                        // If bl_id not found in options, add it manually
+                                        if (k.bl_id && (!window.sectionContainers || !window.sectionContainers[sectionIndex] || !window.sectionContainers[sectionIndex].find(c => c.id == k.bl_id))) {
+                                            kontainerOptions += `<option value="${k.bl_id}" data-nomor="${k.nomor_kontainer || ''}" data-size="${k.size || ''}" selected>${k.nomor_kontainer || 'Kontainer'} ${k.size ? '(' + k.size + ')' : ''}</option>`;
+                                        }
+                                        
+                                        inputGroup.innerHTML = `
+                                            <div class="flex-1">
+                                                <select name="kapal_sections[${sectionIndex}][kontainer][${idx}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" required>
+                                                    ${kontainerOptions}
+                                                </select>
+                                                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${idx}][nomor_kontainer]" class="kontainer-nomor-hidden" value="${k.nomor_kontainer || ''}">
+                                                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${idx}][size]" class="kontainer-size-hidden" value="${k.size || ''}">
+                                            </div>
+                                            <div class="w-32">
+                                                <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${idx}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Rp 0" value="${Math.round(k.nominal || 0).toLocaleString('id-ID')}" required>
+                                            </div>
+                                            <button type="button" onclick="removeKontainerFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        `;
+                                        
+                                        if (kontainerContainer) kontainerContainer.appendChild(inputGroup);
+                                        
+                                        // Add change listener for kontainer select
+                                        const kontainerSelect = inputGroup.querySelector('.kontainer-select-item');
+                                        const nomorHidden = inputGroup.querySelector('.kontainer-nomor-hidden');
+                                        const sizeHidden = inputGroup.querySelector('.kontainer-size-hidden');
+                                        
+                                        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+                                            $(kontainerSelect).select2({
+                                                placeholder: "Pilih Kontainer",
+                                                allowClear: true,
+                                                width: '100%'
+                                            });
+                                        } else {
+                                            kontainerSelect.addEventListener('change', function() {
+                                                const selectedOption = this.options[this.selectedIndex];
+                                                nomorHidden.value = selectedOption.getAttribute('data-nomor') || '';
+                                                sizeHidden.value = selectedOption.getAttribute('data-size') || '';
+                                            });
+                                        }
+                                        
+                                        // Add currency formatting to nominal
+                                        const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+                                        nominalInput.addEventListener('input', function() {
+                                            let val = this.value.replace(/\D/g, '');
+                                            if (val !== '') {
+                                                this.value = parseInt(val).toLocaleString('id-ID');
+                                            }
+                                        });
                                     });
                                 }
                                 
@@ -678,7 +743,7 @@
                                 if (totalNominalInput && myData.total_nominal) {
                                     totalNominalInput.value = parseInt(myData.total_nominal).toLocaleString('id-ID');
                                 }
-                            }, 1000);
+                            }, 1500);
                         }
                         
                         // Set adjustment values
@@ -1134,6 +1199,9 @@
                 populatePerlengkapanData(existingPerlengkapanSections);
             }
         }
+        
+        // Reset the flag so future interactions work normally
+        window.isEditModeInitializing = false;
     }
 
     // New helper for TKBM

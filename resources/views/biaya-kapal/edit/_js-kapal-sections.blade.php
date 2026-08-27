@@ -20,6 +20,8 @@
 
     function initializeKapalSections() {
         if (!kapalSectionsContainer) return;
+        // Skip if edit mode is initializing (to prevent unwanted section creation)
+        if (window.isEditModeInitializing) return;
         kapalSectionsContainer.innerHTML = '';
         kapalSectionCounter = 0;
         addKapalSection();
