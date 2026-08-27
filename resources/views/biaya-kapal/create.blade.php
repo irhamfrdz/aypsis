@@ -71,8 +71,6 @@
 {{-- Biaya Tanto --}}
 @include('biaya-kapal.create._section-tanto')
 
-{{-- Biaya Buruh Bongkar --}}
-@include('biaya-kapal.create._section-buruh-bongkar')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.create._form-fields-extra')
