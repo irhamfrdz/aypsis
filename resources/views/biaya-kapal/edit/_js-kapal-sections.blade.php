@@ -426,6 +426,7 @@
     window.addBarangToSectionWithValue = function(sectionIndex, barangId, jumlah) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.barang-container-section');
+        if (!container) return;
         const barangIndex = container.children.length;
         
         let barangOptions = '<option value="">Pilih Nama Barang</option>';
@@ -510,6 +511,7 @@
     window.addBarangToSection = function(sectionIndex) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.barang-container-section');
+        if (!container) return;
         const barangIndex = container.children.length;
         
         let barangOptions = '<option value="">Pilih Nama Barang</option>';
@@ -551,6 +553,7 @@
     window.addBuruhToSection = function(sectionIndex) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.buruh-container-section');
+        if (!container) return;
         const buruhIndex = container.children.length;
         
         let buruhOptions = '<option value="">Pilih Nama Buruh</option>';
@@ -920,6 +923,7 @@
     window.addKontainerToSection = function(sectionIndex) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.kontainer-container-section');
+        if (!container) return;
         const kontainerIndex = container.children.length;
         
         let kontainerOptions = '<option value="">Pilih Kontainer</option>';

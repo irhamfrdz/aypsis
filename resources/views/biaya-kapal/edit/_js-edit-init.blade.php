@@ -599,8 +599,31 @@
                                     vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
                                 }
                                 voySel.innerHTML = opt;
-                                if (myData.voyage) voySel.value = myData.voyage;
-                                $(voySel).trigger('change'); // Fetch containers if Batam
+                                    if (myData.voyage) {
+                                    // Check if the voyage exists in the options
+                                    const optionExists = Array.from(voySel.options).some(opt => opt.value === myData.voyage);
+                                    
+                                    if (optionExists) {
+                                        voySel.value = myData.voyage;
+                                    } else {
+                                        // Switch to manual input
+                                        const manualBtn = section.querySelector('.voyage-manual-btn');
+                                        if (manualBtn) manualBtn.click();
+                                        
+                                        const voyInput = section.querySelector('.voyage-input');
+                                        if (voyInput) voyInput.value = myData.voyage;
+                                    }
+                                    
+                                    // Trigger change to load containers if batam
+                                    if (myData.is_batam) {
+                                        const event = new Event('change');
+                                        voySel.dispatchEvent(event);
+                                        const voyInput = section.querySelector('.voyage-input');
+                                        if (voyInput && !voyInput.classList.contains('hidden')) {
+                                            voyInput.dispatchEvent(event);
+                                        }
+                                    }
+                                }
                             } catch(e) {
                                 voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
                                 voySel.value = myData.voyage;
@@ -611,7 +634,8 @@
                         
                         // Populate Jakarta data
                         if (!myData.is_batam) {
-                            section.querySelector('.barang-container-section').innerHTML = '';
+                            const barangContainer = section.querySelector('.barang-container-section');
+                            if (barangContainer) barangContainer.innerHTML = '';
                             if (myData.barang) {
                                 myData.barang.forEach(b => {
                                     addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
