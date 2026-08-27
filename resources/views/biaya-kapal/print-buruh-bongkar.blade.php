@@ -265,7 +265,7 @@
 
         <!-- Detail Biaya Kapal -->
         <div style="margin-bottom: 8px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya Buruh Batam:</strong>
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya Buruh Bongkar:</strong>
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
@@ -280,8 +280,8 @@
                 </thead>
                 <tbody>
                     @php $rowNumber = 0; @endphp
-                    @if($biayaKapal->buruhBatamDetails && $biayaKapal->buruhBatamDetails->count() > 0)
-                        @foreach($biayaKapal->buruhBatamDetails as $detail)
+                    @if($biayaKapal->buruhBongkarDetails && $biayaKapal->buruhBongkarDetails->count() > 0)
+                        @foreach($biayaKapal->buruhBongkarDetails as $detail)
                             @php
                                 $rowNumber++;
                                 $kontainerList = is_array($detail->kontainer_ids) ? $detail->kontainer_ids : json_decode($detail->kontainer_ids, true);

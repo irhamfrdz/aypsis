@@ -2811,6 +2811,11 @@ class BiayaKapalController extends Controller
             return $this->printBuruhBatam($biayaKapal);
         }
 
+        // Check if it's Biaya Buruh Bongkar
+        if ($biayaKapal->jenis_biaya === 'KB054' && $biayaKapal->buruhBongkarDetails && $biayaKapal->buruhBongkarDetails->count() > 0) {
+            return $this->printBuruhBongkar($biayaKapal);
+        }
+
         // Check if it's Biaya Meratus
         if ($biayaKapal->klasifikasiBiaya &&
             stripos($biayaKapal->klasifikasiBiaya->nama, 'meratus') !== false) {
@@ -3201,6 +3206,16 @@ class BiayaKapalController extends Controller
         $biayaKapal->load(['klasifikasiBiaya', 'buruhBatamDetails']);
 
         return view('biaya-kapal.print-buruh-batam', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya Buruh Bongkar specifically.
+     */
+    public function printBuruhBongkar(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'buruhBongkarDetails']);
+
+        return view('biaya-kapal.print-buruh-bongkar', compact('biayaKapal'));
     }
 
     /**
