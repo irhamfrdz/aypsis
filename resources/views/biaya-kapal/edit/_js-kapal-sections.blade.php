@@ -975,7 +975,11 @@
                 // Auto-fill nominal for Buruh Bongkar
                 if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
                     if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
-                        const pricelist = pricelistBuruhBongkarData.find(p => String(p.size) === String(size));
+                        const cleanCSize = String(size).replace(/[^0-9]/g, '');
+                        const pricelist = pricelistBuruhBongkarData.find(p => {
+                            const cleanPSize = String(p.size).replace(/[^0-9]/g, '');
+                            return cleanPSize === cleanCSize;
+                        });
                         if (pricelist) {
                             const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
                             nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
@@ -999,7 +1003,11 @@
                 // Auto-fill nominal for Buruh Bongkar
                 if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
                     if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
-                        const pricelist = pricelistBuruhBongkarData.find(p => String(p.size) === String(size));
+                        const cleanCSize = String(size).replace(/[^0-9]/g, '');
+                        const pricelist = pricelistBuruhBongkarData.find(p => {
+                            const cleanPSize = String(p.size).replace(/[^0-9]/g, '');
+                            return cleanPSize === cleanCSize;
+                        });
                         if (pricelist) {
                             const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
                             nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
