@@ -318,6 +318,8 @@
         if (currentLokasi !== 'batam') {
             addBarangToSection(sectionIndex);
         }
+        
+        return section;
     }
     
     // Auto-fill barang based on container counts from BL table
