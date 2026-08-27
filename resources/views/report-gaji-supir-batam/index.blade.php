@@ -67,7 +67,7 @@
                     <th class="p-3 font-medium">Uang Malam/Libur</th>
                     <th class="p-3 font-medium text-red-600">Potongan 5%</th>
                     <th class="p-3 font-medium">Total Gaji</th>
-
+                    <th class="p-3 font-medium text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-gray-50">
@@ -99,11 +99,15 @@
                         <td class="p-3 text-gray-600">Rp {{ number_format($gaji->uang_malam_libur, 0, ',', '.') }}</td>
                         <td class="p-3 text-red-500">Rp {{ number_format($gaji->nominal_potongan_5_persen, 0, ',', '.') }}</td>
                         <td class="p-3 font-semibold text-emerald-600">Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}</td>
-
+                        <td class="p-3 text-center">
+                            <a href="{{ route('gaji-supir-batam.show', $gaji->id) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-colors text-xs font-medium">
+                                <i class="fas fa-eye mr-1"></i> Detail
+                            </a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-8 text-center text-gray-500">
+                        <td colspan="8" class="p-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i>
                             Tidak ada data gaji supir untuk periode ini
                         </td>
@@ -119,7 +123,7 @@
                         <td class="p-3 text-gray-800">Rp {{ number_format($sumMalamLibur, 0, ',', '.') }}</td>
                         <td class="p-3 text-red-600">Rp {{ number_format($sumPotongan, 0, ',', '.') }}</td>
                         <td class="p-3 text-emerald-600">Rp {{ number_format($sumTotal, 0, ',', '.') }}</td>
-
+                        <td></td>
                     </tr>
                 </tfoot>
             @endif
