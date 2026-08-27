@@ -1827,6 +1827,39 @@ Route::middleware([
             ->name('pricelist-buruh.destroy')
             ->middleware('can:master-pricelist-buruh-delete');
 
+        // Pricelist Buruh Bongkar Management
+        Route::get('pricelist-buruh-bongkar', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'index'])
+            ->name('pricelist-buruh-bongkar.index')
+            ->middleware('can:master-pricelist-buruh-bongkar-view');
+
+        Route::get('pricelist-buruh-bongkar/create', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'create'])
+            ->name('pricelist-buruh-bongkar.create')
+            ->middleware('can:master-pricelist-buruh-bongkar-create');
+
+        Route::post('pricelist-buruh-bongkar', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'store'])
+            ->name('pricelist-buruh-bongkar.store')
+            ->middleware('can:master-pricelist-buruh-bongkar-create');
+
+        Route::get('pricelist-buruh-bongkar/{pricelistBuruhBongkar}', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'show'])
+            ->name('pricelist-buruh-bongkar.show')
+            ->middleware('can:master-pricelist-buruh-bongkar-view');
+
+        Route::get('pricelist-buruh-bongkar/{pricelistBuruhBongkar}/edit', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'edit'])
+            ->name('pricelist-buruh-bongkar.edit')
+            ->middleware('can:master-pricelist-buruh-bongkar-update');
+
+        Route::put('pricelist-buruh-bongkar/{pricelistBuruhBongkar}', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'update'])
+            ->name('pricelist-buruh-bongkar.update')
+            ->middleware('can:master-pricelist-buruh-bongkar-update');
+
+        Route::patch('pricelist-buruh-bongkar/{pricelistBuruhBongkar}', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'update'])
+            ->name('pricelist-buruh-bongkar.update')
+            ->middleware('can:master-pricelist-buruh-bongkar-update');
+
+        Route::delete('pricelist-buruh-bongkar/{pricelistBuruhBongkar}', [\App\Http\Controllers\Master\PricelistBuruhBongkarController::class, 'destroy'])
+            ->name('pricelist-buruh-bongkar.destroy')
+            ->middleware('can:master-pricelist-buruh-bongkar-delete');
+
         // Pricelist TKBM Routes
         Route::get('pricelist-tkbm', [\App\Http\Controllers\PricelistTkbmController::class, 'index'])->name('pricelist-tkbm.index');
         Route::get('pricelist-tkbm/create', [\App\Http\Controllers\PricelistTkbmController::class, 'create'])->name('pricelist-tkbm.create');
