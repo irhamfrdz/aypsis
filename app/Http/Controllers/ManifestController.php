@@ -121,7 +121,9 @@ class ManifestController extends Controller
             'selected_manifest_voyage' => $noVoyage,
         ]);
 
-        return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage'));
+        $waTemplates = \App\Models\WaTemplate::where('is_active', true)->get();
+
+        return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage', 'waTemplates'));
     }
 
     /**
@@ -1398,5 +1400,80 @@ class ManifestController extends Controller
                 $imageUrls[] = asset('storage/'.$img);
             }
         }
+    }
+    public function broadcastPreview(Request $request)
+    {
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage');
+        $kategoriMasalah = $request->input('kategori_masalah');
+        $deskripsiMasalah = $request->input('deskripsi_masalah');
+        $estimasiKeterlambatan = $request->input('estimasi_keterlambatan');
+        $templateId = $request->input('template_id');
+
+        $template = \App\Models\WaTemplate::find($templateId);
+        
+        if (!$template) {
+            return back()->with('error', 'Template WA tidak ditemukan.');
+        }
+
+        $manifests = Manifest::where('nama_kapal', $namaKapal)
+            ->where('no_voyage', $noVoyage)
+            ->orderBy('nomor_bl')
+            ->get();
+
+        // Group by shipper_id jika ada, atau fallback ke pengirim (string)
+        $groupedManifests = $manifests->groupBy(function ($item) {
+            return $item->shipper_id ?: $item->pengirim;
+        });
+
+        $broadcastData = [];
+
+        foreach ($groupedManifests as $groupKey => $shipperManifests) {
+            if (!$groupKey) continue; // Skip jika tidak ada shipper_id dan pengirim kosong
+
+            $firstManifest = $shipperManifests->first();
+            
+            $shipper = null;
+            if ($firstManifest->shipper_id) {
+                $shipper = \App\Models\ShipperConsignee::find($firstManifest->shipper_id);
+            } else if ($firstManifest->pengirim) {
+                $shipper = \App\Models\ShipperConsignee::where('shipper', $firstManifest->pengirim)->first();
+            }
+
+            $nomorKontak = $shipper ? ($shipper->contact_person ?: $shipper->telepon) : null;
+            
+            if (!$shipper || empty($nomorKontak)) {
+                continue;
+            }
+
+            $daftarResi = "";
+            foreach ($shipperManifests as $m) {
+                $daftarResi .= "- BL: " . $m->nomor_bl . " / Kontainer: " . $m->nomor_kontainer . "\n";
+            }
+
+            // Nama untuk template (jika shipper name kosong, fallback)
+            $namaTujuan = $shipper->shipper ?: 'Shipper';
+
+            $isiPesan = $template->isi_template;
+            $isiPesan = str_replace('{shipper_name}', $namaTujuan, $isiPesan);
+            $isiPesan = str_replace('{nama_kapal}', $namaKapal, $isiPesan);
+            $isiPesan = str_replace('{no_voyage}', $noVoyage, $isiPesan);
+            $isiPesan = str_replace('{kategori_masalah}', $kategoriMasalah, $isiPesan);
+            $isiPesan = str_replace('{deskripsi_masalah}', $deskripsiMasalah, $isiPesan);
+            $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
+            $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
+
+            $waUrl = "https://wa.me/" . preg_replace('/[^0-9]/', '', $nomorKontak) . "?text=" . rawurlencode($isiPesan);
+
+            $broadcastData[] = [
+                'shipper_name' => $namaTujuan,
+                'telepon' => $nomorKontak,
+                'jumlah_kontainer' => $shipperManifests->count(),
+                'pesan' => $isiPesan,
+                'wa_url' => $waUrl
+            ];
+        }
+
+        return view('manifests.broadcast-preview', compact('namaKapal', 'noVoyage', 'broadcastData', 'kategoriMasalah'));
     }
 }

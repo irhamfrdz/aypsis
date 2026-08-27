@@ -61,7 +61,7 @@
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipper</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consignee</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telepon</th>
+                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Person</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HS Code</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commodity</th>
                     <th class="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -73,7 +73,7 @@
                         <td class="py-4 px-4 text-[10px] text-gray-900">{{ $index + 1 }}</td>
                         <td class="py-4 px-4 text-[10px] font-medium text-gray-900">{{ $item->shipper ?: '-' }}</td>
                         <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->consignee ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->telepon ?: '-' }}</td>
+                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->contact_person ?: $item->telepon ?: '-' }}</td>
                         <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->hs_code ?: '-' }}</td>
                         <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->commodity ?: '-' }}</td>
                         <td class="py-4 px-4 text-center text-[10px] font-medium">

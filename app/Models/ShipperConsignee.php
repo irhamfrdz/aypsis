@@ -30,6 +30,7 @@ class ShipperConsignee extends Model
         'condition',
         'ip_bp_kawasan',
         'npwp_consignee_16_digit',
+        'contact_person',
         'status',
     ];
 }

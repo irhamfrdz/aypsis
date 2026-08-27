@@ -2457,6 +2457,9 @@ Route::middleware([
         // 🏗️ CORE MASTER DATA (SIMPLE RESOURCES) - Alphabetical Order
         // ═══════════════════════════════════════════════════════════════════════
 
+        // 📱 WA Templates Management
+        Route::resource('master/wa-templates', \App\Http\Controllers\Master\WaTemplateController::class)->names('master.wa-templates');
+
         // 🏢 Shipper Consignee Management with permissions
         Route::get('master/shipper-consignee/template', [\App\Http\Controllers\ShipperConsigneeController::class, 'template'])->name('master.shipper-consignee.template');
         Route::post('master/shipper-consignee/import', [\App\Http\Controllers\ShipperConsigneeController::class, 'import'])->name('master.shipper-consignee.import');
@@ -6710,6 +6713,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/{id}/update-satuan', [App\Http\Controllers\ManifestController::class, 'updateSatuan'])->name('manifests.update-satuan');
     Route::post('manifests/{id}/update-kuantitas', [App\Http\Controllers\ManifestController::class, 'updateKuantitas'])->name('manifests.update-kuantitas');
     Route::post('manifests/sync', [App\Http\Controllers\ManifestController::class, 'sync'])->name('manifests.sync');
+    Route::post('manifests/broadcast-preview', [App\Http\Controllers\ManifestController::class, 'broadcastPreview'])->name('manifests.broadcast-preview');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
     Route::get('manifests/{id}/print-document', [App\Http\Controllers\ManifestController::class, 'printDocument'])->name('manifests.print-document');
     Route::get('manifests/{id}/print-ba', [App\Http\Controllers\ManifestController::class, 'printBa'])->name('manifests.print-ba');

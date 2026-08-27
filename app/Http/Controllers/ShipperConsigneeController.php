@@ -39,7 +39,21 @@ class ShipperConsigneeController extends Controller
             'consignee' => 'nullable|string|max:255',
         ]);
 
-        $shipperConsignee = ShipperConsignee::create($request->all());
+        $dataToStore = $request->all();
+        $shipperConsignee = ShipperConsignee::create($dataToStore);
+        
+        // Memastikan contact_person tersimpan, bypass fillable cache jika ada
+        if (array_key_exists('contact_person', $dataToStore)) {
+            $shipperConsignee->contact_person = $dataToStore['contact_person'];
+            $shipperConsignee->save();
+        }
+
+        // Jika contact_person diisi, perbarui juga untuk semua baris dengan nama shipper yang sama
+        if (!empty($dataToStore['contact_person']) && !empty($shipperConsignee->shipper)) {
+            ShipperConsignee::where('shipper', $shipperConsignee->shipper)
+                ->where('id', '!=', $shipperConsignee->id)
+                ->update(['contact_person' => $dataToStore['contact_person']]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -73,7 +87,21 @@ class ShipperConsigneeController extends Controller
             'consignee' => 'nullable|string|max:255',
         ]);
 
-        $shipper_consignee->update($request->all());
+        $dataToUpdate = $request->all();
+        $shipper_consignee->update($dataToUpdate);
+        
+        // Memastikan contact_person tersimpan, bypass fillable cache jika ada
+        if (array_key_exists('contact_person', $dataToUpdate)) {
+            $shipper_consignee->contact_person = $dataToUpdate['contact_person'];
+            $shipper_consignee->save();
+        }
+
+        // Jika contact_person diisi, perbarui juga untuk semua baris dengan nama shipper yang sama
+        if (!empty($dataToUpdate['contact_person']) && !empty($shipper_consignee->shipper)) {
+            ShipperConsignee::where('shipper', $shipper_consignee->shipper)
+                ->where('id', '!=', $shipper_consignee->id)
+                ->update(['contact_person' => $dataToUpdate['contact_person']]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
