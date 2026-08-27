@@ -4138,6 +4138,14 @@ Route::middleware([
             ->name('report-kerja-supir-batam.export')
             ->middleware('can:report-kerja-supir-batam-view');
 
+        // Report Gaji Supir Batam
+        Route::get('report-gaji-supir-batam', [\App\Http\Controllers\ReportGajiSupirBatamController::class, 'index'])
+            ->name('report-gaji-supir-batam.index')
+            ->middleware('can:gaji-supir-batam-view');
+        Route::get('report-gaji-supir-batam/export', [\App\Http\Controllers\ReportGajiSupirBatamController::class, 'export'])
+            ->name('report-gaji-supir-batam.export')
+            ->middleware('can:gaji-supir-batam-view');
+
         // Pranota Uang Jalan Bongkaran - list & basic management
         Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
             ->name('pranota-uang-jalan-bongkaran.index')
