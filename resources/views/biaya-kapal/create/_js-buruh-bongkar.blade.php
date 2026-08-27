@@ -241,6 +241,62 @@
                 this.classList.add('bg-gray-200', 'text-gray-600');
             }
         });
+
+        // --- AUTO-COPY PAYMENT DETAILS FROM KAPAL 1 ---
+        const namaVendorInputBB = section.querySelector('.nama-vendor-input');
+        const penerimaSelectBB = section.querySelector('.penerima-select');
+        const bankSelectBB = section.querySelector('.bank-select');
+        const nomorRekeningInputBB = section.querySelector('.nomor-rekening-input');
+
+        // Copy values from Kapal 1 if this is a new section (> 1)
+        if (sectionIndex > 1) {
+            const firstSection = bbSectionsContainer.querySelector('[data-section-index="1"]');
+            if (firstSection) {
+                const firstVendor = firstSection.querySelector('.nama-vendor-input');
+                const firstPenerima = firstSection.querySelector('.penerima-select');
+                const firstBank = firstSection.querySelector('.bank-select');
+                const firstRekening = firstSection.querySelector('.nomor-rekening-input');
+
+                if (namaVendorInputBB && firstVendor && firstVendor.value) namaVendorInputBB.value = firstVendor.value;
+                if (penerimaSelectBB && firstPenerima && firstPenerima.value) penerimaSelectBB.value = firstPenerima.value;
+                if (bankSelectBB && firstBank && firstBank.value) bankSelectBB.value = firstBank.value;
+                if (nomorRekeningInputBB && firstRekening && firstRekening.value) nomorRekeningInputBB.value = firstRekening.value;
+            }
+        }
+
+        // Auto-update other sections when Kapal 1 changes
+        if (sectionIndex === 1) {
+            const updateOtherSectionsBB = (selector, value) => {
+                bbSectionsContainer.querySelectorAll('.kapal-section').forEach(sec => {
+                    const idx = parseInt(sec.getAttribute('data-section-index'));
+                    if (idx > 1) {
+                        const input = sec.querySelector(selector);
+                        if (input) input.value = value;
+                    }
+                });
+            };
+
+            if (namaVendorInputBB) {
+                namaVendorInputBB.addEventListener('input', function() {
+                    updateOtherSectionsBB('.nama-vendor-input', this.value);
+                });
+            }
+            if (penerimaSelectBB) {
+                penerimaSelectBB.addEventListener('change', function() {
+                    updateOtherSectionsBB('.penerima-select', this.value);
+                });
+            }
+            if (bankSelectBB) {
+                bankSelectBB.addEventListener('change', function() {
+                    updateOtherSectionsBB('.bank-select', this.value);
+                });
+            }
+            if (nomorRekeningInputBB) {
+                nomorRekeningInputBB.addEventListener('input', function() {
+                    updateOtherSectionsBB('.nomor-rekening-input', this.value);
+                });
+            }
+        }
     }
 
     function removeBuruhBongkarSection(index) {

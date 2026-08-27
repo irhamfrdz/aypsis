@@ -697,6 +697,13 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'nullable|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'nullable|numeric|min:0',
+            'kapal_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'kapal_sections.*.penerima' => 'nullable|string|max:255',
+            'kapal_sections.*.bank_id' => 'nullable|exists:banks,id',
+            'kapal_sections.*.nomor_rekening' => 'nullable|string|max:100',
+            'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
+            'kapal_sections.*.pph_percent' => 'nullable|numeric',
+            'kapal_sections.*.pph_amount' => 'nullable|numeric',
             // Biaya Air sections structure
             'air' => 'nullable|array',
             'air.*.kapal' => 'nullable|string|max:255',
@@ -2164,6 +2171,19 @@ class BiayaKapalController extends Controller
                                 'adjustment' => $sectionAdjustment,
                                 'notes_adjustment' => $sectionNotesAdjustment,
                             ]);
+                        }
+                    }
+
+                    // Save payment details from first section to main biaya_kapal record (for print view)
+                    $firstSection = collect($request->kapal_sections)->first();
+                    if ($firstSection) {
+                        $updateData = [];
+                        if (!empty($firstSection['nama_vendor'])) $updateData['nama_vendor'] = $firstSection['nama_vendor'];
+                        if (!empty($firstSection['penerima'])) $updateData['penerima'] = $firstSection['penerima'];
+                        if (!empty($firstSection['bank_id'])) $updateData['bank_id'] = $firstSection['bank_id'];
+                        if (!empty($firstSection['nomor_rekening'])) $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
+                        if (!empty($updateData)) {
+                            $biayaKapal->update($updateData);
                         }
                     }
                 }
@@ -3792,6 +3812,13 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
+            'kapal_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'kapal_sections.*.penerima' => 'nullable|string|max:255',
+            'kapal_sections.*.bank_id' => 'nullable|exists:banks,id',
+            'kapal_sections.*.nomor_rekening' => 'nullable|string|max:100',
+            'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
+            'kapal_sections.*.pph_percent' => 'nullable|numeric',
+            'kapal_sections.*.pph_amount' => 'nullable|numeric',
 
             // Biaya Umum sections
             'umum_sections' => 'nullable|array',
@@ -5470,6 +5497,19 @@ class BiayaKapalController extends Controller
                                     'adjustment' => $sectionAdjustment,
                                     'notes_adjustment' => $sectionNotesAdjustment,
                                 ]);
+                            }
+                        }
+
+                        // Save payment details from first section to main biaya_kapal record (for print view)
+                        $firstSection = collect($request->kapal_sections)->first();
+                        if ($firstSection) {
+                            $updateData = [];
+                            if (!empty($firstSection['nama_vendor'])) $updateData['nama_vendor'] = $firstSection['nama_vendor'];
+                            if (!empty($firstSection['penerima'])) $updateData['penerima'] = $firstSection['penerima'];
+                            if (!empty($firstSection['bank_id'])) $updateData['bank_id'] = $firstSection['bank_id'];
+                            if (!empty($firstSection['nomor_rekening'])) $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
+                            if (!empty($updateData)) {
+                                $biayaKapal->update($updateData);
                             }
                         }
                     }
