@@ -2733,7 +2733,12 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank', 'buruhBatamDetails']);
+
+        // Check if it's Biaya Buruh Batam
+        if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->buruhBatamDetails && $biayaKapal->buruhBatamDetails->count() > 0) {
+            return $this->printBuruhBatam($biayaKapal);
+        }
 
         // Check if it's Biaya Meratus
         if ($biayaKapal->klasifikasiBiaya &&
