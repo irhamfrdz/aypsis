@@ -8,14 +8,25 @@ class BiayaKapalBuruhBongkar extends Model
 {
     protected $fillable = [
         'biaya_kapal_id',
-        'nama_pengirim',
-        'start_date',
-        'end_date',
+        'kapal',
+        'voyage',
+        'kontainer_ids',
+        'nominal',
+        'adjustment',
+        'notes_adjustment',
+        'total_nominal',
+        'nomor_bukti',
+        'penerima',
+        'nama_vendor',
+        'bank_id',
+        'nomor_rekening',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'kontainer_ids' => 'array',
+        'nominal' => 'decimal:2',
+        'adjustment' => 'decimal:2',
+        'total_nominal' => 'decimal:2',
     ];
 
     public function biayaKapal()
@@ -23,8 +34,4 @@ class BiayaKapalBuruhBongkar extends Model
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
     }
 
-    public function details()
-    {
-        return $this->hasMany(BiayaKapalBuruhBongkarDetail::class, 'biaya_kapal_buruh_bongkar_id');
-    }
 }

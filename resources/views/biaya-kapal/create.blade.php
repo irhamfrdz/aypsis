@@ -30,6 +30,9 @@
 {{-- Biaya Buruh / Barang --}}
 @include('biaya-kapal.create._section-buruh')
 
+{{-- Biaya Buruh Bongkar --}}
+@include('biaya-kapal.create._section-buruh-bongkar')
+
 {{-- Biaya OPP/OPT --}}
 @include('biaya-kapal.create._section-opp-opt')
 

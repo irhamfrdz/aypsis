@@ -389,6 +389,12 @@
         // Show Buruh Bongkar fields if "Biaya Buruh Bongkar" is selected (KB054)
         else if (selectedValue === 'KB054') {
             if (buruhBongkarWrapper) buruhBongkarWrapper.classList.remove('hidden');
+            
+            // Location hack removed since we have dedicated backend logic
+
+            if(typeof initializeBuruhBongkarSections === 'function') {
+                initializeBuruhBongkarSections();
+            }
 
             // Hide standard kapal/voyage/bl fields
             kapalWrapper.classList.add('hidden');
@@ -403,6 +409,7 @@
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(bankIdWrapper) bankIdWrapper.classList.add('hidden');
 
             // Remove required attributes
             if(nominalInput) nominalInput.removeAttribute('required');

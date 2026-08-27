@@ -1915,7 +1915,61 @@ class BiayaKapalController extends Controller
                     'sections_count' => count($request->kapal_sections),
                 ]);
 
-                if ($lokasi === 'batam') {
+                if ($request->jenis_biaya === 'KB054') {
+                    // MODE BURUH BONGKAR: Simpan ke tabel biaya_kapal_buruh_bongkars
+                    foreach ($request->kapal_sections as $sectionIndex => $section) {
+                        $kapalName = $section['kapal'] ?? null;
+                        $voyageName = $section['voyage'] ?? null;
+                        
+                        // Kumpulkan kontainer ids
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (!empty($k['bl_id'])) {
+                                    $cleanNominalK = function ($val) {
+                                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                    };
+                                    $kontainerIds[] = [
+                                        'bl_id' => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size' => $k['size'] ?? null,
+                                        'nominal' => $cleanNominalK($k['nominal'] ?? 0),
+                                    ];
+                                }
+                            }
+                        }
+                        
+                        $cleanNum = function ($val) {
+                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                        };
+                        
+                        $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                        $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                        $notesAdjustment = $section['notes_adjustment'] ?? null;
+                        $totalNominal = $nominal + $adjustment;
+                        
+                        \App\Models\BiayaKapalBuruhBongkar::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                            'kontainer_ids' => $kontainerIds,
+                            'nominal' => $nominal,
+                            'adjustment' => $adjustment,
+                            'notes_adjustment' => $notesAdjustment,
+                            'total_nominal' => $totalNominal,
+                            'nomor_bukti' => $section['nomor_bukti'] ?? null,
+                            'penerima' => $section['penerima'] ?? null,
+                            'nama_vendor' => $section['nama_vendor'] ?? null,
+                            'bank_id' => $section['bank_id'] ?? null,
+                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                        ]);
+                    }
+                    
+                    // Auto calculate total for Buruh Bongkar
+                    $totalBongkar = \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
+                    $biayaKapal->update(['nominal' => $totalBongkar]);
+                    
+                } elseif ($lokasi === 'batam') {
                     // MODE BATAM: Simpan ke tabel biaya_kapal_buruh_batams (tanpa barang/tenaga kerja)
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
                         $kapalName = $section['kapal'] ?? null;
@@ -5194,9 +5248,62 @@ class BiayaKapalController extends Controller
                 BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalTenagaKerja::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 
                 if (! empty($request->kapal_sections)) {
-                    if ($lokasi === 'batam') {
+                    if ($request->jenis_biaya === 'KB054') {
+                        // MODE BURUH BONGKAR
+                        foreach ($request->kapal_sections as $sectionIndex => $section) {
+                            $kapalName = $section['kapal'] ?? null;
+                            $voyageName = $section['voyage'] ?? null;
+                            
+                            $kontainerIds = [];
+                            if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                                foreach ($section['kontainer'] as $k) {
+                                    if (!empty($k['bl_id'])) {
+                                        $cleanNominalK = function ($val) {
+                                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                        };
+                                        $kontainerIds[] = [
+                                            'bl_id' => $k['bl_id'],
+                                            'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                            'size' => $k['size'] ?? null,
+                                            'nominal' => $cleanNominalK($k['nominal'] ?? 0),
+                                        ];
+                                    }
+                                }
+                            }
+                            
+                            $cleanNum = function ($val) {
+                                return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                            };
+                            
+                            $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                            $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                            $notesAdjustment = $section['notes_adjustment'] ?? null;
+                            $totalNominal = $nominal + $adjustment;
+                            
+                            \App\Models\BiayaKapalBuruhBongkar::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'kontainer_ids' => $kontainerIds,
+                                'nominal' => $nominal,
+                                'adjustment' => $adjustment,
+                                'notes_adjustment' => $notesAdjustment,
+                                'total_nominal' => $totalNominal,
+                                'nomor_bukti' => $section['nomor_bukti'] ?? null,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nama_vendor' => $section['nama_vendor'] ?? null,
+                                'bank_id' => $section['bank_id'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                            ]);
+                        }
+                        
+                        $totalBongkar = \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
+                        $biayaKapal->update(['nominal' => $totalBongkar]);
+
+                    } elseif ($lokasi === 'batam') {
                         // MODE BATAM
                         foreach ($request->kapal_sections as $sectionIndex => $section) {
                             $kapalName = $section['kapal'] ?? null;
@@ -6376,11 +6483,27 @@ class BiayaKapalController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $manifests = \App\Models\Manifest::with(['suratJalanBongkaran', 'suratJalanBongkaranBatam'])
+        $kapal = $request->get('kapal');
+        $voyage = $request->get('voyage');
+        $kontainer = $request->get('kontainer');
+
+        $query = \App\Models\Manifest::with(['suratJalanBongkaran', 'suratJalanBongkaranBatam'])
             ->where('pengirim', $pengirim)
-            ->whereBetween('tanggal_berangkat', [$startDate, $endDate])
-            ->orderBy('tanggal_berangkat', 'desc')
-            ->get();
+            ->whereBetween('tanggal_berangkat', [$startDate, $endDate]);
+
+        if ($kapal) {
+            $query->where('nama_kapal', 'like', "%{$kapal}%");
+        }
+
+        if ($voyage) {
+            $query->where('no_voyage', 'like', "%{$voyage}%");
+        }
+
+        if ($kontainer) {
+            $query->where('nomor_kontainer', 'like', "%{$kontainer}%");
+        }
+
+        $manifests = $query->orderBy('tanggal_berangkat', 'desc')->get();
 
         $data = $manifests->map(function ($manifest) {
             $suratJalan = '-';
