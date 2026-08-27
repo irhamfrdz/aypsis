@@ -996,7 +996,7 @@
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-buruh-bongkar-view'))
-                                    <a href="{{ route('pricelist-buruh-bongkar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pricelist-buruh-bongkar.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pricelist-buruh-bongkar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-buruh-bongkar.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Buruh Bongkar</span>
                                     </a>
                                 @endif
