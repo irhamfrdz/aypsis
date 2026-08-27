@@ -22,7 +22,7 @@
                 $allCombinations = $allCombinations->merge($biayaKapal->tenagaKerjaDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }));
             }
             if ($biayaKapal->buruhBatamDetails) {
-                $allCombinations = $allCombinations->merge($biayaKapal->buruhBatamDetails->map(function($i) { return $i->kapal . '|||' . $i->no_voyage; }));
+                $allCombinations = $allCombinations->merge($biayaKapal->buruhBatamDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }));
             }
             
             $allCombinations = $allCombinations->unique();
@@ -35,7 +35,7 @@
                     
                     $barangItems = $biayaKapal->barangDetails ? $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage) : collect([]);
                     $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails ? $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage) : collect([]);
-                    $batamItem = $biayaKapal->buruhBatamDetails ? $biayaKapal->buruhBatamDetails->where('kapal', $kapal)->where('no_voyage', $voyage)->first() : null;
+                    $batamItem = $biayaKapal->buruhBatamDetails ? $biayaKapal->buruhBatamDetails->where('kapal', $kapal)->where('voyage', $voyage)->first() : null;
                     
                     $isBatam = $batamItem ? true : false;
                     
@@ -46,6 +46,7 @@
                         'adjustment' => $batamItem ? $batamItem->adjustment : ($barangItems->first()->adjustment ?? 0),
                         'notes_adjustment' => $batamItem ? $batamItem->notes_adjustment : ($barangItems->first()->notes_adjustment ?? ''),
                         'total_nominal' => $batamItem ? $batamItem->total_nominal : 0,
+                        'nominal' => $batamItem ? $batamItem->nominal : 0,
                         'nomor_bukti' => $batamItem ? $batamItem->nomor_bukti : '',
                         'penerima' => $batamItem ? $batamItem->penerima : '',
                         'nama_vendor' => $batamItem ? $batamItem->nama_vendor : '',
@@ -739,9 +740,16 @@
                                 const nomRek = section.querySelector('.nomor-rekening-input');
                                 if (nomRek && myData.nomor_rekening) nomRek.value = myData.nomor_rekening;
                                 
-                                const totalNominalInput = section.querySelector('.total-nominal-input');
-                                if (totalNominalInput && myData.total_nominal) {
-                                    totalNominalInput.value = parseInt(myData.total_nominal).toLocaleString('id-ID');
+                                // Set nominal (manual input field)
+                                const nominalManualInput = section.querySelector('.nominal-manual-input');
+                                if (nominalManualInput && myData.nominal) {
+                                    nominalManualInput.value = parseInt(myData.nominal).toLocaleString('id-ID');
+                                }
+                                
+                                // Set total nominal display
+                                const nominalDisplay = section.querySelector('.section-nominal-display');
+                                if (nominalDisplay && myData.total_nominal) {
+                                    nominalDisplay.textContent = 'Rp ' + parseInt(myData.total_nominal).toLocaleString('id-ID');
                                 }
                             }, 1500);
                         }
