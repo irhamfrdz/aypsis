@@ -252,7 +252,115 @@
     }
 
     window.addKontainerToBuruhBongkarSection = function(sectionIndex) {
-        if(typeof window.addKontainerToSection === 'function') {
-            window.addKontainerToSection(sectionIndex);
+        const bbContainer = document.getElementById('buruh_bongkar_sections_container');
+        if (!bbContainer) return;
+        const section = bbContainer.querySelector(`[data-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const container = section.querySelector('.kontainer-container-section');
+        const kontainerIndex = container.children.length;
+        
+        let kontainerOptions = '<option value="">Pilih Kontainer</option>';
+        if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
+            window.sectionContainers[sectionIndex].forEach(c => {
+                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})</option>`;
+            });
         }
-    }
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2 animate-fade-in';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" required>
+                    ${kontainerOptions}
+                </select>
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
+            </div>
+            <div class="w-32">
+                <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Rp 0" required>
+            </div>
+            <button type="button" onclick="removeBbKontainerFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        const kontainerSelect = inputGroup.querySelector('.kontainer-select-item');
+        const nomorHidden = inputGroup.querySelector('.kontainer-nomor-hidden');
+        const sizeHidden = inputGroup.querySelector('.kontainer-size-hidden');
+
+        function autoFillNominal(size) {
+            if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
+                const cleanCSize = String(size).replace(/[^0-9]/g, '');
+                const pricelist = pricelistBuruhBongkarData.find(p => {
+                    const cleanPSize = String(p.size).replace(/[^0-9]/g, '');
+                    return cleanPSize === cleanCSize;
+                });
+                if (pricelist) {
+                    const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+                    nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
+                    if (typeof calculateTotalFromAllSections === 'function') calculateTotalFromAllSections();
+                }
+            }
+        }
+        
+        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(kontainerSelect).select2({
+                placeholder: "Pilih Kontainer",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $(kontainerSelect).on('select2:select', function (e) {
+                const selectedOption = $(this).find(':selected');
+                nomorHidden.value = selectedOption.attr('data-nomor') || '';
+                const size = selectedOption.attr('data-size') || '';
+                sizeHidden.value = size;
+                autoFillNominal(size);
+            });
+            
+            $(kontainerSelect).on('select2:unselect', function (e) {
+                nomorHidden.value = '';
+                sizeHidden.value = '';
+            });
+        } else {
+            kontainerSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                nomorHidden.value = selectedOption.getAttribute('data-nomor') || '';
+                const size = selectedOption.getAttribute('data-size') || '';
+                sizeHidden.value = size;
+                autoFillNominal(size);
+            });
+        }
+        
+        const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+        nominalInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val !== '') {
+                this.value = parseInt(val).toLocaleString('id-ID');
+            }
+            if (typeof calculateTotalFromAllSections === 'function') calculateTotalFromAllSections();
+        });
+    };
+
+    window.removeBbKontainerFromSection = function(button) {
+        const container = button.closest('.kontainer-container-section');
+        button.closest('.flex').remove();
+        // Reindex
+        const section = container.closest('.kapal-section');
+        const sectionIndex = section.getAttribute('data-section-index');
+        const inputGroups = container.querySelectorAll('.flex');
+        inputGroups.forEach((group, newIndex) => {
+            const select = group.querySelector('.kontainer-select-item');
+            if (select) select.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][bl_id]`;
+            const nomor = group.querySelector('.kontainer-nomor-hidden');
+            if (nomor) nomor.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nomor_kontainer]`;
+            const size = group.querySelector('.kontainer-size-hidden');
+            if (size) size.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][size]`;
+            const nominal = group.querySelector('.kontainer-nominal-item');
+            if (nominal) nominal.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nominal]`;
+        });
+        if (typeof calculateTotalFromAllSections === 'function') calculateTotalFromAllSections();
+    };
+
