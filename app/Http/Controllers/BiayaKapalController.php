@@ -6249,6 +6249,7 @@ class BiayaKapalController extends Controller
                     'nomor_kontainer',
                     'no_seal',
                     'tipe_kontainer',
+                    'size_kontainer',
                     'nama_barang'
                 )
                 ->where('no_voyage', $voyage)
@@ -6258,7 +6259,9 @@ class BiayaKapalController extends Controller
                 ->get()
                 ->map(function ($manifest) {
                     $size = '-';
-                    if (stripos($manifest->tipe_kontainer, '20') !== false) {
+                    if (!empty($manifest->size_kontainer)) {
+                        $size = $manifest->size_kontainer;
+                    } elseif (stripos($manifest->tipe_kontainer, '20') !== false) {
                         $size = '20';
                     } elseif (stripos($manifest->tipe_kontainer, '40') !== false) {
                         $size = '40';

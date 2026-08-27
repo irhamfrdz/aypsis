@@ -931,7 +931,8 @@
         let kontainerOptions = '<option value="">Pilih Kontainer</option>';
         if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
             window.sectionContainers[sectionIndex].forEach(c => {
-                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})</option>`;
+                const sizeInfo = c.size_kontainer && c.size_kontainer !== '-' ? ` [Size: ${c.size_kontainer}]` : '';
+                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})${sizeInfo}</option>`;
             });
         }
         
