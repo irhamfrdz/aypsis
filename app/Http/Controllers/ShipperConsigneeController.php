@@ -141,4 +141,23 @@ class ShipperConsigneeController extends Controller
             return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
         }
     }
+
+    public function templateContact()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ShipperContactExport, 'Template_Update_Contact_Person.xlsx');
+    }
+
+    public function importContact(Request $request)
+    {
+        $request->validate([
+            'file_contact' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ShipperContactImport, $request->file('file_contact'));
+            return redirect()->back()->with('success', 'Data Contact Person berhasil diupdate secara massal.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal update data: ' . $e->getMessage());
+        }
+    }
 }

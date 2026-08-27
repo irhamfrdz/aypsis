@@ -2463,6 +2463,9 @@ Route::middleware([
         // 🏢 Shipper Consignee Management with permissions
         Route::get('master/shipper-consignee/template', [\App\Http\Controllers\ShipperConsigneeController::class, 'template'])->name('master.shipper-consignee.template');
         Route::post('master/shipper-consignee/import', [\App\Http\Controllers\ShipperConsigneeController::class, 'import'])->name('master.shipper-consignee.import');
+        Route::get('master/shipper-consignee/template-contact', [\App\Http\Controllers\ShipperConsigneeController::class, 'templateContact'])->name('master.shipper-consignee.template-contact');
+        Route::post('master/shipper-consignee/import-contact', [\App\Http\Controllers\ShipperConsigneeController::class, 'importContact'])->name('master.shipper-consignee.import-contact');
+        
         Route::resource('master/shipper-consignee', \App\Http\Controllers\ShipperConsigneeController::class)
             ->names('master.shipper-consignee')
             ->middleware([
