@@ -484,6 +484,75 @@ Route::middleware([
             return view('master-persetujuan-absensi.riwayat');
         })->name('persetujuan-absensi.riwayat')->middleware('can:approval-absensi-view');
 
+        Route::get('persetujuan-absensi/print-multiple', function (Illuminate\Http\Request $request) {
+            $items = $request->input('items', []);
+            $dataToPrint = [];
+
+            foreach ($items as $item) {
+                $type = $item['type'] ?? '';
+                $id = $item['id'] ?? '';
+
+                if ($type === 'cutis') {
+                    $data = DB::table('cutis')
+                        ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
+                        ->select('cutis.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
+                        ->where('cutis.id', $id)
+                        ->first();
+                    if ($data) {
+                        $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                        $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
+                        
+                        $tanggal_mulai = \Carbon\Carbon::parse($data->tanggal_mulai);
+                        $tanggal_selesai = \Carbon\Carbon::parse($data->tanggal_selesai);
+                        
+                        $lama_cuti = 0;
+                        $currentDate = $tanggal_mulai->copy();
+                        while ($currentDate <= $tanggal_selesai) {
+                            if (!$currentDate->isWeekend()) {
+                                $lama_cuti++;
+                            }
+                            $currentDate->addDay();
+                        }
+                        $data->lama_cuti = $lama_cuti;
+                        
+                        $tahun = $tanggal_mulai->format('Y');
+                        $saldo = DB::table('saldo_cutis')
+                            ->where('karyawan_id', $data->karyawan_id)
+                            ->where('tahun', $tahun)
+                            ->first();
+                        $data->saldo = $saldo;
+
+                        $data->nama_hrd = '';
+                        if (!empty($data->approved_by_hrd)) {
+                            $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
+                            if ($hrdUser) {
+                                $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
+                                $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->name;
+                            }
+                        }
+
+                        $dataToPrint[] = ['type' => 'cuti', 'data' => $data];
+                    }
+                } else if ($type === 'permohonan_izins') {
+                    $data = DB::table('permohonan_izins')
+                        ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
+                        ->select('permohonan_izins.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik_supervisor')
+                        ->where('permohonan_izins.id', $id)
+                        ->first();
+                    if ($data) {
+                        $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                        $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
+                        
+                        $dataToPrint[] = ['type' => 'izin', 'data' => $data];
+                    }
+                }
+            }
+
+            if (empty($dataToPrint)) abort(404);
+
+            return view('master-persetujuan-absensi.print-multiple', compact('dataToPrint'));
+        })->name('persetujuan-absensi.print-multiple')->middleware('can:approval-absensi-view');
+
         Route::get('persetujuan-absensi/print/{type}/{id}', function ($type, $id) {
             if ($type === 'cutis') {
                 $data = DB::table('cutis')

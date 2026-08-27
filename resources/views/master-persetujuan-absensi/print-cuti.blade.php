@@ -172,6 +172,32 @@
         .signature-title {
             margin-bottom: 70px;
         }
+
+        /* Stamp */
+        .stamp {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 70px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 6px solid;
+            padding: 15px 40px;
+            border-radius: 12px;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 50;
+            letter-spacing: 5px;
+        }
+        .stamp.approved {
+            color: #10B981;
+            border-color: #10B981;
+        }
+        .stamp.rejected {
+            color: #EF4444;
+            border-color: #EF4444;
+        }
         
         @page {
             size: A4 landscape;
@@ -196,6 +222,16 @@
     </div>
 
     <div class="page">
+        <?php 
+            $statusText = strtoupper($data->status ?? '');
+            $isApproved = in_array($statusText, ['APPROVED', 'DISETUJUI']);
+            $isRejected = in_array($statusText, ['REJECTED', 'DITOLAK']);
+        ?>
+        @if($isApproved || $isRejected)
+            <div class="stamp {{ $isApproved ? 'approved' : 'rejected' }}">
+                {{ $isApproved ? 'DISETUJUI' : 'DITOLAK' }}
+            </div>
+        @endif
         <!-- Header -->
         <div class="header">
             <div class="logo">

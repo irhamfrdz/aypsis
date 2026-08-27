@@ -47,6 +47,9 @@
         </select>
         
         <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="printSelected()" class="flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center gap-2 shadow-sm" id="btn-print-selected">
+                <i class="fa-solid fa-print"></i> Cetak (<span id="print-count">0</span>)
+            </button>
             <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-md bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold border border-gray-300 transition flex items-center gap-2 shadow-sm">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
@@ -55,6 +58,14 @@
             </button>
         </div>
     </div>
+</div>
+
+<!-- Select All Actions -->
+<div class="max-w-4xl mx-auto mb-4 px-1 flex items-center justify-between" id="select-all-container" style="display: none;">
+    <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+        <input type="checkbox" id="check-all" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" onclick="toggleCheckAll()">
+        Pilih Semua untuk Dicetak
+    </label>
 </div>
 
 <!-- List Container -->
@@ -136,10 +147,14 @@
             if (data.length === 0) {
                 container.innerHTML = '';
                 emptyState.classList.remove('hidden');
+                document.getElementById('select-all-container').style.display = 'none';
                 return;
             }
 
             emptyState.classList.add('hidden');
+            document.getElementById('select-all-container').style.display = 'flex';
+            document.getElementById('check-all').checked = false;
+            updatePrintCount();
             
             container.innerHTML = data.map(item => {
                 const startObj = new Date(item.tanggal_mulai);
@@ -208,6 +223,9 @@
                         <!-- Header Bar -->
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-gray-100 pb-4">
                             <div class="flex flex-wrap items-center gap-2">
+                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
+                                <input type="checkbox" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer mr-1" data-type="${item.tabel_sumber}" data-id="${item.id}" onclick="updatePrintCount()">
+                                ` : ''}
                                 ${typeBadge}
                                 ${statusBadge}
                                 <span class="hidden sm:inline-block text-gray-300 mx-1">|</span>
@@ -280,7 +298,54 @@
         } catch (err) {
             console.error(err);
             container.innerHTML = `<div class="bg-rose-50 border border-rose-200 text-rose-600 p-4 rounded-lg text-sm font-semibold text-center w-full">Gagal memuat data riwayat. Silakan coba lagi.</div>`;
+            document.getElementById('select-all-container').style.display = 'none';
         }
+    }
+
+    function toggleCheckAll() {
+        const isChecked = document.getElementById('check-all').checked;
+        const checkboxes = document.querySelectorAll('.print-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = isChecked;
+        });
+        updatePrintCount();
+    }
+
+    function updatePrintCount() {
+        const checkboxes = document.querySelectorAll('.print-checkbox:checked');
+        document.getElementById('print-count').innerText = checkboxes.length;
+        
+        const checkAll = document.getElementById('check-all');
+        const allCheckboxes = document.querySelectorAll('.print-checkbox');
+        if (allCheckboxes.length > 0) {
+            checkAll.checked = checkboxes.length === allCheckboxes.length;
+        } else {
+            checkAll.checked = false;
+        }
+    }
+
+    function printSelected() {
+        const checkboxes = document.querySelectorAll('.print-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('Pilih minimal satu data untuk dicetak.');
+            return;
+        }
+        
+        let items = [];
+        checkboxes.forEach(cb => {
+            items.push({
+                type: cb.dataset.type,
+                id: cb.dataset.id
+            });
+        });
+        
+        const params = new URLSearchParams();
+        items.forEach((item, i) => {
+            params.append(`items[${i}][type]`, item.type);
+            params.append(`items[${i}][id]`, item.id);
+        });
+        
+        window.open(`${API_BASE_URL}/master/persetujuan-absensi/print-multiple?${params.toString()}`, '_blank');
     }
 </script>
 @endpush
