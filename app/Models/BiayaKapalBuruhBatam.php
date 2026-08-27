@@ -15,6 +15,11 @@ class BiayaKapalBuruhBatam extends Model
         'adjustment',
         'notes_adjustment',
         'total_nominal',
+        'nomor_bukti',
+        'penerima',
+        'nama_vendor',
+        'bank_id',
+        'nomor_rekening',
     ];
 
     protected $casts = [

@@ -1957,6 +1957,11 @@ class BiayaKapalController extends Controller
                             'adjustment' => $adjustment,
                             'notes_adjustment' => $notesAdjustment,
                             'total_nominal' => $totalNominal,
+                            'nomor_bukti' => $section['nomor_bukti'] ?? null,
+                            'penerima' => $section['penerima'] ?? null,
+                            'nama_vendor' => $section['nama_vendor'] ?? null,
+                            'bank_id' => $section['bank_id'] ?? null,
+                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         ]);
                     }
                     
@@ -5232,6 +5237,11 @@ class BiayaKapalController extends Controller
                                 'adjustment' => $adjustment,
                                 'notes_adjustment' => $notesAdjustment,
                                 'total_nominal' => $totalNominal,
+                                'nomor_bukti' => $section['nomor_bukti'] ?? null,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nama_vendor' => $section['nama_vendor'] ?? null,
+                                'bank_id' => $section['bank_id'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
                             ]);
                         }
                         

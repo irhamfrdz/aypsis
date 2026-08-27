@@ -111,7 +111,45 @@
                             <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
                         </div>
                     </div>
-                    <div class="flex justify-between items-center border-t border-blue-100 pt-2">
+
+                    <!-- Detail Pembayaran Tambahan (Batam) -->
+                    <div class="mt-4 pt-3 border-t border-gray-200">
+                        <h4 class="text-xs font-bold text-gray-700 mb-2 uppercase">Detail Pembayaran & Dokumen</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Bukti</label>
+                                <input type="text" name="kapal_sections[${sectionIndex}][nomor_bukti]" class="nomor-bukti-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Bukti">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Vendor (Ketik Manual)</label>
+                                <input type="text" name="kapal_sections[${sectionIndex}][nama_vendor]" class="nama-vendor-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
+                                <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                                    <option value="">-- Pilih Penerima --</option>
+                                    @foreach($karyawans as $karyawan)
+                                        <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
+                                <select name="kapal_sections[${sectionIndex}][bank_id]" class="bank-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                                    <option value="">-- Pilih Bank --</option>
+                                    @foreach($banks as $bank)
+                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                                <input type="text" name="kapal_sections[${sectionIndex}][nomor_rekening]" class="nomor-rekening-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Rekening">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center border-t border-blue-100 pt-2 mt-2">
                         <span class="text-sm font-semibold text-gray-700">Total Nominal Kapal ${sectionIndex}:</span>
                         <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
                     </div>

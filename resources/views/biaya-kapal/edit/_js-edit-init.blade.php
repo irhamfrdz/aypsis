@@ -46,6 +46,11 @@
                         'adjustment' => $batamItem ? $batamItem->adjustment : ($barangItems->first()->adjustment ?? 0),
                         'notes_adjustment' => $batamItem ? $batamItem->notes_adjustment : ($barangItems->first()->notes_adjustment ?? ''),
                         'total_nominal' => $batamItem ? $batamItem->total_nominal : 0,
+                        'nomor_bukti' => $batamItem ? $batamItem->nomor_bukti : '',
+                        'penerima' => $batamItem ? $batamItem->penerima : '',
+                        'nama_vendor' => $batamItem ? $batamItem->nama_vendor : '',
+                        'bank_id' => $batamItem ? $batamItem->bank_id : '',
+                        'nomor_rekening' => $batamItem ? $batamItem->nomor_rekening : '',
                         'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
                         'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values(),
                         'kontainer' => []
@@ -623,6 +628,21 @@
                                         addKontainerToSectionWithValue(sectionIndex, k.bl_id, k.nominal, k.nomor_kontainer, k.size);
                                     });
                                 }
+                                
+                                const nomBukti = section.querySelector('.nomor-bukti-input');
+                                if (nomBukti && myData.nomor_bukti) nomBukti.value = myData.nomor_bukti;
+                                
+                                const penerimaSel = section.querySelector('.penerima-select');
+                                if (penerimaSel && myData.penerima) penerimaSel.value = myData.penerima;
+                                
+                                const namVendor = section.querySelector('.nama-vendor-input');
+                                if (namVendor && myData.nama_vendor) namVendor.value = myData.nama_vendor;
+                                
+                                const bankSel = section.querySelector('.bank-select');
+                                if (bankSel && myData.bank_id) bankSel.value = myData.bank_id;
+                                
+                                const nomRek = section.querySelector('.nomor-rekening-input');
+                                if (nomRek && myData.nomor_rekening) nomRek.value = myData.nomor_rekening;
                                 
                                 const totalNominalInput = section.querySelector('.total-nominal-input');
                                 if (totalNominalInput && myData.total_nominal) {
