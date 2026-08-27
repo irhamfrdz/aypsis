@@ -479,10 +479,18 @@
             clearAllAirSections();
             // Removed jasa_air, pph_air, grand_total_air as requested
             
-            // Show DP fields for Biaya Buruh
-            dpWrapper.classList.remove('hidden');
-            sisaPembayaranWrapper.classList.remove('hidden');
-            calculateSisaPembayaran();
+            // Hide global fields that are not needed for Biaya Buruh
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(bankIdWrapper) bankIdWrapper.classList.add('hidden');
+            if(dpWrapper) dpWrapper.classList.add('hidden');
+            if(sisaPembayaranWrapper) sisaPembayaranWrapper.classList.add('hidden');
+            
+            // Remove required for hidden inputs
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
             
             // Hide TKBM wrapper for Biaya Buruh
             if (document.getElementById('tkbm_wrapper')) {
@@ -497,9 +505,6 @@
             // Hide Trucking wrapper for Biaya Buruh
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
-
-            // Show Bank Dropdown for Biaya Buruh
-            if (bankIdWrapper) bankIdWrapper.classList.remove('hidden');
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {

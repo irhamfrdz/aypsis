@@ -2786,6 +2786,9 @@ Route::middleware([
         Route::get('biaya-kapal/{biayaKapal}/print-tkbm', [\App\Http\Controllers\BiayaKapalController::class, 'printTkbm'])
             ->name('biaya-kapal.print-tkbm')
             ->middleware('can:biaya-kapal-view');
+        Route::get('biaya-kapal/{biayaKapal}/print-buruh-batam', [\App\Http\Controllers\BiayaKapalController::class, 'printBuruhBatam'])
+            ->name('biaya-kapal.print-buruh-batam')
+            ->middleware('can:biaya-kapal-view');
         Route::get('biaya-kapal/{biayaKapal}/print-operasional', [\App\Http\Controllers\BiayaKapalController::class, 'printOperasional'])
             ->name('biaya-kapal.print-operasional')
             ->middleware('can:biaya-kapal-view');

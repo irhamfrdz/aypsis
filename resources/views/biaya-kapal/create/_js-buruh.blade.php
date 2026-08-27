@@ -82,40 +82,24 @@
                 </div>
 
                 <!-- Kontainer Selection -->
-                <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-indigo-300">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Kontainer <span class="text-xs text-gray-500 font-normal">(Opsional)</span></label>
-                    <p class="text-xs text-gray-400 mb-3"><i class="fas fa-info-circle mr-1"></i>Kontainer akan muncul setelah memilih No. Voyage</p>
-
-                    <!-- Search box -->
-                    <div class="kontainer-search-wrap hidden mb-3 relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400 text-sm"><i class="fas fa-search"></i></span>
-                        <input type="text"
-                            class="kontainer-search w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="Cari nomor kontainer...">
+                <div class="mb-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Detail Kontainer <span class="text-xs text-gray-500 font-normal normal-case">(Opsional)</span></label>
+                    <div class="kontainer-loading hidden py-2 text-center text-gray-500 text-xs italic"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat kontainer...</div>
+                    <div class="kontainer-empty hidden py-2 text-center text-red-500 text-xs italic">Tidak ada kontainer untuk voyage ini</div>
+                    <div class="kontainer-container-section" data-section="${sectionIndex}"></div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <button type="button" onclick="addKontainerToSection(${sectionIndex})" class="btn-tambah-kontainer px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs rounded-lg transition shadow-sm" disabled>
+                            <i class="fas fa-plus mr-1"></i> Tambah Kontainer
+                        </button>
+                        <span class="info-kontainer text-xs text-gray-500"><i class="fas fa-info-circle mr-1"></i>Pilih No. Voyage terlebih dahulu</span>
                     </div>
-
-                    <!-- Loading indicator -->
-                    <div class="kontainer-loading hidden py-4 text-center text-gray-500 text-sm">
-                        <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer...
-                    </div>
-
-                    <!-- Empty state -->
-                    <div class="kontainer-empty hidden py-4 text-center text-gray-400 text-sm">
-                        <i class="fas fa-inbox text-3xl mb-2 block"></i>Tidak ada kontainer untuk voyage ini
-                    </div>
-
-                    <!-- Kontainer checklist -->
-                    <div class="kontainer-list space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-
-                    <!-- Hidden inputs container -->
-                    <div class="kontainer-hidden-inputs"></div>
                 </div>
 
                 <!-- Nominal Per Kapal Display -->
                 <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Nominal (Input Manual) <span class="text-red-500">*</span></label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nominal <span class="text-red-500">*</span></label>
                             <input type="text" name="kapal_sections[${sectionIndex}][nominal_manual]" class="nominal-manual-input w-full px-3 py-2 border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm font-semibold" placeholder="0" required>
                         </div>
                         <div>
@@ -770,9 +754,27 @@
             
             if (currentLokasi === 'batam') {
                 const nominalManualInput = section.querySelector('.nominal-manual-input');
-                if (nominalManualInput) {
-                    const nominalRaw = (nominalManualInput.value || '0').replace(/\./g, '').replace(',', '.');
-                    sectionTotal += parseFloat(nominalRaw) || 0;
+                const kontainerNominals = section.querySelectorAll('.kontainer-nominal-item');
+                let sumKontainer = 0;
+                
+                if (kontainerNominals.length > 0) {
+                    kontainerNominals.forEach(input => {
+                        const val = parseFloat((input.value || '0').replace(/\./g, '').replace(',', '.')) || 0;
+                        sumKontainer += val;
+                    });
+                    if (nominalManualInput) {
+                        nominalManualInput.value = sumKontainer > 0 ? Math.round(sumKontainer).toLocaleString('id-ID') : '';
+                        nominalManualInput.setAttribute('readonly', 'readonly');
+                        nominalManualInput.classList.add('bg-gray-100');
+                    }
+                    sectionTotal += sumKontainer;
+                } else {
+                    if (nominalManualInput) {
+                        nominalManualInput.removeAttribute('readonly');
+                        nominalManualInput.classList.remove('bg-gray-100');
+                        const nominalRaw = (nominalManualInput.value || '0').replace(/\./g, '').replace(',', '.');
+                        sectionTotal += parseFloat(nominalRaw) || 0;
+                    }
                 }
             } else {
                 const barangSelects = section.querySelectorAll('.barang-select-item');
@@ -818,39 +820,34 @@
     }
     
     // --- KONTAINER BATAM LOGIC ---
+    // --- KONTAINER BATAM LOGIC ---
+    window.sectionContainers = window.sectionContainers || {};
+
     function loadContainersForBuruhSection(section, sectionIndex, voyageValue) {
-        const kontainerList = section.querySelector('.kontainer-list');
+        const kontainerContainer = section.querySelector('.kontainer-container-section');
         const kontainerLoading = section.querySelector('.kontainer-loading');
         const kontainerEmpty = section.querySelector('.kontainer-empty');
-        const hiddenInputsContainer = section.querySelector('.kontainer-hidden-inputs');
-        const kontainerSearchWrap = section.querySelector('.kontainer-search-wrap');
-        const kontainerSearch = section.querySelector('.kontainer-search');
+        const btnTambahKontainer = section.querySelector('.btn-tambah-kontainer');
+        const infoKontainer = section.querySelector('.info-kontainer');
 
-        if (!kontainerList) return;
+        if (!kontainerContainer) return;
 
         // Clear previous state
-        kontainerList.innerHTML = '';
-        hiddenInputsContainer.innerHTML = '';
+        kontainerContainer.innerHTML = '';
         kontainerLoading.classList.remove('hidden');
         kontainerEmpty.classList.add('hidden');
-        kontainerSearchWrap.classList.add('hidden');
-        if (kontainerSearch) kontainerSearch.value = '';
+        if(btnTambahKontainer) {
+            btnTambahKontainer.disabled = true;
+            btnTambahKontainer.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+            btnTambahKontainer.classList.add('bg-gray-400');
+        }
+        if(infoKontainer) {
+            infoKontainer.classList.remove('hidden');
+        }
 
         if (!voyageValue) {
             kontainerLoading.classList.add('hidden');
             return;
-        }
-        
-        // Filter search logic setup
-        if (kontainerSearch && !kontainerSearch.dataset.listenerAdded) {
-            kontainerSearch.addEventListener('input', function() {
-                const q = this.value.toLowerCase().trim();
-                kontainerList.querySelectorAll('label').forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = (!q || text.includes(q)) ? '' : 'none';
-                });
-            });
-            kontainerSearch.dataset.listenerAdded = 'true';
         }
 
         fetch(`{{ url('biaya-kapal/get-manifest-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageValue)}`)
@@ -863,57 +860,119 @@
                     return;
                 }
 
-                kontainerSearchWrap.classList.remove('hidden');
-                
-                data.containers.forEach((kontainer) => {
-                    const row = document.createElement('label');
-                    row.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-indigo-50 rounded-lg cursor-pointer border border-gray-200 hover:border-indigo-300 transition-all';
-                    row.innerHTML = `
-                        <input type="checkbox"
-                               class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                               data-bl-id="${kontainer.id}"
-                               data-nomor="${kontainer.nomor_kontainer}"
-                               data-size="${kontainer.size_kontainer}">
-                        <div class="flex-1">
-                            <div class="font-semibold text-sm text-gray-800">
-                                <i class="fas fa-cube text-indigo-500 mr-1"></i>
-                                ${kontainer.nomor_kontainer}
-                                <span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-0.5">
-                                <span class="mr-3"><i class="fas fa-file-alt text-blue-400 mr-1"></i>BL: <span class="font-semibold text-gray-700">${kontainer.no_bl || '-'}</span></span>
-                                <span class="mr-3"><i class="fas fa-box text-orange-400 mr-1"></i>${kontainer.nama_barang || '-'}</span>
-                            </div>
-                        </div>
-                    `;
+                // Simpan data kontainer untuk section ini
+                window.sectionContainers[sectionIndex] = data.containers;
 
-                    const checkbox = row.querySelector('input[type="checkbox"]');
-                    checkbox.addEventListener('change', function() {
-                        const blId = this.dataset.blId;
-                        const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"]`);
-
-                        if (this.checked) {
-                            if (!existingInput) {
-                                const hiddenGroup = document.createElement('div');
-                                hiddenGroup.setAttribute('data-bl-id', blId);
-                                hiddenGroup.innerHTML = `
-                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
-                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
-                                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
-                                `;
-                                hiddenInputsContainer.appendChild(hiddenGroup);
-                            }
-                        } else {
-                            if (existingInput) existingInput.remove();
-                        }
-                    });
-
-                    kontainerList.appendChild(row);
-                });
+                if(btnTambahKontainer) {
+                    btnTambahKontainer.disabled = false;
+                    btnTambahKontainer.classList.remove('bg-gray-400');
+                    btnTambahKontainer.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                }
+                if(infoKontainer) {
+                    infoKontainer.classList.add('hidden');
+                }
             })
             .catch(e => {
                 console.error(e);
                 kontainerLoading.classList.add('hidden');
-                kontainerList.innerHTML = '<div class="p-3 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat kontainer</div>';
+                kontainerContainer.innerHTML = '<div class="p-3 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat kontainer</div>';
             });
+    }
+
+    window.addKontainerToSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.kontainer-container-section');
+        const kontainerIndex = container.children.length;
+        
+        let kontainerOptions = '<option value="">Pilih Kontainer</option>';
+        if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
+            window.sectionContainers[sectionIndex].forEach(c => {
+                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})</option>`;
+            });
+        }
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2 animate-fade-in';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" required>
+                    ${kontainerOptions}
+                </select>
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
+            </div>
+            <div class="w-32">
+                <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Rp 0" required>
+            </div>
+            <button type="button" onclick="removeKontainerFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        const kontainerSelect = inputGroup.querySelector('.kontainer-select-item');
+        const nomorHidden = inputGroup.querySelector('.kontainer-nomor-hidden');
+        const sizeHidden = inputGroup.querySelector('.kontainer-size-hidden');
+        
+        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(kontainerSelect).select2({
+                placeholder: "Pilih Kontainer",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $(kontainerSelect).on('select2:select', function (e) {
+                const selectedOption = $(this).find(':selected');
+                nomorHidden.value = selectedOption.attr('data-nomor') || '';
+                sizeHidden.value = selectedOption.attr('data-size') || '';
+            });
+            
+            $(kontainerSelect).on('select2:unselect', function (e) {
+                nomorHidden.value = '';
+                sizeHidden.value = '';
+            });
+        } else {
+            kontainerSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                nomorHidden.value = selectedOption.getAttribute('data-nomor') || '';
+                sizeHidden.value = selectedOption.getAttribute('data-size') || '';
+            });
+        }
+        
+        const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+        nominalInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val !== '') {
+                this.value = parseInt(val).toLocaleString('id-ID');
+            }
+            calculateTotalFromAllSections();
+        });
+    };
+    
+    window.removeKontainerFromSection = function(button) {
+        const container = button.closest('.kontainer-container-section');
+        button.closest('.flex').remove();
+        reindexKontainerInputs(container);
+        calculateTotalFromAllSections();
+    };
+
+    function reindexKontainerInputs(container) {
+        const section = container.closest('.kapal-section');
+        const sectionIndex = section.getAttribute('data-section-index');
+        const inputGroups = container.querySelectorAll('.flex');
+        
+        inputGroups.forEach((group, newIndex) => {
+            const select = group.querySelector('.kontainer-select-item');
+            if (select) select.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][bl_id]`;
+            
+            const nomor = group.querySelector('.kontainer-nomor-hidden');
+            if (nomor) nomor.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nomor_kontainer]`;
+            
+            const size = group.querySelector('.kontainer-size-hidden');
+            if (size) size.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][size]`;
+            
+            const nominal = group.querySelector('.kontainer-nominal-item');
+            if (nominal) nominal.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nominal]`;
+        });
     }

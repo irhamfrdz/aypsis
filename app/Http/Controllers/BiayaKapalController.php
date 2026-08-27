@@ -682,6 +682,7 @@ class BiayaKapalController extends Controller
             // Untuk Batam
             'kapal_sections.*.kontainer' => 'nullable|array',
             'kapal_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'kapal_sections.*.kontainer.*.nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.nominal_manual' => 'nullable|numeric|min:0',
             
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
@@ -1925,10 +1926,14 @@ class BiayaKapalController extends Controller
                         if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                             foreach ($section['kontainer'] as $k) {
                                 if (!empty($k['bl_id'])) {
+                                    $cleanNominalK = function ($val) {
+                                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                    };
                                     $kontainerIds[] = [
                                         'bl_id' => $k['bl_id'],
                                         'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                         'size' => $k['size'] ?? null,
+                                        'nominal' => $cleanNominalK($k['nominal'] ?? 0),
                                     ];
                                 }
                             }
@@ -3113,6 +3118,16 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Print biaya Buruh Batam specifically.
+     */
+    public function printBuruhBatam(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'buruhBatamDetails']);
+
+        return view('biaya-kapal.print-buruh-batam', compact('biayaKapal'));
+    }
+
+    /**
      * Print biaya operasional specifically.
      */
     public function printOperasional(BiayaKapal $biayaKapal)
@@ -3160,6 +3175,7 @@ class BiayaKapalController extends Controller
         // Load relationships
         $biayaKapal->load([
             'barangDetails.pricelistBuruh',
+            'buruhBatamDetails',
             'airDetails',
             'tkbmDetails.pricelistTkbm',
             'operasionalDetails',
@@ -3665,6 +3681,10 @@ class BiayaKapalController extends Controller
             'kapal_sections' => 'nullable|array',
             'kapal_sections.*.kapal' => 'nullable|string|max:255',
             'kapal_sections.*.voyage' => 'nullable|string|max:255',
+            'kapal_sections.*.kontainer' => 'nullable|array',
+            'kapal_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'kapal_sections.*.kontainer.*.nominal' => 'nullable|numeric|min:0',
+            'kapal_sections.*.nominal_manual' => 'nullable|numeric|min:0',
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.dp' => 'nullable|numeric|min:0',
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
@@ -5176,10 +5196,14 @@ class BiayaKapalController extends Controller
                             if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                                 foreach ($section['kontainer'] as $k) {
                                     if (!empty($k['bl_id'])) {
+                                        $cleanNominalK = function ($val) {
+                                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                        };
                                         $kontainerIds[] = [
                                             'bl_id' => $k['bl_id'],
                                             'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                             'size' => $k['size'] ?? null,
+                                            'nominal' => $cleanNominalK($k['nominal'] ?? 0),
                                         ];
                                     }
                                 }

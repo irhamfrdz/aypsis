@@ -9,11 +9,23 @@
         $editTemasSections = [];
         $editTantoSections = [];
 
-        // Group Buruh
-        if($biayaKapal->barangDetails->count() > 0 || $biayaKapal->tenagaKerjaDetails->count() > 0) {
-            $allCombinations = $biayaKapal->barangDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; })
-                ->merge($biayaKapal->tenagaKerjaDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }))
-                ->unique();
+        // Group Buruh (Jakarta & Batam)
+        if($biayaKapal->barangDetails->count() > 0 || $biayaKapal->tenagaKerjaDetails->count() > 0 || ($biayaKapal->buruhBatamDetails && $biayaKapal->buruhBatamDetails->count() > 0)) {
+            
+            // Collect all unique kapal/voyage combinations across Jakarta and Batam models
+            $allCombinations = collect([]);
+            
+            if ($biayaKapal->barangDetails) {
+                $allCombinations = $allCombinations->merge($biayaKapal->barangDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }));
+            }
+            if ($biayaKapal->tenagaKerjaDetails) {
+                $allCombinations = $allCombinations->merge($biayaKapal->tenagaKerjaDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }));
+            }
+            if ($biayaKapal->buruhBatamDetails) {
+                $allCombinations = $allCombinations->merge($biayaKapal->buruhBatamDetails->map(function($i) { return $i->kapal . '|||' . $i->no_voyage; }));
+            }
+            
+            $allCombinations = $allCombinations->unique();
 
             foreach($allCombinations as $key) {
                 $parts = explode('|||', $key);
@@ -21,19 +33,39 @@
                     $kapal = $parts[0];
                     $voyage = $parts[1];
                     
-                    $barangItems = $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage);
-                    $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage);
+                    $barangItems = $biayaKapal->barangDetails ? $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage) : collect([]);
+                    $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails ? $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage) : collect([]);
+                    $batamItem = $biayaKapal->buruhBatamDetails ? $biayaKapal->buruhBatamDetails->where('kapal', $kapal)->where('no_voyage', $voyage)->first() : null;
                     
-                    $firstItem = $barangItems->first() ?? $tenagaKerjaItems->first();
+                    $isBatam = $batamItem ? true : false;
                     
-                    $editKapalSections[] = [
+                    $sectionData = [
                         'kapal' => $kapal,
                         'voyage' => $voyage,
-                        'adjustment' => $barangItems->first()->adjustment ?? 0,
-                        'notes_adjustment' => $barangItems->first()->notes_adjustment ?? '',
+                        'is_batam' => $isBatam,
+                        'adjustment' => $batamItem ? $batamItem->adjustment : ($barangItems->first()->adjustment ?? 0),
+                        'notes_adjustment' => $batamItem ? $batamItem->notes_adjustment : ($barangItems->first()->notes_adjustment ?? ''),
+                        'total_nominal' => $batamItem ? $batamItem->total_nominal : 0,
                         'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
-                        'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values()
+                        'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values(),
+                        'kontainer' => []
                     ];
+                    
+                    if ($batamItem && $batamItem->kontainer_ids) {
+                        $kontainerIds = is_string($batamItem->kontainer_ids) ? json_decode($batamItem->kontainer_ids, true) : $batamItem->kontainer_ids;
+                        if (is_array($kontainerIds)) {
+                            foreach ($kontainerIds as $k) {
+                                $sectionData['kontainer'][] = [
+                                    'bl_id' => $k['bl_id'] ?? '',
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? '',
+                                    'size' => $k['size'] ?? '',
+                                    'nominal' => $k['nominal'] ?? 0
+                                ];
+                            }
+                        }
+                    }
+                    
+                    $editKapalSections[] = $sectionData;
                 }
             }
         }
@@ -525,6 +557,15 @@
         // 2. BURUH SECTIONS
         if(existingKapalSections.length > 0) {
             clearAllKapalSections();
+            
+            // Check if any section is Batam to set the global location toggle
+            const hasBatam = existingKapalSections.some(s => s.is_batam);
+            const lokasiSelect = document.getElementById('lokasi_buruh_select');
+            if (lokasiSelect && hasBatam) {
+                lokasiSelect.value = 'batam';
+                $(lokasiSelect).trigger('change');
+            }
+            
             existingKapalSections.forEach(myData => {
                 (async function() {
                     const section = addKapalSection();
@@ -548,22 +589,46 @@
                                 }
                                 voySel.innerHTML = opt;
                                 if (myData.voyage) voySel.value = myData.voyage;
+                                $(voySel).trigger('change'); // Fetch containers if Batam
                             } catch(e) {
                                 voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
                                 voySel.value = myData.voyage;
                                 voySel.disabled = false;
+                                $(voySel).trigger('change');
                             }
                         }
                         
-                        section.querySelector('.barang-container-section').innerHTML = '';
-                        myData.barang.forEach(b => {
-                            addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
-                        });
-
-                        if (myData.tenaga_kerja && myData.tenaga_kerja.length > 0) {
-                            myData.tenaga_kerja.forEach(tk => {
-                                addBuruhToSectionWithValue(sectionIndex, tk.buruh_id, tk.nominal);
-                            });
+                        // Populate Jakarta data
+                        if (!myData.is_batam) {
+                            section.querySelector('.barang-container-section').innerHTML = '';
+                            if (myData.barang) {
+                                myData.barang.forEach(b => {
+                                    addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
+                                });
+                            }
+    
+                            if (myData.tenaga_kerja && myData.tenaga_kerja.length > 0) {
+                                myData.tenaga_kerja.forEach(tk => {
+                                    addBuruhToSectionWithValue(sectionIndex, tk.buruh_id, tk.nominal);
+                                });
+                            }
+                        } else {
+                            // Populate Batam data (Wait a bit for containers to load after voyage change)
+                            setTimeout(() => {
+                                const kontainerContainer = section.querySelector('.kontainer-container-section');
+                                if (kontainerContainer) kontainerContainer.innerHTML = '';
+                                
+                                if (myData.kontainer && myData.kontainer.length > 0) {
+                                    myData.kontainer.forEach(k => {
+                                        addKontainerToSectionWithValue(sectionIndex, k.bl_id, k.nominal, k.nomor_kontainer, k.size);
+                                    });
+                                }
+                                
+                                const totalNominalInput = section.querySelector('.total-nominal-input');
+                                if (totalNominalInput && myData.total_nominal) {
+                                    totalNominalInput.value = parseInt(myData.total_nominal).toLocaleString('id-ID');
+                                }
+                            }, 1000);
                         }
                         
                         // Set adjustment values
