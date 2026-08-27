@@ -11,7 +11,7 @@
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
     <div class="p-4 border-b border-gray-100 bg-gray-50/50">
-        <form action="{{ route('report-gaji-supir-batam.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form action="{{ route('report-gaji-supir-batam.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Mulai</label>
                 <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
@@ -31,14 +31,7 @@
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Status Pembayaran</label>
-                <select name="status_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                    <option value="">-- Semua Status --</option>
-                    <option value="Belum Dibayar" {{ $statusPembayaran == 'Belum Dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
-                    <option value="Sudah Dibayar" {{ $statusPembayaran == 'Sudah Dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
-                </select>
-            </div>
+
             <div class="flex items-end gap-2">
                 <button type="submit" class="w-full md:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <i class="fas fa-search mr-1"></i> Filter
@@ -74,7 +67,7 @@
                     <th class="p-3 font-medium">Uang Malam/Libur</th>
                     <th class="p-3 font-medium text-red-600">Potongan 5%</th>
                     <th class="p-3 font-medium">Total Gaji</th>
-                    <th class="p-3 font-medium">Status</th>
+
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-gray-50">
@@ -106,17 +99,11 @@
                         <td class="p-3 text-gray-600">Rp {{ number_format($gaji->uang_malam_libur, 0, ',', '.') }}</td>
                         <td class="p-3 text-red-500">Rp {{ number_format($gaji->nominal_potongan_5_persen, 0, ',', '.') }}</td>
                         <td class="p-3 font-semibold text-emerald-600">Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}</td>
-                        <td class="p-3">
-                            @if($gaji->status_pembayaran == 'Sudah Dibayar')
-                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-md">Dibayar</span>
-                            @else
-                                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-md">Belum Dibayar</span>
-                            @endif
-                        </td>
+
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="p-8 text-center text-gray-500">
+                        <td colspan="7" class="p-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i>
                             Tidak ada data gaji supir untuk periode ini
                         </td>
@@ -132,7 +119,7 @@
                         <td class="p-3 text-gray-800">Rp {{ number_format($sumMalamLibur, 0, ',', '.') }}</td>
                         <td class="p-3 text-red-600">Rp {{ number_format($sumPotongan, 0, ',', '.') }}</td>
                         <td class="p-3 text-emerald-600">Rp {{ number_format($sumTotal, 0, ',', '.') }}</td>
-                        <td></td>
+
                     </tr>
                 </tfoot>
             @endif
