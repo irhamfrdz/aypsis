@@ -100,9 +100,14 @@
                         <td class="p-3 text-red-500">Rp {{ number_format($gaji->nominal_potongan_5_persen, 0, ',', '.') }}</td>
                         <td class="p-3 font-semibold text-emerald-600">Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}</td>
                         <td class="p-3 text-center">
-                            <a href="{{ route('gaji-supir-batam.show', $gaji->id) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-colors text-xs font-medium">
-                                <i class="fas fa-eye mr-1"></i> Detail
-                            </a>
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{{ route('gaji-supir-batam.show', $gaji->id) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md transition-colors text-xs font-medium" title="Lihat Detail">
+                                    <i class="fas fa-eye mr-1"></i> Detail
+                                </a>
+                                <a href="{{ route('gaji-supir-batam.print', $gaji->id) }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-md transition-colors text-xs font-medium" title="Cetak Gaji">
+                                    <i class="fas fa-print mr-1"></i> Print
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 @empty
