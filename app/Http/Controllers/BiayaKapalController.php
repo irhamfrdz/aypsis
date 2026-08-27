@@ -163,7 +163,7 @@ class BiayaKapalController extends Controller
         $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
 
         // Get pricelist Buruh Bongkar
-        $pricelistBuruhBongkars = \App\Models\PricelistBuruhBongkar::where('status', 'aktif')->get();
+        $pricelistBuruhBongkars = \App\Models\PricelistBuruhBongkar::where('status', true)->get();
 
         $pricelistThcs = \App\Models\PricelistThc::where('status', 'Aktif')
             ->orderBy('vendor')
@@ -254,6 +254,7 @@ class BiayaKapalController extends Controller
             'pricelistMeratus',
             'pricelistTemas',
             'pricelistTanto',
+            'pricelistBuruhBongkars',
             'allBuruhs',
             'banks',
             'allInvoices'
@@ -3384,6 +3385,9 @@ class BiayaKapalController extends Controller
         $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
         $banks = \App\Models\Bank::orderBy('name')->get();
 
+        // Get pricelist Buruh Bongkar
+        $pricelistBuruhBongkars = \App\Models\PricelistBuruhBongkar::where('status', true)->get();
+
         $allInvoices = BiayaKapal::whereNotNull('nomor_invoice')
             ->where('nomor_invoice', '!=', '')
             ->orderBy('nomor_invoice')
@@ -3415,6 +3419,7 @@ class BiayaKapalController extends Controller
             'pricelistMeratus',
             'pricelistTemas',
             'pricelistTanto',
+            'pricelistBuruhBongkars',
             'allBuruhs',
             'banks',
             'allInvoices'
