@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterCustomerBuruh;
 use App\Imports\MasterCustomerBuruhImport;
+use App\Exports\MasterCustomerBuruhTemplateExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -12,7 +13,7 @@ class MasterCustomerBuruhController extends Controller
     public function __construct()
     {
         $this->middleware('can:master-customer-buruh-view')->only(['index', 'show']);
-        $this->middleware('can:master-customer-buruh-create')->only(['create', 'store', 'import']);
+        $this->middleware('can:master-customer-buruh-create')->only(['create', 'store', 'import', 'downloadTemplate']);
         $this->middleware('can:master-customer-buruh-update')->only(['edit', 'update']);
         $this->middleware('can:master-customer-buruh-delete')->only('destroy');
     }
@@ -107,5 +108,10 @@ class MasterCustomerBuruhController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('master-customer-buruh.index')->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new MasterCustomerBuruhTemplateExport, 'Template_Master_Customer_Buruh.xlsx');
     }
 }

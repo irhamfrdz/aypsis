@@ -109,6 +109,11 @@
                                     Pastikan file Excel memiliki baris header (baris pertama) dengan nama kolom yang sesuai. Kolom yang dibaca: <b>nama_customer</b>, <b>bank</b>, <b>nomor_rekening</b>, <b>penerima</b>.
                                 </p>
                                 <input type="file" name="file" accept=".xlsx, .xls, .csv" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2">
+                                <div class="mt-3">
+                                    <a href="{{ route('master-customer-buruh.download-template') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                        ↓ Download Template Excel
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
