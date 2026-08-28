@@ -4451,6 +4451,50 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Template WA --}}
+                            <tr class="module-row" data-module="master-wa-templates">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Master Template WA</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan Master Template WA</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-wa-templates-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-wa-templates-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-wa-templates-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-wa-templates-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Template WA Sub-modules --}}
+                            <tr class="submodule-row" data-parent="master-wa-templates">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Daftar Template WA</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-wa-templates][view]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-templates.view') || (isset($userMatrixPermissions['master-wa-templates']['view']) && $userMatrixPermissions['master-wa-templates']['view']) || ($user && $user->can('master-wa-templates-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-wa-templates][create]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-templates.create') || (isset($userMatrixPermissions['master-wa-templates']['create']) && $userMatrixPermissions['master-wa-templates']['create']) || ($user && $user->can('master-wa-templates-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-wa-templates][update]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-templates.update') || (isset($userMatrixPermissions['master-wa-templates']['update']) && $userMatrixPermissions['master-wa-templates']['update']) || ($user && $user->can('master-wa-templates-update'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-wa-templates][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-templates.delete') || (isset($userMatrixPermissions['master-wa-templates']['delete']) && $userMatrixPermissions['master-wa-templates']['delete']) || ($user && $user->can('master-wa-templates-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
@@ -6242,6 +6286,67 @@
                     }
                 });
             }
+
+            // Initialize Master Template WA checkbox handling
+            initializeCheckAllMasterWaTemplates();
+
+            function initializeCheckAllMasterWaTemplates() {
+                document.querySelectorAll('.master-wa-templates-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        if (this.disabled) return;
+                        
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        const subCheckboxes = document.querySelectorAll(`[data-parent="master-wa-templates"] input[name*="[${permission}]"]`);
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (!checkbox.disabled) {
+                                checkbox.checked = isChecked;
+                            }
+                        });
+
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Master Template WA telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Master Template WA telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-parent="master-wa-templates"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateMasterWaTemplatesHeaderCheckboxes();
+                    });
+                });
+
+                updateMasterWaTemplatesHeaderCheckboxes();
+            }
+
+            function updateMasterWaTemplatesHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.master-wa-templates-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="master-wa-templates"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && subCheckboxes.length > 0) {
+                        let allChecked = true;
+                        let someChecked = false;
+
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (checkbox.checked) {
+                                someChecked = true;
+                            } else {
+                                allChecked = false;
+                            }
+                        });
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
             function updatePranotaUangMakanHeaderCheckboxes() {
                 const permissions = ['view', 'create', 'update', 'delete'];
 
