@@ -46,6 +46,7 @@ class GpsTrackingController extends Controller
 
         $nopols = $mobils->pluck('nomor_polisi')->filter()->toArray();
         $activeSjs = \DB::table('surat_jalans')
+            ->select('*', \DB::raw("'Muatan' as tipe_sj"))
             ->whereIn('no_plat', $nopols)
             ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
             ->orderBy('created_at', 'desc')
@@ -53,6 +54,15 @@ class GpsTrackingController extends Controller
             ->groupBy('no_plat');
 
         $activeSjBongkarans = \DB::table('surat_jalan_bongkarans')
+            ->select('*', \DB::raw("'Bongkaran' as tipe_sj"))
+            ->whereIn('no_plat', $nopols)
+            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('no_plat');
+
+        $activeSjBatam = \DB::table('surat_jalan_bongkaran_batams')
+            ->select('*', \DB::raw("'Bongkaran Batam' as tipe_sj"))
             ->whereIn('no_plat', $nopols)
             ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
             ->orderBy('created_at', 'desc')
@@ -77,12 +87,9 @@ class GpsTrackingController extends Controller
 
                 $sj = $activeSjs->get($mobil->nomor_polisi)?->first();
                 $sjb = $activeSjBongkarans->get($mobil->nomor_polisi)?->first();
-                $latestSj = null;
-                if ($sj && $sjb) {
-                    $latestSj = ($sj->created_at > $sjb->created_at) ? $sj : $sjb;
-                } else {
-                    $latestSj = $sj ?? $sjb;
-                }
+                $sjbatam = $activeSjBatam->get($mobil->nomor_polisi)?->first();
+                
+                $latestSj = collect([$sj, $sjb, $sjbatam])->filter()->sortByDesc('created_at')->first();
 
                 $info_sj = null;
                 if ($latestSj) {
@@ -92,7 +99,7 @@ class GpsTrackingController extends Controller
                         'tujuan' => $latestSj->tujuan_pengiriman ?? '-',
                         'no_kontainer' => $latestSj->no_kontainer ?? '-',
                         'jenis_barang' => $latestSj->jenis_barang ?? '-',
-                        'tipe' => $isBongkaran ? 'Bongkaran' : 'Muatan'
+                        'tipe' => $latestSj->tipe_sj
                     ];
                 }
 
