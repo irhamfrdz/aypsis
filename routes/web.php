@@ -378,6 +378,7 @@ Route::middleware([
 
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
 
+    Route::post('master-customer-buruh/import', [\App\Http\Controllers\MasterCustomerBuruhController::class, 'import'])->name('master-customer-buruh.import');
     Route::resource('master-customer-buruh', \App\Http\Controllers\MasterCustomerBuruhController::class);
 
     Route::get('kontainer-sewa-billing', [BtmKontainerSewaController::class, 'index'])

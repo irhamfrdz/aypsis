@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterCustomerBuruh;
+use App\Imports\MasterCustomerBuruhImport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterCustomerBuruhController extends Controller
 {
     public function __construct()
     {
         $this->middleware('can:master-customer-buruh-view')->only(['index', 'show']);
-        $this->middleware('can:master-customer-buruh-create')->only(['create', 'store']);
+        $this->middleware('can:master-customer-buruh-create')->only(['create', 'store', 'import']);
         $this->middleware('can:master-customer-buruh-update')->only(['edit', 'update']);
         $this->middleware('can:master-customer-buruh-delete')->only('destroy');
     }
@@ -91,5 +93,19 @@ class MasterCustomerBuruhController extends Controller
     {
         $masterCustomerBuruh->delete();
         return redirect()->route('master-customer-buruh.index')->with('success', 'Customer Buruh berhasil dihapus.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new MasterCustomerBuruhImport, $request->file('file'));
+            return redirect()->route('master-customer-buruh.index')->with('success', 'Data Customer Buruh berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->route('master-customer-buruh.index')->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
     }
 }
