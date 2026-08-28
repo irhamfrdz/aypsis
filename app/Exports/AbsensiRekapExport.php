@@ -338,7 +338,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $rows[] = [$pekerjaanText, ''];
         
         // Row 4: Header 1
-        $header1 = ['Nama', 'No. ID'];
+        $header1 = ['Nama', 'No. ID', 'Divisi', 'Posisi', 'Pekerjaan', 'Cabang'];
         foreach ($this->dayHeaders as $h) {
             $header1[] = $h['date'];
         }
@@ -346,7 +346,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $rows[] = $header1;
         
         // Row 5: Header 2
-        $header2 = ['', ''];
+        $header2 = ['', '', '', '', '', ''];
         foreach ($this->dayHeaders as $h) {
             $header2[] = $h['dayName'];
         }
@@ -359,10 +359,14 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $karyawan = $data['karyawan'];
             $row = [
                  $karyawan ? ($karyawan->nama_lengkap . ' (' . $karyawan->nik . ')') : 'Unknown',
-                 $karyawan ? $karyawan->nik : 'Unknown'
+                 $karyawan ? $karyawan->nik : 'Unknown',
+                 $karyawan ? $karyawan->divisi : '',
+                 $karyawan ? $karyawan->posisi : '',
+                 $karyawan ? $karyawan->pekerjaan : '',
+                 $karyawan ? $karyawan->cabang : ''
             ];
             
-            $colIndex = 3;
+            $colIndex = 7;
             foreach ($this->dayHeaders as $date => $h) {
                  $val = $data['dailyStatus'][$date];
                  $row[] = $val;
@@ -422,7 +426,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastColIndex = 2 + $this->totalDays + 7;
+                $lastColIndex = 6 + $this->totalDays + 9;
                 $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
                 $totalRows = count($this->rekapData) + 5; 
 
@@ -447,17 +451,21 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $sheet->getStyle('A2:A3')->getFont()->setBold(true);
 
                 // Row 2: Merge and Center Period Text over the date columns
-                $startPeriodCol = 'C';
-                $endPeriodCol = Coordinate::stringFromColumnIndex(2 + $this->totalDays);
+                $startPeriodCol = 'G';
+                $endPeriodCol = Coordinate::stringFromColumnIndex(6 + $this->totalDays);
                 $sheet->mergeCells($startPeriodCol . '2:' . $endPeriodCol . '2');
-                $sheet->getStyle('C2')->getFont()->setBold(true);
+                $sheet->getStyle('G2')->getFont()->setBold(true);
 
                 // Merging header cells vertically (Row 4 & 5)
                 $sheet->mergeCells('A4:A5');
                 $sheet->mergeCells('B4:B5');
+                $sheet->mergeCells('C4:C5');
+                $sheet->mergeCells('D4:D5');
+                $sheet->mergeCells('E4:E5');
+                $sheet->mergeCells('F4:F5');
 
-                $summaryStart = 3 + $this->totalDays;
-                for ($i = 0; $i < 7; $i++) {
+                $summaryStart = 7 + $this->totalDays;
+                for ($i = 0; $i < 9; $i++) {
                     $col = Coordinate::stringFromColumnIndex($summaryStart + $i);
                     $sheet->mergeCells($col . '4:' . $col . '5');
                 }
@@ -478,21 +486,25 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 // Column widths & Alignments
                 $sheet->getColumnDimension('A')->setWidth(30);
                 $sheet->getColumnDimension('B')->setWidth(15);
+                $sheet->getColumnDimension('C')->setWidth(15);
+                $sheet->getColumnDimension('D')->setWidth(15);
+                $sheet->getColumnDimension('E')->setWidth(15);
+                $sheet->getColumnDimension('F')->setWidth(15);
                 for ($i = 1; $i <= $this->totalDays; $i++) {
-                    $col = Coordinate::stringFromColumnIndex(2 + $i);
+                    $col = Coordinate::stringFromColumnIndex(6 + $i);
                     $sheet->getColumnDimension($col)->setWidth(12);
                 }
 
                 if (count($this->rekapData) > 0) {
-                    $gridRange = 'C6:' . $lastColLetter . $totalRows;
+                    $gridRange = 'G6:' . $lastColLetter . $totalRows;
 
                     // Column A (Nama Karyawan): Left-align only
                     $sheet->getStyle('A6:A' . $totalRows)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
-                    // 1. Weekend Rule using Excel Formula: OR(C$5="Sab", C$5="Min")
+                    // 1. Weekend Rule using Excel Formula: OR(G$5="Sab", G$5="Min")
                     $weekendRule = new Conditional();
                     $weekendRule->setConditionType(Conditional::CONDITION_EXPRESSION);
-                    $weekendRule->addCondition('OR(C$5="Sab",C$5="Min")');
+                    $weekendRule->addCondition('OR(G$5="Sab",G$5="Min")');
                     $weekendRule->getStyle()->getFill()
                                 ->setFillType(Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('FFD1D5DB'); // Gray

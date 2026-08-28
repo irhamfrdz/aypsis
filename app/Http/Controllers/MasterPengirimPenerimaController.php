@@ -71,6 +71,7 @@ class MasterPengirimPenerimaController extends Controller
             'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
+            'contact_person' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -113,6 +114,7 @@ class MasterPengirimPenerimaController extends Controller
             'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
+            'contact_person' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -165,6 +167,7 @@ class MasterPengirimPenerimaController extends Controller
             'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
+            'contact_person' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -273,6 +276,7 @@ class MasterPengirimPenerimaController extends Controller
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
+            'contact_person' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 

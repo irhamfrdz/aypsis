@@ -19,6 +19,7 @@ class MasterPengirimPenerima extends Model
         'telepon',
         'alamat',
         'npwp',
+        'contact_person',
         'status',
         'created_by',
         'updated_by',
