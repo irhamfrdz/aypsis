@@ -113,7 +113,7 @@ class GpsTrackingController extends Controller
                     $isBongkaran = isset($activeSj->nomor_surat_jalan);
                     $info_sjs[] = [
                         'no_surat_jalan' => $isBongkaran ? $activeSj->nomor_surat_jalan : $activeSj->no_surat_jalan,
-                        'tujuan' => $activeSj->tujuan_pengiriman ?? '-',
+                        'tujuan' => ($activeSj->tipe_sj === 'Muatan') ? ($activeSj->tujuan_pengambilan ?? '-') : ($activeSj->tujuan_pengiriman ?? '-'),
                         'no_kontainer' => $activeSj->no_kontainer ?? '-',
                         'jenis_barang' => $activeSj->jenis_barang ?? '-',
                         'tipe' => $activeSj->tipe_sj
