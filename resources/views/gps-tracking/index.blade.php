@@ -69,6 +69,9 @@
                                     <i class="fas fa-user-tie text-gray-400 mr-1"></i> {{ $mobil->karyawan ? ($mobil->karyawan->nama_panggilan ?? $mobil->karyawan->nama_lengkap) : 'Tidak Ada Supir' }}
                                 </p>
                                 <p class="truncate text-[10px] leading-4 text-gray-400 mt-0.5">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
+                                <!-- Tempat Info Surat Jalan / Aktifitas -->
+                                <div id="sj-info-sidebar-{{ $mobil->id }}" class="mt-2 hidden flex-col gap-0.5">
+                                </div>
                             </div>
                             <div class="shrink-0 flex flex-col items-end">
                                 <p class="text-sm leading-6 text-gray-900 font-medium truck-speed" id="speed-{{ $mobil->id }}">- km/h</p>
@@ -233,6 +236,17 @@
                 }
                 $(`#status-${loc.mobil_id}`).html(statusHtml);
 
+                // Update Surat Jalan Info on Sidebar
+                if (loc.info_sj) {
+                    $(`#sj-info-sidebar-${loc.mobil_id}`).html(`
+                        <div class="text-[10px] text-gray-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 inline-block w-fit mb-0.5"><i class="fas fa-file-invoice text-indigo-500 mr-1"></i> ${loc.info_sj.no_surat_jalan}</div>
+                        <div class="text-[10px] text-gray-500 truncate" title="${loc.info_sj.tujuan || '-'}"><i class="fas fa-map-marker-alt text-red-400 w-3 text-center mr-1"></i> ${loc.info_sj.tujuan || '-'}</div>
+                        <div class="text-[10px] text-gray-500 truncate" title="${loc.info_sj.jenis_barang || '-'}"><i class="fas fa-box text-orange-400 w-3 text-center mr-1"></i> ${loc.info_sj.jenis_barang || '-'}</div>
+                    `).removeClass('hidden').addClass('flex');
+                } else {
+                    $(`#sj-info-sidebar-${loc.mobil_id}`).addClass('hidden').removeClass('flex');
+                }
+
                 // Info popup is already updated, logic for filter moved to applyFilters()
             }
         });
@@ -264,7 +278,34 @@
                         <span class="text-gray-500">Kecepatan:</span>
                         <span class="font-medium">${loc.speed} km/h</span>
                     </div>
-                    <div class="flex justify-between gap-2 mt-1 border-t border-gray-50 pt-1">
+                    ${loc.info_sj ? `
+                    <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                        <div class="font-semibold text-gray-700 mb-1 flex items-center">
+                            <i class="fas fa-file-invoice text-indigo-500 mr-1"></i> Aktifitas: ${loc.info_sj.tipe}
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-500 shrink-0">No. SJ:</span>
+                            <span class="font-medium">${loc.info_sj.no_surat_jalan || '-'}</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-500 shrink-0">Tujuan:</span>
+                            <span class="font-medium truncate" title="${loc.info_sj.tujuan || '-'}">${loc.info_sj.tujuan || '-'}</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-500 shrink-0">Kontainer:</span>
+                            <span class="font-medium">${loc.info_sj.no_kontainer || '-'}</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-500 shrink-0">Barang:</span>
+                            <span class="font-medium truncate" title="${loc.info_sj.jenis_barang || '-'}">${loc.info_sj.jenis_barang || '-'}</span>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="mt-2 pt-2 border-t border-gray-100 text-gray-400 italic text-[10px] text-center">
+                        Tidak ada aktivitas berjalan
+                    </div>
+                    `}
+                    <div class="flex justify-between gap-2 mt-2 border-t border-gray-100 pt-2">
                         <span class="text-gray-500 shrink-0">Alamat:</span>
                         <span class="font-medium text-right text-[10px] sm:text-xs line-clamp-3" id="address-${loc.mobil_id}" title="${loc.alamat || ''}">
                             ${loc.alamat ? loc.alamat : '<button type="button" onclick="event.stopPropagation(); loadAddress(' + loc.mobil_id + ', ' + loc.lat + ', ' + loc.lng + ')" class="text-indigo-600 hover:underline">Tampilkan Alamat</button>'}

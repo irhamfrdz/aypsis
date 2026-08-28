@@ -44,6 +44,21 @@ class GpsTrackingController extends Controller
         $imeis = $mobils->pluck('imei_gps')->filter()->toArray();
         $bulkGpsData = !empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
 
+        $nopols = $mobils->pluck('nomor_polisi')->filter()->toArray();
+        $activeSjs = \DB::table('surat_jalans')
+            ->whereIn('no_plat', $nopols)
+            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('no_plat');
+
+        $activeSjBongkarans = \DB::table('surat_jalan_bongkarans')
+            ->whereIn('no_plat', $nopols)
+            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('no_plat');
+
         $locations = [];
 
         foreach ($mobils as $mobil) {
@@ -60,6 +75,27 @@ class GpsTrackingController extends Controller
                     $statusText = 'Mesin Menyala';
                 }
 
+                $sj = $activeSjs->get($mobil->nomor_polisi)?->first();
+                $sjb = $activeSjBongkarans->get($mobil->nomor_polisi)?->first();
+                $latestSj = null;
+                if ($sj && $sjb) {
+                    $latestSj = ($sj->created_at > $sjb->created_at) ? $sj : $sjb;
+                } else {
+                    $latestSj = $sj ?? $sjb;
+                }
+
+                $info_sj = null;
+                if ($latestSj) {
+                    $isBongkaran = isset($latestSj->nomor_surat_jalan);
+                    $info_sj = [
+                        'no_surat_jalan' => $isBongkaran ? $latestSj->nomor_surat_jalan : $latestSj->no_surat_jalan,
+                        'tujuan' => $latestSj->tujuan_pengiriman ?? '-',
+                        'no_kontainer' => $latestSj->no_kontainer ?? '-',
+                        'jenis_barang' => $latestSj->jenis_barang ?? '-',
+                        'tipe' => $isBongkaran ? 'Bongkaran' : 'Muatan'
+                    ];
+                }
+
                 $locations[] = [
                     'mobil_id' => $mobil->id,
                     'nomor_polisi' => $mobil->nomor_polisi,
@@ -72,6 +108,7 @@ class GpsTrackingController extends Controller
                     'status' => $statusText,
                     'alamat' => $payload['address'] ?? $payload['location'] ?? null,
                     'last_update' => $payload['last_update'] ?? now()->format('Y-m-d H:i:s'),
+                    'info_sj' => $info_sj,
                 ];
             }
         }
