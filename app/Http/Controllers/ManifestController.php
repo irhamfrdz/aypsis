@@ -1498,6 +1498,6 @@ class ManifestController extends Controller
             ];
         }
 
-        return view('manifests.broadcast-preview', compact('namaKapal', 'noVoyage', 'broadcastData', 'kategoriMasalah'));
+        return view('master.wa-broadcast.broadcast-preview', compact('namaKapal', 'noVoyage', 'broadcastData', 'kategoriMasalah'));
     }
 }

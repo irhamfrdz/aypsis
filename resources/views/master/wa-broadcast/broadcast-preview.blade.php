@@ -7,7 +7,7 @@
 <div class="bg-white shadow-md rounded-lg p-6 font-sans">
     <div class="flex justify-between items-center mb-6 border-b pb-4">
         <h2 class="text-xl font-bold text-gray-800">Preview Pesan Broadcast</h2>
-        <a href="{{ route('report.manifests.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="text-gray-600 hover:text-gray-900 font-medium flex items-center text-sm">
+        <a href="{{ route('master.wa-broadcast.index') }}" class="text-gray-600 hover:text-gray-900 font-medium flex items-center text-sm">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Kembali
         </a>

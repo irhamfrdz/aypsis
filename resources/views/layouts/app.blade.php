@@ -321,6 +321,7 @@
                         $user->can('master-pricelist-freight-view') ||
                         $user->can('master-pricelist-pelindo-view') ||
                         $user->can('master-wa-templates-view') ||
+                        $user->can('master-wa-broadcast-view') ||
                         $user->can('master-customer-buruh-view')
                     );
 
@@ -651,8 +652,8 @@
 
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
-                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*') || Request::routeIs('master-customer-buruh.*');
-                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $user->can('master-shipper-consignee-view') || $user->can('master-wa-templates-view') || $user->can('master-customer-buruh-view') || $isAdmin);
+                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*') || Request::routeIs('master.wa-broadcast.*') || Request::routeIs('master-customer-buruh.*');
+                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $user->can('master-shipper-consignee-view') || $user->can('master-wa-templates-view') || $user->can('master-wa-broadcast-view') || $user->can('master-customer-buruh-view') || $isAdmin);
                         @endphp
 
                         @if($hasUmumPermissions)
@@ -735,6 +736,12 @@
                                 @if($isAdmin || ($user && $user->can('master-wa-templates-view')))
                                     <a href="{{ route('master.wa-templates.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.wa-templates.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs font-semibold">Master Template WA</span>
+                                    </a>
+                                @endif
+                                
+                                @if($isAdmin || ($user && $user->can('master-wa-broadcast-view')))
+                                    <a href="{{ route('master.wa-broadcast.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.wa-broadcast.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs font-semibold">Broadcast WA</span>
                                     </a>
                                 @endif
                                 </div>

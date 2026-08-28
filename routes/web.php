@@ -2468,6 +2468,7 @@ Route::middleware([
 
         // 📱 WA Templates Management
         Route::resource('master/wa-templates', \App\Http\Controllers\Master\WaTemplateController::class)->names('master.wa-templates');
+        Route::resource('master/wa-broadcast', \App\Http\Controllers\Master\WaBroadcastController::class)->names('master.wa-broadcast');
 
         // 🏢 Shipper Consignee Management with permissions
         Route::get('master/shipper-consignee/template', [\App\Http\Controllers\ShipperConsigneeController::class, 'template'])->name('master.shipper-consignee.template');
