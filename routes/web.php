@@ -4409,7 +4409,7 @@ Route::middleware([
 
         Route::get('surat-jalan-bongkaran/outstanding', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'outstanding'])
             ->name('surat-jalan-bongkaran.outstanding')
-            ->middleware('can:surat-jalan-bongkaran-view');
+            ->middleware('can:surat-jalan-bongkaran-outstanding');
 
         Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'show'])
             ->name('surat-jalan-bongkaran.show')

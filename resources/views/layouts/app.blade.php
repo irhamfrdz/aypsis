@@ -1948,7 +1948,7 @@
                         @endif
 
                         {{-- Outstanding Surat Jalan Bongkaran --}}
-                        @if($user && $user->can('surat-jalan-bongkaran-view'))
+                        @if($user && $user->can('surat-jalan-bongkaran-outstanding'))
                             <a href="{{ route('surat-jalan-bongkaran.outstanding') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.outstanding') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs font-semibold text-amber-600">Outstanding Bongkaran</span>
                             </a>

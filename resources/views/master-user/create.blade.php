@@ -1543,6 +1543,23 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.export')) checked @endif></td>
                             </tr>
 
+                            {{-- Outstanding Surat Jalan Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-amber-600 font-semibold">Outstanding Surat Jalan Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][outstanding]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.outstanding')) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Surat Jalan Bongkaran Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
