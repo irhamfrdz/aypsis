@@ -44,7 +44,7 @@
             bankOptions += '<option value="{{ $bank->id }}">{{ $bank->name }}</option>';
         @endforeach
 
-        let karyawanOptions = '<option value="">-- Pilih Penerima --</option>';
+        let karyawanOptions = '';
         @foreach($karyawans as $karyawan)
             karyawanOptions += '<option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>';
         @endforeach
@@ -120,10 +120,11 @@
                             <input type="text" name="kapal_sections[${sectionIndex}][nama_vendor]" class="nama-vendor-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
-                            <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Penerima (Ketik/Pilih)</label>
+                            <input type="text" list="karyawan-list-${sectionIndex}" name="kapal_sections[${sectionIndex}][penerima]" class="penerima-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Penerima">
+                            <datalist id="karyawan-list-${sectionIndex}">
                                 ${karyawanOptions}
-                            </select>
+                            </datalist>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
@@ -244,7 +245,7 @@
 
         // --- AUTO-COPY PAYMENT DETAILS FROM KAPAL 1 ---
         const namaVendorInputBB = section.querySelector('.nama-vendor-input');
-        const penerimaSelectBB = section.querySelector('.penerima-select');
+        const penerimaSelectBB = section.querySelector('.penerima-input');
         const bankSelectBB = section.querySelector('.bank-select');
         const nomorRekeningInputBB = section.querySelector('.nomor-rekening-input');
 
@@ -253,7 +254,7 @@
             const firstSection = bbSectionsContainer.querySelector('[data-section-index="1"]');
             if (firstSection) {
                 const firstVendor = firstSection.querySelector('.nama-vendor-input');
-                const firstPenerima = firstSection.querySelector('.penerima-select');
+                const firstPenerima = firstSection.querySelector('.penerima-input');
                 const firstBank = firstSection.querySelector('.bank-select');
                 const firstRekening = firstSection.querySelector('.nomor-rekening-input');
 
@@ -282,8 +283,8 @@
                 });
             }
             if (penerimaSelectBB) {
-                penerimaSelectBB.addEventListener('change', function() {
-                    updateOtherSectionsBB('.penerima-select', this.value);
+                penerimaSelectBB.addEventListener('input', function() {
+                    updateOtherSectionsBB('.penerima-input', this.value);
                 });
             }
             if (bankSelectBB) {
