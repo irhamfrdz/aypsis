@@ -189,8 +189,36 @@
                 container.innerHTML = '';
                 section.setAttribute('data-manifests', JSON.stringify(data.data));
                 
-                // Add one default row
-                addBarangToOppOptSection(sectionIndex);
+                // Group data by nomor_kontainer
+                const groupedManifests = {};
+                const cargoManifests = [];
+                
+                data.data.forEach(manifest => {
+                    if (manifest.nomor_kontainer) {
+                        if (!groupedManifests[manifest.nomor_kontainer]) {
+                            groupedManifests[manifest.nomor_kontainer] = [];
+                        }
+                        groupedManifests[manifest.nomor_kontainer].push(manifest.id);
+                    } else {
+                        cargoManifests.push([manifest.id]);
+                    }
+                });
+                
+                // Add rows for grouped containers
+                Object.values(groupedManifests).forEach(manifestIds => {
+                    addBarangToOppOptSection(sectionIndex, manifestIds);
+                });
+                
+                // Add rows for cargo (no container number)
+                cargoManifests.forEach(manifestIds => {
+                    addBarangToOppOptSection(sectionIndex, manifestIds);
+                });
+                
+                // If no data, add empty row
+                if (Object.keys(groupedManifests).length === 0 && cargoManifests.length === 0) {
+                    addBarangToOppOptSection(sectionIndex);
+                }
+                
                 calculateTotalFromAllOppOptSections();
             } else {
                 container.innerHTML = '';
@@ -239,7 +267,7 @@
             });
     }
     
-    window.addBarangToOppOptSection = function(sectionIndex) {
+    window.addBarangToOppOptSection = function(sectionIndex, selectedManifestIds = []) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
@@ -251,13 +279,21 @@
 
         let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
         manifestsData.forEach(manifest => {
-            barangOptions += `<option value="${manifest.id}">${manifest.label}</option>`;
+            const isSelected = selectedManifestIds.includes(manifest.id) ? 'selected' : '';
+            barangOptions += `<option value="${manifest.id}" ${isSelected}>${manifest.label}</option>`;
         });
 
-        let biayaOptions = '<option value="">Pilih Biaya</option>';
-        @if(isset($klasifikasiBiayas))
-            @foreach($klasifikasiBiayas as $kb)
-                biayaOptions += `<option value="{{ $kb->id }}">{{ $kb->nama }}</option>`;
+        let biayaOptions = '<option value="">Pilih Biaya (Pricelist)</option>';
+        @if(isset($pricelistOppOpt))
+            @foreach($pricelistOppOpt as $po)
+                biayaOptions += `<option value="{{ $po->id }}" data-tarif="{{ $po->tarif }}">{{ $po->nama_barang }}</option>`;
+            @endforeach
+        @endif
+
+        let customerBuruhOptions = '<option value="">Pilih Customer Buruh</option>';
+        @if(isset($masterCustomerBuruhs))
+            @foreach($masterCustomerBuruhs as $cb)
+                customerBuruhOptions += `<option value="{{ $cb->id }}">{{ $cb->nama_customer }}</option>`;
             @endforeach
         @endif
         
@@ -265,8 +301,8 @@
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
             <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya (Pricelist)</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][pricelist_opp_opt_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
                 </select>
             </div>
@@ -281,8 +317,10 @@
                 <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
             <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Customer Buruh</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][customer_buruh_id]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
+                    ${customerBuruhOptions}
+                </select>
             </div>
             <div class="flex-1">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
@@ -306,13 +344,23 @@
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const biayaSelect = inputGroup.querySelector('.opp-opt-biaya-select-item');
         
+        biayaSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const tarif = selectedOption.getAttribute('data-tarif');
+            if (tarif) {
+                tarifInput.value = tarif;
+                calculateTotalFromAllOppOptSections();
+            }
+        });
+
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
     };
 
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, customerBuruhId, catatan, pricelistOppOptId) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
@@ -332,14 +380,20 @@
         
         // If manifestId exists but not in current options, just add it as an option
         if (manifestId && !found) {
-            // Ideally we pass manifestLabel to this function from edit, but here it's create so it shouldn't happen much.
             barangOptions += `<option value="${manifestId}" selected>Manifest ID: ${manifestId}</option>`;
         }
         
-        let biayaOptions = '<option value="">Pilih Biaya</option>';
-        @if(isset($klasifikasiBiayas))
-            @foreach($klasifikasiBiayas as $kb)
-                biayaOptions += `<option value="{{ $kb->id }}" ${klasifikasiBiayaId == '{{ $kb->id }}' ? 'selected' : ''}>{{ $kb->nama }}</option>`;
+        let biayaOptions = '<option value="">Pilih Biaya (Pricelist)</option>';
+        @if(isset($pricelistOppOpt))
+            @foreach($pricelistOppOpt as $po)
+                biayaOptions += `<option value="{{ $po->id }}" data-tarif="{{ $po->tarif }}" ${pricelistOppOptId == '{{ $po->id }}' ? 'selected' : ''}>{{ $po->nama_barang }}</option>`;
+            @endforeach
+        @endif
+
+        let customerBuruhOptions = '<option value="">Pilih Customer Buruh</option>';
+        @if(isset($masterCustomerBuruhs))
+            @foreach($masterCustomerBuruhs as $cb)
+                customerBuruhOptions += `<option value="{{ $cb->id }}" ${customerBuruhId == '{{ $cb->id }}' ? 'selected' : ''}>{{ $cb->nama_customer }}</option>`;
             @endforeach
         @endif
         
@@ -347,8 +401,8 @@
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
             <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya (Pricelist)</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][pricelist_opp_opt_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
                 </select>
             </div>
@@ -363,8 +417,10 @@
                 <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
             </div>
             <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Customer Buruh</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][customer_buruh_id]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
+                    ${customerBuruhOptions}
+                </select>
             </div>
             <div class="flex-1">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
@@ -386,7 +442,17 @@
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const biayaSelect = inputGroup.querySelector('.opp-opt-biaya-select-item');
         
+        biayaSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const tarifVal = selectedOption.getAttribute('data-tarif');
+            if (tarifVal) {
+                tarifInput.value = tarifVal;
+                calculateTotalFromAllOppOptSections();
+            }
+        });
+
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });

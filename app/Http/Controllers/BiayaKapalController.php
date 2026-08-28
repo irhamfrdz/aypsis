@@ -2218,7 +2218,7 @@ class BiayaKapalController extends Controller
                             
                             $tarif = floatval($item['tarif'] ?? 0);
                             $jumlah = count($manifestIds);
-                            $vendor = $item['vendor'] ?? null;
+                            $customerBuruhId = $item['customer_buruh_id'] ?? null;
                             $catatan = $item['catatan'] ?? null;
 
                             if (empty($manifestIds) || $tarif <= 0) {
@@ -2229,11 +2229,11 @@ class BiayaKapalController extends Controller
 
                             $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
-                                'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
-                                'pricelist_opp_opt_id' => null, // Not used anymore
+                                'klasifikasi_biaya_id' => null, // Not used anymore
+                                'pricelist_opp_opt_id' => $item['pricelist_opp_opt_id'] ?? null,
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
-                                'vendor' => $vendor,
+                                'customer_buruh_id' => $customerBuruhId,
                                 'catatan' => $catatan,
                                 'jumlah' => $jumlah,
                                 'tarif' => $tarif,
@@ -4270,7 +4270,7 @@ class BiayaKapalController extends Controller
                                 
                                 $tarif = floatval($item['tarif'] ?? 0);
                                 $jumlah = count($manifestIds);
-                                $vendor = $item['vendor'] ?? null;
+                                $customerBuruhId = $item['customer_buruh_id'] ?? null;
                                 $catatan = $item['catatan'] ?? null;
 
                                 if (empty($manifestIds) || $tarif <= 0) {
@@ -4281,11 +4281,11 @@ class BiayaKapalController extends Controller
 
                                 $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
-                                    'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
-                                    'pricelist_opp_opt_id' => null, // Not used anymore
+                                    'klasifikasi_biaya_id' => null, // Not used anymore
+                                    'pricelist_opp_opt_id' => $item['pricelist_opp_opt_id'] ?? null,
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,
-                                    'vendor' => $vendor,
+                                    'customer_buruh_id' => $customerBuruhId,
                                     'catatan' => $catatan,
                                     'jumlah' => $jumlah,
                                     'tarif' => $tarif,
@@ -5867,6 +5867,7 @@ class BiayaKapalController extends Controller
                     }
                     return [
                         'id' => $item->id,
+                        'nomor_kontainer' => $item->nomor_kontainer,
                         'label' => $label . ' (' . ($item->size_kontainer ?: '-') . ' ' . ($item->tipe_kontainer ?: '-') . ')'
                     ];
                 });

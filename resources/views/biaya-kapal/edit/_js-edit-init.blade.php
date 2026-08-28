@@ -164,10 +164,10 @@
                     'sisa_pembayaran' => $section['sisa_pembayaran'] ?? 0,
                     'barang' => collect($section['barang'] ?? [])->map(function($i){ 
                         return [
-                            'klasifikasi_biaya_id' => $i['klasifikasi_biaya_id'] ?? null,
+                            'pricelist_opp_opt_id' => $i['pricelist_opp_opt_id'] ?? null,
                             'manifest_id' => $i['manifest_id'] ?? null, 
                             'tarif' => (float)($i['tarif'] ?? 0), 
-                            'vendor' => $i['vendor'] ?? '', 
+                            'customer_buruh_id' => $i['customer_buruh_id'] ?? null, 
                             'catatan' => $i['catatan'] ?? ''
                         ]; 
                     })->values()
@@ -206,11 +206,11 @@
                              }
                              
                              return [
-                                 'klasifikasi_biaya_id' => $i->klasifikasi_biaya_id ?? null,
+                                 'pricelist_opp_opt_id' => $i->pricelist_opp_opt_id ?? null,
                                  'manifest_id' => $manifestIds,
                                  'manifest_label' => implode(' | ', $manifestLabels),
                                  'tarif' => (float)$i->tarif,
-                                 'vendor' => $i->vendor ?? '',
+                                 'customer_buruh_id' => $i->customer_buruh_id ?? null,
                                  'catatan' => $i->catatan ?? ''
                              ];
                          })->values()
