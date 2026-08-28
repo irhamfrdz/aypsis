@@ -6111,9 +6111,6 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('auth');
 
     // OB Antar Gudang routes
-    Route::get('ob-antar-gudang/select', [\App\Http\Controllers\ObAntarGudangController::class, 'select'])
-        ->name('ob-antar-gudang.select')
-        ->middleware('can:ob-antar-gudang-view');
     Route::get('ob-antar-gudang', [\App\Http\Controllers\ObAntarGudangController::class, 'index'])
         ->name('ob-antar-gudang.index')
         ->middleware('can:ob-antar-gudang-view');

@@ -15,28 +15,13 @@ use Illuminate\Support\Facades\DB;
 class ObAntarGudangController extends Controller
 {
     /**
-     * Display the select gudang page.
-     */
-    public function select()
-    {
-        $gudangs = Gudang::orderBy('nama_gudang')->get();
-
-        return view('ob-antar-gudang.select', compact('gudangs'));
-    }
-
-    /**
-     * Display the index page with kontainer data for selected gudang.
+     * Display the index page with kontainer data.
      */
     public function index(Request $request)
     {
         $gudangId = $request->input('gudang_id');
 
-        if (! $gudangId) {
-            return redirect()->route('ob-antar-gudang.select')
-                ->with('error', 'Silakan pilih gudang terlebih dahulu.');
-        }
-
-        $gudang = Gudang::findOrFail($gudangId);
+        $gudang = $gudangId ? Gudang::find($gudangId) : null;
         $gudangs = Gudang::orderBy('nama_gudang')->get();
 
         // Build queries with filters
@@ -45,8 +30,11 @@ class ObAntarGudangController extends Controller
         $filterUkuran = $request->input('ukuran');
         $filterTipe = $request->input('tipe_kontainer');
 
-        // Query stock_kontainers for this gudang
-        $stockKontainersQuery = StockKontainer::where('gudangs_id', $gudangId);
+        // Query stock_kontainers
+        $stockKontainersQuery = StockKontainer::query();
+        if ($gudangId) {
+            $stockKontainersQuery->where('gudangs_id', $gudangId);
+        }
 
         if ($search) {
             $stockKontainersQuery->where(function ($q) use ($search) {
@@ -74,8 +62,11 @@ class ObAntarGudangController extends Controller
             ->paginate(50, ['*'], 'stock_page')
             ->appends($request->query());
 
-        // Query kontainers for this gudang
-        $kontainersQuery = Kontainer::where('gudangs_id', $gudangId);
+        // Query kontainers
+        $kontainersQuery = Kontainer::query();
+        if ($gudangId) {
+            $kontainersQuery->where('gudangs_id', $gudangId);
+        }
 
         if ($search) {
             $kontainersQuery->where(function ($q) use ($search) {
@@ -104,18 +95,25 @@ class ObAntarGudangController extends Controller
             ->appends($request->query());
 
         // Stats
-        $totalStockKontainers = StockKontainer::where('gudangs_id', $gudangId)->count();
-        $totalKontainers = Kontainer::where('gudangs_id', $gudangId)->count();
+        $stockStatsQuery = StockKontainer::query();
+        $kontainerStatsQuery = Kontainer::query();
+        if ($gudangId) {
+            $stockStatsQuery->where('gudangs_id', $gudangId);
+            $kontainerStatsQuery->where('gudangs_id', $gudangId);
+        }
+
+        $totalStockKontainers = (clone $stockStatsQuery)->count();
+        $totalKontainers = (clone $kontainerStatsQuery)->count();
         $totalAll = $totalStockKontainers + $totalKontainers;
 
         // Size breakdown
-        $stockSizes = StockKontainer::where('gudangs_id', $gudangId)
+        $stockSizes = (clone $stockStatsQuery)
             ->selectRaw('ukuran, COUNT(*) as total')
             ->groupBy('ukuran')
             ->pluck('total', 'ukuran')
             ->toArray();
 
-        $kontainerSizes = Kontainer::where('gudangs_id', $gudangId)
+        $kontainerSizes = (clone $kontainerStatsQuery)
             ->selectRaw('ukuran, COUNT(*) as total')
             ->groupBy('ukuran')
             ->pluck('total', 'ukuran')

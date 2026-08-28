@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'OB Antar Gudang - ' . $gudang->nama_gudang)
+@section('title', 'OB Antar Gudang' . ($gudang ? ' - ' . $gudang->nama_gudang : ' - Semua Gudang'))
 @section('page_title', 'OB Antar Gudang')
 
 @section('content')
@@ -12,7 +12,11 @@
                 <i class="fas fa-warehouse mr-2 md:mr-3 text-teal-600 text-xl md:text-2xl"></i>
                 <div>
                     <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB Antar Gudang</h1>
-                    <p class="text-xs md:text-sm text-gray-600">Gudang: <strong>{{ $gudang->nama_gudang }}</strong> {{ $gudang->lokasi ? '| Lokasi: ' . $gudang->lokasi : '' }}</p>
+                    @if($gudang)
+                        <p class="text-xs md:text-sm text-gray-600">Gudang: <strong>{{ $gudang->nama_gudang }}</strong> {{ $gudang->lokasi ? '| Lokasi: ' . $gudang->lokasi : '' }}</p>
+                    @else
+                        <p class="text-xs md:text-sm text-gray-600">Semua Gudang</p>
+                    @endif
                     <p class="text-[10px] md:text-xs text-gray-500 mt-1">Last updated: {{ now()->format('d/m/Y H:i:s') }}</p>
                 </div>
             </div>
@@ -20,9 +24,11 @@
                 <button type="button" onclick="window.location.reload()" style="background-color: #3b82f6;" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
-                <a href="{{ route('ob-antar-gudang.select') }}" style="background-color: #6b7280;" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
-                    <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Gudang Lain</span>
+                @if($gudang)
+                <a href="{{ route('ob-antar-gudang.index') }}" style="background-color: #6b7280;" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-times md:mr-2"></i><span class="hidden md:inline">Hapus Filter Gudang</span>
                 </a>
+                @endif
             </div>
         </div>
     </div>
@@ -111,15 +117,15 @@
     {{-- Filter Section --}}
     <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
         <form method="GET" action="{{ route('ob-antar-gudang.index') }}">
-            <input type="hidden" name="gudang_id" value="{{ $gudang->id }}">
             
             <div class="space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-5 md:gap-4">
                 {{-- Gudang Selector --}}
                 <div>
                     <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Gudang</label>
                     <select name="gudang_id" class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" onchange="this.form.submit()">
+                        <option value="">Semua Gudang</option>
                         @foreach($gudangs as $g)
-                            <option value="{{ $g->id }}" {{ $gudang->id == $g->id ? 'selected' : '' }}>
+                            <option value="{{ $g->id }}" {{ ($gudang && $gudang->id == $g->id) ? 'selected' : '' }}>
                                 {{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}
                             </option>
                         @endforeach
@@ -228,7 +234,7 @@
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock')"
+                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang->nama_gudang ?? '-' }}')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -239,7 +245,7 @@
             @empty
                 <div class="text-center text-gray-500 py-6">
                     <i class="fas fa-inbox text-3xl mb-2"></i>
-                    <p class="text-sm">Tidak ada data stock kontainer di gudang ini</p>
+                    <p class="text-sm">Tidak ada data stock kontainer {{ $gudang ? 'di gudang ini' : '' }}</p>
                 </div>
             @endforelse
         </div>
@@ -282,7 +288,7 @@
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock')"
+                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang->nama_gudang ?? '-' }}')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -296,7 +302,7 @@
                     <tr>
                         <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2"></i>
-                            <p>Tidak ada data stock kontainer di gudang {{ $gudang->nama_gudang }}</p>
+                            <p>Tidak ada data stock kontainer {{ $gudang ? 'di gudang ' . $gudang->nama_gudang : '' }}</p>
                         </td>
                     </tr>
                     @endforelse
@@ -353,7 +359,7 @@
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer')"
+                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang->nama_gudang ?? '-' }}')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -364,7 +370,7 @@
             @empty
                 <div class="text-center text-gray-500 py-6">
                     <i class="fas fa-inbox text-3xl mb-2"></i>
-                    <p class="text-sm">Tidak ada data kontainer sewa di gudang ini</p>
+                    <p class="text-sm">Tidak ada data kontainer sewa {{ $gudang ? 'di gudang ini' : '' }}</p>
                 </div>
             @endforelse
         </div>
@@ -409,7 +415,7 @@
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer')"
+                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang->nama_gudang ?? '-' }}')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -452,7 +458,7 @@
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form action="{{ route('ob-antar-gudang.store-tagihan') }}" method="POST">
                 @csrf
-                <input type="hidden" name="gudang_id" value="{{ $gudang->id }}">
+                <input type="hidden" name="gudang_id" id="modal_gudang_id">
                 <input type="hidden" id="modal_nomor_kontainer" name="nomor_kontainer">
                 <input type="hidden" id="modal_ukuran" name="ukuran">
                 <input type="hidden" id="modal_source" name="source">
@@ -469,7 +475,7 @@
                             <div class="mt-2 p-3 bg-gray-50 rounded border border-gray-100">
                                 <p class="text-xs text-gray-500">No Kontainer: <span id="display_nomor_kontainer" class="font-bold text-gray-800"></span></p>
                                 <p class="text-xs text-gray-500">Ukuran: <span id="display_ukuran" class="font-bold text-gray-800"></span> ft</p>
-                                <p class="text-xs text-gray-500">Gudang Asal: <span class="font-bold text-gray-800">{{ $gudang->nama_gudang }}</span></p>
+                                <p class="text-xs text-gray-500">Gudang Asal: <span class="font-bold text-gray-800" id="display_gudang_asal"></span></p>
                             </div>
 
                             <div class="mt-4 space-y-4">
@@ -536,12 +542,14 @@
 </div>
 
 <script>
-    function openTagihanModal(nomor, ukuran, source) {
+    function openTagihanModal(nomor, ukuran, source, gudangId, namaGudang) {
         document.getElementById('modal_nomor_kontainer').value = nomor;
         document.getElementById('modal_ukuran').value = ukuran;
         document.getElementById('modal_source').value = source;
+        document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
         document.getElementById('display_ukuran').innerText = ukuran.replace('ft', '').trim();
+        document.getElementById('display_gudang_asal').innerText = namaGudang;
         
         // Normalize ukuran for comparison (remove 'ft' and any whitespace)
         const normalizedUkuran = ukuran.toString().replace('ft', '').trim();

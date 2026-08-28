@@ -2275,7 +2275,7 @@
 
                 {{-- OB Antar Gudang --}}
                 @if($user && ($user->can('ob-antar-gudang-view')))
-                    <a href="{{ route('ob-antar-gudang.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('ob-antar-gudang.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('ob-antar-gudang.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('ob-antar-gudang.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">OB Antar Gudang</span>
                     </a>
                 @endif
