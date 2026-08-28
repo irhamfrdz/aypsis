@@ -188,7 +188,7 @@
 
                     <!-- Action Buttons -->
                     <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
-                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran']))
+                        @if(request()->anyFilled(['search', 'penempatan', 'pekerjaan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran', 'start_date', 'end_date']))
                             <a href="{{ route('absensi.rekap') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>

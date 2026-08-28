@@ -695,6 +695,21 @@
                                 <td>-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Template WA</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
                             {{-- Kelola Mesin --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

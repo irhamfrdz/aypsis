@@ -489,6 +489,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Template WA --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Template WA</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-wa-templates']['view']) && $userMatrixPermissions['master-wa-templates']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-wa-templates']['create']) && $userMatrixPermissions['master-wa-templates']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-wa-templates']['update']) && $userMatrixPermissions['master-wa-templates']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-wa-templates][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-wa-templates']['delete']) && $userMatrixPermissions['master-wa-templates']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data COA --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

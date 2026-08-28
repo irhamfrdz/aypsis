@@ -49,6 +49,7 @@ return [
                 'master-chasis-batam' => 'Manajemen Chasis Batam',
                 'master-tunjangan' => 'Manajemen Tunjangan',
                 'master-shipper-consignee' => 'Manajemen Shipper Consignee',
+                'master-wa-templates' => 'Manajemen WA Templates',
             ],
         ],
         'user-approval' => [

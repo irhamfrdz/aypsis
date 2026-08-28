@@ -319,7 +319,8 @@
 
                         $user->can('master-pricelist-labuh-tambat-view') ||
                         $user->can('master-pricelist-freight-view') ||
-                        $user->can('master-pricelist-pelindo-view')
+                        $user->can('master-pricelist-pelindo-view') ||
+                        $user->can('master-wa-templates-view')
                     );
 
 
@@ -623,7 +624,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*');
+                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.wa-templates.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -642,8 +643,8 @@
 
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
-                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*');
-                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $user->can('master-shipper-consignee-view') || $isAdmin);
+                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*');
+                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $user->can('master-shipper-consignee-view') || $user->can('master-wa-templates-view') || $isAdmin);
                         @endphp
 
                         @if($hasUmumPermissions)
@@ -717,7 +718,7 @@
                                         <span class="text-xs font-semibold">Shipper / Consignee</span>
                                     </a>
                                 @endif
-                                @if($isAdmin)
+                                @if($isAdmin || ($user && $user->can('master-wa-templates-view')))
                                     <a href="{{ route('master.wa-templates.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.wa-templates.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs font-semibold">Master Template WA</span>
                                     </a>

@@ -657,8 +657,8 @@ class AbsensiController extends Controller
         }
 
         // Handle Date Range
-        $defaultEndDate = Carbon::now()->day >= 26 ? Carbon::now()->addMonth()->day(25) : Carbon::now()->day(25);
-        $defaultStartDate = $defaultEndDate->copy()->subMonth()->day(26);
+        $defaultStartDate = Carbon::now()->startOfMonth();
+        $defaultEndDate = Carbon::now()->endOfMonth();
 
         $startDateStr = $request->input('start_date', $defaultStartDate->toDateString());
         $endDateStr = $request->input('end_date', $defaultEndDate->toDateString());
