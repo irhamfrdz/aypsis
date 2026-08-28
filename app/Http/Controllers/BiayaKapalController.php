@@ -231,7 +231,10 @@ class BiayaKapalController extends Controller
             ->unique()
             ->values();
 
+        $masterCustomerBuruhs = \App\Models\MasterCustomerBuruh::where('is_active', true)->orderBy('nama_customer')->get();
+
         return view('biaya-kapal.create', compact(
+            'masterCustomerBuruhs',
             'kapals',
             'klasifikasiBiayas',
             'pricelistBuruh',
@@ -3415,7 +3418,10 @@ class BiayaKapalController extends Controller
             ->unique()
             ->values();
 
+        $masterCustomerBuruhs = \App\Models\MasterCustomerBuruh::where('is_active', true)->orderBy('nama_customer')->get();
+
         return view('biaya-kapal.edit', compact(
+            'masterCustomerBuruhs',
             'biayaKapal',
             'kapals',
             'klasifikasiBiayas',

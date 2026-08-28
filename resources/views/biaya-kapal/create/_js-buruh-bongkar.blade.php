@@ -49,6 +49,19 @@
             karyawanOptions += '<option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>';
         @endforeach
 
+        let customerOptions = '<option value="">-- Pilih Customer Buruh --</option>';
+        let customerData = {};
+        @if(isset($masterCustomerBuruhs))
+            @foreach($masterCustomerBuruhs as $customer)
+                customerOptions += `<option value="{{ $customer->nama_customer }}">{{ $customer->nama_customer }}</option>`;
+                customerData["{{ $customer->nama_customer }}"] = {
+                    bank: "{{ $customer->bank }}",
+                    nomor_rekening: "{{ $customer->nomor_rekening }}",
+                    penerima: "{{ $customer->penerima }}"
+                };
+            @endforeach
+        @endif
+
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Buruh Bongkar</span></h3>
@@ -116,8 +129,10 @@
                             <input type="text" name="kapal_sections[${sectionIndex}][nomor_bukti]" class="nomor-bukti-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Bukti">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Vendor (Ketik Manual)</label>
-                            <input type="text" name="kapal_sections[${sectionIndex}][nama_vendor]" class="nama-vendor-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Customer Buruh (Pilih)</label>
+                            <select name="kapal_sections[${sectionIndex}][nama_vendor]" class="customer-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                                ${customerOptions}
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Penerima (Ketik/Pilih)</label>
@@ -177,6 +192,58 @@
                 loadVoyagesForSection(currentIndex, this.value);
             }
         });
+
+        const customerSelect = section.querySelector('.customer-select');
+        if (customerSelect) {
+            customerSelect.addEventListener('change', function() {
+                const selectedCustomer = this.value;
+                if (selectedCustomer && customerData[selectedCustomer]) {
+                    const data = customerData[selectedCustomer];
+                    
+                    // Set penerima if valid option exists, else might need to set it as a new option
+                    const penerimaSelect = section.querySelector('.penerima-select');
+                    if (penerimaSelect && data.penerima) {
+                        let optionExists = false;
+                        Array.from(penerimaSelect.options).forEach(opt => {
+                            if(opt.value === data.penerima) optionExists = true;
+                        });
+                        if (!optionExists) {
+                            const newOption = new Option(data.penerima, data.penerima, true, true);
+                            penerimaSelect.add(newOption);
+                        }
+                        penerimaSelect.value = data.penerima;
+                    }
+                    
+                    // Set bank
+                    const bankSelect = section.querySelector('.bank-select');
+                    if (bankSelect && data.bank) {
+                        let bankFound = false;
+                        Array.from(bankSelect.options).forEach(opt => {
+                            if(opt.text.toLowerCase() === data.bank.toLowerCase() || opt.value == data.bank) {
+                                bankSelect.value = opt.value;
+                                bankFound = true;
+                            }
+                        });
+                    }
+
+                    // Set nomor rekening
+                    const norekInput = section.querySelector('.nomor-rekening-input');
+                    if (norekInput && data.nomor_rekening) {
+                        norekInput.value = data.nomor_rekening;
+                    }
+                } else {
+                    // reset fields if empty
+                    const penerimaSelect = section.querySelector('.penerima-select');
+                    if(penerimaSelect) penerimaSelect.value = '';
+                    
+                    const bankSelect = section.querySelector('.bank-select');
+                    if(bankSelect) bankSelect.value = '';
+                    
+                    const norekInput = section.querySelector('.nomor-rekening-input');
+                    if(norekInput) norekInput.value = '';
+                }
+            });
+        }
         
         voyageSelect.addEventListener('change', function() {
             const currentSection = this.closest('.kapal-section');
