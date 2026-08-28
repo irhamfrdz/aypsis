@@ -44,7 +44,7 @@
             bankOptions += '<option value="{{ $bank->id }}">{{ $bank->name }}</option>';
         @endforeach
 
-        let karyawanOptions = '';
+        let karyawanOptions = '<option value="">-- Ketik/Pilih Penerima --</option>';
         @foreach($karyawans as $karyawan)
             karyawanOptions += '<option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>';
         @endforeach
@@ -121,10 +121,9 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Penerima (Ketik/Pilih)</label>
-                            <input type="text" list="karyawan-list-${sectionIndex}" name="kapal_sections[${sectionIndex}][penerima]" class="penerima-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Penerima">
-                            <datalist id="karyawan-list-${sectionIndex}">
+                            <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
                                 ${karyawanOptions}
-                            </datalist>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
@@ -245,7 +244,7 @@
 
         // --- AUTO-COPY PAYMENT DETAILS FROM KAPAL 1 ---
         const namaVendorInputBB = section.querySelector('.nama-vendor-input');
-        const penerimaSelectBB = section.querySelector('.penerima-input');
+        const penerimaSelectBB = section.querySelector('.penerima-select');
         const bankSelectBB = section.querySelector('.bank-select');
         const nomorRekeningInputBB = section.querySelector('.nomor-rekening-input');
 
@@ -254,12 +253,15 @@
             const firstSection = bbSectionsContainer.querySelector('[data-section-index="1"]');
             if (firstSection) {
                 const firstVendor = firstSection.querySelector('.nama-vendor-input');
-                const firstPenerima = firstSection.querySelector('.penerima-input');
+                const firstPenerima = firstSection.querySelector('.penerima-select');
                 const firstBank = firstSection.querySelector('.bank-select');
                 const firstRekening = firstSection.querySelector('.nomor-rekening-input');
 
                 if (namaVendorInputBB && firstVendor && firstVendor.value) namaVendorInputBB.value = firstVendor.value;
-                if (penerimaSelectBB && firstPenerima && firstPenerima.value) penerimaSelectBB.value = firstPenerima.value;
+                if (penerimaSelectBB && firstPenerima && firstPenerima.value) {
+                    penerimaSelectBB.value = firstPenerima.value;
+                    if (typeof jQuery !== 'undefined') jQuery(penerimaSelectBB).trigger('change.select2');
+                }
                 if (bankSelectBB && firstBank && firstBank.value) bankSelectBB.value = firstBank.value;
                 if (nomorRekeningInputBB && firstRekening && firstRekening.value) nomorRekeningInputBB.value = firstRekening.value;
             }
@@ -272,7 +274,10 @@
                     const idx = parseInt(sec.getAttribute('data-section-index'));
                     if (idx > 1) {
                         const input = sec.querySelector(selector);
-                        if (input) input.value = value;
+                        if (input) {
+                            input.value = value;
+                            if (selector === '.penerima-select' && typeof jQuery !== 'undefined') jQuery(input).trigger('change.select2');
+                        }
                     }
                 });
             };
@@ -283,9 +288,15 @@
                 });
             }
             if (penerimaSelectBB) {
-                penerimaSelectBB.addEventListener('input', function() {
-                    updateOtherSectionsBB('.penerima-input', this.value);
-                });
+                if (typeof jQuery !== 'undefined') {
+                    jQuery(penerimaSelectBB).on('change', function() {
+                        updateOtherSectionsBB('.penerima-select', this.value);
+                    });
+                } else {
+                    penerimaSelectBB.addEventListener('change', function() {
+                        updateOtherSectionsBB('.penerima-select', this.value);
+                    });
+                }
             }
             if (bankSelectBB) {
                 bankSelectBB.addEventListener('change', function() {
@@ -297,6 +308,16 @@
                     updateOtherSectionsBB('.nomor-rekening-input', this.value);
                 });
             }
+        }
+
+        // Initialize Select2 if available
+        if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+            jQuery(section).find('.penerima-select').select2({
+                tags: true,
+                placeholder: "-- Ketik atau Pilih Penerima --",
+                allowClear: true,
+                width: '100%'
+            });
         }
     }
 
