@@ -378,6 +378,8 @@ Route::middleware([
 
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
 
+    Route::resource('master-customer-buruh', \App\Http\Controllers\MasterCustomerBuruhController::class);
+
     Route::get('kontainer-sewa-billing', [BtmKontainerSewaController::class, 'index'])
         ->name('kontainer-sewa-billing.index')
         ->middleware('can:tagihan-kontainer-sewa-index');

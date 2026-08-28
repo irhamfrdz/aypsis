@@ -4496,6 +4496,51 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Customer Buruh --}}
+                            <tr class="module-row" data-module="master-customer-buruh">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Master Customer Buruh</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan Master Customer Buruh</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-customer-buruh-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-customer-buruh-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-customer-buruh-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="master-customer-buruh-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Customer Buruh Sub-modules --}}
+                            <tr class="submodule-row" data-parent="master-customer-buruh">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Daftar Customer Buruh</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-customer-buruh][view]" value="1" class="permission-checkbox" @if(old('permissions.master-customer-buruh.view') || (isset($userMatrixPermissions['master-customer-buruh']['view']) && $userMatrixPermissions['master-customer-buruh']['view']) || ($user && $user->can('master-customer-buruh-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-customer-buruh][create]" value="1" class="permission-checkbox" @if(old('permissions.master-customer-buruh.create') || (isset($userMatrixPermissions['master-customer-buruh']['create']) && $userMatrixPermissions['master-customer-buruh']['create']) || ($user && $user->can('master-customer-buruh-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-customer-buruh][update]" value="1" class="permission-checkbox" @if(old('permissions.master-customer-buruh.update') || (isset($userMatrixPermissions['master-customer-buruh']['update']) && $userMatrixPermissions['master-customer-buruh']['update']) || ($user && $user->can('master-customer-buruh-update'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[master-customer-buruh][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-customer-buruh.delete') || (isset($userMatrixPermissions['master-customer-buruh']['delete']) && $userMatrixPermissions['master-customer-buruh']['delete']) || ($user && $user->can('master-customer-buruh-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">
@@ -6328,6 +6373,67 @@
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.master-wa-templates-header-checkbox[data-permission="${permission}"]`);
                     const subCheckboxes = document.querySelectorAll(`[data-parent="master-wa-templates"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && subCheckboxes.length > 0) {
+                        let allChecked = true;
+                        let someChecked = false;
+
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (checkbox.checked) {
+                                someChecked = true;
+                            } else {
+                                allChecked = false;
+                            }
+                        });
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+
+            // Initialize Master Customer Buruh checkbox handling
+            initializeCheckAllMasterCustomerBuruh();
+
+            function initializeCheckAllMasterCustomerBuruh() {
+                document.querySelectorAll('.master-customer-buruh-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        if (this.disabled) return;
+                        
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        const subCheckboxes = document.querySelectorAll(`[data-parent="master-customer-buruh"] input[name*="[${permission}]"]`);
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (!checkbox.disabled) {
+                                checkbox.checked = isChecked;
+                            }
+                        });
+
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Master Customer Buruh telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Master Customer Buruh telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-parent="master-customer-buruh"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateMasterCustomerBuruhHeaderCheckboxes();
+                    });
+                });
+
+                updateMasterCustomerBuruhHeaderCheckboxes();
+            }
+
+            function updateMasterCustomerBuruhHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.master-customer-buruh-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="master-customer-buruh"] input[name*="[${permission}]"]`);
 
                     if (headerCheckbox && subCheckboxes.length > 0) {
                         let allChecked = true;
