@@ -188,7 +188,7 @@
                     <i class="fas fa-search mr-2"></i>
                     Filter
                 </button>
-                <a href="{{ route('ob-antar-gudang.index', ['gudang_id' => $gudang->id]) }}" style="background-color: #6b7280;" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
+                <a href="{{ route('ob-antar-gudang.index', $gudang ? ['gudang_id' => $gudang->id] : []) }}" style="background-color: #6b7280;" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                     <i class="fas fa-times mr-2"></i>
                     Reset
                 </a>
