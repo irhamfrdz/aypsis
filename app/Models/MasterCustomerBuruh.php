@@ -14,10 +14,9 @@ class MasterCustomerBuruh extends Model
     protected $fillable = [
         'kode',
         'nama_customer',
-        'pic',
-        'no_telp',
-        'alamat',
-        'keterangan',
+        'bank',
+        'nomor_rekening',
+        'penerima',
         'is_active',
     ];
 

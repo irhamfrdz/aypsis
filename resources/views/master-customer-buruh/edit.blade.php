@@ -33,13 +33,18 @@
             </div>
 
             <div>
-                <label for="pic" class="block text-sm font-medium text-gray-700 mb-1">PIC (Penanggung Jawab)</label>
-                <input type="text" name="pic" id="pic" value="{{ old('pic', $masterCustomerBuruh->pic) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                <label for="bank" class="block text-sm font-medium text-gray-700 mb-1">Bank</label>
+                <input type="text" name="bank" id="bank" value="{{ old('bank', $masterCustomerBuruh->bank) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             </div>
 
             <div>
-                <label for="no_telp" class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
-                <input type="text" name="no_telp" id="no_telp" value="{{ old('no_telp', $masterCustomerBuruh->no_telp) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                <label for="nomor_rekening" class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                <input type="text" name="nomor_rekening" id="nomor_rekening" value="{{ old('nomor_rekening', $masterCustomerBuruh->nomor_rekening) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+
+            <div>
+                <label for="penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima (Atas Nama)</label>
+                <input type="text" name="penerima" id="penerima" value="{{ old('penerima', $masterCustomerBuruh->penerima) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             </div>
 
             <div>
@@ -52,15 +57,7 @@
                 </div>
             </div>
 
-            <div class="md:col-span-2">
-                <label for="alamat" class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                <textarea name="alamat" id="alamat" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">{{ old('alamat', $masterCustomerBuruh->alamat) }}</textarea>
-            </div>
-
-            <div class="md:col-span-2">
-                <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <textarea name="keterangan" id="keterangan" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">{{ old('keterangan', $masterCustomerBuruh->keterangan) }}</textarea>
-            </div>
+            <!-- Removed alamat and keterangan as per requirements -->
         </div>
 
         <div class="flex justify-end pt-4 border-t">

@@ -30,10 +30,9 @@ class MasterCustomerBuruhController extends Controller
     {
         $request->validate([
             'nama_customer' => 'required|string|max:255',
-            'pic' => 'nullable|string|max:255',
-            'no_telp' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
-            'keterangan' => 'nullable|string',
+            'bank' => 'nullable|string|max:255',
+            'nomor_rekening' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -72,10 +71,9 @@ class MasterCustomerBuruhController extends Controller
     {
         $request->validate([
             'nama_customer' => 'required|string|max:255',
-            'pic' => 'nullable|string|max:255',
-            'no_telp' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
-            'keterangan' => 'nullable|string',
+            'bank' => 'nullable|string|max:255',
+            'nomor_rekening' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 

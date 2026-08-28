@@ -28,8 +28,9 @@
                     <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider w-12">No</th>
                     <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                     <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Nama Customer</th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">PIC / Telp</th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Bank</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Nomor Rekening</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                     <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-4 py-3 text-center font-medium text-gray-500 uppercase tracking-wider w-32">Aksi</th>
                 </tr>
@@ -40,11 +41,9 @@
                         <td class="px-4 py-3 text-gray-500">{{ $index + 1 }}</td>
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $customer->kode }}</td>
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $customer->nama_customer }}</td>
-                        <td class="px-4 py-3 text-gray-500">
-                            {{ $customer->pic ?: '-' }} <br>
-                            <span class="text-xs">{{ $customer->no_telp }}</span>
-                        </td>
-                        <td class="px-4 py-3 text-gray-500 text-xs">{{ \Illuminate\Support\Str::limit($customer->alamat, 50) }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $customer->bank ?: '-' }}</td>
+                        <td class="px-4 py-3 text-gray-500 font-mono">{{ $customer->nomor_rekening ?: '-' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $customer->penerima ?: '-' }}</td>
                         <td class="px-4 py-3">
                             @if($customer->is_active)
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
