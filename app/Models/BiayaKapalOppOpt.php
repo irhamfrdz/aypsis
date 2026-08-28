@@ -14,7 +14,7 @@ class BiayaKapalOppOpt extends Model
         'pricelist_opp_opt_id',
         'kapal',
         'voyage',
-        'customer_buruh_id',
+        'vendor',
         'catatan',
         'jumlah',
         'tarif',
@@ -57,9 +57,4 @@ class BiayaKapalOppOpt extends Model
             ->withTimestamps();
     }
 
-    // Relationship to MasterCustomerBuruh
-    public function customerBuruh()
-    {
-        return $this->belongsTo(MasterCustomerBuruh::class, 'customer_buruh_id');
-    }
 }
