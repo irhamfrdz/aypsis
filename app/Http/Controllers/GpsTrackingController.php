@@ -45,27 +45,43 @@ class GpsTrackingController extends Controller
         $bulkGpsData = !empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
 
         $nopols = $mobils->pluck('nomor_polisi')->filter()->toArray();
-        $activeSjs = \DB::table('surat_jalans')
-            ->select('*', \DB::raw("'Muatan' as tipe_sj"))
-            ->whereIn('no_plat', $nopols)
-            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
-            ->orderBy('created_at', 'desc')
+        $activeSjs = \DB::table('surat_jalans as sj')
+            ->select('sj.*', \DB::raw("'Muatan' as tipe_sj"))
+            ->whereIn('sj.no_plat', $nopols)
+            ->whereIn('sj.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->whereNull('sj.tanggal_tanda_terima') // Sudah tanda terima berarti selesai
+            ->whereNotExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('tanda_terimas')
+                      ->whereColumn('tanda_terimas.surat_jalan_id', 'sj.id');
+            })
+            ->orderBy('sj.created_at', 'desc')
             ->get()
             ->groupBy('no_plat');
 
-        $activeSjBongkarans = \DB::table('surat_jalan_bongkarans')
-            ->select('*', \DB::raw("'Bongkaran' as tipe_sj"))
-            ->whereIn('no_plat', $nopols)
-            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
-            ->orderBy('created_at', 'desc')
+        $activeSjBongkarans = \DB::table('surat_jalan_bongkarans as sjb')
+            ->select('sjb.*', \DB::raw("'Bongkaran' as tipe_sj"))
+            ->whereIn('sjb.no_plat', $nopols)
+            ->whereIn('sjb.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->whereNotExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('tanda_terima_bongkarans')
+                      ->whereColumn('tanda_terima_bongkarans.surat_jalan_bongkaran_id', 'sjb.id');
+            })
+            ->orderBy('sjb.created_at', 'desc')
             ->get()
             ->groupBy('no_plat');
 
-        $activeSjBatam = \DB::table('surat_jalan_bongkaran_batams')
-            ->select('*', \DB::raw("'Bongkaran Batam' as tipe_sj"))
-            ->whereIn('no_plat', $nopols)
-            ->whereIn('status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
-            ->orderBy('created_at', 'desc')
+        $activeSjBatam = \DB::table('surat_jalan_bongkaran_batams as sjbb')
+            ->select('sjbb.*', \DB::raw("'Bongkaran Batam' as tipe_sj"))
+            ->whereIn('sjbb.no_plat', $nopols)
+            ->whereIn('sjbb.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
+            ->whereNotExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('tanda_terima_bongkaran_batams')
+                      ->whereColumn('tanda_terima_bongkaran_batams.surat_jalan_bongkaran_id', 'sjbb.id');
+            })
+            ->orderBy('sjbb.created_at', 'desc')
             ->get()
             ->groupBy('no_plat');
 
