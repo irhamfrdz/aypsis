@@ -14,6 +14,7 @@ class Pengirim extends Model
         'nama_pengirim',
         'nickname1',
         'pic',
+        'contact_person',
         'telepon',
         'alamat',
         'catatan',
