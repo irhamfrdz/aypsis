@@ -71,6 +71,7 @@ use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PricelistCatController;
 use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\ProspekController;
+use App\Http\Controllers\PranotaBpjsController;
 // use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 // use App\Http\Controllers\PranotaRitKenekController; // Removed - not used
 use App\Http\Controllers\RealisasiUangMukaController;
@@ -1101,6 +1102,8 @@ Route::middleware([
                 return response()->json(['message' => 'Permohonan ditolak.']);
             });
         });
+        
+        Route::resource('pranota-bpjs', PranotaBpjsController::class);
     });
 
     /*
