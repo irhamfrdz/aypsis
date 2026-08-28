@@ -85,21 +85,22 @@ class GpsTrackingController extends Controller
                     $statusText = 'Mesin Menyala';
                 }
 
-                $sj = $activeSjs->get($mobil->nomor_polisi)?->first();
-                $sjb = $activeSjBongkarans->get($mobil->nomor_polisi)?->first();
-                $sjbatam = $activeSjBatam->get($mobil->nomor_polisi)?->first();
+                $sjList = $activeSjs->get($mobil->nomor_polisi) ?? collect();
+                $sjbList = $activeSjBongkarans->get($mobil->nomor_polisi) ?? collect();
+                $sjbatamList = $activeSjBatam->get($mobil->nomor_polisi) ?? collect();
                 
-                $latestSj = collect([$sj, $sjb, $sjbatam])->filter()->sortByDesc('created_at')->first();
+                // Gabungkan semua surat jalan aktif yang dimiliki truk ini
+                $allActiveSj = $sjList->concat($sjbList)->concat($sjbatamList)->sortByDesc('created_at')->values();
 
-                $info_sj = null;
-                if ($latestSj) {
-                    $isBongkaran = isset($latestSj->nomor_surat_jalan);
-                    $info_sj = [
-                        'no_surat_jalan' => $isBongkaran ? $latestSj->nomor_surat_jalan : $latestSj->no_surat_jalan,
-                        'tujuan' => $latestSj->tujuan_pengiriman ?? '-',
-                        'no_kontainer' => $latestSj->no_kontainer ?? '-',
-                        'jenis_barang' => $latestSj->jenis_barang ?? '-',
-                        'tipe' => $latestSj->tipe_sj
+                $info_sjs = [];
+                foreach ($allActiveSj as $activeSj) {
+                    $isBongkaran = isset($activeSj->nomor_surat_jalan);
+                    $info_sjs[] = [
+                        'no_surat_jalan' => $isBongkaran ? $activeSj->nomor_surat_jalan : $activeSj->no_surat_jalan,
+                        'tujuan' => $activeSj->tujuan_pengiriman ?? '-',
+                        'no_kontainer' => $activeSj->no_kontainer ?? '-',
+                        'jenis_barang' => $activeSj->jenis_barang ?? '-',
+                        'tipe' => $activeSj->tipe_sj
                     ];
                 }
 
@@ -115,7 +116,7 @@ class GpsTrackingController extends Controller
                     'status' => $statusText,
                     'alamat' => $payload['address'] ?? $payload['location'] ?? null,
                     'last_update' => $payload['last_update'] ?? now()->format('Y-m-d H:i:s'),
-                    'info_sj' => $info_sj,
+                    'info_sjs' => $info_sjs,
                 ];
             }
         }

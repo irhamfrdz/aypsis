@@ -237,12 +237,21 @@
                 $(`#status-${loc.mobil_id}`).html(statusHtml);
 
                 // Update Surat Jalan Info on Sidebar
-                if (loc.info_sj) {
-                    $(`#sj-info-sidebar-${loc.mobil_id}`).html(`
-                        <div class="text-[10px] text-gray-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 inline-block w-fit mb-0.5"><i class="fas fa-file-invoice text-indigo-500 mr-1"></i> ${loc.info_sj.no_surat_jalan}</div>
-                        <div class="text-[10px] text-gray-500 truncate" title="${loc.info_sj.tujuan || '-'}"><i class="fas fa-map-marker-alt text-red-400 w-3 text-center mr-1"></i> ${loc.info_sj.tujuan || '-'}</div>
-                        <div class="text-[10px] text-gray-500 truncate" title="${loc.info_sj.jenis_barang || '-'}"><i class="fas fa-box text-orange-400 w-3 text-center mr-1"></i> ${loc.info_sj.jenis_barang || '-'}</div>
-                    `).removeClass('hidden').addClass('flex');
+                if (loc.info_sjs && loc.info_sjs.length > 0) {
+                    const firstSj = loc.info_sjs[0];
+                    const extraCount = loc.info_sjs.length - 1;
+                    
+                    let sjHtml = `
+                        <div class="flex items-center justify-between mb-0.5">
+                            <div class="text-[10px] text-gray-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 inline-block truncate flex-1 mr-1" title="${firstSj.no_surat_jalan}">
+                                <i class="fas fa-file-invoice text-indigo-500 mr-1"></i> ${firstSj.no_surat_jalan}
+                            </div>
+                            ${extraCount > 0 ? `<div class="text-[9px] font-bold text-white bg-amber-500 px-1.5 py-0.5 rounded shrink-0" title="${extraCount} aktivitas lain berjalan">+${extraCount} SJ lain</div>` : ''}
+                        </div>
+                        <div class="text-[10px] text-gray-500 truncate" title="${firstSj.tujuan || '-'}"><i class="fas fa-map-marker-alt text-red-400 w-3 text-center mr-1"></i> ${firstSj.tujuan || '-'}</div>
+                        <div class="text-[10px] text-gray-500 truncate" title="${firstSj.jenis_barang || '-'}"><i class="fas fa-box text-orange-400 w-3 text-center mr-1"></i> ${firstSj.jenis_barang || '-'}</div>
+                    `;
+                    $(`#sj-info-sidebar-${loc.mobil_id}`).html(sjHtml).removeClass('hidden').addClass('flex');
                 } else {
                     $(`#sj-info-sidebar-${loc.mobil_id}`).addClass('hidden').removeClass('flex');
                 }
@@ -278,27 +287,32 @@
                         <span class="text-gray-500">Kecepatan:</span>
                         <span class="font-medium">${loc.speed} km/h</span>
                     </div>
-                    ${loc.info_sj ? `
-                    <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
-                        <div class="font-semibold text-gray-700 mb-1 flex items-center">
-                            <i class="fas fa-file-invoice text-indigo-500 mr-1"></i> Aktifitas: ${loc.info_sj.tipe}
-                        </div>
-                        <div class="flex justify-between gap-2">
-                            <span class="text-gray-500 shrink-0">No. SJ:</span>
-                            <span class="font-medium">${loc.info_sj.no_surat_jalan || '-'}</span>
-                        </div>
-                        <div class="flex justify-between gap-2">
-                            <span class="text-gray-500 shrink-0">Tujuan:</span>
-                            <span class="font-medium truncate" title="${loc.info_sj.tujuan || '-'}">${loc.info_sj.tujuan || '-'}</span>
-                        </div>
-                        <div class="flex justify-between gap-2">
-                            <span class="text-gray-500 shrink-0">Kontainer:</span>
-                            <span class="font-medium">${loc.info_sj.no_kontainer || '-'}</span>
-                        </div>
-                        <div class="flex justify-between gap-2">
-                            <span class="text-gray-500 shrink-0">Barang:</span>
-                            <span class="font-medium truncate" title="${loc.info_sj.jenis_barang || '-'}">${loc.info_sj.jenis_barang || '-'}</span>
-                        </div>
+                    ${loc.info_sjs && loc.info_sjs.length > 0 ? `
+                    <div class="mt-2 pt-2 border-t border-gray-100 max-h-48 overflow-y-auto pr-1">
+                        ${loc.info_sjs.map((sj, idx) => `
+                            <div class="mb-3 last:mb-0 space-y-1 ${idx > 0 ? 'border-t border-gray-50 pt-2' : ''}">
+                                <div class="font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                                    <div class="flex items-center"><i class="fas fa-file-invoice text-indigo-500 mr-1"></i> Aktifitas: ${sj.tipe}</div>
+                                    ${loc.info_sjs.length > 1 ? `<span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">#${loc.info_sjs.length - idx}</span>` : ''}
+                                </div>
+                                <div class="flex justify-between gap-2">
+                                    <span class="text-gray-500 shrink-0">No. SJ:</span>
+                                    <span class="font-medium">${sj.no_surat_jalan || '-'}</span>
+                                </div>
+                                <div class="flex justify-between gap-2">
+                                    <span class="text-gray-500 shrink-0">Tujuan:</span>
+                                    <span class="font-medium truncate" title="${sj.tujuan || '-'}">${sj.tujuan || '-'}</span>
+                                </div>
+                                <div class="flex justify-between gap-2">
+                                    <span class="text-gray-500 shrink-0">Kontainer:</span>
+                                    <span class="font-medium">${sj.no_kontainer || '-'}</span>
+                                </div>
+                                <div class="flex justify-between gap-2">
+                                    <span class="text-gray-500 shrink-0">Barang:</span>
+                                    <span class="font-medium truncate" title="${sj.jenis_barang || '-'}">${sj.jenis_barang || '-'}</span>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                     ` : `
                     <div class="mt-2 pt-2 border-t border-gray-100 text-gray-400 italic text-[10px] text-center">
