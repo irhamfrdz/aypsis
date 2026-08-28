@@ -50,6 +50,7 @@ return [
                 'master-tunjangan' => 'Manajemen Tunjangan',
                 'master-shipper-consignee' => 'Manajemen Shipper Consignee',
                 'master-wa-templates' => 'Manajemen WA Templates',
+                'master-wa-broadcast' => 'Manajemen WA Broadcast',
             ],
         ],
         'user-approval' => [

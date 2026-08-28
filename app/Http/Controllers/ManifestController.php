@@ -1433,16 +1433,43 @@ class ManifestController extends Controller
 
             $firstManifest = $shipperManifests->first();
             
-            $shipper = null;
-            if ($firstManifest->shipper_id) {
-                $shipper = \App\Models\ShipperConsignee::find($firstManifest->shipper_id);
-            } else if ($firstManifest->pengirim) {
-                $shipper = \App\Models\ShipperConsignee::where('shipper', $firstManifest->pengirim)->first();
+            $namaTujuan = $firstManifest->pengirim ?: 'Shipper';
+            $nomorKontak = null;
+
+            if ($firstManifest->pengirim) {
+                // 1. Cek di tabel MasterPengirimPenerima
+                $masterPP = \App\Models\MasterPengirimPenerima::where('nama', $firstManifest->pengirim)->first();
+                if ($masterPP && ($masterPP->contact_person || $masterPP->telepon)) {
+                    $namaTujuan = $masterPP->nama;
+                    $nomorKontak = $masterPP->contact_person ?: $masterPP->telepon;
+                }
+
+                // 2. Cek di tabel Pengirim (jika di MasterPengirimPenerima tidak ada nomor)
+                if (!$nomorKontak) {
+                    $pengirimMaster = \App\Models\Pengirim::where('nama_pengirim', $firstManifest->pengirim)->first();
+                    if ($pengirimMaster && ($pengirimMaster->contact_person || $pengirimMaster->telepon)) {
+                        $namaTujuan = $pengirimMaster->nama_pengirim;
+                        $nomorKontak = $pengirimMaster->contact_person ?: $pengirimMaster->telepon;
+                    }
+                }
             }
 
-            $nomorKontak = $shipper ? ($shipper->contact_person ?: $shipper->telepon) : null;
-            
-            if (!$shipper || empty($nomorKontak)) {
+            // 3. Fallback ke ShipperConsignee (alur lama)
+            if (!$nomorKontak) {
+                $shipper = null;
+                if ($firstManifest->shipper_id) {
+                    $shipper = \App\Models\ShipperConsignee::find($firstManifest->shipper_id);
+                } else if ($firstManifest->pengirim) {
+                    $shipper = \App\Models\ShipperConsignee::where('shipper', $firstManifest->pengirim)->first();
+                }
+
+                if ($shipper) {
+                    $namaTujuan = $shipper->shipper ?: $namaTujuan;
+                    $nomorKontak = $shipper->contact_person ?: $shipper->telepon;
+                }
+            }
+
+            if (empty($nomorKontak)) {
                 continue;
             }
 
@@ -1450,9 +1477,6 @@ class ManifestController extends Controller
             foreach ($shipperManifests as $m) {
                 $daftarResi .= "- BL: " . $m->nomor_bl . " / Kontainer: " . $m->nomor_kontainer . "\n";
             }
-
-            // Nama untuk template (jika shipper name kosong, fallback)
-            $namaTujuan = $shipper->shipper ?: 'Shipper';
 
             $isiPesan = $template->isi_template;
             $isiPesan = str_replace('{shipper_name}', $namaTujuan, $isiPesan);

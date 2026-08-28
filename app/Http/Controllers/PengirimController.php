@@ -6,6 +6,8 @@ use App\Exports\PengirimExport;
 use App\Models\Pengirim;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PengirimDataExport;
+use App\Imports\PengirimUpdateImport;
 
 class PengirimController extends Controller
 {
@@ -354,5 +356,41 @@ class PengirimController extends Controller
             'pengirim' => $pengirim,
             'message' => 'Pengirim berhasil diperbarui!',
         ]);
+    }
+    /**
+     * Export data pengirim ke Excel
+     */
+    public function exportData()
+    {
+        $filename = 'master_pengirim_data_' . date('Y-m-d_His') . '.xlsx';
+        return Excel::download(new PengirimDataExport, $filename);
+    }
+
+    /**
+     * Import update data pengirim dari Excel
+     */
+    public function importUpdate(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
+        ]);
+
+        try {
+            $import = new PengirimUpdateImport;
+            Excel::import($import, $request->file('file'));
+
+            if ($import->successCount > 0) {
+                $message = "Berhasil memperbarui {$import->successCount} data pengirim";
+                if (!empty($import->errors)) {
+                    $message .= '. Namun ada ' . count($import->errors) . ' error: ' . implode('; ', $import->errors);
+                }
+
+                return redirect()->route('pengirim.index')->with('success', $message);
+            } else {
+                return redirect()->route('pengirim.index')->with('error', 'Tidak ada data yang diperbarui. ' . implode('; ', $import->errors));
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('pengirim.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

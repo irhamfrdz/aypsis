@@ -20,32 +20,55 @@
                     <p class="mt-1 text-sm text-gray-600">Kelola data pengirim dalam sistem</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    @can('master-pengirim-view')
-                    <a href="{{ route('pengirim.download-template') }}" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Download Template
-                    </a>
-                    <a href="{{ route('pengirim.export-excel', ['search' => request('search')]) }}" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Download Excel
-                    </a>
+                    @can('master-pengirim-create')
+                    <!-- Dropdown Import/Export -->
+                    <div class="relative group" x-data="{ open: false }" @click.away="open = false">
+                        <button @click="open = !open" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-file-excel mr-2"></i> Excel <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                        </button>
+                        
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 hidden"
+                             :class="{'hidden': !open}">
+                            <div class="py-1">
+                                <!-- Download Data -->
+                                <a href="{{ route('pengirim.export-data') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-download mr-2 text-emerald-600"></i> Export Data
+                                </a>
+                                <!-- Import Update -->
+                                <button onclick="openImportUpdateModal(); open = false" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-upload mr-2 text-blue-600"></i> Import Update Data
+                                </button>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <!-- Download Template (Lama) -->
+                                <a href="{{ route('pengirim.download-template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-csv mr-2 text-emerald-600"></i> Download Template Baru
+                                </a>
+                                <!-- Import Data Baru (Lama) -->
+                                <a href="{{ route('pengirim.import') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-upload mr-2 text-yellow-600"></i> Import Data Baru
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <!-- Download Excel (Lama) -->
+                                <a href="{{ route('pengirim.export-excel', ['search' => request('search')]) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-table mr-2 text-emerald-600"></i> Download Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     @endcan
                     @can('master-pengirim-create')
-                    <a href="{{ route('pengirim.import') }}" class="inline-flex items-center justify-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                        </svg>
-                        Import CSV
-                    </a>
                     <a href="{{ route('pengirim.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        Tambah Pengirim
+                        Tambah Data
                     </a>
                     @endcan
                 </div>
@@ -183,12 +206,87 @@
 <!-- Audit Log Modal -->
 @include('components.audit-log-modal')
 
+<!-- Modal Import Update -->
+<div id="importUpdateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-[32rem] shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Import Update Data</h3>
+                <button onclick="closeImportUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ route('pengirim.import-update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label for="import_update_file" class="block text-sm font-medium text-gray-700 mb-2">
+                        Pilih File Excel Hasil Export
+                    </label>
+                    <input type="file"
+                           name="file"
+                           id="import_update_file"
+                           accept=".xlsx,.xls,.csv"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           required>
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <h4 class="text-sm font-medium text-blue-800 mb-1">Cara Penggunaan:</h4>
+                        <ol class="list-decimal ml-4 text-xs text-blue-700 space-y-1">
+                            <li>Klik tombol <strong>Export Data</strong> untuk mengunduh data saat ini.</li>
+                            <li>Buka file Excel, lalu isi field yang masih kosong (contoh: PIC, Telepon, Contact Person).</li>
+                            <li>Upload kembali file Excel tersebut ke sini.</li>
+                            <li>Sistem hanya akan memperbarui data jika field di database masih kosong (data lama yang sudah ada tidak akan ditimpa).</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeImportUpdateModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Upload & Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @include('components.resizable-table')
 
 @push('scripts')
 <script>
+// Menambahkan AlpineJS jika belum ada di layout
+if (typeof Alpine === 'undefined') {
+    let script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';
+    script.defer = true;
+    document.head.appendChild(script);
+}
+
+function openImportUpdateModal() {
+    document.getElementById('importUpdateModal').classList.remove('hidden');
+}
+
+function closeImportUpdateModal() {
+    document.getElementById('importUpdateModal').classList.add('hidden');
+    document.getElementById('import_update_file').value = '';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+    let importUpdateModal = document.getElementById('importUpdateModal');
+    
+    if (e.target === importUpdateModal) {
+        closeImportUpdateModal();
+    }
+});
+
 $(document).ready(function() {
     initResizableTable('masterPengirimTable');
 });

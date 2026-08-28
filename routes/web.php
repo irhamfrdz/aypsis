@@ -3259,12 +3259,29 @@ Route::middleware([
             ->name('pengirim.export-excel')
             ->middleware('can:master-pengirim-view');
 
+        Route::get('master/pengirim-export-data', [PengirimController::class, 'exportData'])
+            ->name('pengirim.export-data')
+            ->middleware('can:master-pengirim-view');
+
+        Route::post('master/pengirim-import-update', [PengirimController::class, 'importUpdate'])
+            ->name('pengirim.import-update')
+            ->middleware('can:master-pengirim-create');
+
+
         // Master Pengirim/Penerima - Download Template & Import (HARUS SEBELUM RESOURCE!)
         Route::get('master-pengirim-penerima/download-template', [MasterPengirimPenerimaController::class, 'downloadTemplate'])
             ->name('master-pengirim-penerima.download-template')
             ->middleware('can:master-pengirim-penerima-create');
         Route::post('master-pengirim-penerima/import', [MasterPengirimPenerimaController::class, 'import'])
             ->name('master-pengirim-penerima.import')
+            ->middleware('can:master-pengirim-penerima-create');
+
+        Route::get('master-pengirim-penerima/export-data', [MasterPengirimPenerimaController::class, 'exportData'])
+            ->name('master-pengirim-penerima.export-data')
+            ->middleware('can:master-pengirim-penerima-create');
+
+        Route::post('master-pengirim-penerima/import-update', [MasterPengirimPenerimaController::class, 'importUpdate'])
+            ->name('master-pengirim-penerima.import-update')
             ->middleware('can:master-pengirim-penerima-create');
 
         // Popup routes for adding/editing penerima from tanda terima
