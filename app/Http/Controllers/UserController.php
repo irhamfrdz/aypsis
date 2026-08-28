@@ -979,6 +979,30 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for pranota-bpjs permissions
+            if (strpos($permissionName, 'pranota-bpjs-') === 0) {
+                $module = 'pranota-bpjs';
+                $action = str_replace('pranota-bpjs-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (! isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+
+                continue; // Skip other patterns
+            }
+
             // Special handling for audit-log permissions (audit-log-view, audit-log-export) - MUST BE BEFORE Pattern 3
             if (strpos($permissionName, 'audit-log-') === 0) {
                 $module = 'audit-log';
@@ -3505,6 +3529,25 @@ class UserController extends Controller
                                 Log::warning('Permission not found in database', [
                                     'permission_name' => $permissionName,
                                 ]);
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-bpjs
+                    if ($module === 'pranota-bpjs') {
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pranota-bpjs-'.$actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }
