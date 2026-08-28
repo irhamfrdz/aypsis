@@ -513,9 +513,7 @@
                                     <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Tujuan--</option>
                                         @foreach($gudangs as $g)
-                                            @if($g->id != $gudang->id)
-                                                <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
-                                            @endif
+                                            <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -570,6 +568,21 @@
             } else {
                 option.style.display = 'none'; // Sembunyikan
                 option.disabled = true;        // Disable option
+            }
+        });
+        
+        // Filter dropdown Gudang Tujuan (sembunyikan gudang asal)
+        const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
+        gudangTujuanSelect.value = '';
+        Array.from(gudangTujuanSelect.options).forEach(option => {
+            if(option.value === '') return;
+            
+            if (option.value === gudangId.toString()) {
+                option.style.display = 'none';
+                option.disabled = true;
+            } else {
+                option.style.display = '';
+                option.disabled = false;
             }
         });
         
