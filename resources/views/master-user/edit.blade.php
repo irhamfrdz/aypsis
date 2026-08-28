@@ -4326,6 +4326,50 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota BPJS --}}
+                            <tr class="module-row" data-module="pranota-bpjs">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Pranota BPJS</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan Pranota BPJS</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-bpjs-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-bpjs-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-bpjs-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-bpjs-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Pranota BPJS Sub-modules --}}
+                            <tr class="submodule-row" data-parent="pranota-bpjs">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Daftar Pranota BPJS</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-bpjs][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-bpjs.view') || (isset($userMatrixPermissions['pranota-bpjs']['view']) && $userMatrixPermissions['pranota-bpjs']['view']) || ($user && $user->can('pranota-bpjs-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-bpjs][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-bpjs.create') || (isset($userMatrixPermissions['pranota-bpjs']['create']) && $userMatrixPermissions['pranota-bpjs']['create']) || ($user && $user->can('pranota-bpjs-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-bpjs][update]" value="1" class="permission-checkbox" @if(old('permissions.pranota-bpjs.update') || (isset($userMatrixPermissions['pranota-bpjs']['update']) && $userMatrixPermissions['pranota-bpjs']['update']) || ($user && $user->can('pranota-bpjs-update'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-bpjs][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-bpjs.delete') || (isset($userMatrixPermissions['pranota-bpjs']['delete']) && $userMatrixPermissions['pranota-bpjs']['delete']) || ($user && $user->can('pranota-bpjs-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
                             {{-- Kwitansi --}}
                             <tr class="module-row" data-module="kwitansi">
                                 <td class="module-header">
@@ -6139,6 +6183,65 @@
                 updatePranotaUangMakanHeaderCheckboxes();
             }
 
+            // Initialize Pranota BPJS checkbox handling
+            initializeCheckAllPranotaBpjs();
+
+            function initializeCheckAllPranotaBpjs() {
+                document.querySelectorAll('.pranota-bpjs-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        if (this.disabled) return;
+                        
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-bpjs"] input[name*="[${permission}]"]`);
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (!checkbox.disabled) {
+                                checkbox.checked = isChecked;
+                            }
+                        });
+
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Pranota BPJS telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Pranota BPJS telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-parent="pranota-bpjs"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updatePranotaBpjsHeaderCheckboxes();
+                    });
+                });
+
+                updatePranotaBpjsHeaderCheckboxes();
+            }
+
+            function updatePranotaBpjsHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.pranota-bpjs-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-bpjs"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && subCheckboxes.length > 0) {
+                        let allChecked = true;
+                        let someChecked = false;
+
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (checkbox.checked) {
+                                someChecked = true;
+                            } else {
+                                allChecked = false;
+                            }
+                        });
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
             function updatePranotaUangMakanHeaderCheckboxes() {
                 const permissions = ['view', 'create', 'update', 'delete'];
 
