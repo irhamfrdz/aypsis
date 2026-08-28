@@ -53,8 +53,8 @@
         let customerData = {};
         @if(isset($masterCustomerBuruhs))
             @foreach($masterCustomerBuruhs as $customer)
-                customerOptions += `<option value="{{ $customer->nama_customer }}">{{ $customer->nama_customer }}</option>`;
-                customerData["{{ $customer->nama_customer }}"] = {
+                customerOptions += `<option value="{{ $customer->id }}">{{ $customer->nama_customer }}</option>`;
+                customerData["{{ $customer->id }}"] = {
                     bank: "{{ $customer->bank }}",
                     nomor_rekening: "{{ $customer->nomor_rekening }}",
                     penerima: "{{ $customer->penerima }}"
@@ -130,7 +130,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Customer Buruh (Pilih)</label>
-                            <select name="kapal_sections[${sectionIndex}][nama_vendor]" class="customer-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <select name="kapal_sections[${sectionIndex}][master_customer_buruh_id]" class="customer-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
                                 ${customerOptions}
                             </select>
                         </div>

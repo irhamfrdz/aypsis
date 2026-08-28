@@ -19,7 +19,7 @@ class BiayaKapalBuruhBongkar extends Model
         'total_nominal',
         'nomor_bukti',
         'penerima',
-        'nama_vendor',
+        'master_customer_buruh_id',
         'bank_id',
         'nomor_rekening',
     ];
@@ -38,4 +38,8 @@ class BiayaKapalBuruhBongkar extends Model
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
     }
 
+    public function masterCustomerBuruh()
+    {
+        return $this->belongsTo(MasterCustomerBuruh::class, 'master_customer_buruh_id');
+    }
 }

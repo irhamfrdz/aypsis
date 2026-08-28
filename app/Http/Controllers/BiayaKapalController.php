@@ -3818,7 +3818,7 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
-            'kapal_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'kapal_sections.*.master_customer_buruh_id' => 'nullable|exists:master_customer_buruhs,id',
             'kapal_sections.*.penerima' => 'nullable|string|max:255',
             'kapal_sections.*.bank_id' => 'nullable|exists:banks,id',
             'kapal_sections.*.nomor_rekening' => 'nullable|string|max:100',

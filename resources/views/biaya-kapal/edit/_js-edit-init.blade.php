@@ -49,7 +49,7 @@
                         'nominal' => $batamItem ? $batamItem->nominal : 0,
                         'nomor_bukti' => $batamItem ? $batamItem->nomor_bukti : '',
                         'penerima' => $batamItem ? $batamItem->penerima : '',
-                        'nama_vendor' => $batamItem ? $batamItem->nama_vendor : '',
+                        'master_customer_buruh_id' => $batamItem ? $batamItem->master_customer_buruh_id : '',
                         'bank_id' => $batamItem ? $batamItem->bank_id : '',
                         'nomor_rekening' => $batamItem ? $batamItem->nomor_rekening : '',
                         'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
@@ -731,8 +731,8 @@
                                 const penerimaSel = section.querySelector('.penerima-select');
                                 if (penerimaSel && myData.penerima) penerimaSel.value = myData.penerima;
                                 
-                                const namVendor = section.querySelector('.nama-vendor-input');
-                                if (namVendor && myData.nama_vendor) namVendor.value = myData.nama_vendor;
+                                const custSel = section.querySelector('.customer-select');
+                                if (custSel && myData.master_customer_buruh_id) custSel.value = myData.master_customer_buruh_id;
                                 
                                 const bankSel = section.querySelector('.bank-select');
                                 if (bankSel && myData.bank_id) bankSel.value = myData.bank_id;
