@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Data Absensi Karyawan</title>
+    <title>Data Scan Karyawan</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,18 +40,19 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
-            table-layout: auto;
+            table-layout: fixed;
         }
         table.data-table th, table.data-table td {
             border: 1px solid black;
             padding: 4px;
             text-align: center;
             word-wrap: break-word;
-            font-size: 10px;
         }
-        table.data-table th {
-            background-color: #f3f4f6;
+        table.data-table tr.emp-header td {
+            text-align: left;
             font-weight: bold;
+            border-bottom: 1px solid black;
+            font-size: 11px;
         }
         
         .footer {
@@ -76,55 +77,59 @@
     <div class="header">
         <table>
             <tr>
-                <td class="title">Data Absensi Harian Karyawan</td>
+                <td class="title">Data Scan Karyawan</td>
                 <td class="center">({{ $filterTitle }})</td>
-                <td class="date">Dari {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }}</td>
+                <td class="date">Dari {{ $startDate->format('d-m-Y') }} s/d {{ $endDate->format('d-m-Y') }}</td>
             </tr>
         </table>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>NIK</th>
-                <th>Nama</th>
-                <th>Posisi</th>
-                <th>Divisi</th>
-                <th>Tanggal</th>
-                <th>Masuk</th>
-                <th>Ist. Keluar</th>
-                <th>Ist. Masuk</th>
-                <th>Pulang</th>
-                <th>Lbr. Masuk</th>
-                <th>Lbr. Pulang</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($absensis as $index => $absensi)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $absensi->nik }}</td>
-                    <td style="text-align: left;">{{ $absensi->karyawan ? $absensi->karyawan->nama_lengkap : 'Karyawan Tidak Terdaftar' }}</td>
-                    <td>{{ $absensi->karyawan ? $absensi->karyawan->pekerjaan : '-' }}</td>
-                    <td>{{ $absensi->karyawan && $absensi->karyawan->divisi !== '0' ? strtoupper($absensi->karyawan->divisi) : '-' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}</td>
-                    <td>{{ $absensi->waktu_masuk ? \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') : '-' }}</td>
-                    <td>{{ $absensi->waktu_istirahat_keluar ? \Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i') : '-' }}</td>
-                    <td>{{ $absensi->waktu_istirahat_masuk ? \Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i') : '-' }}</td>
-                    <td>{{ $absensi->waktu_pulang ? \Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : '-' }}</td>
-                    <td>{{ $absensi->waktu_lembur_masuk ? \Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i') : '-' }}</td>
-                    <td>{{ $absensi->waktu_lembur_pulang ? \Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i') : '-' }}</td>
+    @foreach($pdfData as $data)
+        @php
+            $karyawan = $data['karyawan'];
+            $allLogs = $data['logs'];
+            // Chunk logs per 10 days
+            $chunks = array_chunk($allLogs, 10);
+        @endphp
+
+        @foreach($chunks as $chunk)
+            @php
+                $columnsCount = count($chunk);
+            @endphp
+            <table class="data-table">
+                <tr class="emp-header">
+                    <td colspan="2">{{ $karyawan->penempatan ?: 'Jakarta Kantor' }}</td>
+                    <td colspan="2" style="text-align: center;">{{ $karyawan->nik }}</td>
+                    <td colspan="6">{{ strtoupper($karyawan->nama_lengkap) }}</td>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+                
+                <tr>
+                    @foreach($chunk as $log)
+                        <td>{{ $log['date_label'] }}</td>
+                    @endforeach
+                    @for($i = $columnsCount; $i < 10; $i++)
+                        <td></td>
+                    @endfor
+                </tr>
+                
+                <tr>
+                    @foreach($chunk as $log)
+                        <td>{{ $log['scan'] }}</td>
+                    @endforeach
+                    @for($i = $columnsCount; $i < 10; $i++)
+                        <td></td>
+                    @endfor
+                </tr>
+            </table>
+        @endforeach
+    @endforeach
 
     <div class="footer">
         <table>
             <tr>
-                <td>Dicetak pada: {{ date('d/m/Y H:i') }}</td>
-                <td class="right">Hal. <script type="text/php">if (isset($pdf)) { echo $PAGE_NUM . ' dari ' . $PAGE_COUNT; }</script></td>
+                <td>Oleh: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Supervisor</td>
+                <td class="center">{{ date('d/m/Y') }}</td>
+                <td class="right">Hal. <script type="text/php">if (isset($pdf)) { echo $PAGE_NUM; }</script></td>
             </tr>
         </table>
     </div>

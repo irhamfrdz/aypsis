@@ -457,7 +457,40 @@ class AbsensiController extends Controller
             }
         }
 
-        $absensis = $query->orderBy('tanggal', 'desc')->get();
+        $absensis = $query->orderBy('tanggal', 'asc')->get();
+
+        $hariIndo = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        $pdfData = [];
+        $grouped = $absensis->groupBy('karyawan_id');
+
+        foreach ($grouped as $karyawanId => $logs) {
+            $karyawan = $logs->first()->karyawan;
+            if (!$karyawan) continue;
+
+            $dayLogs = [];
+            foreach ($logs as $log) {
+                $date = \Carbon\Carbon::parse($log->tanggal);
+                $dayStr = $date->format('m/d') . ' ' . $hariIndo[$date->dayOfWeek];
+                
+                $masuk = $log->waktu_masuk ? \Carbon\Carbon::parse($log->waktu_masuk)->format('H.i') : '';
+                $pulang = $log->waktu_pulang ? \Carbon\Carbon::parse($log->waktu_pulang)->format('H.i') : '';
+                
+                $scanStr = '-';
+                if ($masuk || $pulang) {
+                    $scanStr = ($masuk ?: '') . '-' . ($pulang ?: '');
+                }
+                
+                $dayLogs[] = [
+                    'date_label' => $dayStr,
+                    'scan' => $scanStr
+                ];
+            }
+            
+            $pdfData[] = [
+                'karyawan' => $karyawan,
+                'logs' => $dayLogs
+            ];
+        }
 
         $titleParts = [];
         if ($request->filled('penempatan')) {
@@ -479,9 +512,9 @@ class AbsensiController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.pdf', [
             'startDate' => $startDateObj,
             'endDate' => $endDateObj,
-            'absensis' => $absensis,
+            'pdfData' => $pdfData,
             'filterTitle' => $filterTitle,
-        ])->setPaper('A4', 'landscape');
+        ])->setPaper('A4', 'portrait');
 
         return $pdf->download($filename);
     }
