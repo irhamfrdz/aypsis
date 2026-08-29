@@ -247,6 +247,7 @@ class InvoiceAktivitasLainController extends Controller
             'pph',
             'biaya_materai',
             'biaya_adjustment',
+            'pbm_biaya_adjustment',
             'nominal_bayar',
             'biaya_admin',
         ];
@@ -360,6 +361,7 @@ class InvoiceAktivitasLainController extends Controller
             'grand_total' => 'nullable|numeric|min:0',
             'biaya_materai' => 'nullable|numeric|min:0',
             'biaya_adjustment' => 'nullable|numeric',
+            'pbm_biaya_adjustment' => 'nullable|numeric',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
             // Biaya Listrik fields - now accepts array for multiple entries
@@ -870,6 +872,7 @@ class InvoiceAktivitasLainController extends Controller
             'nominal',
             'biaya_materai',
             'biaya_adjustment',
+            'pbm_biaya_adjustment',
             'nominal_bayar',
             'biaya_admin',
         ];
@@ -984,6 +987,7 @@ class InvoiceAktivitasLainController extends Controller
             'grand_total' => 'nullable|numeric|min:0',
             'biaya_materai' => 'nullable|numeric|min:0',
             'biaya_adjustment' => 'nullable|numeric',
+            'pbm_biaya_adjustment' => 'nullable|numeric',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
             // Biaya Listrik fields

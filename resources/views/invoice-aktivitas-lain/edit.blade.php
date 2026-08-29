@@ -465,7 +465,7 @@
                                     <td class="px-3 py-3 text-right">
                                         <div class="relative">
                                             <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">Rp</span>
-                                            <input type="text" name="biaya_adjustment" id="pbm_biaya_adjustment" value="{{ number_format($invoice->biaya_adjustment ?? 0, 0, ',', '.') }}" class="w-full pl-6 text-right border-gray-300 rounded-md text-sm font-bold text-pink-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 pbm-adj-calc" placeholder="0">
+                                            <input type="text" name="pbm_biaya_adjustment" id="pbm_biaya_adjustment" value="{{ number_format($invoice->biaya_adjustment ?? 0, 0, ',', '.') }}" class="w-full pl-6 text-right border-gray-300 rounded-md text-sm font-bold text-pink-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 pbm-adj-calc" placeholder="0">
                                         </div>
                                     </td>
                                     <td></td>
