@@ -16,6 +16,7 @@ class TagihanOb extends Model
         'kapal',
         'voyage',
         'kegiatan', // muat atau bongkar
+        'tanggal_ob', // tanggal kegiatan ob
         'nomor_kontainer',
         'nama_supir',
         'barang',

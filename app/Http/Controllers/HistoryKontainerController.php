@@ -27,6 +27,7 @@ class HistoryKontainerController extends Controller
                 ');
             }, 'asal_gudang_nama')
             ->with(['gudang', 'creator'])
+            ->orderBy('tanggal_kegiatan', 'desc')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {

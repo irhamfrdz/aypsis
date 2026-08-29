@@ -152,6 +152,7 @@ class ObAntarGudangController extends Controller
     public function storeTagihan(Request $request)
     {
         $validated = $request->validate([
+            'tanggal_ob' => 'required|date',
             'nomor_kontainer' => 'required|string',
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
@@ -171,6 +172,7 @@ class ObAntarGudangController extends Controller
             $pricelist = MasterPricelistOb::find($validated['pricelist_id']);
 
             $tagihan = new TagihanOb;
+            $tagihan->tanggal_ob = $validated['tanggal_ob'];
             $tagihan->kapal = 'ANTAR GUDANG';
             $tagihan->voyage = 'ANTAR GUDANG';
             $tagihan->kegiatan = 'ANTAR GUDANG';
@@ -205,7 +207,7 @@ class ObAntarGudangController extends Controller
                         'nomor_kontainer' => $validated['nomor_kontainer'],
                         'tipe_kontainer' => 'stock',
                         'jenis_kegiatan' => 'Pindahan Gudang',
-                        'tanggal_kegiatan' => now(),
+                        'tanggal_kegiatan' => $validated['tanggal_ob'],
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_tujuan_id'],
                         'keterangan' => 'OB Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' -> '.($gudangTujuan->nama_gudang ?? '-'),
@@ -228,7 +230,7 @@ class ObAntarGudangController extends Controller
                         'nomor_kontainer' => $validated['nomor_kontainer'],
                         'tipe_kontainer' => 'kontainer',
                         'jenis_kegiatan' => 'Pindahan Gudang',
-                        'tanggal_kegiatan' => now(),
+                        'tanggal_kegiatan' => $validated['tanggal_ob'],
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_tujuan_id'],
                         'keterangan' => 'OB Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' -> '.($gudangTujuan->nama_gudang ?? '-'),

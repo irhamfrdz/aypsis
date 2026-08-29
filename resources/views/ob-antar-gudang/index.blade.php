@@ -480,6 +480,11 @@
 
                             <div class="mt-4 space-y-4">
                                 <div>
+                                    <label for="tanggal_ob" class="block text-sm font-medium text-gray-700 mb-1">Tanggal OB <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_ob" id="tanggal_ob" value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                </div>
+
+                                <div>
                                     <label for="nama_supir" class="block text-sm font-medium text-gray-700 mb-1">Pilih Supir <span class="text-red-500">*</span></label>
                                     <select name="nama_supir" id="nama_supir" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Supir--</option>
