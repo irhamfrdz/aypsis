@@ -485,12 +485,6 @@ class PranotaUangRitController extends Controller
                             $subQ->whereNotNull('tanggal_checkpoint')
                                 ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
                                 ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                        })
-                        ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
-                            // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
-                            $subQ->where('status', 'approved')
-                                ->where(DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
-                                ->where(DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
                         });
                 });
             } catch (\Exception $e) {
