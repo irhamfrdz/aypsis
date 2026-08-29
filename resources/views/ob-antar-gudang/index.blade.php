@@ -228,13 +228,13 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Gudang:</span>
-                            <span class="font-medium text-gray-900">{{ $sk->gudang->nama_gudang ?? '-' }}</span>
+                            <span class="font-medium text-gray-900">{{ $sk->gudang?->nama_gudang ?? '-' }}</span>
                         </div>
                     </div>
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang->nama_gudang ?? '-' }}')"
+                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang?->nama_gudang ?? '-' }}')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -284,11 +284,11 @@
                                 {{ ucfirst($sk->status ?? 'N/A') }}
                             </span>
                         </td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->gudang->nama_gudang ?? '-' }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->gudang?->nama_gudang ?? '-' }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang->nama_gudang ?? '-' }}')"
+                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock', '{{ $sk->gudangs_id }}', '{{ $sk->gudang?->nama_gudang ?? '-' }}')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -353,13 +353,13 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Gudang:</span>
-                            <span class="font-medium text-gray-900">{{ $k->gudang->nama_gudang ?? '-' }}</span>
+                            <span class="font-medium text-gray-900">{{ $k->gudang?->nama_gudang ?? '-' }}</span>
                         </div>
                     </div>
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang->nama_gudang ?? '-' }}')"
+                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang?->nama_gudang ?? '-' }}')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -411,11 +411,11 @@
                                 {{ ucfirst($k->status ?? 'N/A') }}
                             </span>
                         </td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $k->gudang->nama_gudang ?? '-' }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $k->gudang?->nama_gudang ?? '-' }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang->nama_gudang ?? '-' }}')"
+                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer', '{{ $k->gudangs_id }}', '{{ $k->gudang?->nama_gudang ?? '-' }}')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -429,7 +429,7 @@
                     <tr>
                         <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2"></i>
-                            <p>Tidak ada data kontainer sewa di gudang {{ $gudang->nama_gudang }}</p>
+                            <p>Tidak ada data kontainer sewa {{ $gudang ? 'di gudang ' . $gudang->nama_gudang : '' }}</p>
                         </td>
                     </tr>
                     @endforelse
