@@ -53,7 +53,14 @@
             <input type="hidden" name="opp_opt_sections[${sectionIndex}][dp]" class="opp-opt-section-dp-hidden" value="0">
             <input type="hidden" name="opp_opt_sections[${sectionIndex}][sisa_pembayaran]" class="opp-opt-section-sisa-hidden" value="0">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Klasifikasi</label>
+                    <select name="opp_opt_sections[${sectionIndex}][klasifikasi]" class="opp-opt-klasifikasi-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Pilih --</option>
+                        <option value="opslag">Opslag</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                     <select name="opp_opt_sections[${sectionIndex}][kapal]" class="opp-opt-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500" required>
@@ -293,14 +300,7 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[12%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
-                    <option value="">-- Pilih --</option>
-                    <option value="opslag">Opslag</option>
-                </select>
-            </div>
-            <div class="w-[15%]">
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
@@ -348,7 +348,7 @@
         });
     };
 
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId, klasifikasi) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
@@ -381,14 +381,7 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[12%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
-                    <option value="">-- Pilih --</option>
-                    <option value="opslag" ${klasifikasi === 'opslag' ? 'selected' : ''}>Opslag</option>
-                </select>
-            </div>
-            <div class="w-[15%]">
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
@@ -463,10 +456,6 @@
             const vendorInput = group.querySelector('.opp-opt-vendor-input-item');
             if (vendorInput) {
                 vendorInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][vendor]`;
-            }
-            const klasifikasiInput = group.querySelector('.opp-opt-klasifikasi-select-item');
-            if (klasifikasiInput) {
-                klasifikasiInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][klasifikasi]`;
             }
             const catatanInput = group.querySelector('.opp-opt-catatan-input-item');
             if (catatanInput) {
