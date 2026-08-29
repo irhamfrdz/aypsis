@@ -379,6 +379,8 @@
                         <option value="20ft Empty">20ft Empty</option>
                         <option value="40ft Full">40ft Full</option>
                         <option value="40ft Empty">40ft Empty</option>
+                        <option value="LCL 20ft">LCL 20ft</option>
+                        <option value="LCL 40ft">LCL 40ft</option>
                     </select>
                 </div>
                 <div class="w-[10%]">
@@ -515,6 +517,8 @@
                         <option value="20ft Empty" ${jenisUkuran === '20ft Empty' ? 'selected' : ''}>20ft Empty</option>
                         <option value="40ft Full" ${jenisUkuran === '40ft Full' ? 'selected' : ''}>40ft Full</option>
                         <option value="40ft Empty" ${jenisUkuran === '40ft Empty' ? 'selected' : ''}>40ft Empty</option>
+                        <option value="LCL 20ft" ${jenisUkuran === 'LCL 20ft' ? 'selected' : ''}>LCL 20ft</option>
+                        <option value="LCL 40ft" ${jenisUkuran === 'LCL 40ft' ? 'selected' : ''}>LCL 40ft</option>
                     </select>
                 </div>
                 <div class="w-[10%]">
