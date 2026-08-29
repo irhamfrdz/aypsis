@@ -1189,8 +1189,20 @@ Route::middleware([
                         $startDateObj = $tanggalAbsen->copy()->setTime(6, 0, 0);
                         $endDateObj = $tanggalAbsen->copy()->addDays(1)->setTime(5, 59, 59);
 
+                        // Mapping tipe absen ke format absensis yang standar
+                        $mappedTipe = $permission->tipe_absen;
+                        if (strtolower($mappedTipe) === 'mulai lembur') {
+                            $mappedTipe = 'lembur_masuk';
+                        } elseif (strtolower($mappedTipe) === 'selesai lembur') {
+                            $mappedTipe = 'lembur_pulang';
+                        } elseif (strtolower($mappedTipe) === 'check in') {
+                            $mappedTipe = 'masuk';
+                        } elseif (strtolower($mappedTipe) === 'pulang') {
+                            $mappedTipe = 'pulang';
+                        }
+
                         $existingLog = \App\Models\Absensi::where('nik', $karyawan->nik)
-                            ->where('tipe', $permission->tipe_absen)
+                            ->where('tipe', $mappedTipe)
                             ->whereBetween('waktu', [$startDateObj, $endDateObj])
                             ->first();
 
@@ -1206,7 +1218,7 @@ Route::middleware([
                                 'karyawan_id' => $karyawan->id,
                                 'nik' => $karyawan->nik,
                                 'waktu' => $waktuDateTime,
-                                'tipe' => $permission->tipe_absen,
+                                'tipe' => $mappedTipe,
                                 'keterangan' => 'Lupa Absen: ' . $permission->alasan,
                                 'status' => 'Valid',
                                 'device' => 'Manual Approval',

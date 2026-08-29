@@ -167,6 +167,18 @@ class MasterPersetujuanAbsensiLupaController extends Controller
             // Tambahkan ke tabel absensis juga agar tercatat sebagai kehadiran sah
             $karyawan = Karyawan::find($persetujuanAbsensiLupa->karyawan_id);
             if($karyawan) {
+                // Mapping tipe absen ke format absensis yang standar
+                $mappedTipe = $persetujuanAbsensiLupa->tipe_absen;
+                if (strtolower($mappedTipe) === 'mulai lembur') {
+                    $mappedTipe = 'lembur_masuk';
+                } elseif (strtolower($mappedTipe) === 'selesai lembur') {
+                    $mappedTipe = 'lembur_pulang';
+                } elseif (strtolower($mappedTipe) === 'check in') {
+                    $mappedTipe = 'masuk';
+                } elseif (strtolower($mappedTipe) === 'pulang') {
+                    $mappedTipe = 'pulang';
+                }
+
                 // Kombinasikan tanggal dan waktu
                 $waktuDateTime = Carbon::parse($persetujuanAbsensiLupa->tanggal)->format('Y-m-d') . ' ' . Carbon::parse($persetujuanAbsensiLupa->waktu)->format('H:i:s');
                 
@@ -175,7 +187,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                 $endDateObj = $tanggalAbsen->copy()->addDays(1)->setTime(5, 59, 59);
 
                 $existingLog = Absensi::where('nik', $karyawan->nik)
-                    ->where('tipe', $persetujuanAbsensiLupa->tipe_absen)
+                    ->where('tipe', $mappedTipe)
                     ->whereBetween('waktu', [$startDateObj, $endDateObj])
                     ->first();
 
@@ -191,7 +203,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                         'karyawan_id' => $karyawan->id,
                         'nik' => $karyawan->nik,
                         'waktu' => $waktuDateTime,
-                        'tipe' => $persetujuanAbsensiLupa->tipe_absen,
+                        'tipe' => $mappedTipe,
                         'keterangan' => 'Lupa Absen: ' . $persetujuanAbsensiLupa->alasan,
                         'status' => 'Valid',
                         'device' => 'Manual Approval',
