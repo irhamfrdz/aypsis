@@ -236,6 +236,14 @@
                                     </svg>
                                     Pecah Kontainer
                                 </button>
+                                <button type="button" onclick="bulkAction('stripping')" 
+                                        style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #8b5cf6 !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
+                                        class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Stripping
+                                </button>
                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                     <button type="button" onclick="bulkAction('delete')" 
                                             style="display: inline-flex !important; align-items: center !important; padding: 8px 16px !important; background-color: #dc2626 !important; color: #ffffff !important; font-weight: 500 !important; font-size: 14px !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; min-height: 40px !important; height: auto !important; line-height: 1.5 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;"
@@ -837,6 +845,79 @@
     </div>
 </div>
 
+<!-- Stripping Modal -->
+<div id="strippingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h3 class="text-lg font-medium text-gray-900">Proses Stripping</h3>
+                <button type="button" onclick="closeStrippingModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="strippingForm" method="POST" action="{{ route('tanda-terima-lcl.bulk-stripping') }}">
+                @csrf
+                <input type="hidden" name="selected_ids" id="stripping_selected_ids">
+
+                <div class="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-md">
+                    <p class="text-sm text-purple-800">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span id="strippingCount">0</span> item terpilih akan diproses stripping
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Stripping <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="tanggal_stripping" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                               value="{{ date('Y-m-d') }}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            <option value="Selesai Stripping">Selesai Stripping</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Keterangan
+                    </label>
+                    <textarea name="keterangan" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                              placeholder="Tambahkan keterangan (opsional)"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeStrippingModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1062,6 +1143,11 @@
             case 'split':
                 // Open split container modal
                 openSplitModal(selectedIds);
+                break;
+                
+            case 'stripping':
+                // Open stripping modal
+                openStrippingModal(selectedIds);
                 break;
                 
             case 'delete':
@@ -1352,6 +1438,17 @@
         toggleContainerFields();
     }
 
+    function openStrippingModal(selectedIds) {
+        document.getElementById('stripping_selected_ids').value = JSON.stringify(selectedIds);
+        document.getElementById('strippingCount').textContent = selectedIds.length;
+        document.getElementById('strippingModal').classList.remove('hidden');
+    }
+
+    function closeStrippingModal() {
+        document.getElementById('strippingModal').classList.add('hidden');
+        document.getElementById('strippingForm').reset();
+    }
+
     function openAssignContainerModal(selectedIds) {
         document.getElementById('assign_selected_ids').value = JSON.stringify(selectedIds);
         document.getElementById('assignContainerCount').textContent = selectedIds.length;
@@ -1519,6 +1616,7 @@
     document.addEventListener('click', function(event) {
         const sealModal = document.getElementById('sealModal');
         const splitModal = document.getElementById('splitModal');
+        const strippingModal = document.getElementById('strippingModal');
         
         if (event.target === sealModal) {
             closeSealModal();
@@ -1526,6 +1624,10 @@
         
         if (event.target === splitModal) {
             closeSplitModal();
+        }
+        
+        if (event.target === strippingModal) {
+            closeStrippingModal();
         }
     });
 

@@ -1165,6 +1165,73 @@ class TandaTerimaLclController extends Controller
             ->with('success', $successMessage);
     }
 
+    public function bulkStripping(Request $request)
+    {
+        $request->validate([
+            'selected_ids' => 'required|string',
+            'tanggal_stripping' => 'required|date',
+            'status' => 'required|string',
+            'keterangan' => 'nullable|string'
+        ]);
+
+        $ids = json_decode($request->selected_ids, true);
+
+        if (empty($ids)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada item yang dipilih.',
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($ids as $id) {
+                $tt = TandaTerimaLcl::find($id);
+                if ($tt) {
+                    $tt->status = $request->status;
+                    
+                    if ($request->keterangan) {
+                        $tt->kegiatan = trim($tt->kegiatan . "\nStripping ({$request->tanggal_stripping}): {$request->keterangan}");
+                    } else {
+                        $tt->kegiatan = trim($tt->kegiatan . "\nStripping pada {$request->tanggal_stripping}");
+                    }
+                    
+                    // Lepas nomor kontainer setelah stripping
+                    $tt->kontainerPivot()->delete();
+                    
+                    $tt->save();
+                }
+            }
+
+            DB::commit();
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Berhasil memproses stripping untuk ' . count($ids) . ' item.',
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Berhasil memproses stripping untuk ' . count($ids) . ' item.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error in bulkStripping: ' . $e->getMessage());
+            
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memproses stripping: ' . $e->getMessage(),
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses stripping: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Download specific image from a tanda terima LCL record
      */

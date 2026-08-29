@@ -5000,6 +5000,10 @@ Route::middleware([
             ->name('tanda-terima-lcl.bulk-split')
             ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
 
+        Route::post('tanda-terima-lcl/bulk-stripping', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkStripping'])
+            ->name('tanda-terima-lcl.bulk-stripping')
+            ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
         Route::post('tanda-terima-lcl/get-barang-from-containers', [\App\Http\Controllers\TandaTerimaLclController::class, 'getBarangFromContainers'])
             ->name('tanda-terima-lcl.get-barang-from-containers')
             ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
