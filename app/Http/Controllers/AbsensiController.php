@@ -383,10 +383,10 @@ class AbsensiController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', "%\{$search\}%")
+                $q->where('nik', 'like', "%{$search}%")
                     ->orWhereHas('karyawan', function ($kQ) use ($search) {
-                        $kQ->where('nama_lengkap', 'like', "%\{$search\}%")
-                            ->orWhere('nama_panggilan', 'like', "%\{$search\}%");
+                        $kQ->where('nama_lengkap', 'like', "%{$search}%")
+                            ->orWhere('nama_panggilan', 'like', "%{$search}%");
                     });
             });
         }
