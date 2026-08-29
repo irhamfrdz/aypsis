@@ -106,7 +106,7 @@
                         <i class="fas fa-file-invoice-dollar mr-1"></i>
                         Masukkan ke Pranota (<span id="selectedCountHeader">0</span>)
                     </button>
-                    <a href="{{ route('ob-antar-gudang.select') }}" class="bg-teal-600 hover:bg-teal-500 text-white border border-teal-500 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
+                    <a href="{{ route('ob-antar-gudang.index') }}" class="bg-teal-600 hover:bg-teal-500 text-white border border-teal-500 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
                         <i class="fas fa-plus mr-1"></i>
                         Buat OB Baru (Pilih Gudang)
                     </a>
