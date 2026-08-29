@@ -527,7 +527,9 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        $validated['biaya_adjustment'] = $validated['biaya_adjustment'] ?? $validated['pbm_biaya_adjustment'] ?? 0;
+        if (empty($validated['biaya_adjustment']) || $validated['biaya_adjustment'] == 0) {
+            $validated['biaya_adjustment'] = $validated['pbm_biaya_adjustment'] ?? 0;
+        }
 
         $invoice = InvoiceAktivitasLain::create($validated);
 
@@ -1144,7 +1146,9 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        $validated['biaya_adjustment'] = $validated['biaya_adjustment'] ?? $validated['pbm_biaya_adjustment'] ?? 0;
+        if (empty($validated['biaya_adjustment']) || $validated['biaya_adjustment'] == 0) {
+            $validated['biaya_adjustment'] = $validated['pbm_biaya_adjustment'] ?? 0;
+        }
         
         $invoice->update($validated);
 
