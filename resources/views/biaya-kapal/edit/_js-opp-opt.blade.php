@@ -320,17 +320,17 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${biayaOptions}
-                </select>
-            </div>
             <div class="w-[12%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
                     <option value="">-- Pilih --</option>
                     <option value="opslag">Opslag</option>
+                </select>
+            </div>
+            <div class="w-[15%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                    ${biayaOptions}
                 </select>
             </div>
             <div class="w-[20%]">
@@ -409,17 +409,17 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${biayaOptions}
-                </select>
-            </div>
             <div class="w-[12%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
                     <option value="">-- Pilih --</option>
                     <option value="opslag" ${klasifikasi === 'opslag' ? 'selected' : ''}>Opslag</option>
+                </select>
+            </div>
+            <div class="w-[15%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                    ${biayaOptions}
                 </select>
             </div>
             <div class="w-[20%]">
