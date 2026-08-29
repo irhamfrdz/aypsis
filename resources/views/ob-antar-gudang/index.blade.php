@@ -458,7 +458,6 @@
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form action="{{ route('ob-antar-gudang.store-tagihan') }}" method="POST">
                 @csrf
-                <input type="hidden" name="gudang_id" id="modal_gudang_id">
                 <input type="hidden" id="modal_nomor_kontainer" name="nomor_kontainer">
                 <input type="hidden" id="modal_ukuran" name="ukuran">
                 <input type="hidden" id="modal_source" name="source">
@@ -475,10 +474,18 @@
                             <div class="mt-2 p-3 bg-gray-50 rounded border border-gray-100">
                                 <p class="text-xs text-gray-500">No Kontainer: <span id="display_nomor_kontainer" class="font-bold text-gray-800"></span></p>
                                 <p class="text-xs text-gray-500">Ukuran: <span id="display_ukuran" class="font-bold text-gray-800"></span> ft</p>
-                                <p class="text-xs text-gray-500">Gudang Asal: <span class="font-bold text-gray-800" id="display_gudang_asal"></span></p>
                             </div>
 
                             <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="modal_gudang_id" class="block text-sm font-medium text-gray-700 mb-1">Gudang Asal <span class="text-red-500">*</span></label>
+                                    <select name="gudang_id" id="modal_gudang_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="">--Pilih Gudang Asal--</option>
+                                        @foreach($gudangs as $g)
+                                            <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div>
                                     <label for="tanggal_ob" class="block text-sm font-medium text-gray-700 mb-1">Tanggal OB <span class="text-red-500">*</span></label>
                                     <input type="date" name="tanggal_ob" id="tanggal_ob" value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
@@ -552,7 +559,9 @@
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
         document.getElementById('display_ukuran').innerText = ukuran.replace('ft', '').trim();
-        document.getElementById('display_gudang_asal').innerText = namaGudang;
+        
+        // Trigger change event to update the destination warehouse options
+        document.getElementById('modal_gudang_id').dispatchEvent(new Event('change'));
         
         // Normalize ukuran for comparison (remove 'ft' and any whitespace)
         const normalizedUkuran = ukuran.toString().replace('ft', '').trim();
@@ -576,13 +585,27 @@
             }
         });
         
-        // Filter dropdown Gudang Tujuan (sembunyikan gudang asal)
         const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
         gudangTujuanSelect.value = '';
+        
+        const modal = document.getElementById('tagihanModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Filter Gudang Tujuan based on Gudang Asal
+    document.getElementById('modal_gudang_id').addEventListener('change', function() {
+        const selectedGudangId = this.value;
+        const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
+        
+        if (gudangTujuanSelect.value === selectedGudangId) {
+            gudangTujuanSelect.value = '';
+        }
+        
         Array.from(gudangTujuanSelect.options).forEach(option => {
             if(option.value === '') return;
             
-            if (option.value === gudangId.toString()) {
+            if (option.value === selectedGudangId) {
                 option.style.display = 'none';
                 option.disabled = true;
             } else {
@@ -590,11 +613,7 @@
                 option.disabled = false;
             }
         });
-        
-        const modal = document.getElementById('tagihanModal');
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
+    });
 
     // Update nominal input when selecting Harga OB
     document.getElementById('pricelist_id').addEventListener('change', function() {

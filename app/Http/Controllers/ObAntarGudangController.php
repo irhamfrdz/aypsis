@@ -192,14 +192,13 @@ class ObAntarGudangController extends Controller
 
             // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
             if ($validated['source'] === 'stock') {
-                $stockModel = StockKontainer::where('gudangs_id', $validated['gudang_id'])
-                    ->where(function ($q) use ($validated) {
+                $stockModel = StockKontainer::where(function ($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
                             ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
                     })->first();
 
                 if ($stockModel) {
-                    $asalGudangId = $stockModel->gudangs_id;
+                    $asalGudangId = $validated['gudang_id'];
                     $stockModel->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
 
                     // Record history
@@ -215,14 +214,13 @@ class ObAntarGudangController extends Controller
                     ]);
                 }
             } else {
-                $kontainerModel = Kontainer::where('gudangs_id', $validated['gudang_id'])
-                    ->where(function ($q) use ($validated) {
+                $kontainerModel = Kontainer::where(function ($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
                             ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
                     })->first();
 
                 if ($kontainerModel) {
-                    $asalGudangId = $kontainerModel->gudangs_id;
+                    $asalGudangId = $validated['gudang_id'];
                     $kontainerModel->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
 
                     // Record history
