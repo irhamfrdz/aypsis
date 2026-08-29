@@ -162,10 +162,13 @@
                     'total_nominal' => $section['total_nominal'] ?? 0,
                     'dp' => $section['dp'] ?? 0,
                     'sisa_pembayaran' => $section['sisa_pembayaran'] ?? 0,
-                    'barang' => collect($section['barang'] ?? [])->map(function($i){ 
+                    'barang' => collect($section['barang'] ?? [])->map(function($i) use ($section) { 
                         return [
                             'klasifikasi_biaya_id' => $i['klasifikasi_biaya_id'] ?? null,
-                            'manifest_id' => $i['manifest_id'] ?? null, 
+                            'klasifikasi' => $section['klasifikasi'] ?? null,
+                            'manifest_id' => $i['manifest_id'] ?? null,
+                            'jenis_ukuran' => $i['jenis_ukuran'] ?? null,
+                            'jumlah' => (float)($i['jumlah'] ?? 0),
                             'tarif' => (float)($i['tarif'] ?? 0), 
                             'vendor' => $i['vendor'] ?? '', 
                             'catatan' => $i['catatan'] ?? ''
@@ -207,6 +210,9 @@
                              
                              return [
                                  'klasifikasi_biaya_id' => $i->klasifikasi_biaya_id ?? null,
+                                 'klasifikasi' => $i->klasifikasi ?? null,
+                                 'jenis_ukuran' => $i->jenis_ukuran ?? null,
+                                 'jumlah' => (float)($i->jumlah ?? 0),
                                  'manifest_id' => $manifestIds,
                                  'manifest_label' => implode(' | ', $manifestLabels),
                                  'tarif' => (float)$i->tarif,

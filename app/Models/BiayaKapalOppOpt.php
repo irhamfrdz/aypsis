@@ -16,6 +16,7 @@ class BiayaKapalOppOpt extends Model
         'kapal',
         'voyage',
         'vendor',
+        'jenis_ukuran',
         'catatan',
         'jumlah',
         'tarif',

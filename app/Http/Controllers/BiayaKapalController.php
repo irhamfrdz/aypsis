@@ -2216,12 +2216,21 @@ class BiayaKapalController extends Controller
                             }
                             $manifestIds = array_filter($manifestIds);
                             
+                            $jenisUkuran = $item['jenis_ukuran'] ?? null;
                             $tarif = floatval($item['tarif'] ?? 0);
-                            $jumlah = count($manifestIds);
+                            
+                            $isOpslag = ($section['klasifikasi'] ?? '') === 'opslag';
+                            
+                            if ($isOpslag) {
+                                $jumlah = floatval($item['jumlah'] ?? 0);
+                            } else {
+                                $jumlah = count($manifestIds);
+                            }
+                            
                             $vendor = $item['vendor'] ?? null;
                             $catatan = $item['catatan'] ?? null;
 
-                            if (empty($manifestIds) || $tarif <= 0) {
+                            if ((!$isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
                                 continue;
                             }
 
@@ -2235,6 +2244,7 @@ class BiayaKapalController extends Controller
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
                                 'vendor' => $vendor,
+                                'jenis_ukuran' => $jenisUkuran,
                                 'catatan' => $catatan,
                                 'jumlah' => $jumlah,
                                 'tarif' => $tarif,
@@ -4269,12 +4279,21 @@ class BiayaKapalController extends Controller
                                 }
                                 $manifestIds = array_filter($manifestIds);
                                 
+                                $jenisUkuran = $item['jenis_ukuran'] ?? null;
                                 $tarif = floatval($item['tarif'] ?? 0);
-                                $jumlah = count($manifestIds);
+                                
+                                $isOpslag = ($section['klasifikasi'] ?? '') === 'opslag';
+                                
+                                if ($isOpslag) {
+                                    $jumlah = floatval($item['jumlah'] ?? 0);
+                                } else {
+                                    $jumlah = count($manifestIds);
+                                }
+                                
                                 $vendor = $item['vendor'] ?? null;
                                 $catatan = $item['catatan'] ?? null;
 
-                                if (empty($manifestIds) || $tarif <= 0) {
+                                if ((!$isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
                                     continue;
                                 }
 
@@ -4288,6 +4307,7 @@ class BiayaKapalController extends Controller
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,
                                     'vendor' => $vendor,
+                                    'jenis_ukuran' => $jenisUkuran,
                                     'catatan' => $catatan,
                                     'jumlah' => $jumlah,
                                     'tarif' => $tarif,

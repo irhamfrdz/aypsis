@@ -45,7 +45,7 @@
                 // Barang
                 if (data.barang && data.barang.length > 0) {
                     data.barang.forEach(b => {
-                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id);
+                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id, b.jenis_ukuran, b.jumlah);
                     });
                 } else {
                     addBarangToOppOptSection(sectionIndex);
@@ -197,20 +197,23 @@
         });
 
         voyageInput.addEventListener('blur', function() {
-            if (this.value && kapalSelect.value) {
-                autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, this.value);
-            }
-        });
-        
-        // Setup voyage change listener for Bongkaran toggle
-        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
-        bongkaranCheckbox.addEventListener('change', function() {
             if (kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
                 autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
             }
         });
 
-        // Add first barang input as default
+        // Setup klasifikasi change listener for Opslag mode
+        const klasifikasiSelect = section.querySelector('.opp-opt-klasifikasi-select');
+        if (klasifikasiSelect) {
+            klasifikasiSelect.addEventListener('change', function() {
+                toggleOpslagMode(sectionIndex, this.value);
+            });
+        }
+        
+        // Add bongkaran logic if needed (it uses voyage input blur now)
+        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
+        
+        // Add first barang input as default if not edit
         if (!isEdit) {
             addBarangToOppOptSection(sectionIndex);
         }
@@ -223,6 +226,30 @@
         if (section) {
             section.remove();
             calculateTotalFromAllOppOptSections();
+        }
+    };
+
+    window.toggleOpslagMode = function(sectionIndex, klasifikasi) {
+        const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        
+        const container = section.querySelector('.opp-opt-barang-container');
+        container.innerHTML = ''; // Clear rows
+        
+        // If Opslag, don't try to fetch manifests, just add one static row
+        if (klasifikasi === 'opslag') {
+            addBarangToOppOptSection(sectionIndex);
+        } else {
+            // Re-fetch manifests if Kapal and Voyage are set
+            const kapalSelect = section.querySelector('.opp-opt-kapal-select');
+            const voyageSelect = section.querySelector('.opp-opt-voyage-select');
+            const voyageInput = section.querySelector('.opp-opt-voyage-input');
+            
+            if (kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
+                autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
+            } else {
+                addBarangToOppOptSection(sectionIndex);
+            }
         }
     };
 
@@ -313,6 +340,9 @@
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
         
+        const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+        const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
         let manifestsData = [];
         try {
             manifestsData = JSON.parse(section.getAttribute('data-manifests') || '[]');
@@ -332,64 +362,119 @@
         
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
-        inputGroup.innerHTML = `
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${biayaOptions}
-                </select>
-            </div>
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${barangOptions}
-                </select>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-            </div>
-            <div class="flex-1">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-            </div>
-            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                <i class="fas fa-trash text-xs"></i>
-            </button>
-        `;
+        
+        if (isOpslag) {
+            inputGroup.innerHTML = `
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${biayaOptions}
+                    </select>
+                </div>
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jenis Ukuran</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Pilih Jenis</option>
+                        <option value="20ft Full">20ft Full</option>
+                        <option value="20ft Empty">20ft Empty</option>
+                        <option value="40ft Full">40ft Full</option>
+                        <option value="40ft Empty">40ft Empty</option>
+                    </select>
+                </div>
+                <div class="w-[10%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jumlah</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </div>
+                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            `;
+        } else {
+            inputGroup.innerHTML = `
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${biayaOptions}
+                    </select>
+                </div>
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${barangOptions}
+                    </select>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </div>
+                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            `;
+        }
         
         container.appendChild(inputGroup);
         
         // Initialize select2 if available
-        if (typeof $ !== 'undefined' && $.fn.select2) {
+        if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
-                width: '100%'
+                width: '100%',
+                placeholder: 'Pilih Kontainer / BL (Bisa Lebih Dari 1)',
+                allowClear: true
             });
         }
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
         
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
+        
+        if (jumlahInput) {
+            jumlahInput.addEventListener('input', function() {
+                calculateTotalFromAllOppOptSections();
+            });
+        }
     };
 
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId, jenisUkuran = null, jumlah = 0) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
+        
+        const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+        const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
         
         let manifestsData = [];
         try {
             manifestsData = JSON.parse(section.getAttribute('data-manifests') || '[]');
         } catch (e) {}
 
-        let barangOptions = '';
+        let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
+        
+        // Ensure manifestId is an array
         const selectedIds = Array.isArray(manifestId) ? manifestId : (manifestId ? [manifestId] : []);
         
         manifestsData.forEach(manifest => {
@@ -413,39 +498,80 @@
         
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
-        inputGroup.innerHTML = `
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${biayaOptions}
-                </select>
-            </div>
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${barangOptions}
-                </select>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" value="${tarif || 0}" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-            </div>
-            <div class="flex-1">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-            </div>
-            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                <i class="fas fa-trash text-xs"></i>
-            </button>
-        `;
+        
+        if (isOpslag) {
+            inputGroup.innerHTML = `
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${biayaOptions}
+                    </select>
+                </div>
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jenis Ukuran</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Pilih Jenis</option>
+                        <option value="20ft Full" ${jenisUkuran === '20ft Full' ? 'selected' : ''}>20ft Full</option>
+                        <option value="20ft Empty" ${jenisUkuran === '20ft Empty' ? 'selected' : ''}>20ft Empty</option>
+                        <option value="40ft Full" ${jenisUkuran === '40ft Full' ? 'selected' : ''}>40ft Full</option>
+                        <option value="40ft Empty" ${jenisUkuran === '40ft Empty' ? 'selected' : ''}>40ft Empty</option>
+                    </select>
+                </div>
+                <div class="w-[10%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jumlah</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${jumlah || 0}" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </div>
+                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            `;
+        } else {
+            inputGroup.innerHTML = `
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${biayaOptions}
+                    </select>
+                </div>
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${barangOptions}
+                    </select>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </div>
+                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            `;
+        }
         
         container.appendChild(inputGroup);
         
-        if (typeof $ !== 'undefined' && $.fn.select2) {
+        if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
                 width: '100%',
                 placeholder: 'Pilih Kontainer / BL (Bisa Lebih Dari 1)',
@@ -455,10 +581,17 @@
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
         
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
+        
+        if (jumlahInput) {
+            jumlahInput.addEventListener('input', function() {
+                calculateTotalFromAllOppOptSections();
+            });
+        }
     };
     
     window.removeBarangFromOppOptSection = function(button) {
@@ -482,6 +615,14 @@
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
             if (barangSelect) {
                 barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id][]`;
+            }
+            const jenisUkuranSelect = group.querySelector('.opp-opt-jenis-ukuran-select-item');
+            if (jenisUkuranSelect) {
+                jenisUkuranSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][jenis_ukuran]`;
+            }
+            const jumlahInput = group.querySelector('.opp-opt-jumlah-input-item');
+            if (jumlahInput) {
+                jumlahInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][jumlah]`;
             }
             const tarifInput = group.querySelector('.opp-opt-tarif-input-item');
             if (tarifInput) {
@@ -508,7 +649,20 @@
             
             tarifInputs.forEach((tarifInput) => {
                 const tarif = parseFloat(tarifInput.value.replace(',', '.')) || 0;
-                sectionTotal += tarif;
+                
+                const group = tarifInput.closest('.flex');
+                const jumlahInput = group.querySelector('.opp-opt-jumlah-input-item');
+                const manifestSelect = group.querySelector('.opp-opt-barang-select-item');
+                
+                let qty = 0;
+                if (jumlahInput) {
+                    qty = parseFloat(jumlahInput.value) || 0;
+                } else if (manifestSelect) {
+                    const selectedOptions = Array.from(manifestSelect.options).filter(opt => opt.selected && opt.value !== "");
+                    qty = selectedOptions.length;
+                }
+                
+                sectionTotal += (tarif * qty);
             });
             
             // Update section nominal display
