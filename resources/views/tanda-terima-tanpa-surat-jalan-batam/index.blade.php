@@ -1617,12 +1617,6 @@
                 alert('Kuantitas pemecahan tidak boleh melebihi kuantitas item asal (' + maxQty + ')');
                 return false;
             }
-
-            if (totalItemsInTT === 1 && splitQty >= maxQty && maxQty > 0) {
-                e.preventDefault();
-                alert('Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima. Jika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.');
-                return false;
-            }
         }
     });
 

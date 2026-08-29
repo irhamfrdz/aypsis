@@ -1015,15 +1015,6 @@ class TandaTerimaLclController extends Controller
         $originalTandaTerima = $specificItem->tandaTerima;
         $totalItemsCount = $originalTandaTerima ? $originalTandaTerima->items()->count() : 0;
 
-        if ($totalItemsCount === 1 && $splitKuantitas == $specificItem->jumlah) {
-            $message = 'Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima. Jika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.';
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['success' => false, 'message' => $message], 400);
-            }
-
-            return redirect()->back()->with('error', $message);
-        }
-
         if ($specificItem->meter_kubik < $splitVolume) {
             $message = "Volume pemecahan ({$splitVolume} m³) tidak boleh melebihi volume item asal ({$specificItem->meter_kubik} m³).";
             if ($request->wantsJson() || $request->ajax()) {

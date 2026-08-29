@@ -1568,15 +1568,6 @@ document.getElementById('splitForm').addEventListener('submit', function(e) {
     // Validate 100% split on single-item Tanda Terima
     const namaBarangSelect = document.getElementById('split_nama_barang');
     const selectedOption = namaBarangSelect ? namaBarangSelect.options[namaBarangSelect.selectedIndex] : null;
-    if (selectedOption && selectedOption.value) {
-        const totalItemsInTT = parseInt(selectedOption.dataset.totalItems || '1');
-        const originalJumlah = parseInt(selectedOption.dataset.jumlah || '0');
-        const splitJumlah = parseInt(document.getElementById('split_jumlah').value || '0');
-        if (totalItemsInTT === 1 && splitJumlah >= originalJumlah && originalJumlah > 0) {
-            alert('Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima.\n\nJika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.');
-            return false;
-        }
-    }
     
     fetch(formUrl, {
         method: 'POST',
