@@ -2230,6 +2230,7 @@ class BiayaKapalController extends Controller
                             $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
+                                'klasifikasi' => $item['klasifikasi'] ?? null,
                                 'pricelist_opp_opt_id' => null, // Not used anymore
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
@@ -4282,6 +4283,7 @@ class BiayaKapalController extends Controller
                                 $oppOpt = \App\Models\BiayaKapalOppOpt::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
                                     'klasifikasi_biaya_id' => $item['klasifikasi_biaya_id'] ?? null,
+                                    'klasifikasi' => $item['klasifikasi'] ?? null,
                                     'pricelist_opp_opt_id' => null, // Not used anymore
                                     'kapal' => $kapalName,
                                     'voyage' => $voyageName,

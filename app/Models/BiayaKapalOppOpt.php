@@ -11,6 +11,7 @@ class BiayaKapalOppOpt extends Model
     protected $fillable = [
         'biaya_kapal_id',
         'klasifikasi_biaya_id',
+        'klasifikasi',
         'pricelist_opp_opt_id',
         'kapal',
         'voyage',

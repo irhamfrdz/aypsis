@@ -38,7 +38,9 @@
 
                 // Barang
                 if (data.barang && data.barang.length > 0) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id);
+                    data.barang.forEach(b => {
+                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id, b.klasifikasi);
+                    });
                 } else {
                     addBarangToOppOptSection(sectionIndex);
                 }
@@ -318,10 +320,17 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[20%]">
+            <div class="w-[15%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
+                </select>
+            </div>
+            <div class="w-[12%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
+                    <option value="">-- Pilih --</option>
+                    <option value="opslag">Opslag</option>
                 </select>
             </div>
             <div class="w-[20%]">
@@ -334,7 +343,7 @@
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
                 <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <div class="w-[20%]">
+            <div class="w-[15%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                 <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
             </div>
@@ -365,7 +374,7 @@
     };
 
     // Add barang to OPP/OPT section with pre-filled values
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId, klasifikasi) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
@@ -400,10 +409,17 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[20%]">
+            <div class="w-[15%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${biayaOptions}
+                </select>
+            </div>
+            <div class="w-[12%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Klasifikasi</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi]" class="opp-opt-klasifikasi-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500">
+                    <option value="">-- Pilih --</option>
+                    <option value="opslag" ${klasifikasi === 'opslag' ? 'selected' : ''}>Opslag</option>
                 </select>
             </div>
             <div class="w-[20%]">
@@ -416,7 +432,7 @@
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
                 <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" value="${tarif || 0}" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <div class="w-[20%]">
+            <div class="w-[15%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                 <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
             </div>
@@ -476,6 +492,10 @@
             const vendorInput = group.querySelector('.opp-opt-vendor-input-item');
             if (vendorInput) {
                 vendorInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][vendor]`;
+            }
+            const klasifikasiInput = group.querySelector('.opp-opt-klasifikasi-select-item');
+            if (klasifikasiInput) {
+                klasifikasiInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][klasifikasi]`;
             }
             const catatanInput = group.querySelector('.opp-opt-catatan-input-item');
             if (catatanInput) {
