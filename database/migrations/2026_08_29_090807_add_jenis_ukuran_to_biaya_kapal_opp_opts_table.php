@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('biaya_kapal_opp_opts', function (Blueprint $table) {
-            $table->string('jenis_ukuran')->nullable()->after('vendor');
+            $table->string('jenis_ukuran')->nullable()->after('catatan');
         });
     }
 
