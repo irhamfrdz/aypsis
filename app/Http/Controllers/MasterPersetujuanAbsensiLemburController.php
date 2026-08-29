@@ -191,14 +191,25 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             
             $karyawan = Karyawan::find($persetujuanAbsensiLembur->karyawan_id);
             if ($karyawan) {
-                // Insert Lembur Masuk (Hanya jam mulai yang dimasukkan sesuai request)
+                // Insert Lembur Masuk
                 Absensi::create([
                     'karyawan_id' => $karyawan->id,
                     'nik' => $karyawan->nik ?? '-',
                     'waktu' => $waktuMasuk,
-                    'tipe' => 'Lembur Masuk',
+                    'tipe' => 'lembur_masuk',
                     'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
                 ]);
+
+                // Insert Lembur Pulang jika ada jam selesai
+                if ($persetujuanAbsensiLembur->jam_selesai) {
+                    Absensi::create([
+                        'karyawan_id' => $karyawan->id,
+                        'nik' => $karyawan->nik ?? '-',
+                        'waktu' => $waktuPulang,
+                        'tipe' => 'lembur_pulang',
+                        'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
+                    ]);
+                }
             }
 
             DB::commit();
