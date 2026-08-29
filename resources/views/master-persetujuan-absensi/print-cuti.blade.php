@@ -14,7 +14,7 @@
             background-color: #fff;
         }
         .page {
-            width: 297mm; /* Landscape A4 */
+            width: 250mm; /* Landscape B5 */
             min-height: 170mm;
             height: auto;
             padding: 10mm;
@@ -200,7 +200,7 @@
         }
         
         @page {
-            size: A4 landscape;
+            size: B5 landscape;
             margin: 0;
         }
 
@@ -208,6 +208,11 @@
             body { background: none; }
             .page {
                 margin: 0;
+                border: 2px solid #000;
+                box-shadow: none;
+            }
+            .page.cuti {
+                size: B5 landscape;
             }
             .no-print {
                 display: none !important;

@@ -534,7 +534,7 @@ Route::middleware([
                             $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
                             if ($hrdUser) {
                                 $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
-                                $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->name;
+                                $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->username;
                             }
                         }
 
@@ -551,6 +551,36 @@ Route::middleware([
                         $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
                         
                         $dataToPrint[] = ['type' => 'izin', 'data' => $data];
+                    }
+                } else if ($type === 'persetujuan_absensi_lemburs') {
+                    $data = DB::table('persetujuan_absensi_lemburs')
+                        ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
+                        ->select('persetujuan_absensi_lemburs.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
+                        ->where('persetujuan_absensi_lemburs.id', $id)
+                        ->first();
+                    if ($data) {
+                        $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                        $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
+                        $data->lembur_id = $data->id;
+                        
+                        $dataToPrint[] = ['type' => 'lembur', 'data' => $data];
+                    }
+                } else if ($type === 'persetujuan_absensi_lupas') {
+                    $data = DB::table('persetujuan_absensi_lupas')
+                        ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
+                        ->select('persetujuan_absensi_lupas.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
+                        ->where('persetujuan_absensi_lupas.id', $id)
+                        ->first();
+                    if ($data && stripos($data->tipe_absen, 'lembur') !== false) {
+                        $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                        $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
+                        $data->lembur_id = $data->id;
+                        
+                        $data->jam_mulai = stripos($data->tipe_absen, 'mulai') !== false ? $data->waktu : null;
+                        $data->jam_selesai = stripos($data->tipe_absen, 'selesai') !== false ? $data->waktu : null;
+                        $data->keterangan = $data->alasan;
+                        
+                        $dataToPrint[] = ['type' => 'lembur', 'data' => $data];
                     }
                 }
             }
@@ -601,7 +631,7 @@ Route::middleware([
                     $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
                     if ($hrdUser) {
                         $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
-                        $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->name;
+                        $data->nama_hrd = $hrdKaryawan ? $hrdKaryawan->nama_lengkap : $hrdUser->username;
                     }
                 }
 
@@ -619,6 +649,46 @@ Route::middleware([
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
                 
                 return view('master-persetujuan-absensi.print-izin', compact('data'));
+            } else if ($type === 'persetujuan_absensi_lemburs') {
+                $data = DB::table('persetujuan_absensi_lemburs')
+                    ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
+                    ->select('persetujuan_absensi_lemburs.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
+                    ->where('persetujuan_absensi_lemburs.id', $id)
+                    ->first();
+                if (!$data) abort(404);
+                
+                // Get supervisor name
+                $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
+                
+                // Assign id for consistency
+                $data->lembur_id = $data->id;
+
+                return view('master-persetujuan-absensi.print-lembur', compact('data'));
+            } else if ($type === 'persetujuan_absensi_lupas') {
+                $data = DB::table('persetujuan_absensi_lupas')
+                    ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
+                    ->select('persetujuan_absensi_lupas.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
+                    ->where('persetujuan_absensi_lupas.id', $id)
+                    ->first();
+                if (!$data) abort(404);
+                
+                // Get supervisor name
+                $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
+                $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
+                
+                $data->lembur_id = $data->id;
+                
+                // Adapt to lembur format
+                if (stripos($data->tipe_absen, 'lembur') !== false) {
+                    $data->jam_mulai = stripos($data->tipe_absen, 'mulai') !== false ? $data->waktu : null;
+                    $data->jam_selesai = stripos($data->tipe_absen, 'selesai') !== false ? $data->waktu : null;
+                    $data->keterangan = $data->alasan;
+                    return view('master-persetujuan-absensi.print-lembur', compact('data'));
+                }
+                
+                // Fallback for non-lembur lupa absen if forced to print
+                abort(404, "Cetak untuk Lupa Absen jenis ini belum didukung.");
             }
             abort(404);
         })->name('persetujuan-absensi.print')->middleware('can:approval-absensi-view');
@@ -931,7 +1001,7 @@ Route::middleware([
                     );
                 }
 
-                if (!$filter || !in_array($filter, ['cuti', 'lupa'])) {
+                if (!$filter || !in_array($filter, ['cuti', 'lupa', 'lembur'])) {
                     $izinQuery = DB::table('permohonan_izins')
                         ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                         ->whereNotIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
@@ -961,6 +1031,35 @@ Route::middleware([
                     }
                     $queries->push($izinQuery);
                 }
+
+                if (!$filter || $filter === 'lembur') {
+                    $queries->push(
+                        DB::table('persetujuan_absensi_lemburs')
+                            ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
+                            ->whereNotIn('persetujuan_absensi_lemburs.status', ['pending'])
+                            ->when(!$canApproveAll, function($query) use ($userNik) {
+                                $query->where('karyawans.nik_supervisor', $userNik);
+                            })
+                            ->select(
+                                'persetujuan_absensi_lemburs.id',
+                                'persetujuan_absensi_lemburs.karyawan_id',
+                                'karyawans.nik',
+                                'karyawans.nama_lengkap as nama',
+                                'karyawans.divisi',
+                                DB::raw("'lembur' as jenis_izin"),
+                                'persetujuan_absensi_lemburs.tanggal as tanggal_mulai',
+                                'persetujuan_absensi_lemburs.tanggal as tanggal_selesai',
+                                DB::raw("CONCAT(persetujuan_absensi_lemburs.jam_mulai, ' - ', persetujuan_absensi_lemburs.jam_selesai) as waktu"),
+                                'persetujuan_absensi_lemburs.keterangan as alasan',
+                                'persetujuan_absensi_lemburs.foto as lampiran',
+                                'persetujuan_absensi_lemburs.status',
+                                'persetujuan_absensi_lemburs.created_at',
+                                'persetujuan_absensi_lemburs.updated_at',
+                                DB::raw("'persetujuan_absensi_lemburs' as tabel_sumber")
+                            )
+                    );
+                }
+
 
                 $mainQuery = $queries->shift();
                 foreach ($queries as $q) {
@@ -6751,6 +6850,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 
     // Perincian
+    Route::post('perincians/sync', [App\Http\Controllers\PerincianController::class, 'sync'])->name('perincians.sync');
     Route::get('perincians/select-ship', [App\Http\Controllers\PerincianController::class, 'selectShip'])->name('perincians.select-ship');
     Route::get('perincians/export', [App\Http\Controllers\PerincianController::class, 'export'])->name('perincians.export');
     Route::resource('perincians', App\Http\Controllers\PerincianController::class);

@@ -371,6 +371,82 @@ class PerincianController extends Controller
     }
 
     /**
+     * Sync nama_barang in Perincian based on data from NaikKapal or TandaTerima.
+     */
+    public function sync(Request $request)
+    {
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage');
+
+        if (!$namaKapal || !$noVoyage) {
+            return redirect()->back()->with('error', 'Nama Kapal dan Voyage harus diisi untuk melakukan sinkronisasi.');
+        }
+
+        // Fetch all perincian for this ship and voyage
+        $perincians = Perincian::where('nama_kapal', $namaKapal)
+            ->where('no_voyage', $noVoyage)
+            ->get();
+
+        $updatedCount = 0;
+
+        foreach ($perincians as $perincian) {
+            $naikKapalQuery = \App\Models\NaikKapal::where('no_voyage', $perincian->no_voyage)
+                ->where('nama_kapal', $perincian->nama_kapal);
+                
+            if ($perincian->prospek_id) {
+                $naikKapalQuery->where('prospek_id', $perincian->prospek_id);
+            } else {
+                $naikKapalQuery->where('nomor_kontainer', $perincian->nomor_kontainer);
+            }
+            
+            $naikKapal = $naikKapalQuery->first();
+            $newNamaBarang = null;
+
+            if ($naikKapal) {
+                if ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) {
+                    $tt = $naikKapal->prospek->tandaTerima;
+                    $itemNames = [];
+                    if (! empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                        foreach ($tt->dimensi_items as $item) {
+                            if (! empty($item['nama_barang'])) {
+                                $itemNames[] = $item['nama_barang'];
+                            }
+                        }
+                    } elseif (! empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                        foreach ($tt->dimensi_details as $item) {
+                            if (! empty($item['nama_barang'])) {
+                                $itemNames[] = $item['nama_barang'];
+                            }
+                        }
+                    } elseif (! empty($tt->nama_barang)) {
+                        if (is_array($tt->nama_barang)) {
+                            $itemNames = $tt->nama_barang;
+                        } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
+                            $itemNames[] = $tt->nama_barang;
+                        }
+                    }
+
+                    if (! empty($itemNames)) {
+                        $newNamaBarang = implode(', ', array_unique($itemNames));
+                    }
+                }
+
+                if (empty($newNamaBarang)) {
+                    $newNamaBarang = $naikKapal->jenis_barang;
+                }
+                
+                if (!empty($newNamaBarang) && (empty($perincian->nama_barang) || $perincian->nama_barang !== $newNamaBarang)) {
+                    $perincian->nama_barang = $newNamaBarang;
+                    $perincian->save();
+                    $updatedCount++;
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', "Sinkronisasi berhasil. $updatedCount data nama barang telah diperbarui.");
+    }
+
+    /**
      * Get voyages by ship name (for AJAX)
      */
     public function getVoyagesByShip($namaKapal)

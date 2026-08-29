@@ -26,13 +26,13 @@
             margin-bottom: 0;
         }
         .page.cuti {
-            width: 297mm; /* Landscape A4 */
+            width: 250mm; /* Landscape B5 */
             min-height: 170mm;
             padding: 10mm;
         }
         .page.izin {
-            width: 210mm;
-            min-height: 148mm; /* Setengah A4 */
+            width: 176mm; /* B5 Portrait */
+            min-height: 148mm;
             padding: 10mm;
         }
         .page::before {
@@ -302,10 +302,10 @@
                 box-shadow: none;
             }
             .page.cuti {
-                size: A4 landscape;
+                size: B5 landscape;
             }
             .page.izin {
-                size: A4 portrait;
+                size: B5 portrait;
             }
             .no-print {
                 display: none !important;
@@ -575,6 +575,132 @@
                 <div class="note">
                     Note:<br>
                     Setelah form diisi dan ditanda tangani, serahkan form ke HRD
+                </div>
+            </div>
+        @elseif($item['type'] === 'lembur')
+            <?php 
+                $data = $item['data']; 
+                
+                // Format dates
+                $tanggalObj = \Carbon\Carbon::parse($data->tanggal);
+                $hariTanggal = $tanggalObj->isoFormat('dddd, D MMMM Y');
+                
+                // Extract hour/minute from time if they exist
+                $mulaiDari = $data->jam_mulai ? \Carbon\Carbon::parse($data->jam_mulai)->format('H:i') . ' WIB' : '...... WIB';
+                $sampaiDengan = $data->jam_selesai ? \Carbon\Carbon::parse($data->jam_selesai)->format('H:i') . ' WIB' : '...... WIB';
+                
+                $keteranganLines = [];
+                if (!empty($data->keterangan)) {
+                    $lines = explode("\n", $data->keterangan);
+                    foreach ($lines as $line) {
+                        if (trim($line) !== '') {
+                            $keteranganLines[] = trim($line);
+                        }
+                    }
+                }
+                while (count($keteranganLines) < 2) {
+                    $keteranganLines[] = '';
+                }
+                
+                $submitDate = \Carbon\Carbon::parse($data->created_at)->isoFormat('D MMMM Y');
+            ?>
+            <div class="page izin">
+                <!-- Header -->
+                <div class="header">
+                    <div class="logo">
+                        <img src="/img/ayp-logo.png" alt="Logo" style="width: 100%;" onerror="this.style.display='none'">
+                    </div>
+                    <div class="company-info" style="border: none; padding-right: 0; text-align: center; flex-grow: 1;">
+                        <h1 style="font-size: 18px; margin: 0; text-decoration: underline;">SURAT PERINTAH LEMBUR</h1>
+                    </div>
+                </div>
+
+                <!-- Form Content -->
+                <div style="padding: 0 10px;">
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <span>Pimpinan unit Divisi</span>
+                        <span class="dotted-line" style="flex-grow: 0; width: 150px; margin-right: 5px; min-height: 10px; border-bottom: 1px dotted #000; margin-left: 5px; display: inline-block;">
+                            {{ $data->divisi ?? '..................' }}
+                        </span>
+                        <span>memberi perintah kepada :</span>
+                    </div>
+
+                    <div style="margin-top: 15px; margin-bottom: 10px;">
+                        <div class="form-row">
+                            <div class="form-label">Nama</div>
+                            <div class="form-separator">:</div>
+                            <div class="form-value" style="font-weight: bold;">{{ $data->nama_lengkap ?? '....................................' }}</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-label">NPP</div>
+                            <div class="form-separator">:</div>
+                            <div class="form-value">{{ $data->nik ?? '....................................' }}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; margin-bottom: 10px;">
+                        <p style="margin: 0 0 10px 0;">Untuk melaksanakan tugas di luar jam kerja rutin pada :</p>
+                        
+                        <div class="form-row">
+                            <div class="form-label" style="padding-left: 20px; width: 100px;">Hari, Tanggal</div>
+                            <div class="form-separator">:</div>
+                            <div class="form-value">{{ $hariTanggal }}</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-label" style="padding-left: 20px; width: 100px;">Mulai dari</div>
+                            <div class="form-separator">:</div>
+                            <div class="form-value">{{ $mulaiDari }}</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-label" style="padding-left: 20px; width: 100px;">Sampai dengan</div>
+                            <div class="form-separator">:</div>
+                            <div class="form-value">{{ $sampaiDengan }}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; margin-bottom: 10px;">
+                        <p style="margin: 0;">Hal-hal yang dikerjakan :</p>
+                        <ol style="margin: 5px 0 10px 0; padding-left: 35px;">
+                            @foreach(array_slice($keteranganLines, 0, 2) as $index => $line)
+                            <li style="margin-bottom: 5px;">
+                                <div class="form-value" style="display: inline-block; width: 90%;">{{ $line }}</div>
+                            </li>
+                            @endforeach
+                        </ol>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <p style="margin: 0;">Alasan memberi perintah lembur :</p>
+                        <ol style="margin: 5px 0 10px 0; padding-left: 35px;">
+                            <li style="margin-bottom: 5px;"><div class="form-value" style="display: inline-block; width: 90%;"></div></li>
+                            <li style="margin-bottom: 5px;"><div class="form-value" style="display: inline-block; width: 90%;"></div></li>
+                        </ol>
+                    </div>
+                    
+                    <p style="margin-top: 20px; font-weight: bold;">Harap dilaksanakan dengan penuh tanggung jawab.</p>
+
+                    <div style="margin-top: 30px; display: flex; justify-content: space-between; padding: 0 20px;">
+                        <div style="width: 45%; text-align: center; position: relative; margin-top: 25px;">
+                            <div style="height: 80px; position: relative;">
+                            </div>
+                            <div style="border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding: 0 10px; margin-bottom: 5px;">{{ $data->nama_lengkap ?? '....................................' }}</div>
+                            <div>Yang menerima tugas</div>
+                        </div>
+                        <div style="width: 45%; text-align: center; position: relative;">
+                            <div style="text-align: left; margin-bottom: 10px; padding-left: 30px;">Jakarta, {{ $submitDate }}</div>
+                            <div style="height: 80px; position: relative;">
+                            </div>
+                            <div style="border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding: 0 10px; margin-bottom: 5px;">{{ $data->nama_supervisor ?? '....................................' }}</div>
+                            <div>Yang memberi tugas</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; border-top: 1px solid #000; padding-top: 5px; font-size: 11px; line-height: 1.4;">
+                        <p style="margin: 0; margin-bottom: 2px;">Catatan :</p>
+                        <p style="margin: 0;">- Harap Cantumkan nomor NIK dan Nama lengkap agar pencatatan berjalan baik.</p>
+                        <p style="margin: 0;">- Ketentuan pembayaran lembur berdasarkan Data Finger Scan yang tercatat di Mesin Absen.</p>
+                        <p style="margin: 0;">- Pemberi tugas lembur wajib untuk mengisi/penjelasan pekerjaan lembur yang dilakukan.</p>
+                    </div>
                 </div>
             </div>
         @endif

@@ -14,8 +14,8 @@
             background-color: #fff;
         }
         .page {
-            width: 210mm;
-            min-height: 148mm; /* Setengah A4 */
+            width: 176mm; /* B5 Portrait */
+            min-height: 148mm;
             padding: 10mm;
             margin: 0 auto;
             box-sizing: border-box;
@@ -170,7 +170,7 @@
         }
 
         @page {
-            size: A4 portrait;
+            size: B5 portrait;
             margin: 0;
         }
         
@@ -180,6 +180,8 @@
             }
             .page {
                 margin: 0;
+                border: 2px solid #000;
+                box-shadow: none;
             }
             .no-print {
                 display: none !important;

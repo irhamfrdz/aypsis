@@ -39,6 +39,7 @@
         <select id="filter-jenis" onchange="refreshData()" class="px-3.5 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
             <option value="">Semua Jenis Izin</option>
             <option value="cuti">Cuti</option>
+            <option value="lembur">Lembur</option>
             <option value="Sakit">Izin: Sakit</option>
             <option value="Pulang Cepat">Izin: Pulang Cepat</option>
             <option value="Datang Terlambat">Izin: Datang Terlambat</option>
@@ -180,6 +181,10 @@
                     badgePrefix = 'LUPA ABSEN:';
                     badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
                     typeLabel = item.jenis_izin || 'Lupa Absen';
+                } else if (item.tabel_sumber === 'persetujuan_absensi_lemburs') {
+                    badgePrefix = 'LEMBUR:';
+                    badgeColor = 'bg-sky-50 text-sky-700 border-sky-200';
+                    typeLabel = 'Kerja Lembur';
                 } else {
                     if (item.jenis_izin === 'tidak_masuk') typeLabel = 'Tidak Masuk';
                     else if (item.jenis_izin === 'datang_terlambat') typeLabel = 'Datang Terlambat';
@@ -223,7 +228,7 @@
                         <!-- Header Bar -->
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-gray-100 pb-4">
                             <div class="flex flex-wrap items-center gap-2">
-                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
+                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' || (item.jenis_izin && item.jenis_izin.toLowerCase().includes('lembur')) ? `
                                 <input type="checkbox" class="print-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer mr-1" data-type="${item.tabel_sumber}" data-id="${item.id}" onclick="updatePrintCount()">
                                 ` : ''}
                                 ${typeBadge}
@@ -239,7 +244,7 @@
                                 </a>
                                 ` : ''}
                                 
-                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' ? `
+                                ${item.tabel_sumber !== 'persetujuan_absensi_lupas' || (item.jenis_izin && item.jenis_izin.toLowerCase().includes('lembur')) ? `
                                 <a href="${API_BASE_URL}/master/persetujuan-absensi/print/${item.tabel_sumber}/${item.id}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors" title="Cetak Form">
                                     <i class="fa-solid fa-print"></i> Cetak Form
                                 </a>
