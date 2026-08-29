@@ -2472,6 +2472,10 @@ Route::middleware([
             ->name('absensi.export_excel')
             ->middleware('can:absensi-view');
 
+        Route::get('absensi/export-pdf', [AbsensiController::class, 'exportPdf'])
+            ->name('absensi.export_pdf')
+            ->middleware('can:absensi-view');
+
         Route::delete('absensi/delete-log', [AbsensiController::class, 'deleteLog'])
             ->name('absensi.delete_log')
             ->middleware('can:absensi-delete');

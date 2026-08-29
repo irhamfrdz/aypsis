@@ -363,6 +363,129 @@ class AbsensiController extends Controller
     /**
      * Store manual attendance.
      */
+    public function exportPdf(Request $request)
+    {
+        $query = Absensi::with(['karyawan']);
+
+        // Filter by Date Range safely
+        $defaultStart = Carbon::now()->startOfMonth()->toDateString();
+        $defaultEnd = Carbon::now()->endOfMonth()->toDateString();
+
+        $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultStart);
+        $endDateObj = $this->parseDateSafe($request->input('end_date'), $defaultEnd);
+
+        $query->whereBetween('waktu', [
+            $startDateObj->copy()->setTime(6, 0, 0),
+            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
+        ]);
+
+        // Filter by Search (Employee Name, NIK)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nik', 'like', "%\{$search\}%")
+                    ->orWhereHas('karyawan', function ($kQ) use ($search) {
+                        $kQ->where('nama_lengkap', 'like', "%\{$search\}%")
+                            ->orWhere('nama_panggilan', 'like', "%\{$search\}%");
+                    });
+            });
+        }
+
+        // Filter by Pekerjaan
+        if ($request->filled('pekerjaan')) {
+            $pekerjaan = $request->pekerjaan;
+            $query->whereHas('karyawan', function ($kQ) use ($pekerjaan) {
+                $kQ->where('pekerjaan', $pekerjaan);
+            });
+        }
+
+        // Filter by Penempatan
+        if ($request->filled('penempatan')) {
+            $penempatan = $request->penempatan;
+            $query->whereHas('karyawan', function ($kQ) use ($penempatan) {
+                $kQ->where('penempatan', $penempatan);
+            });
+        }
+
+        // Filter by Divisi
+        if ($request->filled('divisi')) {
+            $divisi = $request->divisi;
+            $query->whereHas('karyawan', function ($kQ) use ($divisi) {
+                $kQ->where('divisi', $divisi);
+            });
+        }
+
+        // Filter by Cabang
+        if ($request->filled('cabang')) {
+            $cabang = $request->cabang;
+            $query->whereHas('karyawan', function ($kQ) use ($cabang) {
+                $kQ->where('cabang', $cabang);
+            });
+        }
+
+        // Build the daily grouped query
+        $query->selectRaw('
+            karyawan_id,
+            nik,
+            DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
+            MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
+            MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
+            MAX(CASE WHEN LOWER(tipe) IN ("istirahat_masuk", "istirahat masuk") THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
+            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
+            MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
+        ')
+        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
+
+        // Filter by Status Absen
+        if ($request->filled('status_absen')) {
+            $status_absen = $request->status_absen;
+            if ($status_absen === 'tidak_masuk') {
+                $query->havingRaw('waktu_masuk IS NULL');
+            } elseif ($status_absen === 'tidak_pulang') {
+                $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL');
+            } elseif ($status_absen === 'tidak_istirahat') {
+                $query->havingRaw('(waktu_istirahat_keluar IS NULL OR waktu_istirahat_masuk IS NULL) AND waktu_masuk IS NOT NULL');
+            } elseif ($status_absen === 'ada_istirahat') {
+                $query->havingRaw('waktu_istirahat_keluar IS NOT NULL OR waktu_istirahat_masuk IS NOT NULL');
+            } elseif ($status_absen === 'lengkap') {
+                $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
+            } elseif ($status_absen === 'ada_lembur') {
+                $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
+            }
+        }
+
+        $absensis = $query->orderBy('tanggal', 'desc')->get();
+
+        $titleParts = [];
+        if ($request->filled('penempatan')) {
+            $titleParts[] = strtoupper($request->penempatan);
+        }
+        if ($request->filled('pekerjaan')) {
+            $titleParts[] = strtoupper($request->pekerjaan);
+        }
+        if ($request->filled('divisi')) {
+            $titleParts[] = strtoupper($request->divisi);
+        }
+        if ($request->filled('cabang')) {
+            $titleParts[] = strtoupper($request->cabang);
+        }
+        $filterTitle = !empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
+
+        $filename = 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.pdf', [
+            'startDate' => $startDateObj,
+            'endDate' => $endDateObj,
+            'absensis' => $absensis,
+            'filterTitle' => $filterTitle,
+        ])->setPaper('A4', 'landscape');
+
+        return $pdf->download($filename);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
