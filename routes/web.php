@@ -1178,6 +1178,67 @@ Route::middleware([
                 }
                 
                 DB::table($table)->where('id', $data['permission_id'])->update($updateData);
+
+                // SYNC KE ABSENSI UNTUK LUPA ABSEN & LEMBUR
+                $karyawan = \App\Models\Karyawan::find($permission->karyawan_id);
+                if ($karyawan && strtoupper($permission->status) !== 'APPROVED' && $permission->status !== 'approved') {
+                    if ($table === 'persetujuan_absensi_lupas') {
+                        $waktuDateTime = \Carbon\Carbon::parse($permission->tanggal)->format('Y-m-d') . ' ' . \Carbon\Carbon::parse($permission->waktu)->format('H:i:s');
+                        
+                        $tanggalAbsen = \Carbon\Carbon::parse($permission->tanggal);
+                        $startDateObj = $tanggalAbsen->copy()->setTime(6, 0, 0);
+                        $endDateObj = $tanggalAbsen->copy()->addDays(1)->setTime(5, 59, 59);
+
+                        $existingLog = \App\Models\Absensi::where('nik', $karyawan->nik)
+                            ->where('tipe', $permission->tipe_absen)
+                            ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                            ->first();
+
+                        if ($existingLog) {
+                            $existingLog->update([
+                                'waktu' => $waktuDateTime,
+                                'keterangan' => 'Lupa Absen: ' . $permission->alasan,
+                                'status' => 'Valid',
+                                'device' => 'Manual Approval',
+                            ]);
+                        } else {
+                            \App\Models\Absensi::create([
+                                'karyawan_id' => $karyawan->id,
+                                'nik' => $karyawan->nik,
+                                'waktu' => $waktuDateTime,
+                                'tipe' => $permission->tipe_absen,
+                                'keterangan' => 'Lupa Absen: ' . $permission->alasan,
+                                'status' => 'Valid',
+                                'device' => 'Manual Approval',
+                            ]);
+                        }
+                    } elseif ($table === 'persetujuan_absensi_lemburs') {
+                        $waktuMasuk = \Carbon\Carbon::parse($permission->tanggal)->setTimeFromTimeString($permission->jam_mulai);
+                        $waktuPulang = \Carbon\Carbon::parse($permission->tanggal)->setTimeFromTimeString($permission->jam_selesai);
+                        
+                        if ($waktuPulang->lt($waktuMasuk)) {
+                            $waktuPulang->addDay();
+                        }
+
+                        \App\Models\Absensi::create([
+                            'karyawan_id' => $karyawan->id,
+                            'nik' => $karyawan->nik ?? '-',
+                            'waktu' => $waktuMasuk,
+                            'tipe' => 'lembur_masuk',
+                            'keterangan' => "Disetujui dari form lembur: {$permission->keterangan}",
+                        ]);
+
+                        if ($permission->jam_selesai) {
+                            \App\Models\Absensi::create([
+                                'karyawan_id' => $karyawan->id,
+                                'nik' => $karyawan->nik ?? '-',
+                                'waktu' => $waktuPulang,
+                                'tipe' => 'lembur_pulang',
+                                'keterangan' => "Disetujui dari form lembur: {$permission->keterangan}",
+                            ]);
+                        }
+                    }
+                }
                 
                 return response()->json(['message' => 'Permohonan berhasil disetujui.']);
             });
