@@ -858,15 +858,13 @@
                     <div id="dimensi-container">
                         @if(count($dimensiItems) > 0)
                             @foreach($dimensiItems as $index => $item)
-                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 {{ $index > 0 ? 'relative' : '' }}">
-                                @if($index > 0)
-                                <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 transition">
+                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 relative">
+                                <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
                                 </button>
-                                @endif
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
@@ -942,8 +940,13 @@
                             @endforeach
                         @else
                             {{-- Default empty row if no dimensi items exist --}}
-                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 relative">
+                                <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
@@ -1611,17 +1614,40 @@
         const addButton = document.getElementById('add-dimensi-btn');
         const container = document.getElementById('dimensi-container');
 
+        // Helper: wire up a newly created dimensi row
+        function wireUpDimensiRow(row) {
+            // Delete button – prevent removing the last row
+            const removeBtn = row.querySelector('.remove-dimensi-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    const allRows = container.querySelectorAll('.dimensi-row');
+                    if (allRows.length <= 1) {
+                        alert('Minimal harus ada 1 data barang.');
+                        return;
+                    }
+                    row.remove();
+                });
+            }
+
+            // Volume auto-calculation
+            row.querySelectorAll('.dimensi-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateVolume(row);
+                });
+            });
+        }
+
         if (addButton && container) {
             addButton.addEventListener('click', function() {
                 const newRow = document.createElement('div');
                 newRow.className = 'dimensi-row mb-4 pb-4 border-b border-purple-200 relative';
                 newRow.innerHTML = `
-                    <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 transition">
+                    <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                     </button>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                             <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Nama barang" oninput="toggleUkuranField(this)">
@@ -1664,40 +1690,17 @@
                 `;
 
                 container.appendChild(newRow);
-
-                const removeBtn = newRow.querySelector('.remove-dimensi-btn');
-                removeBtn.addEventListener('click', function() {
-                    newRow.remove();
-                });
-
-                const dimensiInputs = newRow.querySelectorAll('.dimensi-input');
-                dimensiInputs.forEach(input => {
-                    input.addEventListener('input', function() {
-                        calculateVolume(newRow);
-                    });
-                });
+                wireUpDimensiRow(newRow);
             });
         }
 
-        // Attach listeners to existing rows
-        const existingDimensiInputs = document.querySelectorAll('.dimensi-input');
-        existingDimensiInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const row = input.closest('.dimensi-row');
-                calculateVolume(row);
-            });
+        // Wire up all rows that already exist in the DOM on page load
+        document.querySelectorAll('#dimensi-container .dimensi-row').forEach(row => {
+            wireUpDimensiRow(row);
         });
 
         // Calculate initial volumes
-        const existingRows = document.querySelectorAll('#dimensi-container .dimensi-row');
-        existingRows.forEach(row => calculateVolume(row));
-
-        // Remove button handlers for existing rows
-        document.querySelectorAll('.remove-dimensi-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.closest('.dimensi-row').remove();
-            });
-        });
+        document.querySelectorAll('#dimensi-container .dimensi-row').forEach(row => calculateVolume(row));
     });
 
     let processedImages = [];
