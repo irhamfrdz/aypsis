@@ -125,6 +125,22 @@
                 </div>
             @endif
 
+            @if($errors->any())
+                <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-medium text-sm">Terdapat kesalahan validasi:</span>
+                    </div>
+                    <ul class="list-disc list-inside text-sm ml-6">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- Search and Filter -->
             <div class="mb-6 bg-gray-50 p-4 rounded-lg">
                 <form method="GET" action="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -591,7 +607,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Volume (m³) <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" id="split_volume" name="meter_kubik" step="0.001" min="0.001" required
+                                    <input type="number" id="split_volume" name="volume" step="0.001" min="0" required
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                            placeholder="0.000" readonly>
                                     <p class="text-xs text-gray-500 mt-1">Auto-calculated</p>
@@ -600,7 +616,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Tonase (Ton) <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" id="split_tonase" name="tonase" step="0.001" min="0.001" required
+                                    <input type="number" id="split_tonase" name="berat" step="0.001" min="0" required
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                            placeholder="0.000">
                                 </div>
@@ -1544,12 +1560,9 @@
         const tinggi = parseFloat(tinggiInput.value) || 0;
         const jumlah = parseFloat(jumlahInput.value) || 1;
 
-        if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            const volume = panjang * lebar * tinggi * jumlah;
-            volumeInput.value = volume.toFixed(3);
-        } else {
-            volumeInput.value = '';
-        }
+        // Calculate volume even when dimensions are 0
+        const volume = panjang * lebar * tinggi * jumlah;
+        volumeInput.value = volume.toFixed(3);
     }
 
     // Add submit handler for split form with client-side validation
