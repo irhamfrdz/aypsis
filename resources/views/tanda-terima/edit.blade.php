@@ -858,13 +858,16 @@
                     <div id="dimensi-container">
                         @if(count($dimensiItems) > 0)
                             @foreach($dimensiItems as $index => $item)
-                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 relative">
-                                <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
+                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
+                                <div class="flex justify-end mb-2">
+                                    <button type="button" class="remove-dimensi-btn inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition" title="Hapus barang ini">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Hapus Barang
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
@@ -940,13 +943,16 @@
                             @endforeach
                         @else
                             {{-- Default empty row if no dimensi items exist --}}
-                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 relative">
-                                <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
+                            <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
+                                <div class="flex justify-end mb-2">
+                                    <button type="button" class="remove-dimensi-btn inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition" title="Hapus barang ini">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Hapus Barang
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
@@ -1640,14 +1646,17 @@
         if (addButton && container) {
             addButton.addEventListener('click', function() {
                 const newRow = document.createElement('div');
-                newRow.className = 'dimensi-row mb-4 pb-4 border-b border-purple-200 relative';
+                newRow.className = 'dimensi-row mb-4 pb-4 border-b border-purple-200';
                 newRow.innerHTML = `
-                    <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition p-1" title="Hapus barang ini">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid pr-8">
+                    <div class="flex justify-end mb-2">
+                        <button type="button" class="remove-dimensi-btn inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition" title="Hapus barang ini">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Hapus Barang
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                             <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Nama barang" oninput="toggleUkuranField(this)">
