@@ -527,6 +527,7 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
+        $validated['biaya_adjustment'] = $validated['biaya_adjustment'] ?? $validated['pbm_biaya_adjustment'] ?? 0;
 
         $invoice = InvoiceAktivitasLain::create($validated);
 
@@ -1143,7 +1144,8 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-
+        $validated['biaya_adjustment'] = $validated['biaya_adjustment'] ?? $validated['pbm_biaya_adjustment'] ?? 0;
+        
         $invoice->update($validated);
 
         // Update biaya listrik records
