@@ -145,8 +145,6 @@
             }
         });
 
-        voyageInput.addEventListener('blur', function() {
-            if (this.value && kapalSelect.value) {
         // Setup voyage change listener for Bongkaran toggle
         const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
         voyageInput.addEventListener('blur', function() {
