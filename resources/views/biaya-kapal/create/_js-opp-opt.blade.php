@@ -180,8 +180,25 @@
         const container = section.querySelector('.opp-opt-barang-container');
         container.innerHTML = ''; // Clear rows
         
-        // If Opslag, don't try to fetch manifests, just add one static row
+        // If Opslag, don't try to fetch manifests, just add one static row in a table format
         if (klasifikasi === 'opslag') {
+            container.innerHTML = `
+                <div class="overflow-x-auto rounded-lg border border-purple-200">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="bg-purple-100 text-[10px] uppercase text-gray-700">
+                            <tr>
+                                <th class="px-3 py-2 border-b border-purple-200">Jenis Ukuran</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-32">Jumlah</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-40">Tarif (Rp)</th>
+                                <th class="px-3 py-2 border-b border-purple-200">Catatan</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-16 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="opp-opt-opslag-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            `;
             addBarangToOppOptSection(sectionIndex);
         } else {
             // Re-fetch manifests if Kapal and Voyage are set
@@ -303,10 +320,17 @@
     window.addBarangToOppOptSection = function(sectionIndex, selectedManifestIds = []) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
-        const barangIndex = container.children.length;
         
         const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
         const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        let targetContainer = container;
+        if (isOpslag) {
+            targetContainer = container.querySelector('.opp-opt-opslag-tbody');
+            if (!targetContainer) targetContainer = container; // fallback
+        }
+        
+        const barangIndex = targetContainer.children.length;
         
         let manifestsData = [];
         try {
@@ -326,19 +350,13 @@
             @endforeach
         @endif
         
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'flex items-end gap-2 mb-2';
+        let inputGroup;
         
         if (isOpslag) {
+            inputGroup = document.createElement('tr');
+            inputGroup.className = 'border-b border-gray-200 hover:bg-gray-50 opp-opt-item-row';
             inputGroup.innerHTML = `
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                        ${biayaOptions}
-                    </select>
-                </div>
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jenis Ukuran</label>
+                <td class="p-2 align-top">
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Pilih Jenis</option>
                         <option value="20ft Full">20ft Full</option>
@@ -346,28 +364,25 @@
                         <option value="40ft Full">40ft Full</option>
                         <option value="40ft Empty">40ft Empty</option>
                     </select>
-                </div>
-                <div class="w-[10%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jumlah</label>
+                </td>
+                <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                </td>
+                <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-                </div>
-                <div class="flex-1">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                </td>
+                <td class="p-2 align-top">
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-                </div>
-                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                    <i class="fas fa-trash text-xs"></i>
-                </button>
+                </td>
+                <td class="p-2 align-top text-center">
+                    <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </td>
             `;
         } else {
+            inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
             inputGroup.innerHTML = `
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
@@ -399,7 +414,7 @@
             `;
         }
         
-        container.appendChild(inputGroup);
+        targetContainer.appendChild(inputGroup);
         
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
@@ -425,10 +440,20 @@
         }
     };
 
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId, jenisUkuran = '', jumlah = '') {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
-        const barangIndex = container.children.length;
+        
+        const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+        const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        let targetContainer = container;
+        if (isOpslag) {
+            targetContainer = container.querySelector('.opp-opt-opslag-tbody');
+            if (!targetContainer) targetContainer = container; // fallback
+        }
+        
+        const barangIndex = targetContainer.children.length;
         
         let manifestsData = [];
         try {
@@ -455,42 +480,74 @@
             @endforeach
         @endif
         
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'flex items-end gap-2 mb-2';
-        inputGroup.innerHTML = `
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${biayaOptions}
-                </select>
-            </div>
-            <div class="w-[20%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                    ${barangOptions}
-                </select>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
-            </div>
-            <div class="w-[15%]">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-            </div>
-            <div class="flex-1">
-                <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
-                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-            </div>
-            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                <i class="fas fa-trash text-xs"></i>
-            </button>
-        `;
+        let inputGroup;
         
-        container.appendChild(inputGroup);
+        if (isOpslag) {
+            inputGroup = document.createElement('tr');
+            inputGroup.className = 'border-b border-gray-200 hover:bg-gray-50 opp-opt-item-row';
+            inputGroup.innerHTML = `
+                <td class="p-2 align-top">
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Pilih Jenis</option>
+                        <option value="20ft Full" ${jenisUkuran === '20ft Full' ? 'selected' : ''}>20ft Full</option>
+                        <option value="20ft Empty" ${jenisUkuran === '20ft Empty' ? 'selected' : ''}>20ft Empty</option>
+                        <option value="40ft Full" ${jenisUkuran === '40ft Full' ? 'selected' : ''}>40ft Full</option>
+                        <option value="40ft Empty" ${jenisUkuran === '40ft Empty' ? 'selected' : ''}>40ft Empty</option>
+                    </select>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${jumlah}" required>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </td>
+                <td class="p-2 align-top text-center">
+                    <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </td>
+            `;
+        } else {
+            inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
+            inputGroup.innerHTML = `
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${biayaOptions}
+                    </select>
+                </div>
+                <div class="w-[20%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                        ${barangOptions}
+                    </select>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
+                </div>
+                <div class="w-[15%]">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+                </div>
+                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            `;
+        }
+        
+        targetContainer.appendChild(inputGroup);
         
         // Initialize select2 if available
-        if (typeof $ !== 'undefined' && $.fn.select2) {
+        if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
                 width: '100%'
             });
@@ -498,16 +555,26 @@
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
         
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
+        
+        if (jumlahInput) {
+            jumlahInput.addEventListener('input', function() {
+                calculateTotalFromAllOppOptSections();
+            });
+        }
     };
     
     window.removeBarangFromOppOptSection = function(button) {
         const container = button.closest('.opp-opt-barang-container');
-        if (container.children.length > 1) {
-            button.closest('.flex').remove();
+        const row = button.closest('.opp-opt-item-row');
+        const parent = row.parentNode;
+        
+        if (parent.children.length > 1) {
+            row.remove();
             
             // Reindex all barang inputs after removal
             reindexOppOptBarangInputs(container);
@@ -519,7 +586,7 @@
     function reindexOppOptBarangInputs(container) {
         const section = container.closest('.opp-opt-section');
         const sectionIndex = section.getAttribute('data-opp-opt-section-index');
-        const inputGroups = container.querySelectorAll('.flex.items-end');
+        const inputGroups = container.querySelectorAll('.opp-opt-item-row');
         
         inputGroups.forEach((group, newIndex) => {
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');

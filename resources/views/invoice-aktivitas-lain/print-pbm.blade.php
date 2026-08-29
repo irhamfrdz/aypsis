@@ -289,11 +289,12 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">No. Referensi</th>
+                        <th style="width: 14%;">No. Referensi</th>
                         <th style="width: 10%;">Voyage</th>
-                        <th style="width: 30%;">Catatan</th>
-                        <th style="width: 15%;">Nominal Bayar</th>
-                        <th style="width: 10%;">Adm</th>
+                        <th style="width: 25%;">Catatan</th>
+                        <th style="width: 13%;">Nom. Bayar</th>
+                        <th style="width: 8%;">Adm</th>
+                        <th style="width: 10%;">Adj</th>
                         <th style="width: 15%;">Total</th>
                     </tr>
                 </thead>
@@ -307,6 +308,7 @@
                         @php
                             $nominal = (float)str_replace(['.', ','], '', $pbm['nominal_bayar'] ?? 0);
                             $admin = (float)str_replace(['.', ','], '', $pbm['biaya_admin'] ?? 0);
+                            $adj = (float)str_replace(['.', ','], '', $pbm['adjustment'] ?? 0);
                             $total = (float)str_replace(['.', ','], '', $pbm['grand_total'] ?? 0);
                             
                             $totalNominal += $nominal;
@@ -320,6 +322,7 @@
                             <td>{{ $pbm['catatan'] ?? '-' }}</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
+                            <td class="text-right">{{ number_format($adj, 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
                         </tr>
                     @empty
@@ -337,37 +340,38 @@
                             <td>-</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
+                            <td class="text-right">0</td>
                             <td class="text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
                         </tr>
                     @endforelse
                     
                     @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0 || $invoice->pph > 0)
                         <tr>
-                            <td colspan="6" class="text-right">Subtotal</td>
+                            <td colspan="7" class="text-right">Subtotal</td>
                             <td class="text-right">Rp {{ number_format($grandTotalAll, 0, ',', '.') }}</td>
                         </tr>
                         @if($invoice->biaya_materai > 0)
                         <tr>
-                            <td colspan="6" class="text-right">Materai</td>
+                            <td colspan="7" class="text-right">Materai</td>
                             <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->biaya_adjustment != 0)
                         <tr>
-                            <td colspan="6" class="text-right">Adjustment</td>
+                            <td colspan="7" class="text-right">Adjustment</td>
                             <td class="text-right">Rp {{ ($invoice->biaya_adjustment > 0 ? '+' : '') . number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->pph > 0)
                         <tr>
-                            <td colspan="6" class="text-right">PPH</td>
+                            <td colspan="7" class="text-right">PPH</td>
                             <td class="text-right">Rp ({{ number_format($invoice->pph, 0, ',', '.') }})</td>
                         </tr>
                         @endif
                     @endif
 
                     <tr class="total-row">
-                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($invoice->grand_total ?? $invoice->total, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>

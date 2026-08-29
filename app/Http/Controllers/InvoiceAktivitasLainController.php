@@ -415,6 +415,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nama_bank' => 'nullable|string|max:255',
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
+            'pbm_detail.*.adjustment' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
             'pbm_detail.*.catatan' => 'nullable|string',
         ]);
@@ -455,6 +456,9 @@ class InvoiceAktivitasLainController extends Controller
                 }
                 if (isset($pbm['biaya_admin'])) {
                     $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
+                }
+                if (isset($pbm['adjustment'])) {
+                    $pbm['adjustment'] = str_replace(['.', ','], '', $pbm['adjustment']);
                 }
                 if (isset($pbm['grand_total'])) {
                     $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
@@ -1033,6 +1037,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nama_bank' => 'nullable|string|max:255',
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
+            'pbm_detail.*.adjustment' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
             'pbm_detail.*.catatan' => 'nullable|string',
         ]);
@@ -1069,6 +1074,9 @@ class InvoiceAktivitasLainController extends Controller
                 }
                 if (isset($pbm['biaya_admin'])) {
                     $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
+                }
+                if (isset($pbm['adjustment'])) {
+                    $pbm['adjustment'] = str_replace(['.', ','], '', $pbm['adjustment']);
                 }
                 if (isset($pbm['grand_total'])) {
                     $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
