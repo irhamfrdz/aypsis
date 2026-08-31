@@ -4601,6 +4601,10 @@ Route::middleware([
         Route::get('/surat-jalan-bongkaran-batam/print-ba/{bl}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'printBa'])
             ->name('surat-jalan-bongkaran-batam.print-ba')
             ->middleware('can:surat-jalan-bongkaran-batam-view');
+        Route::get('/surat-jalan-bongkaran/print-ba/{bl}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'printBa'])
+            ->name('surat-jalan-bongkaran.print-ba');
+        Route::get('/surat-jalan-bongkaran/print-ba-preprinted/{bl}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'printBaPreprinted'])
+            ->name('surat-jalan-bongkaran.print-ba-preprinted');
 
         Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
             ->name('surat-jalan-bongkaran.create')

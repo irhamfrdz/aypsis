@@ -1157,6 +1157,41 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Print Berita Acara (BA) directly from Manifest data with Pre-printed Alexindo template
+     */
+    public function printBaPreprinted($bl)
+    {
+        // Find manifest by ID from manifests table
+        $manifest = Manifest::findOrFail($bl);
+
+        // Map manifest data to standard baData object
+        $baData = new \stdClass;
+        
+        $baData->pengirim = $manifest->shipper;
+        $baData->penerima = $manifest->consignee;
+        
+        // No CP in manifest table usually, leave empty or use a default
+        $baData->contact_person = '';
+        
+        $baData->no_kontainer = $manifest->no_kontainer;
+        $baData->jenis_barang = $manifest->nama_barang_manifest;
+        
+        $baData->nama_kapal = $manifest->kapal;
+        $baData->no_voyage = $manifest->voyage;
+        $baData->no_bl = $manifest->nomor_bl;
+        
+        $baData->pelabuhan_asal = $manifest->port_of_loading;
+        $baData->pelabuhan_tujuan = $manifest->port_of_discharge;
+        
+        $baData->tanggal_ba = $manifest->tanggal_berangkat;
+        
+        // Include full manifest object just in case the view needs it
+        $baData->manifest = $manifest;
+
+        return view('surat-jalan-bongkaran.print-ba-preprinted', compact('baData'));
+    }
+
+    /**
      * Get Surat Jalan Bongkaran data by ID for API (for edit modal)
      */
     public function getSuratJalanById($id)

@@ -352,6 +352,13 @@
                                                         </svg>
                                                         Print BA
                                                     </a>
+                                                    <a href="#" onclick="printBAPreprinted({{ $manifest->id }}); return false;" 
+                                                       class="group flex items-center px-3 py-2 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900">
+                                                        <svg class="mr-2 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                                        </svg>
+                                                        Print BA (Alexindo)
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -1893,6 +1900,11 @@ function printSJ(blId) {
 function printBA(blId) {
     // Open print BA page in new window/tab
     window.open('/surat-jalan-bongkaran/print-ba/' + blId, '_blank');
+}
+
+function printBAPreprinted(blId) {
+    // Open print BA pre-printed page in new window/tab
+    window.open('/surat-jalan-bongkaran/print-ba-preprinted/' + blId, '_blank');
 }
 
 // Functions for Surat Jalan Bongkaran mode
