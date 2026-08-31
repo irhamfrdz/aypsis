@@ -231,6 +231,7 @@
             $totalJasaAir = 0;
             $countJasaAir = 0;
             $totalPPH = 0;
+            $totalAdjustment = 0;
             $totalGrandTotal = 0;
             
             foreach($biayaKapal->airDetails as $detail) {
@@ -253,6 +254,10 @@
                 if ($detail->jasa_air > 0) {
                     $totalJasaAir += $detail->jasa_air;
                     $countJasaAir++;
+                }
+                
+                if ($detail->adjustment != 0) {
+                    $totalAdjustment += $detail->adjustment;
                 }
                 
                 $totalPPH += $detail->pph;
@@ -380,6 +385,15 @@
                     <td>PPH (2%)</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                
+                @if($totalAdjustment != 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>ADJUSTMENT</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">{{ $totalAdjustment < 0 ? '-Rp ' : 'Rp ' }}{{ number_format(abs($totalAdjustment), 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 
