@@ -1161,32 +1161,63 @@ class SuratJalanBongkaranController extends Controller
      */
     public function printBaPreprinted($bl)
     {
+        // ========================================
+        // DATA SOURCE: TABLE MANIFESTS
+        // ========================================
         // Find manifest by ID from manifests table
         $manifest = Manifest::findOrFail($bl);
 
-        // Map manifest data to standard baData object
+        // This allows printing BA even if surat jalan hasn't been created yet
         $baData = new \stdClass;
-        
-        $baData->pengirim = $manifest->shipper;
-        $baData->penerima = $manifest->consignee;
-        
-        // No CP in manifest table usually, leave empty or use a default
-        $baData->contact_person = '';
-        
-        $baData->no_kontainer = $manifest->no_kontainer;
-        $baData->jenis_barang = $manifest->nama_barang_manifest;
-        
-        $baData->nama_kapal = $manifest->kapal;
-        $baData->no_voyage = $manifest->voyage;
-        $baData->no_bl = $manifest->nomor_bl;
-        
-        $baData->pelabuhan_asal = $manifest->port_of_loading;
-        $baData->pelabuhan_tujuan = $manifest->port_of_discharge;
-        
-        $baData->tanggal_ba = $manifest->tanggal_berangkat;
-        
-        // Include full manifest object just in case the view needs it
+
+        // Generate BA number if not exists
+        $baData->id = $manifest->id;
+        $baData->nomor_ba = 'BA/'.date('Y/m/d').'/'.str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
+
+        // Use manifest tanggal_berangkat for BA date
+        $baData->tanggal_ba = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
+
+        // Attach manifest object for view compatibility
         $baData->manifest = $manifest;
+
+        // ========================================
+        // MAPPING DATA DARI TABEL MANIFESTS
+        // ========================================
+        // Ship data (manifests table)
+        $baData->nama_kapal = $manifest->nama_kapal;                            // manifests.nama_kapal
+        $baData->no_voyage = $manifest->no_voyage;                              // manifests.no_voyage
+        $baData->pelabuhan_asal = $manifest->pelabuhan_asal ?? '';              // manifests.pelabuhan_asal
+        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';          // manifests.pelabuhan_tujuan
+        $baData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';         // manifests.pelabuhan_tujuan
+
+        // Container data (manifests table)
+        $baData->no_bl = $manifest->nomor_bl;                                   // manifests.nomor_bl
+        $baData->no_kontainer = $manifest->nomor_kontainer;                     // manifests.nomor_kontainer
+        $baData->no_seal = $manifest->no_seal;                                  // manifests.no_seal
+        $baData->size = $manifest->size_kontainer;                              // manifests.size_kontainer
+        $baData->size_kontainer = $manifest->size_kontainer;                    // manifests.size_kontainer
+        $baData->tipe_kontainer = $manifest->tipe_kontainer ?? '';              // manifests.tipe_kontainer (CARGO, FCL, LCL, etc)
+
+        // Cargo data (manifests table)
+        $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang
+        $baData->pengirim = $manifest->pengirim ?? '';                          // manifests.pengirim
+        $baData->penerima = $manifest->penerima ?? '';                          // manifests.penerima
+        $baData->contact_person = $manifest->contact_person ?? '';              // manifests.contact_person
+        $baData->kuantitas = $manifest->kuantitas;                              // manifests.kuantitas
+        $baData->satuan = $manifest->satuan;                                    // manifests.satuan
+
+        // Transportation data (will be empty until surat jalan is created)
+        $baData->no_plat = '';
+        $baData->supir = '';
+        $baData->kenek = '';
+        $baData->krani = '';
+        $baData->tujuan_pengambilan = '';
+
+        // Condition notes (default values)
+        $baData->kondisi_seal = 'Seal dalam keadaan baik dan tidak rusak';
+        $baData->kondisi_kontainer = 'Kontainer dalam keadaan baik dan tidak rusak';
+        $baData->kondisi_barang = 'Barang dalam keadaan baik sesuai manifest';
+        $baData->catatan = '-';
 
         return view('surat-jalan-bongkaran.print-ba-preprinted', compact('baData'));
     }
