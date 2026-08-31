@@ -2533,6 +2533,14 @@ Route::middleware([
             ->name('absensi.import')
             ->middleware('can:absensi-view'); // Gunakan permission yang ada
 
+        Route::get('absensi/template-import', [AbsensiImportController::class, 'downloadTemplate'])
+            ->name('absensi.template_import')
+            ->middleware('can:absensi-view');
+
+        Route::post('absensi/import-excel-koreksi', [AbsensiImportController::class, 'importKoreksi'])
+            ->name('absensi.import_excel_koreksi')
+            ->middleware('can:absensi-view');
+
         Route::get('absensi/export-dat', [AbsensiController::class, 'exportDat'])
             ->name('absensi.export_dat')
             ->middleware('can:absensi-view');

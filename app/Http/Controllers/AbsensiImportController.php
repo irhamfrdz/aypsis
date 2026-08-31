@@ -146,4 +146,51 @@ class AbsensiImportController extends Controller
 
         return $importedCount;
     }
+
+    /**
+     * Download Template Koreksi Absensi (Berdasarkan Tipe)
+     */
+    public function downloadTemplate(Request $request)
+    {
+        $tipe = $request->query('tipe', 'Reguler');
+        
+        $headersList = ['NIK', 'NAMA', 'TANGGAL (YYYY-MM-DD)'];
+        if ($tipe === 'Lembur') {
+            $headersList[] = 'LEMBUR MASUK';
+            $headersList[] = 'LEMBUR PULANG';
+        } else {
+            $headersList[] = 'JAM MASUK';
+            $headersList[] = 'JAM PULANG';
+        }
+        
+        $filename = "Template_Koreksi_Absensi_" . str_replace(' ', '_', $tipe) . ".xlsx";
+        
+        return Excel::download(new \App\Exports\TemplateKoreksiAbsensiExport($headersList), $filename);
+    }
+
+    /**
+     * Handle Import Koreksi Excel
+     */
+    public function importKoreksi(Request $request)
+    {
+        $request->validate([
+            'file_excel' => 'required|file|mimes:xls,xlsx,csv|max:10240',
+            'tipe_absen' => 'required|string',
+            'tanggal_absensi' => 'required|date'
+        ]);
+
+        try {
+            $import = new \App\Imports\AbsensiKoreksiImport(
+                $request->tipe_absen,
+                $request->tanggal_absensi
+            );
+            
+            Excel::import($import, $request->file('file_excel'));
+            
+            return redirect()->route('absensi.index')->with('success', "Berhasil mengupdate {$import->importedCount} data koreksi absensi.");
+        } catch (\Exception $e) {
+            Log::error("Error import koreksi absensi: " . $e->getMessage());
+            return redirect()->route('absensi.index')->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+        }
+    }
 }
