@@ -1007,7 +1007,7 @@ class KaryawanController extends Controller
     /**
      * Export Karyawan Simple (NIK, NAMA, TGL LAHIR, TGL MASUK)
      */
-    public function exportSimple()
+    public function exportSimple(Request $request)
     {
         if (function_exists('opcache_reset')) {
             opcache_reset();
@@ -1023,9 +1023,12 @@ class KaryawanController extends Controller
             'TANGGAL MASUK'  => 'tanggal_masuk',
         ];
 
+        $penempatan = $request->input('penempatan');
+        $cabang     = $request->input('cabang');
+
         $fileName = 'karyawan_simple_'.date('Ymd_His').'.csv';
 
-        $callback = function () use ($columns) {
+        $callback = function () use ($columns, $penempatan, $cabang) {
             $out = fopen('php://output', 'w');
 
             // BOM agar Excel mengenali UTF-8
@@ -1034,8 +1037,17 @@ class KaryawanController extends Controller
             // Header dengan semicolon — kompatibel Excel regional Indonesia
             fwrite($out, implode(';', array_keys($columns))."\r\n");
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns) {
-                Karyawan::chunk(200, function ($rows) use ($out, $columns) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns, $penempatan, $cabang) {
+                $query = Karyawan::query()->whereNull('tanggal_berhenti');
+
+                if ($penempatan) {
+                    $query->where('penempatan', $penempatan);
+                }
+                if ($cabang) {
+                    $query->where('cabang', $cabang);
+                }
+
+                $query->chunk(200, function ($rows) use ($out, $columns) {
                     foreach ($rows as $r) {
                         $line = [];
                         foreach ($columns as $header => $field) {
@@ -1067,6 +1079,7 @@ class KaryawanController extends Controller
             'Last-Modified'       => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
+
 
 
     /**

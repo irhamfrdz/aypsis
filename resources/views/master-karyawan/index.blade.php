@@ -37,7 +37,7 @@
                                 <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <button type="button" onclick="openImportSupervisorModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal Supervisor"><i class="fas fa-user-tie border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
-                                <a href="{{ route('master.karyawan.export-simple') }}" class="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors border-r pr-2 border-gray-200 ml-1" title="Tarik Data (NIK, Nama, Tgl Lahir, Tgl Masuk)"><i class="fas fa-table"></i></a>
+                                <button type="button" onclick="openTarikDataModal()" class="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors border-r pr-2 border-gray-200 ml-1" title="Tarik Data (NIK, Nama, Tgl Lahir, Tgl Masuk)"><i class="fas fa-table"></i></button>
                                 <div class="flex items-center ml-1 bg-gray-100/50 rounded-md px-1">
                                     <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Daftar (List)"><i class="fas fa-list-ul"></i></a>
                                     <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Formulir (Bulk Detail)"><i class="fas fa-id-card-alt"></i></a>
@@ -1136,8 +1136,101 @@
     </div>
 </div>
 
+{{-- Modal: Tarik Data Karyawan --}}
+<div id="tarikDataModal" class="fixed inset-0 z-50 hidden" aria-labelledby="tarikDataModalTitle" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        {{-- Backdrop --}}
+        <div class="fixed inset-0 bg-gray-900/60 transition-opacity" onclick="closeTarikDataModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-cyan-600 to-teal-600 px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-table text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white" id="tarikDataModalTitle">Tarik Data Karyawan</h3>
+                        <p class="text-cyan-100 text-[10px]">NIK · Nama · Tgl Lahir · Tgl Masuk</p>
+                    </div>
+                </div>
+                <button onclick="closeTarikDataModal()" class="text-white/70 hover:text-white transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            {{-- Body --}}
+            <form id="tarikDataForm" method="GET" action="{{ route('master.karyawan.export-simple') }}">
+                <div class="px-5 py-5 space-y-4">
+                    <p class="text-xs text-gray-500">Pilih filter opsional untuk menyaring data yang akan ditarik. Kosongkan untuk mengambil semua data karyawan aktif.</p>
+
+                    {{-- Filter Penempatan --}}
+                    <div>
+                        <label for="tarik_penempatan" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            <i class="fas fa-map-marker-alt text-cyan-500 mr-1"></i> Filter Penempatan
+                        </label>
+                        <select id="tarik_penempatan" name="penempatan" class="block w-full py-2 px-3 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="">— Semua Penempatan —</option>
+                            @if(isset($penempatanOptions))
+                                @foreach($penempatanOptions as $opt)
+                                    <option value="{{ $opt }}">{{ strtoupper($opt) }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    {{-- Filter Cabang --}}
+                    <div>
+                        <label for="tarik_cabang" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            <i class="fas fa-building text-cyan-500 mr-1"></i> Filter Cabang
+                        </label>
+                        <select id="tarik_cabang" name="cabang" class="block w-full py-2 px-3 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="">— Semua Cabang —</option>
+                            @if(isset($cabangOptions))
+                                @foreach($cabangOptions as $opt)
+                                    <option value="{{ $opt }}">{{ strtoupper($opt) }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    {{-- Info --}}
+                    <div class="bg-cyan-50 border border-cyan-100 rounded-lg px-3 py-2.5 flex items-start gap-2">
+                        <i class="fas fa-info-circle text-cyan-500 mt-0.5 text-xs"></i>
+                        <p class="text-[10px] text-cyan-700">Output berupa file <strong>.csv</strong> yang bisa dibuka di Excel. Setiap kolom (NIK, Nama, Tanggal Lahir, Tanggal Masuk) akan terpisah otomatis.</p>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="bg-gray-50 px-5 py-3 flex items-center justify-end gap-2 border-t border-gray-100">
+                    <button type="button" onclick="closeTarikDataModal()" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition-colors inline-flex items-center gap-1.5">
+                        <i class="fas fa-download"></i> Unduh Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+function openTarikDataModal() {
+    document.getElementById('tarikDataModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTarikDataModal() {
+    document.getElementById('tarikDataModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    // Reset selects
+    document.getElementById('tarik_penempatan').value = '';
+    document.getElementById('tarik_cabang').value = '';
+}
+
 function openImportDppModal() {
     const modal = document.getElementById('importDppModal');
     modal.classList.remove('hidden');
