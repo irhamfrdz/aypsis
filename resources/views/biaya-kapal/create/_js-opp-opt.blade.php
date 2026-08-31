@@ -1,3 +1,10 @@
+@php
+    $oppOptTarifsRaw = \App\Models\PricelistOppOpt::pluck('tarif', 'nama_barang')->mapWithKeys(function ($item, $key) {
+        return [strtolower(trim($key)) => $item];
+    })->toArray();
+@endphp
+    const oppOptTarifs = @json($oppOptTarifsRaw);
+
     // ============= OPP/OPT SECTIONS MANAGEMENT =============
     let oppOptSectionCounter = 0;
     const oppOptSectionsContainer = document.getElementById('opp_opt_sections_container');
@@ -190,6 +197,7 @@
                                 <th class="px-3 py-2 border-b border-purple-200">Jenis Ukuran</th>
                                 <th class="px-3 py-2 border-b border-purple-200 w-32">Jumlah</th>
                                 <th class="px-3 py-2 border-b border-purple-200 w-40">Tarif (Rp)</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-40">Total (Rp)</th>
                                 <th class="px-3 py-2 border-b border-purple-200">Catatan</th>
                                 <th class="px-3 py-2 border-b border-purple-200 w-16 text-center">Aksi</th>
                             </tr>
@@ -199,7 +207,15 @@
                     </table>
                 </div>
             `;
-            addBarangToOppOptSection(sectionIndex);
+            const kapalSelect = section.querySelector('.opp-opt-kapal-select');
+            const voyageSelect = section.querySelector('.opp-opt-voyage-select');
+            const voyageInput = section.querySelector('.opp-opt-voyage-input');
+            
+            if (kapalSelect && kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
+                autoFillOpslagCountsForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
+            } else {
+                addBarangToOppOptSection(sectionIndex);
+            }
         } else {
             // Re-fetch manifests if Kapal and Voyage are set
             const kapalSelect = section.querySelector('.opp-opt-kapal-select');
@@ -219,6 +235,14 @@
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         
+        const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+        const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        if (isOpslag) {
+            autoFillOpslagCountsForSection(sectionIndex, kapalNama, voyage);
+            return;
+        }
+
         // Show loading
         container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer/BL...</div>';
         
@@ -280,6 +304,77 @@
             console.error('Error fetching manifests for OPP/OPT:', error);
             container.innerHTML = '';
             section.removeAttribute('data-manifests');
+            addBarangToOppOptSection(sectionIndex);
+        });
+    }
+
+    function autoFillOpslagCountsForSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.opp-opt-barang-container');
+        const tbody = container.querySelector('.opp-opt-opslag-tbody');
+        
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-sm text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</td></tr>';
+        
+        fetch('{{ route("biaya-kapal.get-container-counts") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ kapal: kapalNama, voyage: voyage })
+        })
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = '';
+            if (data.success && data.counts) {
+                const types = [
+                    { key: '20ft Full', value: data.counts['20'] ? (data.counts['20']['full'] - data.counts['20']['lcl']) : 0 },
+                    { key: '20ft Empty', value: data.counts['20'] ? data.counts['20']['empty'] : 0 },
+                    { key: '40ft Full', value: data.counts['40'] ? (data.counts['40']['full'] - data.counts['40']['lcl']) : 0 },
+                    { key: '40ft Empty', value: data.counts['40'] ? data.counts['40']['empty'] : 0 },
+                    { key: 'LCL 20ft', value: data.counts['20'] ? data.counts['20']['lcl'] : 0 },
+                    { key: 'LCL 40ft', value: data.counts['40'] ? data.counts['40']['lcl'] : 0 }
+                ];
+                
+                let hasData = false;
+                types.forEach(t => {
+                    if (t.value > 0) {
+                        hasData = true;
+                        addBarangToOppOptSection(sectionIndex);
+                        const rows = tbody.querySelectorAll('tr.opp-opt-item-row');
+                        const lastRow = rows[rows.length - 1];
+                        if (lastRow) {
+                            const select = lastRow.querySelector('.opp-opt-jenis-ukuran-select-item');
+                            const inputJumlah = lastRow.querySelector('.opp-opt-jumlah-input-item');
+                            const inputTarif = lastRow.querySelector('.opp-opt-tarif-input-item');
+                            
+                            if (select) select.value = t.key;
+                            if (inputJumlah) inputJumlah.value = t.value;
+                            if (inputTarif) {
+                                const lookupKey = t.key.toLowerCase();
+                                if (oppOptTarifs[lookupKey]) {
+                                    inputTarif.value = oppOptTarifs[lookupKey];
+                                } else if (lookupKey === '20ft full' && oppOptTarifs['fcl 20ft']) {
+                                    inputTarif.value = oppOptTarifs['fcl 20ft'];
+                                } else if (lookupKey === '40ft full' && oppOptTarifs['fcl 40ft']) {
+                                    inputTarif.value = oppOptTarifs['fcl 40ft'];
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                if (!hasData) addBarangToOppOptSection(sectionIndex);
+                calculateTotalFromAllOppOptSections();
+            } else {
+                addBarangToOppOptSection(sectionIndex);
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching opslag counts:', err);
+            tbody.innerHTML = '';
             addBarangToOppOptSection(sectionIndex);
         });
     }
@@ -374,6 +469,9 @@
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
                 </td>
                 <td class="p-2 align-top">
+                    <input type="text" readonly class="opp-opt-subtotal-input-item bg-gray-100 w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0">
+                </td>
+                <td class="p-2 align-top">
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
                 </td>
                 <td class="p-2 align-top text-center">
@@ -430,6 +528,21 @@
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
         const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
+        const jenisUkuranSelect = inputGroup.querySelector('.opp-opt-jenis-ukuran-select-item');
+        
+        if (jenisUkuranSelect && tarifInput) {
+            jenisUkuranSelect.addEventListener('change', function() {
+                const selectedVal = this.value.toLowerCase();
+                if (oppOptTarifs[selectedVal]) {
+                    tarifInput.value = oppOptTarifs[selectedVal];
+                } else if (selectedVal === '20ft full' && oppOptTarifs['fcl 20ft']) {
+                    tarifInput.value = oppOptTarifs['fcl 20ft'];
+                } else if (selectedVal === '40ft full' && oppOptTarifs['fcl 40ft']) {
+                    tarifInput.value = oppOptTarifs['fcl 40ft'];
+                }
+                calculateTotalFromAllOppOptSections();
+            });
+        }
         
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
@@ -504,6 +617,9 @@
                 </td>
                 <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="text" readonly class="opp-opt-subtotal-input-item bg-gray-100 w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0">
                 </td>
                 <td class="p-2 align-top">
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
@@ -631,9 +747,10 @@
             tarifInputs.forEach((tarifInput) => {
                 const tarif = parseFloat(tarifInput.value.replace(',', '.')) || 0;
                 
-                const group = tarifInput.closest('.flex');
+                const group = tarifInput.closest('.opp-opt-item-row') || tarifInput.closest('.flex');
                 const jumlahInput = group.querySelector('.opp-opt-jumlah-input-item');
                 const manifestSelect = group.querySelector('.opp-opt-barang-select-item');
+                const subtotalInput = group.querySelector('.opp-opt-subtotal-input-item');
                 
                 let qty = 0;
                 if (jumlahInput) {
@@ -643,7 +760,12 @@
                     qty = selectedOptions.length;
                 }
                 
-                sectionTotal += (tarif * qty);
+                const rowTotal = tarif * qty;
+                if (subtotalInput) {
+                    subtotalInput.value = rowTotal > 0 ? Math.round(rowTotal).toLocaleString('id-ID') : '';
+                }
+                
+                sectionTotal += rowTotal;
             });
             
             // Update section nominal display
