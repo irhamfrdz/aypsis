@@ -159,6 +159,10 @@
                                     elseif ($biaya->airDetails && $biaya->airDetails->count() > 0) {
                                         $namaKapals = $biaya->airDetails->pluck('kapal')->unique()->filter()->values()->toArray();
                                     }
+                                    // Untuk biaya OPP/OPT, ambil kapal dari oppOptDetails
+                                    elseif ($biaya->oppOptDetails && $biaya->oppOptDetails->count() > 0) {
+                                        $namaKapals = $biaya->oppOptDetails->pluck('kapal')->unique()->filter()->values()->toArray();
+                                    }
                                     else {
                                         $namaKapals = is_array($biaya->nama_kapal) ? $biaya->nama_kapal : ($biaya->nama_kapal ? [$biaya->nama_kapal] : []);
                                     }
@@ -181,6 +185,10 @@
                                     // Untuk biaya air, ambil voyage dari airDetails
                                     elseif ($biaya->airDetails && $biaya->airDetails->count() > 0) {
                                         $noVoyages = $biaya->airDetails->pluck('voyage')->unique()->filter()->values()->toArray();
+                                    }
+                                    // Untuk biaya OPP/OPT, ambil voyage dari oppOptDetails
+                                    elseif ($biaya->oppOptDetails && $biaya->oppOptDetails->count() > 0) {
+                                        $noVoyages = $biaya->oppOptDetails->pluck('voyage')->unique()->filter()->values()->toArray();
                                     }
                                     else {
                                         $noVoyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : ($biaya->no_voyage ? [$biaya->no_voyage] : []);
