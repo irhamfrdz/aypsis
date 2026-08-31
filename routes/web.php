@@ -1403,6 +1403,10 @@ Route::middleware([
             ->name('karyawan.export-excel')
             ->middleware('can:master-karyawan-export');
 
+        Route::get('karyawan/export-simple', [KaryawanController::class, 'exportSimple'])
+            ->name('karyawan.export-simple')
+            ->middleware('can:master-karyawan-export');
+
         // Export untuk Excel Indonesia (comma delimiter dengan quotes untuk mengatasi koma dalam data)
         Route::get('karyawan/export-excel-indonesia', [KaryawanController::class, 'exportExcelIndonesia'])
             ->name('karyawan.export-excel-indonesia')
