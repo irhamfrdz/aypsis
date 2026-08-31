@@ -5,7 +5,11 @@
         const selectedText = selectedJenisBiaya.nama || '';
         
         // Reset visibility of standard fields
-        if(nominalWrapper) nominalWrapper.classList.remove('hidden');
+        if(nominalWrapper) {
+            nominalWrapper.classList.remove('hidden');
+            const lbl = nominalWrapper.querySelector('label');
+            if(lbl) lbl.innerHTML = 'Nominal <span class="text-red-500">*</span>';
+        }
         if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
         if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
@@ -203,7 +207,15 @@
             
             // Show global summary fields for Biaya Trucking
             // HIDDEN AS PER REQUEST - VALUES DERIVED FROM SECTIONS
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(pphDokumenWrapper) pphDokumenWrapper.classList.add('hidden');
             if(grandTotalDokumenWrapper) grandTotalDokumenWrapper.classList.add('hidden');
             
@@ -271,7 +283,15 @@
             if (nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
             
             // Hide standard fields for Biaya Air
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             
             // Show global payment fields for Biaya Air
@@ -343,7 +363,15 @@
             if (nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
             
             // Hide standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -405,7 +433,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -487,7 +523,15 @@
             // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Hide global fields that are not needed for Biaya Buruh
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -591,7 +635,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -652,7 +704,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -721,7 +781,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -798,7 +866,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -863,7 +939,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -933,7 +1017,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) {
                 penerimaWrapper.classList.add('hidden');
                 if(penerimaInput) {
@@ -1010,7 +1102,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
@@ -1079,7 +1179,15 @@
             clearBlSelections();
 
             // Show nominal, penerima, nama vendor, nomor rekening, nomor referensi  
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(nominalInput) nominalInput.removeAttribute('required');
             if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
             if(penerimaInput) penerimaInput.setAttribute('required', 'required');
@@ -1317,7 +1425,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
@@ -1390,7 +1506,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
@@ -1459,7 +1583,15 @@
             clearBlSelections();
 
             // Hide other standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
@@ -1528,7 +1660,15 @@
             }
 
             // Hide standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const lbl = nominalWrapper.querySelector('label');
+                if(lbl) lbl.innerHTML = 'Total Biaya Keseluruhan';
+            }
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
