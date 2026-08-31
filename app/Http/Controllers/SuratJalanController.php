@@ -648,6 +648,7 @@ class SuratJalanController extends Controller
 
         $request->validate([
             'tanggal_surat_jalan' => 'required|date',
+            'tanggal_muat' => 'nullable|date',
             'no_surat_jalan' => 'required|string|max:255|unique:surat_jalans,no_surat_jalan,'.$id,
             'kegiatan' => 'required|string|max:255',
             'pengirim_id' => 'nullable|exists:pengirims,id',
