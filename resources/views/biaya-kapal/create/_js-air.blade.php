@@ -15,6 +15,26 @@
         if (nominalInput) nominalInput.value = '';
         // Removed global summary input resets
     }
+
+    window.formatAdjustmentAir = function(input, sectionIndex) {
+        let val = input.value.replace(/[^0-9-]/g, '');
+        // Handle negative sign correctly
+        if (val === '-') {
+            input.value = '-';
+            document.querySelector(`.air-section[data-section-index="${sectionIndex}"] .adjustment-value`).value = 0;
+        } else if (val !== '') {
+            let num = parseInt(val, 10);
+            if (isNaN(num)) num = 0;
+            // Format back to input
+            let formatted = num < 0 ? '-Rp ' + Math.abs(num).toLocaleString('id-ID') : 'Rp ' + num.toLocaleString('id-ID');
+            input.value = formatted;
+            document.querySelector(`.air-section[data-section-index="${sectionIndex}"] .adjustment-value`).value = num;
+        } else {
+            input.value = '';
+            document.querySelector(`.air-section[data-section-index="${sectionIndex}"] .adjustment-value`).value = 0;
+        }
+        calculateAirSectionTotal(sectionIndex);
+    };
     
     addAirSectionBtn.addEventListener('click', function() {
         addAirSection();
@@ -219,6 +239,11 @@
                     <input type="text" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="air[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                     <input type="hidden" name="air[${sectionIndex}][harga]" class="harga-hidden" value="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                    <input type="text" class="adjustment-display w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Rp 0" oninput="formatAdjustmentAir(this, ${sectionIndex})">
+                    <input type="hidden" name="air[${sectionIndex}][adjustment]" class="adjustment-value" value="0">
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-1">
@@ -633,7 +658,11 @@
         const pphActive = pphActiveCheckbox ? pphActiveCheckbox.checked : true;
         let finalTaxableBase = isAbqori ? (taxableCost + jasaAir) : subTotal;
         const pph = pphActive ? Math.round(finalTaxableBase * 0.02) : 0;
-        const grandTotal = subTotal - pph;
+        
+        const adjustmentValue = section.querySelector('.adjustment-value');
+        const adjustment = parseFloat(adjustmentValue ? adjustmentValue.value : 0) || 0;
+        
+        const grandTotal = subTotal - pph + adjustment;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         subTotalValue.value = subTotal;
