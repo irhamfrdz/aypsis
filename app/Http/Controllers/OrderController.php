@@ -158,7 +158,7 @@ class OrderController extends Controller
         }
 
         $data['completion_percentage'] = 0.00;
-        $data['processing_history'] = json_encode([]);
+        $data['processing_history'] = [];
 
         // Update nomor terakhir for ODS if nomor_order follows ODS format
         if (strpos($request->nomor_order, 'ODS') === 0) {
@@ -372,7 +372,10 @@ class OrderController extends Controller
             }
 
             // Log the change in processing history
-            $history = json_decode($order->processing_history ?? '[]', true);
+            $history = $order->processing_history;
+            if (!is_array($history)) {
+                $history = [];
+            }
             $history[] = [
                 'action' => 'units_updated',
                 'old_units' => $oldUnits,
@@ -381,7 +384,7 @@ class OrderController extends Controller
                 'timestamp' => now()->toDateTimeString(),
                 'notes' => 'Units updated via order edit (synced with unit_kontainer)',
             ];
-            $data['processing_history'] = json_encode($history);
+            $data['processing_history'] = $history;
         }
 
         // Set penerima string field from penerimas table
