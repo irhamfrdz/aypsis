@@ -473,6 +473,13 @@
         document.querySelectorAll('.grand-total-value').forEach(el => {
             el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
         });
+
+        // Clean Biaya Buruh / Kapal Sections fields
+        document.querySelectorAll('.kontainer-nominal-item, .nominal-manual-input, .adjustment-input, .pph-amount-input, .buruh-nominal-item').forEach(input => {
+            if (input.value) {
+                input.value = String(input.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
+            }
+        });
     });
     }
 
