@@ -281,22 +281,42 @@
                 <!-- Upload Bukti -->
                 <div class="md:col-span-2">
                     <label for="bukti" class="block text-sm font-medium text-gray-700 mb-2">
-                        Upload Bukti
+                        Upload Bukti Baru (Opsional)
                     </label>
+                    @if(count($biayaKapal->bukti_array) > 0)
+                        <div class="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">File Saat Ini ({{ count($biayaKapal->bukti_array) }} file)</p>
+                            <ul class="space-y-2">
+                                @foreach($biayaKapal->bukti_array as $index => $file_path)
+                                    <li class="flex items-center text-sm">
+                                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                                        <a href="{{ asset('storage/' . $file_path) }}" target="_blank" class="text-blue-600 hover:underline flex-1 truncate">
+                                            Bukti {{ $index + 1 }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <p class="text-xs text-orange-600 mt-2 bg-orange-50 p-2 rounded border border-orange-200">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Jika Anda mengupload file baru, maka <strong>semua file lama ini akan terhapus dan digantikan</strong> dengan yang baru.
+                            </p>
+                        </div>
+                    @endif
                     <div class="flex items-center justify-center w-full">
                         <label for="bukti" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
                                 <p class="mb-2 text-sm text-gray-500">
-                                    <span class="font-semibold">Klik untuk upload</span> atau drag and drop
+                                    <span class="font-semibold">Klik untuk upload</span> atau drag and drop (Bisa pilih banyak file)
                                 </p>
                                 <p class="text-xs text-gray-500">PDF, PNG, JPG atau JPEG (Max. 2MB)</p>
                             </div>
                             <input id="bukti" 
-                                   name="bukti" 
+                                   name="bukti[]" 
                                    type="file" 
                                    class="hidden" 
                                    accept=".pdf,.png,.jpg,.jpeg"
+                                   multiple
                                    onchange="updateFileName(this)">
                         </label>
                     </div>

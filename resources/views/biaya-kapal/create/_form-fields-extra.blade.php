@@ -282,15 +282,16 @@
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
                                 <p class="mb-2 text-sm text-gray-500">
-                                    <span class="font-semibold">Klik untuk upload</span> atau drag and drop
+                                    <span class="font-semibold">Klik untuk upload</span> atau drag and drop (Bisa pilih banyak file)
                                 </p>
                                 <p class="text-xs text-gray-500">PDF, PNG, JPG atau JPEG (Max. 2MB)</p>
                             </div>
                             <input id="bukti" 
-                                   name="bukti" 
+                                   name="bukti[]" 
                                    type="file" 
                                    class="hidden" 
                                    accept=".pdf,.png,.jpg,.jpeg"
+                                   multiple
                                    onchange="updateFileName(this)">
                         </label>
                     </div>

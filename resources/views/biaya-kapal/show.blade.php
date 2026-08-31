@@ -212,28 +212,37 @@
                 </div>
             </div>
 
-            @if($biayaKapal->bukti)
-            <div>
+            @if(count($biayaKapal->bukti_array) > 0)
+            <div class="col-span-1 md:col-span-2 mt-4">
                 <label class="block text-sm font-medium text-gray-500 mb-2">Bukti</label>
-                @if($biayaKapal->bukti_foto)
-                    <a href="{{ $biayaKapal->bukti_foto }}" target="_blank" class="block">
-                        <img src="{{ $biayaKapal->bukti_foto }}" alt="Bukti" class="max-w-full h-auto rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                    </a>
-                @elseif($biayaKapal->bukti_pdf)
-                    <a href="{{ $biayaKapal->bukti_pdf }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        Lihat PDF
-                    </a>
-                @else
-                    <a href="{{ asset('storage/' . $biayaKapal->bukti) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Download File
-                    </a>
-                @endif
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($biayaKapal->bukti_array as $index => $file_path)
+                        @php
+                            $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+                            $isImage = in_array($ext, ['jpg', 'jpeg', 'png']);
+                            $isPdf = $ext === 'pdf';
+                        @endphp
+                        
+                        @if($isImage)
+                            <a href="{{ asset('storage/' . $file_path) }}" target="_blank" class="block relative group overflow-hidden rounded-lg shadow-sm border border-gray-200">
+                                <img src="{{ asset('storage/' . $file_path) }}" alt="Bukti {{ $index + 1 }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center">
+                                    <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 text-2xl drop-shadow-md"></i>
+                                </div>
+                            </a>
+                        @elseif($isPdf)
+                            <a href="{{ asset('storage/' . $file_path) }}" target="_blank" class="flex flex-col items-center justify-center w-full h-48 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg shadow-sm transition-colors text-red-600 group">
+                                <i class="fas fa-file-pdf text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-sm font-semibold">PDF Bukti {{ $index + 1 }}</span>
+                            </a>
+                        @else
+                            <a href="{{ asset('storage/' . $file_path) }}" target="_blank" class="flex flex-col items-center justify-center w-full h-48 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg shadow-sm transition-colors text-blue-600 group">
+                                <i class="fas fa-file-download text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-sm font-semibold">Download File {{ $index + 1 }}</span>
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
             </div>
             @endif
 

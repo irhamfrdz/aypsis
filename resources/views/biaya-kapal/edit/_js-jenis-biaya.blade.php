@@ -194,10 +194,19 @@
     // Update file name display
     function updateFileName(input) {
         const fileNameDisplay = document.getElementById('file-name');
-        if (input.files && input.files[0]) {
-            const fileName = input.files[0].name;
-            const fileSize = (input.files[0].size / 1024 / 1024).toFixed(2); // Convert to MB
-            fileNameDisplay.innerHTML = `<i class="fas fa-file-alt mr-2 text-blue-600"></i><span class="font-medium">File terpilih:</span> ${fileName} (${fileSize} MB)`;
+        if (input.files && input.files.length > 0) {
+            if (input.files.length === 1) {
+                const fileName = input.files[0].name;
+                const fileSize = (input.files[0].size / 1024 / 1024).toFixed(2); // Convert to MB
+                fileNameDisplay.innerHTML = `<i class="fas fa-file-alt mr-2 text-blue-600"></i><span class="font-medium">File terpilih:</span> ${fileName} (${fileSize} MB)`;
+            } else {
+                let totalSize = 0;
+                for(let i=0; i<input.files.length; i++) {
+                    totalSize += input.files[i].size;
+                }
+                const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+                fileNameDisplay.innerHTML = `<i class="fas fa-copy mr-2 text-blue-600"></i><span class="font-medium">${input.files.length} file terpilih</span> (Total: ${totalSizeMB} MB)`;
+            }
         } else {
             fileNameDisplay.innerHTML = '';
         }

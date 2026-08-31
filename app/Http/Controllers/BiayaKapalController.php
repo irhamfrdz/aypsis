@@ -665,7 +665,8 @@ class BiayaKapalController extends Controller
             'nomor_rekening' => 'nullable|string|max:100',
             'bank_id' => 'nullable|exists:banks,id',
             'keterangan' => 'nullable|string',
-            'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'bukti' => 'nullable|array',
+            'bukti.*' => 'file|mimes:pdf,png,jpg,jpeg|max:2048',
             'ppn' => 'nullable|numeric|min:0',
             'pph' => 'nullable|numeric|min:0',
             'total_biaya' => 'nullable|numeric|min:0',
@@ -1059,10 +1060,12 @@ class BiayaKapalController extends Controller
 
             // Handle file upload
             if ($request->hasFile('bukti')) {
-                $file = $request->file('bukti');
-                $fileName = time().'_'.$file->getClientOriginalName();
-                $filePath = $file->storeAs('biaya-kapal', $fileName, 'public');
-                $validated['bukti'] = $filePath;
+                $paths = [];
+                foreach ($request->file('bukti') as $file) {
+                    $fileName = time().'_'.uniqid().'_'.$file->getClientOriginalName();
+                    $paths[] = $file->storeAs('biaya-kapal', $fileName, 'public');
+                }
+                $validated['bukti'] = json_encode($paths);
             }
 
             // HITUNG TOTAL PERLENGKAPAN DULU (agar nominal tidak null)
@@ -3798,7 +3801,8 @@ class BiayaKapalController extends Controller
             'nomor_rekening' => 'nullable|string|max:100',
             'bank_id' => 'nullable|exists:banks,id',
             'keterangan' => 'nullable|string',
-            'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'bukti' => 'nullable|array',
+            'bukti.*' => 'file|mimes:pdf,png,jpg,jpeg|max:2048',
             'ppn' => 'nullable|numeric|min:0',
             'pph' => 'nullable|numeric|min:0',
             'total_biaya' => 'nullable|numeric|min:0',
@@ -4112,12 +4116,17 @@ class BiayaKapalController extends Controller
 
             if ($request->hasFile('bukti')) {
                 if ($biayaKapal->bukti) {
-                    Storage::disk('public')->delete($biayaKapal->bukti);
+                    foreach ($biayaKapal->bukti_array as $oldPath) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
                 }
-                $file = $request->file('bukti');
-                $fileName = time().'_'.$file->getClientOriginalName();
-                $filePath = $file->storeAs('biaya-kapal', $fileName, 'public');
-                $validated['bukti'] = $filePath;
+                
+                $paths = [];
+                foreach ($request->file('bukti') as $file) {
+                    $fileName = time().'_'.uniqid().'_'.$file->getClientOriginalName();
+                    $paths[] = $file->storeAs('biaya-kapal', $fileName, 'public');
+                }
+                $validated['bukti'] = json_encode($paths);
             }
 
             // Ensure nominal is not null for section-based jenis biaya

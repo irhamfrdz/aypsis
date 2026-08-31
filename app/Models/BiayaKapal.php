@@ -109,6 +109,18 @@ class BiayaKapal extends Model
         return $this->klasifikasiBiaya->nama ?? $this->jenis_biaya;
     }
 
+    public function getBuktiArrayAttribute()
+    {
+        if (empty($this->bukti)) return [];
+        
+        $decoded = json_decode($this->bukti, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+        
+        return [$this->bukti];
+    }
+
     public function getBuktiFotoAttribute()
     {
         if ($this->bukti && in_array(pathinfo($this->bukti, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png'])) {
