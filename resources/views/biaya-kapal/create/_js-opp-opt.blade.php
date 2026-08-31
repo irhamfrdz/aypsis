@@ -176,6 +176,16 @@
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         if (section) {
             section.remove();
+            
+            // Re-index titles so it doesn't jump numbers
+            const sections = document.querySelectorAll('.opp-opt-section');
+            sections.forEach((sec, index) => {
+                const title = sec.querySelector('h4');
+                if (title) {
+                    title.innerHTML = `<i class="fas fa-ship mr-2"></i>Kapal ${index + 1}`;
+                }
+            });
+            
             calculateTotalFromAllOppOptSections();
         }
     };

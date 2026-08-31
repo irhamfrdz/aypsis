@@ -586,6 +586,21 @@
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         if (section) {
             section.remove();
+            
+            // Re-index titles so it doesn't jump numbers
+            const sections = document.querySelectorAll('.kapal-section');
+            sections.forEach((sec, index) => {
+                const title = sec.querySelector('h3');
+                if (title) {
+                    // Cek mode batam atau bukan
+                    if (title.innerHTML.includes('Mode Batam')) {
+                        title.innerHTML = `Kapal ${index + 1} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Mode Batam</span>`;
+                    } else {
+                        title.innerHTML = `Kapal ${index + 1}`;
+                    }
+                }
+            });
+            
             calculateTotalFromAllSections();
         }
     };
