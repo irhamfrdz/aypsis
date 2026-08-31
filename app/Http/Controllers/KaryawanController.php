@@ -1017,53 +1017,57 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'NIK' => 'nik',
-            'NAMA' => 'nama_lengkap',
-            'TANGGAL LAHIR' => 'tanggal_lahir',
-            'TANGGAL MASUK' => 'tanggal_masuk'
+            'NIK'            => 'nik',
+            'NAMA'           => 'nama_lengkap',
+            'TANGGAL LAHIR'  => 'tanggal_lahir',
+            'TANGGAL MASUK'  => 'tanggal_masuk',
         ];
 
         $fileName = 'karyawan_simple_'.date('Ymd_His').'.csv';
 
         $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
-            
-            // BOM
+
+            // BOM agar Excel mengenali UTF-8
             fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Header
-            fputcsv($out, array_keys($columns), ',', '"');
-            
+
+            // Header dengan semicolon — kompatibel Excel regional Indonesia
+            fwrite($out, implode(';', array_keys($columns))."\r\n");
+
             \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns) {
                 Karyawan::chunk(200, function ($rows) use ($out, $columns) {
                     foreach ($rows as $r) {
                         $line = [];
                         foreach ($columns as $header => $field) {
                             $val = $r->{$field} ?? '';
-                            // Format date if it's a date field
                             if (in_array($field, ['tanggal_lahir', 'tanggal_masuk']) && $val) {
                                 try {
-                                    $val = \Carbon\Carbon::parse($val)->format('Y-m-d');
+                                    $ts = strtotime((string) $val);
+                                    $val = $ts ? date('d/m/Y', $ts) : (string) $val;
                                 } catch (\Exception $e) {}
                             }
+                            // Escape semicolon di dalam nilai agar tidak merusak kolom
+                            $val = str_replace(';', ',', (string) $val);
                             $line[] = $val;
                         }
-                        fputcsv($out, $line, ',', '"');
+                        fwrite($out, implode(';', $line)."\r\n");
                     }
                 });
             });
+
             fclose($out);
         };
 
         return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-            'Last-Modified' => gmdate('D, d M Y H:i:s').' GMT',
+            'Cache-Control'       => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma'              => 'no-cache',
+            'Expires'             => 'Thu, 01 Jan 1970 00:00:00 GMT',
+            'Last-Modified'       => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
+
 
     /**
      * Menampilkan formulir untuk membuat karyawan baru.
