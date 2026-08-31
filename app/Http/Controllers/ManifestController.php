@@ -1436,20 +1436,28 @@ class ManifestController extends Controller
             $namaTujuan = $firstManifest->pengirim ?: 'Shipper';
             $nomorKontak = null;
 
+            $sumberTabel = '-';
+
             if ($firstManifest->pengirim) {
                 // 1. Cek di tabel MasterPengirimPenerima
                 $masterPP = \App\Models\MasterPengirimPenerima::where('nama', $firstManifest->pengirim)->first();
-                if ($masterPP && ($masterPP->contact_person || $masterPP->telepon)) {
-                    $namaTujuan = $masterPP->nama;
-                    $nomorKontak = $masterPP->contact_person ?: $masterPP->telepon;
+                if ($masterPP) {
+                    $sumberTabel = 'Master Pengirim Penerima';
+                    if ($masterPP->contact_person || $masterPP->telepon) {
+                        $namaTujuan = $masterPP->nama;
+                        $nomorKontak = $masterPP->contact_person ?: $masterPP->telepon;
+                    }
                 }
 
                 // 2. Cek di tabel Pengirim (jika di MasterPengirimPenerima tidak ada nomor)
                 if (!$nomorKontak) {
                     $pengirimMaster = \App\Models\Pengirim::where('nama_pengirim', $firstManifest->pengirim)->first();
-                    if ($pengirimMaster && ($pengirimMaster->contact_person || $pengirimMaster->telepon)) {
-                        $namaTujuan = $pengirimMaster->nama_pengirim;
-                        $nomorKontak = $pengirimMaster->contact_person ?: $pengirimMaster->telepon;
+                    if ($pengirimMaster) {
+                        $sumberTabel = 'Pengirim';
+                        if ($pengirimMaster->contact_person || $pengirimMaster->telepon) {
+                            $namaTujuan = $pengirimMaster->nama_pengirim;
+                            $nomorKontak = $pengirimMaster->contact_person ?: $pengirimMaster->telepon;
+                        }
                     }
                 }
             }
@@ -1464,14 +1472,12 @@ class ManifestController extends Controller
                 }
 
                 if ($shipper) {
+                    $sumberTabel = 'Shipper Consignee';
                     $namaTujuan = $shipper->shipper ?: $namaTujuan;
                     $nomorKontak = $shipper->contact_person ?: $shipper->telepon;
                 }
             }
 
-            if (empty($nomorKontak)) {
-                continue;
-            }
 
             $daftarResi = "";
             foreach ($shipperManifests as $m) {
@@ -1487,12 +1493,14 @@ class ManifestController extends Controller
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
             $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
 
-            $waUrl = "https://wa.me/" . preg_replace('/[^0-9]/', '', $nomorKontak) . "?text=" . rawurlencode($isiPesan);
+            $waUrl = $nomorKontak ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $nomorKontak) . "?text=" . rawurlencode($isiPesan) : null;
 
             $broadcastData[] = [
                 'shipper_name' => $namaTujuan,
                 'telepon' => $nomorKontak,
+                'sumber_tabel' => $sumberTabel,
                 'jumlah_kontainer' => $shipperManifests->count(),
+                'daftar_kontainer' => $shipperManifests->pluck('nomor_kontainer')->filter()->unique()->values()->toArray(),
                 'pesan' => $isiPesan,
                 'wa_url' => $waUrl
             ];

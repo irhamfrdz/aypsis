@@ -64,4 +64,10 @@ class WaBroadcastController extends Controller
         $manifestController = app(ManifestController::class);
         return $manifestController->broadcastPreview($request);
     }
+
+    public function destroy(WaBroadcast $waBroadcast)
+    {
+        $waBroadcast->delete();
+        return redirect()->route('master.wa-broadcast.index')->with('success', 'Riwayat broadcast berhasil dihapus.');
+    }
 }

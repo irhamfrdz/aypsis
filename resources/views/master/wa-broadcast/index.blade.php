@@ -69,18 +69,28 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <form action="{{ route('report.manifests.broadcast-preview') }}" method="POST" target="_blank" class="inline-block">
-                            @csrf
-                            <input type="hidden" name="nama_kapal" value="{{ $broadcast->nama_kapal }}">
-                            <input type="hidden" name="no_voyage" value="{{ $broadcast->no_voyage }}">
-                            <input type="hidden" name="kategori_masalah" value="{{ $broadcast->kategori_masalah }}">
-                            <input type="hidden" name="deskripsi_masalah" value="{{ $broadcast->deskripsi_masalah }}">
-                            <input type="hidden" name="template_id" value="{{ $broadcast->wa_template_id }}">
-                            <button type="submit" class="inline-flex items-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors shadow-sm">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                Kirim Ulang
-                            </button>
-                        </form>
+                        <div class="flex items-center justify-center space-x-2">
+                            <form action="{{ route('report.manifests.broadcast-preview') }}" method="POST" target="_blank" class="inline-block">
+                                @csrf
+                                <input type="hidden" name="nama_kapal" value="{{ $broadcast->nama_kapal }}">
+                                <input type="hidden" name="no_voyage" value="{{ $broadcast->no_voyage }}">
+                                <input type="hidden" name="kategori_masalah" value="{{ $broadcast->kategori_masalah }}">
+                                <input type="hidden" name="deskripsi_masalah" value="{{ $broadcast->deskripsi_masalah }}">
+                                <input type="hidden" name="template_id" value="{{ $broadcast->wa_template_id }}">
+                                <button type="submit" class="inline-flex items-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors shadow-sm">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                    Kirim Ulang
+                                </button>
+                            </form>
+                            <form action="{{ route('master.wa-broadcast.destroy', $broadcast->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat broadcast ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="inline-flex items-center text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md transition-colors shadow-sm">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Hapus
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
