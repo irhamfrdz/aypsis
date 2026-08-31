@@ -4222,8 +4222,13 @@ class BiayaKapalController extends Controller
                                 // Otherwise, if it's the first record, tax only the jasaAir part (Jasa Air Jakarta)
                                 $pphBase = $isTypeTaxable ? $currentSubTotal : $currentJasaAir;
                                 $currentPph = $pphActive ? round($pphBase * 0.02) : 0;
+                                
+                                $currentAdjustment = 0;
+                                if ($typeIndex === 0 && isset($section['adjustment'])) {
+                                    $currentAdjustment = floatval(preg_replace('/[^0-9-]/', '', $section['adjustment']));
+                                }
 
-                                $currentGrandTotal = $currentSubTotal - $currentPph;
+                                $currentGrandTotal = $currentSubTotal - $currentPph + $currentAdjustment;
 
                                 // Create BiayaKapalAir record
                                 BiayaKapalAir::create([
@@ -4238,6 +4243,7 @@ class BiayaKapalController extends Controller
                                     'kuantitas' => $currentKuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
+                                    'adjustment' => $currentAdjustment,
                                     'sub_total' => $currentSubTotal,
                                     'pph' => $currentPph,
                                     'pph_active' => $pphActive,

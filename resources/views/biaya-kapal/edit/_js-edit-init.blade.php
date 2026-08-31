@@ -848,6 +848,12 @@
                         pphActiveCheckbox.checked = data.pph_active !== false;
                     }
                     
+                    const adjustmentDisplay = sec.querySelector('.adjustment-display');
+                    if (adjustmentDisplay && data.adjustment !== undefined) {
+                        adjustmentDisplay.value = data.adjustment;
+                        formatAdjustmentAirEdit(adjustmentDisplay, sectionIndex);
+                    }
+                    
                     calculateAirSectionTotal(sectionIndex);
                 })();
              });
