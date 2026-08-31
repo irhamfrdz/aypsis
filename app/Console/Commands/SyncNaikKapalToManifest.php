@@ -61,7 +61,9 @@ class SyncNaikKapalToManifest extends Command
         }
 
         if ($kapal) {
-            $query->where('nama_kapal', 'like', '%'.$kapal.'%');
+            $normalizedKapal = strtoupper(trim(str_replace('.', '', $kapal)));
+            $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+            $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) LIKE ?", ['%'.$normalizedKapal.'%']);
         }
 
         $naikKapals = $query->get();
@@ -74,7 +76,9 @@ class SyncNaikKapalToManifest extends Command
             $existingManifests->where('no_voyage', $voyage);
         }
         if ($kapal) {
-            $existingManifests->where('nama_kapal', 'like', '%'.$kapal.'%');
+            $normalizedKapal = strtoupper(trim(str_replace('.', '', $kapal)));
+            $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+            $existingManifests->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) LIKE ?", ['%'.$normalizedKapal.'%']);
         }
         $manifestCount = $existingManifests->count();
 
@@ -108,9 +112,10 @@ class SyncNaikKapalToManifest extends Command
                         }
 
                         // Check if manifest already exists for this specific tanda terima
+                        $normalizedNkKapal = str_replace('  ', ' ', strtoupper(trim(str_replace('.', '', $nk->nama_kapal))));
                         $existingManifest = Manifest::where('nomor_kontainer', $nk->nomor_kontainer)
                             ->where('no_voyage', $nk->no_voyage)
-                            ->where('nama_kapal', $nk->nama_kapal)
+                            ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedNkKapal])
                             ->where('nomor_tanda_terima', $tandaTerima->nomor_tanda_terima)
                             ->first();
 
@@ -200,9 +205,10 @@ class SyncNaikKapalToManifest extends Command
             }
 
             // Check if manifest already exists for this container (non-LCL fallback)
+            $normalizedNkKapal = str_replace('  ', ' ', strtoupper(trim(str_replace('.', '', $nk->nama_kapal))));
             $existingManifest = Manifest::where('nomor_kontainer', $nk->nomor_kontainer)
                 ->where('no_voyage', $nk->no_voyage)
-                ->where('nama_kapal', $nk->nama_kapal)
+                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedNkKapal])
                 ->first();
 
             if ($existingManifest && ! $force) {
