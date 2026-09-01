@@ -22,6 +22,10 @@ class PricelistOppOptController extends Controller
             });
         }
 
+        if ($request->has('status_bongkar_muat') && ! empty($request->status_bongkar_muat)) {
+            $query->where('status_bongkar_muat', $request->status_bongkar_muat);
+        }
+
         $pricelistOppOpts = $query->latest()->paginate(10)->withQueryString();
 
         return view('master.pricelist-opp-opt.index', compact('pricelistOppOpts'));

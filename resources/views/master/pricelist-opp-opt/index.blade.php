@@ -35,8 +35,21 @@
         <div class="p-6">
             <form method="GET" action="{{ route('master.pricelist-opp-opt.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-12">
+                    <div class="md:col-span-6">
                         <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Cari Nama Barang atau Lokasi..." value="{{ request('search') }}">
+                    </div>
+                    <div class="md:col-span-4">
+                        <select name="status_bongkar_muat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Status B/M</option>
+                            <option value="Bongkar" {{ request('status_bongkar_muat') == 'Bongkar' ? 'selected' : '' }}>Bongkar</option>
+                            <option value="Muat" {{ request('status_bongkar_muat') == 'Muat' ? 'selected' : '' }}>Muat</option>
+                            <option value="Bongkar/Muat" {{ request('status_bongkar_muat') == 'Bongkar/Muat' ? 'selected' : '' }}>Bongkar/Muat</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
+                            <i class="fas fa-search mr-2"></i> Cari
+                        </button>
                     </div>
                 </div>
             </form>
