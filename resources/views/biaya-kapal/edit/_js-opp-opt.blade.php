@@ -276,9 +276,7 @@
             });
         }
         
-        // Add bongkaran logic if needed (it uses voyage input blur now)
-        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
-        
+
         // Add first barang input as default if not edit
         if (!isEdit) {
             addBarangToOppOptSection(sectionIndex);
