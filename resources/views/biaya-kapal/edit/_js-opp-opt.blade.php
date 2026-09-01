@@ -38,6 +38,7 @@
     const oppOptSectionsContainer = document.getElementById('opp_opt_sections_container');
     const addOppOptSectionBtn = document.getElementById('add_opp_opt_section_btn');
     
+
     function initializeOppOptSections() {
         if (!oppOptSectionsContainer) return;
         oppOptSectionsContainer.innerHTML = '';
@@ -58,13 +59,19 @@
                 const kapalSel = section.querySelector('.opp-opt-kapal-select');
                 if (kapalSel) {
                     kapalSel.value = data.kapal;
-                    kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // Bongkaran
+                const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
+                if (bongkaranCheckbox && data.is_bongkaran) {
+                    bongkaranCheckbox.checked = true;
                 }
 
                 // Klasifikasi
                 const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
                 if (klasifikasiSel && data.barang && data.barang.length > 0) {
                     klasifikasiSel.value = data.barang[0].klasifikasi || '';
+                    toggleOpslagMode(sectionIndex, klasifikasiSel.value);
                 }
 
                 // Hidden values
@@ -80,7 +87,7 @@
                 // Barang
                 if (data.barang && data.barang.length > 0) {
                     data.barang.forEach(b => {
-                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id, b.jenis_ukuran, b.jumlah);
+                        addBarangToOppOptSection(sectionIndex, b.manifest_id, b);
                     });
                 } else {
                     addBarangToOppOptSection(sectionIndex);
@@ -91,6 +98,7 @@
             addOppOptSection();
         }
     }
+
     
     function clearAllOppOptSections() {
         if (!oppOptSectionsContainer) return;
@@ -182,45 +190,10 @@
         
         oppOptSectionsContainer.appendChild(section);
         
-        // Setup voyage change listener for Bongkaran toggle
-        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
-        
-        // Add event listener for bongkaran checkbox to recalculate tariffs
-        if (bongkaranCheckbox) {
-            bongkaranCheckbox.addEventListener('change', function() {
-                const isBongkaran = this.checked;
-                const tarifInputs = section.querySelectorAll('.opp-opt-tarif-input-item');
-                const jenisSelects = section.querySelectorAll('.opp-opt-jenis-ukuran-select-item');
-                
-                // Only for opslag rows
-                jenisSelects.forEach((select, idx) => {
-                    const tarifInput = tarifInputs[idx];
-                    if (tarifInput && select.value) {
-                        const selectedVal = select.value.toLowerCase();
-                        const tarif = getOppOptTarif(selectedVal, isBongkaran);
-                        if (tarif) {
-                            tarifInput.value = tarif;
-                        } else if (selectedVal === '20ft full') {
-                            tarifInput.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
-                        } else if (selectedVal === '40ft full') {
-                            tarifInput.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
-                        }
-                    }
-                });
-                calculateTotalFromAllOppOptSections();
-            });
-        }
-
         // Setup kapal change listener
         const kapalSelect = section.querySelector('.opp-opt-kapal-select');
-
-
         kapalSelect.addEventListener('change', function() {
-            // We read a data attribute to see if there's a saved voyage to select
-            const savedVoyage = voyageSelect.getAttribute('data-saved-voyage');
-            loadVoyagesForOppOptSection(sectionIndex, this.value, savedVoyage);
-            // Clear it after using it once
-            if (savedVoyage) voyageSelect.removeAttribute('data-saved-voyage');
+            loadVoyagesForOppOptSection(sectionIndex, this.value);
         });
 
         // Setup manual voyage toggle
@@ -262,6 +235,35 @@
             }
         });
 
+        // Setup voyage change listener for Bongkaran toggle
+        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
+        
+        // Add event listener for bongkaran checkbox to recalculate tariffs
+        if (bongkaranCheckbox) {
+            bongkaranCheckbox.addEventListener('change', function() {
+                const isBongkaran = this.checked;
+                const tarifInputs = section.querySelectorAll('.opp-opt-tarif-input-item');
+                const jenisSelects = section.querySelectorAll('.opp-opt-jenis-ukuran-select-item');
+                
+                // Only for opslag rows
+                jenisSelects.forEach((select, idx) => {
+                    const tarifInput = tarifInputs[idx];
+                    if (tarifInput && select.value) {
+                        const selectedVal = select.value.toLowerCase();
+                        const tarif = getOppOptTarif(selectedVal, isBongkaran);
+                        if (tarif) {
+                            tarifInput.value = tarif;
+                        } else if (selectedVal === '20ft full') {
+                            tarifInput.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
+                        } else if (selectedVal === '40ft full') {
+                            tarifInput.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
+                        }
+                    }
+                });
+                calculateTotalFromAllOppOptSections();
+            });
+        }
+        
         voyageInput.addEventListener('blur', function() {
             if (kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
                 autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
@@ -275,20 +277,27 @@
                 toggleOpslagMode(sectionIndex, this.value);
             });
         }
-        
 
-        // Add first barang input as default if not edit
+        // Add first barang input as default
         if (!isEdit) {
             addBarangToOppOptSection(sectionIndex);
         }
-
-        return section;
     }
     
     window.removeOppOptSection = function(sectionIndex) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         if (section) {
             section.remove();
+            
+            // Re-index titles so it doesn't jump numbers
+            const sections = document.querySelectorAll('.opp-opt-section');
+            sections.forEach((sec, index) => {
+                const title = sec.querySelector('h4');
+                if (title) {
+                    title.innerHTML = `<i class="fas fa-ship mr-2"></i>Kapal ${index + 1}`;
+                }
+            });
+            
             calculateTotalFromAllOppOptSections();
         }
     };
@@ -300,9 +309,35 @@
         const container = section.querySelector('.opp-opt-barang-container');
         container.innerHTML = ''; // Clear rows
         
-        // If Opslag, don't try to fetch manifests, just add one static row
+        // If Opslag, don't try to fetch manifests, just add one static row in a table format
         if (klasifikasi === 'opslag') {
-            addBarangToOppOptSection(sectionIndex);
+            container.innerHTML = `
+                <div class="overflow-x-auto rounded-lg border border-purple-200">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="bg-purple-100 text-[10px] uppercase text-gray-700">
+                            <tr>
+                                <th class="px-3 py-2 border-b border-purple-200">Jenis Ukuran</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-32">Jumlah</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-40">Tarif (Rp)</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-40">Total (Rp)</th>
+                                <th class="px-3 py-2 border-b border-purple-200">Catatan</th>
+                                <th class="px-3 py-2 border-b border-purple-200 w-16 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="opp-opt-opslag-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            const kapalSelect = section.querySelector('.opp-opt-kapal-select');
+            const voyageSelect = section.querySelector('.opp-opt-voyage-select');
+            const voyageInput = section.querySelector('.opp-opt-voyage-input');
+            
+            if (kapalSelect && kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
+                autoFillOpslagCountsForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
+            } else {
+                addBarangToOppOptSection(sectionIndex);
+            }
         } else {
             // Re-fetch manifests if Kapal and Voyage are set
             const kapalSelect = section.querySelector('.opp-opt-kapal-select');
@@ -322,6 +357,14 @@
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         
+        const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+        const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        if (isOpslag) {
+            autoFillOpslagCountsForSection(sectionIndex, kapalNama, voyage);
+            return;
+        }
+
         // Show loading
         container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer/BL...</div>';
         
@@ -342,8 +385,36 @@
                 container.innerHTML = '';
                 section.setAttribute('data-manifests', JSON.stringify(data.data));
                 
-                // Add one default row
-                addBarangToOppOptSection(sectionIndex);
+                // Group data by nomor_kontainer
+                const groupedManifests = {};
+                const cargoManifests = [];
+                
+                data.data.forEach(manifest => {
+                    if (manifest.nomor_kontainer) {
+                        if (!groupedManifests[manifest.nomor_kontainer]) {
+                            groupedManifests[manifest.nomor_kontainer] = [];
+                        }
+                        groupedManifests[manifest.nomor_kontainer].push(manifest.id);
+                    } else {
+                        cargoManifests.push([manifest.id]);
+                    }
+                });
+                
+                // Add rows for grouped containers
+                Object.values(groupedManifests).forEach(manifestIds => {
+                    addBarangToOppOptSection(sectionIndex, manifestIds);
+                });
+                
+                // Add rows for cargo (no container number)
+                cargoManifests.forEach(manifestIds => {
+                    addBarangToOppOptSection(sectionIndex, manifestIds);
+                });
+                
+                // If no data, add empty row
+                if (Object.keys(groupedManifests).length === 0 && cargoManifests.length === 0) {
+                    addBarangToOppOptSection(sectionIndex);
+                }
+                
                 calculateTotalFromAllOppOptSections();
             } else {
                 container.innerHTML = '';
@@ -358,8 +429,82 @@
             addBarangToOppOptSection(sectionIndex);
         });
     }
+
+    function autoFillOpslagCountsForSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.opp-opt-barang-container');
+        const tbody = container.querySelector('.opp-opt-opslag-tbody');
+        
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-sm text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</td></tr>';
+        
+        fetch('{{ route("biaya-kapal.get-container-counts") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ kapal: kapalNama, voyage: voyage })
+        })
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = '';
+            if (data.success && data.counts) {
+                const types = [
+                    { key: '20ft Full', value: data.counts['20'] ? (data.counts['20']['full'] - data.counts['20']['lcl']) : 0 },
+                    { key: '20ft Empty', value: data.counts['20'] ? data.counts['20']['empty'] : 0 },
+                    { key: '40ft Full', value: data.counts['40'] ? (data.counts['40']['full'] - data.counts['40']['lcl']) : 0 },
+                    { key: '40ft Empty', value: data.counts['40'] ? data.counts['40']['empty'] : 0 },
+                    { key: 'LCL 20ft', value: data.counts['20'] ? data.counts['20']['lcl'] : 0 },
+                    { key: 'LCL 40ft', value: data.counts['40'] ? data.counts['40']['lcl'] : 0 }
+                ];
+                
+                let hasData = false;
+                types.forEach(t => {
+                    if (t.value > 0) {
+                        hasData = true;
+                        addBarangToOppOptSection(sectionIndex);
+                        const rows = tbody.querySelectorAll('tr.opp-opt-item-row');
+                        const lastRow = rows[rows.length - 1];
+                        if (lastRow) {
+                            const select = lastRow.querySelector('.opp-opt-jenis-ukuran-select-item');
+                            const inputJumlah = lastRow.querySelector('.opp-opt-jumlah-input-item');
+                            const inputTarif = lastRow.querySelector('.opp-opt-tarif-input-item');
+                            
+                            if (select) select.value = t.key;
+                            if (inputJumlah) inputJumlah.value = t.value;
+                            if (inputTarif) {
+                                const lookupKey = t.key.toLowerCase();
+                                const isBongkaran = document.querySelector(`[name="opp_opt_sections[${sectionIndex}][is_bongkaran]"]`)?.checked;
+                                const tarif = getOppOptTarif(lookupKey, isBongkaran);
+                                
+                                if (tarif) {
+                                    inputTarif.value = tarif;
+                                } else if (lookupKey === '20ft full') {
+                                    inputTarif.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
+                                } else if (lookupKey === '40ft full') {
+                                    inputTarif.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                if (!hasData) addBarangToOppOptSection(sectionIndex);
+                calculateTotalFromAllOppOptSections();
+            } else {
+                addBarangToOppOptSection(sectionIndex);
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching opslag counts:', err);
+            tbody.innerHTML = '';
+            addBarangToOppOptSection(sectionIndex);
+        });
+    }
     
-    function loadVoyagesForOppOptSection(sectionIndex, kapalNama, savedVoyage = null) {
+    function loadVoyagesForOppOptSection(sectionIndex, kapalNama) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const voyageSelect = section.querySelector('.opp-opt-voyage-select');
         
@@ -380,14 +525,7 @@
                     data.voyages.forEach(voyage => {
                         html += `<option value="${voyage}">${voyage}</option>`;
                     });
-                    // Make sure saved voyage is always in the list even if not active
-                    if (savedVoyage && !data.voyages.includes(savedVoyage)) {
-                        html += `<option value="${savedVoyage}">${savedVoyage}</option>`;
-                    }
                     voyageSelect.innerHTML = html;
-                    if (savedVoyage) {
-                        voyageSelect.value = savedVoyage;
-                    }
                     voyageSelect.disabled = false;
                 } else {
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
@@ -399,13 +537,20 @@
             });
     }
     
-    window.addBarangToOppOptSection = function(sectionIndex) {
+    window.addBarangToOppOptSection = function(sectionIndex, selectedManifestIds = [], existingValues = null) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
-        const barangIndex = container.children.length;
         
         const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
         const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        let targetContainer = container;
+        if (isOpslag) {
+            targetContainer = container.querySelector('.opp-opt-opslag-tbody');
+            if (!targetContainer) targetContainer = container; // fallback
+        }
+        
+        const barangIndex = targetContainer.children.length;
         
         let manifestsData = [];
         try {
@@ -414,7 +559,9 @@
 
         let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
         manifestsData.forEach(manifest => {
-            barangOptions += `<option value="${manifest.id}">${manifest.label}</option>`;
+            const selectedIdsArr = Array.isArray(selectedManifestIds) ? selectedManifestIds : (selectedManifestIds ? [selectedManifestIds] : []);
+            const isSelected = selectedIdsArr.includes(manifest.id) ? 'selected' : '';
+            barangOptions += `<option value="${manifest.id}" ${isSelected}>${manifest.label}</option>`;
         });
 
         let biayaOptions = '<option value="">Pilih Biaya</option>';
@@ -424,19 +571,13 @@
             @endforeach
         @endif
         
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'flex items-end gap-2 mb-2';
+        let inputGroup;
         
         if (isOpslag) {
+            inputGroup = document.createElement('tr');
+            inputGroup.className = 'border-b border-gray-200 hover:bg-gray-50 opp-opt-item-row';
             inputGroup.innerHTML = `
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                        ${biayaOptions}
-                    </select>
-                </div>
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jenis Ukuran</label>
+                <td class="p-2 align-top">
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Pilih Jenis</option>
                         <option value="20ft Full">20ft Full</option>
@@ -450,28 +591,28 @@
                         <option value="Truck">Truck</option>
                         <option value="Trailer">Trailer</option>
                     </select>
-                </div>
-                <div class="w-[10%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jumlah</label>
+                </td>
+                <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                </td>
+                <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-                </div>
-                <div class="flex-1">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="text" readonly class="opp-opt-subtotal-input-item bg-gray-100 w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0">
+                </td>
+                <td class="p-2 align-top">
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-                </div>
-                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                    <i class="fas fa-trash text-xs"></i>
-                </button>
+                </td>
+                <td class="p-2 align-top text-center">
+                    <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </td>
             `;
         } else {
+            inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
             inputGroup.innerHTML = `
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
@@ -503,7 +644,54 @@
             `;
         }
         
-        container.appendChild(inputGroup);
+        
+        targetContainer.appendChild(inputGroup);
+        
+        // If we have existing values, apply them
+        if (existingValues) {
+            if (isOpslag) {
+                const jenisSel = inputGroup.querySelector('.opp-opt-jenis-ukuran-select-item');
+                if (jenisSel && existingValues.jenis_ukuran) jenisSel.value = existingValues.jenis_ukuran;
+                
+                const jumlahInput2 = inputGroup.querySelector('.opp-opt-jumlah-input-item');
+                if (jumlahInput2 && existingValues.jumlah) jumlahInput2.value = existingValues.jumlah;
+                
+                const tarifInput2 = inputGroup.querySelector('.opp-opt-tarif-input-item');
+                if (tarifInput2 && existingValues.tarif) tarifInput2.value = existingValues.tarif;
+                
+                const catatanInput2 = inputGroup.querySelector('.opp-opt-catatan-input-item');
+                if (catatanInput2 && existingValues.catatan) catatanInput2.value = existingValues.catatan;
+                
+                const totalSpan = inputGroup.querySelector('.opp-opt-total-span');
+                if (totalSpan && existingValues.tarif && existingValues.jumlah) {
+                    totalSpan.textContent = 'Rp ' + (existingValues.tarif * existingValues.jumlah).toLocaleString('id-ID');
+                }
+            } else {
+                const biayaSel = inputGroup.querySelector('.opp-opt-biaya-select-item');
+                if (biayaSel && existingValues.klasifikasi_biaya_id) biayaSel.value = existingValues.klasifikasi_biaya_id;
+                
+                const tarifInput2 = inputGroup.querySelector('.opp-opt-tarif-input-item');
+                if (tarifInput2 && existingValues.tarif) tarifInput2.value = existingValues.tarif;
+                
+                const vendorInput2 = inputGroup.querySelector('.opp-opt-vendor-input-item');
+                if (vendorInput2 && existingValues.vendor) vendorInput2.value = existingValues.vendor;
+                
+                const catatanInput2 = inputGroup.querySelector('.opp-opt-catatan-input-item');
+                if (catatanInput2 && existingValues.catatan) catatanInput2.value = existingValues.catatan;
+                
+                const barangSel = inputGroup.querySelector('.opp-opt-barang-select-item');
+                if (barangSel && selectedManifestIds) {
+                    const ids = Array.isArray(selectedManifestIds) ? selectedManifestIds : [selectedManifestIds];
+                    ids.forEach(id => {
+                        let opt = Array.from(barangSel.options).find(o => o.value == id);
+                        if (!opt) {
+                            barangSel.insertAdjacentHTML('beforeend', `<option value="${id}" selected>${existingValues.manifest_label || 'Manifest ID: ' + id}</option>`);
+                        }
+                    });
+                }
+            }
+        }
+
         
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
@@ -547,13 +735,20 @@
         }
     };
 
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId, jenisUkuran = null, jumlah = 0) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, tarif, vendor, catatan, klasifikasiBiayaId, jenisUkuran = '', jumlah = '') {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
-        const barangIndex = container.children.length;
         
         const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
         const isOpslag = klasifikasiSel && klasifikasiSel.value === 'opslag';
+        
+        let targetContainer = container;
+        if (isOpslag) {
+            targetContainer = container.querySelector('.opp-opt-opslag-tbody');
+            if (!targetContainer) targetContainer = container; // fallback
+        }
+        
+        const barangIndex = targetContainer.children.length;
         
         let manifestsData = [];
         try {
@@ -561,21 +756,17 @@
         } catch (e) {}
 
         let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
-        
-        // Ensure manifestId is an array
-        const selectedIds = Array.isArray(manifestId) ? manifestId : (manifestId ? [manifestId] : []);
-        
+        let found = false;
         manifestsData.forEach(manifest => {
-            const selected = selectedIds.includes(manifest.id) ? 'selected' : '';
+            const selected = manifest.id == manifestId ? 'selected' : '';
+            if (manifest.id == manifestId) found = true;
             barangOptions += `<option value="${manifest.id}" ${selected}>${manifest.label}</option>`;
         });
         
-        // For multiple, if there are IDs not in manifestsData, we should add them
-        selectedIds.forEach(id => {
-            if (!manifestsData.find(m => m.id == id)) {
-                barangOptions += `<option value="${id}" selected>${manifestLabel || 'Manifest ID: ' + id}</option>`;
-            }
-        });
+        // If manifestId exists but not in current options, just add it as an option
+        if (manifestId && !found) {
+            barangOptions += `<option value="${manifestId}" selected>Manifest ID: ${manifestId}</option>`;
+        }
         
         let biayaOptions = '<option value="">Pilih Biaya</option>';
         @if(isset($klasifikasiBiayas))
@@ -584,19 +775,13 @@
             @endforeach
         @endif
         
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'flex items-end gap-2 mb-2';
+        let inputGroup;
         
         if (isOpslag) {
+            inputGroup = document.createElement('tr');
+            inputGroup.className = 'border-b border-gray-200 hover:bg-gray-50 opp-opt-item-row';
             inputGroup.innerHTML = `
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
-                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
-                        ${biayaOptions}
-                    </select>
-                </div>
-                <div class="w-[20%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jenis Ukuran</label>
+                <td class="p-2 align-top">
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jenis_ukuran]" class="opp-opt-jenis-ukuran-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Pilih Jenis</option>
                         <option value="20ft Full" ${jenisUkuran === '20ft Full' ? 'selected' : ''}>20ft Full</option>
@@ -610,28 +795,28 @@
                         <option value="Truck" ${jenisUkuran === 'Truck' ? 'selected' : ''}>Truck</option>
                         <option value="Trailer" ${jenisUkuran === 'Trailer' ? 'selected' : ''}>Trailer</option>
                     </select>
-                </div>
-                <div class="w-[10%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Jumlah</label>
-                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${jumlah || 0}" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${jumlah}" required>
+                </td>
+                <td class="p-2 align-top">
                     <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" value="${tarif || 0}" required>
-                </div>
-                <div class="w-[15%]">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
-                    <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
-                </div>
-                <div class="flex-1">
-                    <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                </td>
+                <td class="p-2 align-top">
+                    <input type="text" readonly class="opp-opt-subtotal-input-item bg-gray-100 w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0">
+                </td>
+                <td class="p-2 align-top">
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
-                </div>
-                <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
-                    <i class="fas fa-trash text-xs"></i>
-                </button>
+                </td>
+                <td class="p-2 align-top text-center">
+                    <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </td>
             `;
         } else {
+            inputGroup = document.createElement('div');
+            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
             inputGroup.innerHTML = `
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
@@ -641,7 +826,7 @@
                 </div>
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
-                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                    <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         ${barangOptions}
                     </select>
                 </div>
@@ -663,37 +848,65 @@
             `;
         }
         
-        container.appendChild(inputGroup);
         
+        targetContainer.appendChild(inputGroup);
+        
+        // If we have existing values, apply them
+        if (existingValues) {
+            if (isOpslag) {
+                const jenisSel = inputGroup.querySelector('.opp-opt-jenis-ukuran-select-item');
+                if (jenisSel && existingValues.jenis_ukuran) jenisSel.value = existingValues.jenis_ukuran;
+                
+                const jumlahInput2 = inputGroup.querySelector('.opp-opt-jumlah-input-item');
+                if (jumlahInput2 && existingValues.jumlah) jumlahInput2.value = existingValues.jumlah;
+                
+                const tarifInput2 = inputGroup.querySelector('.opp-opt-tarif-input-item');
+                if (tarifInput2 && existingValues.tarif) tarifInput2.value = existingValues.tarif;
+                
+                const catatanInput2 = inputGroup.querySelector('.opp-opt-catatan-input-item');
+                if (catatanInput2 && existingValues.catatan) catatanInput2.value = existingValues.catatan;
+                
+                const totalSpan = inputGroup.querySelector('.opp-opt-total-span');
+                if (totalSpan && existingValues.tarif && existingValues.jumlah) {
+                    totalSpan.textContent = 'Rp ' + (existingValues.tarif * existingValues.jumlah).toLocaleString('id-ID');
+                }
+            } else {
+                const biayaSel = inputGroup.querySelector('.opp-opt-biaya-select-item');
+                if (biayaSel && existingValues.klasifikasi_biaya_id) biayaSel.value = existingValues.klasifikasi_biaya_id;
+                
+                const tarifInput2 = inputGroup.querySelector('.opp-opt-tarif-input-item');
+                if (tarifInput2 && existingValues.tarif) tarifInput2.value = existingValues.tarif;
+                
+                const vendorInput2 = inputGroup.querySelector('.opp-opt-vendor-input-item');
+                if (vendorInput2 && existingValues.vendor) vendorInput2.value = existingValues.vendor;
+                
+                const catatanInput2 = inputGroup.querySelector('.opp-opt-catatan-input-item');
+                if (catatanInput2 && existingValues.catatan) catatanInput2.value = existingValues.catatan;
+                
+                const barangSel = inputGroup.querySelector('.opp-opt-barang-select-item');
+                if (barangSel && selectedManifestIds) {
+                    const ids = Array.isArray(selectedManifestIds) ? selectedManifestIds : [selectedManifestIds];
+                    ids.forEach(id => {
+                        let opt = Array.from(barangSel.options).find(o => o.value == id);
+                        if (!opt) {
+                            barangSel.insertAdjacentHTML('beforeend', `<option value="${id}" selected>${existingValues.manifest_label || 'Manifest ID: ' + id}</option>`);
+                        }
+                    });
+                }
+            }
+        }
+
+        
+        // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
-                width: '100%',
-                placeholder: 'Pilih Kontainer / BL (Bisa Lebih Dari 1)',
-                allowClear: true
+                width: '100%'
             });
         }
         
         // Add event listeners
         const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
         const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
-        const jenisUkuranSelect = inputGroup.querySelector('.opp-opt-jenis-ukuran-select-item');
-        
-        if (jenisUkuranSelect && tarifInput) {
-            jenisUkuranSelect.addEventListener('change', function() {
-                const selectedVal = this.value.toLowerCase();
-                const isBongkaran = document.querySelector(`[name="opp_opt_sections[${sectionIndex}][is_bongkaran]"]`)?.checked;
-                const tarif = getOppOptTarif(selectedVal, isBongkaran);
-                
-                if (tarif) {
-                    tarifInput.value = tarif;
-                } else if (selectedVal === '20ft full') {
-                    tarifInput.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
-                } else if (selectedVal === '40ft full') {
-                    tarifInput.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
-                }
-                calculateTotalFromAllOppOptSections();
-            });
-        }
         
         tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
@@ -708,8 +921,11 @@
     
     window.removeBarangFromOppOptSection = function(button) {
         const container = button.closest('.opp-opt-barang-container');
-        if (container.children.length > 1) {
-            button.closest('.flex').remove();
+        const row = button.closest('.opp-opt-item-row');
+        const parent = row.parentNode;
+        
+        if (parent.children.length > 1) {
+            row.remove();
             
             // Reindex all barang inputs after removal
             reindexOppOptBarangInputs(container);
@@ -721,7 +937,7 @@
     function reindexOppOptBarangInputs(container) {
         const section = container.closest('.opp-opt-section');
         const sectionIndex = section.getAttribute('data-opp-opt-section-index');
-        const inputGroups = container.querySelectorAll('.flex.items-end');
+        const inputGroups = container.querySelectorAll('.opp-opt-item-row');
         
         inputGroups.forEach((group, newIndex) => {
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
@@ -762,9 +978,10 @@
             tarifInputs.forEach((tarifInput) => {
                 const tarif = parseFloat(tarifInput.value.replace(',', '.')) || 0;
                 
-                const group = tarifInput.closest('.flex');
+                const group = tarifInput.closest('.opp-opt-item-row') || tarifInput.closest('.flex');
                 const jumlahInput = group.querySelector('.opp-opt-jumlah-input-item');
                 const manifestSelect = group.querySelector('.opp-opt-barang-select-item');
+                const subtotalInput = group.querySelector('.opp-opt-subtotal-input-item');
                 
                 let qty = 0;
                 if (jumlahInput) {
@@ -774,7 +991,12 @@
                     qty = selectedOptions.length;
                 }
                 
-                sectionTotal += (tarif * qty);
+                const rowTotal = tarif * qty;
+                if (subtotalInput) {
+                    subtotalInput.value = rowTotal > 0 ? Math.round(rowTotal).toLocaleString('id-ID') : '';
+                }
+                
+                sectionTotal += rowTotal;
             });
             
             // Update section nominal display
