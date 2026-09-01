@@ -12,6 +12,7 @@ class PranotaStock extends Model
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
+        'lokasi',
         'nomor_accurate',
         'vendor',
         'bank',
