@@ -1798,6 +1798,7 @@ class StockAmprahanController extends Controller
             $data = $request->validate([
                 'nomor_pranota' => 'required|string|unique:pranota_stocks,nomor_pranota',
                 'tanggal_pranota' => 'required|date',
+                'lokasi' => 'required|string',
                 'nomor_accurate' => 'nullable|string',
                 'vendor' => 'nullable|string',
                 'bank' => 'nullable|string',
@@ -1811,6 +1812,7 @@ class StockAmprahanController extends Controller
             $pranota = \App\Models\PranotaStock::create([
                 'nomor_pranota' => $data['nomor_pranota'],
                 'tanggal_pranota' => $data['tanggal_pranota'],
+                'lokasi' => $data['lokasi'] ?? null,
                 'nomor_accurate' => $data['nomor_accurate'],
                 'vendor' => $data['vendor'],
                 'bank' => $data['bank'],

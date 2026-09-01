@@ -970,23 +970,37 @@
             <div class="mt-6">
                 <p class="text-sm text-gray-600 leading-relaxed mb-6">Berikut adalah detail barang yang akan dimasukkan ke pranota. Semua barang yang telah Anda pilih akan diproses.</p>
                 
-                <div class="mb-6">
-                    <label for="nomor_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Nomor Pranota <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex gap-3">
-                        <div class="relative flex-1">
-                            <input type="text" id="nomor_pranota" name="nomor_pranota" required readonly
-                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 font-medium"
-                                   placeholder="Loading nomor pranota...">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="nomor_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nomor Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex gap-3">
+                            <div class="relative flex-1">
+                                <input type="text" id="nomor_pranota" name="nomor_pranota" required readonly
+                                       class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 font-medium"
+                                       placeholder="Loading nomor pranota...">
+                            </div>
+                            <button type="button" onclick="generateNomorPranota()" 
+                                    class="px-5 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
+                                    title="Generate nomor baru">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
                         </div>
-                        <button type="button" onclick="generateNomorPranota()" 
-                                class="px-5 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
-                                title="Generate nomor baru">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
+                        <p class="text-[11px] text-gray-500 mt-2 font-medium">Format: PTP-MM-YY-000001 (auto-generate)</p>
                     </div>
-                    <p class="text-[11px] text-gray-500 mt-2 font-medium">Format: PTP-MM-YY-000001 (auto-generate)</p>
+                    
+                    <div>
+                        <label for="lokasi_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Lokasi <span class="text-red-500">*</span>
+                        </label>
+                        <select id="lokasi_pranota" name="lokasi" required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 appearance-none bg-white" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat, repeat; background-position: right .7em top 50%, 0 0; background-size: .65em auto, 100%;">
+                            <option value="">-- Pilih Lokasi --</option>
+                            <option value="Jakarta">Jakarta</option>
+                            <option value="Batam">Batam</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -2285,6 +2299,7 @@
     if (btnConfirm) {
         btnConfirm.addEventListener('click', function() {
             const nomor = document.getElementById('nomor_pranota').value;
+            const lokasi = document.getElementById('lokasi_pranota').value;
             const tanggal = document.getElementById('tanggal_pranota').value;
             const accurate = document.getElementById('nomor_accurate').value;
             const adj = document.getElementById('adjustment').value;
@@ -2292,6 +2307,11 @@
             
             if (!nomor || nomor === 'Generating...' || nomor === 'Error') {
                 alert('Nomor pranota belum tersedia');
+                return;
+            }
+
+            if (!lokasi) {
+                alert('Silakan pilih lokasi terlebih dahulu!');
                 return;
             }
 
@@ -2316,6 +2336,7 @@
                 },
                 body: JSON.stringify({
                     nomor_pranota: nomor,
+                    lokasi: lokasi,
                     tanggal_pranota: tanggal,
                     nomor_accurate: accurate,
                     vendor: vendor,
