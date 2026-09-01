@@ -120,9 +120,6 @@
 
     // Before form submit, remove formatting from all currency fields
     const biayaKapalForm = document.getElementById('biayaKapalForm');
-    const jasaAirInput = document.getElementById('jasa_air');
-    const pphAirInput = document.getElementById('pph_air');
-    const grandTotalAirInput = document.getElementById('grand_total_air');
     
     if (biayaKapalForm) {
         biayaKapalForm.addEventListener('submit', function(e) {
