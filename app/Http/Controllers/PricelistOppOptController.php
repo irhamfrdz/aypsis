@@ -43,6 +43,7 @@ class PricelistOppOptController extends Controller
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',
+            'status_bongkar_muat' => 'nullable|in:Bongkar,Muat,Bongkar/Muat',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);
@@ -73,6 +74,7 @@ class PricelistOppOptController extends Controller
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',
+            'status_bongkar_muat' => 'nullable|in:Bongkar,Muat,Bongkar/Muat',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);

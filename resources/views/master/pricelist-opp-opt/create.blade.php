@@ -28,6 +28,15 @@
                                 <option value="Pinang">Pinang</option>
                             </select>
                         </div>
+                        <div>
+                            <label for="status_bongkar_muat" class="block text-sm font-medium text-gray-700">Status Bongkar/Muat</label>
+                            <select name="status_bongkar_muat" id="status_bongkar_muat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">-- Pilih Status Bongkar/Muat --</option>
+                                <option value="Bongkar">Bongkar</option>
+                                <option value="Muat">Muat</option>
+                                <option value="Bongkar/Muat">Bongkar/Muat</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

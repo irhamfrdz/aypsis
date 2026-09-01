@@ -48,6 +48,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status B/M</th>
                             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -61,6 +62,7 @@
                             </td>
                             <td class="px-3 py-2 text-xs font-medium text-gray-900">{{ $oppOpt->nama_barang }}</td>
                             <td class="px-3 py-2 text-xs text-gray-900">{{ $oppOpt->lokasi ?? '-' }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-900">{{ $oppOpt->status_bongkar_muat ?? '-' }}</td>
                             <td class="px-3 py-2 text-xs text-gray-900 text-right">Rp {{ number_format($oppOpt->tarif, 0, ',', '.') }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-center">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $oppOpt->status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

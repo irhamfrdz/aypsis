@@ -12,6 +12,7 @@ class PricelistOppOpt extends Model
     protected $fillable = [
         'nama_barang',
         'lokasi',
+        'status_bongkar_muat',
         'tarif',
         'status',
     ];
