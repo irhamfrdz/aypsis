@@ -144,10 +144,10 @@
             }
         });
         
-        if (sisaPembayaranInput.value) {
+        if (sisaPembayaranInput && sisaPembayaranInput.value) {
             sisaPembayaranInput.value = sisaPembayaranInput.value.replace(/\./g, '');
         }
-        if (totalBiayaInput.value) {
+        if (totalBiayaInput && totalBiayaInput.value) {
             totalBiayaInput.value = totalBiayaInput.value.replace(/\./g, '');
         }
         // Clean Biaya Dokumen fields

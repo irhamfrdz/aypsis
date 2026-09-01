@@ -412,16 +412,17 @@
         });
         console.log('=========================');
         
-        nominalInput.value = nominalInput.value.replace(/\./g, '');
-        ppnInput.value = ppnInput.value.replace(/\./g, '');
-        pphInput.value = pphInput.value.replace(/\./g, '');
-        if (dpInput.value) {
+        if (nominalInput && nominalInput.value) nominalInput.value = nominalInput.value.replace(/\./g, '');
+        if (ppnInput && ppnInput.value) ppnInput.value = ppnInput.value.replace(/\./g, '');
+        if (pphInput && pphInput.value) pphInput.value = pphInput.value.replace(/\./g, '');
+        
+        if (dpInput && dpInput.value) {
             dpInput.value = dpInput.value.replace(/\./g, '');
         }
-        if (sisaPembayaranInput.value) {
+        if (sisaPembayaranInput && sisaPembayaranInput.value) {
             sisaPembayaranInput.value = sisaPembayaranInput.value.replace(/\./g, '');
         }
-        if (totalBiayaInput.value) {
+        if (totalBiayaInput && totalBiayaInput.value) {
             totalBiayaInput.value = totalBiayaInput.value.replace(/\./g, '');
         }
         // Clean Biaya Dokumen fields
