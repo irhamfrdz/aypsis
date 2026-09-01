@@ -282,6 +282,8 @@
         if (!isEdit) {
             addBarangToOppOptSection(sectionIndex);
         }
+
+        return section;
     }
     
     window.removeOppOptSection = function(sectionIndex) {
