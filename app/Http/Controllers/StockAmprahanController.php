@@ -1851,6 +1851,14 @@ class StockAmprahanController extends Controller
     {
         $query = \App\Models\PranotaStock::with('creator')->latest();
 
+        $user = auth()->user();
+        if ($user && $user->karyawan) {
+            $cabang = strtolower(trim($user->karyawan->cabang ?? ''));
+            if ($cabang === 'batam') {
+                $query->where('lokasi', 'Batam');
+            }
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where('nomor_pranota', 'like', "%{$search}%")
