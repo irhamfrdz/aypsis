@@ -213,8 +213,7 @@
 
         // Setup kapal change listener
         const kapalSelect = section.querySelector('.opp-opt-kapal-select');
-        const voyageSelect = section.querySelector('.opp-opt-voyage-select');
-        const voyageInput = section.querySelector('.opp-opt-voyage-input');
+
 
         kapalSelect.addEventListener('change', function() {
             // We read a data attribute to see if there's a saved voyage to select
