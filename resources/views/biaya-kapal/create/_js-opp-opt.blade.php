@@ -470,6 +470,10 @@
                         <option value="40ft Empty">40ft Empty</option>
                         <option value="LCL 20ft">LCL 20ft</option>
                         <option value="LCL 40ft">LCL 40ft</option>
+                        <option value="Motor">Motor</option>
+                        <option value="Mobil">Mobil</option>
+                        <option value="Truck">Truck</option>
+                        <option value="Trailer">Trailer</option>
                     </select>
                 </td>
                 <td class="p-2 align-top">
@@ -620,6 +624,10 @@
                         <option value="40ft Empty" ${jenisUkuran === '40ft Empty' ? 'selected' : ''}>40ft Empty</option>
                         <option value="LCL 20ft" ${jenisUkuran === 'LCL 20ft' ? 'selected' : ''}>LCL 20ft</option>
                         <option value="LCL 40ft" ${jenisUkuran === 'LCL 40ft' ? 'selected' : ''}>LCL 40ft</option>
+                        <option value="Motor" ${jenisUkuran === 'Motor' ? 'selected' : ''}>Motor</option>
+                        <option value="Mobil" ${jenisUkuran === 'Mobil' ? 'selected' : ''}>Mobil</option>
+                        <option value="Truck" ${jenisUkuran === 'Truck' ? 'selected' : ''}>Truck</option>
+                        <option value="Trailer" ${jenisUkuran === 'Trailer' ? 'selected' : ''}>Trailer</option>
                     </select>
                 </td>
                 <td class="p-2 align-top">
