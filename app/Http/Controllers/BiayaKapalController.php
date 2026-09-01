@@ -1087,6 +1087,37 @@ class BiayaKapalController extends Controller
                 $validated['nominal'] = 0;
             }
 
+            // Extract global fields from the first section if they are empty in the root request
+            // This is needed because some dynamic sections (like Biaya Buruh Batam) hide the global inputs
+            // and instead put 'penerima', 'nama_vendor', etc. inside the section array.
+            $globalFields = ['penerima', 'nama_vendor', 'nomor_rekening', 'bank_id'];
+            $sectionTypes = [
+                'kapal_sections', 'trucking_sections', 'stuffing_sections', 
+                'thc_sections', 'dokumen_sections', 'freight_sections', 
+                'lolo_sections', 'storage_sections', 'demurrage_sections', 
+                'nota_retur_sections', 'umum_sections', 'perijinan_sections',
+                'labuh_tambat', 'meratus', 'temas', 'tanto'
+            ];
+
+            foreach ($globalFields as $field) {
+                if (empty($validated[$field])) {
+                    foreach ($sectionTypes as $secType) {
+                        if ($request->has($secType) && is_array($request->$secType)) {
+                            $firstSection = collect($request->$secType)->first();
+                            if ($firstSection && !empty($firstSection[$field])) {
+                                $validated[$field] = $firstSection[$field];
+                                break;
+                            }
+                            // Special case: some sections use 'vendor' instead of 'nama_vendor'
+                            if ($field === 'nama_vendor' && $firstSection && !empty($firstSection['vendor'])) {
+                                $validated[$field] = $firstSection['vendor'];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             // Create BiayaKapal record
             $biayaKapal = BiayaKapal::create($validated);
 
