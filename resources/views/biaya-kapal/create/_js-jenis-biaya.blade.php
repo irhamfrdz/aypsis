@@ -147,6 +147,9 @@
     const typeAirInput = document.getElementById('type_air');
     const kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
     const kuantitasAirInput = document.getElementById('kuantitas_air');
+    const jasaAirInput = document.getElementById('jasa_air');
+    const pphAirInput = document.getElementById('pph_air');
+    const grandTotalAirInput = document.getElementById('grand_total_air');
     const operasionalWrapper = document.getElementById('operasional_wrapper');
     
     // Trucking specific fields
