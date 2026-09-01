@@ -1,9 +1,37 @@
 @php
-    $oppOptTarifsRaw = \App\Models\PricelistOppOpt::pluck('tarif', 'nama_barang')->mapWithKeys(function ($item, $key) {
-        return [strtolower(trim($key)) => $item];
+    $oppOptTarifsRaw = \App\Models\PricelistOppOpt::all()->map(function($item) {
+        return [
+            'nama_barang' => strtolower(trim($item->nama_barang)),
+            'status' => strtolower(trim($item->status_bongkar_muat)),
+            'tarif' => $item->tarif
+        ];
     })->toArray();
 @endphp
-    const oppOptTarifs = @json($oppOptTarifsRaw);
+    const oppOptTarifsFull = @json($oppOptTarifsRaw);
+
+    function getOppOptTarif(namaBarang, isBongkaran) {
+        if (!namaBarang) return null;
+        namaBarang = namaBarang.toLowerCase();
+        const requiredStatus = isBongkaran ? 'bongkar' : 'muat';
+        
+        let matched = oppOptTarifsFull.find(t => 
+            t.nama_barang === namaBarang && 
+            t.status === requiredStatus
+        );
+        
+        if (!matched) {
+            matched = oppOptTarifsFull.find(t => 
+                t.nama_barang === namaBarang && 
+                t.status === 'bongkar/muat'
+            );
+        }
+        
+        if (!matched) {
+            matched = oppOptTarifsFull.find(t => t.nama_barang === namaBarang);
+        }
+        
+        return matched ? matched.tarif : null;
+    }
 
     // ============= OPP/OPT SECTIONS MANAGEMENT =============
     let oppOptSectionCounter = 0;
@@ -154,6 +182,33 @@
 
         // Setup voyage change listener for Bongkaran toggle
         const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
+        
+        // Add event listener for bongkaran checkbox to recalculate tariffs
+        if (bongkaranCheckbox) {
+            bongkaranCheckbox.addEventListener('change', function() {
+                const isBongkaran = this.checked;
+                const tarifInputs = section.querySelectorAll('.opp-opt-tarif-input-item');
+                const jenisSelects = section.querySelectorAll('.opp-opt-jenis-ukuran-select-item');
+                
+                // Only for opslag rows
+                jenisSelects.forEach((select, idx) => {
+                    const tarifInput = tarifInputs[idx];
+                    if (tarifInput && select.value) {
+                        const selectedVal = select.value.toLowerCase();
+                        const tarif = getOppOptTarif(selectedVal, isBongkaran);
+                        if (tarif) {
+                            tarifInput.value = tarif;
+                        } else if (selectedVal === '20ft full') {
+                            tarifInput.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
+                        } else if (selectedVal === '40ft full') {
+                            tarifInput.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
+                        }
+                    }
+                });
+                calculateTotalFromAllOppOptSections();
+            });
+        }
+        
         voyageInput.addEventListener('blur', function() {
             if (kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
                 autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
@@ -364,12 +419,15 @@
                             if (inputJumlah) inputJumlah.value = t.value;
                             if (inputTarif) {
                                 const lookupKey = t.key.toLowerCase();
-                                if (oppOptTarifs[lookupKey]) {
-                                    inputTarif.value = oppOptTarifs[lookupKey];
-                                } else if (lookupKey === '20ft full' && oppOptTarifs['fcl 20ft']) {
-                                    inputTarif.value = oppOptTarifs['fcl 20ft'];
-                                } else if (lookupKey === '40ft full' && oppOptTarifs['fcl 40ft']) {
-                                    inputTarif.value = oppOptTarifs['fcl 40ft'];
+                                const isBongkaran = document.querySelector(`[name="opp_opt_sections[${sectionIndex}][is_bongkaran]"]`)?.checked;
+                                const tarif = getOppOptTarif(lookupKey, isBongkaran);
+                                
+                                if (tarif) {
+                                    inputTarif.value = tarif;
+                                } else if (lookupKey === '20ft full') {
+                                    inputTarif.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
+                                } else if (lookupKey === '40ft full') {
+                                    inputTarif.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
                                 }
                             }
                         }
@@ -547,12 +605,15 @@
         if (jenisUkuranSelect && tarifInput) {
             jenisUkuranSelect.addEventListener('change', function() {
                 const selectedVal = this.value.toLowerCase();
-                if (oppOptTarifs[selectedVal]) {
-                    tarifInput.value = oppOptTarifs[selectedVal];
-                } else if (selectedVal === '20ft full' && oppOptTarifs['fcl 20ft']) {
-                    tarifInput.value = oppOptTarifs['fcl 20ft'];
-                } else if (selectedVal === '40ft full' && oppOptTarifs['fcl 40ft']) {
-                    tarifInput.value = oppOptTarifs['fcl 40ft'];
+                const isBongkaran = document.querySelector(`[name="opp_opt_sections[${sectionIndex}][is_bongkaran]"]`)?.checked;
+                const tarif = getOppOptTarif(selectedVal, isBongkaran);
+                
+                if (tarif) {
+                    tarifInput.value = tarif;
+                } else if (selectedVal === '20ft full') {
+                    tarifInput.value = getOppOptTarif('fcl 20ft', isBongkaran) || '';
+                } else if (selectedVal === '40ft full') {
+                    tarifInput.value = getOppOptTarif('fcl 40ft', isBongkaran) || '';
                 }
                 calculateTotalFromAllOppOptSections();
             });
