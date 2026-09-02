@@ -1,0 +1,150 @@
+@php
+    $oppOptTarifsRaw = \App\Models\PricelistOppOpt::all()->map(function($item) {
+        return [
+            'nama_barang' => strtolower(trim($item->nama_barang)),
+            'status' => strtolower(trim($item->status_bongkar_muat)),
+            'tarif' => $item->tarif
+        ];
+    })->toArray();
+@endphp
+    const oppOptTarifsFull = @json($oppOptTarifsRaw);
+
+    function getOppOptTarif(namaBarang, isBongkaran) {
+        if (!namaBarang) return null;
+        namaBarang = namaBarang.toLowerCase();
+        const requiredStatus = isBongkaran ? 'bongkar' : 'muat';
+        
+        let matched = oppOptTarifsFull.find(t => 
+            t.nama_barang === namaBarang && 
+            t.status === requiredStatus
+        );
+        
+        if (!matched) {
+            matched = oppOptTarifsFull.find(t => 
+                t.nama_barang === namaBarang && 
+                t.status === 'bongkar/muat'
+            );
+        }
+        
+        if (!matched) {
+            matched = oppOptTarifsFull.find(t => t.nama_barang === namaBarang);
+        }
+        
+        return matched ? matched.tarif : null;
+    }
+
+    // ============= OPP/OPT SECTIONS MANAGEMENT =============
+    let oppOptSectionCounter = 0;
+    const oppOptSectionsContainer = document.getElementById('opp_opt_sections_container');
+    const addOppOptSectionBtn = document.getElementById('add_opp_opt_section_btn');
+    
+    function initializeOppOptSections() {
+        if (!oppOptSectionsContainer) return;
+        oppOptSectionsContainer.innerHTML = '';
+        oppOptSectionCounter = 0;
+        
+        if (typeof existingOppOptSections !== 'undefined' && existingOppOptSections.length > 0) {
+            existingOppOptSections.forEach(data => {
+                const section = addOppOptSection(true); // true means isEdit to avoid default row
+                const sectionIndex = section.getAttribute('data-opp-opt-section-index');
+                
+                const voySel = section.querySelector('.opp-opt-voyage-select');
+                voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
+                voySel.value = data.voyage;
+                voySel.setAttribute('data-saved-voyage', data.voyage);
+                voySel.disabled = false;
+                
+                // Kapal & Voyage
+                const kapalSel = section.querySelector('.opp-opt-kapal-select');
+                if (kapalSel) {
+                    kapalSel.value = data.kapal;
+                    kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // Klasifikasi
+                const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
+                if (klasifikasiSel && data.barang && data.barang.length > 0) {
+                    klasifikasiSel.value = data.barang[0].klasifikasi || '';
+                }
+
+                // Hidden values
+                const totalHidden = section.querySelector('.opp-opt-section-total-hidden');
+                if (totalHidden) totalHidden.value = data.total_nominal || 0;
+                
+                const dpHidden = section.querySelector('.opp-opt-section-dp-hidden');
+                if (dpHidden) dpHidden.value = data.dp || 0;
+                
+                const sisaHidden = section.querySelector('.opp-opt-section-sisa-hidden');
+                if (sisaHidden) sisaHidden.value = data.sisa_pembayaran || 0;
+
+                // Barang
+                if (data.barang && data.barang.length > 0) {
+                    data.barang.forEach(b => {
+                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id, b.jenis_ukuran, b.jumlah);
+                    });
+                } else {
+                    addBarangToOppOptSection(sectionIndex);
+                }
+            });
+            calculateTotalFromAllOppOptSections();
+        } else {
+            addOppOptSection();
+        }
+    }
+    
+    function clearAllOppOptSections() {
+        if (!oppOptSectionsContainer) return;
+        oppOptSectionsContainer.innerHTML = '';
+        oppOptSectionCounter = 0;
+    }
+    
+    if (addOppOptSectionBtn) {
+        addOppOptSectionBtn.addEventListener('click', function() {
+            addOppOptSection();
+        });
+    }
+    
+    function addOppOptSection(isEdit = false) {
+        if (!oppOptSectionsContainer) return;
+        oppOptSectionCounter++;
+        const sectionIndex = oppOptSectionCounter;
+        
+        const section = document.createElement('div');
+        section.className = 'opp-opt-section mb-6 p-4 border-2 border-purple-200 rounded-lg bg-purple-50';
+        section.setAttribute('data-opp-opt-section-index', sectionIndex);
+        
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} (OPP/OPT)</h3>
+                    <label class="flex items-center gap-2 px-3 py-1 bg-white border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 transition shadow-sm">
+                        <input type="checkbox" name="opp_opt_sections[${sectionIndex}][is_bongkaran]" class="opp-opt-is-bongkaran-checkbox rounded border-purple-400 text-purple-600 focus:ring-purple-500" value="1">
+                        <span class="text-xs font-bold text-purple-700">BONGKARAN</span>
+                    </label>
+                </div>
+                ${sectionIndex > 1 ? `<button type="button" onclick="removeOppOptSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
+            </div>
+            
+            <!-- Hidden inputs for section totals -->
+            <input type="hidden" name="opp_opt_sections[${sectionIndex}][total_nominal]" class="opp-opt-section-total-hidden" value="0">
+            <input type="hidden" name="opp_opt_sections[${sectionIndex}][dp]" class="opp-opt-section-dp-hidden" value="0">
+            <input type="hidden" name="opp_opt_sections[${sectionIndex}][sisa_pembayaran]" class="opp-opt-section-sisa-hidden" value="0">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Klasifikasi</label>
+                    <select name="opp_opt_sections[${sectionIndex}][klasifikasi]" class="opp-opt-klasifikasi-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Pilih --</option>
+                        <option value="opslag">Opslag</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="opp_opt_sections[${sectionIndex}][kapal]" class="opp-opt-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500" required>
+                        ${kapalOptions}
+                    </select>
