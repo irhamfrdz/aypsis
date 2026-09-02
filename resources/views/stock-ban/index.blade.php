@@ -4101,6 +4101,34 @@ function closeJualBanModal() {
                         </div>
 
                         <div>
+                            <label class="form-label-premium">Mobil</label>
+                            <input type="hidden" name="mobil_id" id="usage_mobil">
+                            <button type="button" id="btn-usage_mobil" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('usage_mobil', this)">
+                                <span class="block truncate" id="text-usage_mobil">-- Pilih Mobil --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="dropdown-content-usage_mobil" class="hidden">
+                                <div class="dropdown-search-container">
+                                    <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari mobil..." onkeyup="DropdownManager.filter(this)">
+                                </div>
+                                <div class="dropdown-list">
+                                    <div class="dropdown-item" onclick="DropdownManager.select('usage_mobil', '', '-- Pilih Mobil --')">-- Pilih Mobil --</div>
+                                    @foreach($mobils as $mobil)
+                                        @php
+                                            $displayPlat = $mobil->nomor_polisi;
+                                            if (empty($displayPlat) && $mobil->jenis && stripos($mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $mobil->no_kir ?? '-';
+                                            }
+                                        @endphp
+                                        <div class="dropdown-item" onclick="DropdownManager.select('usage_mobil', '{{ $mobil->id }}', '{{ $displayPlat }} - {{ $mobil->jenis }}')" data-search="{{ strtolower($displayPlat . ' ' . $mobil->jenis) }}">
+                                            {{ $displayPlat }} - {{ $mobil->jenis }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
                             <label class="form-label-premium">Tanggal Digunakan <span class="text-red-500">*</span></label>
                             <input type="date" name="tanggal_digunakan" id="usage_tanggal_digunakan" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
                         </div>
@@ -4231,6 +4259,10 @@ function closeJualBanModal() {
         document.getElementById('usage_kapal').value = '';
         const textUsageKapal = document.getElementById('text-usage_kapal');
         if (textUsageKapal) textUsageKapal.textContent = '-- Pilih Kapal --';
+
+        document.getElementById('usage_mobil').value = '';
+        const textUsageMobil = document.getElementById('text-usage_mobil');
+        if (textUsageMobil) textUsageMobil.textContent = '-- Pilih Mobil --';
 
         document.getElementById('usage_keterangan').value = '';
         document.getElementById('usage_tanggal_digunakan').value = new Date().toISOString().split('T')[0];

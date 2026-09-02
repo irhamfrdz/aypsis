@@ -1039,6 +1039,7 @@ class StockBanController extends Controller
             'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'gudang_id' => 'nullable|exists:master_gudang_bans,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
+            'mobil_id' => 'nullable|exists:mobils,id',
             'tanggal_digunakan' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ]);
@@ -1084,6 +1085,7 @@ class StockBanController extends Controller
                 'penerima_manual' => $request->penerima_manual,
                 'gudang_id' => $request->gudang_id,
                 'kapal_id' => $request->kapal_id,
+                'mobil_id' => $request->mobil_id,
                 'tanggal_keluar' => $request->tanggal_digunakan ?? now(),
                 'tanggal_digunakan' => $request->tanggal_digunakan ?? now(),
                 'created_by' => \Illuminate\Support\Facades\Auth::id(),
