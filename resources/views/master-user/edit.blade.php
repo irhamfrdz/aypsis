@@ -578,6 +578,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Rumus BPJS --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Rumus BPJS</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-rumus-bpjs][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-rumus-bpjs']['view']) && $userMatrixPermissions['master-rumus-bpjs']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-rumus-bpjs][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-rumus-bpjs']['create']) && $userMatrixPermissions['master-rumus-bpjs']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-rumus-bpjs][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-rumus-bpjs']['update']) && $userMatrixPermissions['master-rumus-bpjs']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-rumus-bpjs][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-rumus-bpjs']['delete']) && $userMatrixPermissions['master-rumus-bpjs']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Shipper / Consignee --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

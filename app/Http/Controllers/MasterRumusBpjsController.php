@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 
 class MasterRumusBpjsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('permission:master-rumus-bpjs-view')->only(['index']);
+        $this->middleware('permission:master-rumus-bpjs-create')->only(['store']);
+        $this->middleware('permission:master-rumus-bpjs-update')->only(['update']);
+        $this->middleware('permission:master-rumus-bpjs-delete')->only(['destroy']);
+    }
+
     public function index()
     {
         $rumusJkn = MasterRumusBpjs::where('jenis', 'jkn')->get();

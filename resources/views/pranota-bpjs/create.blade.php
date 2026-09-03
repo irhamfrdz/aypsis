@@ -2,93 +2,143 @@
 
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+
+    {{-- Page Header --}}
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
         <div class="mb-4 sm:mb-0">
             <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Buat Pranota BPJS</h1>
+            <p class="text-sm text-gray-500 mt-1">Isi detail pranota dan data BPJS karyawan</p>
         </div>
         <div>
-            <a href="{{ route('pranota-bpjs.index') }}" class="btn bg-white border-gray-200 hover:border-gray-300 text-gray-600">
-                <i class="fas fa-arrow-left mr-2"></i> Kembali
+            <a href="{{ route('pranota-bpjs.index') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+                <i class="fas fa-arrow-left text-xs"></i>
+                Kembali
             </a>
         </div>
     </div>
 
     <form action="{{ route('pranota-bpjs.store') }}" method="POST">
         @csrf
-        <div class="bg-white shadow-lg rounded-sm border border-gray-200 mb-8">
+
+        {{-- Section: Informasi Pranota --}}
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+                <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-file-invoice text-teal-600 text-sm"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-gray-800">Informasi Pranota</h2>
+                    <p class="text-xs text-gray-400">Tanggal dan periode pembayaran BPJS</p>
+                </div>
+            </div>
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                     <div>
-                        <label class="block text-sm font-medium mb-1" for="tanggal_pranota">Tanggal Pranota <span class="text-red-500">*</span></label>
-                        <input id="tanggal_pranota" name="tanggal_pranota" type="date" class="form-input w-full" value="{{ date('Y-m-d') }}" required />
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5" for="tanggal_pranota">
+                            Tanggal Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <input id="tanggal_pranota" name="tanggal_pranota" type="date"
+                            class="form-input w-full text-sm" value="{{ date('Y-m-d') }}" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1" for="periode_bulan">Bulan <span class="text-red-500">*</span></label>
-                        <select id="periode_bulan" name="periode_bulan" class="form-select w-full" required>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5" for="periode_bulan">
+                            Bulan Periode <span class="text-red-500">*</span>
+                        </label>
+                        <select id="periode_bulan" name="periode_bulan" class="form-select w-full text-sm" required>
                             @for($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ date('n') == $i ? 'selected' : '' }}>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }} - {{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
+                                <option value="{{ $i }}" {{ date('n') == $i ? 'selected' : '' }}>
+                                    {{ str_pad($i, 2, '0', STR_PAD_LEFT) }} — {{ date('F', mktime(0, 0, 0, $i, 1)) }}
+                                </option>
                             @endfor
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1" for="periode_tahun">Tahun <span class="text-red-500">*</span></label>
-                        <input id="periode_tahun" name="periode_tahun" type="number" class="form-input w-full" value="{{ date('Y') }}" required />
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5" for="periode_tahun">
+                            Tahun Periode <span class="text-red-500">*</span>
+                        </label>
+                        <input id="periode_tahun" name="periode_tahun" type="number"
+                            class="form-input w-full text-sm" value="{{ date('Y') }}" required />
                     </div>
                 </div>
-                
-                <div class="mb-6">
-                    <label class="block text-sm font-medium mb-1" for="keterangan">Keterangan Tambahan</label>
-                    <textarea id="keterangan" name="keterangan" class="form-textarea w-full" rows="3" placeholder="Opsional..."></textarea>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5" for="keterangan">
+                        Keterangan Tambahan
+                    </label>
+                    <textarea id="keterangan" name="keterangan" class="form-textarea w-full text-sm" rows="2"
+                        placeholder="Opsional..."></textarea>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white shadow-lg rounded-sm border border-gray-200 mb-8">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">Detail Karyawan</h2>
-                    <div class="flex space-x-2">
-                        <button type="button" id="btn-generate-all" class="btn bg-green-500 hover:bg-green-600 text-white text-sm">
-                            <i class="fas fa-magic mr-2"></i> Hitung Semua Karyawan
-                        </button>
-                        <button type="button" id="btn-add-karyawan" class="btn bg-indigo-500 hover:bg-indigo-600 text-white text-sm">
-                            <i class="fas fa-plus mr-2"></i> Tambah Karyawan
-                        </button>
+        {{-- Section: Detail Karyawan --}}
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-users text-indigo-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-800">Detail Karyawan</h2>
+                        <p class="text-xs text-gray-400">Pilih karyawan dan nominal BPJS</p>
                     </div>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="table-auto w-full" id="tabel-detail">
-                        <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-t border-b border-gray-200">
-                            <tr>
-                                <th class="px-2 py-3 w-10 text-center">#</th>
-                                <th class="px-2 py-3 text-left">Nama Karyawan</th>
-                                <th class="px-2 py-3 text-right">JKN (Rp)</th>
-                                <th class="px-2 py-3 text-right">BP Jamsostek (Rp)</th>
-                                <th class="px-2 py-3 text-right">Subtotal (Rp)</th>
-                                <th class="px-2 py-3 w-10 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detail-container">
-                            <!-- Rows will be added here -->
-                        </tbody>
-                        <tfoot class="bg-gray-50 border-t border-gray-200 font-semibold">
-                            <tr>
-                                <td colspan="2" class="px-2 py-3 text-right">Total Keseluruhan:</td>
-                                <td class="px-2 py-3 text-right text-indigo-600" id="total_kes">Rp 0</td>
-                                <td class="px-2 py-3 text-right text-indigo-600" id="total_ket">Rp 0</td>
-                                <td class="px-2 py-3 text-right text-indigo-600" id="grand_total">Rp 0</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-generate-all"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-magic text-xs"></i>
+                        Hitung Semua Karyawan
+                    </button>
+                    <button type="button" id="btn-add-karyawan"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-plus text-xs"></i>
+                        Tambah Karyawan
+                    </button>
                 </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="table-auto w-full" id="tabel-detail">
+                    <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-b border-gray-200 tracking-wider">
+                        <tr>
+                            <th class="px-3 py-3 w-10 text-center">#</th>
+                            <th class="px-3 py-3 text-left">Nama Karyawan</th>
+                            <th class="px-3 py-3 text-center" style="min-width:160px">Tipe JKN</th>
+                            <th class="px-3 py-3 text-right">JKN (Rp)</th>
+                            <th class="px-3 py-3 text-right">BP Jamsostek (Rp)</th>
+                            <th class="px-3 py-3 text-right">Subtotal (Rp)</th>
+                            <th class="px-3 py-3 w-10 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail-container" class="divide-y divide-gray-100">
+                        <!-- Rows will be added here -->
+                    </tbody>
+                    <tfoot class="bg-gray-50 border-t-2 border-gray-200">
+                        <tr>
+                            <td colspan="3" class="px-3 py-3 text-right text-sm font-bold text-gray-600">Total Keseluruhan:</td>
+                            <td class="px-3 py-3 text-right font-bold text-indigo-600" id="total_kes">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-bold text-indigo-600" id="total_ket">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
 
-        <div class="flex justify-end space-x-3">
-            <a href="{{ route('pranota-bpjs.index') }}" class="btn bg-white border-gray-200 hover:border-gray-300 text-gray-600">Batal</a>
-            <button type="submit" class="btn bg-teal-600 hover:bg-teal-700 text-white">Simpan Pranota</button>
+        {{-- Action Buttons --}}
+        <div class="flex items-center justify-between">
+            <a href="{{ route('pranota-bpjs.index') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+                <i class="fas fa-times text-xs"></i>
+                Batal
+            </a>
+            <button type="submit"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+                <i class="fas fa-save text-xs"></i>
+                Simpan Pranota
+            </button>
         </div>
     </form>
 </div>
@@ -105,6 +155,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatNumber(num) {
         return new Intl.NumberFormat('id-ID').format(num || 0);
+    }
+
+    /**
+     * Parse angka format Indonesia ke float
+     * Contoh: "5.729.880,00" → 5729880
+     *         "5.200.000"    → 5200000
+     *         5200000        → 5200000 (sudah number, langsung return)
+     */
+    function parseIdNumber(val) {
+        if (val === null || val === undefined || val === '') return 0;
+        if (typeof val === 'number') return val;
+        // Hapus titik pemisah ribuan, ganti koma desimal ke titik
+        const cleaned = String(val).replace(/\./g, '').replace(',', '.');
+        return parseFloat(cleaned) || 0;
     }
 
     function calculateTotals() {
@@ -136,20 +200,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 detail-row";
         tr.innerHTML = `
-            <td class="px-2 py-2 text-center align-middle row-number">${rowCount}</td>
+            <td class="px-2 py-2 text-center align-top row-number">${rowCount}</td>
             <td class="px-2 py-2">
                 <select name="details[${rowCount}][karyawan_id]" class="form-select w-full text-sm select2" required>
                     ${options}
                 </select>
+                <div class="info-jkn mt-1"></div>
             </td>
-            <td class="px-2 py-2">
+            <td class="px-2 py-2 align-top">
+                <select class="form-select w-full text-sm select-tipe-jkn" name="details[${rowCount}][tipe_jkn]">
+                    <option value="tunjangan">Tunjangan</option>
+                    <option value="hutang">Hutang</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </td>
+            <td class="px-2 py-2 align-top">
                 <input type="number" name="details[${rowCount}][bpjs_kesehatan]" class="form-input w-full text-right text-sm input-kes" min="0" step="1" value="0">
             </td>
-            <td class="px-2 py-2">
+            <td class="px-2 py-2 align-top">
                 <input type="number" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="form-input w-full text-right text-sm input-ket" min="0" step="1" value="0">
             </td>
-            <td class="px-2 py-2 text-right font-medium align-middle subtotal-text">Rp 0</td>
-            <td class="px-2 py-2 text-center">
+            <td class="px-2 py-2 text-right font-medium align-top subtotal-text">Rp 0</td>
+            <td class="px-2 py-2 text-center align-top">
                 <button type="button" class="text-red-500 hover:text-red-700 btn-remove">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -158,10 +230,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         container.appendChild(tr);
 
-        // Add event listeners for inputs
-        const inputKes = tr.querySelector('.input-kes');
-        const inputKet = tr.querySelector('.input-ket');
+        const inputKes     = tr.querySelector('.input-kes');
+        const inputKet     = tr.querySelector('.input-ket');
         const subtotalText = tr.querySelector('.subtotal-text');
+        const infoJkn      = tr.querySelector('.info-jkn');
+        const selectTipe   = tr.querySelector('.select-tipe-jkn');
         
         const updateSubtotal = () => {
             const kes = parseFloat(inputKes.value || 0);
@@ -189,79 +262,147 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Calculate function separated for reuse
-        function calculateBpjsForKaryawan(karyawanId) {
-            if (!karyawanId) {
+        /**
+         * Tampilkan info badge Group JKN, DPP, dan persentase
+         * serta perbarui label opsi Tipe JKN
+         */
+        function updateInfoBadgeJkn(kId) {
+            const karyawan = karyawans.find(k => k.id == kId);
+            if (!karyawan) { infoJkn.innerHTML = ''; return; }
+
+            if (karyawan.group_jkn) {
+                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                if (rumus) {
+                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
+                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
+
+                    infoJkn.innerHTML = `
+                        <span class="inline-flex flex-wrap gap-1 mt-1">
+                            <span class="bg-indigo-100 text-indigo-700 rounded px-1 py-0.5 text-xs">Group: <b>${karyawan.group_jkn}</b></span>
+                            <span class="bg-gray-100 text-gray-600 rounded px-1 py-0.5 text-xs">DPP: <b>Rp ${formatNumber(dpp)}</b></span>
+                            <span class="bg-green-100 text-green-700 rounded px-1 py-0.5 text-xs">Tunj: <b>${tunjPersen}%</b></span>
+                            <span class="bg-yellow-100 text-yellow-700 rounded px-1 py-0.5 text-xs">Hutang: <b>${hutangPersen}%</b></span>
+                        </span>
+                    `;
+
+                    // Perbarui label dropdown dengan persentase aktual
+                    selectTipe.options[0].text = `Tunjangan (${tunjPersen}%)`;
+                    selectTipe.options[1].text = `Hutang (${hutangPersen}%)`;
+                } else {
+                    infoJkn.innerHTML = `<span class="text-xs text-orange-500">&#9888; Rumus JKN untuk Group "${karyawan.group_jkn}" tidak ditemukan</span>`;
+                    selectTipe.options[0].text = 'Tunjangan';
+                    selectTipe.options[1].text = 'Hutang';
+                }
+            } else {
+                infoJkn.innerHTML = `<span class="text-xs text-gray-400">Tidak ada Group JKN</span>`;
+                selectTipe.options[0].text = 'Tunjangan';
+                selectTipe.options[1].text = 'Hutang';
+            }
+        }
+
+        /**
+         * Hitung nominal BPJS berdasarkan karyawan dan tipe JKN yang dipilih
+         * Alur:
+         * 1. Cari Group JKN karyawan
+         * 2. Ambil DPP JKN karyawan
+         * 3. Sesuai tipe (tunjangan/hutang): ambil persen dari rumus
+         * 4. nominalKes = (persen / 100) * DPP
+         */
+        function calculateBpjsForKaryawan(kId, tipeJkn) {
+            if (!kId) {
                 inputKes.value = 0;
                 inputKet.value = 0;
+                infoJkn.innerHTML = '';
+                selectTipe.options[0].text = 'Tunjangan';
+                selectTipe.options[1].text = 'Hutang';
                 updateSubtotal();
                 return;
             }
 
-            const karyawan = karyawans.find(k => k.id == karyawanId);
+            const karyawan = karyawans.find(k => k.id == kId);
             if (!karyawan) return;
+
+            // Perbarui info badge
+            updateInfoBadgeJkn(kId);
 
             let nominalKes = 0;
             let nominalKet = 0;
 
-            // Hitung JKN: cari rumus berdasarkan group_jkn karyawan
-            if (karyawan.group_jkn) {
+            // --- Hitung JKN ---
+            // Langkah 1: Cek Group JKN karyawan
+            // Langkah 2: Cari rumus yang cocok (jenis='jkn', group_name=group_jkn karyawan)
+            // Langkah 3: Ambil DPP JKN karyawan
+            // Langkah 4: Kalikan persen sesuai tipe yang dipilih
+            if (karyawan.group_jkn && tipeJkn !== 'manual') {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
                 if (rumus) {
-                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutang    = parseFloat(rumus.hutang_persen    || 0);
-                    const biaya     = parseFloat(rumus.biaya_persen     || 0);
-                    const totalPersen = tunjangan + hutang + biaya;
+                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
+                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
 
-                    if (totalPersen > 0) {
-                        const dpp = parseFloat(karyawan.dpp_jkn || 0);
-                        nominalKes = (totalPersen / 100) * dpp;
+                    let persen = 0;
+                    if (tipeJkn === 'tunjangan') {
+                        persen = tunjPersen;
+                    } else if (tipeJkn === 'hutang') {
+                        persen = hutangPersen;
                     }
-                    // jika keterangan_custom dan totalPersen == 0, biarkan 0 (input manual)
+
+                    nominalKes = (persen / 100) * dpp;
                 }
+            } else if (tipeJkn === 'manual') {
+                // Biarkan nilai inputKes yang sudah ada (user input manual)
+                nominalKes = parseFloat(inputKes.value || 0);
             }
 
-            // Hitung BP Jamsostek: cari rumus berdasarkan group_bp_jamsostek karyawan
+            // --- Hitung BP Jamsostek (jumlahkan semua komponen) ---
             if (karyawan.group_bp_jamsostek) {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
                 if (rumus) {
-                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutang    = parseFloat(rumus.hutang_persen    || 0);
-                    const biaya     = parseFloat(rumus.biaya_persen     || 0);
+                    const tunjangan   = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutang      = parseFloat(rumus.hutang_persen    || 0);
+                    const biaya       = parseFloat(rumus.biaya_persen     || 0);
                     const totalPersen = tunjangan + hutang + biaya;
 
                     if (totalPersen > 0) {
-                        const dpp = parseFloat(karyawan.dpp_bp_jamsostek || 0);
+                        const dpp  = parseIdNumber(karyawan.dpp_bp_jamsostek);
                         nominalKet = (totalPersen / 100) * dpp;
                     }
                 }
             }
 
-            inputKes.value = Math.round(nominalKes);
+            if (tipeJkn !== 'manual') {
+                inputKes.value = Math.round(nominalKes);
+            }
             inputKet.value = Math.round(nominalKet);
             updateSubtotal();
         }
 
-        const handleKaryawanChange = function(val) {
-            // val bisa dari event biasa (e.target.value) atau dari Select2 (val langsung)
-            const karyawanId = (typeof val === 'object' && val !== null && val.target) ? val.target.value : val;
-            calculateBpjsForKaryawan(karyawanId);
+        // Handler: karyawan berubah
+        const handleKaryawanChange = function(kId) {
+            const tipe = selectTipe.value;
+            calculateBpjsForKaryawan(kId, tipe);
         };
 
         if ($select) {
-            // Select2 mengirimkan event jQuery, ambil value dari $select.val()
             $select.on('change', function() {
-                calculateBpjsForKaryawan($select.val());
+                handleKaryawanChange($select.val());
             });
         } else {
             tr.querySelector('.select2').addEventListener('change', function(e) {
-                calculateBpjsForKaryawan(e.target.value);
+                handleKaryawanChange(e.target.value);
             });
         }
 
-        // Jika saat pembuatan baris sudah ada karyawanId (dari generate-all), hitung langsung
+        // Handler: tipe JKN berubah → hitung ulang otomatis
+        selectTipe.addEventListener('change', function() {
+            const kId = $select ? $select.val() : tr.querySelector('.select2').value;
+            calculateBpjsForKaryawan(kId, this.value);
+        });
+
+        // Jika baris dibuat dengan karyawanId (generate-all), hitung dengan default tunjangan
         if (karyawanId) {
-            setTimeout(() => calculateBpjsForKaryawan(karyawanId), 100);
+            setTimeout(() => calculateBpjsForKaryawan(karyawanId, 'tunjangan'), 100);
         }
     }
 
@@ -285,9 +426,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Tambahkan baris untuk setiap karyawan yang punya Group JKN atau Group BP Jamsostek
+        // Default tipe: tunjangan
         karyawans.forEach(k => {
             if (k.group_jkn || k.group_bp_jamsostek) {
-                addRow(k.id); // addRow sekarang otomatis menghitung melalui setTimeout
+                addRow(k.id);
             }
         });
         
