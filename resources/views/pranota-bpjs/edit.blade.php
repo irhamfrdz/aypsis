@@ -60,8 +60,8 @@
                             <tr>
                                 <th class="px-2 py-3 w-10 text-center">#</th>
                                 <th class="px-2 py-3 text-left">Nama Karyawan</th>
-                                <th class="px-2 py-3 text-right">BPJS Kesehatan (Rp)</th>
-                                <th class="px-2 py-3 text-right">BPJS Ketenagakerjaan (Rp)</th>
+                                <th class="px-2 py-3 text-right">JKN (Rp)</th>
+                                <th class="px-2 py-3 text-right">BP Jamsostek (Rp)</th>
                                 <th class="px-2 py-3 text-right">Subtotal (Rp)</th>
                                 <th class="px-2 py-3 w-10 text-center">Aksi</th>
                             </tr>
@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const karyawans = @json($karyawans);
     const existingDetails = @json($pranota_bpj->details);
+    const rumusBpjs = @json($rumusBpjs);
     let rowCount = 0;
 
     function formatNumber(num) {
@@ -178,11 +179,77 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateTotals();
         });
         
+        let $select = null;
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-            jQuery(tr.querySelector('.select2')).select2({
+            $select = jQuery(tr.querySelector('.select2')).select2({
                 placeholder: "-- Pilih Karyawan --",
                 allowClear: true
             });
+        }
+
+        const handleKaryawanChange = function(e) {
+            const selectedKaryawanId = e.target.value;
+            if (!selectedKaryawanId) {
+                inputKes.value = 0;
+                inputKet.value = 0;
+                updateSubtotal();
+                return;
+            }
+
+            const karyawan = karyawans.find(k => k.id == selectedKaryawanId);
+            if (!karyawan) return;
+
+            let nominalKes = 0;
+            let nominalKet = 0;
+
+            // Hitung JKN
+            if (karyawan.group_jkn) {
+                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                if (rumus) {
+                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutang = parseFloat(rumus.hutang_persen || 0);
+                    const biaya = parseFloat(rumus.biaya_persen || 0);
+                    const totalPersen = tunjangan + hutang + biaya;
+
+                    if (totalPersen > 0) {
+                        const dpp = parseFloat(karyawan.dpp_jkn || 0);
+                        nominalKes = (totalPersen / 100) * dpp;
+                    } else if (rumus.keterangan_custom) {
+                        nominalKes = 0; // Manual input for custom logic
+                    }
+                }
+            }
+
+            // Hitung Jamsostek
+            if (karyawan.group_bp_jamsostek) {
+                const rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
+                if (rumus) {
+                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutang = parseFloat(rumus.hutang_persen || 0);
+                    const biaya = parseFloat(rumus.biaya_persen || 0);
+                    const totalPersen = tunjangan + hutang + biaya;
+
+                    if (totalPersen > 0) {
+                        const dpp = parseFloat(karyawan.dpp_bp_jamsostek || 0);
+                        nominalKet = (totalPersen / 100) * dpp;
+                    } else if (rumus.keterangan_custom) {
+                        nominalKet = 0; // Manual input for custom logic
+                    }
+                }
+            }
+
+            // Only override if the inputs are currently empty or 0, or if user explicitly changes the selection.
+            // If it's a new row (data === null) or user actively changed it.
+            // Since this is triggered on 'change', it usually means a user action, so we can override.
+            inputKes.value = Math.round(nominalKes);
+            inputKet.value = Math.round(nominalKet);
+            updateSubtotal();
+        };
+
+        if ($select) {
+            $select.on('change', handleKaryawanChange);
+        } else {
+            tr.querySelector('.select2').addEventListener('change', handleKaryawanChange);
         }
     }
 

@@ -47,9 +47,14 @@
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-gray-800">Detail Karyawan</h2>
-                    <button type="button" id="btn-add-karyawan" class="btn bg-indigo-500 hover:bg-indigo-600 text-white text-sm">
-                        <i class="fas fa-plus mr-2"></i> Tambah Karyawan
-                    </button>
+                    <div class="flex space-x-2">
+                        <button type="button" id="btn-generate-all" class="btn bg-green-500 hover:bg-green-600 text-white text-sm">
+                            <i class="fas fa-magic mr-2"></i> Hitung Semua Karyawan
+                        </button>
+                        <button type="button" id="btn-add-karyawan" class="btn bg-indigo-500 hover:bg-indigo-600 text-white text-sm">
+                            <i class="fas fa-plus mr-2"></i> Tambah Karyawan
+                        </button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -58,8 +63,8 @@
                             <tr>
                                 <th class="px-2 py-3 w-10 text-center">#</th>
                                 <th class="px-2 py-3 text-left">Nama Karyawan</th>
-                                <th class="px-2 py-3 text-right">BPJS Kesehatan (Rp)</th>
-                                <th class="px-2 py-3 text-right">BPJS Ketenagakerjaan (Rp)</th>
+                                <th class="px-2 py-3 text-right">JKN (Rp)</th>
+                                <th class="px-2 py-3 text-right">BP Jamsostek (Rp)</th>
                                 <th class="px-2 py-3 text-right">Subtotal (Rp)</th>
                                 <th class="px-2 py-3 w-10 text-center">Aksi</th>
                             </tr>
@@ -95,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Convert karyawans to JSON for select options
     const karyawans = @json($karyawans);
+    const rumusBpjs = @json($rumusBpjs);
     let rowCount = 0;
 
     function formatNumber(num) {
@@ -118,12 +124,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(sumKes + sumKet);
     }
 
-    function addRow() {
+    function addRow(karyawanId = null) {
         rowCount++;
         
         let options = '<option value="">-- Pilih Karyawan --</option>';
         karyawans.forEach(k => {
-            options += `<option value="${k.id}">${k.nama_lengkap}</option>`;
+            const selected = (karyawanId && k.id == karyawanId) ? 'selected' : '';
+            options += `<option value="${k.id}" ${selected}>${k.nama_lengkap}</option>`;
         });
 
         const tr = document.createElement('tr');
@@ -174,11 +181,87 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Try to initialize select2 if available
+        let $select = null;
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-            jQuery(tr.querySelector('.select2')).select2({
+            $select = jQuery(tr.querySelector('.select2')).select2({
                 placeholder: "-- Pilih Karyawan --",
                 allowClear: true
             });
+        }
+
+        // Calculate function separated for reuse
+        function calculateBpjsForKaryawan(karyawanId) {
+            if (!karyawanId) {
+                inputKes.value = 0;
+                inputKet.value = 0;
+                updateSubtotal();
+                return;
+            }
+
+            const karyawan = karyawans.find(k => k.id == karyawanId);
+            if (!karyawan) return;
+
+            let nominalKes = 0;
+            let nominalKet = 0;
+
+            // Hitung JKN: cari rumus berdasarkan group_jkn karyawan
+            if (karyawan.group_jkn) {
+                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                if (rumus) {
+                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutang    = parseFloat(rumus.hutang_persen    || 0);
+                    const biaya     = parseFloat(rumus.biaya_persen     || 0);
+                    const totalPersen = tunjangan + hutang + biaya;
+
+                    if (totalPersen > 0) {
+                        const dpp = parseFloat(karyawan.dpp_jkn || 0);
+                        nominalKes = (totalPersen / 100) * dpp;
+                    }
+                    // jika keterangan_custom dan totalPersen == 0, biarkan 0 (input manual)
+                }
+            }
+
+            // Hitung BP Jamsostek: cari rumus berdasarkan group_bp_jamsostek karyawan
+            if (karyawan.group_bp_jamsostek) {
+                const rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
+                if (rumus) {
+                    const tunjangan = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutang    = parseFloat(rumus.hutang_persen    || 0);
+                    const biaya     = parseFloat(rumus.biaya_persen     || 0);
+                    const totalPersen = tunjangan + hutang + biaya;
+
+                    if (totalPersen > 0) {
+                        const dpp = parseFloat(karyawan.dpp_bp_jamsostek || 0);
+                        nominalKet = (totalPersen / 100) * dpp;
+                    }
+                }
+            }
+
+            inputKes.value = Math.round(nominalKes);
+            inputKet.value = Math.round(nominalKet);
+            updateSubtotal();
+        }
+
+        const handleKaryawanChange = function(val) {
+            // val bisa dari event biasa (e.target.value) atau dari Select2 (val langsung)
+            const karyawanId = (typeof val === 'object' && val !== null && val.target) ? val.target.value : val;
+            calculateBpjsForKaryawan(karyawanId);
+        };
+
+        if ($select) {
+            // Select2 mengirimkan event jQuery, ambil value dari $select.val()
+            $select.on('change', function() {
+                calculateBpjsForKaryawan($select.val());
+            });
+        } else {
+            tr.querySelector('.select2').addEventListener('change', function(e) {
+                calculateBpjsForKaryawan(e.target.value);
+            });
+        }
+
+        // Jika saat pembuatan baris sudah ada karyawanId (dari generate-all), hitung langsung
+        if (karyawanId) {
+            setTimeout(() => calculateBpjsForKaryawan(karyawanId), 100);
         }
     }
 
@@ -188,10 +271,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    btnAdd.addEventListener('click', addRow);
+    btnAdd.addEventListener('click', () => addRow(null));
     
-    // Add first row by default
-    addRow();
+    document.getElementById('btn-generate-all').addEventListener('click', () => {
+        // Hapus baris kosong pertama jika ada
+        const existingRows = document.querySelectorAll('.detail-row');
+        if (existingRows.length === 1) {
+            const firstSelect = existingRows[0].querySelector('select');
+            if (!firstSelect.value) {
+                existingRows[0].remove();
+                rowCount = 0;
+            }
+        }
+
+        // Tambahkan baris untuk setiap karyawan yang punya Group JKN atau Group BP Jamsostek
+        karyawans.forEach(k => {
+            if (k.group_jkn || k.group_bp_jamsostek) {
+                addRow(k.id); // addRow sekarang otomatis menghitung melalui setTimeout
+            }
+        });
+        
+        updateRowNumbers();
+    });
+
+    // Tambah 1 baris kosong sebagai default
+    addRow(null);
 });
 </script>
 @endsection

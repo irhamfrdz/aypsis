@@ -383,6 +383,8 @@ Route::middleware([
     Route::resource('master-customer-buruh', \App\Http\Controllers\MasterCustomerBuruhController::class);
     Route::resource('master-group-bp-jamsostek', \App\Http\Controllers\MasterGroupBpJamsostekController::class);
 
+    Route::resource('master-rumus-bpjs', \App\Http\Controllers\MasterRumusBpjsController::class)->except(['create', 'show', 'edit']);
+
     Route::get('kontainer-sewa-billing', [BtmKontainerSewaController::class, 'index'])
         ->name('kontainer-sewa-billing.index')
         ->middleware('can:tagihan-kontainer-sewa-index');
