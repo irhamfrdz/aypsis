@@ -1223,6 +1223,26 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Print BL on Preprinted paper
+     */
+    public function printBlPreprinted($bl)
+    {
+        // ========================================
+        // DATA SOURCE: TABLE MANIFESTS
+        // ========================================
+        // Find manifest by ID from manifests table
+        $manifest = Manifest::findOrFail($bl);
+
+        $printData = clone $manifest;
+        
+        // Include any logic specific to BL printing
+        $printData->tanggal_bl = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
+        
+        return view('surat-jalan-bongkaran.print-bl-preprinted', compact('printData'));
+    }
+
+
+    /**
      * Get Surat Jalan Bongkaran data by ID for API (for edit modal)
      */
     public function getSuratJalanById($id)
