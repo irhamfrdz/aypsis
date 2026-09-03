@@ -243,6 +243,23 @@
                     </select>
                 </div>
 
+                {{-- Tujuan (Ke) Filter --}}
+                <div>
+                    <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter Tujuan (Ke)</label>
+                    <select name="tujuan_ke"
+                            class="select2-gudang w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Tujuan</option>
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->nama_gudang }}" {{ request('tujuan_ke') == $gudang->nama_gudang ? 'selected' : '' }}>
+                                {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
+                            </option>
+                        @endforeach
+                        @if($namaKapal)
+                            <option value="{{ $namaKapal }}" {{ request('tujuan_ke') == $namaKapal ? 'selected' : '' }}>{{ $namaKapal }}</option>
+                        @endif
+                    </select>
+                </div>
+
                 {{-- Asal Kontainer Input --}}
                 <div>
                     <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Asal Kontainer (Semua)</label>
@@ -396,6 +413,10 @@
                         <div class="flex justify-between">
                             <span class="text-gray-600">Vol/Ton:</span>
                             <span class="font-medium text-gray-900">{{ number_format($bl->volume ?? 0, 2) }} / {{ number_format($bl->tonnage ?? 0, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between bg-blue-50 px-2 py-1 -mx-2 rounded">
+                            <span class="text-gray-700 font-medium">Tujuan (Ke):</span>
+                            <span class="font-bold text-blue-700">{{ $bl->ke ?: '-' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Created:</span>

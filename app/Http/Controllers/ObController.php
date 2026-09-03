@@ -139,6 +139,10 @@ class ObController extends Controller
                 $queryBl->where('tipe_kontainer', $request->tipe_kontainer);
             }
 
+            if ($request->filled('tujuan_ke')) {
+                $queryBl->where('ke', $request->tujuan_ke);
+            }
+
             if ($request->filled('size_kontainer')) {
                 $queryBl->where('size_kontainer', $request->size_kontainer);
             }
@@ -318,6 +322,10 @@ class ObController extends Controller
             } elseif ($request->status_ob === 'belum') {
                 $query->where('sudah_ob', false);
             }
+        }
+
+        if ($request->filled('tujuan_ke')) {
+            $query->where('ke', $request->tujuan_ke);
         }
 
         if ($request->filled('tipe_kontainer')) {
