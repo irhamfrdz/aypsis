@@ -278,6 +278,9 @@ class PembayaranBiayaKapalController extends Controller
             // Remove items
             $pembayaran->biayaKapals()->detach();
 
+            // Delete associated COA transactions
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+
             // Delete payment record
             $pembayaran->delete();
 
