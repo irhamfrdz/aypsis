@@ -36,6 +36,7 @@ class StockBanLuarBatam extends Model
         'status_ban_luar',
         'status_masak',
         'jumlah_masak',
+        'nomor_bukti_pakai',
         'created_by',
         'updated_by',
     ];

@@ -73,7 +73,12 @@ class StockBanController extends Controller
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals', 'masterGudangBans', 'gudangs'));
+        $nextNomorBuktiPakai = \App\Models\StockBan::generateNextNomorBuktiPakai();
+        $nextNomorBuktiJual = \App\Models\StockBan::generateNextNomorBuktiJual();
+        $nextNomorBuktiKirim = \App\Models\StockBan::generateNextNomorBuktiKirim();
+        $nextNomorBuktiKembali = \App\Models\StockBan::generateNextNomorBuktiKembali();
+
+        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals', 'masterGudangBans', 'gudangs', 'nextNomorBuktiPakai', 'nextNomorBuktiJual', 'nextNomorBuktiKirim', 'nextNomorBuktiKembali'));
     }
 
     /**
@@ -752,6 +757,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'lokasi' => 'required|string|max:255',
+            'nomor_bukti_kembali' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -769,6 +775,7 @@ class StockBanController extends Controller
             'status' => 'Stok',
             'mobil_id' => null,
             'lokasi' => $request->lokasi,
+            'nomor_bukti_kembali' => $request->nomor_bukti_kembali,
             'tanggal_keluar' => null,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$returnNote) : $returnNote,
         ]);
@@ -932,6 +939,7 @@ class StockBanController extends Controller
             'harga_jual' => 'required|numeric|min:0',
             'pembeli' => 'required|string|max:255',
             'tanggal_jual' => 'required|date',
+            'nomor_bukti_jual' => 'nullable|string|max:255',
             'keterangan_jual' => 'nullable|string',
         ]);
 
@@ -945,6 +953,7 @@ class StockBanController extends Controller
             'harga_jual' => $request->harga_jual,
             'pembeli' => $request->pembeli,
             'tanggal_jual' => $request->tanggal_jual,
+            'nomor_bukti_jual' => $request->nomor_bukti_jual,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$jualNote) : $jualNote,
             'mobil_id' => null,
             'alat_berat_id' => null,

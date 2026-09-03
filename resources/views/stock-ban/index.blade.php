@@ -2117,6 +2117,13 @@
                                     </div>
 
                                     <div>
+                                        <label for="return_nomor_bukti" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Nomor Bukti Kembali
+                                        </label>
+                                        <input type="text" name="nomor_bukti_kembali" id="return_nomor_bukti" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Contoh: M260100001" autocomplete="off">
+                                    </div>
+
+                                    <div>
                                         <label for="return_keterangan" class="block text-sm font-medium text-gray-700 mb-2">
                                             Keterangan (Opsional)
                                         </label>
@@ -2547,6 +2554,11 @@
             }
         }
         
+        const nomorBuktiPakaiInput = usageForm.querySelector('input[name="nomor_bukti_pakai"]');
+        if (nomorBuktiPakaiInput) {
+            nomorBuktiPakaiInput.value = '{{ $nextNomorBuktiPakai ?? "" }}';
+        }
+        
         console.log('About to show modal, current classes:', usageModal.className);
         usageModal.classList.remove('hidden');
         
@@ -2595,6 +2607,12 @@
         
         // Reset form
         document.getElementById('return_lokasi').value = '';
+        
+        const returnNomorBukti = document.getElementById('return_nomor_bukti');
+        if (returnNomorBukti) {
+            returnNomorBukti.value = "{{ $nextNomorBuktiKembali ?? '' }}";
+        }
+        
         document.getElementById('return_keterangan').value = '';
         
         // Show modal
@@ -2792,6 +2810,12 @@
         document.getElementById('kirim_kapal').value = '';
         document.getElementById('text-kirim_kapal').textContent = '-- Pilih Kapal --';
         document.getElementById('kirim_tanggal').value = new Date().toISOString().split('T')[0];
+        
+        const modalNomorKirim = document.getElementById('kirim_nomor');
+        if (modalNomorKirim) {
+            modalNomorKirim.value = "{{ $nextNomorBuktiKirim ?? '' }}";
+        }
+        
         document.getElementById('kirim_keterangan').value = '';
 
         modal.classList.remove('hidden');
@@ -3594,6 +3618,11 @@
         modalNomorSeri.textContent = seri || '-';
         modalPembeli.value = '';
         modalHarga.value = '';
+        
+        const modalNomorBuktiJual = document.getElementById('jual_nomor_bukti_jual');
+        if (modalNomorBuktiJual) {
+            modalNomorBuktiJual.value = "{{ $nextNomorBuktiJual ?? '' }}";
+        }
         document.getElementById('jual_tanggal').value = new Date().toISOString().split('T')[0];
         document.getElementById('jual_keterangan').value = '';
 
@@ -3768,8 +3797,8 @@ function closeJualBanModal() {
                                 </div>
 
                                 <div>
-                                    <label for="kirim_nomor" class="form-label-premium">Nomor Kirim</label>
-                                    <input type="text" name="nomor_kirim" id="kirim_nomor" class="form-input-premium" placeholder="Contoh: NK-26-08-2026" autocomplete="off">
+                                    <label for="kirim_nomor" class="form-label-premium">Nomor Bukti Kirim</label>
+                                    <input type="text" name="nomor_kirim" id="kirim_nomor" class="form-input-premium" placeholder="Contoh: B260100001" autocomplete="off">
                                 </div>
 
                                 <div>
@@ -3934,6 +3963,11 @@ function closeJualBanModal() {
                                         </div>
                                         <input type="number" name="harga_jual" id="jual_harga" class="form-input-premium" style="padding-left: 3rem !important;" placeholder="0" min="0" required>
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label-premium">Nomor Bukti Jual</label>
+                                    <input type="text" name="nomor_bukti_jual" id="jual_nomor_bukti_jual" class="form-input-premium" placeholder="Contoh: J260100001" autocomplete="off">
                                 </div>
 
                                 <div>

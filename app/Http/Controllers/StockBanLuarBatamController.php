@@ -211,6 +211,7 @@ class StockBanLuarBatamController extends Controller
             'processed_unit_id' => $isAlatBerat ? 'exists:alat_berats,id' : 'exists:mobils,id',
             'penerima_id' => 'nullable|exists:karyawans,id',
             'tanggal_keluar' => 'required|date',
+            'nomor_bukti_pakai' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ], [
             'mobil_id.required' => 'Wajib memilih Mobil atau Alat Berat.',
@@ -223,6 +224,7 @@ class StockBanLuarBatamController extends Controller
             'status' => 'Terpakai',
             'penerima_id' => $request->penerima_id,
             'tanggal_keluar' => $request->tanggal_keluar,
+            'nomor_bukti_pakai' => $request->nomor_bukti_pakai,
             'keterangan' => $request->keterangan ? ($stockBan->keterangan."\n".'[Pemakaian: '.$request->keterangan.']') : $stockBan->keterangan,
         ];
 
