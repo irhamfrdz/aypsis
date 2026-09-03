@@ -74,7 +74,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($shipperConsignees as $index => $item)
                     <tr class="hover:bg-gray-50">
-                        <td class="py-4 px-4 text-[10px] text-gray-900">{{ $index + 1 }}</td>
+                        <td class="py-4 px-4 text-[10px] text-gray-900">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
                         <td class="py-4 px-4 text-[10px] font-medium text-gray-900">{{ $item->shipper ?: '-' }}</td>
                         <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->consignee ?: '-' }}</td>
                         <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->contact_person ?: $item->telepon ?: '-' }}</td>
@@ -124,6 +124,18 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Pagination --}}
+    @if($shipperConsignees->hasPages())
+    <div class="mt-4 flex items-center justify-between">
+        <p class="text-xs text-gray-500">
+            Menampilkan {{ $shipperConsignees->firstItem() }}–{{ $shipperConsignees->lastItem() }} dari {{ $shipperConsignees->total() }} data
+        </p>
+        <div>
+            {{ $shipperConsignees->links() }}
+        </div>
+    </div>
+    @endif
 </div>
 
 <!-- Import Modal -->

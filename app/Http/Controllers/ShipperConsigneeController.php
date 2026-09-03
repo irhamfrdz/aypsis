@@ -23,7 +23,7 @@ class ShipperConsigneeController extends Controller
             });
         }
 
-        $shipperConsignees = $query->orderBy('id', 'desc')->get();
+        $shipperConsignees = $query->orderBy('id', 'desc')->paginate(50)->withQueryString();
         return view('master.shipper-consignee.index', compact('shipperConsignees'));
     }
 

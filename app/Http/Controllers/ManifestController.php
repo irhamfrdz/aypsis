@@ -1493,7 +1493,23 @@ class ManifestController extends Controller
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
             $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
 
-            $waUrl = $nomorKontak ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $nomorKontak) . "?text=" . rawurlencode($isiPesan) : null;
+            // Konversi \n literal (dari database) menjadi newline asli
+            $isiPesan = str_replace('\n', "\n", $isiPesan);
+
+            // Konversi nomor ke format internasional (62xxx)
+            $waPhone = null;
+            if ($nomorKontak) {
+                $waPhone = preg_replace('/[^0-9]/', '', $nomorKontak);
+                if (str_starts_with($waPhone, '0')) {
+                    $waPhone = '62' . substr($waPhone, 1);
+                } elseif (!str_starts_with($waPhone, '62')) {
+                    $waPhone = '62' . $waPhone;
+                }
+            }
+
+            $waUrl = $waPhone
+                ? "https://web.whatsapp.com/send?phone={$waPhone}&text=" . rawurlencode($isiPesan)
+                : null;
 
             $broadcastData[] = [
                 'shipper_name' => $namaTujuan,
