@@ -36,6 +36,7 @@ return [
             'required' => true,
             'sub_modules' => [
                 'master-karyawan' => 'Manajemen Karyawan',
+                'master-group-bp-jamsostek' => 'Manajemen Group BP Jamsostek',
                 'master-user' => 'Manajemen User',
                 'master-kontainer' => 'Manajemen Kontainer',
                 'master-pricelist-sewa-kontainer' => 'Pricelist Sewa Kontainer',

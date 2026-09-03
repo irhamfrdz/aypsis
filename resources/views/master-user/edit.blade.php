@@ -969,6 +969,22 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                             {{-- Master Group BP Jamsostek --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Group BP Jamsostek</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-group-bp-jamsostek']['view']) && $userMatrixPermissions['master-group-bp-jamsostek']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-group-bp-jamsostek']['create']) && $userMatrixPermissions['master-group-bp-jamsostek']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-group-bp-jamsostek']['update']) && $userMatrixPermissions['master-group-bp-jamsostek']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-group-bp-jamsostek']['delete']) && $userMatrixPermissions['master-group-bp-jamsostek']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
                             {{-- Data Buruh --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

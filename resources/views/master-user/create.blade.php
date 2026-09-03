@@ -351,6 +351,22 @@
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Group BP Jamsostek</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-group-bp-jamsostek][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Data Divisi</span>
                                     </div>
                                 </td>
