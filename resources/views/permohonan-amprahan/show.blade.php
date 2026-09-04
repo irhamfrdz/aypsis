@@ -29,7 +29,7 @@
                 <div class="space-y-4">
                     <div>
                         <div class="text-xs text-gray-500 uppercase font-semibold">Kapal</div>
-                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->kapal->nama ?? '-' }}</div>
+                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->kapal->nama_kapal ?? '-' }}</div>
                     </div>
                     
                     <div>

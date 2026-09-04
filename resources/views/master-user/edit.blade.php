@@ -3309,12 +3309,12 @@
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[permohonan-amprahan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['view']) && $userMatrixPermissions['permohonan-amprahan']['view']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['create']) && $userMatrixPermissions['permohonan-amprahan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['update']) && $userMatrixPermissions['permohonan-amprahan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['delete']) && $userMatrixPermissions['permohonan-amprahan']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['approve']) && $userMatrixPermissions['permohonan-amprahan']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['print']) && $userMatrixPermissions['permohonan-amprahan']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['export']) && $userMatrixPermissions['permohonan-amprahan']['export']) checked @endif></td>
                             </tr>
 
                             {{-- Belanja Amprahan --}}

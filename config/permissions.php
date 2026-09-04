@@ -268,6 +268,12 @@ return [
             'required' => true,
             'sub_modules' => [
                 'permohonan-amprahan-view' => 'View Permohonan Amprahan',
+                'permohonan-amprahan-create' => 'Create Permohonan Amprahan',
+                'permohonan-amprahan-update' => 'Update Permohonan Amprahan',
+                'permohonan-amprahan-delete' => 'Delete Permohonan Amprahan',
+                'permohonan-amprahan-approve' => 'Approve Permohonan Amprahan',
+                'permohonan-amprahan-print' => 'Print Permohonan Amprahan',
+                'permohonan-amprahan-export' => 'Export Permohonan Amprahan',
             ],
         ],
     ],

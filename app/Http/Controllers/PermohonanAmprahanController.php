@@ -11,7 +11,7 @@ class PermohonanAmprahanController extends Controller
 {
     public function index(Request $request)
     {
-        $kapals = MasterKapal::orderBy('nama')->get();
+        $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $selectedKapal = $request->input('kapal_id');
         $selectedVoyage = $request->input('nomor_voyage');
 
@@ -47,5 +47,46 @@ class PermohonanAmprahanController extends Controller
         // Since AYPSIS usually uses DOMPDF for printing, or just a printable view.
         // I will just return a view with window.print()
         return view('permohonan-amprahan.print', compact('permohonan'));
+    }
+
+    public function approvalIndex(Request $request)
+    {
+        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+        $selectedKapal = $request->input('kapal_id');
+        $selectedVoyage = $request->input('nomor_voyage');
+        $selectedStatus = $request->input('status', 'pending');
+
+        $query = PermohonanAmprahan::with(['kapal', 'user'])->latest();
+
+        if ($selectedKapal) {
+            $query->where('kapal_id', $selectedKapal);
+        }
+
+        if ($selectedVoyage) {
+            $query->where('nomor_voyage', 'like', "%{$selectedVoyage}%");
+        }
+        
+        if ($selectedStatus && $selectedStatus != 'all') {
+            $query->where('status', $selectedStatus);
+        }
+
+        $permohonans = $query->paginate(15)->withQueryString();
+
+        return view('permohonan-amprahan.approval-index', compact('kapals', 'permohonans', 'selectedKapal', 'selectedVoyage', 'selectedStatus'));
+    }
+
+    public function process(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        $permohonan = PermohonanAmprahan::findOrFail($id);
+        $permohonan->status = $request->status;
+        $permohonan->save();
+
+        $message = $request->status == 'approved' ? 'Permohonan berhasil disetujui.' : 'Permohonan ditolak.';
+        
+        return redirect()->route('approval-permohonan-amprahan.index')->with('success', $message);
     }
 }

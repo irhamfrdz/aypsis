@@ -1112,6 +1112,23 @@
                                 <td><input type="checkbox" name="permissions[permohonan-memo][print]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[permohonan-memo][export]" value="1" class="permission-checkbox"></td>
                             </tr>
+                            
+                            {{-- Permintaan Amprahan --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Permintaan Amprahan (PWA)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-amprahan][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
 
                             <tr class="submodule-row" data-parent="uang-jalan-supir">
                                 <td class="submodule">
