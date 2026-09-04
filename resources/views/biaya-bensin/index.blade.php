@@ -141,6 +141,11 @@
                                             <i class="fas fa-file-invoice"></i>
                                         </a>
                                     @endif
+                                    @can('biaya-bensin-view')
+                                        <a href="{{ route('biaya-bensin.print', $item->id) }}" target="_blank" class="p-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" title="Print Permohonan Transfer">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    @endcan
                                     @can('biaya-bensin-update')
                                         <a href="{{ route('biaya-bensin.edit', $item) }}" class="p-2 bg-amber-100 text-amber-700 rounded-md hover:bg-amber-200 transition-colors" title="Edit">
                                             <i class="fas fa-edit"></i>

@@ -164,6 +164,16 @@ class BiayaBensinController extends Controller
     }
 
     /**
+     * Print permohonan transfer untuk Biaya Bensin.
+     */
+    public function print(string $id)
+    {
+        $biayaBensin = BiayaBensin::with(['mobil', 'supir', 'creator'])->findOrFail($id);
+        
+        return view('biaya-bensin.print', compact('biayaBensin'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)

@@ -3002,6 +3002,10 @@ Route::middleware([
             ->middleware('can:biaya-kapal-view');
 
         // ⛽ Biaya Bensin Routes
+        Route::get('biaya-bensin/print/{id}', [BiayaBensinController::class, 'print'])
+            ->name('biaya-bensin.print')
+            ->middleware('can:biaya-bensin-view');
+            
         Route::get('biaya-bensin/approval', [BiayaBensinController::class, 'approvalList'])
             ->name('biaya-bensin.approval')
             ->middleware('can:biaya-bensin-view');

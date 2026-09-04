@@ -112,7 +112,6 @@
             </div>
         </form>
     </div>
-
     <!-- Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="overflow-x-auto">
