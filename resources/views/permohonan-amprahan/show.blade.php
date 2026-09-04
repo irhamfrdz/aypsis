@@ -93,6 +93,7 @@
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Satuan</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Keterangan</th>
                             </tr>
                         </thead>
@@ -111,13 +112,22 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
                                         {{ $item->satuan }}
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($item->status == 'pending')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                        @elseif($item->status == 'approved')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
+                                        @else
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
                                         {{ $item->keterangan ?: '-' }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
                                         Tidak ada item barang dalam permintaan ini.
                                     </td>
                                 </tr>

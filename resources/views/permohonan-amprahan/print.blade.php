@@ -249,9 +249,15 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($permohonan->items as $index => $item)
+                @php
+                    $itemsToPrint = $permohonan->status == 'pending' 
+                        ? $permohonan->items 
+                        : $permohonan->items->where('status', 'approved');
+                    $printIndex = 1;
+                @endphp
+                @foreach($itemsToPrint as $item)
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td class="text-center">{{ $printIndex++ }}</td>
                     <td>{{ $item->nama_barang }}</td>
                     <td class="text-center font-bold">{{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }}</td>
                     <td class="text-center">{{ $item->satuan }}</td>

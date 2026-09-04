@@ -11,29 +11,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('permohonan_amprahans', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('kapal_id');
-            $table->string('nomor_voyage');
-            $table->string('status')->default('pending');
-            $table->text('keterangan_umum')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('permohonan_amprahans')) {
+            Schema::create('permohonan_amprahans', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->unsignedBigInteger('kapal_id');
+                $table->string('nomor_voyage');
+                $table->string('status')->default('pending');
+                $table->text('keterangan_umum')->nullable();
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('permohonan_amprahan_items', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('permohonan_id');
-            $table->string('nama_barang');
-            $table->decimal('jumlah', 10, 2);
-            $table->string('satuan');
-            $table->text('keterangan')->nullable();
-            
-            $table->foreign('permohonan_id')
-                  ->references('id')
-                  ->on('permohonan_amprahans')
-                  ->onDelete('cascade');
-        });
+        if (!Schema::hasTable('permohonan_amprahan_items')) {
+            Schema::create('permohonan_amprahan_items', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('permohonan_id');
+                $table->string('nama_barang');
+                $table->decimal('jumlah', 10, 2);
+                $table->string('satuan');
+                $table->text('keterangan')->nullable();
+                
+                $table->foreign('permohonan_id')
+                      ->references('id')
+                      ->on('permohonan_amprahans')
+                      ->onDelete('cascade');
+            });
+        }
     }
 
     /**

@@ -92,19 +92,23 @@
                                 <div class="text-sm text-gray-600">Voyage: <span class="font-medium">{{ $item->nomor_voyage }}</span></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->status == 'pending')
-                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                @elseif($item->status == 'approved')
-                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Disetujui
-                                    </span>
-                                @else
-                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Ditolak
-                                    </span>
-                                @endif
+                                  @if($item->status == 'pending')
+                                      <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                          Pending
+                                      </span>
+                                  @elseif($item->status == 'approved')
+                                      <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                          Disetujui
+                                      </span>
+                                  @elseif($item->status == 'partially_approved')
+                                      <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                          Disetujui Sebagian
+                                      </span>
+                                  @else
+                                      <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                          Ditolak
+                                      </span>
+                                  @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $item->user->name ?? '-' }}</div>
@@ -116,21 +120,9 @@
                                     </a>
                                     
                                     @if($item->status == 'pending')
-                                        <form action="{{ route('approval-permohonan-amprahan.process', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin menyetujui permohonan ini?');">
-                                            @csrf
-                                            <input type="hidden" name="status" value="approved">
-                                            <button type="submit" class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors" title="Setujui">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        
-                                        <form action="{{ route('approval-permohonan-amprahan.process', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin MENOLAK permohonan ini?');">
-                                            @csrf
-                                            <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors" title="Tolak">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('approval-permohonan-amprahan.process-form', $item->id) }}" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center" title="Proses Persetujuan">
+                                            <i class="fas fa-clipboard-check mr-1.5"></i> Proses
+                                        </a>
                                     @endif
                                 </div>
                             </td>

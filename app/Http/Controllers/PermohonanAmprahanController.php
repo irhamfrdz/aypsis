@@ -75,18 +75,50 @@ class PermohonanAmprahanController extends Controller
         return view('permohonan-amprahan.approval-index', compact('kapals', 'permohonans', 'selectedKapal', 'selectedVoyage', 'selectedStatus'));
     }
 
+    public function approvalProcessForm($id)
+    {
+        $permohonan = PermohonanAmprahan::with(['items', 'kapal', 'user'])->findOrFail($id);
+        
+        return view('permohonan-amprahan.approval-process', compact('permohonan'));
+    }
+
     public function process(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:approved,rejected',
+            'items' => 'required|array',
+            'items.*' => 'required|in:approved,rejected,pending',
         ]);
 
         $permohonan = PermohonanAmprahan::findOrFail($id);
-        $permohonan->status = $request->status;
+        
+        // Update item statuses
+        $approvedCount = 0;
+        $rejectedCount = 0;
+        $totalItems = count($request->items);
+        
+        foreach ($request->items as $itemId => $status) {
+            $item = PermohonanAmprahanItem::where('permohonan_id', $id)->where('id', $itemId)->first();
+            if ($item) {
+                $item->status = $status;
+                $item->save();
+                
+                if ($status == 'approved') $approvedCount++;
+                if ($status == 'rejected') $rejectedCount++;
+            }
+        }
+
+        // Determine parent status
+        if ($approvedCount == $totalItems) {
+            $permohonan->status = 'approved';
+        } elseif ($rejectedCount == $totalItems) {
+            $permohonan->status = 'rejected';
+        } else {
+            $permohonan->status = 'partially_approved';
+        }
+        
         $permohonan->save();
 
-        $message = $request->status == 'approved' ? 'Permohonan berhasil disetujui.' : 'Permohonan ditolak.';
-        
-        return redirect()->route('approval-permohonan-amprahan.index')->with('success', $message);
+        return redirect()->route('approval-permohonan-amprahan.index')
+                         ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
     }
 }
