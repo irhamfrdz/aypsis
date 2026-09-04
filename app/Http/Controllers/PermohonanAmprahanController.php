@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterKapal;
 use App\Models\PermohonanAmprahan;
+use App\Models\PermohonanAmprahanItem;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
