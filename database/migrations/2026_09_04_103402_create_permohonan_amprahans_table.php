@@ -18,6 +18,7 @@ return new class extends Migration
                 $table->unsignedBigInteger('kapal_id');
                 $table->string('nomor_voyage');
                 $table->string('status')->default('pending');
+            $table->timestamp('tanggal_diterima')->nullable();
                 $table->text('keterangan_umum')->nullable();
                 $table->timestamps();
             });
