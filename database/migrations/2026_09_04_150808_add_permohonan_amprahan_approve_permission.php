@@ -24,7 +24,7 @@ return new class extends Migration
         if ($adminRole) {
             $permission = DB::table('permissions')->where('name', 'permohonan-amprahan-approve')->first();
             if ($permission) {
-                DB::table('role_has_permissions')->updateOrInsert([
+                DB::table('permission_role')->updateOrInsert([
                     'permission_id' => $permission->id,
                     'role_id' => $adminRole->id
                 ]);
@@ -39,7 +39,7 @@ return new class extends Migration
     {
         $permission = DB::table('permissions')->where('name', 'permohonan-amprahan-approve')->first();
         if ($permission) {
-            DB::table('role_has_permissions')->where('permission_id', $permission->id)->delete();
+            DB::table('permission_role')->where('permission_id', $permission->id)->delete();
             DB::table('permissions')->where('id', $permission->id)->delete();
         }
     }
