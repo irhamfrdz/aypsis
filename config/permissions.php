@@ -262,6 +262,14 @@ return [
                 'chatbox-delete' => 'Hapus Chat/FAQ',
             ],
         ],
+        'permohonan-amprahan' => [
+            'name' => 'Permintaan Amprahan',
+            'description' => 'Menu Permintaan Amprahan ABK',
+            'required' => true,
+            'sub_modules' => [
+                'permohonan-amprahan-view' => 'View Permohonan Amprahan',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -331,5 +339,9 @@ return [
 
         // Chatbox
         'chatbox' => ['chatbox-view', 'chatbox-create', 'chatbox-edit', 'chatbox-delete'],
+
+        // Permintaan Amprahan
+        'permohonan-amprahan' => ['permohonan-amprahan-view'],
     ],
 ];
+

@@ -1933,6 +1933,14 @@
                             </a>
                         @endif
 
+                        {{-- Permintaan Amprahan --}}
+                        @if(Route::has('permohonan-amprahan.index') && $user && ($user->can('permohonan-amprahan-view') || $user->is_admin))
+                            <a href="{{ route('permohonan-amprahan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('permohonan-amprahan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                <div class="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2 flex-shrink-0"></div>
+                                <span>Permintaan Amprahan (PWA)</span>
+                            </a>
+                        @endif
+
                         {{-- Bayar Pranota Uang Jalan Batam --}}
                         @if(Route::has('pembayaran-pranota-uang-jalan-batam.index') && $user && ($user->can('pembayaran-pranota-uang-jalan-batam-view') || $user->is_admin))
                             <a href="{{ route('pembayaran-pranota-uang-jalan-batam.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan-batam.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">

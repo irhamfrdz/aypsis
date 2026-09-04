@@ -7821,5 +7821,10 @@ Route::middleware(['auth',
     // Rekap Perbaikan Kontainer
     Route::get('rekap-perbaikan-kontainer', [\App\Http\Controllers\RekapPerbaikanKontainerController::class, 'index'])->name('rekap-perbaikan-kontainer.index');
     Route::get('rekap-perbaikan-kontainer/show', [\App\Http\Controllers\RekapPerbaikanKontainerController::class, 'show'])->name('rekap-perbaikan-kontainer.show');
+
+    // Permintaan Amprahan
+    Route::get('permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'index'])->name('permohonan-amprahan.index')->middleware('can:permohonan-amprahan-view');
+    Route::get('permohonan-amprahan/{id}', [\App\Http\Controllers\PermohonanAmprahanController::class, 'show'])->name('permohonan-amprahan.show')->middleware('can:permohonan-amprahan-view');
+    Route::get('permohonan-amprahan/{id}/print', [\App\Http\Controllers\PermohonanAmprahanController::class, 'print'])->name('permohonan-amprahan.print')->middleware('can:permohonan-amprahan-view');
 });
 
