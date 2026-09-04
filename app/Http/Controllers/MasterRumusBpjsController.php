@@ -38,6 +38,18 @@ class MasterRumusBpjsController extends Controller
             'biaya_persen.*' => 'nullable|numeric|min:0',
             'keterangan_custom' => 'nullable|array',
             'keterangan_custom.*' => 'nullable|string|max:255',
+            'jht_biaya' => 'nullable|array',
+            'jht_biaya.*' => 'nullable|numeric|min:0',
+            'jht_hutang' => 'nullable|array',
+            'jht_hutang.*' => 'nullable|numeric|min:0',
+            'jkk_tunjangan' => 'nullable|array',
+            'jkk_tunjangan.*' => 'nullable|numeric|min:0',
+            'jkm_tunjangan' => 'nullable|array',
+            'jkm_tunjangan.*' => 'nullable|numeric|min:0',
+            'jp_biaya' => 'nullable|array',
+            'jp_biaya.*' => 'nullable|numeric|min:0',
+            'jp_hutang' => 'nullable|array',
+            'jp_hutang.*' => 'nullable|numeric|min:0',
         ]);
 
         foreach ($request->jenis as $key => $jenis) {
@@ -49,6 +61,12 @@ class MasterRumusBpjsController extends Controller
                     'hutang_persen' => $request->hutang_persen[$key] ?? null,
                     'biaya_persen' => $request->biaya_persen[$key] ?? null,
                     'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
+                    'jht_biaya' => $request->jht_biaya[$key] ?? null,
+                    'jht_hutang' => $request->jht_hutang[$key] ?? null,
+                    'jkk_tunjangan' => $request->jkk_tunjangan[$key] ?? null,
+                    'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
+                    'jp_biaya' => $request->jp_biaya[$key] ?? null,
+                    'jp_hutang' => $request->jp_hutang[$key] ?? null,
                 ]);
             }
         }
@@ -67,10 +85,28 @@ class MasterRumusBpjsController extends Controller
             'hutang_persen' => 'nullable|numeric|min:0',
             'biaya_persen' => 'nullable|numeric|min:0',
             'keterangan_custom' => 'nullable|string|max:255',
+            'jht_biaya' => 'nullable|numeric|min:0',
+            'jht_hutang' => 'nullable|numeric|min:0',
+            'jkk_tunjangan' => 'nullable|numeric|min:0',
+            'jkm_tunjangan' => 'nullable|numeric|min:0',
+            'jp_biaya' => 'nullable|numeric|min:0',
+            'jp_hutang' => 'nullable|numeric|min:0',
         ]);
 
         $rumus = MasterRumusBpjs::findOrFail($id);
-        $rumus->update($request->all());
+        $rumus->update([
+            'group_name' => $request->group_name,
+            'tunjangan_persen' => $request->tunjangan_persen,
+            'hutang_persen' => $request->hutang_persen,
+            'biaya_persen' => $request->biaya_persen,
+            'keterangan_custom' => $request->keterangan_custom,
+            'jht_biaya' => $request->jht_biaya,
+            'jht_hutang' => $request->jht_hutang,
+            'jkk_tunjangan' => $request->jkk_tunjangan,
+            'jkm_tunjangan' => $request->jkm_tunjangan,
+            'jp_biaya' => $request->jp_biaya,
+            'jp_hutang' => $request->jp_hutang,
+        ]);
 
         return redirect()->route('master-rumus-bpjs.index')->with('success', 'Data rumus berhasil diperbarui.');
     }

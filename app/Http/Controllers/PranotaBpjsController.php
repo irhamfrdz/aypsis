@@ -43,7 +43,7 @@ class PranotaBpjsController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek']);
             
-        $rumusBpjs = \App\Models\MasterRumusBpjs::all(['id', 'jenis', 'group_name', 'tunjangan_persen', 'hutang_persen', 'biaya_persen', 'keterangan_custom']);
+        $rumusBpjs = \App\Models\MasterRumusBpjs::all();
             
         return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs'));
     }
@@ -58,6 +58,12 @@ class PranotaBpjsController extends Controller
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
             'details.*.bpjs_kesehatan' => 'nullable|numeric',
             'details.*.bpjs_ketenagakerjaan' => 'nullable|numeric',
+            'details.*.jht_biaya' => 'nullable|numeric',
+            'details.*.jht_hutang' => 'nullable|numeric',
+            'details.*.jkk_tunjangan' => 'nullable|numeric',
+            'details.*.jkm_tunjangan' => 'nullable|numeric',
+            'details.*.jp_biaya' => 'nullable|numeric',
+            'details.*.jp_hutang' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -92,6 +98,12 @@ class PranotaBpjsController extends Controller
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
                             'bpjs_ketenagakerjaan' => $bpjsKet,
+                            'jht_biaya' => floatval($detail['jht_biaya'] ?? 0),
+                            'jht_hutang' => floatval($detail['jht_hutang'] ?? 0),
+                            'jkk_tunjangan' => floatval($detail['jkk_tunjangan'] ?? 0),
+                            'jkm_tunjangan' => floatval($detail['jkm_tunjangan'] ?? 0),
+                            'jp_biaya' => floatval($detail['jp_biaya'] ?? 0),
+                            'jp_hutang' => floatval($detail['jp_hutang'] ?? 0),
                             'total' => $total,
                         ]);
 
@@ -156,6 +168,12 @@ class PranotaBpjsController extends Controller
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
             'details.*.bpjs_kesehatan' => 'nullable|numeric',
             'details.*.bpjs_ketenagakerjaan' => 'nullable|numeric',
+            'details.*.jht_biaya' => 'nullable|numeric',
+            'details.*.jht_hutang' => 'nullable|numeric',
+            'details.*.jkk_tunjangan' => 'nullable|numeric',
+            'details.*.jkm_tunjangan' => 'nullable|numeric',
+            'details.*.jp_biaya' => 'nullable|numeric',
+            'details.*.jp_hutang' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -189,6 +207,12 @@ class PranotaBpjsController extends Controller
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
                             'bpjs_ketenagakerjaan' => $bpjsKet,
+                            'jht_biaya' => floatval($detail['jht_biaya'] ?? 0),
+                            'jht_hutang' => floatval($detail['jht_hutang'] ?? 0),
+                            'jkk_tunjangan' => floatval($detail['jkk_tunjangan'] ?? 0),
+                            'jkm_tunjangan' => floatval($detail['jkm_tunjangan'] ?? 0),
+                            'jp_biaya' => floatval($detail['jp_biaya'] ?? 0),
+                            'jp_hutang' => floatval($detail['jp_hutang'] ?? 0),
                             'total' => $total,
                         ]);
 

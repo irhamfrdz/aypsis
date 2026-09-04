@@ -68,9 +68,14 @@
         </div>
     </div>
 
+    @php
+        $rumusJamsostekBpu = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU'));
+        $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => str_contains(strtoupper($item->group_name), 'PPU'));
+    @endphp
+
     <div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">Group BP Jamsostek</h3>
-        <div class="overflow-x-auto">
+        <h3 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">Group BP Jamsostek (BPU)</h3>
+        <div class="overflow-x-auto mb-8">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider">
@@ -84,10 +89,13 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-600">
-                    @forelse($rumusJamsostek as $index => $item)
+                    @forelse($rumusJamsostekBpu as $index => $item)
                         <tr class="hover:bg-gray-50 transition duration-150 border-b">
-                            <td class="px-4 py-3 text-center">{{ $index + 1 }}</td>
-                            <td class="px-4 py-3 font-medium text-gray-800">{{ $item->group_name }}</td>
+                            <td class="px-4 py-3 text-center">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-800">
+                                {{ $item->group_name }}
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">BPU</span>
+                            </td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? $item->biaya_persen . '%' : '-' }}</td>
@@ -109,7 +117,63 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek.</td>
+                            <td colspan="7" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek BPU.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">Group BP Jamsostek (PPU)</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider">
+                        <th class="px-3 py-3 border-b w-10 text-center">No</th>
+                        <th class="px-3 py-3 border-b">Group Name</th>
+                        <th class="px-3 py-3 border-b text-center">JHT 3.7% Biaya</th>
+                        <th class="px-3 py-3 border-b text-center">JHT 2% Hutang</th>
+                        <th class="px-3 py-3 border-b text-center">JKK 0.24% Tunjangan</th>
+                        <th class="px-3 py-3 border-b text-center">JKM 0.3% Tunjangan</th>
+                        <th class="px-3 py-3 border-b text-center">JP 2% Biaya</th>
+                        <th class="px-3 py-3 border-b text-center">JP 1% Hutang</th>
+                        <th class="px-3 py-3 border-b text-center w-24">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600">
+                    @forelse($rumusJamsostekPpu as $index => $item)
+                        <tr class="hover:bg-gray-50 transition duration-150 border-b text-sm">
+                            <td class="px-3 py-3 text-center">{{ $loop->iteration }}</td>
+                            <td class="px-3 py-3 font-medium text-gray-800">
+                                {{ $item->group_name }}
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">PPU</span>
+                            </td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jht_biaya ? $item->jht_biaya . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jht_hutang ? $item->jht_hutang . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jkk_tunjangan ? $item->jkk_tunjangan . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jkm_tunjangan ? $item->jkm_tunjangan . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jp_biaya ? $item->jp_biaya . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center font-medium">{{ $item->jp_hutang ? $item->jp_hutang . '%' : '-' }}</td>
+                            <td class="px-3 py-3 text-center">
+                                <div class="flex justify-center space-x-2">
+                                    <button onclick="editModal({{ $item->toJson() }})" class="text-blue-500 hover:text-blue-700" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek PPU.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -135,7 +199,6 @@
                     </div>
                     
                     <div id="dynamic-rows-container">
-                        <!-- Baris Template -->
                         <div class="bpjs-row border border-gray-200 p-4 rounded-lg mb-4 relative bg-gray-50">
                             <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 hidden remove-row-btn" onclick="removeRow(this)" title="Hapus Baris">
                                 <i class="fas fa-times"></i>
@@ -151,11 +214,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
-                                    <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN">
+                                    <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="togglePpuFields(this)">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="bpu-fields grid grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
                                     <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
@@ -167,6 +230,36 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
                                     <input type="number" name="biaya_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                                </div>
+                            </div>
+                            
+                            <div class="ppu-fields hidden mb-4 bg-emerald-50 p-3 rounded-md border border-emerald-100">
+                                <p class="text-xs font-semibold text-emerald-800 mb-2">Variabel PPU Jamsostek</p>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JHT Biaya (%)</label>
+                                        <input type="number" name="jht_biaya[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 3.7">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JHT Hutang (%)</label>
+                                        <input type="number" name="jht_hutang[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JKK Tunjangan (%)</label>
+                                        <input type="number" name="jkk_tunjangan[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 0.24">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JKM Tunjangan (%)</label>
+                                        <input type="number" name="jkm_tunjangan[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 0.3">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JP Biaya (%)</label>
+                                        <input type="number" name="jp_biaya[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">JP Hutang (%)</label>
+                                        <input type="number" name="jp_hutang[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 1">
+                                    </div>
                                 </div>
                             </div>
 
@@ -213,10 +306,10 @@
 
                     <div class="mb-4">
                         <label for="edit_group_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
-                        <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN">
+                        <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="toggleEditPpuFields(this)">
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div id="edit_bpu_fields" class="grid grid-cols-3 gap-4 mb-4">
                         <div>
                             <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
                             <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
@@ -228,6 +321,36 @@
                         <div>
                             <label for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
                             <input type="number" id="edit_biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                        </div>
+                    </div>
+                    
+                    <div id="edit_ppu_fields" class="hidden mb-4 bg-emerald-50 p-3 rounded-md border border-emerald-100">
+                        <p class="text-xs font-semibold text-emerald-800 mb-2">Variabel PPU Jamsostek</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label for="edit_jht_biaya" class="block text-xs font-medium text-gray-700 mb-1">JHT Biaya (%)</label>
+                                <input type="number" id="edit_jht_biaya" name="jht_biaya" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 3.7">
+                            </div>
+                            <div>
+                                <label for="edit_jht_hutang" class="block text-xs font-medium text-gray-700 mb-1">JHT Hutang (%)</label>
+                                <input type="number" id="edit_jht_hutang" name="jht_hutang" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 2">
+                            </div>
+                            <div>
+                                <label for="edit_jkk_tunjangan" class="block text-xs font-medium text-gray-700 mb-1">JKK Tunjangan (%)</label>
+                                <input type="number" id="edit_jkk_tunjangan" name="jkk_tunjangan" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 0.24">
+                            </div>
+                            <div>
+                                <label for="edit_jkm_tunjangan" class="block text-xs font-medium text-gray-700 mb-1">JKM Tunjangan (%)</label>
+                                <input type="number" id="edit_jkm_tunjangan" name="jkm_tunjangan" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 0.3">
+                            </div>
+                            <div>
+                                <label for="edit_jp_biaya" class="block text-xs font-medium text-gray-700 mb-1">JP Biaya (%)</label>
+                                <input type="number" id="edit_jp_biaya" name="jp_biaya" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 2">
+                            </div>
+                            <div>
+                                <label for="edit_jp_hutang" class="block text-xs font-medium text-gray-700 mb-1">JP Hutang (%)</label>
+                                <input type="number" id="edit_jp_hutang" name="jp_hutang" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            </div>
                         </div>
                     </div>
 
@@ -253,14 +376,12 @@
 
 <script>
     function openModal() {
-        // Reset rows to just 1 on open
         const container = document.getElementById('dynamic-rows-container');
         const rows = container.getElementsByClassName('bpjs-row');
         while(rows.length > 1) {
             rows[1].remove();
         }
         
-        // Reset values in the first row
         const firstRow = rows[0];
         firstRow.querySelector('select[name="jenis[]"]').value = 'jkn';
         firstRow.querySelector('input[name="group_name[]"]').value = '';
@@ -268,7 +389,14 @@
         firstRow.querySelector('input[name="hutang_persen[]"]').value = '';
         firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
         firstRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
+        firstRow.querySelector('input[name="jht_biaya[]"]').value = '';
+        firstRow.querySelector('input[name="jht_hutang[]"]').value = '';
+        firstRow.querySelector('input[name="jkk_tunjangan[]"]').value = '';
+        firstRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
+        firstRow.querySelector('input[name="jp_biaya[]"]').value = '';
+        firstRow.querySelector('input[name="jp_hutang[]"]').value = '';
         
+        togglePpuFields(firstRow.querySelector('input[name="group_name[]"]'));
         updateRemoveButtons();
         
         document.getElementById('createModal').classList.remove('hidden');
@@ -283,15 +411,21 @@
         const firstRow = container.querySelector('.bpjs-row');
         const newRow = firstRow.cloneNode(true);
         
-        // Clear input values in the cloned row
         newRow.querySelector('select[name="jenis[]"]').value = 'jkn';
         newRow.querySelector('input[name="group_name[]"]').value = '';
         newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         newRow.querySelector('input[name="hutang_persen[]"]').value = '';
         newRow.querySelector('input[name="biaya_persen[]"]').value = '';
         newRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
+        newRow.querySelector('input[name="jht_biaya[]"]').value = '';
+        newRow.querySelector('input[name="jht_hutang[]"]').value = '';
+        newRow.querySelector('input[name="jkk_tunjangan[]"]').value = '';
+        newRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
+        newRow.querySelector('input[name="jp_biaya[]"]').value = '';
+        newRow.querySelector('input[name="jp_hutang[]"]').value = '';
         
         container.appendChild(newRow);
+        togglePpuFields(newRow.querySelector('input[name="group_name[]"]'));
         updateRemoveButtons();
     }
     
@@ -317,7 +451,7 @@
     }
 
     function editModal(data) {
-        document.getElementById('editForm').action = "/master-rumus-bpjs/" + data.id;
+        document.getElementById('editForm').action = `/master-rumus-bpjs/${data.id}`;
         
         document.getElementById('edit_jenis').value = data.jenis;
         document.getElementById('edit_group_name').value = data.group_name;
@@ -325,12 +459,46 @@
         document.getElementById('edit_hutang_persen').value = data.hutang_persen;
         document.getElementById('edit_biaya_persen').value = data.biaya_persen;
         document.getElementById('edit_keterangan_custom').value = data.keterangan_custom;
+        
+        document.getElementById('edit_jht_biaya').value = data.jht_biaya;
+        document.getElementById('edit_jht_hutang').value = data.jht_hutang;
+        document.getElementById('edit_jkk_tunjangan').value = data.jkk_tunjangan;
+        document.getElementById('edit_jkm_tunjangan').value = data.jkm_tunjangan;
+        document.getElementById('edit_jp_biaya').value = data.jp_biaya;
+        document.getElementById('edit_jp_hutang').value = data.jp_hutang;
+        
+        toggleEditPpuFields(document.getElementById('edit_group_name'));
 
         document.getElementById('editModal').classList.remove('hidden');
     }
 
     function closeEditModal() {
         document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function togglePpuFields(input) {
+        const row = input.closest('.bpjs-row');
+        const ppuFields = row.querySelector('.ppu-fields');
+        const bpuFields = row.querySelector('.bpu-fields');
+        if (input.value.toUpperCase().includes('PPU')) {
+            ppuFields.classList.remove('hidden');
+            bpuFields.classList.add('hidden');
+        } else {
+            ppuFields.classList.add('hidden');
+            bpuFields.classList.remove('hidden');
+        }
+    }
+
+    function toggleEditPpuFields(input) {
+        const ppuFields = document.getElementById('edit_ppu_fields');
+        const bpuFields = document.getElementById('edit_bpu_fields');
+        if (input.value.toUpperCase().includes('PPU')) {
+            ppuFields.classList.remove('hidden');
+            bpuFields.classList.add('hidden');
+        } else {
+            ppuFields.classList.add('hidden');
+            bpuFields.classList.remove('hidden');
+        }
     }
 </script>
 @endsection

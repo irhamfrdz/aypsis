@@ -22,5 +22,13 @@ class MasterRumusBpjs extends Model
         'hutang_persen',
         'biaya_persen',
         'keterangan_custom',
+        'created_by',
+        'updated_by',
+        'jht_biaya',
+        'jht_hutang',
+        'jkk_tunjangan',
+        'jkm_tunjangan',
+        'jp_biaya',
+        'jp_hutang',
     ];
 }

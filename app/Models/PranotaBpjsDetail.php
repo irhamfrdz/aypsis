@@ -14,6 +14,12 @@ class PranotaBpjsDetail extends Model
     protected $casts = [
         'bpjs_kesehatan' => 'decimal:2',
         'bpjs_ketenagakerjaan' => 'decimal:2',
+        'jht_biaya' => 'decimal:2',
+        'jht_hutang' => 'decimal:2',
+        'jkk_tunjangan' => 'decimal:2',
+        'jkm_tunjangan' => 'decimal:2',
+        'jp_biaya' => 'decimal:2',
+        'jp_hutang' => 'decimal:2',
         'total' => 'decimal:2',
     ];
 

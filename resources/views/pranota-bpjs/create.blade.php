@@ -105,9 +105,16 @@
                             <th class="px-4 py-3 w-10 text-center">#</th>
                             <th class="px-4 py-3 text-left">Nama Karyawan</th>
                             <th class="px-4 py-3 text-left">Group</th>
-                            <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN & BP JAMSOSTEK</th>
-                            <th class="px-4 py-3 text-right">JKN (Rp)</th>
-                            <th class="px-4 py-3 text-right">BP Jamsostek (Rp)</th>
+                            <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN</th>
+                            <th class="px-4 py-3 text-center" style="min-width:180px">Tipe BP JAMSOSTEK</th>
+                            <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 4%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 1%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:100px">JHT 3.7%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:90px">JHT 2%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:100px">JKK 0.24%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
@@ -117,10 +124,16 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 shadow-sm">
                         <tr>
-                            <td colspan="4" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
-                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-base" id="total_kes">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-base" id="total_ket">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-teal-600 text-lg" id="grand_total">Rp 0</td>
+                            <td colspan="5" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_ket">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_biaya">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_hutang">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkk">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_biaya">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_hutang">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -173,20 +186,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculateTotals() {
-        let sumKes = 0;
-        let sumKet = 0;
+        let sumKes = 0, sumKet = 0;
+        let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
-        document.querySelectorAll('.input-kes').forEach(input => {
-            sumKes += parseIdNumber(input.value);
-        });
-        
-        document.querySelectorAll('.input-ket').forEach(input => {
-            sumKet += parseIdNumber(input.value);
-        });
+        document.querySelectorAll('.input-kes').forEach(i => sumKes += parseIdNumber(i.value));
+        document.querySelectorAll('.input-ket').forEach(i => sumKet += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jht-biaya').forEach(i => sumJhtB += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jht-hutang').forEach(i => sumJhtH += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jkk').forEach(i => sumJkk += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jkm').forEach(i => sumJkm += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jp-biaya').forEach(i => sumJpB += parseIdNumber(i.value));
+        document.querySelectorAll('.input-jp-hutang').forEach(i => sumJpH += parseIdNumber(i.value));
 
         document.getElementById('total_kes').innerText = 'Rp ' + formatNumber(sumKes);
         document.getElementById('total_ket').innerText = 'Rp ' + formatNumber(sumKet);
-        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_jht_biaya').innerText = 'Rp ' + formatNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').innerText = 'Rp ' + formatNumber(sumJhtH);
+        document.getElementById('total_jkk').innerText = 'Rp ' + formatNumber(sumJkk);
+        document.getElementById('total_jkm').innerText = 'Rp ' + formatNumber(sumJkm);
+        document.getElementById('total_jp_biaya').innerText = 'Rp ' + formatNumber(sumJpB);
+        document.getElementById('total_jp_hutang').innerText = 'Rp ' + formatNumber(sumJpH);
+        
+        const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
+        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
     }
 
     function addRow(karyawanId = null, autoCalculate = false) {
@@ -224,9 +246,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-4 py-3 align-middle text-center text-xs group-text font-semibold text-gray-600 whitespace-nowrap">-</td>
             <td class="px-4 py-3 align-middle text-center">
                 <select class="form-select w-full text-sm text-center select-tipe-jkn border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition-colors" name="details[${rowCount}][tipe_jkn]">
-                    <option value="tunjangan">Tunjangan</option>
-                    <option value="hutang">Hutang</option>
-                    <option value="tunjangan_hutang">Tunjangan & Hutang</option>
+                    <option value="tunjangan_hutang">TOTAL JKN</option>
+                </select>
+            </td>
+            <td class="px-4 py-3 align-middle text-center">
+                <select class="form-select w-full text-sm text-center select-tipe-bp-jamsostek border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition-colors" name="details[${rowCount}][tipe_bp_jamsostek]">
+                    <option value="total">TOTAL BP JAMSOSTEK</option>
                 </select>
             </td>
             <td class="px-4 py-3 align-middle">
@@ -234,6 +259,24 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right text-sm input-jkk font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+            </td>
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
             </td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp 0</td>
             <td class="px-4 py-3 text-center align-middle">
@@ -251,11 +294,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const infoJkn      = tr.querySelector('.info-jkn');
         const groupText    = tr.querySelector('.group-text');
         const selectTipe   = tr.querySelector('.select-tipe-jkn');
+        const selectTipeJamsostek = tr.querySelector('.select-tipe-bp-jamsostek');
+        const inputJhtBiaya = tr.querySelector('.input-jht-biaya');
+        const inputJhtHutang = tr.querySelector('.input-jht-hutang');
+        const inputJkk = tr.querySelector('.input-jkk');
+        const inputJkm = tr.querySelector('.input-jkm');
+        const inputJpBiaya = tr.querySelector('.input-jp-biaya');
+        const inputJpHutang = tr.querySelector('.input-jp-hutang');
         
         const updateSubtotal = () => {
             const kes = parseIdNumber(inputKes.value);
             const ket = parseIdNumber(inputKet.value);
-            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket);
+            const jhtB = parseIdNumber(inputJhtBiaya.value);
+            const jhtH = parseIdNumber(inputJhtHutang.value);
+            const jkk = parseIdNumber(inputJkk.value);
+            const jkm = parseIdNumber(inputJkm.value);
+            const jpB = parseIdNumber(inputJpBiaya.value);
+            const jpH = parseIdNumber(inputJpHutang.value);
+            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + jpB + jpH);
             calculateTotals();
         };
 
@@ -296,16 +352,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const karyawan = karyawans.find(k => k.id == kId);
             if (!karyawan) { groupText.innerHTML = '-'; return; }
 
+            let groupHtml = '';
+
             if (karyawan.group_jkn) {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
                 if (rumus) {
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    groupText.innerHTML = `<span class="text-indigo-600">${karyawan.group_jkn}</span>`;
-                    selectTipe.options[0].text = `Tunjangan (${tunjPersen}%)`;
-                    selectTipe.options[1].text = `Hutang (${hutangPersen}%)`;
-                    selectTipe.options[2].text = `Tunjangan (${tunjPersen}%) & Hutang (${hutangPersen}%)`;
+                    groupHtml += `<div class="text-indigo-600 mb-1" title="Group JKN">${karyawan.group_jkn}</div>`;
+                    selectTipe.options[0].text = `TOTAL JKN`;
                 }
+            }
+
+            if (karyawan.group_bp_jamsostek) {
+                groupHtml += `<div class="text-emerald-600" title="Group BP Jamsostek">${karyawan.group_bp_jamsostek}</div>`;
+            }
+
+            if (groupHtml) {
+                groupText.innerHTML = groupHtml;
+            } else {
+                groupText.innerHTML = '-';
             }
         }
 
@@ -333,12 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const dpp          = parseIdNumber(karyawan.dpp_jkn);
 
                     let persen = 0;
-                    if (tipeJkn === 'tunjangan') {
-                        persen = tunjPersen;
-                    } else if (tipeJkn === 'hutang') {
-                        persen = 0;
-                        nominalKet += (hutangPersen / 100) * dpp;
-                    } else if (tipeJkn === 'tunjangan_hutang') {
+                    if (tipeJkn === 'tunjangan_hutang') {
                         persen = tunjPersen;
                         nominalKet += (hutangPersen / 100) * dpp;
                     }
@@ -351,21 +412,47 @@ document.addEventListener('DOMContentLoaded', function() {
             if (karyawan.group_bp_jamsostek && tipeJkn !== 'manual') {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
                 if (rumus) {
-                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
-                    let persen = 0;
-                    if (tipeJkn === 'tunjangan') {
-                        persen = tunjPersen;
-                    } else if (tipeJkn === 'hutang') {
-                        persen = hutangPersen;
-                    } else if (tipeJkn === 'tunjangan_hutang') {
-                        persen = hutangPersen;
+                    const dppJamsostek = parseIdNumber(karyawan.dpp_bp_jamsostek);
+                    let jhtBiaya = 0, jhtHutang = 0, jkkTunj = 0, jkmTunj = 0, jpBiaya = 0, jpHutang = 0;
+                    
+                    if (rumus.group_name.toUpperCase().includes('PPU')) {
+                        const jhtBiayaMaster = parseFloat(rumus.jht_biaya || 0); // e.g. 5.7
+                        const jhtHutangMaster = parseFloat(rumus.jht_hutang || 0); // e.g. 2.0
+                        
+                        jhtHutang = (jhtHutangMaster / 100) * dppJamsostek;
+                        jhtBiaya = ((jhtBiayaMaster / 100) * dppJamsostek) - jhtHutang;
+                        
+                        const jpBiayaMaster = parseFloat(rumus.jp_biaya || 0); // e.g. 3.0
+                        const jpHutangMaster = parseFloat(rumus.jp_hutang || 0); // e.g. 1.0
+                        
+                        jpHutang = (jpHutangMaster / 100) * dppJamsostek;
+                        jpBiaya = ((jpBiayaMaster / 100) * dppJamsostek) - jpHutang;
+
+                        jkkTunj = (parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek;
+                        jkmTunj = (parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek;
+                    } else {
+                        const hutangPersen = parseFloat(rumus.hutang_persen || 0);
+                        let persen = 0;
+                        if (tipeJkn === 'tunjangan_hutang') {
+                            persen = hutangPersen;
+                        }
+                        nominalKet += (persen / 100) * dppJamsostek;
                     }
-                    nominalKet += (persen / 100) * dpp;
+                    
+                    inputJhtBiaya.value = formatNumber(jhtBiaya);
+                    inputJhtHutang.value = formatNumber(jhtHutang);
+                    inputJkk.value = formatNumber(jkkTunj);
+                    inputJkm.value = formatNumber(jkmTunj);
+                    inputJpBiaya.value = formatNumber(jpBiaya);
+                    inputJpHutang.value = formatNumber(jpHutang);
                 }
-            } else if (tipeJkn === 'manual') {
-                nominalKet = parseIdNumber(inputKet.value);
+            } else {
+                inputJhtBiaya.value = 0;
+                inputJhtHutang.value = 0;
+                inputJkk.value = 0;
+                inputJkm.value = 0;
+                inputJpBiaya.value = 0;
+                inputJpHutang.value = 0;
             }
 
             if (tipeJkn !== 'manual') {
