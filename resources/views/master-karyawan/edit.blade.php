@@ -492,17 +492,19 @@
                     <label for="dpp_jkn" class="{{ $labelClasses }}">DPP JKN</label>
                     <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn', $karyawan->dpp_jkn) }}">
                 </div>
-
                 <div>
-                    <label for="status_jkn" class="{{ $labelClasses }}">Status JKN</label>
-                    <select name="status_jkn" id="status_jkn" class="{{ $selectClasses }}">
-                        <option value="">-- Pilih Status JKN --</option>
-                        <option value="PPU (Penerima Upah (Karyawan))" {{ old('status_jkn', $karyawan->status_jkn) == 'PPU (Penerima Upah (Karyawan))' ? 'selected' : '' }}>PPU (Penerima Upah (Karyawan))</option>
-                        <option value="BPU (Bukan Penerima Upah (Mandiri))" {{ old('status_jkn', $karyawan->status_jkn) == 'BPU (Bukan Penerima Upah (Mandiri))' ? 'selected' : '' }}>BPU (Bukan Penerima Upah (Mandiri))</option>
-                        <option value="PBI (Penerima Bantuan Iuran)" {{ old('status_jkn', $karyawan->status_jkn) == 'PBI (Penerima Bantuan Iuran)' ? 'selected' : '' }}>PBI (Penerima Bantuan Iuran)</option>
+                    <label for="group_jkn" class="{{ $labelClasses }}">Group JKN</label>
+                    <select name="group_jkn" id="group_jkn" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Group JKN --</option>
+                        <option value="JKN-KIS-HARIAN" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-HARIAN' ? 'selected' : '' }}>JKN-KIS-HARIAN</option>
+                        <option value="JKN-KIS-KANTOR" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-KANTOR' ? 'selected' : '' }}>JKN-KIS-KANTOR</option>
+                        <option value="JKN-KIS-LAPANGAN" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-LAPANGAN' ? 'selected' : '' }}>JKN-KIS-LAPANGAN</option>
+                        <option value="JKN-KIS-NON KARY-UMKM KIS" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-NON KARY-UMKM KIS' ? 'selected' : '' }}>JKN-KIS-NON KARY-UMKM KIS</option>
+                        <option value="JKN-KIS-TRANSFER" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-TRANSFER' ? 'selected' : '' }}>JKN-KIS-TRANSFER</option>
+                        <option value="JKN-KIS-TUNAI" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-TUNAI' ? 'selected' : '' }}>JKN-KIS-TUNAI</option>
+                        <option value="JKN-REIMBURSEMENT-CREW" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-REIMBURSEMENT-CREW' ? 'selected' : '' }}>JKN-REIMBURSEMENT-CREW</option>
                     </select>
                 </div>
-
                 <div>
                     <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
                     <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan) }}">
@@ -512,106 +514,31 @@
                     <label for="dpp_bp_jamsostek" class="{{ $labelClasses }}">DPP BP Jamsostek</label>
                     <input type="text" name="dpp_bp_jamsostek" id="dpp_bp_jamsostek" class="{{ $inputClasses }}" placeholder="DPP BP Jamsostek" value="{{ old('dpp_bp_jamsostek', $karyawan->dpp_bp_jamsostek) }}">
                 </div>
-
                 <div>
-                    <label for="status_bp_jamsostek" class="{{ $labelClasses }}">Status BP Jamsostek</label>
-                    <select name="status_bp_jamsostek" id="status_bp_jamsostek" class="{{ $selectClasses }}">
-                        <option value="">-- Pilih Status BP Jamsostek --</option>
-                        <option value="PPU (Penerima Upah (Karyawan))" {{ old('status_bp_jamsostek', $karyawan->status_bp_jamsostek) == 'PPU (Penerima Upah (Karyawan))' ? 'selected' : '' }}>PPU (Penerima Upah (Karyawan))</option>
-                        <option value="BPU (Bukan Penerima Upah (Mandiri))" {{ old('status_bp_jamsostek', $karyawan->status_bp_jamsostek) == 'BPU (Bukan Penerima Upah (Mandiri))' ? 'selected' : '' }}>BPU (Bukan Penerima Upah (Mandiri))</option>
-                        <option value="PBI (Penerima Bantuan Iuran)" {{ old('status_bp_jamsostek', $karyawan->status_bp_jamsostek) == 'PBI (Penerima Bantuan Iuran)' ? 'selected' : '' }}>PBI (Penerima Bantuan Iuran)</option>
+                    <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
+                    <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Group BP Jamsostek --</option>
+                        <option value="BPU-CREW" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-CREW' ? 'selected' : '' }}>BPU-CREW</option>
+                        <option value="BPU-HARIAN" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-HARIAN' ? 'selected' : '' }}>BPU-HARIAN</option>
+                        <option value="BPU-LAPANGAN" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-LAPANGAN' ? 'selected' : '' }}>BPU-LAPANGAN</option>
+                        <option value="BPU-NON KARY-PBM" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-NON KARY-PBM' ? 'selected' : '' }}>BPU-NON KARY-PBM</option>
+                        <option value="BPU-NON KARY-UMKM" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-NON KARY-UMKM' ? 'selected' : '' }}>BPU-NON KARY-UMKM</option>
+                        <option value="BPU-NON KARY-UMKM NO PP" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-NON KARY-UMKM NO PP' ? 'selected' : '' }}>BPU-NON KARY-UMKM NO PP</option>
+                        <option value="BPU-TUNAI" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-TUNAI' ? 'selected' : '' }}>BPU-TUNAI</option>
+                        <option value="PPU-HARIAN" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'PPU-HARIAN' ? 'selected' : '' }}>PPU-HARIAN</option>
+                        <option value="PPU-KANTOR" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'PPU-KANTOR' ? 'selected' : '' }}>PPU-KANTOR</option>
+                        <option value="PPU-LAPANGAN" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'PPU-LAPANGAN' ? 'selected' : '' }}>PPU-LAPANGAN</option>
+                        <option value="PPU-TRANSFER" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'PPU-TRANSFER' ? 'selected' : '' }}>PPU-TRANSFER</option>
+                        <option value="PPU-TUNAI" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'PPU-TUNAI' ? 'selected' : '' }}>PPU-TUNAI</option>
                     </select>
                 </div>
-
                 <div>
                     <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>
                     <input type="text" name="cabang_bpjs" id="cabang_bpjs" class="{{ $inputClasses }}" placeholder="Contoh: Cabang Batam" value="{{ old('cabang_bpjs', $karyawan->cabang_bpjs) }}">
                 </div>
             </div>
 
-            <div class="mt-4 border-t pt-4">
-                <label class="{{ $labelClasses }}">Group BPJS</label>
-                <div id="grup-bpjs-container" class="space-y-2">
-                    @php
-                        $subGroupsBpjs = [
-                            'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-                            'BPJS-JKN' => ['BPU REIMBURSMENT']
-                        ];
-                        $defaultGrupsBpjs = array_keys($subGroupsBpjs);
-                        $existingGrupsBpjs = [];
-                        $karyawansGrupsBpjs = \App\Models\Karyawan::whereNotNull('grup_bpjs')->pluck('grup_bpjs');
-                        foreach ($karyawansGrupsBpjs as $grupArray) {
-                            if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
-                            if (is_array($grupArray)) {
-                                foreach ($grupArray as $g) {
-                                    $parts = explode(':', $g, 2);
-                                    $main = $parts[0];
-                                    if (!in_array($main, $existingGrupsBpjs) && $main !== '') $existingGrupsBpjs[] = $main;
-                                }
-                            }
-                        }
-                        $allGrupsBpjs = array_unique(array_merge($defaultGrupsBpjs, $existingGrupsBpjs));
-                        $selectedGrupBpjs = old('grup_bpjs', $karyawan->grup_bpjs ?? []);
-                        if (is_string($selectedGrupBpjs)) $selectedGrupBpjs = json_decode($selectedGrupBpjs, true) ?? [];
-                        if (!is_array($selectedGrupBpjs)) $selectedGrupBpjs = [];
-                        foreach ($selectedGrupBpjs as $s) {
-                            $parts = explode(':', $s, 2);
-                            $main = $parts[0];
-                            if (!in_array($main, $allGrupsBpjs) && $main !== '') $allGrupsBpjs[] = $main;
-                        }
-                        sort($allGrupsBpjs);
-                        if (empty($selectedGrupBpjs)) $selectedGrupBpjs = [''];
-                    @endphp
-                    @foreach($selectedGrupBpjs as $index => $sg)
-                        @php
-                            $parts = explode(':', $sg, 2);
-                            $sgMain = $parts[0] ?? '';
-                            $sgSub = $parts[1] ?? '';
-                        @endphp
-                        <div class="flex items-center gap-2 grup-bpjs-row">
-                            <input type="hidden" name="grup_bpjs[]" class="grup-bpjs-hidden-val" value="{{ $sg }}">
-                            
-                            <div class="flex-1">
-                                <select class="{{ $selectClasses }} grup-bpjs-main" onchange="handleGrupBpjsChange(this)">
-                                    <option value="">-- Pilih Group BPJS --</option>
-                                    @foreach($allGrupsBpjs as $g)
-                                        <option value="{{ $g }}" {{ $g == $sgMain ? 'selected' : '' }}>{{ $g }}</option>
-                                    @endforeach
-                                    <option value="__baru__" class="font-bold text-blue-600">+ KETIK GROUP BPJS BARU...</option>
-                                </select>
-                                <input type="text" class="{{ $inputClasses }} grup-bpjs-main-input mt-1" placeholder="Ketik group bpjs baru..." style="display:none;">
-                            </div>
-                            <div class="flex-1 relative">
-                                <select class="{{ $selectClasses }} grup-bpjs-sub" onchange="handleSubGrupBpjsChange(this)">
-                                    <option value="">-- Sub Group (Opsional) --</option>
-                                    @if($sgMain !== '')
-                                        @php
-                                            $subs = $subGroupsBpjs[$sgMain] ?? [];
-                                            if ($sgSub !== '' && !in_array($sgSub, $subs)) {
-                                                $subs[] = $sgSub;
-                                            }
-                                        @endphp
-                                        @foreach($subs as $sub)
-                                            <option value="{{ $sub }}" {{ $sub == $sgSub ? 'selected' : '' }}>{{ $sub }}</option>
-                                        @endforeach
-                                    @endif
-                                    <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
-                                </select>
-                                <input type="text" class="{{ $inputClasses }} grup-bpjs-sub-input mt-1" placeholder="Ketik sub group baru..." style="display:none;" value="{{ $sgSub }}">
-                            </div>
-                            
-                            @if($index > 0)
-                                <button type="button" class="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200" onclick="this.closest('.grup-bpjs-row').remove(); updateGrupBpjsHidden(this.closest('#grup-bpjs-container'));">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-                <button type="button" id="add-grup-bpjs-btn" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    + Tambah Group BPJS
-                </button>
-            </div>
+
         </fieldset>
 
         {{-- Susunan Keluarga --}}

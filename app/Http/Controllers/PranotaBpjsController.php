@@ -41,9 +41,11 @@ class PranotaBpjsController extends Controller
         // Get active Karyawan that might have BPJS
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
-            ->get();
+            ->get(['id', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek']);
             
-        return view('pranota-bpjs.create', compact('karyawans'));
+        $rumusBpjs = \App\Models\MasterRumusBpjs::all(['id', 'jenis', 'group_name', 'tunjangan_persen', 'hutang_persen', 'biaya_persen', 'keterangan_custom']);
+            
+        return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs'));
     }
 
     public function store(Request $request)
@@ -135,7 +137,9 @@ class PranotaBpjsController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
             
-        return view('pranota-bpjs.edit', compact('pranota_bpj', 'karyawans'));
+        $rumusBpjs = \App\Models\MasterRumusBpjs::all();
+            
+        return view('pranota-bpjs.edit', compact('pranota_bpj', 'karyawans', 'rumusBpjs'));
     }
 
     public function update(Request $request, PranotaBpjsHeader $pranota_bpj)
