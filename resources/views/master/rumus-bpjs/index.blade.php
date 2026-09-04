@@ -118,58 +118,131 @@
     </div>
 </div>
 
-<!-- Modal Form -->
-<div id="formModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<!-- Modal Form Tambah -->
+<div id="createModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCreateModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+            <form id="createForm" method="POST" action="{{ route('master-rumus-bpjs.store') }}">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 max-h-[80vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Tambah Rumus BPJS</h3>
+                        <button type="button" onclick="addRow()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-150">
+                            <i class="fas fa-plus mr-1"></i> Tambah Baris
+                        </button>
+                    </div>
+                    
+                    <div id="dynamic-rows-container">
+                        <!-- Baris Template -->
+                        <div class="bpjs-row border border-gray-200 p-4 rounded-lg mb-4 relative bg-gray-50">
+                            <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 hidden remove-row-btn" onclick="removeRow(this)" title="Hapus Baris">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
+                                    <select name="jenis[]" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
+                                        <option value="jkn">Group JKN</option>
+                                        <option value="jamsostek">Group BP Jamsostek</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
+                                    <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                                    <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                                    <input type="number" name="hutang_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
+                                    <input type="number" name="biaya_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Rumus Custom</label>
+                                <textarea name="keterangan_custom[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" rows="1" placeholder="Cth: Maksimal (2 Orang Tua 3 Anak @ 35.000) / 2"></textarea>
+                                <p class="text-xs text-gray-500 mt-1">Kosongkan kolom persentase jika menggunakan perhitungan custom.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeCreateModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Form Edit -->
+<div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-            <form id="modalForm" method="POST" action="{{ route('master-rumus-bpjs.store') }}">
+            <form id="editForm" method="POST" action="">
                 @csrf
-                <input type="hidden" name="_method" id="formMethod" value="POST">
+                @method('PUT')
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modalTitle">Tambah Rumus BPJS</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Edit Rumus BPJS</h3>
                     
                     <div class="mb-4">
-                        <label for="jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
-                        <select id="jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
+                        <label for="edit_jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
+                        <select id="edit_jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
                             <option value="jkn">Group JKN</option>
                             <option value="jamsostek">Group BP Jamsostek</option>
                         </select>
                     </div>
 
                     <div class="mb-4">
-                        <label for="group_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
-                        <input type="text" id="group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN">
+                        <label for="edit_group_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
+                        <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN">
                     </div>
 
                     <div class="grid grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label for="tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                            <input type="number" id="tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                            <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                            <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
                         </div>
                         <div>
-                            <label for="hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
-                            <input type="number" id="hutang_persen" name="hutang_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            <label for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                            <input type="number" id="edit_hutang_persen" name="hutang_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
                         </div>
                         <div>
-                            <label for="biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
-                            <input type="number" id="biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                            <label for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
+                            <input type="number" id="edit_biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="keterangan_custom" class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Rumus Custom</label>
-                        <textarea id="keterangan_custom" name="keterangan_custom" class="form-input w-full border-gray-300 rounded-md shadow-sm" rows="2" placeholder="Cth: Maksimal (2 Orang Tua 3 Anak @ 35.000) / 2"></textarea>
+                        <label for="edit_keterangan_custom" class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Rumus Custom</label>
+                        <textarea id="edit_keterangan_custom" name="keterangan_custom" class="form-input w-full border-gray-300 rounded-md shadow-sm" rows="2" placeholder="Cth: Maksimal (2 Orang Tua 3 Anak @ 35.000) / 2"></textarea>
                         <p class="text-xs text-gray-500 mt-1">Kosongkan kolom persentase di atas jika group ini menggunakan perhitungan custom / manual.</p>
                     </div>
 
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
                     <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                        Simpan
+                        Simpan Perubahan
                     </button>
-                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="closeEditModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>
@@ -180,37 +253,84 @@
 
 <script>
     function openModal() {
-        document.getElementById('modalForm').action = "{{ route('master-rumus-bpjs.store') }}";
-        document.getElementById('formMethod').value = "POST";
-        document.getElementById('modalTitle').innerText = "Tambah Rumus BPJS";
+        // Reset rows to just 1 on open
+        const container = document.getElementById('dynamic-rows-container');
+        const rows = container.getElementsByClassName('bpjs-row');
+        while(rows.length > 1) {
+            rows[1].remove();
+        }
         
-        document.getElementById('jenis').value = 'jkn';
-        document.getElementById('group_name').value = '';
-        document.getElementById('tunjangan_persen').value = '';
-        document.getElementById('hutang_persen').value = '';
-        document.getElementById('biaya_persen').value = '';
-        document.getElementById('keterangan_custom').value = '';
+        // Reset values in the first row
+        const firstRow = rows[0];
+        firstRow.querySelector('select[name="jenis[]"]').value = 'jkn';
+        firstRow.querySelector('input[name="group_name[]"]').value = '';
+        firstRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
+        firstRow.querySelector('input[name="hutang_persen[]"]').value = '';
+        firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
+        firstRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
+        
+        updateRemoveButtons();
+        
+        document.getElementById('createModal').classList.remove('hidden');
+    }
+    
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+    }
 
-        document.getElementById('formModal').classList.remove('hidden');
+    function addRow() {
+        const container = document.getElementById('dynamic-rows-container');
+        const firstRow = container.querySelector('.bpjs-row');
+        const newRow = firstRow.cloneNode(true);
+        
+        // Clear input values in the cloned row
+        newRow.querySelector('select[name="jenis[]"]').value = 'jkn';
+        newRow.querySelector('input[name="group_name[]"]').value = '';
+        newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
+        newRow.querySelector('input[name="hutang_persen[]"]').value = '';
+        newRow.querySelector('input[name="biaya_persen[]"]').value = '';
+        newRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
+        
+        container.appendChild(newRow);
+        updateRemoveButtons();
+    }
+    
+    function removeRow(btn) {
+        const row = btn.closest('.bpjs-row');
+        const container = document.getElementById('dynamic-rows-container');
+        if (container.querySelectorAll('.bpjs-row').length > 1) {
+            row.remove();
+            updateRemoveButtons();
+        }
+    }
+    
+    function updateRemoveButtons() {
+        const rows = document.querySelectorAll('.bpjs-row');
+        rows.forEach(row => {
+            const btn = row.querySelector('.remove-row-btn');
+            if (rows.length > 1) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        });
     }
 
     function editModal(data) {
-        document.getElementById('modalForm').action = "/master-rumus-bpjs/" + data.id;
-        document.getElementById('formMethod').value = "PUT";
-        document.getElementById('modalTitle').innerText = "Edit Rumus BPJS";
+        document.getElementById('editForm').action = "/master-rumus-bpjs/" + data.id;
         
-        document.getElementById('jenis').value = data.jenis;
-        document.getElementById('group_name').value = data.group_name;
-        document.getElementById('tunjangan_persen').value = data.tunjangan_persen;
-        document.getElementById('hutang_persen').value = data.hutang_persen;
-        document.getElementById('biaya_persen').value = data.biaya_persen;
-        document.getElementById('keterangan_custom').value = data.keterangan_custom;
+        document.getElementById('edit_jenis').value = data.jenis;
+        document.getElementById('edit_group_name').value = data.group_name;
+        document.getElementById('edit_tunjangan_persen').value = data.tunjangan_persen;
+        document.getElementById('edit_hutang_persen').value = data.hutang_persen;
+        document.getElementById('edit_biaya_persen').value = data.biaya_persen;
+        document.getElementById('edit_keterangan_custom').value = data.keterangan_custom;
 
-        document.getElementById('formModal').classList.remove('hidden');
+        document.getElementById('editModal').classList.remove('hidden');
     }
 
-    function closeModal() {
-        document.getElementById('formModal').classList.add('hidden');
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
     }
 </script>
 @endsection
