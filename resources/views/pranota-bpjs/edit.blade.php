@@ -101,26 +101,27 @@
 
             <div class="overflow-x-auto">
                 <table class="table-auto w-full" id="tabel-detail">
-                    <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-b border-gray-200 tracking-wider">
+                    <thead class="text-xs font-semibold uppercase text-gray-600 bg-gray-50 border-b-2 border-gray-200 tracking-wider">
                         <tr>
-                            <th class="px-3 py-3 w-10 text-center">#</th>
-                            <th class="px-3 py-3 text-left">Nama Karyawan</th>
-                            <th class="px-3 py-3 text-center" style="min-width:160px">Tipe JKN</th>
-                            <th class="px-3 py-3 text-right">JKN (Rp)</th>
-                            <th class="px-3 py-3 text-right">BP Jamsostek (Rp)</th>
-                            <th class="px-3 py-3 text-right">Subtotal (Rp)</th>
-                            <th class="px-3 py-3 w-10 text-center">Aksi</th>
+                            <th class="px-4 py-3 w-10 text-center">#</th>
+                            <th class="px-4 py-3 text-left">Nama Karyawan</th>
+                            <th class="px-4 py-3 text-left">Group</th>
+                            <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN</th>
+                            <th class="px-4 py-3 text-right">JKN (Rp)</th>
+                            <th class="px-4 py-3 text-right">BP Jamsostek (Rp)</th>
+                            <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
+                            <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="detail-container" class="divide-y divide-gray-100">
-                        <!-- Existing details will be loaded here via JS -->
+                    <tbody id="detail-container" class="divide-y divide-gray-100 bg-white">
+                        <!-- Rows will be added here -->
                     </tbody>
-                    <tfoot class="bg-gray-50 border-t-2 border-gray-200">
+                    <tfoot class="bg-gray-50 border-t-2 border-gray-200 shadow-sm">
                         <tr>
-                            <td colspan="3" class="px-3 py-3 text-right text-sm font-bold text-gray-600">Total Keseluruhan:</td>
-                            <td class="px-3 py-3 text-right font-bold text-indigo-600" id="total_kes">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-bold text-indigo-600" id="total_ket">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
+                            <td colspan="4" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-base" id="total_kes">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-base" id="total_ket">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-teal-600 text-lg" id="grand_total">Rp 0</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -176,11 +177,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let sumKet = 0;
         
         document.querySelectorAll('.input-kes').forEach(input => {
-            sumKes += parseFloat(input.value || 0);
+            sumKes += parseIdNumber(input.value);
         });
         
         document.querySelectorAll('.input-ket').forEach(input => {
-            sumKet += parseFloat(input.value || 0);
+            sumKet += parseIdNumber(input.value);
         });
 
         document.getElementById('total_kes').innerText = 'Rp ' + formatNumber(sumKes);
@@ -197,42 +198,58 @@ document.addEventListener('DOMContentLoaded', function() {
         rowCount++;
         
         let selectedKaryawanId = detail ? detail.karyawan_id : '';
+        let karyawanId = detail ? detail.karyawan_id : null;
         let valKes   = detail ? detail.bpjs_kesehatan         : 0;
         let valKet   = detail ? detail.bpjs_ketenagakerjaan   : 0;
         let subVal   = detail ? detail.total                  : 0;
         let isExistingRow = detail !== null;
 
-        let options = '<option value="">-- Pilih Karyawan --</option>';
-        karyawans.forEach(k => {
-            options += `<option value="${k.id}" ${k.id == selectedKaryawanId ? 'selected' : ''}>${k.nama_lengkap}</option>`;
-        });
-
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-gray-100 detail-row";
-        tr.innerHTML = `
-            <td class="px-2 py-2 text-center align-top row-number">${rowCount}</td>
-            <td class="px-2 py-2">
+        let karyawanInputHTML = '';
+        if (karyawanId) {
+            const k = karyawans.find(k => k.id == karyawanId);
+            karyawanInputHTML = `
+                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${karyawanId}" class="karyawan-hidden-input">
+                <div class="px-2 py-2 text-sm text-gray-700 font-semibold truncate" style="max-width: 250px;">
+                    ${k ? k.nama_lengkap : ''}
+                </div>
+            `;
+        } else {
+            let options = '<option value="">-- Pilih Karyawan --</option>';
+            karyawans.forEach(k => {
+                options += `<option value="${k.id}">${k.nama_lengkap}</option>`;
+            });
+            karyawanInputHTML = `
                 <select name="details[${rowCount}][karyawan_id]" class="form-select w-full text-sm select2" required>
                     ${options}
                 </select>
-                <div class="info-jkn mt-1"></div>
+            `;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-gray-100 detail-row hover:bg-indigo-50/30 transition-colors";
+        tr.innerHTML = `
+            <td class="px-4 py-3 text-center align-middle row-number text-gray-500 font-medium">${rowCount}</td>
+            <td class="px-4 py-3 align-middle">
+                ${karyawanInputHTML}
+                <div class="info-jkn mt-1 hidden"></div>
             </td>
-            <td class="px-2 py-2 align-top">
-                <select class="form-select w-full text-sm select-tipe-jkn" name="details[${rowCount}][tipe_jkn]">
-                    <option value="tunjangan">Tunjangan</option>
-                    <option value="hutang">Hutang</option>
-                    <option value="manual" ${isExistingRow ? 'selected' : ''}>Manual</option>
+            <td class="px-4 py-3 align-middle text-center text-xs group-text font-semibold text-gray-600 whitespace-nowrap">-</td>
+            <td class="px-4 py-3 align-middle text-center">
+                <select class="form-select w-full text-sm text-center select-tipe-jkn border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition-colors" name="details[${rowCount}][tipe_jkn]">
+                    <option value="tunjangan" ${tipeJkn === 'tunjangan' ? 'selected' : ''}>Tunjangan</option>
+                    <option value="hutang" ${tipeJkn === 'hutang' ? 'selected' : ''}>Hutang</option>
+                    <option value="tunjangan_hutang" ${tipeJkn === 'tunjangan_hutang' ? 'selected' : ''}>Tunjangan & Hutang</option>
                 </select>
             </td>
-            <td class="px-2 py-2 align-top">
-                <input type="number" name="details[${rowCount}][bpjs_kesehatan]" class="form-input w-full text-right text-sm input-kes" min="0" step="1" value="${valKes}">
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${valKes}" autocomplete="off" readonly>
             </td>
-            <td class="px-2 py-2 align-top">
-                <input type="number" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="form-input w-full text-right text-sm input-ket" min="0" step="1" value="${valKet}">
+            <td class="px-4 py-3 align-middle">
+                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${valKet}" autocomplete="off" readonly>
             </td>
-            <td class="px-2 py-2 text-right font-medium align-top subtotal-text">Rp ${formatNumber(subVal)}</td>
-            <td class="px-2 py-2 text-center align-top">
-                <button type="button" class="text-red-500 hover:text-red-700 btn-remove">
+            <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
+            <td class="px-4 py-3 text-center align-middle">
+                <button type="button" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-all btn-remove mt-1" title="Hapus Baris">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -243,15 +260,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputKes     = tr.querySelector('.input-kes');
         const inputKet     = tr.querySelector('.input-ket');
         const subtotalText = tr.querySelector('.subtotal-text');
-        const infoJkn      = tr.querySelector('.info-jkn');
+        const groupText    = tr.querySelector('.group-text');
         const selectTipe   = tr.querySelector('.select-tipe-jkn');
         
         const updateSubtotal = () => {
-            const kes = parseFloat(inputKes.value || 0);
-            const ket = parseFloat(inputKet.value || 0);
+            const kes = parseIdNumber(inputKes.value);
+            const ket = parseIdNumber(inputKet.value);
             subtotalText.innerText = 'Rp ' + formatNumber(kes + ket);
             calculateTotals();
         };
+
+        [inputKes, inputKet].forEach(input => {
+            input.addEventListener('change', function() {
+                this.value = formatNumber(parseIdNumber(this.value));
+                updateSubtotal();
+            });
+        });
 
         inputKes.addEventListener('input', updateSubtotal);
         inputKet.addEventListener('input', updateSubtotal);
@@ -263,143 +287,127 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         let $select = null;
-        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+        if (!karyawanId && typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
             $select = jQuery(tr.querySelector('.select2')).select2({
                 placeholder: "-- Pilih Karyawan --",
-                allowClear: true
+                width: '100%'
             });
         }
 
-        /**
-         * Tampilkan info badge Group JKN + DPP + persen
-         * dan perbarui label opsi Tipe JKN
-         */
         function updateInfoBadgeJkn(kId) {
             const karyawan = karyawans.find(k => k.id == kId);
-            if (!karyawan) { infoJkn.innerHTML = ''; return; }
+            if (!karyawan) { groupText.innerHTML = '-'; return; }
 
             if (karyawan.group_jkn) {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
                 if (rumus) {
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
-
-                    infoJkn.innerHTML = `
-                        <span class="inline-flex flex-wrap gap-1 mt-1">
-                            <span class="bg-indigo-100 text-indigo-700 rounded px-1 py-0.5 text-xs">Group: <b>${karyawan.group_jkn}</b></span>
-                            <span class="bg-gray-100 text-gray-600 rounded px-1 py-0.5 text-xs">DPP: <b>Rp ${formatNumber(dpp)}</b></span>
-                            <span class="bg-green-100 text-green-700 rounded px-1 py-0.5 text-xs">Tunj: <b>${tunjPersen}%</b></span>
-                            <span class="bg-yellow-100 text-yellow-700 rounded px-1 py-0.5 text-xs">Hutang: <b>${hutangPersen}%</b></span>
-                        </span>
-                    `;
-
+                    groupText.innerHTML = `<span class="text-indigo-600">${karyawan.group_jkn}</span>`;
                     selectTipe.options[0].text = `Tunjangan (${tunjPersen}%)`;
                     selectTipe.options[1].text = `Hutang (${hutangPersen}%)`;
+                    selectTipe.options[2].text = `Tunjangan (${tunjPersen}%) & Hutang (${hutangPersen}%)`;
                 } else {
-                    infoJkn.innerHTML = `<span class="text-xs text-orange-500">&#9888; Rumus JKN untuk Group "${karyawan.group_jkn}" tidak ditemukan</span>`;
-                    selectTipe.options[0].text = 'Tunjangan';
-                    selectTipe.options[1].text = 'Hutang';
+                    groupText.innerHTML = `<span class="text-orange-500" title="Rumus tidak ditemukan">${karyawan.group_jkn} &#9888;</span>`;
                 }
             } else {
-                infoJkn.innerHTML = `<span class="text-xs text-gray-400">Tidak ada Group JKN</span>`;
-                selectTipe.options[0].text = 'Tunjangan';
-                selectTipe.options[1].text = 'Hutang';
+                groupText.innerHTML = `<span class="text-gray-400">-</span>`;
             }
         }
 
-        /**
-         * Hitung nominal BPJS
-         * Alur JKN:
-         * 1. Cari Group JKN karyawan
-         * 2. Ambil DPP JKN karyawan
-         * 3. Sesuai tipe (tunjangan/hutang): ambil persen dari rumus
-         * 4. nominalKes = (persen / 100) * DPP
-         */
         function calculateBpjsForKaryawan(kId, tipeJkn) {
             if (!kId) {
                 inputKes.value = 0;
                 inputKet.value = 0;
-                infoJkn.innerHTML = '';
-                selectTipe.options[0].text = 'Tunjangan';
-                selectTipe.options[1].text = 'Hutang';
                 updateSubtotal();
                 return;
             }
-
             updateInfoBadgeJkn(kId);
-
             const karyawan = karyawans.find(k => k.id == kId);
             if (!karyawan) return;
 
+            let nominalKes = 0;
             let nominalKet = 0;
 
-            // --- Hitung JKN berdasarkan tipe ---
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
                 if (rumus) {
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
                     const dpp          = parseIdNumber(karyawan.dpp_jkn);
-
                     let persen = 0;
-                    if (tipeJkn === 'tunjangan') {
-                        persen = tunjPersen;
-                    } else if (tipeJkn === 'hutang') {
-                        persen = hutangPersen;
+                    if (tipeJkn === 'tunjangan') { persen = tunjPersen; } 
+                    else if (tipeJkn === 'hutang') { 
+                        persen = 0; 
+                        nominalKet += (hutangPersen / 100) * dpp; 
+                    } 
+                    else if (tipeJkn === 'tunjangan_hutang') { 
+                        persen = tunjPersen; 
+                        nominalKet += (hutangPersen / 100) * dpp; 
                     }
-
-                    inputKes.value = Math.round((persen / 100) * dpp);
+                    nominalKes = (persen / 100) * dpp;
                 }
+            } else if (tipeJkn === 'manual') {
+                nominalKes = parseIdNumber(inputKes.value);
             }
-            // 'manual': jangan ubah inputKes, biarkan user isi sendiri
 
-            // --- Hitung BP Jamsostek (semua komponen) ---
-            if (karyawan.group_bp_jamsostek) {
+            if (karyawan.group_bp_jamsostek && tipeJkn !== 'manual') {
                 const rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
                 if (rumus) {
-                    const tunjangan   = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutang      = parseFloat(rumus.hutang_persen    || 0);
-                    const biaya       = parseFloat(rumus.biaya_persen     || 0);
-                    const totalPersen = tunjangan + hutang + biaya;
-                    if (totalPersen > 0) {
-                        const dpp  = parseIdNumber(karyawan.dpp_bp_jamsostek);
-                        nominalKet = (totalPersen / 100) * dpp;
-                    }
+                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
+                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
+                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
+                    let persen = 0;
+                    if (tipeJkn === 'tunjangan') { persen = tunjPersen; } 
+                    else if (tipeJkn === 'hutang') { persen = hutangPersen; } 
+                    else if (tipeJkn === 'tunjangan_hutang') { persen = hutangPersen; }
+                    nominalKet += (persen / 100) * dpp;
                 }
+            } else if (tipeJkn === 'manual') {
+                nominalKet = parseIdNumber(inputKet.value);
             }
 
-            inputKet.value = Math.round(nominalKet);
+            if (tipeJkn !== 'manual') { 
+                inputKes.value = formatNumber(Math.round(nominalKes)); 
+                inputKes.readOnly = true;
+                inputKet.readOnly = true;
+                
+                inputKes.classList.add('cursor-default');
+                inputKet.classList.add('cursor-default');
+            }
+            
+            inputKet.value = formatNumber(Math.round(nominalKet));
             updateSubtotal();
         }
 
-        // Handler: karyawan berubah
-        const handleKaryawanChange = function(kId) {
-            const tipe = selectTipe.value;
-            calculateBpjsForKaryawan(kId, tipe);
-        };
+        const handleKaryawanChange = function(kId) { calculateBpjsForKaryawan(kId, selectTipe.value); };
 
-        if ($select) {
-            $select.on('change', function() {
-                handleKaryawanChange($select.val());
-            });
-        } else {
-            tr.querySelector('.select2').addEventListener('change', function(e) {
-                handleKaryawanChange(e.target.value);
-            });
+        if ($select) { 
+            $select.on('change', function() { handleKaryawanChange($select.val()); }); 
+        } else if (!karyawanId) { 
+            tr.querySelector('.select2').addEventListener('change', function(e) { handleKaryawanChange(e.target.value); }); 
         }
 
-        // Handler: tipe JKN berubah → hitung ulang
         selectTipe.addEventListener('change', function() {
-            const kId = $select ? $select.val() : tr.querySelector('.select2').value;
+            const kId = karyawanId ? karyawanId : ($select ? $select.val() : tr.querySelector('.select2').value);
             calculateBpjsForKaryawan(kId, this.value);
         });
 
-        // Existing rows: tampilkan info badge saja, jangan hitung ulang
-        if (isExistingRow && selectedKaryawanId) {
+        if (karyawanId) {
+            setTimeout(() => {
+                selectTipe.value = 'tunjangan_hutang';
+                calculateBpjsForKaryawan(karyawanId, 'tunjangan_hutang');
+            }, 100);
+        } else if (isExistingRow && selectedKaryawanId) {
             setTimeout(() => updateInfoBadgeJkn(selectedKaryawanId), 100);
         }
     }
+
+    document.querySelector('form').addEventListener('submit', function() {
+        document.querySelectorAll('.input-kes, .input-ket').forEach(input => {
+            input.value = parseIdNumber(input.value);
+        });
+    });
 
     function updateRowNumbers() {
         document.querySelectorAll('.row-number').forEach((td, index) => {
