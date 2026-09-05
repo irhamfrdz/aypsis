@@ -72,8 +72,8 @@
                     <tr>
                         <th class="border border-gray-300 px-3 py-2 text-center w-12">No</th>
                         <th class="border border-gray-300 px-3 py-2 text-left">Nama Karyawan</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">BPJS Kesehatan</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">BPJS Ketenagakerjaan</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">JKN</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">BP Jamsostek</th>
                         <th class="border border-gray-300 px-3 py-2 text-right">Subtotal</th>
                     </tr>
                 </thead>
@@ -82,8 +82,8 @@
                         <tr>
                             <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
                             <td class="border border-gray-300 px-3 py-2">{{ $detail->karyawan->nama_lengkap ?? '-' }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_kesehatan, 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_kesehatan + $detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->jht_biaya + $detail->jht_hutang + $detail->jkk_tunjangan + $detail->jkm_tunjangan + $detail->jp_biaya + $detail->jp_hutang, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 px-3 py-2 text-right font-medium">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
                         </tr>
                     @endforeach

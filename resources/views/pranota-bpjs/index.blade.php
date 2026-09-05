@@ -146,7 +146,7 @@
                         <th class="px-4 py-3 text-center">Periode</th>
                         <th class="px-4 py-3 text-center">Karyawan</th>
                         <th class="px-4 py-3 text-right">JKN</th>
-                        <th class="px-4 py-3 text-right">Jamsostek</th>
+                        <th class="px-4 py-3 text-right">BP Jamsostek</th>
                         <th class="px-4 py-3 text-right">Grand Total</th>
                         <th class="px-4 py-3 text-center">Status</th>
                         <th class="px-4 py-3 text-center">Aksi</th>

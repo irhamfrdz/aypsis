@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <form action="{{ route('pranota-bpjs.update', $pranota_bpj->id) }}" method="POST">
+    <form id="pranota-form" action="{{ route('pranota-bpjs.update', $pranota_bpj->id) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -498,8 +498,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    document.querySelector('form').addEventListener('submit', function() {
-        document.querySelectorAll('.input-kes, .input-ket').forEach(input => {
+    document.getElementById('pranota-form').addEventListener('submit', function() {
+        document.querySelectorAll('.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, .input-jkk, .input-jkm, .input-jp-biaya, .input-jp-hutang').forEach(input => {
             input.value = parseIdNumber(input.value);
         });
     });

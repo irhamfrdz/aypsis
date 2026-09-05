@@ -89,26 +89,37 @@ class PranotaBpjsController extends Controller
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
                     $bpjsKes = floatval($detail['bpjs_kesehatan'] ?? 0);
-                    $bpjsKet = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
-                    $total = $bpjsKes + $bpjsKet;
+                    $bpjsKetInput = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
+                    $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    if ($total > 0) {
+                    $jhtBiaya = floatval($detail['jht_biaya'] ?? 0);
+                    $jhtHutang = floatval($detail['jht_hutang'] ?? 0);
+                    $jkkTunjangan = floatval($detail['jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = floatval($detail['jkm_tunjangan'] ?? 0);
+                    $jpBiaya = floatval($detail['jp_biaya'] ?? 0);
+                    $jpHutang = floatval($detail['jp_hutang'] ?? 0);
+                    
+                    $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
+                    
+                    $total = $jknTotal + $jamsostekTotal;
+
+                    if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
                         PranotaBpjsDetail::create([
                             'pranota_bpjs_header_id' => $header->id,
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
-                            'bpjs_ketenagakerjaan' => $bpjsKet,
-                            'jht_biaya' => floatval($detail['jht_biaya'] ?? 0),
-                            'jht_hutang' => floatval($detail['jht_hutang'] ?? 0),
-                            'jkk_tunjangan' => floatval($detail['jkk_tunjangan'] ?? 0),
-                            'jkm_tunjangan' => floatval($detail['jkm_tunjangan'] ?? 0),
-                            'jp_biaya' => floatval($detail['jp_biaya'] ?? 0),
-                            'jp_hutang' => floatval($detail['jp_hutang'] ?? 0),
+                            'bpjs_ketenagakerjaan' => $bpjsKetInput,
+                            'jht_biaya' => $jhtBiaya,
+                            'jht_hutang' => $jhtHutang,
+                            'jkk_tunjangan' => $jkkTunjangan,
+                            'jkm_tunjangan' => $jkmTunjangan,
+                            'jp_biaya' => $jpBiaya,
+                            'jp_hutang' => $jpHutang,
                             'total' => $total,
                         ]);
 
-                        $totalKes += $bpjsKes;
-                        $totalKet += $bpjsKet;
+                        $totalKes += $jknTotal;
+                        $totalKet += $jamsostekTotal;
                         $totalKaryawan++;
                     }
                 }
@@ -198,26 +209,37 @@ class PranotaBpjsController extends Controller
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
                     $bpjsKes = floatval($detail['bpjs_kesehatan'] ?? 0);
-                    $bpjsKet = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
-                    $total = $bpjsKes + $bpjsKet;
+                    $bpjsKetInput = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
+                    $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    if ($total > 0) {
+                    $jhtBiaya = floatval($detail['jht_biaya'] ?? 0);
+                    $jhtHutang = floatval($detail['jht_hutang'] ?? 0);
+                    $jkkTunjangan = floatval($detail['jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = floatval($detail['jkm_tunjangan'] ?? 0);
+                    $jpBiaya = floatval($detail['jp_biaya'] ?? 0);
+                    $jpHutang = floatval($detail['jp_hutang'] ?? 0);
+                    
+                    $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
+                    
+                    $total = $jknTotal + $jamsostekTotal;
+
+                    if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
                         PranotaBpjsDetail::create([
                             'pranota_bpjs_header_id' => $pranota_bpj->id,
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
-                            'bpjs_ketenagakerjaan' => $bpjsKet,
-                            'jht_biaya' => floatval($detail['jht_biaya'] ?? 0),
-                            'jht_hutang' => floatval($detail['jht_hutang'] ?? 0),
-                            'jkk_tunjangan' => floatval($detail['jkk_tunjangan'] ?? 0),
-                            'jkm_tunjangan' => floatval($detail['jkm_tunjangan'] ?? 0),
-                            'jp_biaya' => floatval($detail['jp_biaya'] ?? 0),
-                            'jp_hutang' => floatval($detail['jp_hutang'] ?? 0),
+                            'bpjs_ketenagakerjaan' => $bpjsKetInput,
+                            'jht_biaya' => $jhtBiaya,
+                            'jht_hutang' => $jhtHutang,
+                            'jkk_tunjangan' => $jkkTunjangan,
+                            'jkm_tunjangan' => $jkmTunjangan,
+                            'jp_biaya' => $jpBiaya,
+                            'jp_hutang' => $jpHutang,
                             'total' => $total,
                         ]);
 
-                        $totalKes += $bpjsKes;
-                        $totalKet += $bpjsKet;
+                        $totalKes += $jknTotal;
+                        $totalKet += $jamsostekTotal;
                         $totalKaryawan++;
                     }
                 }

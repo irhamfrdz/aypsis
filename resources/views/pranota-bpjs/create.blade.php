@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <form action="{{ route('pranota-bpjs.store') }}" method="POST">
+    <form id="pranota-form" action="{{ route('pranota-bpjs.store') }}" method="POST">
         @csrf
 
         {{-- Section: Informasi Pranota --}}
@@ -328,8 +328,8 @@ document.addEventListener('DOMContentLoaded', function() {
         inputKes.addEventListener('input', updateSubtotal);
         inputKet.addEventListener('input', updateSubtotal);
 
-        document.querySelector('form').addEventListener('submit', function() {
-            document.querySelectorAll('.input-kes, .input-ket').forEach(input => {
+        document.getElementById('pranota-form').addEventListener('submit', function() {
+            document.querySelectorAll('.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, .input-jkk, .input-jkm, .input-jp-biaya, .input-jp-hutang').forEach(input => {
                 input.value = parseIdNumber(input.value);
             });
         });
