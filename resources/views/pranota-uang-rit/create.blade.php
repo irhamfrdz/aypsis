@@ -446,7 +446,7 @@
                                                placeholder="{{ number_format($ritValue, 0, ',', '') }}" 
                                                value="{{ $ritValue }}"
                                                min="0" 
-                                               step="1000"
+                                               step="any"
                                                title="Dari Pricelist Rit - Tujuan: Supir">
                                     </td>
                                 </tr>
