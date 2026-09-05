@@ -27,6 +27,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     protected $tempat;
     protected $grup;
     protected $subGrup;
+    protected $statusKaryawan;
 
     protected $totalDays;
     protected $dayHeaders;
@@ -34,7 +35,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     protected $periodText;
     protected $styleRanges = [];
 
-    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null)
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null, $statusKaryawan = 'aktif')
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
@@ -45,6 +46,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->tempat = $tempat;
         $this->grup = $grup;
         $this->subGrup = $subGrup;
+        $this->statusKaryawan = $statusKaryawan;
         
         $this->styleRanges = [
             'sakit' => [],
@@ -76,7 +78,12 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $this->periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
         }
 
-        $karyawansQuery = Karyawan::query()->whereNull('tanggal_berhenti');
+        $karyawansQuery = Karyawan::query();
+        if ($this->statusKaryawan === 'aktif') {
+            $karyawansQuery->whereNull('tanggal_berhenti');
+        } elseif ($this->statusKaryawan === 'berhenti') {
+            $karyawansQuery->whereNotNull('tanggal_berhenti');
+        }
         if (!empty($this->search)) {
             $search = $this->search;
             $karyawansQuery->where(function ($q) use ($search) {

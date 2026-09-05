@@ -822,8 +822,14 @@ class AbsensiController extends Controller
         $startDate = Carbon::parse($startDateStr)->startOfDay();
         $endDate = Carbon::parse($endDateStr)->endOfDay();
 
-        // Get all active employees (exclude those who have resigned)
-        $karyawansQuery = Karyawan::whereNull('tanggal_berhenti');
+        // Filter by Status Karyawan
+        $statusKaryawan = $request->input('status_karyawan', 'aktif');
+        $karyawansQuery = Karyawan::query();
+        if ($statusKaryawan === 'aktif') {
+            $karyawansQuery->whereNull('tanggal_berhenti');
+        } elseif ($statusKaryawan === 'berhenti') {
+            $karyawansQuery->whereNotNull('tanggal_berhenti');
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -919,12 +925,12 @@ class AbsensiController extends Controller
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
-        $allKaryawans = Karyawan::whereNull('tanggal_berhenti')->where('status', 'active')->orderBy('nama_lengkap')->get();
+        $allKaryawans = Karyawan::where('status', 'active')->orderBy('nama_lengkap')->get();
         
-        $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
-        $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
-        $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
-        $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+        $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
+        $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
+        $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
+        $penempatans = Karyawan::whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
         $grupMap = [
             'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
@@ -1285,12 +1291,13 @@ class AbsensiController extends Controller
         $tempat = $request->input('tempat');
         $grup = $request->input('grup');
         $subGrup = $request->input('sub_grup');
+        $statusKaryawan = $request->input('status_karyawan', 'aktif');
 
         $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat) . '-' : '';
         $fileName = 'rekap-absensi-' . $tempatSlug . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup, $statusKaryawan),
             $fileName
         );
     }
@@ -1369,7 +1376,13 @@ class AbsensiController extends Controller
         $startDate = Carbon::parse($startDateStr)->startOfDay();
         $endDate = Carbon::parse($endDateStr)->endOfDay();
         
-        $karyawansQuery = Karyawan::whereNull('tanggal_berhenti')->orderBy('nik', 'asc');
+        $statusKaryawan = $request->input('status_karyawan', 'aktif');
+        $karyawansQuery = Karyawan::query()->orderBy('nik', 'asc');
+        if ($statusKaryawan === 'aktif') {
+            $karyawansQuery->whereNull('tanggal_berhenti');
+        } elseif ($statusKaryawan === 'berhenti') {
+            $karyawansQuery->whereNotNull('tanggal_berhenti');
+        }
         
         if ($request->filled('search')) {
             $search = $request->search;

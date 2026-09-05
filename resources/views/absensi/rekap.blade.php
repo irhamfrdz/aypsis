@@ -170,6 +170,17 @@
                         </select>
                     </div>
 
+                    <!-- Status Karyawan -->
+                    <div class="md:col-span-1">
+                        <label for="status_karyawan" class="block text-xs font-semibold text-gray-700 mb-1">Status Karyawan</label>
+                        <select name="status_karyawan" id="status_karyawan"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="aktif" {{ request('status_karyawan', 'aktif') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                            <option value="berhenti" {{ request('status_karyawan') == 'berhenti' ? 'selected' : '' }}>Berhenti</option>
+                            <option value="semua" {{ request('status_karyawan') == 'semua' ? 'selected' : '' }}>Semua</option>
+                        </select>
+                    </div>
+
                     <!-- Dari Tanggal -->
                     <div class="md:col-span-1">
                         <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
