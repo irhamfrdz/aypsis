@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                        class="person-utang-input w-24 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 text-right"
                                        value="${utangValue}"
                                        min="0" 
-                                       step="1000"
+                                       step="any"
                                        data-person="${personId}"
                                        data-last-count="${totals.count}">
                             </div>
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                        class="person-tabungan-input w-24 px-2 py-1 text-xs border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 text-right"
                                        value="${tabunganValue}"
                                        min="0" 
-                                       step="1000"
+                                       step="any"
                                        data-person="${personId}">
                             </div>
                             <div class="flex flex-col items-center">
@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                        class="person-bpjs-input w-24 px-2 py-1 text-xs border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-right"
                                        value="${bpjsValue}"
                                        min="0" 
-                                       step="1000"
+                                       step="any"
                                        data-person="${personId}">
                             </div>
                             <div class="flex flex-col items-center">
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <input type="number" 
                                        class="person-adjustment-input w-24 px-2 py-1 text-xs border border-sky-300 rounded focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-right"
                                        value="${adjustmentValue}"
-                                       step="1000"
+                                       step="any"
                                        data-person="${personId}">
                             </div>
                         </div>
