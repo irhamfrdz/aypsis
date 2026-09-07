@@ -212,7 +212,7 @@
                         </tr>
                         <tr>
                             <td>Kendaraan</td>
-                            <td>: {{ $biayaBensin->mobil->nopol ?? '-' }}</td>
+                            <td>: {{ $biayaBensin->mobil->nomor_polisi ?? '-' }}</td>
                         </tr>
                     </table>
                 </div>
@@ -220,7 +220,7 @@
                     <table class="info-table">
                         <tr>
                             <td style="width: 35%;">Penerima</td>
-                            <td>: {{ $biayaBensin->supir->nama_karyawan ?? '-' }}</td>
+                            <td>: {{ $biayaBensin->supir ? ($biayaBensin->supir->nama_panggilan ?: $biayaBensin->supir->nama_lengkap) : '-' }}</td>
                         </tr>
                         <tr>
                             <td>Nomor Kartu</td>
@@ -247,9 +247,9 @@
             <tbody>
                 <tr>
                     <td class="text-center">1</td>
-                    <td class="text-center">{{ $biayaBensin->mobil->nopol ?? '-' }}</td>
-                    <td class="text-center">{{ $biayaBensin->supir->nama_karyawan ?? '-' }}</td>
-                    <td class="text-right">{{ number_format($biayaBensin->liter, 2, ',', '.') }} L</td>
+                    <td class="text-center">{{ $biayaBensin->mobil->nomor_polisi ?? '-' }}</td>
+                    <td class="text-center">{{ $biayaBensin->supir ? ($biayaBensin->supir->nama_panggilan ?: $biayaBensin->supir->nama_lengkap) : '-' }}</td>
+                    <td class="text-center">{{ rtrim(rtrim(number_format($biayaBensin->liter, 2, ',', '.'), '0'), ',') }} L</td>
                     <td class="text-right">Rp {{ number_format($biayaBensin->harga_per_liter, 0, ',', '.') }}</td>
                     <td class="text-right font-bold">Rp {{ number_format($biayaBensin->biaya, 0, ',', '.') }}</td>
                 </tr>
