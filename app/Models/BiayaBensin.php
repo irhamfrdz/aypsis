@@ -19,6 +19,8 @@ class BiayaBensin extends Model
         'biaya',
         'harga_per_liter',
         'keterangan',
+        'nomor_rekening',
+        'penerima_rekening',
         'created_by',
         'bukti_beli',
         'status',

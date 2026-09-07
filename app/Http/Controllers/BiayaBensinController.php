@@ -89,6 +89,8 @@ class BiayaBensinController extends Controller
             'biaya' => 'required|numeric',
             'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
+            'nomor_rekening' => 'nullable|string|max:100',
+            'penerima_rekening' => 'nullable|string|max:150',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
@@ -205,6 +207,8 @@ class BiayaBensinController extends Controller
             'biaya' => 'required|numeric',
             'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
+            'nomor_rekening' => 'nullable|string|max:100',
+            'penerima_rekening' => 'nullable|string|max:150',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 

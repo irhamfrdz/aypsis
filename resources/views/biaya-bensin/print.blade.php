@@ -226,6 +226,10 @@
                             <td>Nomor Kartu</td>
                             <td>: {{ $biayaBensin->nomor_kartu ?? '-' }}</td>
                         </tr>
+                        <tr>
+                            <td>Rekening</td>
+                            <td>: {{ $biayaBensin->nomor_rekening ?? '-' }} {{ $biayaBensin->penerima_rekening ? '(A.n '.$biayaBensin->penerima_rekening.')' : '' }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>

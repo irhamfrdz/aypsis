@@ -94,6 +94,30 @@
                             </select>
                             @error('nomor_kartu') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                         </div>
+
+                        <!-- Rekening Penerima -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nomor_rekening" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Nomor Rekening
+                                </label>
+                                <input type="text" name="nomor_rekening" id="nomor_rekening" 
+                                       value="{{ old('nomor_rekening') }}" 
+                                       placeholder="Cth: 1234567890" 
+                                       class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-colors">
+                                @error('nomor_rekening') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="penerima_rekening" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Penerima
+                                </label>
+                                <input type="text" name="penerima_rekening" id="penerima_rekening" 
+                                       value="{{ old('penerima_rekening') }}" 
+                                       placeholder="Nama Pemilik Rekening" 
+                                       class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-colors">
+                                @error('penerima_rekening') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
 
