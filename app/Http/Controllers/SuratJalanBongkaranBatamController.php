@@ -55,7 +55,12 @@ class SuratJalanBongkaranBatamController extends Controller
                 ->pluck('no_voyage');
         }
 
-        return view('surat-jalan-bongkaran-batam.select-ship', compact('kapals', 'voyages'));
+        $target = $request->get('target', 'list');
+        $targetRoute = $target === 'dashboard' 
+            ? route('surat-jalan-bongkaran-batam.dashboard') 
+            : route('surat-jalan-bongkaran-batam.list');
+
+        return view('surat-jalan-bongkaran-batam.select-ship', compact('kapals', 'voyages', 'targetRoute'));
     }
 
     /**
@@ -150,6 +155,10 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         $selectedKapal = $request->nama_kapal;
         $selectedVoyage = $request->no_voyage;
+
+        if (!$selectedKapal || !$selectedVoyage) {
+            return redirect()->route('surat-jalan-bongkaran-batam.index', ['target' => 'dashboard']);
+        }
 
         $statsQuery = Manifest::query();
         if ($selectedKapal) {

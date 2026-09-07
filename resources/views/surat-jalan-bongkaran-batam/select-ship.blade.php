@@ -28,7 +28,7 @@
 
         <!-- Card Body -->
         <div class="p-4 md:p-6">
-            <form method="GET" action="{{ route('surat-jalan-bongkaran-batam.list') }}" id="selectShipForm">
+            <form method="GET" action="{{ $targetRoute ?? route('surat-jalan-bongkaran-batam.list') }}" id="selectShipForm">
                 <div class="space-y-4 md:space-y-6">
                     <!-- Kapal Selection -->
                     <div>
