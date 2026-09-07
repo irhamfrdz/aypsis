@@ -122,6 +122,7 @@
     </div>
     @endif
 
+    @if(request('view') !== 'dashboard')
     <!-- Main Card -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <!-- Card Header -->
@@ -1537,6 +1538,7 @@
             </form>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 
