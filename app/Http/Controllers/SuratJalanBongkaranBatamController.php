@@ -146,6 +146,59 @@ class SuratJalanBongkaranBatamController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function dashboard(Request $request)
+    {
+        $selectedKapal = $request->nama_kapal;
+        $selectedVoyage = $request->no_voyage;
+
+        $statsQuery = Manifest::query();
+        if ($selectedKapal) {
+            $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+            $statsQuery->where(function ($q) use ($selectedKapal, $kapalClean) {
+                $q->where('manifests.nama_kapal', $selectedKapal)
+                    ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+            });
+        }
+        if ($selectedVoyage) {
+            $statsQuery->where('manifests.no_voyage', $selectedVoyage);
+        }
+
+        $totalManifest = (clone $statsQuery)->count();
+        $sudahSj = (clone $statsQuery)->whereHas('suratJalanBongkaranBatam')->count();
+        $belumSj = $totalManifest - $sudahSj;
+
+        $leadtimeQuery = clone $statsQuery;
+        $avgLeadtimeData = collect(\DB::select("
+            SELECT AVG(TIMESTAMPDIFF(HOUR, m.created_at, sj.created_at)) as avg_hours
+            FROM manifests m
+            JOIN surat_jalan_bongkaran_batams sj ON sj.manifest_id = m.id
+            " . ($selectedKapal || $selectedVoyage ? "WHERE " : "") . "
+            " . ($selectedKapal ? "m.nama_kapal = '{$selectedKapal}' " : "") . "
+            " . ($selectedKapal && $selectedVoyage ? "AND " : "") . "
+            " . ($selectedVoyage ? "m.no_voyage = '{$selectedVoyage}'" : "") . "
+        "))->first();
+
+        $avgHours = $avgLeadtimeData->avg_hours ? round($avgLeadtimeData->avg_hours) : 0;
+        $avg_leadtime_days = floor($avgHours / 24);
+        $avg_leadtime_hours = $avgHours % 24;
+
+        // Chart Data: Tipe Kontainer
+        $chartTipeKontainer = (clone $statsQuery)
+            ->select('tipe_kontainer', \DB::raw('count(*) as total'))
+            ->groupBy('tipe_kontainer')
+            ->get();
+
+        $stats = (object)[
+            'total_manifest' => $totalManifest,
+            'sudah_sj' => $sudahSj,
+            'belum_sj' => $belumSj,
+            'avg_leadtime_days' => $avg_leadtime_days,
+            'avg_leadtime_hours' => $avg_leadtime_hours,
+        ];
+
+        return view('surat-jalan-bongkaran-batam.dashboard', compact('selectedKapal', 'selectedVoyage', 'stats', 'chartTipeKontainer'));
+    }
+
     public function index(Request $request)
     {
         // Get selected kapal and voyage from request for filter functionality
