@@ -253,12 +253,12 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Penerima (Ketik Manual/Pilih)</label>
-                                <input type="text" name="kapal_sections[${sectionIndex}][penerima]" list="karyawan-list-${sectionIndex}" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="-- Pilih atau Ketik Penerima --">
-                                <datalist id="karyawan-list-${sectionIndex}">
+                                <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                                    <option value="">-- Pilih atau Ketik Penerima --</option>
                                     @foreach($karyawans as $karyawan)
                                         <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>
                                     @endforeach
-                                </datalist>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
@@ -427,6 +427,37 @@
             if (nomorRekeningInput) {
                 nomorRekeningInput.addEventListener('input', function() {
                     updateOtherSections('.nomor-rekening-input', this.value);
+                });
+            }
+        }
+        
+        // Initialize Select2 for Penerima
+        if (penerimaSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(penerimaSelect).select2({
+                tags: true,
+                placeholder: "-- Pilih atau Ketik Penerima --",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Sync with other sections if this is section 1
+            if (sectionIndex === 1) {
+                $(penerimaSelect).on('select2:select select2:unselect', function(e) {
+                    const value = $(this).val();
+                    document.querySelectorAll('.kapal-section').forEach(sec => {
+                        const idx = parseInt(sec.getAttribute('data-section-index'));
+                        if (idx > 1) {
+                            const $sel = $(sec.querySelector('.penerima-select'));
+                            if ($sel.length) {
+                                // Add option if it doesn't exist
+                                if (value && !$sel.find("option[value='" + value + "']").length) {
+                                    const newOption = new Option(value, value, true, true);
+                                    $sel.append(newOption);
+                                }
+                                $sel.val(value).trigger('change.select2');
+                            }
+                        }
+                    });
                 });
             }
         }
