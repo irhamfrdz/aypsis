@@ -252,13 +252,13 @@
                                 <input type="text" name="kapal_sections[${sectionIndex}][nama_vendor]" class="nama-vendor-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
-                                <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                                    <option value="">-- Pilih Penerima --</option>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Penerima (Ketik Manual/Pilih)</label>
+                                <input type="text" name="kapal_sections[${sectionIndex}][penerima]" list="karyawan-list-${sectionIndex}" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="-- Pilih atau Ketik Penerima --">
+                                <datalist id="karyawan-list-${sectionIndex}">
                                     @foreach($karyawans as $karyawan)
                                         <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>
                                     @endforeach
-                                </select>
+                                </datalist>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>

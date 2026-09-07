@@ -302,7 +302,43 @@ class SuratJalanBongkaranBatamController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs'));
+        // --- DASHBOARD STATS CALCULATION ---
+        $statsQuery = Manifest::query();
+        if ($selectedKapal) {
+            $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+            $statsQuery->where(function ($q) use ($selectedKapal, $kapalClean) {
+                $q->where('manifests.nama_kapal', $selectedKapal)
+                    ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+            });
+        }
+        if ($selectedVoyage) {
+            $statsQuery->where('manifests.no_voyage', $selectedVoyage);
+        }
+
+        $totalManifest = (clone $statsQuery)->count();
+        $sudahSj = (clone $statsQuery)->whereHas('suratJalanBongkaranBatam')->count();
+        $belumSj = $totalManifest - $sudahSj;
+
+        $leadtimeQuery = (clone $statsQuery)
+            ->join('surat_jalan_bongkaran_batams as sj', 'manifests.id', '=', 'sj.manifest_id')
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, manifests.created_at, sj.created_at)) as avg_leadtime_hours')
+            ->first();
+
+        $avgLeadtimeHours = $leadtimeQuery->avg_leadtime_hours ?? 0;
+        $avgLeadtimeDays = $avgLeadtimeHours > 0 ? floor($avgLeadtimeHours / 24) : 0;
+        $remainingHours = $avgLeadtimeHours > 0 ? round($avgLeadtimeHours % 24) : 0;
+
+        $stats = (object)[
+            'total_manifest' => $totalManifest,
+            'sudah_sj' => $sudahSj,
+            'belum_sj' => $belumSj,
+            'avg_leadtime_days' => $avgLeadtimeDays,
+            'avg_leadtime_hours' => $remainingHours,
+            'persentase_selesai' => $totalManifest > 0 ? round(($sudahSj / $totalManifest) * 100, 1) : 0
+        ];
+        // -----------------------------------
+
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats'));
     }
 
     public function penarikanIndex(Request $request)
