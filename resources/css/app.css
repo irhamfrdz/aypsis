@@ -1,5 +1,5 @@
-/* FontAwesome */
-@import '@fortawesome/fontawesome-free/css/all.css';
+/* FontAwesome di-load via CDN di public.blade.php untuk menghindari konflik encoding */
+/* @import '@fortawesome/fontawesome-free/css/all.css'; */
 
 @tailwind base;
 @tailwind components;
