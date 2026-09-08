@@ -42,6 +42,14 @@ class PranotaUangJalanExport implements FromCollection, ShouldAutoSize, WithEven
             if (! empty($this->filters['status'])) {
                 $query->where('status_pembayaran', $this->filters['status']);
             }
+
+            if (! empty($this->filters['tanggal_dari'])) {
+                $query->whereDate('tanggal_pranota', '>=', $this->filters['tanggal_dari']);
+            }
+
+            if (! empty($this->filters['tanggal_sampai'])) {
+                $query->whereDate('tanggal_pranota', '<=', $this->filters['tanggal_sampai']);
+            }
         }
 
         $rows = $query->get()->map(function ($p) {

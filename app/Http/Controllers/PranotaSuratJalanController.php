@@ -76,7 +76,7 @@ class PranotaSuratJalanController extends Controller
         }
 
         try {
-            $filters = $request->only(['search', 'status']);
+            $filters = $request->only(['search', 'status', 'tanggal_dari', 'tanggal_sampai']);
             $fileName = 'pranota_uang_jalan_export_'.date('Ymd_His').'.xlsx';
             $export = new PranotaUangJalanExport($filters, []);
 
