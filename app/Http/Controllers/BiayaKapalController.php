@@ -62,6 +62,11 @@ class BiayaKapalController extends Controller
             $query->where('jenis_biaya', $request->jenis_biaya);
         }
 
+        // Filter by lokasi
+        if ($request->has('lokasi') && $request->lokasi != '') {
+            $query->where('lokasi', $request->lokasi);
+        }
+
         // Filter by tanggal range
         if ($request->filled('start_date')) {
             $query->where('tanggal', '>=', $request->start_date);

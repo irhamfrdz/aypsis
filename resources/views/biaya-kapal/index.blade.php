@@ -73,8 +73,8 @@
         <div class="p-6">
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('biaya-kapal.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div class="md:col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4">
+                    <div class="md:col-span-3 lg:col-span-2">
                         <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Cari Data</label>
                         <input type="text"
                                name="search"
@@ -83,7 +83,7 @@
                                placeholder="Kapal, invoice, jenis biaya, ket..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-3 lg:col-span-2">
                         <label for="jenis_biaya_select" class="block text-xs font-medium text-gray-700 mb-1">Jenis Biaya</label>
                         <select name="jenis_biaya" id="jenis_biaya_select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2 text-sm">
                             <option value="">Semua Jenis Biaya</option>
@@ -94,7 +94,15 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2 lg:col-span-2">
+                        <label for="lokasi" class="block text-xs font-medium text-gray-700 mb-1">Lokasi</label>
+                        <select name="lokasi" id="lokasi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            <option value="">Semua Lokasi</option>
+                            <option value="jakarta" {{ request('lokasi') == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="batam" {{ request('lokasi') == 'batam' ? 'selected' : '' }}>Batam</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 lg:col-span-2">
                         <label for="start_date" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
                         <input type="date"
                                name="start_date"
@@ -102,7 +110,7 @@
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
                                value="{{ request('start_date') }}">
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2 lg:col-span-2">
                         <label for="end_date" class="block text-xs font-medium text-gray-700 mb-1">Ke Tanggal</label>
                         <input type="date"
                                name="end_date"
@@ -110,7 +118,7 @@
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
                                value="{{ request('end_date') }}">
                     </div>
-                    <div class="md:col-span-2 flex items-end gap-2">
+                    <div class="md:col-span-12 lg:col-span-2 flex items-end gap-2">
                         <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition duration-200 flex items-center justify-center text-sm font-medium">
                             <i class="fas fa-search mr-1.5"></i> Cari
                         </button>
@@ -206,6 +214,9 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {{ $biaya->jenis_biaya_label }}
+                                    @if($biaya->jenis_biaya === 'KB024' && $biaya->lokasi)
+                                        <span class="ml-1 text-[10px] font-bold text-blue-600">({{ strtoupper($biaya->lokasi) }})</span>
+                                    @endif
                                 </span>
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
