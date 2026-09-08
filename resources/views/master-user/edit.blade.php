@@ -3384,6 +3384,22 @@
                                 <td><input type="checkbox" name="permissions[pranota-stock][print]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock.print') || (isset($userMatrixPermissions['pranota-stock']['print']) && $userMatrixPermissions['pranota-stock']['print']) || ($user && $user->can('pranota-stock-print'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            {{-- Pranota Biaya Bensin --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Biaya Bensin</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-biaya-bensin][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-biaya-bensin.view') || (isset($userMatrixPermissions['pranota-biaya-bensin']['view']) && $userMatrixPermissions['pranota-biaya-bensin']['view']) || ($user && $user->can('pranota-biaya-bensin-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-biaya-bensin][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-biaya-bensin.create') || (isset($userMatrixPermissions['pranota-biaya-bensin']['create']) && $userMatrixPermissions['pranota-biaya-bensin']['create']) || ($user && $user->can('pranota-biaya-bensin-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-biaya-bensin][update]" value="1" class="permission-checkbox" @if(old('permissions.pranota-biaya-bensin.update') || (isset($userMatrixPermissions['pranota-biaya-bensin']['update']) && $userMatrixPermissions['pranota-biaya-bensin']['update']) || ($user && $user->can('pranota-biaya-bensin-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-biaya-bensin][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-biaya-bensin.delete') || (isset($userMatrixPermissions['pranota-biaya-bensin']['delete']) && $userMatrixPermissions['pranota-biaya-bensin']['delete']) || ($user && $user->can('pranota-biaya-bensin-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-biaya-bensin][print]" value="1" class="permission-checkbox" @if(old('permissions.pranota-biaya-bensin.print') || (isset($userMatrixPermissions['pranota-biaya-bensin']['print']) && $userMatrixPermissions['pranota-biaya-bensin']['print']) || ($user && $user->can('pranota-biaya-bensin-print'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Pranota Uang Rit --}}
                             <tr class="submodule-row" data-parent="aktivitas">
