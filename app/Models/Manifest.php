@@ -45,6 +45,11 @@ class Manifest extends Model
         'alamat_notify_party',
         'created_by',
         'updated_by',
+        'tanggal_mulai_berlayar',
+        'tanggal_berlabuh',
+        'tanggal_sandar',
+        'tanggal_mulai_bongkar',
+        'tanggal_selesai_bongkar',
     ];
 
     protected $casts = [
@@ -55,6 +60,11 @@ class Manifest extends Model
         'volume' => 'decimal:3',
         'volume_perincian' => 'decimal:3',
         'kuantitas' => 'integer',
+        'tanggal_mulai_berlayar' => 'date',
+        'tanggal_berlabuh' => 'date',
+        'tanggal_sandar' => 'date',
+        'tanggal_mulai_bongkar' => 'date',
+        'tanggal_selesai_bongkar' => 'date',
     ];
 
     // Relationships
