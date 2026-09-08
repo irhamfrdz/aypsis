@@ -21,8 +21,11 @@
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, Helvetica, sans-serif !important;
             background-color: #f8fafc;
+        }
+        *:not(i) {
+            font-family: Arial, Helvetica, sans-serif !important;
         }
         
         .hero-bg {
@@ -63,13 +66,13 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: #000000;
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            background: #333333;
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
         @yield('additional_styles')
@@ -84,7 +87,7 @@
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="nav-logo text-2xl font-bold tracking-tighter flex items-center gap-2 transition-colors duration-300 @yield('logo_class', 'text-white')">
                         <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
-                        <span>ALEXINDO<span class="text-blue-500 font-black">YAKINPRIMA</span></span>
+                        <span>ALEXINDO<span class="text-black font-black">YAKINPRIMA</span></span>
                     </a>
                 </div>
                 <div class="hidden md:flex space-x-8 items-center">
@@ -226,7 +229,7 @@
                 <div class="lg:col-span-1">
                     <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter flex flex-col items-start gap-3 text-white mb-6">
                         <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
-                        <span>ALEXINDO<span class="text-blue-500">YAKINPRIMA</span></span>
+                        <span>ALEXINDO<span class="text-black">YAKINPRIMA</span></span>
                     </a>
                     <p class="text-slate-400 mb-6 leading-relaxed">
                         Integrator maritim dan logistik terkemuka, menjadi partner terbaik dalam pengiriman peti kemas Anda.

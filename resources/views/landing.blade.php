@@ -10,7 +10,7 @@
                         Integrator Logistik Terpercaya
                     </div>
                     <h1 class="text-5xl lg:text-7xl font-bold leading-tight">
-                        ALEXINDO <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">YAKINPRIMA</span><br>
+                        ALEXINDO <span class="text-white">YAKINPRIMA</span><br>
                     </h1>
                     <p class="text-lg lg:text-xl text-slate-300 max-w-lg font-light leading-relaxed" data-lang-en="PT Alexindo Yakinprima is your best partner for container shipping and integrated logistics services throughout Indonesia." data-lang-zh="PT Alexindo Yakinprima 是您在全印尼集装箱运输和综合物流服务的最佳合作伙伴。">
                         PT Alexindo Yakinprima merupakan partner terbaik Anda untuk pengiriman peti kemas dan layanan logistik terpadu di seluruh Indonesia.

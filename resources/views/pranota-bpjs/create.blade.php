@@ -279,28 +279,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right text-sm input-jkk font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right text-sm input-jkk font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="0" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="0" autocomplete="off">
             </td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp 0</td>
             <td class="px-4 py-3 text-center align-middle">
@@ -477,12 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (tipeJkn !== 'manual') {
                 inputKes.value = formatNumber(Math.round(nominalKes));
-                inputKes.readOnly = true;
-                inputKet.readOnly = true;
-                
-                // Tambahkan styling agar tidak terlihat seperti input
-                inputKes.classList.add('cursor-default');
-                inputKet.classList.add('cursor-default');
             }
             
             inputKet.value = formatNumber(Math.round(nominalKet));

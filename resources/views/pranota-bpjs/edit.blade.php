@@ -92,11 +92,18 @@
                         <p class="text-xs text-gray-400">Data karyawan dan nominal BPJS yang akan diperbarui</p>
                     </div>
                 </div>
-                <button type="button" id="btn-add-karyawan"
-                    class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
-                    <i class="fas fa-plus text-xs"></i>
-                    Tambah Karyawan
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-generate-all"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-magic text-xs"></i>
+                        Hitung Semua Karyawan
+                    </button>
+                    <button type="button" id="btn-add-karyawan"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                        <i class="fas fa-plus text-xs"></i>
+                        Tambah Karyawan
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -212,11 +219,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * addRow(detail) — detail: objek existing, atau null untuk baris baru
+     * addRow(detail, isGenerated) — detail: objek existing, atau null untuk baris baru
      * Existing row: tipe default 'manual' agar nilai lama tidak ditimpa
      * New row     : tipe default 'tunjangan_hutang' agar langsung hitung otomatis
      */
-    function addRow(detail = null) {
+    function addRow(detail = null, isGenerated = false) {
         rowCount++;
         
         let selectedKaryawanId = detail ? detail.karyawan_id : '';
@@ -230,7 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let jpB      = detail ? detail.jp_biaya : 0;
         let jpH      = detail ? detail.jp_hutang : 0;
         let subVal   = detail ? detail.total                  : 0;
-        let isExistingRow = detail !== null;
+        let isExistingRow = (detail !== null) && !isGenerated;
+        let tipeJkn = isExistingRow ? 'manual' : 'tunjangan_hutang';
 
         let karyawanInputHTML = '';
         if (karyawanId) {
@@ -273,28 +281,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${valKes}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKes}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${valKet}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKet}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jhtB)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtB)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jhtH)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtH)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right text-sm input-jkk font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jkkT)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right text-sm input-jkk font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jkkT)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jkmT)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jkmT)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jpB)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpB)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none cursor-default" value="${formatNumber(jpH)}" autocomplete="off" readonly>
+                <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
             <td class="px-4 py-3 text-center align-middle">
@@ -332,15 +340,14 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateTotals();
         };
 
-        [inputKes, inputKet].forEach(input => {
+        const inputs = [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
+        inputs.forEach(input => {
             input.addEventListener('change', function() {
                 this.value = formatNumber(parseIdNumber(this.value));
                 updateSubtotal();
             });
+            input.addEventListener('input', updateSubtotal);
         });
-
-        inputKes.addEventListener('input', updateSubtotal);
-        inputKet.addEventListener('input', updateSubtotal);
 
         tr.querySelector('.btn-remove').addEventListener('click', function() {
             tr.remove();
@@ -464,11 +471,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (tipeJkn !== 'manual') { 
                 inputKes.value = formatNumber(Math.round(nominalKes)); 
-                inputKes.readOnly = true;
-                inputKet.readOnly = true;
-                
-                inputKes.classList.add('cursor-default');
-                inputKet.classList.add('cursor-default');
             }
             
             inputKet.value = formatNumber(Math.round(nominalKet));
@@ -496,19 +498,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 inputKes.value = formatNumber(valKes);
                 inputKet.value = formatNumber(valKet);
                 
-                // Lepas attribute readonly untuk semua field agar bisa di-edit
-                const inputs = [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
-                inputs.forEach(input => {
-                    input.readOnly = false;
-                    input.classList.remove('cursor-default');
-                    input.addEventListener('change', function() {
-                        this.value = formatNumber(parseIdNumber(this.value));
-                        updateSubtotal();
-                    });
-                    input.addEventListener('input', updateSubtotal);
-                });
-                
                 updateSubtotal();
+            }, 100);
+        } else if (isGenerated && karyawanId) {
+            setTimeout(() => {
+                selectTipe.value = 'tunjangan_hutang';
+                updateInfoBadgeJkn(karyawanId);
+                calculateBpjsForKaryawan(karyawanId, 'tunjangan_hutang');
             }, 100);
         }
     }
@@ -527,12 +523,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnAdd.addEventListener('click', () => addRow(null));
     
-    // Load existing details
+    const btnGenerateAll = document.getElementById('btn-generate-all');
+    if (btnGenerateAll) {
+        btnGenerateAll.addEventListener('click', () => {
+            container.innerHTML = '';
+            rowCount = 0;
+            let count = 0;
+            karyawans.forEach(k => {
+                if (k.group_jkn || k.group_bp_jamsostek) {
+                    addRow({karyawan_id: k.id}, true);
+                    count++;
+                }
+            });
+            if (count === 0) { addRow(null); }
+            updateRowNumbers();
+        });
+    }
+    
+    // Kosongkan tabel dulu
+    container.innerHTML = '';
+    rowCount = 0;
+    
+    let processedIds = [];
+
+    // 1. Tampilkan semua existingDetails (data yang sudah tersimpan)
     if (existingDetails && existingDetails.length > 0) {
-        existingDetails.forEach(detail => addRow(detail));
+        existingDetails.forEach(detail => {
+            addRow(detail);
+            if (detail.karyawan_id) processedIds.push(parseInt(detail.karyawan_id));
+        });
     } else {
+        // 2. Jika draft kosong sama sekali, generate otomatis untuk semua yang punya group
+        karyawans.forEach(k => {
+            if (k.group_jkn || k.group_bp_jamsostek) {
+                addRow({karyawan_id: k.id}, true);
+            }
+        });
+    }
+    
+    // Jika masih kosong (tidak ada existing dan tidak ada yg punya group)
+    if (rowCount === 0) {
         addRow();
     }
+    
+    updateRowNumbers();
     
     calculateTotals();
 });
