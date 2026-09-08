@@ -145,19 +145,27 @@
                                     Rp {{ number_format($item->biaya, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    @if($item->status === 'pending')
-                                        <span class="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">Pending</span>
-                                    @elseif($item->status === 'approved')
-                                        <span class="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-800 rounded-full">Approved</span>
-                                    @else
-                                        <span class="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">Rejected</span>
-                                    @endif
-
                                     @if($item->pranota_biaya_bensin_id)
-                                        <div class="mt-1">
+                                        <span class="px-2.5 py-1 text-xs font-bold bg-blue-100 text-blue-800 rounded-full">
+                                            <i class="fas fa-check-circle mr-1"></i> Sudah Pranota
+                                        </span>
+                                        <div class="mt-2">
                                             <a href="{{ route('pranota-biaya-bensin.show', $item->pranota_biaya_bensin_id) }}" class="text-xs text-blue-600 hover:underline">
                                                 <i class="fas fa-link"></i> {{ $item->pranotaBiayaBensin->nomor_pranota ?? 'Pranota' }}
                                             </a>
+                                        </div>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-bold bg-gray-100 text-gray-800 rounded-full">
+                                            <i class="fas fa-clock mr-1"></i> Belum Pranota
+                                        </span>
+                                        <div class="mt-2">
+                                            @if($item->status === 'pending')
+                                                <span class="text-[10px] text-amber-600">Menunggu Approval</span>
+                                            @elseif($item->status === 'approved')
+                                                <span class="text-[10px] text-green-600">Siap diproses</span>
+                                            @else
+                                                <span class="text-[10px] text-red-600">Ditolak</span>
+                                            @endif
                                         </div>
                                     @endif
                                 </td>
