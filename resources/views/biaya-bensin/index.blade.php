@@ -85,7 +85,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
@@ -103,8 +103,15 @@
                                 {{ $item->tanggal->format('d/m/Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
-                                <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
+                                @if($item->mobil_id)
+                                    <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
+                                @elseif($item->alat_berat_id)
+                                    <div class="font-medium text-gray-900">{{ $item->alatBerat->nama ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->alatBerat->kode_alat ?? '-' }}</div>
+                                @else
+                                    -
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $item->nomor_kartu ?: '-' }}

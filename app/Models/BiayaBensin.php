@@ -11,6 +11,7 @@ class BiayaBensin extends Model
     protected $fillable = [
         'tanggal',
         'mobil_id',
+        'alat_berat_id',
         'nomor_kartu',
         'karyawan_id',
         'km_awal',
@@ -20,6 +21,7 @@ class BiayaBensin extends Model
         'harga_per_liter',
         'keterangan',
         'nomor_rekening',
+        'nama_bank',
         'penerima_rekening',
         'created_by',
         'bukti_beli',
@@ -39,6 +41,11 @@ class BiayaBensin extends Model
     public function mobil()
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');
+    }
+
+    public function alatBerat()
+    {
+        return $this->belongsTo(AlatBerat::class, 'alat_berat_id');
     }
 
     public function supir()

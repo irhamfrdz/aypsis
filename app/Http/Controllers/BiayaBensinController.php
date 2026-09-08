@@ -52,6 +52,16 @@ class BiayaBensinController extends Controller
 
             return $mobil;
         });
+        $alatBerats = \App\Models\AlatBerat::all()->map(function ($alatBerat) {
+            $lastBensin = BiayaBensin::where('alat_berat_id', $alatBerat->id)
+                ->whereNotNull('km_akhir')
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+            $alatBerat->last_km_akhir = $lastBensin ? $lastBensin->km_akhir : 0;
+
+            return $alatBerat;
+        });
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
         $kartus = MasterKartuBensinBatam::all();
 
@@ -70,7 +80,7 @@ class BiayaBensinController extends Controller
             ->orderBy('id', 'desc')
             ->value('nomor_kartu');
 
-        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu', 'kartus'));
+        return view('biaya-bensin.create', compact('mobils', 'alatBerats', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu', 'kartus'));
     }
 
     /**
@@ -80,7 +90,7 @@ class BiayaBensinController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'mobil_id' => 'required|exists:mobils,id',
+            'kendaraan_id' => 'required|string',
             'nomor_kartu' => 'nullable|string|max:50',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
@@ -89,10 +99,22 @@ class BiayaBensinController extends Controller
             'biaya' => 'required|numeric',
             'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
+            'nama_bank' => 'nullable|string|max:50',
             'nomor_rekening' => 'nullable|string|max:100',
             'penerima_rekening' => 'nullable|string|max:150',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        $kendaraan_id = $validated['kendaraan_id'];
+        unset($validated['kendaraan_id']);
+        
+        if (strpos($kendaraan_id, 'mobil_') === 0) {
+            $validated['mobil_id'] = str_replace('mobil_', '', $kendaraan_id);
+            $validated['alat_berat_id'] = null;
+        } elseif (strpos($kendaraan_id, 'alat_') === 0) {
+            $validated['alat_berat_id'] = str_replace('alat_', '', $kendaraan_id);
+            $validated['mobil_id'] = null;
+        }
 
         if (empty($validated['harga_per_liter']) && $validated['liter'] > 0) {
             $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
@@ -182,10 +204,11 @@ class BiayaBensinController extends Controller
     {
         $item = BiayaBensin::findOrFail($id);
         $mobils = Mobil::all();
+        $alatBerats = \App\Models\AlatBerat::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
         $kartus = MasterKartuBensinBatam::all();
 
-        return view('biaya-bensin.edit', compact('item', 'mobils', 'supirs', 'kartus'));
+        return view('biaya-bensin.edit', compact('item', 'mobils', 'alatBerats', 'supirs', 'kartus'));
     }
 
     /**
@@ -198,7 +221,7 @@ class BiayaBensinController extends Controller
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'mobil_id' => 'required|exists:mobils,id',
+            'kendaraan_id' => 'required|string',
             'nomor_kartu' => 'nullable|string|max:50',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
@@ -207,10 +230,22 @@ class BiayaBensinController extends Controller
             'biaya' => 'required|numeric',
             'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
+            'nama_bank' => 'nullable|string|max:50',
             'nomor_rekening' => 'nullable|string|max:100',
             'penerima_rekening' => 'nullable|string|max:150',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        $kendaraan_id = $validated['kendaraan_id'];
+        unset($validated['kendaraan_id']);
+        
+        if (strpos($kendaraan_id, 'mobil_') === 0) {
+            $validated['mobil_id'] = str_replace('mobil_', '', $kendaraan_id);
+            $validated['alat_berat_id'] = null;
+        } elseif (strpos($kendaraan_id, 'alat_') === 0) {
+            $validated['alat_berat_id'] = str_replace('alat_', '', $kendaraan_id);
+            $validated['mobil_id'] = null;
+        }
 
         if (empty($validated['harga_per_liter']) && $validated['liter'] > 0) {
             $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);

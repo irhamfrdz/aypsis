@@ -212,7 +212,15 @@
                         </tr>
                         <tr>
                             <td>Kendaraan</td>
-                            <td>: {{ $biayaBensin->mobil->nomor_polisi ?? '-' }}</td>
+                            <td>: 
+                                @if($biayaBensin->mobil_id)
+                                    {{ $biayaBensin->mobil->nomor_polisi ?? '-' }}
+                                @elseif($biayaBensin->alat_berat_id)
+                                    {{ $biayaBensin->alatBerat->nama ?? '-' }} ({{ $biayaBensin->alatBerat->kode_alat ?? '-' }})
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                     </table>
                 </div>
@@ -228,7 +236,7 @@
                         </tr>
                         <tr>
                             <td>Rekening</td>
-                            <td>: {{ $biayaBensin->nomor_rekening ?? '-' }} {{ $biayaBensin->penerima_rekening ? '(A.n '.$biayaBensin->penerima_rekening.')' : '' }}</td>
+                            <td>: {{ $biayaBensin->nama_bank ? $biayaBensin->nama_bank . ' - ' : '' }}{{ $biayaBensin->nomor_rekening ?? '-' }} {{ $biayaBensin->penerima_rekening ? '(A.n '.$biayaBensin->penerima_rekening.')' : '' }}</td>
                         </tr>
                     </table>
                 </div>
@@ -251,7 +259,15 @@
             <tbody>
                 <tr>
                     <td class="text-center">1</td>
-                    <td class="text-center">{{ $biayaBensin->mobil->nomor_polisi ?? '-' }}</td>
+                    <td class="text-center">
+                        @if($biayaBensin->mobil_id)
+                            {{ $biayaBensin->mobil->nomor_polisi ?? '-' }}
+                        @elseif($biayaBensin->alat_berat_id)
+                            {{ $biayaBensin->alatBerat->nama ?? '-' }}
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td class="text-center">{{ $biayaBensin->supir ? ($biayaBensin->supir->nama_panggilan ?: $biayaBensin->supir->nama_lengkap) : '-' }}</td>
                     <td class="text-center">{{ rtrim(rtrim(number_format($biayaBensin->liter, 2, ',', '.'), '0'), ',') }} L</td>
                     <td class="text-right">Rp {{ number_format($biayaBensin->harga_per_liter, 0, ',', '.') }}</td>

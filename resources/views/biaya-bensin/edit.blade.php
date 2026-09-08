@@ -63,20 +63,33 @@
                             @error('karyawan_id') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Mobil -->
+                        <!-- Mobil & Alat Berat -->
                         <div>
-                            <label for="mobil_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                                Kendaraan / Mobil <span class="text-red-500">*</span>
+                            <label for="kendaraan_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                Kendaraan / Alat Berat <span class="text-red-500">*</span>
                             </label>
-                            <select name="mobil_id" id="mobil_id" required class="select2 block w-full">
-                                <option value="">Pilih Mobil...</option>
-                                @foreach($mobils as $mobil)
-                                    <option value="{{ $mobil->id }}" {{ old('mobil_id', $item->mobil_id) == $mobil->id ? 'selected' : '' }}>
-                                        {{ $mobil->nomor_polisi ?: '-' }}
-                                    </option>
-                                @endforeach
+                            <select name="kendaraan_id" id="kendaraan_id" required class="select2 block w-full">
+                                <option value="">Pilih Kendaraan...</option>
+                                <optgroup label="Mobil">
+                                    @foreach($mobils as $mobil)
+                                        @if(!empty(trim($mobil->nomor_polisi)) && trim($mobil->nomor_polisi) !== '-')
+                                            <option value="mobil_{{ $mobil->id }}" {{ old('kendaraan_id', $item->mobil_id ? 'mobil_'.$item->mobil_id : ($item->alat_berat_id ? 'alat_'.$item->alat_berat_id : '')) == 'mobil_'.$mobil->id ? 'selected' : '' }}>
+                                                {{ $mobil->nomor_polisi }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Alat Berat">
+                                    @foreach($alatBerats as $alat)
+                                        @if(!empty(trim($alat->kode_alat)) || !empty(trim($alat->nama)))
+                                            <option value="alat_{{ $alat->id }}" {{ old('kendaraan_id', $item->mobil_id ? 'mobil_'.$item->mobil_id : ($item->alat_berat_id ? 'alat_'.$item->alat_berat_id : '')) == 'alat_'.$alat->id ? 'selected' : '' }}>
+                                                {{ $alat->kode_alat ? $alat->kode_alat . ' - ' : '' }}{{ $alat->nama }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
                             </select>
-                            @error('mobil_id') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            @error('kendaraan_id') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                         </div>
 
                         <!-- Kartu Bensin -->
@@ -96,7 +109,17 @@
                         </div>
 
                         <!-- Rekening Penerima -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="nama_bank" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Nama Bank
+                                </label>
+                                <input type="text" name="nama_bank" id="nama_bank" 
+                                       value="{{ old('nama_bank', $item->nama_bank) }}" 
+                                       placeholder="Cth: BCA" 
+                                       class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-colors">
+                                @error('nama_bank') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            </div>
                             <div>
                                 <label for="nomor_rekening" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                                     Nomor Rekening
@@ -333,7 +356,7 @@
             const selectedOption = $(this).find('option:selected');
             const mobilId = selectedOption.data('mobil-id');
             if (mobilId) {
-                $('#mobil_id').val(mobilId).trigger('change');
+                $('#kendaraan_id').val('mobil_' + mobilId).trigger('change');
             }
         });
 
