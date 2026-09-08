@@ -999,7 +999,11 @@
         if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
             window.sectionContainers[sectionIndex].forEach(c => {
                 const sizeInfo = c.size_kontainer && c.size_kontainer !== '-' ? ` [Size: ${c.size_kontainer}]` : '';
-                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})${sizeInfo}</option>`;
+                let textLabel = `${c.nomor_kontainer} (BL: ${c.no_bl || '-'})${sizeInfo}`;
+                if (c.nomor_kontainer && c.nomor_kontainer.toUpperCase() === 'CARGO' && c.nama_barang && c.nama_barang !== '-') {
+                    textLabel += ` - ${c.nama_barang}`;
+                }
+                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${textLabel}</option>`;
             });
         }
         

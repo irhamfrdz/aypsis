@@ -7834,5 +7834,8 @@ Route::middleware(['auth',
     Route::get('approval-permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'approvalIndex'])->name('approval-permohonan-amprahan.index')->middleware('can:permohonan-amprahan-approve');
     Route::get('approval-permohonan-amprahan/{id}/process-form', [\App\Http\Controllers\PermohonanAmprahanController::class, 'approvalProcessForm'])->name('approval-permohonan-amprahan.process-form')->middleware('can:permohonan-amprahan-approve');
     Route::post('approval-permohonan-amprahan/{id}/process', [\App\Http\Controllers\PermohonanAmprahanController::class, 'process'])->name('approval-permohonan-amprahan.process')->middleware('can:permohonan-amprahan-approve');
+
+    // Tanggal Gerak Voyage
+    Route::resource('gerak-voyage', \App\Http\Controllers\GerakVoyageController::class)->middleware('can:gerak-voyage-view');
 });
 

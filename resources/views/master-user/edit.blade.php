@@ -3317,6 +3317,23 @@
                                 <td><input type="checkbox" name="permissions[permohonan-amprahan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-amprahan']['export']) && $userMatrixPermissions['permohonan-amprahan']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Tanggal Gerak Voyage --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanggal Gerak Voyage</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[gerak-voyage][view]" value="1" class="permission-checkbox" @if(old('permissions.gerak-voyage.view') || (isset($userMatrixPermissions['gerak-voyage']['view']) && $userMatrixPermissions['gerak-voyage']['view']) || ($user && $user->can('gerak-voyage-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-voyage][create]" value="1" class="permission-checkbox" @if(old('permissions.gerak-voyage.create') || (isset($userMatrixPermissions['gerak-voyage']['create']) && $userMatrixPermissions['gerak-voyage']['create']) || ($user && $user->can('gerak-voyage-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-voyage][update]" value="1" class="permission-checkbox" @if(old('permissions.gerak-voyage.update') || (isset($userMatrixPermissions['gerak-voyage']['update']) && $userMatrixPermissions['gerak-voyage']['update']) || ($user && $user->can('gerak-voyage-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-voyage][delete]" value="1" class="permission-checkbox" @if(old('permissions.gerak-voyage.delete') || (isset($userMatrixPermissions['gerak-voyage']['delete']) && $userMatrixPermissions['gerak-voyage']['delete']) || ($user && $user->can('gerak-voyage-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Belanja Amprahan --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

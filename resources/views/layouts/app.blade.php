@@ -1981,6 +1981,16 @@
                 </div>
                 @endif
 
+                @if($user && ($user->can('gerak-voyage-view') || $user->is_admin))
+                {{-- Tanggal Gerak Voyage --}}
+                <div class="mx-1 mb-2">
+                    <a href="{{ route('gerak-voyage.index') }}" class="flex items-center py-2 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('gerak-voyage.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <i class="fas fa-ship w-4 text-center mr-2 {{ Request::routeIs('gerak-voyage.*') ? 'text-blue-600' : 'text-gray-400' }}"></i>
+                        <span class="text-xs font-semibold">Tanggal Gerak Voyage</span>
+                    </a>
+                </div>
+                @endif
+
                 {{-- Surat Jalan Bongkaran Sub-Dropdown --}}
                 @php
                     $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('tanda-terima-bongkaran.*') || Request::routeIs('surat-jalan-bongkaran-batam.*') || Request::routeIs('penarikan-surat-jalan-batam.*');

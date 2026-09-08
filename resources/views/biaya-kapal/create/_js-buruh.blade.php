@@ -1096,7 +1096,11 @@
         let kontainerOptions = '<option value="">Pilih Kontainer</option>';
         if (window.sectionContainers && window.sectionContainers[sectionIndex]) {
             window.sectionContainers[sectionIndex].forEach(c => {
-                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${c.nomor_kontainer} (BL: ${c.no_bl || '-'})</option>`;
+                let textLabel = `${c.nomor_kontainer} (BL: ${c.no_bl || '-'})`;
+                if (c.nomor_kontainer && c.nomor_kontainer.toUpperCase() === 'CARGO' && c.nama_barang && c.nama_barang !== '-') {
+                    textLabel += ` - ${c.nama_barang}`;
+                }
+                kontainerOptions += `<option value="${c.id}" data-nomor="${c.nomor_kontainer}" data-size="${c.size_kontainer || ''}">${textLabel}</option>`;
             });
         }
         
