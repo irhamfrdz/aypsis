@@ -62,4 +62,9 @@ class BiayaBensin extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    public function pranotaBiayaBensin()
+    {
+        return $this->belongsTo(PranotaBiayaBensin::class, 'pranota_biaya_bensin_id');
+    }
 }

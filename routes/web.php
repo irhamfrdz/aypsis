@@ -3027,6 +3027,21 @@ Route::middleware([
             'update' => 'can:biaya-bensin-update',
             'destroy' => 'can:biaya-bensin-delete',
         ]);
+
+        // 📝 Pranota Biaya Bensin Routes
+        Route::get('pranota-biaya-bensin/print/{id}', [\App\Http\Controllers\PranotaBiayaBensinController::class, 'print'])
+            ->name('pranota-biaya-bensin.print')
+            ->middleware('can:pranota-biaya-bensin-view');
+        
+        Route::resource('pranota-biaya-bensin', \App\Http\Controllers\PranotaBiayaBensinController::class)->middleware([
+            'index' => 'can:pranota-biaya-bensin-view',
+            'show' => 'can:pranota-biaya-bensin-view',
+            'create' => 'can:pranota-biaya-bensin-create',
+            'store' => 'can:pranota-biaya-bensin-create',
+            'edit' => 'can:pranota-biaya-bensin-update',
+            'update' => 'can:pranota-biaya-bensin-update',
+            'destroy' => 'can:pranota-biaya-bensin-delete',
+        ]);
         Route::get('biaya-kapal/{biayaKapal}/print-tkbm', [\App\Http\Controllers\BiayaKapalController::class, 'printTkbm'])
             ->name('biaya-kapal.print-tkbm')
             ->middleware('can:biaya-kapal-view');

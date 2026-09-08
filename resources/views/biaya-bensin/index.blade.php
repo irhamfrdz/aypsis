@@ -78,113 +78,136 @@
         </div>
     </form>
 
-    <!-- Table -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liter</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($items as $item)
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item->tanggal->format('d/m/Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($item->mobil_id)
-                                    <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
-                                    <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
-                                @elseif($item->alat_berat_id)
-                                    <div class="font-medium text-gray-900">{{ $item->alatBerat->nama ?? '-' }}</div>
-                                    <div class="text-xs text-gray-500">{{ $item->alatBerat->kode_alat ?? '-' }}</div>
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item->nomor_kartu ?: '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item->supir ? ($item->supir->nama_panggilan ?: $item->supir->nama_lengkap) : '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div>{{ number_format($item->km_awal, 0, ',', '.') }} KM</div>
-                                <div class="text-xs">{{ number_format($item->km_akhir, 0, ',', '.') }} KM</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ number_format($item->liter, 2, ',', '.') }} L
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                Rp {{ number_format($item->biaya, 0, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($item->status === 'pending')
-                                    <span class="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">Pending</span>
-                                @elseif($item->status === 'approved')
-                                    <span class="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-800 rounded-full">Approved</span>
-                                @else
-                                    <span class="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">Rejected</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-xs">
-                                {{ $item->creator->name ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    @if($item->bukti_beli)
-                                        <a href="{{ asset('storage/' . $item->bukti_beli) }}" target="_blank" class="p-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors" title="Lihat Bukti Beli">
-                                            <i class="fas fa-file-invoice"></i>
-                                        </a>
+    <!-- Table & Pranota Form -->
+    <form action="{{ route('pranota-biaya-bensin.create') }}" method="GET">
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-semibold text-gray-800">Daftar Biaya Bensin</h2>
+            <button type="submit" id="btn-buat-pranota" class="hidden inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                <i class="fas fa-file-invoice-dollar mr-2"></i> Buat Pranota
+            </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <input type="checkbox" id="check-all" class="rounded border-gray-300 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liter</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($items as $item)
+                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($item->status === 'approved' && !$item->pranota_biaya_bensin_id)
+                                        <input type="checkbox" name="biaya_bensin_ids[]" value="{{ $item->id }}" class="check-item rounded border-gray-300 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50">
                                     @endif
-                                    @can('biaya-bensin-view')
-                                        <a href="{{ route('biaya-bensin.print', $item->id) }}" target="_blank" class="p-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" title="Print Permohonan Transfer">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                    @endcan
-                                    @can('biaya-bensin-update')
-                                        <a href="{{ route('biaya-bensin.edit', $item) }}" class="p-2 bg-amber-100 text-amber-700 rounded-md hover:bg-amber-200 transition-colors" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    @endcan
-                                    @can('biaya-bensin-delete')
-                                        <form action="{{ route('biaya-bensin.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="Hapus">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $item->tanggal->format('d/m/Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($item->mobil_id)
+                                        <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
+                                    @elseif($item->alat_berat_id)
+                                        <div class="font-medium text-gray-900">{{ $item->alatBerat->nama ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $item->alatBerat->kode_alat ?? '-' }}</div>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $item->nomor_kartu ?: '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $item->supir ? ($item->supir->nama_panggilan ?: $item->supir->nama_lengkap) : '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div>{{ number_format($item->km_awal, 0, ',', '.') }} KM</div>
+                                    <div class="text-xs">{{ number_format($item->km_akhir, 0, ',', '.') }} KM</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ number_format($item->liter, 2, ',', '.') }} L
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    Rp {{ number_format($item->biaya, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($item->status === 'pending')
+                                        <span class="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">Pending</span>
+                                    @elseif($item->status === 'approved')
+                                        <span class="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-800 rounded-full">Approved</span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">Rejected</span>
+                                    @endif
+
+                                    @if($item->pranota_biaya_bensin_id)
+                                        <div class="mt-1">
+                                            <a href="{{ route('pranota-biaya-bensin.show', $item->pranota_biaya_bensin_id) }}" class="text-xs text-blue-600 hover:underline">
+                                                <i class="fas fa-link"></i> {{ $item->pranotaBiayaBensin->nomor_pranota ?? 'Pranota' }}
+                                            </a>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        @if($item->bukti_beli)
+                                            <a href="{{ asset('storage/' . $item->bukti_beli) }}" target="_blank" class="p-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors" title="Lihat Bukti Beli">
+                                                <i class="fas fa-file-invoice"></i>
+                                            </a>
+                                        @endif
+                                        @can('biaya-bensin-view')
+                                            <a href="{{ route('biaya-bensin.print', $item->id) }}" target="_blank" class="p-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" title="Print Permohonan Transfer">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                        @endcan
+                                        @can('biaya-bensin-update')
+                                            <a href="{{ route('biaya-bensin.edit', $item) }}" class="p-2 bg-amber-100 text-amber-700 rounded-md hover:bg-amber-200 transition-colors" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        @endcan
+                                        @can('biaya-bensin-delete')
+                                            <button type="button" onclick="confirmDelete('{{ route('biaya-bensin.destroy', $item) }}')" class="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="Hapus">
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                        </form>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-gas-pump text-gray-300 text-5xl mb-4"></i>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada catatan biaya bensin</h3>
-                                    <p class="text-gray-500 mb-4 text-sm">Mulai catat biaya bensin dengan menekan tombol di atas.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i class="fas fa-gas-pump text-gray-300 text-5xl mb-4"></i>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada catatan biaya bensin</h3>
+                                        <p class="text-gray-500 mb-4 text-sm">Mulai catat biaya bensin dengan menekan tombol di atas.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </form>
+
+    <!-- Hidden Delete Form -->
+    <form id="delete-form" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
 
     <!-- Pagination -->
     <div class="mt-6">
@@ -195,6 +218,14 @@
 
 @push('scripts')
 <script>
+    function confirmDelete(url) {
+        if(confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+            var form = document.getElementById('delete-form');
+            form.action = url;
+            form.submit();
+        }
+    }
+
     $(document).ready(function() {
         if ($.fn.select2) {
             $('.select2').select2({
@@ -203,6 +234,36 @@
                 width: '100%'
             });
         }
+
+        // Checkbox logic for Pranota
+        const checkAll = document.getElementById('check-all');
+        const checkboxes = document.querySelectorAll('.check-item');
+        const btnBuatPranota = document.getElementById('btn-buat-pranota');
+
+        function toggleBtn() {
+            const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            if (anyChecked) {
+                btnBuatPranota.classList.remove('hidden');
+            } else {
+                btnBuatPranota.classList.add('hidden');
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                toggleBtn();
+            });
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                toggleBtn();
+                if (!this.checked && checkAll) {
+                    checkAll.checked = false;
+                }
+            });
+        });
     });
 </script>
 @endpush

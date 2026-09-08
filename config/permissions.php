@@ -137,6 +137,18 @@ return [
                 'pranota-uang-makan-print' => 'Cetak Pranota Uang Makan',
             ],
         ],
+        'pranota-biaya-bensin' => [
+            'name' => 'Pranota Biaya Bensin',
+            'description' => 'Menu Pranota Biaya Bensin',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-biaya-bensin-view' => 'View Pranota Biaya Bensin',
+                'pranota-biaya-bensin-create' => 'Buat Pranota Biaya Bensin',
+                'pranota-biaya-bensin-update' => 'Edit Pranota Biaya Bensin',
+                'pranota-biaya-bensin-delete' => 'Hapus Pranota Biaya Bensin',
+                'pranota-biaya-bensin-print' => 'Cetak Pranota Biaya Bensin',
+            ],
+        ],
         'tanda-terima-surat-jalan-kontainer-sewa' => [
             'name' => 'Tanda Terima SJ Kontainer Sewa',
             'description' => 'Menu tanda terima surat jalan kontainer sewa',
@@ -313,6 +325,12 @@ return [
 
         // Pranota Perbaikan Kontainer - butuh pranota-perbaikan-kontainer-view
         'pranota-perbaikan-kontainer' => ['pranota-perbaikan-kontainer-view'],
+
+        // Pranota Uang Makan - butuh pranota-uang-makan-view
+        'pranota-uang-makan' => ['pranota-uang-makan-view'],
+
+        // Pranota Biaya Bensin - butuh pranota-biaya-bensin-view
+        'pranota-biaya-bensin' => ['pranota-biaya-bensin-view'],
 
         // Tanda Terima SJ Kontainer Sewa - butuh tanda-terima-surat-jalan-kontainer-sewa-view
         'tanda-terima-surat-jalan-kontainer-sewa' => ['tanda-terima-surat-jalan-kontainer-sewa-view'],
