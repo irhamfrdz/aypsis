@@ -57,11 +57,17 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
     public function collection()
     {
         if (! empty($this->pranotaIds)) {
-            $query = PranotaUangJalan::with(['uangJalans.suratJalan', 'uangJalans.suratJalanBongkaran', 'uangJalans.suratJalanBongkaranBatam'])
-                ->whereIn('id', $this->pranotaIds);
+            $query = PranotaUangJalan::with([
+                'uangJalans.suratJalan',
+                'uangJalans.suratJalanBongkaran',
+                'uangJalans.suratJalanBongkaranBatam',
+            ])->whereIn('id', $this->pranotaIds);
         } else {
-            $query = PranotaUangJalan::with(['uangJalans.suratJalan', 'uangJalans.suratJalanBongkaran', 'uangJalans.suratJalanBongkaranBatam'])
-                ->orderBy('created_at', 'desc');
+            $query = PranotaUangJalan::with([
+                'uangJalans.suratJalan',
+                'uangJalans.suratJalanBongkaran',
+                'uangJalans.suratJalanBongkaranBatam',
+            ])->orderBy('created_at', 'desc');
 
             if (! empty($this->filters['search'])) {
                 $search = $this->filters['search'];
@@ -89,32 +95,49 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
         $rows = collect();
 
         $query->get()->each(function ($p) use (&$rows) {
-            // Collect all nomor surat jalan from uang jalans
-            $nomorSuratJalans = [];
-            foreach ($p->uangJalans as $uj) {
-                if ($uj->suratJalan) {
-                    $nomorSuratJalans[] = $uj->suratJalan->no_surat_jalan;
-                }
-                if ($uj->suratJalanBongkaran) {
-                    $nomorSuratJalans[] = $uj->suratJalanBongkaran->nomor_surat_jalan;
-                }
-                if ($uj->suratJalanBongkaranBatam) {
-                    $nomorSuratJalans[] = $uj->suratJalanBongkaranBatam->nomor_surat_jalan;
+            if ($p->uangJalans->isEmpty()) {
+                // Pranota tanpa uang jalan — tetap tampilkan 1 baris
+                $rows->push([
+                    $p->nomor_pranota,
+                    $p->tanggal_pranota ? (is_string($p->tanggal_pranota) ? \Carbon\Carbon::parse($p->tanggal_pranota)->format('d/m/Y') : $p->tanggal_pranota->format('d/m/Y')) : '-',
+                    $p->total_amount,
+                    $p->status_pembayaran,
+                    $p->periode_tagihan,
+                    '-', // Nomor Uang Jalan
+                    '-', // Tanggal Uang Jalan
+                    '-', // Nomor Surat Jalan
+                    '-', // Kegiatan
+                    '-', // Supir
+                    '-', // Kenek
+                    '-', // No Plat
+                    0,   // Jumlah Total UJ
+                ]);
+            } else {
+                // Setiap uang jalan muncul sebagai baris terpisah
+                foreach ($p->uangJalans as $uj) {
+                    $surat = $uj->suratJalan ?? $uj->suratJalanBongkaran ?? $uj->suratJalanBongkaranBatam;
+                    $nomorSJ = '-';
+                    if ($surat) {
+                        $nomorSJ = $surat->no_surat_jalan ?? $surat->nomor_surat_jalan ?? '-';
+                    }
+
+                    $rows->push([
+                        $p->nomor_pranota,
+                        $p->tanggal_pranota ? (is_string($p->tanggal_pranota) ? \Carbon\Carbon::parse($p->tanggal_pranota)->format('d/m/Y') : $p->tanggal_pranota->format('d/m/Y')) : '-',
+                        $p->total_amount,
+                        $p->status_pembayaran,
+                        $p->periode_tagihan,
+                        $uj->nomor_uang_jalan ?? '-',
+                        $uj->tanggal_uang_jalan ? (is_string($uj->tanggal_uang_jalan) ? \Carbon\Carbon::parse($uj->tanggal_uang_jalan)->format('d/m/Y') : $uj->tanggal_uang_jalan->format('d/m/Y')) : '-',
+                        $nomorSJ,
+                        $uj->kegiatan_bongkar_muat ?? '-',
+                        $surat->supir ?? '-',
+                        $surat->kenek ?? '-',
+                        $surat->no_plat ?? '-',
+                        $uj->jumlah_total,
+                    ]);
                 }
             }
-
-            $nomorSuratJalans = array_unique(array_filter($nomorSuratJalans));
-
-            $rows->push([
-                $p->nomor_pranota,
-                $p->tanggal_pranota ? (is_string($p->tanggal_pranota) ? \Carbon\Carbon::parse($p->tanggal_pranota)->format('d/m/Y') : $p->tanggal_pranota->format('d/m/Y')) : '-',
-                $p->jumlah_uang_jalan,
-                $p->total_amount,
-                $p->status_pembayaran,
-                $p->periode_tagihan,
-                implode(', ', $nomorSuratJalans) ?: '-',
-                $p->createdBy->username ?? 'System',
-            ]);
         });
 
         return $rows;
@@ -125,12 +148,17 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
         return [
             'Nomor Pranota',
             'Tanggal Pranota',
-            'Jumlah Uang Jalan',
-            'Total Amount',
+            'Total Amount Pranota',
             'Status Pembayaran',
             'Periode Tagihan',
+            'Nomor Uang Jalan',
+            'Tanggal Uang Jalan',
             'Nomor Surat Jalan',
-            'Created By',
+            'Kegiatan',
+            'Supir',
+            'Kenek',
+            'No Plat',
+            'Jumlah Total UJ',
         ];
     }
 
@@ -140,10 +168,10 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $range = 'A1:H' . $lastRow;
+                $range = 'A1:M' . $lastRow;
 
                 // Header styling
-                $sheet->getStyle('A1:H1')->applyFromArray([
+                $sheet->getStyle('A1:M1')->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F46E5']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
@@ -279,7 +307,6 @@ class PembayaranAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCo
         }
 
         return $query->get()->map(function ($p) {
-            // Collect related invoice numbers
             $nomorInvoices = $p->invoices->pluck('nomor_invoice')->filter()->implode(', ') ?: '-';
 
             return [
