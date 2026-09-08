@@ -488,13 +488,28 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateBpjsForKaryawan(kId, this.value);
         });
 
-        if (karyawanId) {
+        if (isExistingRow) {
             setTimeout(() => {
-                selectTipe.value = 'tunjangan_hutang';
-                calculateBpjsForKaryawan(karyawanId, 'tunjangan_hutang');
+                selectTipe.value = 'manual';
+                updateInfoBadgeJkn(karyawanId);
+                
+                inputKes.value = formatNumber(valKes);
+                inputKet.value = formatNumber(valKet);
+                
+                // Lepas attribute readonly untuk semua field agar bisa di-edit
+                const inputs = [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
+                inputs.forEach(input => {
+                    input.readOnly = false;
+                    input.classList.remove('cursor-default');
+                    input.addEventListener('change', function() {
+                        this.value = formatNumber(parseIdNumber(this.value));
+                        updateSubtotal();
+                    });
+                    input.addEventListener('input', updateSubtotal);
+                });
+                
+                updateSubtotal();
             }, 100);
-        } else if (isExistingRow && selectedKaryawanId) {
-            setTimeout(() => updateInfoBadgeJkn(selectedKaryawanId), 100);
         }
     }
 
