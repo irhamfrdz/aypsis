@@ -18,6 +18,30 @@
         </div>
     </div>
 
+    {{-- Validation Errors --}}
+    @if ($errors->any())
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+                <h3 class="text-sm font-bold text-red-700">Gagal menyimpan, ada kesalahan berikut:</h3>
+            </div>
+            <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+                <p class="text-sm text-red-700">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
     <form id="pranota-form" action="{{ route('pranota-bpjs.store') }}" method="POST">
         @csrf
 
@@ -328,11 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inputKes.addEventListener('input', updateSubtotal);
         inputKet.addEventListener('input', updateSubtotal);
 
-        document.getElementById('pranota-form').addEventListener('submit', function() {
-            document.querySelectorAll('.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, .input-jkk, .input-jkm, .input-jp-biaya, .input-jp-hutang').forEach(input => {
-                input.value = parseIdNumber(input.value);
-            });
-        });
+        // (submit handler dipasang sekali di luar addRow — lihat bawah)
 
         tr.querySelector('.btn-remove').addEventListener('click', function() {
             tr.remove();
@@ -500,6 +520,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnAdd.addEventListener('click', () => addRow(null));
+
+    // Bersihkan format angka Indonesia (5.729.880 → 5729880) sebelum submit
+    // Dipasang SEKALI di sini agar tidak duplikat saat addRow() dipanggil berkali-kali
+    document.getElementById('pranota-form').addEventListener('submit', function(e) {
+        document.querySelectorAll(
+            '.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, ' +
+            '.input-jkk, .input-jkm, .input-jp-biaya, .input-jp-hutang'
+        ).forEach(function(input) {
+            input.value = parseIdNumber(input.value);
+        });
+    });
     
     document.getElementById('btn-generate-all').addEventListener('click', () => {
         // Kosongkan tabel

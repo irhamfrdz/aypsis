@@ -56,14 +56,14 @@ class PranotaBpjsController extends Controller
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
-            'details.*.bpjs_kesehatan' => 'nullable|numeric',
-            'details.*.bpjs_ketenagakerjaan' => 'nullable|numeric',
-            'details.*.jht_biaya' => 'nullable|numeric',
-            'details.*.jht_hutang' => 'nullable|numeric',
-            'details.*.jkk_tunjangan' => 'nullable|numeric',
-            'details.*.jkm_tunjangan' => 'nullable|numeric',
-            'details.*.jp_biaya' => 'nullable|numeric',
-            'details.*.jp_hutang' => 'nullable|numeric',
+            'details.*.bpjs_kesehatan' => 'nullable',
+            'details.*.bpjs_ketenagakerjaan' => 'nullable',
+            'details.*.jht_biaya' => 'nullable',
+            'details.*.jht_hutang' => 'nullable',
+            'details.*.jkk_tunjangan' => 'nullable',
+            'details.*.jkm_tunjangan' => 'nullable',
+            'details.*.jp_biaya' => 'nullable',
+            'details.*.jp_hutang' => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -88,16 +88,16 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
-                    $bpjsKes = floatval($detail['bpjs_kesehatan'] ?? 0);
-                    $bpjsKetInput = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
+                    $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
+                    $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    $jhtBiaya = floatval($detail['jht_biaya'] ?? 0);
-                    $jhtHutang = floatval($detail['jht_hutang'] ?? 0);
-                    $jkkTunjangan = floatval($detail['jkk_tunjangan'] ?? 0);
-                    $jkmTunjangan = floatval($detail['jkm_tunjangan'] ?? 0);
-                    $jpBiaya = floatval($detail['jp_biaya'] ?? 0);
-                    $jpHutang = floatval($detail['jp_hutang'] ?? 0);
+                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0);
+                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0);
+                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0);
+                    $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
+                    $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
                     
                     $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
                     
@@ -177,14 +177,14 @@ class PranotaBpjsController extends Controller
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
-            'details.*.bpjs_kesehatan' => 'nullable|numeric',
-            'details.*.bpjs_ketenagakerjaan' => 'nullable|numeric',
-            'details.*.jht_biaya' => 'nullable|numeric',
-            'details.*.jht_hutang' => 'nullable|numeric',
-            'details.*.jkk_tunjangan' => 'nullable|numeric',
-            'details.*.jkm_tunjangan' => 'nullable|numeric',
-            'details.*.jp_biaya' => 'nullable|numeric',
-            'details.*.jp_hutang' => 'nullable|numeric',
+            'details.*.bpjs_kesehatan' => 'nullable',
+            'details.*.bpjs_ketenagakerjaan' => 'nullable',
+            'details.*.jht_biaya' => 'nullable',
+            'details.*.jht_hutang' => 'nullable',
+            'details.*.jkk_tunjangan' => 'nullable',
+            'details.*.jkm_tunjangan' => 'nullable',
+            'details.*.jp_biaya' => 'nullable',
+            'details.*.jp_hutang' => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -208,16 +208,16 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
-                    $bpjsKes = floatval($detail['bpjs_kesehatan'] ?? 0);
-                    $bpjsKetInput = floatval($detail['bpjs_ketenagakerjaan'] ?? 0);
+                    $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
+                    $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    $jhtBiaya = floatval($detail['jht_biaya'] ?? 0);
-                    $jhtHutang = floatval($detail['jht_hutang'] ?? 0);
-                    $jkkTunjangan = floatval($detail['jkk_tunjangan'] ?? 0);
-                    $jkmTunjangan = floatval($detail['jkm_tunjangan'] ?? 0);
-                    $jpBiaya = floatval($detail['jp_biaya'] ?? 0);
-                    $jpHutang = floatval($detail['jp_hutang'] ?? 0);
+                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0);
+                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0);
+                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0);
+                    $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
+                    $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
                     
                     $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
                     
@@ -270,10 +270,12 @@ class PranotaBpjsController extends Controller
 
         try {
             DB::beginTransaction();
-            $pranota_bpj->details()->delete();
-            $pranota_bpj->delete();
+            // Hapus permanen detail terlebih dahulu
+            $pranota_bpj->details()->forceDelete();
+            // Hapus permanen header dari database
+            $pranota_bpj->forceDelete();
             DB::commit();
-            return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil dihapus.');
+            return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil dihapus permanen.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting Pranota BPJS: ' . $e->getMessage());
@@ -281,21 +283,43 @@ class PranotaBpjsController extends Controller
         }
     }
 
-    private function generateNomorPranota()
+    /**
+     * Parse angka format Indonesia ke float.
+     * Contoh: "5.729.880"  → 5729880.0
+     *         "5.200.000,50" → 5200000.5
+     *         5200000        → 5200000.0  (sudah number)
+     */
+    private function parseIndonesianNumber($value): float
+    {
+        if (is_numeric($value)) {
+            return floatval($value);
+        }
+        // Hapus titik pemisah ribuan, ganti koma desimal → titik
+        $cleaned = str_replace('.', '', (string) $value);
+        $cleaned = str_replace(',', '.', $cleaned);
+        return floatval($cleaned) ?: 0.0;
+    }
+
+    private function generateNomorPranota(): string
     {
         $prefix = 'PBPJS' . date('ym');
-        
-        $lastPranota = PranotaBpjsHeader::where('nomor_pranota', 'like', $prefix . '%')
-            ->orderBy('id', 'desc')
-            ->first();
-            
-        if ($lastPranota) {
-            $lastNumber = (int) substr($lastPranota->nomor_pranota, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
 
-        return $prefix . $newNumber;
+        // Ambil nomor terakhir berdasarkan prefix bulan ini
+        $lastPranota = PranotaBpjsHeader::withTrashed()
+            ->where('nomor_pranota', 'like', $prefix . '%')
+            ->orderBy('nomor_pranota', 'desc')
+            ->first();
+
+        $lastNumber = $lastPranota
+            ? (int) substr($lastPranota->nomor_pranota, -4)
+            : 0;
+
+        // Loop sampai ketemu nomor yang benar-benar belum ada
+        do {
+            $lastNumber++;
+            $candidate = $prefix . str_pad($lastNumber, 4, '0', STR_PAD_LEFT);
+        } while (PranotaBpjsHeader::withTrashed()->where('nomor_pranota', $candidate)->exists());
+
+        return $candidate;
     }
 }
