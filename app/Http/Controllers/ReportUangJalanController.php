@@ -219,12 +219,14 @@ class ReportUangJalanController extends Controller
                     ->orWhereHas('suratJalan', function ($sq) use ($search) {
                         $sq->where('no_surat_jalan', 'like', "%{$search}%")
                             ->orWhere('supir', 'like', "%{$search}%")
-                            ->orWhere('no_plat', 'like', "%{$search}%");
+                            ->orWhere('no_plat', 'like', "%{$search}%")
+                            ->orWhere('jenis_barang', 'like', "%{$search}%");
                     })
                     ->orWhereHas('suratJalanBongkaran', function ($sq) use ($search) {
                         $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
                             ->orWhere('supir', 'like', "%{$search}%")
-                            ->orWhere('no_plat', 'like', "%{$search}%");
+                            ->orWhere('no_plat', 'like', "%{$search}%")
+                            ->orWhere('jenis_barang', 'like', "%{$search}%");
                     });
             });
         }
@@ -268,12 +270,14 @@ class ReportUangJalanController extends Controller
                     ->orWhereHas('suratJalan', function ($sq) use ($search) {
                         $sq->where('no_surat_jalan', 'like', "%{$search}%")
                             ->orWhere('supir', 'like', "%{$search}%")
-                            ->orWhere('no_plat', 'like', "%{$search}%");
+                            ->orWhere('no_plat', 'like', "%{$search}%")
+                            ->orWhere('jenis_barang', 'like', "%{$search}%");
                     })
                     ->orWhereHas('suratJalanBongkaran', function ($sq) use ($search) {
                         $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
                             ->orWhere('supir', 'like', "%{$search}%")
-                            ->orWhere('no_plat', 'like', "%{$search}%");
+                            ->orWhere('no_plat', 'like', "%{$search}%")
+                            ->orWhere('jenis_barang', 'like', "%{$search}%");
                     });
             });
         }

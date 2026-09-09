@@ -45,6 +45,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
             $plat = $relatedSJ->no_plat ?? '-';
             $nik = $relatedSJ->supirKaryawan->nik ?? '-';
             $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
+            $namaBarang = $relatedSJ->jenis_barang ?? '-';
 
             $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
             $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
@@ -71,6 +72,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
                 $noBukti,
                 $sjNumber,
                 $typeLabel,
+                $namaBarang,
                 $tujuanAmbil,
                 $supir,
                 $nik,
@@ -107,6 +109,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
                         $adjNomorBukti, // No. Bukti (Accurate)
                         '', // No. Surat Jalan
                         '', // Tipe
+                        '', // Nama Barang
                         '', // Tujuan Ambil
                         '', // Supir
                         '', // NIK
@@ -145,6 +148,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
                 'No. Bukti (Accurate)',
                 'No. Surat Jalan',
                 'Tipe',
+                'Nama Barang',
                 'Tujuan Ambil',
                 'Supir',
                 'NIK',
@@ -165,7 +169,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
 
     public function styles(Worksheet $sheet)
     {
-        $lastCol = 'T'; // 20 columns = A-T
+        $lastCol = 'U'; // 21 columns = A-U
         $sheet->mergeCells("A1:{$lastCol}1");
         $sheet->mergeCells("A2:{$lastCol}2");
 

@@ -73,6 +73,7 @@
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No UJ</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No Bukti</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Surat Jalan / Tipe</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Nama Barang</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest text-amber-600 font-bold">Tujuan Ambil</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Supir & Plat</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">NIK</th>
@@ -94,6 +95,7 @@
                             $plat = $relatedSJ->no_plat ?? '-';
                             $nik = $relatedSJ->supirKaryawan->nik ?? '-';
                             $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
+                            $namaBarang = $relatedSJ->jenis_barang ?? '-';
                             
                             $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
                             $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
@@ -128,6 +130,9 @@
                                 <span class="px-2 py-0.5 inline-flex text-[10px] leading-4 font-bold rounded-full {{ $typeLabel === 'Muat' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }}">
                                     {{ $typeLabel }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-700">{{ $namaBarang }}</div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-xs font-bold text-gray-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded w-fit">{{ $tujuanAmbil }}</div>
@@ -181,27 +186,27 @@
                                     <td class="px-4 py-2 whitespace-nowrap">
                                         <div class="text-xs text-gray-500">{{ $adjNomorBukti }}</div>
                                     </td>
-                                    <td class="px-4 py-2 whitespace-nowrap" colspan="4">
+                                    <td class="px-4 py-2 whitespace-nowrap" colspan="5">
                                         <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-full {{ $isPenambahan ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                             <i class="fas {{ $isPenambahan ? 'fa-plus-circle' : 'fa-minus-circle' }} mr-1"></i>
                                             {{ ucfirst($adjLabel) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $isPenambahan ? '+' : '-' }}{{ number_format($adjNominal, 0, ',', '.') }}
-                                    </td>
+                                    <td class="px-4 py-2"></td>
                                     <td class="px-4 py-2"></td>
                                     <td class="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">
                                         {{ $isPenambahan ? '+' : '-' }}{{ number_format($adjNominal, 0, ',', '.') }}
                                     </td>
-                                    <td class="px-4 py-2"></td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $isPenambahan ? '+' : '-' }}{{ number_format($adjNominal, 0, ',', '.') }}
+                                    </td>
                                     <td class="px-4 py-2"></td>
                                 </tr>
                             @endforeach
                         @endif
                     @empty
                         <tr>
-                            <td colspan="12" class="px-4 py-16 text-center">
+                            <td colspan="13" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="p-4 bg-gray-50 rounded-full mb-3">
                                         <i class="fas fa-folder-open text-gray-300 text-4xl"></i>
@@ -216,7 +221,7 @@
                 @if($uangJalans->count() > 0)
                 <tfoot class="bg-gray-50 border-t-2 border-gray-100">
                     <tr>
-                        <th colspan="7" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
+                        <th colspan="8" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-gray-700">
                             {{ number_format($uangJalans->sum('jumlah_uang_jalan'), 0, ',', '.') }}
                         </th>
