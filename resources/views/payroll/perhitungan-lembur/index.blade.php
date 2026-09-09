@@ -484,7 +484,7 @@
                 
                 let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
                 html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
-                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th></tr></thead><tbody class="divide-y divide-gray-200">';
+                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
                 
                 let total = 0;
                 let totalJam = 0;
@@ -500,7 +500,7 @@
                         if (!isChecked) allChecked = false;
                         
                         if (isChecked) {
-                            total += Number(row.nominal);
+                            total += Number(row.nominal) + Number(row.adjustment || 0);
                             totalJam += Number(row.durasi_jam);
                             if (row.tipe_hari === 'Hari Biasa') {
                                 totalBiasa += Number(row.durasi_jam);
@@ -521,6 +521,8 @@
                         rowCount++;
                         let isChecked = (row.selected !== false);
                         
+                        let adjVal = Number(row.adjustment) || 0;
+                        let adjColor = adjVal > 0 ? 'text-blue-600' : (adjVal < 0 ? 'text-red-600' : 'text-gray-400');
                         html += `<tr>
                             <td class="px-4 py-2 text-center">
                                 <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''}>
@@ -531,19 +533,23 @@
                             <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
                             <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
+                            <td class="px-4 py-2 text-sm text-center">
+                                <input type="number" class="detail-adj-input w-28 px-2 py-1 border border-gray-300 rounded-md text-xs text-right font-mono focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 ${adjColor}" data-idx="${i}" value="${adjVal}" placeholder="0" step="1000">
+                                ${adjVal !== 0 ? `<div class="text-xs mt-0.5 font-semibold ${adjColor}">${adjVal > 0 ? '+' : ''}${adjVal.toLocaleString('id-ID')}</div>` : ''}
+                            </td>
                         </tr>`;
                     });
                     
                     if (rowCount > 0) {
                         html += `<tr class="bg-gray-50">
-                            <td colspan="6" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
+                            <td colspan="7" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
                             <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
                         </tr>`;
                     } else {
-                        html += '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
+                        html += '<tr><td colspan="8" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
                     }
                 } else {
-                    html += '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                    html += '<tr><td colspan="8" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
                 }
                 html += '</tbody></table>';
                 
@@ -566,6 +572,24 @@
                         details[idx].selected = this.checked;
                         btnEl.setAttribute('data-detail', JSON.stringify(details));
                         renderDetail();
+                    });
+                });
+
+                // Adjustment input listeners — update on blur/change agar tidak re-render saat sedang diketik
+                document.querySelectorAll('.detail-adj-input').forEach(input => {
+                    input.addEventListener('change', function() {
+                        const idx = this.getAttribute('data-idx');
+                        details[idx].adjustment = Number(this.value) || 0;
+                        btnEl.setAttribute('data-detail', JSON.stringify(details));
+                        renderDetail();
+                    });
+                    // Styling realtime saat mengetik
+                    input.addEventListener('input', function() {
+                        const val = Number(this.value) || 0;
+                        this.classList.remove('text-blue-600', 'text-red-600', 'text-gray-400');
+                        if (val > 0) this.classList.add('text-blue-600');
+                        else if (val < 0) this.classList.add('text-red-600');
+                        else this.classList.add('text-gray-400');
                     });
                 });
                 
