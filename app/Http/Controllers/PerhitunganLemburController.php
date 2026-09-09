@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
 use App\Models\Absensi;
+use App\Models\HariLibur;
 use App\Models\UangLembur;
 use App\Models\UangLemburRule;
 use Carbon\Carbon;
@@ -123,6 +124,16 @@ class PerhitunganLemburController extends Controller
         // Fetch all UangLembur and Rules
         $uangLemburs = UangLembur::with('rules')->get();
 
+        // Fetch registered holidays (hari_liburs) within the selected date range
+        // These are holidays manually registered by admin (e.g. national holidays on weekdays)
+        $hariLiburDates = HariLibur::whereBetween('tanggal', [
+                $startDate->toDateString(),
+                $endDate->toDateString()
+            ])
+            ->pluck('tanggal')
+            ->map(fn($t) => \Carbon\Carbon::parse($t)->toDateString())
+            ->toArray();
+
         $rekapData = [];
 
         foreach ($karyawans as $karyawan) {
@@ -162,7 +173,8 @@ class PerhitunganLemburController extends Controller
             $tempDate = $startDate->copy();
             while ($tempDate->lte($endDate)) {
                 $dateStr = $tempDate->toDateString();
-                $isHoliday = $tempDate->isSunday(); // For now, Sunday is holiday
+                // Hari Libur = Minggu ATAU terdaftar di tabel hari_liburs oleh admin
+                $isHoliday = $tempDate->isSunday() || in_array($dateStr, $hariLiburDates);
                 $tipeHari = $isHoliday ? 'Hari Libur' : 'Hari Biasa';
 
                 $dayLogs = $logsByDate->get($dateStr);
@@ -185,8 +197,9 @@ class PerhitunganLemburController extends Controller
                         $durasiJam = ceil($durationMinutes / 60);
 
                         // Aturan Hari Sabtu: jika lembur selesai nanggung 17:00-17:59, bulatkan ke 18:00
+                        // Aturan ini TIDAK berlaku jika Sabtu tersebut terdaftar sebagai Hari Libur di hari_liburs
                         $lpEvaluation = $lp->copy();
-                        if ($tempDate->isSaturday() && $lpEvaluation->hour == 17) {
+                        if ($tempDate->isSaturday() && !$isHoliday && $lpEvaluation->hour == 17) {
                             $lpEvaluation->setTime(18, 0, 0);
                         }
 
