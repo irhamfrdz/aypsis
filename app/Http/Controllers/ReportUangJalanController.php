@@ -253,7 +253,7 @@ class ReportUangJalanController extends Controller
             $fakeUj->setRelation('pranotaUangJalan', collect());
             
             $fakeUser = new \App\Models\User();
-            $fakeUser->name = '-';
+            $fakeUser->username = '-';
             $fakeUj->setRelation('createdBy', $fakeUser);
 
             $uangJalans->push($fakeUj);
