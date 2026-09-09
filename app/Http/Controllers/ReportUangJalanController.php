@@ -192,6 +192,92 @@ class ReportUangJalanController extends Controller
         return $result;
     }
 
+    private function appendStandalonePembatalans(&$uangJalans, &$adjustmentsByUjId, $startDate, $endDate, $search)
+    {
+        $pembatalans = PembatalanSuratJalan::whereBetween('tanggal_kas', [$startDate, $endDate]);
+        
+        if ($search) {
+            $pembatalans->where(function ($q) use ($search) {
+                $q->where('nomor_pembayaran', 'like', "%{$search}%")
+                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                  ->orWhere('no_surat_jalan', 'like', "%{$search}%");
+            });
+        }
+        
+        $pembatalans = $pembatalans->get();
+
+        foreach ($pembatalans as $pbl) {
+            // Check if this pembatalan is already included via some existing UangJalan
+            $exists = false;
+            foreach ($adjustmentsByUjId as $ujId => $adjs) {
+                if ($adjs->contains('_source_type', 'pembatalan') && $adjs->contains('nomor', $pbl->nomor_pembayaran)) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if ($exists) continue;
+
+            // Create fake UangJalan
+            $fakeUj = new UangJalan();
+            $fakeUj->id = 'pbl_' . $pbl->id;
+            $fakeUj->tanggal_uang_jalan = Carbon::parse($pbl->tanggal_kas);
+            $fakeUj->nomor_uang_jalan = '-';
+            $fakeUj->jumlah_uang_jalan = 0;
+            $fakeUj->jumlah_mel = 0;
+            $fakeUj->jumlah_pelancar = 0;
+            $fakeUj->jumlah_kawalan = 0;
+            $fakeUj->jumlah_parkir = 0;
+            $fakeUj->jumlah_total = 0; 
+
+            if ($pbl->tipe_sj === 'reguler') {
+                $fakeUj->surat_jalan_id = $pbl->surat_jalan_id ?? 1; // dummy truthy value
+                $fakeSjModel = new \App\Models\SuratJalan();
+                $fakeSjModel->no_surat_jalan = $pbl->no_surat_jalan;
+                $fakeSjModel->jenis_barang = '-';
+                $fakeSjModel->tujuan_pengambilan = '-';
+                $fakeSjModel->supir = '-';
+                $fakeSjModel->no_plat = '-';
+                $fakeUj->setRelation('suratJalan', $fakeSjModel);
+            } else {
+                $fakeUj->surat_jalan_bongkaran_id = $pbl->surat_jalan_bongkaran_id ?? 1; // dummy truthy value
+                $fakeSjModel = new \App\Models\SuratJalanBongkaran();
+                $fakeSjModel->nomor_surat_jalan = $pbl->no_surat_jalan;
+                $fakeSjModel->jenis_barang = '-';
+                $fakeSjModel->tujuan_pengambilan = '-';
+                $fakeSjModel->supir = '-';
+                $fakeSjModel->no_plat = '-';
+                $fakeUj->setRelation('suratJalanBongkaran', $fakeSjModel);
+            }
+
+            // Fake relations
+            $fakeUj->setRelation('pranotaUangJalan', collect());
+            
+            $fakeUser = new \App\Models\User();
+            $fakeUser->name = '-';
+            $fakeUj->setRelation('createdBy', $fakeUser);
+
+            $uangJalans->push($fakeUj);
+
+            // Create adjustment obj
+            $adjObj = new \stdClass();
+            $adjObj->_source_type = 'pembatalan';
+            $adjObj->tanggal_invoice = $pbl->tanggal_kas;
+            $adjObj->tanggal = $pbl->tanggal_kas;
+            $adjObj->nomor_invoice = $pbl->nomor_pembayaran ?: $pbl->no_surat_jalan;
+            $adjObj->nomor = $pbl->nomor_pembayaran;
+            $adjObj->jenis_penyesuaian = 'Pembatalan SJ';
+            $adjObj->jenis_aktivitas = 'Pembatalan Surat Jalan';
+            $adjObj->grand_total = (float) ($pbl->total_tagihan_setelah_penyesuaian ?? 0);
+            $adjObj->total = (float) ($pbl->total_tagihan_setelah_penyesuaian ?? 0);
+            $adjObj->_resolved_nomor_bukti = $pbl->nomor_accurate ?: '-';
+            $adjObj->alasan_batal = $pbl->alasan_batal;
+
+            $adjustmentsByUjId[$fakeUj->id] = collect([$adjObj]);
+        }
+        
+        $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
+    }
+
     public function view(Request $request)
     {
         $user = Auth::user();
@@ -235,6 +321,9 @@ class ReportUangJalanController extends Controller
 
         // Fetch adjustments
         $adjustmentsByUjId = $this->fetchAdjustments($uangJalans);
+        
+        // Append standalone Pembatalan records that occurred in this period
+        $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
 
         return view('report-uang-jalan.view', [
             'uangJalans' => $uangJalans,
@@ -282,10 +371,16 @@ class ReportUangJalanController extends Controller
             });
         }
 
-        $uangJalans = $query->orderBy('tanggal_uang_jalan', 'asc')->get();
+        $uangJalans = $query->orderBy('tanggal_uang_jalan', 'desc')->get();
 
         // Fetch adjustments
         $adjustmentsByUjId = $this->fetchAdjustments($uangJalans);
+
+        // Append standalone Pembatalan records that occurred in this period
+        $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
+        
+        // In export, order needs to be ascending as before
+        $uangJalans = $uangJalans->sortBy('tanggal_uang_jalan')->values();
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\ReportUangJalanExport($uangJalans, $startDate, $endDate, $adjustmentsByUjId),
