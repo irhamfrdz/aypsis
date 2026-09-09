@@ -78,11 +78,13 @@
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">NIK</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Uang Jalan</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Lain-lain</th>
+                        <th class="px-4 py-4 text-right text-xs font-bold text-purple-600 uppercase tracking-widest">Adj. UJ</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest font-bold text-amber-600">Total</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Dibuat Oleh</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-50">
+                    @php $totalAdj = 0; @endphp
                     @forelse($uangJalans as $index => $uj)
                         @php
                             $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
@@ -97,6 +99,20 @@
                             $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
 
                             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
+
+                            // Calculate total adjustment for this UJ
+                            $ujAdjs = $adjustmentsByUjId[$uj->id] ?? collect();
+                            $ujAdjTotal = 0;
+                            foreach ($ujAdjs as $adj) {
+                                $nominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+                                $jenisPeny = strtolower($adj->jenis_penyesuaian ?? '');
+                                if ($jenisPeny === 'penambahan') {
+                                    $ujAdjTotal += $nominal;
+                                } else {
+                                    $ujAdjTotal -= $nominal;
+                                }
+                            }
+                            $totalAdj += $ujAdjTotal;
                         @endphp
                         <tr class="hover:bg-amber-50/30 transition duration-150">
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ $index + 1 }}</td>
@@ -129,6 +145,13 @@
                             <td class="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-500">
                                 {{ number_format($lainLain, 0, ',', '.') }}
                             </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-semibold {{ $ujAdjTotal > 0 ? 'text-green-600' : ($ujAdjTotal < 0 ? 'text-red-600' : 'text-gray-400') }}">
+                                @if($ujAdjTotal != 0)
+                                    {{ $ujAdjTotal > 0 ? '+' : '' }}{{ number_format($ujAdjTotal, 0, ',', '.') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-bold text-amber-600">
                                 {{ number_format($uj->jumlah_total, 0, ',', '.') }}
                             </td>
@@ -136,9 +159,49 @@
                                 <div class="text-xs font-medium text-gray-500">{{ $uj->createdBy->name ?? '-' }}</div>
                             </td>
                         </tr>
+
+                        {{-- Adjustment Rows --}}
+                        @if($ujAdjs->isNotEmpty())
+                            @foreach($ujAdjs as $adj)
+                                @php
+                                    $adjNominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+                                    $adjJenis = strtolower($adj->jenis_penyesuaian ?? '');
+                                    $isPenambahan = ($adjJenis === 'penambahan');
+                                    $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? null);
+                                    $adjNomorInvoice = $adj->nomor_invoice ?? ($adj->nomor ?? '-');
+                                    $adjNomorBukti = $adj->_resolved_nomor_bukti ?? '-';
+                                    $adjLabel = $adj->jenis_penyesuaian ?? 'Adjustment';
+                                @endphp
+                                <tr class="{{ $isPenambahan ? 'bg-green-50/50' : 'bg-red-50/50' }} border-l-4 {{ $isPenambahan ? 'border-l-green-400' : 'border-l-red-400' }}">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300"></td>
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-xs text-gray-500">{{ $adjDate ? \Carbon\Carbon::parse($adjDate)->format('d/m/Y') : '-' }}</div>
+                                        <div class="text-xs font-medium {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">{{ $adjNomorInvoice }}</div>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-xs text-gray-500">{{ $adjNomorBukti }}</div>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap" colspan="4">
+                                        <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-full {{ $isPenambahan ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            <i class="fas {{ $isPenambahan ? 'fa-plus-circle' : 'fa-minus-circle' }} mr-1"></i>
+                                            {{ ucfirst($adjLabel) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $isPenambahan ? '+' : '-' }}{{ number_format($adjNominal, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-2"></td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold {{ $isPenambahan ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $isPenambahan ? '+' : '-' }}{{ number_format($adjNominal, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-2"></td>
+                                    <td class="px-4 py-2"></td>
+                                </tr>
+                            @endforeach
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="11" class="px-4 py-16 text-center">
+                            <td colspan="12" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="p-4 bg-gray-50 rounded-full mb-3">
                                         <i class="fas fa-folder-open text-gray-300 text-4xl"></i>
@@ -165,8 +228,15 @@
                             @endphp
                             {{ number_format($totalLainLain, 0, ',', '.') }}
                         </th>
+                        <th class="px-4 py-4 text-right text-sm font-bold {{ $totalAdj > 0 ? 'text-green-600' : ($totalAdj < 0 ? 'text-red-600' : 'text-gray-400') }}">
+                            @if($totalAdj != 0)
+                                {{ $totalAdj > 0 ? '+' : '' }}{{ number_format($totalAdj, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-amber-600 bg-amber-50">
-                            {{ number_format($uangJalans->sum('jumlah_total'), 0, ',', '.') }}
+                            {{ number_format($uangJalans->sum('jumlah_total') + $totalAdj, 0, ',', '.') }}
                         </th>
                         <th></th>
                     </tr>

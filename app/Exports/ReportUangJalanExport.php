@@ -2,14 +2,14 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Models\InvoiceAktivitasLain;
+use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
+class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
     protected $uangJalans;
 
@@ -17,16 +17,119 @@ class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadi
 
     protected $endDate;
 
-    public function __construct($uangJalans, $startDate, $endDate)
+    protected $adjustmentsByUjId;
+
+    protected $adjustmentRowIndices = [];
+
+    public function __construct($uangJalans, $startDate, $endDate, $adjustmentsByUjId = null)
     {
         $this->uangJalans = $uangJalans;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->adjustmentsByUjId = $adjustmentsByUjId ?? collect();
     }
 
-    public function collection()
+    public function array(): array
     {
-        return $this->uangJalans;
+        $rows = [];
+        $index = 0;
+        $dataRowStart = 5; // headings take rows 1-4, data starts at row 5
+
+        foreach ($this->uangJalans as $uj) {
+            $index++;
+
+            $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
+            $typeLabel = $uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-');
+            $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
+            $supir = $relatedSJ->supir ?? '-';
+            $plat = $relatedSJ->no_plat ?? '-';
+            $nik = $relatedSJ->supirKaryawan->nik ?? '-';
+            $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
+
+            $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
+            $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
+
+            $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
+
+            // Calculate total adjustment
+            $ujAdjs = $this->adjustmentsByUjId[$uj->id] ?? collect();
+            $ujAdjTotal = 0;
+            foreach ($ujAdjs as $adj) {
+                $nominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+                $jenisPeny = strtolower($adj->jenis_penyesuaian ?? '');
+                if ($jenisPeny === 'penambahan') {
+                    $ujAdjTotal += $nominal;
+                } else {
+                    $ujAdjTotal -= $nominal;
+                }
+            }
+
+            $rows[] = [
+                $index,
+                $uj->tanggal_uang_jalan->format('d/m/Y'),
+                $uj->nomor_uang_jalan,
+                $noBukti,
+                $sjNumber,
+                $typeLabel,
+                $tujuanAmbil,
+                $supir,
+                $nik,
+                $plat,
+                (float) ($uj->jumlah_uang_jalan ?? 0),
+                (float) ($uj->jumlah_mel ?? 0),
+                (float) ($uj->jumlah_pelancar ?? 0),
+                (float) ($uj->jumlah_kawalan ?? 0),
+                (float) ($uj->jumlah_parkir ?? 0),
+                (float) $lainLain,
+                $ujAdjTotal != 0 ? (float) $ujAdjTotal : 0,
+                (float) ($uj->jumlah_total ?? 0),
+                '', // Keterangan Adj.
+                $uj->createdBy->name ?? '-',
+            ];
+
+            // Add adjustment sub-rows
+            if ($ujAdjs instanceof \Traversable || is_array($ujAdjs)) {
+                foreach ($ujAdjs as $adj) {
+                    $adjNominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+                    $adjJenis = strtolower($adj->jenis_penyesuaian ?? '');
+                    $isPenambahan = ($adjJenis === 'penambahan');
+                    $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? null);
+                    $adjNomorInvoice = $adj->nomor_invoice ?? ($adj->nomor ?? '-');
+                    $adjNomorBukti = $adj->_resolved_nomor_bukti ?? '-';
+                    $adjLabel = ucfirst($adj->jenis_penyesuaian ?? 'Adjustment');
+
+                    $displayNominal = $isPenambahan ? $adjNominal : -$adjNominal;
+
+                    $rows[] = [
+                        '',  // No
+                        $adjDate ? \Carbon\Carbon::parse($adjDate)->format('d/m/Y') : '-', // Tanggal
+                        $adjNomorInvoice, // Nomor UJ -> shows invoice number
+                        $adjNomorBukti, // No. Bukti (Accurate)
+                        '', // No. Surat Jalan
+                        '', // Tipe
+                        '', // Tujuan Ambil
+                        '', // Supir
+                        '', // NIK
+                        '', // Plat Nomor
+                        '', // Uang Jalan
+                        '', // Mel
+                        '', // Pelancar
+                        '', // Kawalan
+                        '', // Parkir
+                        '', // Total Lain-lain
+                        (float) $displayNominal, // Adj. UJ
+                        '', // GRAND TOTAL
+                        $adjLabel, // Keterangan Adj.
+                        '', // Dibuat Oleh
+                    ];
+
+                    // Track adjustment row index for styling
+                    $this->adjustmentRowIndices[] = $dataRowStart + count($rows) - 1;
+                }
+            }
+        }
+
+        return $rows;
     }
 
     public function headings(): array
@@ -52,61 +155,23 @@ class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadi
                 'Kawalan',
                 'Parkir',
                 'Total Lain-lain',
+                'Adj. Uang Jalan',
                 'GRAND TOTAL',
+                'Keterangan Adj.',
                 'Dibuat Oleh',
             ],
         ];
     }
 
-    public function map($uj): array
-    {
-        static $index = 0;
-        $index++;
-
-        $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
-        $typeLabel = $uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-');
-        $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
-        $supir = $relatedSJ->supir ?? '-';
-        $plat = $relatedSJ->no_plat ?? '-';
-        $nik = $relatedSJ->supirKaryawan->nik ?? '-';
-        $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
-
-        $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
-        $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
-
-        $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
-
-        return [
-            $index,
-            $uj->tanggal_uang_jalan->format('d/m/Y'),
-            $uj->nomor_uang_jalan,
-            $noBukti,
-            $sjNumber,
-            $typeLabel,
-            $tujuanAmbil,
-            $supir,
-            $nik,
-            $plat,
-            (float) ($uj->jumlah_uang_jalan ?? 0),
-            (float) ($uj->jumlah_mel ?? 0),
-            (float) ($uj->jumlah_pelancar ?? 0),
-            (float) ($uj->jumlah_kawalan ?? 0),
-            (float) ($uj->jumlah_parkir ?? 0),
-            (float) $lainLain,
-            (float) ($uj->jumlah_total ?? 0),
-            $uj->createdBy->name ?? '-',
-        ];
-    }
-
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:R1');
-        $sheet->mergeCells('A2:R2');
+        $lastCol = 'T'; // 20 columns = A-T
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->mergeCells("A2:{$lastCol}2");
 
-        // Final Row
         $lastRow = $sheet->getHighestRow();
 
-        return [
+        $styles = [
             1 => ['font' => ['bold' => true, 'size' => 16]],
             2 => ['font' => ['bold' => true]],
             4 => [
@@ -116,7 +181,7 @@ class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadi
                     'startColor' => ['rgb' => 'B45309'], // Amber 700
                 ],
             ],
-            'A1:R'.$lastRow => [
+            "A1:{$lastCol}{$lastRow}" => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -124,5 +189,22 @@ class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadi
                 ],
             ],
         ];
+
+        // Style adjustment rows with light background
+        foreach ($this->adjustmentRowIndices as $rowIdx) {
+            $sheet->getStyle("A{$rowIdx}:{$lastCol}{$rowIdx}")->applyFromArray([
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'FEF3C7'], // Light amber/yellow
+                ],
+                'font' => [
+                    'italic' => true,
+                    'size' => 9,
+                ],
+            ]);
+        }
+
+        return $styles;
     }
 }
+
