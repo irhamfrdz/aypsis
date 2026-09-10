@@ -83,6 +83,22 @@
                 <input type="text" name="nomor_seri" id="nomor_seri" value="{{ old('nomor_seri', $alatBerat->nomor_seri) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
+            <!-- Sertifikat SIA -->
+            <div>
+                <label for="nomor_sertifikat_sia" class="block text-sm font-medium text-gray-700">Nomor Sertifikat SIA</label>
+                <input type="text" name="nomor_sertifikat_sia" id="nomor_sertifikat_sia" value="{{ old('nomor_sertifikat_sia', $alatBerat->nomor_sertifikat_sia) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Nomor sertifikat SIA">
+            </div>
+
+            <div>
+                <label for="tanggal_terbit_sertifikat_sia" class="block text-sm font-medium text-gray-700">Tanggal Terbit Sertifikat SIA</label>
+                <input type="date" name="tanggal_terbit_sertifikat_sia" id="tanggal_terbit_sertifikat_sia" value="{{ old('tanggal_terbit_sertifikat_sia', optional($alatBerat->tanggal_terbit_sertifikat_sia)->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
+            <div>
+                <label for="tanggal_kadaluarsa_sertifikat_sia" class="block text-sm font-medium text-gray-700">Tanggal Kadaluarsa Sertifikat SIA</label>
+                <input type="date" name="tanggal_kadaluarsa_sertifikat_sia" id="tanggal_kadaluarsa_sertifikat_sia" value="{{ old('tanggal_kadaluarsa_sertifikat_sia', optional($alatBerat->tanggal_kadaluarsa_sertifikat_sia)->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
 
 
             <!-- Lokasi -->

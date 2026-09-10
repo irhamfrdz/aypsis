@@ -22,6 +22,9 @@ class AlatBerat extends Model
         'tipe',
         'kapasitas',
         'nomor_seri',
+        'nomor_sertifikat_sia',
+        'tanggal_terbit_sertifikat_sia',
+        'tanggal_kadaluarsa_sertifikat_sia',
         'tahun_pembuatan',
         'lokasi',
         'tarif_harian',
@@ -31,6 +34,7 @@ class AlatBerat extends Model
     ];
 
     protected $casts = [
-
+        'tanggal_terbit_sertifikat_sia' => 'date',
+        'tanggal_kadaluarsa_sertifikat_sia' => 'date',
     ];
 }

@@ -52,6 +52,8 @@
                         'master_customer_buruh_id' => $batamItem ? $batamItem->master_customer_buruh_id : '',
                         'bank_id' => $batamItem ? $batamItem->bank_id : '',
                         'nomor_rekening' => $batamItem ? $batamItem->nomor_rekening : '',
+                        'pph_percent' => $batamItem ? $batamItem->pph_percent : 0,
+                        'pph_amount' => $batamItem ? $batamItem->pph_amount : 0,
                         'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
                         'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values(),
                         'kontainer' => []
@@ -745,6 +747,14 @@
                                 
                                 const nomRek = section.querySelector('.nomor-rekening-input');
                                 if (nomRek && myData.nomor_rekening) nomRek.value = myData.nomor_rekening;
+
+                                const pphPercent = section.querySelector('.pph-percent-select');
+                                if (pphPercent) pphPercent.value = myData.pph_percent ?? '0';
+
+                                const pphAmount = section.querySelector('.pph-amount-input');
+                                if (pphAmount && myData.pph_amount) {
+                                    pphAmount.value = Math.round(myData.pph_amount).toLocaleString('id-ID');
+                                }
                                 
                                 // Set nominal (manual input field)
                                 const nominalManualInput = section.querySelector('.nominal-manual-input');
