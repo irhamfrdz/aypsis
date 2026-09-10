@@ -1,5 +1,5 @@
-/* FontAwesome di-load via CDN di public.blade.php untuk menghindari konflik encoding */
-/* @import '@fortawesome/fontawesome-free/css/all.css'; */
+/* Bundel lokal agar ikon tetap tersedia setelah `npm run build` di production. */
+@import '@fortawesome/fontawesome-free/css/all.css';
 
 @tailwind base;
 @tailwind components;
