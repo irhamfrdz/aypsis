@@ -303,7 +303,11 @@ class BiayaKapalController extends Controller
 
                 if (isset($section['bank_id']) && !empty($section['bank_id'])) {
                     if (!is_numeric($section['bank_id'])) {
-                        $bank = \App\Models\Bank::firstOrCreate(['name' => trim($section['bank_id'])]);
+                        $bankName = trim($section['bank_id']);
+                        $bank = \App\Models\Bank::firstOrCreate(
+                            ['name' => $bankName],
+                            ['code' => 'M'.strtoupper(substr(sha1($bankName), 0, 9))]
+                        );
                         $section['bank_id'] = $bank->id;
                     }
                 }
@@ -3566,7 +3570,11 @@ class BiayaKapalController extends Controller
 
                 if (isset($section['bank_id']) && !empty($section['bank_id'])) {
                     if (!is_numeric($section['bank_id'])) {
-                        $bank = \App\Models\Bank::firstOrCreate(['name' => trim($section['bank_id'])]);
+                        $bankName = trim($section['bank_id']);
+                        $bank = \App\Models\Bank::firstOrCreate(
+                            ['name' => $bankName],
+                            ['code' => 'M'.strtoupper(substr(sha1($bankName), 0, 9))]
+                        );
                         $section['bank_id'] = $bank->id;
                     }
                 }
