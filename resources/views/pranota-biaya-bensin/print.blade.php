@@ -216,14 +216,6 @@
                 <div style="flex: 1;">
                     <table class="info-table">
                         <tr>
-                            <td style="width: 35%;">Jumlah Data</td>
-                            <td>: {{ $pranota->biayaBensins->count() }}</td>
-                        </tr>
-                        <tr>
-                            <td>Pembuat</td>
-                            <td>: {{ $pranota->creator->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <td>Nomor Rekening</td>
                             <td>: {{ $rekeningItem?->nomor_rekening ?? '-' }}</td>
                         </tr>
