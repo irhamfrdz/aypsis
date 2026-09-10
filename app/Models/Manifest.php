@@ -50,6 +50,7 @@ class Manifest extends Model
         'tanggal_sandar',
         'tanggal_mulai_bongkar',
         'tanggal_selesai_bongkar',
+        'tanggal_muat',
     ];
 
     protected $casts = [
@@ -65,6 +66,7 @@ class Manifest extends Model
         'tanggal_sandar' => 'date',
         'tanggal_mulai_bongkar' => 'date',
         'tanggal_selesai_bongkar' => 'date',
+        'tanggal_muat' => 'date',
     ];
 
     // Relationships

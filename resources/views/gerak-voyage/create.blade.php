@@ -62,6 +62,13 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
+                        <label for="tanggal_muat" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Muat</label>
+                        <input type="date" id="tanggal_muat" name="tanggal_muat" 
+                               value="{{ old('tanggal_muat', $manifest ? ($manifest->tanggal_muat ? \Carbon\Carbon::parse($manifest->tanggal_muat)->format('Y-m-d') : '') : '') }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
+                    </div>
+
+                    <div>
                         <label for="tanggal_mulai_berlayar" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai Berlayar</label>
                         <input type="date" id="tanggal_mulai_berlayar" name="tanggal_mulai_berlayar" 
                                value="{{ old('tanggal_mulai_berlayar', $manifest ? ($manifest->tanggal_mulai_berlayar ? \Carbon\Carbon::parse($manifest->tanggal_mulai_berlayar)->format('Y-m-d') : '') : '') }}" 

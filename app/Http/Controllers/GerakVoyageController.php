@@ -67,6 +67,7 @@ class GerakVoyageController extends Controller
             'tanggal_sandar' => 'nullable|date',
             'tanggal_mulai_bongkar' => 'nullable|date',
             'tanggal_selesai_bongkar' => 'nullable|date',
+            'tanggal_muat' => 'nullable|date',
         ]);
 
         $namaKapal = $validated['nama_kapal'];
@@ -85,6 +86,7 @@ class GerakVoyageController extends Controller
                 'tanggal_sandar' => $validated['tanggal_sandar'],
                 'tanggal_mulai_bongkar' => $validated['tanggal_mulai_bongkar'],
                 'tanggal_selesai_bongkar' => $validated['tanggal_selesai_bongkar'],
+                'tanggal_muat' => $validated['tanggal_muat'],
             ]);
 
         return redirect()->route('gerak-voyage.index')->with('success', "Data Gerak Voyage berhasil disimpan untuk {$updatedCount} manifest.");
