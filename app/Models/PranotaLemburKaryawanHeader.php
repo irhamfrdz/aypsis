@@ -39,4 +39,14 @@ class PranotaLemburKaryawanHeader extends Model
     {
         return $this->hasMany(PranotaLemburKaryawan::class, 'pranota_lembur_karyawan_header_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function pranotaPuml()
+    {
+        return $this->belongsTo(PranotaPuml::class, 'pranota_puml_id');
+    }
 }

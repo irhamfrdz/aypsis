@@ -38,7 +38,7 @@
                 </h3>
             </div>
             <div class="p-6">
-                <form action="{{ route('pranota-lembur-karyawan.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <form action="{{ route('pranota-lembur-karyawan.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label for="nomor_pranota" class="block text-sm font-medium text-gray-700 mb-1">Nomor Pranota</label>
                         <input type="text" name="nomor_pranota" id="nomor_pranota" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ request('nomor_pranota') }}" placeholder="Contoh: PML...">
@@ -47,7 +47,13 @@
                         <label for="tanggal_pranota" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pranota</label>
                         <input type="date" name="tanggal_pranota" id="tanggal_pranota" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ request('tanggal_pranota') }}">
                     </div>
-                    <div class="flex items-end space-x-3">
+                    <div class="flex items-center pb-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="only_my" value="1" {{ request('only_my') == '1' ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" onchange="this.form.submit()">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">Hanya Yang Saya Buat</span>
+                        </label>
+                    </div>
+                    <div class="flex items-end space-x-2">
                         <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
@@ -68,6 +74,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Pranota</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total Biaya</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Adjustment</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
@@ -86,6 +93,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
                                 <div class="text-xs text-gray-500">{{ $pranota->created_at->diffForHumans() }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-xs font-medium text-gray-900 flex items-center gap-1.5">
+                                    <i class="fas fa-user-circle text-gray-400"></i>
+                                    <span>{{ $pranota->creator->name ?? 'System' }}</span>
+                                    @if($pranota->created_by == auth()->id())
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Saya</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600">
                                 Rp {{ number_format($pranota->total_biaya, 0, ',', '.') }}
@@ -109,14 +125,28 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <a href="{{ route('pranota-lembur-karyawan.show', $pranota->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors">
-                                    <i class="fas fa-eye mr-1"></i> Detail
-                                </a>
+                                <div class="inline-flex items-center gap-2">
+                                    <a href="{{ route('pranota-lembur-karyawan.show', $pranota->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors" title="Lihat Detail">
+                                        <i class="fas fa-eye mr-1"></i> Detail
+                                    </a>
+                                    <a href="{{ route('pranota-lembur-karyawan.export', $pranota->id) }}" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-md transition-colors" title="Download Excel">
+                                        <i class="fas fa-file-excel mr-1"></i> Excel
+                                    </a>
+                                    @if(!$pranota->pranota_puml_id && ($pranota->created_by == auth()->id() || auth()->user()->can('payroll-delete')))
+                                        <form action="{{ route('pranota-lembur-karyawan.destroy', $pranota->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota {{ $pranota->nomor_pranota }}?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors" title="Hapus Pranota">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                         <i class="fas fa-file-invoice text-2xl text-gray-400"></i>

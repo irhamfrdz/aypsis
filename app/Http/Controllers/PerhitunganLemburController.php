@@ -378,6 +378,14 @@ class PerhitunganLemburController extends Controller
         }
         $grupsBpjsList = array_keys($grupBpjsMap);
 
+        // Riwayat Pranota Lembur Karyawan yang dibuat oleh user yang sedang login
+        $userId = auth()->id();
+        $riwayatPranotaUser = \App\Models\PranotaLemburKaryawanHeader::where('created_by', $userId)
+            ->with(['karyawans.karyawan:id,nama_lengkap,nama_panggilan,nik'])
+            ->withCount('karyawans')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('payroll.perhitungan-lembur.index', compact(
             'rekapData', 
             'startDateStr', 
@@ -389,7 +397,8 @@ class PerhitunganLemburController extends Controller
             'grupMap',
             'grupsList',
             'grupBpjsMap',
-            'grupsBpjsList'
+            'grupsBpjsList',
+            'riwayatPranotaUser'
         ));
     }
 }

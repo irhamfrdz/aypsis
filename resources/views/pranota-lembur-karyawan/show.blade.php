@@ -20,6 +20,10 @@
                     <p class="mt-1 text-sm text-gray-600 ml-8">Melihat rincian karyawan pada pranota lembur tertentu.</p>
                 </div>
                 <div class="flex items-center space-x-3">
+                    <a href="{{ route('pranota-lembur-karyawan.export', $pranota->id) }}" class="inline-flex items-center px-4 py-2 border border-emerald-300 shadow-sm text-sm font-medium rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
+                        <i class="fas fa-file-excel mr-2 text-emerald-600"></i>
+                        Export Excel
+                    </a>
                     <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" onclick="window.print()">
                         <i class="fas fa-print mr-2"></i>
                         Cetak

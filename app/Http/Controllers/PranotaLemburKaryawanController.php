@@ -20,7 +20,14 @@ class PranotaLemburKaryawanController extends Controller
             $query->where('tanggal_pranota', $request->tanggal_pranota);
         }
 
-        $pranotas = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        if ($request->filled('only_my') && $request->only_my == '1') {
+            $query->where('created_by', auth()->id());
+        }
+
+        $pranotas = $query->with(['creator', 'karyawans'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('pranota-lembur-karyawan.index', compact('pranotas'));
     }
@@ -31,6 +38,17 @@ class PranotaLemburKaryawanController extends Controller
             ->findOrFail($id);
             
         return view('pranota-lembur-karyawan.show', compact('pranota'));
+    }
+
+    public function export($id)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::with(['creator', 'karyawans.karyawan'])
+            ->findOrFail($id);
+
+        $safeNomor = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pranota->nomor_pranota);
+        $filename = 'Pranota_Lembur_' . $safeNomor . '.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaLemburKaryawanExport($pranota), $filename);
     }
 
     public function store(Request $request)
@@ -111,6 +129,33 @@ class PranotaLemburKaryawanController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return back()->with('error', 'Gagal menyimpan Pranota Lembur: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy($id)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::findOrFail($id);
+
+        if ($pranota->pranota_puml_id) {
+            return back()->with('error', 'Pranota tidak dapat dihapus karena sudah digabungkan ke Pranota PUML.');
+        }
+
+        if ($pranota->created_by != auth()->id() && !auth()->user()->can('payroll-delete')) {
+            return back()->with('error', 'Anda hanya dapat menghapus pranota yang Anda buat sendiri.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            \App\Models\PranotaLemburKaryawan::where('pranota_lembur_karyawan_header_id', $pranota->id)->delete();
+            $pranota->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return back()->with('success', 'Pranota lembur ' . $pranota->nomor_pranota . ' berhasil dihapus.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
         }
     }
 }

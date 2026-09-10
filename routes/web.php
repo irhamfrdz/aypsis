@@ -7803,6 +7803,8 @@ Route::middleware(['auth',
     Route::get('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'index'])->name('pranota-lembur-karyawan.index')->middleware('can:payroll-view');
     Route::post('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'store'])->name('pranota-lembur-karyawan.store')->middleware('can:payroll-perhitungan-lembur-create');
     Route::get('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'show'])->name('pranota-lembur-karyawan.show')->middleware('can:payroll-view');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}/export', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'export'])->name('pranota-lembur-karyawan.export')->middleware('can:payroll-view');
+    Route::delete('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'destroy'])->name('pranota-lembur-karyawan.destroy')->middleware('can:payroll-view');
     
     // Master Tunjangan
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)
