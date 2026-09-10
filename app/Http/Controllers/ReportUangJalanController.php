@@ -102,8 +102,7 @@ class ReportUangJalanController extends Controller
         })->groupBy('no_surat_jalan');
 
         // Fetch pembatalan surat jalan (cancellation = return of uang jalan)
-        $pembatalanBySjId = PembatalanSuratJalan::where('status', 'approved')
-            ->where(function ($q) use ($sjIds, $sjbIds) {
+        $pembatalanBySjId = PembatalanSuratJalan::where(function ($q) use ($sjIds, $sjbIds) {
             $q->whereIn('surat_jalan_id', $sjIds)
               ->orWhereIn('surat_jalan_bongkaran_id', $sjbIds);
         })->get()->groupBy(function ($p) {
@@ -199,13 +198,16 @@ class ReportUangJalanController extends Controller
 
     private function appendStandalonePembatalans(&$uangJalans, &$adjustmentsByUjId, $startDate, $endDate, $search)
     {
-        $pembatalans = PembatalanSuratJalan::where('status', 'approved')
-            ->whereBetween('tanggal_kas', [$startDate, $endDate]);
+        $pembatalans = PembatalanSuratJalan::where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_kas', [$startDate, $endDate])
+                    ->orWhereBetween('tanggal_pembayaran', [$startDate, $endDate]);
+            });
         
         if ($search) {
             $pembatalans->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
                   ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                  ->orWhereRaw("REPLACE(nomor_accurate, ' ', '') LIKE ?", ['%'.str_replace(' ', '', $search).'%'])
                   ->orWhere('no_surat_jalan', 'like', "%{$search}%");
             });
         }
@@ -213,19 +215,19 @@ class ReportUangJalanController extends Controller
         $pembatalans = $pembatalans->get();
 
         foreach ($pembatalans as $pbl) {
-            // Check if this pembatalan is already included via some existing UangJalan
-            $exists = false;
-            foreach ($adjustmentsByUjId as $ujId => $adjs) {
-                if ($adjs->contains('_source_type', 'pembatalan') && $adjs->contains('nomor', $pbl->nomor_pembayaran)) {
-                    $exists = true;
-                    break;
-                }
+            // Deduplicate only by the concrete standalone row ID. Checking
+            // nested adjustment collections by attribute can incorrectly skip
+            // unrelated cancellation records.
+            // UangJalan casts its primary key to integer, so use a unique
+            // negative integer instead of a string such as "pbl_21".
+            $standaloneId = -((int) $pbl->id);
+            if ($uangJalans->contains(fn ($uj) => (int) $uj->id === $standaloneId)) {
+                continue;
             }
-            if ($exists) continue;
 
             // Create fake UangJalan
             $fakeUj = new UangJalan();
-            $fakeUj->id = 'pbl_' . $pbl->id;
+            $fakeUj->id = $standaloneId;
             $fakeUj->tanggal_uang_jalan = Carbon::parse($pbl->tanggal_kas);
             $fakeUj->nomor_uang_jalan = '-';
             $fakeUj->jumlah_uang_jalan = 0;
