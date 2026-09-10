@@ -41,6 +41,7 @@
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
+    $rekeningItem = $pranota->biayaBensins->firstWhere('nomor_rekening') ?? $pranota->biayaBensins->first();
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -222,6 +223,14 @@
                             <td>Pembuat</td>
                             <td>: {{ $pranota->creator->name ?? '-' }}</td>
                         </tr>
+                        <tr>
+                            <td>Nomor Rekening</td>
+                            <td>: {{ $rekeningItem?->nomor_rekening ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Bank / Pemilik</td>
+                            <td>: {{ $rekeningItem?->nama_bank ?? '-' }}{{ $rekeningItem?->penerima_rekening ? ' / '.$rekeningItem->penerima_rekening : '' }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>
@@ -233,11 +242,11 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Tgl Bensin</th>
+                    <th style="width: 15%;">Tanggal Bensin</th>
                     <th style="width: 20%;">Kendaraan</th>
                     <th style="width: 20%;">Supir</th>
-                    <th style="width: 20%;">Rekening</th>
-                    <th style="width: 20%;">Biaya</th>
+                    <th style="width: 15%;">Jumlah Liter</th>
+                    <th style="width: 25%;">Biaya</th>
                 </tr>
             </thead>
             <tbody>
@@ -255,10 +264,7 @@
                         @endif
                     </td>
                     <td class="text-center">{{ $item->supir ? ($item->supir->nama_panggilan ?: $item->supir->nama_lengkap) : '-' }}</td>
-                    <td class="text-center">
-                        {{ $item->nama_bank ? $item->nama_bank . ' - ' : '' }}{{ $item->nomor_rekening ?? '-' }}<br>
-                        {{ $item->penerima_rekening ? '(A.n '.$item->penerima_rekening.')' : '' }}
-                    </td>
+                    <td class="text-right">{{ number_format($item->liter ?? 0, 2, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($item->biaya, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
