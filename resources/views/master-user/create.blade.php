@@ -696,6 +696,22 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Riwayat Pranota PUML --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Riwayat Pranota PUML</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-puml][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-puml][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-puml][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-puml][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">

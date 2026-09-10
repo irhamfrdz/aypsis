@@ -426,8 +426,8 @@
                     <span class="text-xs font-medium menu-text text-left">Rekap Perbaikan Kontainer</span>
                 </a>
 
-                <!-- Pranota Uang Makan -->
-                @if($user && $user->can('pranota-uang-makan-view'))
+                <!-- Riwayat Pranota PUML -->
+                @if($user && ($user->can('pranota-puml-view') || $user->can('pranota-uang-makan-view')))
                 @php
                     $isPranotaUangMakan = Request::routeIs('pranota-puml.*');
                 @endphp

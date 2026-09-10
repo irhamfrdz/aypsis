@@ -137,6 +137,17 @@ return [
                 'pranota-uang-makan-print' => 'Cetak Pranota Uang Makan',
             ],
         ],
+        'pranota-puml' => [
+            'name' => 'Riwayat Pranota PUML',
+            'description' => 'Menu Riwayat Pranota PUML',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-puml-view' => 'View Riwayat Pranota PUML',
+                'pranota-puml-create' => 'Buat Pranota PUML',
+                'pranota-puml-update' => 'Edit Pranota PUML',
+                'pranota-puml-delete' => 'Hapus Pranota PUML',
+            ],
+        ],
         'pranota-biaya-bensin' => [
             'name' => 'Pranota Biaya Bensin',
             'description' => 'Menu Pranota Biaya Bensin',
@@ -328,6 +339,9 @@ return [
 
         // Pranota Uang Makan - butuh pranota-uang-makan-view
         'pranota-uang-makan' => ['pranota-uang-makan-view'],
+
+        // Pranota PUML - butuh pranota-puml-view
+        'pranota-puml' => ['pranota-puml-view'],
 
         // Pranota Biaya Bensin - butuh pranota-biaya-bensin-view
         'pranota-biaya-bensin' => ['pranota-biaya-bensin-view'],

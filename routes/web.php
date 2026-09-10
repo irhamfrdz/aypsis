@@ -7795,8 +7795,8 @@ Route::middleware(['auth',
     Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');
     
     // Tambah controller baru untuk Pranota Gabungan PUML
-    Route::post('pranota-puml/{id}/potongan', [\App\Http\Controllers\PranotaPumlController::class, 'storePotongan'])->name('pranota-puml.store-potongan')->middleware('can:payroll-view');
-    Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:payroll-view');
+    Route::post('pranota-puml/{id}/potongan', [\App\Http\Controllers\PranotaPumlController::class, 'storePotongan'])->name('pranota-puml.store-potongan')->middleware('can:pranota-puml-view');
+    Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:pranota-puml-view');
 
     // Perhitungan Lembur
     Route::get('/payroll/perhitungan-lembur', [\App\Http\Controllers\PerhitunganLemburController::class, 'index'])->name('payroll.perhitungan-lembur')->middleware('can:payroll-perhitungan-lembur-view');

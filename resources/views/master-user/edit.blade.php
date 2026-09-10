@@ -4425,6 +4425,51 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Riwayat Pranota PUML --}}
+                            <tr class="module-row" data-module="pranota-puml">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Riwayat Pranota PUML</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan Riwayat Pranota PUML</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-puml-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-puml-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-puml-header-checkbox permission-checkbox" data-permission="update" disabled>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-puml-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Riwayat Pranota PUML Sub-modules --}}
+                            <tr class="submodule-row" data-parent="pranota-puml">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Riwayat Pranota PUML</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-puml][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-puml.view') || (isset($userMatrixPermissions['pranota-puml']['view']) && $userMatrixPermissions['pranota-puml']['view']) || ($user && $user->can('pranota-puml-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-puml][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-puml.create') || (isset($userMatrixPermissions['pranota-puml']['create']) && $userMatrixPermissions['pranota-puml']['create']) || ($user && $user->can('pranota-puml-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-puml][update]" value="1" class="permission-checkbox" disabled></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-puml][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-puml.delete') || (isset($userMatrixPermissions['pranota-puml']['delete']) && $userMatrixPermissions['pranota-puml']['delete']) || ($user && $user->can('pranota-puml-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota BPJS --}}
                             <tr class="module-row" data-module="pranota-bpjs">
                                 <td class="module-header">
@@ -5658,7 +5703,10 @@
                     updateAktivaHeaderCheckboxes,
                     updateAktivitasLainnyaHeaderCheckboxes,
                     updateAuditLogHeaderCheckboxes,
-                    updateKwitansiHeaderCheckboxes
+                    updateKwitansiHeaderCheckboxes,
+                    updatePranotaUangMakanHeaderCheckboxes,
+                    updatePranotaPumlHeaderCheckboxes,
+                    updatePranotaBpjsHeaderCheckboxes
                 ];
 
                 updateFunctions.forEach(fn => {
@@ -6387,6 +6435,46 @@
                 updatePranotaUangMakanHeaderCheckboxes();
             }
 
+            // Initialize Pranota PUML checkbox handling
+            initializeCheckAllPranotaPuml();
+
+            function initializeCheckAllPranotaPuml() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.pranota-puml-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        if (this.disabled) return;
+                        
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in pranota puml sub-modules
+                        const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-puml"] input[name*="[${permission}]"]`);
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (!checkbox.disabled) {
+                                checkbox.checked = isChecked;
+                            }
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Riwayat Pranota PUML telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Riwayat Pranota PUML telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="pranota-puml"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updatePranotaPumlHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updatePranotaPumlHeaderCheckboxes();
+            }
+
             // Initialize Pranota BPJS checkbox handling
             initializeCheckAllPranotaBpjs();
 
@@ -6574,6 +6662,23 @@
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.pranota-uang-makan-header-checkbox[data-permission="${permission}"]`);
                     const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-uang-makan"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && subCheckboxes.length > 0) {
+                        const allChecked = Array.from(subCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(subCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function updatePranotaPumlHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.pranota-puml-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-puml"] input[name*="[${permission}]"]`);
 
                     if (headerCheckbox && subCheckboxes.length > 0) {
                         const allChecked = Array.from(subCheckboxes).every(cb => cb.checked);

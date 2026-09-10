@@ -750,6 +750,7 @@ class UserController extends Controller
                 'pranota-uang-rit-kenek' => 'pranota-uang-rit-kenek',
                 'pranota-uang-rit-batam' => 'pranota-uang-rit-batam',
                 'pranota-uang-rit' => 'pranota-uang-rit',
+                'pranota-puml' => 'pranota-puml',
                 'prospek-batam' => 'prospek-batam',
                 'prospek' => 'prospek',
                 'realisasi-uang-muka' => 'realisasi-uang-muka',
@@ -5167,6 +5168,27 @@ class UserController extends Controller
                             'create' => 'pranota-stock-create',
                             'print' => 'pranota-stock-print',
                             'delete' => 'pranota-stock-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+
+                                continue; // Skip to next action
+                            }
+                        }
+                    }
+
+                    // Handle pranota-puml permissions explicitly
+                    if ($module === 'pranota-puml' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'pranota-puml-view',
+                            'create' => 'pranota-puml-create',
+                            'update' => 'pranota-puml-update',
+                            'delete' => 'pranota-puml-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
