@@ -4,14 +4,18 @@
 @section('page_title', 'Tambah Alat Berat')
 
 @section('content')
-<div class="bg-white rounded-lg shadow-md p-6">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-gray-800">Tambah Alat Berat Baru</h2>
+@php
+    $inputClasses = 'mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm transition focus:border-indigo-500 focus:ring-indigo-500';
+    $labelClasses = 'block text-sm font-medium text-gray-700';
+@endphp
+<div class="mx-auto max-w-6xl space-y-6">
+    <div class="flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-indigo-700 to-indigo-500 px-6 py-6 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div class="flex items-center gap-4"><div class="rounded-xl bg-white/15 p-3"><i class="fa-solid fa-truck-monster text-2xl"></i></div><div><p class="text-sm text-indigo-100">Master Data</p><h2 class="text-2xl font-bold">Tambah Alat Berat</h2><p class="mt-1 text-sm text-indigo-100">Lengkapi identitas, sertifikat, dan informasi operasional alat.</p></div></div>
+        <a href="{{ route('master.alat-berat.index') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/30 hover:bg-white/20"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
     </div>
 
     @if ($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <ul>
+        <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><ul class="list-disc space-y-1 pl-5">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -19,19 +23,19 @@
         </div>
     @endif
 
-    <form action="{{ route('master.alat-berat.store') }}" method="POST">
+    <form action="{{ route('master.alat-berat.store') }}" method="POST" class="space-y-6">
         @csrf
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"><div class="mb-6 border-b border-gray-100 pb-4"><h3 class="font-semibold text-gray-900">Identitas Alat</h3><p class="mt-1 text-sm text-gray-500">Informasi dasar alat berat yang didaftarkan.</p></div><div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <!-- Kode Alat -->
             <div>
-                <label for="kode_alat" class="block text-sm font-medium text-gray-700">Kode Alat <span class="text-red-500">*</span></label>
-                <input type="text" name="kode_alat" id="kode_alat" value="{{ old('kode_alat', $nextKode) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-100" readonly>
+                <label for="kode_alat" class="{{ $labelClasses }}">Kode Alat <span class="text-red-500">*</span></label>
+                <input type="text" name="kode_alat" id="kode_alat" value="{{ old('kode_alat', $nextKode) }}" class="{{ $inputClasses }} bg-gray-100" readonly>
             </div>
 
             <!-- Nama -->
             <div>
-                <label for="nama" class="block text-sm font-medium text-gray-700">Nama Alat <span class="text-red-500">*</span></label>
-                <input type="text" name="nama" id="nama" value="{{ old('nama') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: Excavator PC200" required>
+                <label for="nama" class="{{ $labelClasses }}">Nama Alat <span class="text-red-500">*</span></label>
+                <input type="text" name="nama" id="nama" value="{{ old('nama') }}" class="{{ $inputClasses }}" placeholder="Contoh: Excavator PC200" required>
             </div>
 
             <!-- Nickname -->
@@ -76,6 +80,7 @@
                 <input type="text" name="nomor_seri" id="nomor_seri" value="{{ old('nomor_seri') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
+            <div class="md:col-span-2 mt-2 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4"><h3 class="font-semibold text-gray-900"><i class="fa-solid fa-certificate mr-2 text-indigo-600"></i>Sertifikat SIA</h3><p class="mt-1 text-sm text-gray-500">Informasi masa berlaku sertifikat alat.</p></div>
             <!-- Sertifikat SIA -->
             <div>
                 <label for="nomor_sertifikat_sia" class="block text-sm font-medium text-gray-700">Nomor Sertifikat SIA</label>
@@ -94,6 +99,7 @@
 
 
 
+            <div class="md:col-span-2 mt-2 border-t border-gray-100 pt-5"><h3 class="font-semibold text-gray-900">Operasional</h3><p class="mt-1 text-sm text-gray-500">Atur lokasi, tarif, dan status alat.</p></div>
             <!-- Lokasi -->
             <div>
                 <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi Saat Ini</label>
