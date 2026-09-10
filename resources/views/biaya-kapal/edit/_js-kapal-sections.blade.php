@@ -41,9 +41,10 @@
     }
     
     function clearAllKapalSections() {
-        kapalSectionsContainer.innerHTML = '';
+        if (kapalSectionsContainer) {
+            kapalSectionsContainer.innerHTML = '';
+        }
         kapalSectionCounter = 0;
-        nominalInput.value = '';
     }
     
     addKapalSectionBtn.addEventListener('click', function() {
