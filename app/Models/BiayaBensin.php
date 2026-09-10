@@ -28,6 +28,7 @@ class BiayaBensin extends Model
         'status',
         'approved_by',
         'approved_at',
+        'pranota_biaya_bensin_id',
     ];
 
     protected $casts = [

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BiayaBensin;
 use App\Models\PranotaBiayaBensin;
-use App\Models\KodeNomor;
+use App\Models\NomorTerakhir;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,8 +68,10 @@ class PranotaBiayaBensinController extends Controller
             }
 
             // Generate nomor pranota
-            $kode = KodeNomor::firstOrCreate(
-                ['kode' => 'PBB'],
+            // Nomor berjalan disimpan di tabel nomor_terakhir. Tabel kode_nomor
+            // tidak memiliki kolom nomor_terakhir.
+            $kode = NomorTerakhir::firstOrCreate(
+                ['modul' => 'PBB'],
                 ['nomor_terakhir' => 0, 'keterangan' => 'Pranota Biaya Bensin']
             );
             $kode->increment('nomor_terakhir');

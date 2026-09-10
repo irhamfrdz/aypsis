@@ -22,6 +22,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6 shadow-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form action="{{ route('pranota-biaya-bensin.store') }}" method="POST">
         @csrf
         
@@ -85,12 +91,12 @@
                     <div class="space-y-4">
                         <div>
                             <label for="tanggal_pranota" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
-                            <input type="date" name="tanggal_pranota" id="tanggal_pranota" value="{{ date('Y-m-d') }}" required class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2">
+                            <input type="date" name="tanggal_pranota" id="tanggal_pranota" value="{{ old('tanggal_pranota', date('Y-m-d')) }}" required class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2">
                         </div>
 
                         <div>
                             <label for="catatan" class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
-                            <textarea name="catatan" id="catatan" rows="3" class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2" placeholder="Tulis catatan..."></textarea>
+                            <textarea name="catatan" id="catatan" rows="3" class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2" placeholder="Tulis catatan...">{{ old('catatan') }}</textarea>
                         </div>
                         
                         <div class="pt-4 border-t border-gray-100">
