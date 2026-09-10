@@ -102,7 +102,8 @@ class ReportUangJalanController extends Controller
         })->groupBy('no_surat_jalan');
 
         // Fetch pembatalan surat jalan (cancellation = return of uang jalan)
-        $pembatalanBySjId = PembatalanSuratJalan::where(function ($q) use ($sjIds, $sjbIds) {
+        $pembatalanBySjId = PembatalanSuratJalan::where('status', 'approved')
+            ->where(function ($q) use ($sjIds, $sjbIds) {
             $q->whereIn('surat_jalan_id', $sjIds)
               ->orWhereIn('surat_jalan_bongkaran_id', $sjbIds);
         })->get()->groupBy(function ($p) {
@@ -142,10 +143,14 @@ class ReportUangJalanController extends Controller
                     $adjObj->tanggal = $pembatalan->tanggal_kas;
                     $adjObj->nomor_invoice = $pembatalan->nomor_pembayaran ?: $pembatalan->no_surat_jalan;
                     $adjObj->nomor = $pembatalan->nomor_pembayaran;
-                    $adjObj->jenis_penyesuaian = 'Pembatalan SJ';
+                    $adjObj->jenis_penyesuaian = 'Pengembalian Uang Jalan (Pembatalan SJ)';
                     $adjObj->jenis_aktivitas = 'Pembatalan Surat Jalan';
-                    $adjObj->grand_total = (float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? 0);
-                    $adjObj->total = (float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? 0);
+                    $refundAmount = (float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? 0);
+                    if ($refundAmount <= 0) {
+                        $refundAmount = (float) ($pembatalan->total_pembayaran ?? 0);
+                    }
+                    $adjObj->grand_total = $refundAmount;
+                    $adjObj->total = $refundAmount;
                     $adjObj->_resolved_nomor_bukti = $pembatalan->nomor_accurate ?: '-';
                     $adjObj->alasan_batal = $pembatalan->alasan_batal;
                     $ujAdjs->push($adjObj);
@@ -194,7 +199,8 @@ class ReportUangJalanController extends Controller
 
     private function appendStandalonePembatalans(&$uangJalans, &$adjustmentsByUjId, $startDate, $endDate, $search)
     {
-        $pembatalans = PembatalanSuratJalan::whereBetween('tanggal_kas', [$startDate, $endDate]);
+        $pembatalans = PembatalanSuratJalan::where('status', 'approved')
+            ->whereBetween('tanggal_kas', [$startDate, $endDate]);
         
         if ($search) {
             $pembatalans->where(function ($q) use ($search) {
@@ -265,10 +271,14 @@ class ReportUangJalanController extends Controller
             $adjObj->tanggal = $pbl->tanggal_kas;
             $adjObj->nomor_invoice = $pbl->nomor_pembayaran ?: $pbl->no_surat_jalan;
             $adjObj->nomor = $pbl->nomor_pembayaran;
-            $adjObj->jenis_penyesuaian = 'Pembatalan SJ';
+            $adjObj->jenis_penyesuaian = 'Pengembalian Uang Jalan (Pembatalan SJ)';
             $adjObj->jenis_aktivitas = 'Pembatalan Surat Jalan';
-            $adjObj->grand_total = (float) ($pbl->total_tagihan_setelah_penyesuaian ?? 0);
-            $adjObj->total = (float) ($pbl->total_tagihan_setelah_penyesuaian ?? 0);
+            $refundAmount = (float) ($pbl->total_tagihan_setelah_penyesuaian ?? 0);
+            if ($refundAmount <= 0) {
+                $refundAmount = (float) ($pbl->total_pembayaran ?? 0);
+            }
+            $adjObj->grand_total = $refundAmount;
+            $adjObj->total = $refundAmount;
             $adjObj->_resolved_nomor_bukti = $pbl->nomor_accurate ?: '-';
             $adjObj->alasan_batal = $pbl->alasan_batal;
 

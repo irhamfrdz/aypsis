@@ -172,11 +172,12 @@
                                 @php
                                     $adjNominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
                                     $adjJenis = strtolower($adj->jenis_penyesuaian ?? '');
-                                    $isPenambahan = ($adjJenis === 'penambahan');
+                                    $isPembatalan = (($adj->_source_type ?? null) === 'pembatalan');
+                                    $isPenambahan = !$isPembatalan && ($adjJenis === 'penambahan');
                                     $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? null);
                                     $adjNomorInvoice = $adj->nomor_invoice ?? ($adj->nomor ?? '-');
                                     $adjNomorBukti = $adj->_resolved_nomor_bukti ?? '-';
-                                    $adjLabel = $adj->jenis_penyesuaian ?? 'Adjustment';
+                                    $adjLabel = $isPembatalan ? 'Pengembalian Uang Jalan (Pembatalan SJ)' : ($adj->jenis_penyesuaian ?? 'Adjustment');
                                 @endphp
                                 <tr class="{{ $isPenambahan ? 'bg-green-50/50' : 'bg-red-50/50' }} border-l-4 {{ $isPenambahan ? 'border-l-green-400' : 'border-l-red-400' }}">
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300"></td>
