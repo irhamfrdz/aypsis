@@ -27,7 +27,7 @@
         </div>
     @endif
 
-    <form action="{{ route('master.alat-berat.update', $alatBerat->id) }}" method="POST" class="space-y-6">
+    <form action="{{ route('master.alat-berat.update', $alatBerat->id) }}" method="POST" class="alat-berat-form space-y-6">
         @csrf
         @method('PUT')
         
@@ -162,3 +162,18 @@
     </form>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .alat-berat-form input:not([type="hidden"]),
+    .alat-berat-form select,
+    .alat-berat-form textarea { min-height: 44px; border: 1px solid #d7dee9; border-radius: 0.75rem; background-color: #f8fafc; color: #1f2937; font-size: 0.875rem; line-height: 1.25rem; transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease; }
+    .alat-berat-form input:not([type="hidden"]), .alat-berat-form select { padding: 0.65rem 0.85rem; }
+    .alat-berat-form input.pl-10 { padding-left: 2.5rem; }
+    .alat-berat-form textarea { min-height: 104px; padding: 0.75rem 0.85rem; resize: vertical; }
+    .alat-berat-form input:not([type="hidden"]):hover, .alat-berat-form select:hover, .alat-berat-form textarea:hover { border-color: #a5b4fc; background-color: #fff; }
+    .alat-berat-form input:not([type="hidden"]):focus, .alat-berat-form select:focus, .alat-berat-form textarea:focus { border-color: #6366f1; background-color: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14); outline: none; }
+    .alat-berat-form input[readonly] { cursor: not-allowed; border-color: #e5e7eb; background-color: #f1f5f9; color: #64748b; }
+    .alat-berat-form input::placeholder, .alat-berat-form textarea::placeholder { color: #94a3b8; }
+</style>
+@endpush
