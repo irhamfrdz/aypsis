@@ -81,9 +81,10 @@
                     <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider">
                         <th class="px-4 py-3 border-b w-10 text-center">No</th>
                         <th class="px-4 py-3 border-b">Group Name</th>
-                        <th class="px-4 py-3 border-b text-center">Tunjangan (%)</th>
-                        <th class="px-4 py-3 border-b text-center">Hutang (%)</th>
-                        <th class="px-4 py-3 border-b text-center">Biaya (%)</th>
+                        <th class="px-4 py-3 border-b">Cabang BPJS</th>
+                        <th class="px-4 py-3 border-b text-center">JKK 1% Tunjangan</th>
+                        <th class="px-4 py-3 border-b text-center">JKK 1% Hutang</th>
+                        <th class="px-4 py-3 border-b text-center">JKM Tunjangan</th>
                         <th class="px-4 py-3 border-b">Keterangan / Custom</th>
                         <th class="px-4 py-3 border-b text-center w-24">Aksi</th>
                     </tr>
@@ -96,6 +97,7 @@
                                 {{ $item->group_name }}
                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">BPU</span>
                             </td>
+                            <td class="px-4 py-3 font-medium text-gray-700">{{ $item->cabang_bpjs ?: '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? $item->biaya_persen . '%' : '-' }}</td>
@@ -117,7 +119,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek BPU.</td>
+                            <td colspan="8" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek BPU.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -207,7 +209,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
-                                    <select name="jenis[]" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
+                                    <select name="jenis[]" class="form-select w-full border-gray-300 rounded-md shadow-sm" required onchange="togglePpuFields(this)">
                                         <option value="jkn">Group JKN</option>
                                         <option value="jamsostek">Group BP Jamsostek</option>
                                     </select>
@@ -218,17 +220,22 @@
                                 </div>
                             </div>
 
+                            <div class="cabang-bpjs-field hidden mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
+                                <input type="text" name="cabang_bpjs[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Cabang Batam">
+                            </div>
+
                             <div class="bpu-fields grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                                    <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                                    <label class="label-tunjangan block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                                    <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                                    <label class="label-hutang block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
                                     <input type="number" name="hutang_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
+                                    <label class="label-biaya block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
                                     <input type="number" name="biaya_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
                                 </div>
                             </div>
@@ -298,7 +305,7 @@
                     
                     <div class="mb-4">
                         <label for="edit_jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
-                        <select id="edit_jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
+                        <select id="edit_jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required onchange="toggleEditPpuFields(this)">
                             <option value="jkn">Group JKN</option>
                             <option value="jamsostek">Group BP Jamsostek</option>
                         </select>
@@ -309,17 +316,22 @@
                         <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="toggleEditPpuFields(this)">
                     </div>
 
+                    <div id="edit_cabang_bpjs_field" class="hidden mb-4">
+                        <label for="edit_cabang_bpjs" class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
+                        <input type="text" id="edit_cabang_bpjs" name="cabang_bpjs" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Cabang Batam">
+                    </div>
+
                     <div id="edit_bpu_fields" class="grid grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                            <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                            <label id="edit_label_tunjangan" for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                            <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
                         </div>
                         <div>
-                            <label for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                            <label id="edit_label_hutang" for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
                             <input type="number" id="edit_hutang_persen" name="hutang_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
                         </div>
                         <div>
-                            <label for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
+                            <label id="edit_label_biaya" for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
                             <input type="number" id="edit_biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
                         </div>
                     </div>
@@ -385,6 +397,7 @@
         const firstRow = rows[0];
         firstRow.querySelector('select[name="jenis[]"]').value = 'jkn';
         firstRow.querySelector('input[name="group_name[]"]').value = '';
+        firstRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         firstRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         firstRow.querySelector('input[name="hutang_persen[]"]').value = '';
         firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -413,6 +426,7 @@
         
         newRow.querySelector('select[name="jenis[]"]').value = 'jkn';
         newRow.querySelector('input[name="group_name[]"]').value = '';
+        newRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         newRow.querySelector('input[name="hutang_persen[]"]').value = '';
         newRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -455,6 +469,7 @@
         
         document.getElementById('edit_jenis').value = data.jenis;
         document.getElementById('edit_group_name').value = data.group_name;
+        document.getElementById('edit_cabang_bpjs').value = data.cabang_bpjs || '';
         document.getElementById('edit_tunjangan_persen').value = data.tunjangan_persen;
         document.getElementById('edit_hutang_persen').value = data.hutang_persen;
         document.getElementById('edit_biaya_persen').value = data.biaya_persen;
@@ -467,7 +482,7 @@
         document.getElementById('edit_jp_biaya').value = data.jp_biaya;
         document.getElementById('edit_jp_hutang').value = data.jp_hutang;
         
-        toggleEditPpuFields(document.getElementById('edit_group_name'));
+        toggleEditPpuFields();
 
         document.getElementById('editModal').classList.remove('hidden');
     }
@@ -478,26 +493,66 @@
 
     function togglePpuFields(input) {
         const row = input.closest('.bpjs-row');
+        const jenis = row.querySelector('select[name="jenis[]"]').value;
         const ppuFields = row.querySelector('.ppu-fields');
         const bpuFields = row.querySelector('.bpu-fields');
-        if (input.value.toUpperCase().includes('PPU')) {
+        const cabangField = row.querySelector('.cabang-bpjs-field');
+        const groupName = row.querySelector('input[name="group_name[]"]').value;
+
+        const lblTunj = row.querySelector('.label-tunjangan');
+        const lblHut = row.querySelector('.label-hutang');
+        const lblBiaya = row.querySelector('.label-biaya');
+
+        if (groupName.toUpperCase().includes('PPU')) {
             ppuFields.classList.remove('hidden');
             bpuFields.classList.add('hidden');
+            if (cabangField) cabangField.classList.add('hidden');
         } else {
             ppuFields.classList.add('hidden');
             bpuFields.classList.remove('hidden');
+            if (jenis === 'jamsostek') {
+                if (cabangField) cabangField.classList.remove('hidden');
+                if (lblTunj) lblTunj.textContent = 'JKK 1% Tunjangan';
+                if (lblHut) lblHut.textContent = 'JKK 1% Hutang';
+                if (lblBiaya) lblBiaya.textContent = 'JKM Tunjangan';
+            } else {
+                if (cabangField) cabangField.classList.add('hidden');
+                if (lblTunj) lblTunj.textContent = 'Tunjangan (%)';
+                if (lblHut) lblHut.textContent = 'Hutang (%)';
+                if (lblBiaya) lblBiaya.textContent = 'Biaya (%)';
+            }
         }
     }
 
-    function toggleEditPpuFields(input) {
+    function toggleEditPpuFields() {
+        const jenis = document.getElementById('edit_jenis').value;
+        const groupName = document.getElementById('edit_group_name').value;
         const ppuFields = document.getElementById('edit_ppu_fields');
         const bpuFields = document.getElementById('edit_bpu_fields');
-        if (input.value.toUpperCase().includes('PPU')) {
+        const cabangField = document.getElementById('edit_cabang_bpjs_field');
+
+        const lblTunj = document.getElementById('edit_label_tunjangan');
+        const lblHut = document.getElementById('edit_label_hutang');
+        const lblBiaya = document.getElementById('edit_label_biaya');
+
+        if (groupName.toUpperCase().includes('PPU')) {
             ppuFields.classList.remove('hidden');
             bpuFields.classList.add('hidden');
+            if (cabangField) cabangField.classList.add('hidden');
         } else {
             ppuFields.classList.add('hidden');
             bpuFields.classList.remove('hidden');
+            if (jenis === 'jamsostek') {
+                if (cabangField) cabangField.classList.remove('hidden');
+                if (lblTunj) lblTunj.textContent = 'JKK 1% Tunjangan';
+                if (lblHut) lblHut.textContent = 'JKK 1% Hutang';
+                if (lblBiaya) lblBiaya.textContent = 'JKM Tunjangan';
+            } else {
+                if (cabangField) cabangField.classList.add('hidden');
+                if (lblTunj) lblTunj.textContent = 'Tunjangan (%)';
+                if (lblHut) lblHut.textContent = 'Hutang (%)';
+                if (lblBiaya) lblBiaya.textContent = 'Biaya (%)';
+            }
         }
     }
 </script>

@@ -20,6 +20,7 @@ class MasterRumusBpjsController extends Controller
     {
         $rumusJkn = MasterRumusBpjs::where('jenis', 'jkn')->get();
         $rumusJamsostek = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
+
         return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek'));
     }
 
@@ -30,6 +31,8 @@ class MasterRumusBpjsController extends Controller
             'jenis.*' => 'required|in:jkn,jamsostek',
             'group_name' => 'required|array',
             'group_name.*' => 'required|string|max:255',
+            'cabang_bpjs' => 'nullable|array',
+            'cabang_bpjs.*' => 'nullable|string|max:255',
             'tunjangan_persen' => 'nullable|array',
             'tunjangan_persen.*' => 'nullable|numeric|min:0',
             'hutang_persen' => 'nullable|array',
@@ -53,10 +56,11 @@ class MasterRumusBpjsController extends Controller
         ]);
 
         foreach ($request->jenis as $key => $jenis) {
-            if (!empty($request->group_name[$key])) {
+            if (! empty($request->group_name[$key])) {
                 MasterRumusBpjs::create([
                     'jenis' => $jenis,
                     'group_name' => $request->group_name[$key],
+                    'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
                     'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
                     'hutang_persen' => $request->hutang_persen[$key] ?? null,
                     'biaya_persen' => $request->biaya_persen[$key] ?? null,
@@ -79,6 +83,7 @@ class MasterRumusBpjsController extends Controller
         $request->validate([
             'jenis' => 'required|in:jkn,jamsostek',
             'group_name' => 'required|string|max:255',
+            'cabang_bpjs' => 'nullable|string|max:255',
             'tipe_rumus' => 'nullable|in:nominal,persentase',
             'nilai' => 'nullable|numeric|min:0',
             'tunjangan_persen' => 'nullable|numeric|min:0',
@@ -96,6 +101,7 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
         $rumus->update([
             'group_name' => $request->group_name,
+            'cabang_bpjs' => $request->cabang_bpjs,
             'tunjangan_persen' => $request->tunjangan_persen,
             'hutang_persen' => $request->hutang_persen,
             'biaya_persen' => $request->biaya_persen,

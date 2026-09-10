@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MasterRumusBpjs extends Model
 {
-    use HasFactory, Auditable, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'master_rumus_bpjs';
 
     protected $fillable = [
         'jenis',
         'group_name',
+        'cabang_bpjs',
         'tipe_rumus',
         'nilai',
         'tunjangan_persen',
