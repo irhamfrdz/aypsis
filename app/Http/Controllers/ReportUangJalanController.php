@@ -278,6 +278,63 @@ class ReportUangJalanController extends Controller
         $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
     }
 
+    private function appendStandalonePembayaranAktivitasLain(&$uangJalans, &$adjustmentsByUjId, $startDate, $endDate, $search)
+    {
+        $query = PembayaranAktivitasLain::with('creator')
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereRaw("LOWER(COALESCE(keterangan, '')) LIKE ?", ['%uang jalan%']);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor', 'like', "%{$search}%")
+                    ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhere('penerima', 'like', "%{$search}%")
+                    ->orWhere('nomor_polisi', 'like', "%{$search}%");
+            });
+        }
+
+        $payments = $query->get();
+        $existingPaymentIds = $adjustmentsByUjId->flatten()->filter(function ($item) {
+            return $item instanceof PembayaranAktivitasLain;
+        })->pluck('id')->all();
+
+        foreach ($payments as $payment) {
+            if (in_array($payment->id, $existingPaymentIds, true)) {
+                continue;
+            }
+
+            $fakeUj = new UangJalan();
+            $fakeUj->id = 'pal_' . $payment->id;
+            $fakeUj->tanggal_uang_jalan = Carbon::parse($payment->tanggal);
+            $fakeUj->nomor_uang_jalan = $payment->nomor ?: '-';
+            $fakeUj->jumlah_uang_jalan = (float) ($payment->jumlah ?? 0);
+            $fakeUj->jumlah_mel = 0;
+            $fakeUj->jumlah_pelancar = 0;
+            $fakeUj->jumlah_kawalan = 0;
+            $fakeUj->jumlah_parkir = 0;
+            $fakeUj->jumlah_total = (float) ($payment->jumlah ?? 0);
+            $fakeUj->_source_type = 'pembayaran_aktivitas_lain';
+            $fakeUj->_standalone_payment = $payment;
+
+            $fakeSj = new \App\Models\SuratJalan();
+            $fakeSj->no_surat_jalan = '-';
+            $fakeSj->jenis_barang = $payment->keterangan ?: 'Pembayaran Aktivitas Lain';
+            $fakeSj->tujuan_pengambilan = '-';
+            $fakeSj->supir = $payment->penerima ?: '-';
+            $fakeSj->no_plat = $payment->nomor_polisi ?: '-';
+            $fakeUj->surat_jalan_id = 1;
+            $fakeUj->setRelation('suratJalan', $fakeSj);
+            $fakeUj->setRelation('pranotaUangJalan', collect());
+            $fakeUj->setRelation('createdBy', $payment->creator);
+
+            $uangJalans->push($fakeUj);
+            $adjustmentsByUjId[$fakeUj->id] = collect();
+        }
+
+        $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
+    }
+
     public function view(Request $request)
     {
         $user = Auth::user();
@@ -324,6 +381,7 @@ class ReportUangJalanController extends Controller
         
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
+        $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
 
         return view('report-uang-jalan.view', [
             'uangJalans' => $uangJalans,
@@ -378,6 +436,7 @@ class ReportUangJalanController extends Controller
 
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
+        $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         
         // In export, order needs to be ascending as before
         $uangJalans = $uangJalans->sortBy('tanggal_uang_jalan')->values();

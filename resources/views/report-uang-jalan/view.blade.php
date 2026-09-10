@@ -88,8 +88,9 @@
                     @php $totalAdj = 0; @endphp
                     @forelse($uangJalans as $index => $uj)
                         @php
+                            $standalonePayment = $uj->_standalone_payment ?? null;
                             $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
-                            $typeLabel = $uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-');
+                            $typeLabel = $standalonePayment ? 'Aktivitas Lain' : ($uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-'));
                             $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
                             $supir = $relatedSJ->supir ?? '-';
                             $plat = $relatedSJ->no_plat ?? '-';
@@ -98,7 +99,7 @@
                             $namaBarang = $relatedSJ->jenis_barang ?? '-';
                             
                             $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
-                            $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
+                            $noBukti = $standalonePayment ? ($standalonePayment->nomor_accurate ?: '-') : ($pembayaran ? $pembayaran->nomor_accurate : '-');
 
                             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
 
