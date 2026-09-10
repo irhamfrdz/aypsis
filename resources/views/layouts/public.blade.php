@@ -21,15 +21,12 @@
 
     <style>
         body {
-            font-family: Arial, Helvetica, sans-serif !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8fafc;
-        }
-        *:not(i) {
-            font-family: Arial, Helvetica, sans-serif !important;
         }
         
         .hero-bg {
-            background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 58, 138, 0.82) 50%, rgba(15, 23, 42, 0.92) 100%), url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -37,42 +34,79 @@
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card-dark {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .nav-scrolled {
-            background-color: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
 
         .nav-scrolled .nav-link {
-            color: #1e293b;
+            color: #334155;
+        }
+        .nav-scrolled .nav-link:hover {
+            color: #2563eb;
         }
         
-        .nav-scrolled .nav-logo {
+        .nav-scrolled .nav-logo-text-1 {
             color: #0f172a;
+        }
+        .nav-scrolled .nav-logo-text-2 {
+            color: #2563eb;
+        }
+
+        .nav-logo-text-1 {
+            color: #ffffff;
+            transition: color 0.3s ease;
+        }
+        .nav-logo-text-2 {
+            color: #38bdf8;
+            transition: color 0.3s ease;
+        }
+
+        /* Modern button */
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1.5px);
+            box-shadow: 0 8px 20px 0 rgba(37, 99, 235, 0.4);
         }
 
         /* Micro animations */
         .service-card {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
         }
-        
-        .btn-primary {
-            background: #000000;
-            transition: all 0.3s ease;
+
+        /* Hide scrollbars cleanly */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .btn-primary:hover {
-            background: #333333;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         @yield('additional_styles')
@@ -85,9 +119,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <a href="{{ route('home') }}" class="nav-logo text-2xl font-bold tracking-tighter flex items-center gap-2 transition-colors duration-300 @yield('logo_class', 'text-white')">
-                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
-                        <span>ALEXINDO<span class="text-black font-black">YAKINPRIMA</span></span>
+                    <a href="{{ route('home') }}" class="nav-logo flex items-center gap-2.5 transition-colors duration-300">
+                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-8 md:h-9 w-auto object-contain">
+                        <span class="text-lg md:text-xl font-extrabold tracking-tight leading-none uppercase">
+                            <span class="nav-logo-text-1">ALEXINDO</span>
+                            <span class="nav-logo-text-2">YAKINPRIMA</span>
+                        </span>
                     </a>
                 </div>
                 <div class="hidden md:flex space-x-8 items-center">
@@ -227,9 +264,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                 <div class="lg:col-span-1">
-                    <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter flex flex-col items-start gap-3 text-white mb-6">
-                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
-                        <span>ALEXINDO<span class="text-black">YAKINPRIMA</span></span>
+                    <a href="{{ route('home') }}" class="flex items-center gap-2.5 text-white mb-6 group">
+                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-8 md:h-9 w-auto object-contain">
+                        <span class="text-lg font-extrabold tracking-tight uppercase leading-none">
+                            <span class="text-white">ALEXINDO</span>
+                            <span class="text-sky-400">YAKINPRIMA</span>
+                        </span>
                     </a>
                     <p class="text-slate-400 mb-6 leading-relaxed">
                         Integrator maritim dan logistik terkemuka, menjadi partner terbaik dalam pengiriman peti kemas Anda.
