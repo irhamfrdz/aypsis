@@ -554,6 +554,22 @@
     var existingUmumSections = @json($editUmumSections);
     var existingPerlengkapanSections = @json($editPerlengkapanSections);
 
+    // Restore a select value reliably, including values entered through Select2 tags.
+    function restoreEditSelectValue(select, value) {
+        if (!select || value === null || value === undefined || value === '') return;
+
+        const stringValue = String(value);
+        const optionExists = Array.from(select.options).some(option => option.value === stringValue);
+        if (!optionExists) {
+            select.add(new Option(stringValue, stringValue, false, false));
+        }
+
+        select.value = stringValue;
+        if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+            jQuery(select).val(stringValue).trigger('change');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
     });
@@ -734,37 +750,41 @@
                                 }
                                 
                                 const nomBukti = section.querySelector('.nomor-bukti-input');
-                                if (nomBukti && myData.nomor_bukti) nomBukti.value = myData.nomor_bukti;
+                                if (nomBukti && myData.nomor_bukti !== null && myData.nomor_bukti !== undefined) {
+                                    nomBukti.value = myData.nomor_bukti;
+                                }
                                 
                                 const penerimaSel = section.querySelector('.penerima-select');
-                                if (penerimaSel && myData.penerima) penerimaSel.value = myData.penerima;
-                                
+                                restoreEditSelectValue(penerimaSel, myData.penerima);
+
                                 const custSel = section.querySelector('.customer-select');
-                                if (custSel && myData.master_customer_buruh_id) custSel.value = myData.master_customer_buruh_id;
-                                
+                                restoreEditSelectValue(custSel, myData.master_customer_buruh_id);
+
                                 const bankSel = section.querySelector('.bank-select');
-                                if (bankSel && myData.bank_id) bankSel.value = myData.bank_id;
+                                restoreEditSelectValue(bankSel, myData.bank_id);
                                 
                                 const nomRek = section.querySelector('.nomor-rekening-input');
-                                if (nomRek && myData.nomor_rekening) nomRek.value = myData.nomor_rekening;
+                                if (nomRek && myData.nomor_rekening !== null && myData.nomor_rekening !== undefined) {
+                                    nomRek.value = myData.nomor_rekening;
+                                }
 
                                 const pphPercent = section.querySelector('.pph-percent-select');
-                                if (pphPercent) pphPercent.value = myData.pph_percent ?? '0';
+                                restoreEditSelectValue(pphPercent, myData.pph_percent ?? '0');
 
                                 const pphAmount = section.querySelector('.pph-amount-input');
-                                if (pphAmount && myData.pph_amount) {
+                                if (pphAmount && myData.pph_amount !== null && myData.pph_amount !== undefined) {
                                     pphAmount.value = Math.round(myData.pph_amount).toLocaleString('id-ID');
                                 }
                                 
                                 // Set nominal (manual input field)
                                 const nominalManualInput = section.querySelector('.nominal-manual-input');
-                                if (nominalManualInput && myData.nominal) {
+                                if (nominalManualInput && myData.nominal !== null && myData.nominal !== undefined) {
                                     nominalManualInput.value = parseInt(myData.nominal).toLocaleString('id-ID');
                                 }
                                 
                                 // Set total nominal display
                                 const nominalDisplay = section.querySelector('.section-nominal-display');
-                                if (nominalDisplay && myData.total_nominal) {
+                                if (nominalDisplay && myData.total_nominal !== null && myData.total_nominal !== undefined) {
                                     nominalDisplay.textContent = 'Rp ' + parseInt(myData.total_nominal).toLocaleString('id-ID');
                                 }
                             }, 1500);
@@ -774,10 +794,10 @@
                         const adjInput = section.querySelector('.adjustment-input');
                         const notesInput = section.querySelector('input[name="kapal_sections['+sectionIndex+'][notes_adjustment]"]');
                         
-                        if(adjInput && myData.adjustment) {
+                        if(adjInput && myData.adjustment !== null && myData.adjustment !== undefined && myData.adjustment !== '') {
                             adjInput.value = Math.round(myData.adjustment).toLocaleString('id-ID');
                         }
-                        if(notesInput && myData.notes_adjustment) {
+                        if(notesInput && myData.notes_adjustment !== null && myData.notes_adjustment !== undefined) {
                             notesInput.value = myData.notes_adjustment;
                         }
                         
