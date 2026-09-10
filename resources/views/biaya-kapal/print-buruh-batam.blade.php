@@ -351,7 +351,7 @@
                     <td style="height: 85px;"></td>
                 </tr>
                 <tr>
-                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( {{ $creatorName ?? '__________' }} )</td>
                     <td>( __________ )</td>
                     <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
                 </tr>

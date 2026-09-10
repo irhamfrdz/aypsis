@@ -3291,9 +3291,14 @@ class BiayaKapalController extends Controller
      */
     public function printBuruhBatam(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'buruhBatamDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'buruhBatamDetails', 'bank', 'auditLogs.user']);
 
-        return view('biaya-kapal.print-buruh-batam', compact('biayaKapal'));
+        // BiayaKapal does not store created_by directly. The Auditable trait
+        // records the user who created it in the first "created" audit log.
+        $creatorLog = $biayaKapal->auditLogs->firstWhere('action', 'created');
+        $creatorName = $creatorLog?->user?->name ?? $creatorLog?->user_name;
+
+        return view('biaya-kapal.print-buruh-batam', compact('biayaKapal', 'creatorName'));
     }
 
     /**
