@@ -104,6 +104,14 @@
                         <dt class="text-sm font-medium text-gray-500">Tahun Pembuatan</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $alatBerat->tahun_pembuatan ?? '-' }}</dd>
                     </div>
+                    <div class="sm:col-span-2 rounded-lg border border-indigo-100 bg-indigo-50/60 p-3">
+                        <dt class="text-sm font-semibold text-indigo-900">Sertifikat SIA</dt>
+                        <dd class="mt-2 grid grid-cols-1 gap-2 text-sm text-gray-900 sm:grid-cols-3">
+                            <span><b class="block text-xs font-medium text-gray-500">Nomor</b>{{ $alatBerat->nomor_sertifikat_sia ?? '-' }}</span>
+                            <span><b class="block text-xs font-medium text-gray-500">Periode</b>{{ $alatBerat->tanggal_terbit_sertifikat_sia?->format('d/m/Y') ?? '-' }} - {{ $alatBerat->tanggal_kadaluarsa_sertifikat_sia?->format('d/m/Y') ?? '-' }}</span>
+                            <span><b class="block text-xs font-medium text-gray-500">Biaya Periode</b>{{ $alatBerat->biaya_sertifikat_sia !== null ? 'Rp ' . number_format($alatBerat->biaya_sertifikat_sia, 0, ',', '.') : '-' }}</span>
+                        </dd>
+                    </div>
                     <div class="sm:col-span-2">
                         <dt class="text-sm font-medium text-gray-500">Keterangan</dt>
                         <dd class="mt-1 text-sm text-gray-900 bg-white p-2 rounded border border-gray-200 min-h-[60px]">{{ $alatBerat->keterangan ?? '-' }}</dd>

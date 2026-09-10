@@ -97,6 +97,15 @@
                 <input type="date" name="tanggal_kadaluarsa_sertifikat_sia" id="tanggal_kadaluarsa_sertifikat_sia" value="{{ old('tanggal_kadaluarsa_sertifikat_sia') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
+            <div>
+                <label for="biaya_sertifikat_sia" class="block text-sm font-medium text-gray-700">Biaya Sertifikat SIA <span class="text-xs font-normal text-gray-500">(periode berlaku)</span></label>
+                <div class="relative mt-1">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-500">Rp</span>
+                    <input type="number" step="0.01" min="0" name="biaya_sertifikat_sia" id="biaya_sertifikat_sia" value="{{ old('biaya_sertifikat_sia') }}" class="mt-1 block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0">
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Nominal ini berlaku untuk periode tanggal terbit sampai tanggal kadaluarsa.</p>
+            </div>
+
 
 
             <div class="md:col-span-2 mt-2 border-t border-gray-100 pt-5"><h3 class="font-semibold text-gray-900">Operasional</h3><p class="mt-1 text-sm text-gray-500">Atur lokasi, tarif, dan status alat.</p></div>
