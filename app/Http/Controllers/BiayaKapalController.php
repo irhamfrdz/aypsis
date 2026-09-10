@@ -301,6 +301,13 @@ class BiayaKapalController extends Controller
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
 
+                if (isset($section['bank_id']) && !empty($section['bank_id'])) {
+                    if (!is_numeric($section['bank_id'])) {
+                        $bank = \App\Models\Bank::firstOrCreate(['name' => trim($section['bank_id'])]);
+                        $section['bank_id'] = $bank->id;
+                    }
+                }
+
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) {
@@ -3556,6 +3563,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
+
+                if (isset($section['bank_id']) && !empty($section['bank_id'])) {
+                    if (!is_numeric($section['bank_id'])) {
+                        $bank = \App\Models\Bank::firstOrCreate(['name' => trim($section['bank_id'])]);
+                        $section['bank_id'] = $bank->id;
+                    }
+                }
+
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) {

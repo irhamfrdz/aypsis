@@ -382,6 +382,28 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+
+        // Initialize Select2 for Penerima
+        const penerimaSelect = section.querySelector('.penerima-select');
+        if (penerimaSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(penerimaSelect).select2({
+                tags: true,
+                placeholder: "-- Pilih atau Ketik Penerima --",
+                allowClear: true,
+                width: '100%'
+            });
+        }
+
+        // Initialize Select2 for Bank (Pilih atau Input Manual)
+        const bankSelect = section.querySelector('.bank-select');
+        if (bankSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(bankSelect).select2({
+                tags: true,
+                placeholder: "-- Pilih atau Ketik Bank --",
+                allowClear: true,
+                width: '100%'
+            });
+        }
         
         // Add first barang input for Jakarta
         if (currentLokasi !== 'batam') {

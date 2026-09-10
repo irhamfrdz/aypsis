@@ -385,6 +385,12 @@
                 allowClear: true,
                 width: '100%'
             });
+            jQuery(section).find('.bank-select').select2({
+                tags: true,
+                placeholder: "-- Pilih atau Ketik Bank --",
+                allowClear: true,
+                width: '100%'
+            });
         }
     }
 

@@ -391,8 +391,20 @@
                 const firstRekening = firstSection.querySelector('.nomor-rekening-input');
 
                 if (namaVendorInput && firstVendor && firstVendor.value) namaVendorInput.value = firstVendor.value;
-                if (penerimaSelect && firstPenerima && firstPenerima.value) penerimaSelect.value = firstPenerima.value;
-                if (bankSelect && firstBank && firstBank.value) bankSelect.value = firstBank.value;
+                if (penerimaSelect && firstPenerima && firstPenerima.value) {
+                    const pVal = $(firstPenerima).val() || firstPenerima.value;
+                    if (pVal && !$(penerimaSelect).find("option[value='" + pVal + "']").length) {
+                        $(penerimaSelect).append(new Option(pVal, pVal, true, true));
+                    }
+                    penerimaSelect.value = pVal;
+                }
+                if (bankSelect && firstBank && firstBank.value) {
+                    const bVal = $(firstBank).val() || firstBank.value;
+                    if (bVal && !$(bankSelect).find("option[value='" + bVal + "']").length) {
+                        $(bankSelect).append(new Option(bVal, bVal, true, true));
+                    }
+                    bankSelect.value = bVal;
+                }
                 if (nomorRekeningInput && firstRekening && firstRekening.value) nomorRekeningInput.value = firstRekening.value;
             }
         }
@@ -448,6 +460,37 @@
                         const idx = parseInt(sec.getAttribute('data-section-index'));
                         if (idx > 1) {
                             const $sel = $(sec.querySelector('.penerima-select'));
+                            if ($sel.length) {
+                                // Add option if it doesn't exist
+                                if (value && !$sel.find("option[value='" + value + "']").length) {
+                                    const newOption = new Option(value, value, true, true);
+                                    $sel.append(newOption);
+                                }
+                                $sel.val(value).trigger('change.select2');
+                            }
+                        }
+                    });
+                });
+            }
+        }
+
+        // Initialize Select2 for Bank (Pilih atau Input Manual)
+        if (bankSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(bankSelect).select2({
+                tags: true,
+                placeholder: "-- Pilih atau Ketik Bank --",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Sync with other sections if this is section 1
+            if (sectionIndex === 1) {
+                $(bankSelect).on('select2:select select2:unselect', function(e) {
+                    const value = $(this).val();
+                    document.querySelectorAll('.kapal-section').forEach(sec => {
+                        const idx = parseInt(sec.getAttribute('data-section-index'));
+                        if (idx > 1) {
+                            const $sel = $(sec.querySelector('.bank-select'));
                             if ($sel.length) {
                                 // Add option if it doesn't exist
                                 if (value && !$sel.find("option[value='" + value + "']").length) {
