@@ -1652,7 +1652,7 @@
 
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
-            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::routeIs('biaya-bensin.*') || Request::is('pranota-ongkos-truk*');
+            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::routeIs('biaya-bensin.*') || Request::is('pranota-ongkos-truk*') || Request::routeIs('pranota-biaya-bensin.*');
 
             $hasAktivitasSupirPermissions = $user && (
                 $user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || 
@@ -2121,6 +2121,13 @@
                         @if($pendingBensinCount > 0)
                             <span class="ml-auto bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold">{{ $pendingBensinCount }}</span>
                         @endif
+                    </a>
+                @endif
+
+                {{-- Pranota Biaya Bensin --}}
+                @if($user && ($user->can('pranota-biaya-bensin-view') || $user->is_admin))
+                    <a href="{{ route('pranota-biaya-bensin.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('pranota-biaya-bensin.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pranota Biaya Bensin</span>
                     </a>
                 @endif
 
