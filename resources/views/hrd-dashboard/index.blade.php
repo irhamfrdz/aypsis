@@ -12,7 +12,7 @@
             <p class="text-gray-500">Ringkasan aktivitas kehadiran karyawan pada <strong>{{ $filterDate->translatedFormat('l, d F Y') }}</strong>.</p>
         </div>
         
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <form action="{{ route('hrd.dashboard') }}" method="GET" class="flex items-center gap-2">
                 @foreach(request()->except(['tanggal_dashboard', 'page']) as $key => $value)
                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -30,6 +30,26 @@
                     </a>
                 @endif
             </form>
+
+            {{-- Filter Group --}}
+            @if(count($allGroups) > 0)
+            <div class="flex items-center gap-2">
+                <label for="global_group_filter" class="text-sm text-gray-600 font-medium whitespace-nowrap">
+                    <i class="fas fa-layer-group mr-1 text-indigo-500"></i> Group:
+                </label>
+                <select id="global_group_filter" onchange="applyGroupFilter(this.value)"
+                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1.5 pr-8">
+                    <option value="">Semua Group</option>
+                    @foreach($allGroups as $grp)
+                        <option value="{{ $grp }}">{{ $grp }}</option>
+                    @endforeach
+                </select>
+                <button type="button" onclick="resetGroupFilter()" id="reset_group_btn"
+                        class="hidden px-2 py-1.5 bg-gray-100 text-gray-600 text-sm rounded-md hover:bg-gray-200 transition-colors" title="Reset Filter Group">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            @endif
             
             <button onclick="openExportModal()" class="px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center shadow-sm">
                 <i class="fas fa-file-excel mr-2"></i> Rekap Absen
@@ -129,7 +149,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($karyawanBelumAbsen as $k)
-                        <tr class="hover:bg-red-50/50">
+                        <tr class="hover:bg-red-50/50" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}">
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
                             <td class="px-4 py-2 font-medium text-gray-800">
                                 <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $k->nama_lengkap }}</a>
@@ -168,7 +188,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($absensiMasuk->sortByDesc('waktu') as $absen)
-                        <tr class="hover:bg-green-50/50">
+                        <tr class="hover:bg-green-50/50" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}">
                             <td class="px-4 py-2 text-gray-600">{{ $absen->karyawan->nik ?? '-' }}</td>
                             <td class="px-4 py-2">
                                 <div class="font-medium text-gray-800">
@@ -215,7 +235,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($karyawanBelumAbsenPulang as $k)
-                        <tr class="hover:bg-yellow-50/50">
+                        <tr class="hover:bg-yellow-50/50" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}">
                             <td class="px-4 py-2 text-gray-600">{{ $k->nik }}</td>
                             <td class="px-4 py-2">
                                 <div class="font-medium text-gray-800">
@@ -258,7 +278,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @foreach($karyawanTerlambat as $absen)
-                            <tr class="hover:bg-orange-50/50">
+                            <tr class="hover:bg-orange-50/50" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}">
                                 <td class="px-4 py-2">
                                     <div class="font-medium text-gray-800">
                                         @if($absen->karyawan)
@@ -304,7 +324,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @foreach($karyawanCuti as $cuti)
-                            <tr class="hover:bg-purple-50/50">
+                            <tr class="hover:bg-purple-50/50" data-grup="{{ $cuti->karyawan && is_array($cuti->karyawan->grup) ? implode(',', $cuti->karyawan->grup) : ($cuti->karyawan->grup ?? '') }}">
                                 <td class="px-4 py-2">
                                     <div class="font-medium text-gray-800">
                                         <a href="{{ route('master.karyawan.show', $cuti->karyawan->id) }}" target="_blank" class="hover:text-indigo-600 transition-colors">{{ $cuti->karyawan->nama_lengkap }}</a>
@@ -351,7 +371,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($absensiLuarRadius as $absen)
-                        <tr class="hover:bg-red-50/50">
+                        <tr class="hover:bg-red-50/50" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}">
                             <td class="px-4 py-2">
                                 <div class="font-medium text-gray-800">
                                     @if($absen->karyawan)
@@ -542,6 +562,69 @@
     }
     function closeExportModal() {
         document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    /**
+     * Filter semua tabel berdasarkan grup karyawan.
+     * Setiap <tr data-grup="..."> berisi daftar grup penuh (misal "LEMBUR:KANTOR JAKARTA,CUTI").
+     * Filter mencocokkan berdasarkan prefix SEBELUM ':' saja.
+     * @param {string} group - Nama group (tanpa sub-group) yang dipilih, atau string kosong untuk semua.
+     */
+    function applyGroupFilter(group) {
+        const resetBtn = document.getElementById('reset_group_btn');
+        const rows = document.querySelectorAll('tr[data-grup]');
+
+        rows.forEach(function(row) {
+            if (!group) {
+                row.style.display = '';
+            } else {
+                const grupAttr = row.getAttribute('data-grup') || '';
+                // Pecah berdasarkan koma, lalu ambil prefix sebelum ':' dari setiap item
+                const grups = grupAttr.split(',').map(g => g.trim().split(':')[0].trim()).filter(g => g);
+                row.style.display = grups.includes(group) ? '' : 'none';
+            }
+        });
+
+        // Tampilkan/sembunyikan tombol reset
+        if (resetBtn) {
+            resetBtn.classList.toggle('hidden', !group);
+        }
+
+        // Update badge count di setiap header tabel
+        updateTableBadges();
+    }
+
+    function resetGroupFilter() {
+        const select = document.getElementById('global_group_filter');
+        if (select) {
+            select.value = '';
+        }
+        applyGroupFilter('');
+    }
+
+    /**
+     * Perbarui badge jumlah orang di header setiap tabel
+     * berdasarkan baris yang sedang tampil.
+     */
+    function updateTableBadges() {
+        document.querySelectorAll('table').forEach(function(table) {
+            const visibleRows = table.querySelectorAll('tbody tr[data-grup]:not([style*="display: none"])');
+            const badge = table.closest('.bg-white');
+            if (!badge) return;
+            const countEl = badge.querySelector('.rounded-full[class*="font-bold"]');
+            if (countEl) {
+                const total = table.querySelectorAll('tbody tr[data-grup]').length;
+                const visible = visibleRows.length;
+                if (visible === total) {
+                    // tampilkan jumlah asli
+                    countEl.dataset.originalText = countEl.dataset.originalText || countEl.textContent;
+                    countEl.textContent = countEl.dataset.originalText;
+                } else {
+                    countEl.dataset.originalText = countEl.dataset.originalText || countEl.textContent;
+                    countEl.textContent = visible + ' Orang';
+                }
+            }
+        });
     }
 </script>
 @endsection

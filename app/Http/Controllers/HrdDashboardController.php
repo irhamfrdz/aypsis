@@ -25,6 +25,22 @@ class HrdDashboardController extends Controller
             ->whereNull('tanggal_berhenti')
             ->count();
 
+        // Daftar grup unik dari semua karyawan aktif (untuk filter dropdown)
+        // Nilai grup berformat "KATEGORI:SUBKATEGORI" — ambil hanya bagian sebelum ':'
+        $allGroups = Karyawan::where('status', 'active')
+            ->whereNull('tanggal_berhenti')
+            ->whereNotNull('grup')
+            ->where('grup', '!=', '[]')
+            ->where('grup', '!=', 'null')
+            ->pluck('grup')
+            ->flatMap(fn($g) => is_array($g) ? $g : [])
+            ->map(fn($v) => trim(explode(':', $v)[0]))
+            ->unique()
+            ->filter()
+            ->sort()
+            ->values()
+            ->toArray();
+
         // 2. Karyawan Absen Masuk Hari Ini
         $absensiMasuk = Absensi::with('karyawan')
             ->whereDate('waktu', $filterDate)
@@ -88,7 +104,8 @@ class HrdDashboardController extends Controller
             'karyawanCuti',
             'karyawanBelumAbsenPulang',
             'absensiMasuk',
-            'absensiLuarRadius'
+            'absensiLuarRadius',
+            'allGroups'
         ));
     }
 
