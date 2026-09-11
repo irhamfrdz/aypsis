@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MasterRumusBpjs extends Model
 {
-    use Auditable, HasFactory, SoftDeletes;
+    use HasFactory, Auditable, SoftDeletes;
 
     protected $table = 'master_rumus_bpjs';
 
@@ -31,5 +31,8 @@ class MasterRumusBpjs extends Model
         'jkm_tunjangan',
         'jp_biaya',
         'jp_hutang',
+        'diskon_status',
+        'diskon_tipe',
+        'diskon_nilai',
     ];
 }

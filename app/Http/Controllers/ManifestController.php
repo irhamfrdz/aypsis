@@ -6,6 +6,7 @@ use App\Exports\ManifestMultipleExport;
 use App\Exports\ManifestTableExport;
 use App\Models\Manifest;
 use App\Models\Prospek;
+use App\Services\WaBroadcastRecipientService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1401,11 +1402,13 @@ class ManifestController extends Controller
             }
         }
     }
-    public function broadcastPreview(Request $request)
+    public function broadcastPreview(Request $request, ?WaBroadcastRecipientService $recipientService = null)
     {
+        $recipientService = $recipientService ?? app(WaBroadcastRecipientService::class);
+
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage');
-        $kategoriMasalah = $request->input('kategori_masalah');
+        $kategoriMasalah = $request->input('kategori_masalah', '');
         $deskripsiMasalah = $request->input('deskripsi_masalah');
         $estimasiKeterlambatan = $request->input('estimasi_keterlambatan');
         $templateId = $request->input('template_id');
@@ -1416,76 +1419,15 @@ class ManifestController extends Controller
             return back()->with('error', 'Template WA tidak ditemukan.');
         }
 
-        $manifests = Manifest::where('nama_kapal', $namaKapal)
-            ->where('no_voyage', $noVoyage)
-            ->orderBy('nomor_bl')
-            ->get();
-
-        // Group by shipper_id jika ada, atau fallback ke pengirim (string)
-        $groupedManifests = $manifests->groupBy(function ($item) {
-            return $item->shipper_id ?: $item->pengirim;
-        });
-
         $broadcastData = [];
 
-        foreach ($groupedManifests as $groupKey => $shipperManifests) {
-            if (!$groupKey) continue; // Skip jika tidak ada shipper_id dan pengirim kosong
-
-            $firstManifest = $shipperManifests->first();
-            
-            $namaTujuan = $firstManifest->pengirim ?: 'Shipper';
-            $nomorKontak = null;
-
-            $sumberTabel = '-';
-
-            if ($firstManifest->pengirim) {
-                // 1. Cek di tabel MasterPengirimPenerima
-                $masterPP = \App\Models\MasterPengirimPenerima::where('nama', $firstManifest->pengirim)->first();
-                if ($masterPP) {
-                    $sumberTabel = 'Master Pengirim Penerima';
-                    if ($masterPP->contact_person || $masterPP->telepon) {
-                        $namaTujuan = $masterPP->nama;
-                        $nomorKontak = $masterPP->contact_person ?: $masterPP->telepon;
-                    }
-                }
-
-                // 2. Cek di tabel Pengirim (jika di MasterPengirimPenerima tidak ada nomor)
-                if (!$nomorKontak) {
-                    $pengirimMaster = \App\Models\Pengirim::where('nama_pengirim', $firstManifest->pengirim)->first();
-                    if ($pengirimMaster) {
-                        $sumberTabel = 'Pengirim';
-                        if ($pengirimMaster->contact_person || $pengirimMaster->telepon) {
-                            $namaTujuan = $pengirimMaster->nama_pengirim;
-                            $nomorKontak = $pengirimMaster->contact_person ?: $pengirimMaster->telepon;
-                        }
-                    }
-                }
-            }
-
-            // 3. Fallback ke ShipperConsignee (alur lama)
-            if (!$nomorKontak) {
-                $shipper = null;
-                if ($firstManifest->shipper_id) {
-                    $shipper = \App\Models\ShipperConsignee::find($firstManifest->shipper_id);
-                } else if ($firstManifest->pengirim) {
-                    $shipper = \App\Models\ShipperConsignee::where('shipper', $firstManifest->pengirim)->first();
-                }
-
-                if ($shipper) {
-                    $sumberTabel = 'Shipper Consignee';
-                    $namaTujuan = $shipper->shipper ?: $namaTujuan;
-                    $nomorKontak = $shipper->contact_person ?: $shipper->telepon;
-                }
-            }
-
-
-            $daftarResi = "";
-            foreach ($shipperManifests as $m) {
-                $daftarResi .= "- BL: " . $m->nomor_bl . " / Kontainer: " . $m->nomor_kontainer . "\n";
-            }
+        foreach ($recipientService->recipients($namaKapal, $noVoyage) as $recipient) {
+            $daftarResi = collect($recipient['daftar_resi'])
+                ->map(fn (array $resi) => '- BL: '.$resi['nomor_bl'].' / Kontainer: '.$resi['nomor_kontainer'])
+                ->implode("\n");
 
             $isiPesan = $template->isi_template;
-            $isiPesan = str_replace('{shipper_name}', $namaTujuan, $isiPesan);
+            $isiPesan = str_replace('{shipper_name}', $recipient['shipper_name'], $isiPesan);
             $isiPesan = str_replace('{nama_kapal}', $namaKapal, $isiPesan);
             $isiPesan = str_replace('{no_voyage}', $noVoyage, $isiPesan);
             $isiPesan = str_replace('{kategori_masalah}', $kategoriMasalah, $isiPesan);
@@ -1498,8 +1440,8 @@ class ManifestController extends Controller
 
             // Konversi nomor ke format internasional (62xxx)
             $waPhone = null;
-            if ($nomorKontak) {
-                $waPhone = preg_replace('/[^0-9]/', '', $nomorKontak);
+            if ($recipient['telepon']) {
+                $waPhone = preg_replace('/[^0-9]/', '', $recipient['telepon']);
                 if (str_starts_with($waPhone, '0')) {
                     $waPhone = '62' . substr($waPhone, 1);
                 } elseif (!str_starts_with($waPhone, '62')) {
@@ -1512,11 +1454,11 @@ class ManifestController extends Controller
                 : null;
 
             $broadcastData[] = [
-                'shipper_name' => $namaTujuan,
-                'telepon' => $nomorKontak,
-                'sumber_tabel' => $sumberTabel,
-                'jumlah_kontainer' => $shipperManifests->count(),
-                'daftar_kontainer' => $shipperManifests->pluck('nomor_kontainer')->filter()->unique()->values()->toArray(),
+                'shipper_name' => $recipient['shipper_name'],
+                'telepon' => $recipient['telepon'],
+                'sumber_tabel' => $recipient['sumber_tabel'],
+                'jumlah_kontainer' => $recipient['jumlah_kontainer'],
+                'daftar_kontainer' => $recipient['daftar_kontainer'],
                 'pesan' => $isiPesan,
                 'wa_url' => $waUrl
             ];

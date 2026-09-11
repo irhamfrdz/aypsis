@@ -42,17 +42,27 @@
             </div>
         </div>
 
-        <div class="mb-6">
-            <label for="kategori_masalah" class="block text-sm font-medium text-gray-700 mb-2">Kategori Kendala <span class="text-red-500">*</span></label>
-            <select name="kategori_masalah" id="kategori_masalah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
-                <option value="">-- Pilih Kategori Kendala --</option>
-                <option value="Cuaca Buruk" {{ old('kategori_masalah') == 'Cuaca Buruk' ? 'selected' : '' }}>Cuaca Buruk</option>
-                <option value="Kerusakan Mesin Kapal" {{ old('kategori_masalah') == 'Kerusakan Mesin Kapal' ? 'selected' : '' }}>Kerusakan Mesin Kapal</option>
-                <option value="Antrean Pelabuhan" {{ old('kategori_masalah') == 'Antrean Pelabuhan' ? 'selected' : '' }}>Antrean Pelabuhan</option>
-                <option value="Dokumen Tertunda" {{ old('kategori_masalah') == 'Dokumen Tertunda' ? 'selected' : '' }}>Dokumen Tertunda</option>
-                <option value="Lainnya" {{ old('kategori_masalah') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
-            </select>
-            @error('kategori_masalah') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+        <div id="recipient-panel" class="hidden mb-6 border border-blue-200 bg-blue-50 p-4 rounded-lg">
+            <div class="flex items-center justify-between gap-4 mb-3">
+                <div>
+                    <h3 class="text-sm font-bold text-blue-900">Penerima Broadcast</h3>
+                    <p id="recipient-summary" class="text-xs text-blue-700 mt-1"></p>
+                </div>
+                <span id="recipient-loading" class="hidden text-xs text-blue-700">Memuat data...</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="border-b border-blue-200 text-left text-xs text-blue-800">
+                        <tr>
+                            <th class="py-2 pr-4 font-semibold">SHIPPER</th>
+                            <th class="py-2 pr-4 font-semibold">Contact Person / No. WhatsApp</th>
+                            <th class="py-2 pr-4 font-semibold">Sumber</th>
+                            <th class="py-2 font-semibold text-right">Kontainer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recipient-list" class="divide-y divide-blue-100 text-gray-700"></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="mb-6">
@@ -72,7 +82,7 @@
             @error('template_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
             
             <div class="mt-3 text-xs text-gray-500 italic">
-                * Pesan akan dibuat otomatis berdasarkan variabel seperti nama kapal, no voyage, dan kategori masalah sesuai dengan isi template yang dipilih. Data nomor shipper otomatis ditarik dari tabel manifest berdasarkan Kapal & Voyage yang dipilih di atas.
+                * Pesan akan dibuat otomatis berdasarkan variabel sesuai dengan isi template yang dipilih. Data nomor shipper otomatis ditarik dari tabel manifest berdasarkan Kapal & Voyage yang dipilih di atas.
             </div>
         </div>
 
@@ -92,24 +102,107 @@
 <script>
     $(document).ready(function() {
         if($.fn.select2) {
-            $('#nama_kapal, #no_voyage, #kategori_masalah, #template_id').select2({
+            $('#nama_kapal, #no_voyage, #template_id').select2({
                 width: '100%'
             });
         }
 
         const $namaKapal = $('#nama_kapal');
         const $noVoyage = $('#no_voyage');
+        const $recipientPanel = $('#recipient-panel');
+        const $recipientList = $('#recipient-list');
+        const $recipientSummary = $('#recipient-summary');
+        const $recipientLoading = $('#recipient-loading');
+        let recipientRequestId = 0;
+
+        function clearRecipients() {
+            recipientRequestId++;
+            $recipientList.empty();
+            $recipientSummary.empty();
+            $recipientPanel.addClass('hidden');
+            $recipientLoading.addClass('hidden');
+        }
+
+        function loadRecipients() {
+            const namaKapal = $namaKapal.val();
+            const noVoyage = $noVoyage.val();
+
+            if (!namaKapal || !noVoyage) {
+                clearRecipients();
+                return;
+            }
+
+            const requestId = ++recipientRequestId;
+            $recipientPanel.removeClass('hidden');
+            $recipientList.empty();
+            $recipientSummary.text('Membaca data SHIPPER dan Contact Person dari manifest voyage terpilih.');
+            $recipientLoading.removeClass('hidden');
+
+            $.ajax({
+                url: "{{ route('master.wa-broadcast.get-recipients') }}",
+                type: 'GET',
+                data: { nama_kapal: namaKapal, no_voyage: noVoyage },
+                dataType: 'json',
+                success: function(response) {
+                    if (requestId !== recipientRequestId) {
+                        return;
+                    }
+
+                    const recipients = response.success ? response.recipients : [];
+                    $recipientList.empty();
+                    $recipientSummary.text(recipients.length + ' SHIPPER akan menerima broadcast untuk voyage ini.');
+
+                    $.each(recipients, function(index, recipient) {
+                        const $row = $('<tr>');
+                        $('<td>', { class: 'py-2.5 pr-4 font-medium text-gray-900', text: recipient.shipper_name }).appendTo($row);
+                        $('<td>', { class: 'py-2.5 pr-4 text-gray-700', text: recipient.telepon || 'Belum ada Contact Person / no. WhatsApp' }).appendTo($row);
+                        $('<td>', { class: 'py-2.5 pr-4 text-xs text-gray-500', text: recipient.sumber_tabel || '-' }).appendTo($row);
+                        $('<td>', { class: 'py-2.5 text-right text-gray-700', text: recipient.jumlah_kontainer }).appendTo($row);
+                        $row.appendTo($recipientList);
+                    });
+
+                    if (!recipients.length) {
+                        $('<tr>').append($('<td>', {
+                            colspan: 4,
+                            class: 'py-3 text-center text-gray-500',
+                            text: 'Tidak ada data SHIPPER pada manifest untuk voyage ini.'
+                        })).appendTo($recipientList);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    if (requestId !== recipientRequestId) {
+                        return;
+                    }
+
+                    console.error('Error fetching broadcast recipients:', error);
+                    $recipientList.empty();
+                    $('<tr>').append($('<td>', {
+                        colspan: 4,
+                        class: 'py-3 text-center text-red-600',
+                        text: 'Gagal memuat data penerima broadcast.'
+                    })).appendTo($recipientList);
+                    $recipientSummary.text('');
+                },
+                complete: function() {
+                    if (requestId === recipientRequestId) {
+                        $recipientLoading.addClass('hidden');
+                    }
+                }
+            });
+        }
 
         $namaKapal.on('change', function() {
             const namaKapal = $(this).val();
 
             if (!namaKapal) {
+                clearRecipients();
                 $noVoyage.empty().append('<option value="">-- Pilih Kapal Terlebih Dahulu --</option>');
                 $noVoyage.prop('disabled', true);
                 $noVoyage.trigger('change');
                 return;
             }
 
+            clearRecipients();
             $noVoyage.empty().append('<option value="">Memuat data voyage...</option>');
             $noVoyage.prop('disabled', true);
             $noVoyage.trigger('change');
@@ -144,6 +237,12 @@
                 }
             });
         });
+
+        $noVoyage.on('change', loadRecipients);
+
+        if ($namaKapal.val() && $noVoyage.val()) {
+            loadRecipients();
+        }
     });
 </script>
 @endpush

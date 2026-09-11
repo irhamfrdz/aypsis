@@ -7,6 +7,7 @@ use App\Http\Controllers\ManifestController;
 use App\Models\Manifest;
 use App\Models\WaBroadcast;
 use App\Models\WaTemplate;
+use App\Services\WaBroadcastRecipientService;
 use Illuminate\Http\Request;
 
 class WaBroadcastController extends Controller
@@ -93,32 +94,44 @@ class WaBroadcastController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function getRecipients(Request $request, WaBroadcastRecipientService $recipientService)
+    {
+        $validated = $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+        ]);
+
+        $recipients = $recipientService->recipients($validated['nama_kapal'], $validated['no_voyage'])
+            ->map(fn (array $recipient) => [
+                'shipper_name' => $recipient['shipper_name'],
+                'telepon' => $recipient['telepon'],
+                'sumber_tabel' => $recipient['sumber_tabel'],
+                'jumlah_kontainer' => $recipient['jumlah_kontainer'],
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'recipients' => $recipients,
+        ]);
+    }
+
+    public function store(Request $request, WaBroadcastRecipientService $recipientService)
     {
         $request->validate([
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
-            'kategori_masalah' => 'required|string',
+            'kategori_masalah' => 'nullable|string',
             'deskripsi_masalah' => 'nullable|string',
             'template_id' => 'required|exists:wa_templates,id',
         ]);
 
-        // Calculate total affected shippers (similar logic to broadcastPreview)
-        $manifests = Manifest::where('nama_kapal', $request->nama_kapal)
-            ->where('no_voyage', $request->no_voyage)
-            ->get();
-
-        $shippers = $manifests->groupBy(function ($item) {
-            return $item->shipper_id ? 'shipper_'.$item->shipper_id : 'pengirim_'.$item->pengirim;
-        });
-
-        $totalShipper = $shippers->count();
+        $totalShipper = $recipientService->recipients($request->nama_kapal, $request->no_voyage)->count();
 
         // Save broadcast history
         WaBroadcast::create([
             'nama_kapal' => $request->nama_kapal,
             'no_voyage' => $request->no_voyage,
-            'kategori_masalah' => $request->kategori_masalah,
+            'kategori_masalah' => $request->input('kategori_masalah', ''),
             'deskripsi_masalah' => $request->deskripsi_masalah,
             'wa_template_id' => $request->template_id,
             'total_shipper' => $totalShipper,
@@ -128,7 +141,7 @@ class WaBroadcastController extends Controller
         // so we don't have to duplicate the complex preview logic
         $manifestController = app(ManifestController::class);
 
-        return $manifestController->broadcastPreview($request);
+        return $manifestController->broadcastPreview($request, $recipientService);
     }
 
     public function destroy(WaBroadcast $waBroadcast)

@@ -27,6 +27,7 @@
                     <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider">
                         <th class="px-4 py-3 border-b w-10 text-center">No</th>
                         <th class="px-4 py-3 border-b">Group Name</th>
+                        <th class="px-4 py-3 border-b">Cabang BPJS</th>
                         <th class="px-4 py-3 border-b text-center">Tunjangan (%)</th>
                         <th class="px-4 py-3 border-b text-center">Hutang (%)</th>
                         <th class="px-4 py-3 border-b text-center">Biaya (%)</th>
@@ -39,6 +40,7 @@
                         <tr class="hover:bg-gray-50 transition duration-150 border-b">
                             <td class="px-4 py-3 text-center">{{ $index + 1 }}</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $item->group_name }}</td>
+                            <td class="px-4 py-3 text-gray-600">{{ $item->cabang_bpjs ?: '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? $item->biaya_persen . '%' : '-' }}</td>
@@ -60,7 +62,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-4 text-center text-gray-500">Belum ada data Group JKN.</td>
+                            <td colspan="8" class="px-4 py-4 text-center text-gray-500">Belum ada data Group JKN.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -82,9 +84,10 @@
                         <th class="px-4 py-3 border-b w-10 text-center">No</th>
                         <th class="px-4 py-3 border-b">Group Name</th>
                         <th class="px-4 py-3 border-b">Cabang BPJS</th>
-                        <th class="px-4 py-3 border-b text-center">JKK 1% Tunjangan</th>
-                        <th class="px-4 py-3 border-b text-center">JKK 1% Hutang</th>
-                        <th class="px-4 py-3 border-b text-center">JKM Tunjangan</th>
+                        <th class="px-4 py-3 border-b text-center">Tunjangan (%)</th>
+                        <th class="px-4 py-3 border-b text-center">Hutang (%)</th>
+                        <th class="px-4 py-3 border-b text-center">Biaya (%)</th>
+                        <th class="px-4 py-3 border-b text-center">Diskon</th>
                         <th class="px-4 py-3 border-b">Keterangan / Custom</th>
                         <th class="px-4 py-3 border-b text-center w-24">Aksi</th>
                     </tr>
@@ -97,10 +100,34 @@
                                 {{ $item->group_name }}
                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">BPU</span>
                             </td>
-                            <td class="px-4 py-3 font-medium text-gray-700">{{ $item->cabang_bpjs ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-600">{{ $item->cabang_bpjs ?: '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? $item->biaya_persen . '%' : '-' }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="inline-flex flex-col items-center space-y-1" id="diskon-cell-{{ $item->id }}">
+                                    <select onchange="handleTableDiskonStatusChange(this, {{ $item->id }})" 
+                                            class="diskon-status-select text-xs border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-medium' : 'bg-white text-gray-700' }}">
+                                        <option value="tidak_ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'tidak_ada' ? 'selected' : '' }}>Tidak Ada (0%)</option>
+                                        <option value="ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'selected' : '' }}>Ada Diskon</option>
+                                    </select>
+                                    <div class="diskon-inputs flex items-center space-x-1 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? '' : 'hidden' }}">
+                                        <input type="number" 
+                                               step="0.01" 
+                                               min="0" 
+                                               value="{{ $item->diskon_nilai ? (float)$item->diskon_nilai : '' }}" 
+                                               placeholder="Nilai" 
+                                               onchange="handleTableDiskonValueChange(this, {{ $item->id }})" 
+                                               class="diskon-nilai text-xs w-16 border border-gray-300 rounded-md py-0.5 px-1.5 text-right font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                                        <select onchange="handleTableDiskonTipeChange(this, {{ $item->id }})" 
+                                                class="diskon-tipe text-xs border border-gray-300 rounded-md py-0.5 px-1 bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="persen" {{ ($item->diskon_tipe ?? 'persen') === 'persen' ? 'selected' : '' }}>%</option>
+                                            <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
+                                        </select>
+                                    </div>
+                                    <span class="save-status-msg text-[10px] text-green-600 hidden font-medium">Tersimpan!</span>
+                                </div>
+                            </td>
                             <td class="px-4 py-3">{{ $item->keterangan_custom ?: '-' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center space-x-2">
@@ -119,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek BPU.</td>
+                            <td colspan="9" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek BPU.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -135,6 +162,7 @@
                     <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider">
                         <th class="px-3 py-3 border-b w-10 text-center">No</th>
                         <th class="px-3 py-3 border-b">Group Name</th>
+                        <th class="px-3 py-3 border-b">Cabang BPJS</th>
                         <th class="px-3 py-3 border-b text-center">JHT 3.7% Biaya</th>
                         <th class="px-3 py-3 border-b text-center">JHT 2% Hutang</th>
                         <th class="px-3 py-3 border-b text-center">JKK 0.24% Tunjangan</th>
@@ -152,6 +180,7 @@
                                 {{ $item->group_name }}
                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">PPU</span>
                             </td>
+                            <td class="px-3 py-3 text-gray-600">{{ $item->cabang_bpjs ?: '-' }}</td>
                             <td class="px-3 py-3 text-center font-medium">{{ $item->jht_biaya ? $item->jht_biaya . '%' : '-' }}</td>
                             <td class="px-3 py-3 text-center font-medium">{{ $item->jht_hutang ? $item->jht_hutang . '%' : '-' }}</td>
                             <td class="px-3 py-3 text-center font-medium">{{ $item->jkk_tunjangan ? $item->jkk_tunjangan . '%' : '-' }}</td>
@@ -175,7 +204,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek PPU.</td>
+                            <td colspan="10" class="px-4 py-4 text-center text-gray-500">Belum ada data Group BP Jamsostek PPU.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -206,10 +235,10 @@
                                 <i class="fas fa-times"></i>
                             </button>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
-                                    <select name="jenis[]" class="form-select w-full border-gray-300 rounded-md shadow-sm" required onchange="togglePpuFields(this)">
+                                    <select name="jenis[]" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
                                         <option value="jkn">Group JKN</option>
                                         <option value="jamsostek">Group BP Jamsostek</option>
                                     </select>
@@ -218,25 +247,46 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
                                     <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="togglePpuFields(this)">
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
+                                    <input type="text" name="cabang_bpjs[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Batam / Jakarta">
+                                </div>
                             </div>
 
-                            <div class="cabang-bpjs-field hidden mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
-                                <input type="text" name="cabang_bpjs[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Cabang Batam">
-                            </div>
-
-                            <div class="bpu-fields grid grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label class="label-tunjangan block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                                    <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            <div class="bpu-fields mb-4">
+                                <div class="grid grid-cols-3 gap-4 mb-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                                        <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                                        <input type="number" name="hutang_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Biaya (% / Rp)</label>
+                                        <input type="number" name="biaya_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5 atau 6800">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="label-hutang block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
-                                    <input type="number" name="hutang_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
-                                </div>
-                                <div>
-                                    <label class="label-biaya block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
-                                    <input type="number" name="biaya_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-100 p-3 rounded-md border border-gray-200">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Variabel Diskon</label>
+                                        <select name="diskon_status[]" class="form-select w-full border-gray-300 rounded-md shadow-sm text-sm" onchange="toggleDiskonInputs(this)">
+                                            <option value="tidak_ada">Tidak Ada (0%)</option>
+                                            <option value="ada">Ada Diskon</option>
+                                        </select>
+                                    </div>
+                                    <div class="diskon-nilai-wrapper hidden">
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nilai Diskon</label>
+                                        <input type="number" name="diskon_nilai[]" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 50">
+                                    </div>
+                                    <div class="diskon-tipe-wrapper hidden">
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tipe Diskon</label>
+                                        <select name="diskon_tipe[]" class="form-select w-full border-gray-300 rounded-md shadow-sm text-sm">
+                                            <option value="persen">Persentase (%)</option>
+                                            <option value="nominal">Nominal (Rp)</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -305,34 +355,57 @@
                     
                     <div class="mb-4">
                         <label for="edit_jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis BPJS</label>
-                        <select id="edit_jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required onchange="toggleEditPpuFields(this)">
+                        <select id="edit_jenis" name="jenis" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
                             <option value="jkn">Group JKN</option>
                             <option value="jamsostek">Group BP Jamsostek</option>
                         </select>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="edit_group_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
-                        <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="toggleEditPpuFields(this)">
-                    </div>
-
-                    <div id="edit_cabang_bpjs_field" class="hidden mb-4">
-                        <label for="edit_cabang_bpjs" class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
-                        <input type="text" id="edit_cabang_bpjs" name="cabang_bpjs" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Cabang Batam">
-                    </div>
-
-                    <div id="edit_bpu_fields" class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label id="edit_label_tunjangan" for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                            <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            <label for="edit_group_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Group</label>
+                            <input type="text" id="edit_group_name" name="group_name" class="form-input w-full border-gray-300 rounded-md shadow-sm" required placeholder="Contoh: JKN-KIS-HARIAN" oninput="toggleEditPpuFields(this)">
                         </div>
                         <div>
-                            <label id="edit_label_hutang" for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
-                            <input type="number" id="edit_hutang_persen" name="hutang_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            <label for="edit_cabang_bpjs" class="block text-sm font-medium text-gray-700 mb-1">Cabang BPJS</label>
+                            <input type="text" id="edit_cabang_bpjs" name="cabang_bpjs" class="form-input w-full border-gray-300 rounded-md shadow-sm" placeholder="Contoh: Batam / Jakarta">
                         </div>
-                        <div>
-                            <label id="edit_label_biaya" for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (%)</label>
-                            <input type="number" id="edit_biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5">
+                    </div>
+
+                    <div id="edit_bpu_fields" class="mb-4">
+                        <div class="grid grid-cols-3 gap-4 mb-3">
+                            <div>
+                                <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
+                                <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                            </div>
+                            <div>
+                                <label for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
+                                <input type="number" id="edit_hutang_persen" name="hutang_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 1">
+                            </div>
+                            <div>
+                                <label for="edit_biaya_persen" class="block text-sm font-medium text-gray-700 mb-1">Biaya (% / Rp)</label>
+                                <input type="number" id="edit_biaya_persen" name="biaya_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 5 atau 6800">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-100 p-3 rounded-md border border-gray-200">
+                            <div>
+                                <label for="edit_diskon_status" class="block text-xs font-semibold text-gray-700 mb-1">Variabel Diskon</label>
+                                <select id="edit_diskon_status" name="diskon_status" class="form-select w-full border-gray-300 rounded-md shadow-sm text-sm" onchange="toggleEditDiskonInputs(this)">
+                                    <option value="tidak_ada">Tidak Ada (0%)</option>
+                                    <option value="ada">Ada Diskon</option>
+                                </select>
+                            </div>
+                            <div id="edit_diskon_nilai_wrapper" class="hidden">
+                                <label for="edit_diskon_nilai" class="block text-xs font-semibold text-gray-700 mb-1">Nilai Diskon</label>
+                                <input type="number" id="edit_diskon_nilai" name="diskon_nilai" class="form-input w-full border-gray-300 rounded-md shadow-sm text-sm" step="0.01" min="0" placeholder="Cth: 50">
+                            </div>
+                            <div id="edit_diskon_tipe_wrapper" class="hidden">
+                                <label for="edit_diskon_tipe" class="block text-xs font-semibold text-gray-700 mb-1">Tipe Diskon</label>
+                                <select id="edit_diskon_tipe" name="diskon_tipe" class="form-select w-full border-gray-300 rounded-md shadow-sm text-sm">
+                                    <option value="persen">Persentase (%)</option>
+                                    <option value="nominal">Nominal (Rp)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     
@@ -408,6 +481,10 @@
         firstRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
         firstRow.querySelector('input[name="jp_biaya[]"]').value = '';
         firstRow.querySelector('input[name="jp_hutang[]"]').value = '';
+        firstRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
+        firstRow.querySelector('input[name="diskon_nilai[]"]').value = '';
+        firstRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
+        toggleDiskonInputs(firstRow.querySelector('select[name="diskon_status[]"]'));
         
         togglePpuFields(firstRow.querySelector('input[name="group_name[]"]'));
         updateRemoveButtons();
@@ -437,6 +514,10 @@
         newRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
         newRow.querySelector('input[name="jp_biaya[]"]').value = '';
         newRow.querySelector('input[name="jp_hutang[]"]').value = '';
+        newRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
+        newRow.querySelector('input[name="diskon_nilai[]"]').value = '';
+        newRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
+        toggleDiskonInputs(newRow.querySelector('select[name="diskon_status[]"]'));
         
         container.appendChild(newRow);
         togglePpuFields(newRow.querySelector('input[name="group_name[]"]'));
@@ -482,7 +563,12 @@
         document.getElementById('edit_jp_biaya').value = data.jp_biaya;
         document.getElementById('edit_jp_hutang').value = data.jp_hutang;
         
-        toggleEditPpuFields();
+        document.getElementById('edit_diskon_status').value = data.diskon_status || 'tidak_ada';
+        document.getElementById('edit_diskon_nilai').value = data.diskon_nilai ? parseFloat(data.diskon_nilai) : '';
+        document.getElementById('edit_diskon_tipe').value = data.diskon_tipe || 'persen';
+        toggleEditDiskonInputs(document.getElementById('edit_diskon_status'));
+
+        toggleEditPpuFields(document.getElementById('edit_group_name'));
 
         document.getElementById('editModal').classList.remove('hidden');
     }
@@ -491,68 +577,123 @@
         document.getElementById('editModal').classList.add('hidden');
     }
 
-    function togglePpuFields(input) {
-        const row = input.closest('.bpjs-row');
-        const jenis = row.querySelector('select[name="jenis[]"]').value;
-        const ppuFields = row.querySelector('.ppu-fields');
-        const bpuFields = row.querySelector('.bpu-fields');
-        const cabangField = row.querySelector('.cabang-bpjs-field');
-        const groupName = row.querySelector('input[name="group_name[]"]').value;
-
-        const lblTunj = row.querySelector('.label-tunjangan');
-        const lblHut = row.querySelector('.label-hutang');
-        const lblBiaya = row.querySelector('.label-biaya');
-
-        if (groupName.toUpperCase().includes('PPU')) {
-            ppuFields.classList.remove('hidden');
-            bpuFields.classList.add('hidden');
-            if (cabangField) cabangField.classList.add('hidden');
+    function toggleDiskonInputs(select) {
+        const bpuRow = select.closest('.bpu-fields');
+        if (!bpuRow) return;
+        const nilaiWrapper = bpuRow.querySelector('.diskon-nilai-wrapper');
+        const tipeWrapper = bpuRow.querySelector('.diskon-tipe-wrapper');
+        if (select.value === 'ada') {
+            nilaiWrapper?.classList.remove('hidden');
+            tipeWrapper?.classList.remove('hidden');
         } else {
-            ppuFields.classList.add('hidden');
-            bpuFields.classList.remove('hidden');
-            if (jenis === 'jamsostek') {
-                if (cabangField) cabangField.classList.remove('hidden');
-                if (lblTunj) lblTunj.textContent = 'JKK 1% Tunjangan';
-                if (lblHut) lblHut.textContent = 'JKK 1% Hutang';
-                if (lblBiaya) lblBiaya.textContent = 'JKM Tunjangan';
-            } else {
-                if (cabangField) cabangField.classList.add('hidden');
-                if (lblTunj) lblTunj.textContent = 'Tunjangan (%)';
-                if (lblHut) lblHut.textContent = 'Hutang (%)';
-                if (lblBiaya) lblBiaya.textContent = 'Biaya (%)';
-            }
+            nilaiWrapper?.classList.add('hidden');
+            tipeWrapper?.classList.add('hidden');
         }
     }
 
-    function toggleEditPpuFields() {
-        const jenis = document.getElementById('edit_jenis').value;
-        const groupName = document.getElementById('edit_group_name').value;
-        const ppuFields = document.getElementById('edit_ppu_fields');
-        const bpuFields = document.getElementById('edit_bpu_fields');
-        const cabangField = document.getElementById('edit_cabang_bpjs_field');
+    function toggleEditDiskonInputs(select) {
+        const nilaiWrapper = document.getElementById('edit_diskon_nilai_wrapper');
+        const tipeWrapper = document.getElementById('edit_diskon_tipe_wrapper');
+        if (select.value === 'ada') {
+            nilaiWrapper?.classList.remove('hidden');
+            tipeWrapper?.classList.remove('hidden');
+        } else {
+            nilaiWrapper?.classList.add('hidden');
+            tipeWrapper?.classList.add('hidden');
+        }
+    }
 
-        const lblTunj = document.getElementById('edit_label_tunjangan');
-        const lblHut = document.getElementById('edit_label_hutang');
-        const lblBiaya = document.getElementById('edit_label_biaya');
+    function handleTableDiskonStatusChange(selectEl, id) {
+        const cell = document.getElementById('diskon-cell-' + id);
+        const inputsDiv = cell.querySelector('.diskon-inputs');
+        if (selectEl.value === 'ada') {
+            inputsDiv.classList.remove('hidden');
+            selectEl.classList.add('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-medium');
+            selectEl.classList.remove('bg-white', 'text-gray-700');
+        } else {
+            inputsDiv.classList.add('hidden');
+            selectEl.classList.remove('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-medium');
+            selectEl.classList.add('bg-white', 'text-gray-700');
+        }
+        saveDiskonAjax(id, cell);
+    }
 
-        if (groupName.toUpperCase().includes('PPU')) {
+    function handleTableDiskonValueChange(inputEl, id) {
+        const cell = document.getElementById('diskon-cell-' + id);
+        saveDiskonAjax(id, cell);
+    }
+
+    function handleTableDiskonTipeChange(selectEl, id) {
+        const cell = document.getElementById('diskon-cell-' + id);
+        saveDiskonAjax(id, cell);
+    }
+
+    function saveDiskonAjax(id, cell) {
+        const status = cell.querySelector('.diskon-status-select').value;
+        const nilai = cell.querySelector('.diskon-nilai').value;
+        const tipe = cell.querySelector('.diskon-tipe').value;
+        const statusMsg = cell.querySelector('.save-status-msg');
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                       || '{{ csrf_token() }}';
+
+        fetch(`/master-rumus-bpjs/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _method: 'PUT',
+                diskon_status: status,
+                diskon_nilai: status === 'ada' ? (nilai || 0) : 0,
+                diskon_tipe: tipe
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal menyimpan diskon');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (statusMsg) {
+                statusMsg.classList.remove('hidden');
+                setTimeout(() => {
+                    statusMsg.classList.add('hidden');
+                }, 2000);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal menyimpan perubahan diskon. Silakan coba lagi.');
+        });
+    }
+
+    function togglePpuFields(input) {
+        const row = input.closest('.bpjs-row');
+        const ppuFields = row.querySelector('.ppu-fields');
+        const bpuFields = row.querySelector('.bpu-fields');
+        if (input.value.toUpperCase().includes('PPU')) {
             ppuFields.classList.remove('hidden');
             bpuFields.classList.add('hidden');
-            if (cabangField) cabangField.classList.add('hidden');
         } else {
             ppuFields.classList.add('hidden');
             bpuFields.classList.remove('hidden');
-            if (jenis === 'jamsostek') {
-                if (cabangField) cabangField.classList.remove('hidden');
-                if (lblTunj) lblTunj.textContent = 'JKK 1% Tunjangan';
-                if (lblHut) lblHut.textContent = 'JKK 1% Hutang';
-                if (lblBiaya) lblBiaya.textContent = 'JKM Tunjangan';
-            } else {
-                if (cabangField) cabangField.classList.add('hidden');
-                if (lblTunj) lblTunj.textContent = 'Tunjangan (%)';
-                if (lblHut) lblHut.textContent = 'Hutang (%)';
-                if (lblBiaya) lblBiaya.textContent = 'Biaya (%)';
-            }
+        }
+    }
+
+    function toggleEditPpuFields(input) {
+        const ppuFields = document.getElementById('edit_ppu_fields');
+        const bpuFields = document.getElementById('edit_bpu_fields');
+        if (input.value.toUpperCase().includes('PPU')) {
+            ppuFields.classList.remove('hidden');
+            bpuFields.classList.add('hidden');
+        } else {
+            ppuFields.classList.add('hidden');
+            bpuFields.classList.remove('hidden');
         }
     }
 </script>

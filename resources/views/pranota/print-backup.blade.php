@@ -854,6 +854,7 @@
             </div>
             <h1 style="visibility: visible !important; display: block !important; font-size: {{ $paperSize === 'Folio' ? '20px' : '16px' }} !important;">PRANOTA TAGIHAN KONTAINER</h1>
         </div>
+        @endif
         @if($pageIndex > 0)
         <!-- Simple page indicator for subsequent pages -->
         <div style="text-align: right; margin-bottom: 10px; padding: 5px 0; font-size: 10px; color: #666;">

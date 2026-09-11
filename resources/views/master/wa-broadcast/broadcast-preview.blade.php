@@ -74,12 +74,89 @@
         </div>
     </div>
 
+    <div class="mb-6 overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+        <div class="px-5 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h3 class="text-base font-bold text-gray-800">Daftar Contact Person Shipper</h3>
+                <span id="selected-recipient-summary" class="text-xs font-semibold text-blue-700"></span>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Data kontak diambil dari setiap shipper pada kapal dan voyage yang dipilih.</p>
+        </div>
+        <table id="contactTable" class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs w-16">
+                        <input type="checkbox" id="select-all-recipients" checked class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" title="Pilih semua shipper">
+                    </th>
+                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-12">No</th>
+                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Shipper</th>
+                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Contact Person / No. WhatsApp</th>
+                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No. Kontainer</th>
+                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Sumber Data</th>
+                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Status</th>
+                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                @forelse($broadcastData as $index => $data)
+                    <tr class="hover:bg-gray-50">
+                        <td class="recipient-select-cell px-5 py-3 text-center">
+                            <input type="checkbox"
+                                   class="recipient-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                   data-recipient-index="{{ $index }}"
+                                   checked
+                                   title="Pilih {{ $data['shipper_name'] }}">
+                        </td>
+                        <td class="px-5 py-3 text-gray-500">{{ $index + 1 }}</td>
+                        <td class="px-5 py-3 font-semibold text-gray-900">{{ $data['shipper_name'] }}</td>
+                        <td class="px-5 py-3">
+                            <input type="text"
+                                   class="contact-person-input w-full min-w-[190px] rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-blue-500 focus:ring-blue-500"
+                                   data-recipient-index="{{ $index }}"
+                                   value="{{ $data['telepon'] }}"
+                                   placeholder="Masukkan Contact Person / No. WhatsApp"
+                                   autocomplete="off">
+                            <p class="mt-1 text-[11px] text-gray-500">Bisa diisi atau dikoreksi sebelum kirim.</p>
+                        </td>
+                        <td class="px-5 py-3">
+                            @if(!empty($data['daftar_kontainer']))
+                                <div class="flex max-w-sm flex-wrap gap-1">
+                                    @foreach($data['daftar_kontainer'] as $kontainer)
+                                        <span class="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] font-mono text-gray-700">{{ $kontainer }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3 text-gray-500">{{ $data['sumber_tabel'] }}</td>
+                        <td class="contact-status px-5 py-3 text-center" data-recipient-index="{{ $index }}"></td>
+                        <td class="px-5 py-3 text-center">
+                            <div class="wa-action" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
+                                @if($data['wa_url'])
+                                    <a href="{{ $data['wa_url'] }}" target="_blank" class="inline-flex items-center justify-center rounded bg-green-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-green-600">Kirim WA</a>
+                                @else
+                                    <span class="inline-flex items-center justify-center rounded bg-gray-300 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Ada No</span>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" class="px-5 py-6 text-center text-gray-500">Tidak ada data Contact Person untuk voyage ini.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @if(false)
     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
         <table id="previewTable" class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-12">No</th>
-                    <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-1/4">Shipper / Kontak</th>
+                    <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-1/4">Shipper</th>
                     <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Preview Pesan</th>
                     <th class="px-5 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs w-32">Aksi</th>
                 </tr>
@@ -96,15 +173,6 @@
                                     Sumber: {{ $data['sumber_tabel'] }}
                                 </span>
                             </div>
-                            <div class="text-gray-600 text-sm flex items-center mt-2.5 bg-gray-50 p-1.5 rounded-lg inline-flex border border-gray-100">
-                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                                @if($data['telepon'])
-                                    <span class="font-semibold text-gray-800">{{ $data['telepon'] }}</span>
-                                @else
-                                    <span class="text-red-500 italic font-medium">Belum ada no telepon</span>
-                                @endif
-                            </div>
-                            
                             <div class="mt-3">
                                 <div class="text-xs font-semibold text-indigo-700 flex items-center mb-1.5">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
@@ -129,6 +197,7 @@
                             </div>
                         </td>
                         <td class="px-5 py-4 text-center align-top">
+                            <div class="wa-action" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
                             @if($data['wa_url'])
                                 <a href="{{ $data['wa_url'] }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 bg-green-500 text-white text-xs font-bold rounded hover:bg-green-600 transition-colors shadow-sm">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
@@ -142,6 +211,7 @@
                                     Tidak Ada No
                                 </span>
                             @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -154,6 +224,7 @@
             </tbody>
         </table>
     </div>
+    @endif
 </div>
 
 @push('scripts')
@@ -161,10 +232,88 @@
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#previewTable').DataTable({
+        let contactTable;
+        const selectedRecipients = {};
+        const contactValues = {};
+
+        $('.recipient-checkbox').each(function() {
+            const index = $(this).attr('data-recipient-index');
+            selectedRecipients[index] = $(this).prop('checked');
+        });
+
+        $('.contact-person-input').each(function() {
+            contactValues[$(this).attr('data-recipient-index')] = $(this).val() || '';
+        });
+
+        function updateSelectedSummary() {
+            const total = Object.keys(selectedRecipients).length;
+            const selected = Object.values(selectedRecipients).filter(Boolean).length;
+            $('#selected-recipient-summary').text(selected + ' dari ' + total + ' shipper dipilih');
+            $('#select-all-recipients').prop('checked', total > 0 && selected === total);
+            $('#select-all-recipients').prop('indeterminate', selected > 0 && selected < total);
+        }
+
+        function normalizeWaPhone(value) {
+            let phone = (value || '').replace(/[^0-9]/g, '');
+            if (!phone) {
+                return '';
+            }
+
+            if (phone.startsWith('0')) {
+                return '62' + phone.substring(1);
+            }
+
+            return phone.startsWith('62') ? phone : '62' + phone;
+        }
+
+        function refreshRecipientContact(index, value) {
+            const phone = normalizeWaPhone(value);
+            const $status = $('.contact-status[data-recipient-index="' + index + '"]');
+            const $action = $('.wa-action[data-recipient-index="' + index + '"]');
+            const message = $action.attr('data-message') || '';
+
+            if (!selectedRecipients[index]) {
+                $status.html('<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500">Tidak dipilih</span>');
+                $action.html('<span class="inline-flex items-center justify-center rounded bg-gray-200 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Dipilih</span>');
+                return;
+            }
+
+            if (phone) {
+                $status.html('<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">Siap dikirim</span>');
+
+                const url = 'https://web.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(message);
+                const $link = $action.find('a');
+                if ($link.length) {
+                    $link.attr('href', url);
+                } else {
+                    $('<a>', {
+                        href: url,
+                        target: '_blank',
+                        class: 'inline-flex items-center justify-center rounded bg-green-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-green-600',
+                        text: 'Kirim WA'
+                    }).appendTo($action.empty());
+                }
+            } else {
+                $status.html('<span class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">Tidak ada nomor</span>');
+                $action.html('<span class="inline-flex items-center justify-center rounded bg-gray-300 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Ada No</span>');
+            }
+        }
+
+        $('.contact-person-input').each(function() {
+            refreshRecipientContact($(this).attr('data-recipient-index'), contactValues[$(this).attr('data-recipient-index')] || '');
+        });
+
+        $(document).on('input', '.contact-person-input', function() {
+            const index = $(this).attr('data-recipient-index');
+            contactValues[index] = $(this).val() || '';
+            refreshRecipientContact(index, contactValues[index]);
+        });
+
+        contactTable = $('#contactTable').DataTable({
             responsive: true,
+            pageLength: 10,
             language: {
-                search: "Cari:",
+                search: "Cari shipper/kontak:",
                 lengthMenu: "Tampilkan _MENU_ data",
                 info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
                 infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
@@ -177,6 +326,36 @@
                 }
             }
         });
+
+        $('#contactTable').on('draw.dt', function() {
+            $('.recipient-checkbox').each(function() {
+                const index = $(this).attr('data-recipient-index');
+                $(this).prop('checked', Boolean(selectedRecipients[index]));
+                refreshRecipientContact(index, contactValues[index] || '');
+            });
+            updateSelectedSummary();
+        });
+
+        $(document).on('change', '.recipient-checkbox', function() {
+            const index = $(this).attr('data-recipient-index');
+            selectedRecipients[index] = $(this).prop('checked');
+            refreshRecipientContact(index, contactValues[index] || '');
+            updateSelectedSummary();
+        });
+
+        $('#select-all-recipients').on('change', function() {
+            const isSelected = $(this).prop('checked');
+            contactTable.rows().nodes().to$().find('.recipient-checkbox').each(function() {
+                const index = $(this).attr('data-recipient-index');
+                selectedRecipients[index] = isSelected;
+                $(this).prop('checked', isSelected);
+                refreshRecipientContact(index, contactValues[index] || '');
+            });
+            updateSelectedSummary();
+        });
+
+        updateSelectedSummary();
+
     });
 </script>
 @endpush

@@ -78,6 +78,7 @@
                         </svg>
                         Download Excel
                     </a>
+                    @if(Route::has('report.perincians.import'))
                     <button onclick="openImportModal()"
                        class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,6 +86,7 @@
                         </svg>
                         Import Excel
                     </button>
+                    @endif
                     <a href="{{ route('report.perincians.create') }}"
                        class="inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,18 +376,22 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                     </a>
+                                    @if(Route::has('report.perincians.print-document'))
                                     <a href="{{ route('report.perincians.print-document', $perincian->id) }}" target="_blank"
                                        class="text-emerald-600 hover:text-emerald-900" title="Print Dokumen">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
+                                    @endif
+                                    @if(Route::has('report.perincians.print-ba'))
                                     <a href="{{ route('report.perincians.print-ba', $perincian->id) }}" target="_blank"
                                        class="text-amber-600 hover:text-amber-900" title="Print BA">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                     </a>
+                                    @endif
                                     @endcan
                                     @can('perincian-edit')
                                     <a href="{{ route('report.perincians.edit', $perincian->id) }}"
@@ -435,6 +441,7 @@
     </div>
 </div>
 
+@if(Route::has('report.perincians.import'))
 <!-- Import Modal -->
 <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -478,6 +485,7 @@
 
             <!-- Download Template -->
             <div class="mb-4">
+                @if(Route::has('report.perincians.download-template'))
                 <a href="{{ route('report.perincians.download-template') }}" 
                    class="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 font-medium">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,6 +493,7 @@
                     </svg>
                     Download Template
                 </a>
+                @endif
             </div>
 
             <!-- File Upload -->
@@ -535,6 +544,7 @@
         </form>
     </div>
 </div>
+@endif
 
 <script>
 // Import Modal Functions - Defined immediately for inline onclick handlers
@@ -858,8 +868,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const endpoint = @json(Route::has('report.perincians.auto-update-nomor-urut') ? route('report.perincians.auto-update-nomor-urut', [], false) : null);
+        if (!endpoint) {
+            alert('Fitur update nomor urut belum tersedia.');
+            return;
+        }
 
-        fetch('{{ route("report.perincians.auto-update-nomor-urut", [], false) }}', {
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -891,8 +906,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const endpoint = @json(Route::has('report.perincians.auto-update-size') ? route('report.perincians.auto-update-size', [], false) : null);
+        if (!endpoint) {
+            alert('Fitur update size belum tersedia.');
+            return;
+        }
 
-        fetch('{{ route("report.perincians.auto-update-size", [], false) }}', {
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -936,7 +956,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                fetch('{{ route("report.perincians.auto-update-tanggal-berangkat", [], false) }}', {
+                const endpoint = @json(Route::has('report.perincians.auto-update-tanggal-berangkat') ? route('report.perincians.auto-update-tanggal-berangkat', [], false) : null);
+                if (!endpoint) {
+                    Swal.fire('Error!', 'Fitur update tanggal berangkat belum tersedia.', 'error');
+                    return;
+                }
+                fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -989,9 +1014,16 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', loadingHtml);
+
+        const endpoint = @json(Route::has('tanda-terima.update-perincian') ? route('tanda-terima.update-perincian', [], false) : null);
+        if (!endpoint) {
+            document.getElementById('loading-overlay').remove();
+            alert('Fitur update perincian belum tersedia.');
+            return;
+        }
         
         // Call API through tanda-terima controller
-        fetch('{{ route("tanda-terima.update-perincian", [], false) }}', {
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
