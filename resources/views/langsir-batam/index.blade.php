@@ -374,29 +374,29 @@
                     
                     <!-- Badges Daftar 14 Kolom -->
                     <div class="flex flex-wrap gap-1.5 mb-3">
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">1. Tanggal <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">2. No Kontainer <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">3. Size <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">4. No Seal</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">5. Dari <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">6. Ke <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">7. Gudang Tujuan <span class="text-red-500 ml-0.5">*</span></span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">8. Supir</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">9. No Plat</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">10. Biaya</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">11. Status</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">12. OB Pelabuhan</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">13. Keterangan</span>
-                        <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-900 text-xs border border-indigo-300 font-bold shadow-sm">14. No. Surat Jalan (Unik)</span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-900 text-xs border border-indigo-300 font-bold shadow-sm">1. No. Surat Jalan (Unik)</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">2. Tanggal <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">3. No Kontainer <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">4. Size <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">5. No Seal</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">6. Dari <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">7. Ke <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">8. Gudang Tujuan <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">9. Supir</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">10. No Plat</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">11. Biaya</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">12. Status</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">13. OB Pelabuhan</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">14. Keterangan</span>
                     </div>
 
                     <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100">
-                        <strong>Template:</strong> Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; No Surat Jalan
+                        <strong>Template:</strong> No Surat Jalan ; Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan
                     </div>
                     <div class="mt-2 text-xs text-emerald-700">
                         <strong>Contoh Baris Data:</strong>
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
-                            2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345
+                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat
                         </div>
                     </div>
                 </div>
@@ -404,7 +404,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Langsir <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345"></textarea>
+                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat"></textarea>
                 </div>
                 <div class="flex items-center gap-3 mb-4">
                     <button type="button" onclick="parseBulkData()" class="inline-flex items-center px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -420,8 +420,8 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">#</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Tanggal</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">No. SJ</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Tanggal</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Kontainer</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Size</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Dari & Ke</th>
@@ -575,9 +575,11 @@ function parseBulkData() {
     lines.forEach((line) => {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
-        if (cols.length >= 3 && cols[1]) {
-            const noKontainerVal = cols[1] || '';
-            let sizeVal = cols[2] || '';
+        if (cols.length >= 3) {
+            const noSuratJalanVal = cols[0] || '';
+            const tanggalVal = convertExcelDate(cols[1] || '');
+            const noKontainerVal = cols[2] || '';
+            let sizeVal = cols[3] || '';
             
             // Auto fill size jika kosong
             if (sizeVal === '') {
@@ -587,22 +589,26 @@ function parseBulkData() {
                 }
             }
 
-            let biayaVal = cols[9] || '';
-            const statusVal = cols[10] || 'FULL';
-            const obVal = cols[11] || 'Tidak';
+            const noSealVal = cols[4] || '';
+            const dariVal = cols[5] || '';
+            const keVal = cols[6] || '';
+            const gudangTujuanVal = cols[7] || '';
+            const supirVal = cols[8] || '';
+            const noPlatVal = cols[9] || '';
+            let biayaVal = cols[10] || '';
+            const statusVal = cols[11] || 'FULL';
+            const obVal = cols[12] || 'Tidak';
+            const keteranganVal = cols[13] || '';
             
             // Auto calculate biaya jika dikosongkan atau 0
             if (biayaVal === '' || biayaVal === '0') {
-                const calcBiaya = calculateLangsirBiaya(cols[4], cols[5], sizeVal, statusVal, obVal);
+                const calcBiaya = calculateLangsirBiaya(dariVal, keVal, sizeVal, statusVal, obVal);
                 if (calcBiaya > 0) {
                     biayaVal = calcBiaya.toString();
                 } else {
                     biayaVal = '0';
                 }
             }
-
-            const tanggalVal = convertExcelDate(cols[0] || '');
-            const noSuratJalanVal = cols[13] || '';
 
             if (noSuratJalanVal) {
                 const sjKey = noSuratJalanVal.toUpperCase();
@@ -614,28 +620,28 @@ function parseBulkData() {
             }
 
             const rowData = {
+                no_surat_jalan: noSuratJalanVal,
                 tanggal: tanggalVal,
                 no_kontainer: noKontainerVal,
                 size: sizeVal,
-                no_seal: cols[3] || '',
-                dari: cols[4] || '',
-                ke: cols[5] || '',
-                gudang_tujuan: cols[6] || '',
-                supir: cols[7] || '',
-                no_plat: cols[8] || '',
+                no_seal: noSealVal,
+                dari: dariVal,
+                ke: keVal,
+                gudang_tujuan: gudangTujuanVal,
+                supir: supirVal,
+                no_plat: noPlatVal,
                 biaya: biayaVal,
                 status: statusVal,
                 ob_dalam_pelabuhan: obVal,
-                keterangan: cols[12] || '',
-                no_surat_jalan: noSuratJalanVal
+                keterangan: keteranganVal
             };
             bulkParsedRows.push(rowData);
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${validCount + 1}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.tanggal}</td>
                 <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_surat_jalan || '-'}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.tanggal}</td>
                 <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_kontainer}<br><span class="text-gray-500 text-[10px]">${rowData.no_seal}</span></td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${rowData.size}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.dari} <br> ${rowData.ke}</td>
