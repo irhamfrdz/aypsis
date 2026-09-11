@@ -167,6 +167,7 @@
                             <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"
                                    class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                         </th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Perbaikan</th>
                         <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                         <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Ukuran & Tipe</th>
@@ -200,6 +201,9 @@
                                        data-jenis-cat="{{ $perbaikan->jenis_cat }}"
                                        data-status-pranota="{{ $perbaikan->status_pranota }}"
                                        onchange="updateBulkActions()">
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                {{ $perbaikanKontainers->firstItem() + $loop->index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
                                 {{ $perbaikan->no_perbaikan }}
