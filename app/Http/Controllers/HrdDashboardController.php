@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\HrdAbsensiExport;
 use App\Models\Absensi;
 use App\Models\Cuti;
 use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\HrdAbsensiExport;
 
 class HrdDashboardController extends Controller
 {
@@ -19,7 +19,7 @@ class HrdDashboardController extends Controller
     {
         $date = $request->input('tanggal_dashboard', Carbon::today()->format('Y-m-d'));
         $filterDate = Carbon::parse($date)->startOfDay();
-        
+
         // 1. Total Karyawan Aktif
         $totalKaryawanAktif = Karyawan::where('status', 'active')
             ->whereNull('tanggal_berhenti')
@@ -33,8 +33,8 @@ class HrdDashboardController extends Controller
             ->where('grup', '!=', '[]')
             ->where('grup', '!=', 'null')
             ->pluck('grup')
-            ->flatMap(fn($g) => is_array($g) ? $g : [])
-            ->map(fn($v) => trim(explode(':', $v)[0]))
+            ->flatMap(fn ($g) => is_array($g) ? $g : [])
+            ->map(fn ($v) => trim(explode(':', $v)[0]))
             ->unique()
             ->filter()
             ->sort()
@@ -63,9 +63,9 @@ class HrdDashboardController extends Controller
         $batasTerlambat = $filterDate->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
         $karyawanTerlambat = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
             $waktuAbsen = Carbon::parse($absen->waktu);
+
             return $waktuAbsen->greaterThan($batasTerlambat);
         })->values();
-
 
         // 5. Karyawan Cuti / Izin
         $karyawanCuti = Cuti::with('karyawan')
@@ -95,6 +95,9 @@ class HrdDashboardController extends Controller
             ->orderBy('waktu', 'asc')
             ->get();
 
+        // 8. Total presensi (Masuk + Pulang) hari ini
+        $totalPresensiHariIni = Absensi::whereDate('waktu', $filterDate)->count();
+
         return view('hrd-dashboard.index', compact(
             'filterDate',
             'jamBatas',
@@ -105,6 +108,7 @@ class HrdDashboardController extends Controller
             'karyawanBelumAbsenPulang',
             'absensiMasuk',
             'absensiLuarRadius',
+            'totalPresensiHariIni',
             'allGroups'
         ));
     }
@@ -117,7 +121,7 @@ class HrdDashboardController extends Controller
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
 
-        $fileName = 'Rekap_Absensi_HRD_' . str_replace('-', '', $startDate) . '_' . str_replace('-', '', $endDate) . '.xlsx';
+        $fileName = 'Rekap_Absensi_HRD_'.str_replace('-', '', $startDate).'_'.str_replace('-', '', $endDate).'.xlsx';
 
         return Excel::download(new HrdAbsensiExport($startDate, $endDate), $fileName);
     }
