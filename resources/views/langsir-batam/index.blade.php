@@ -365,18 +365,40 @@
             </div>
             <div class="mt-4 max-h-[80vh] overflow-y-auto px-1">
                 <div id="bulkModalAlertArea"></div>
-                <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <h4 class="text-sm font-semibold text-emerald-800 mb-2">
-                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
+                <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <h4 class="text-sm font-semibold text-emerald-800 mb-2 flex items-center">
+                        <svg class="w-4 h-4 inline-block mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Panduan Format Data (Dipisahkan Titik Koma <code class="bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-900 font-bold">;</code>)
                     </h4>
-                    <p class="text-xs text-emerald-700 mb-1">Setiap baris = 1 data langsir. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
-                    <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100 whitespace-nowrap">
-                        Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; No Surat Jalan
+                    <p class="text-xs text-emerald-700 mb-2">Setiap baris = 1 data langsir. Terdapat <strong>14 kolom</strong> yang dipisahkan dengan tanda titik koma (<strong>;</strong>):</p>
+                    
+                    <!-- Badges Daftar 14 Kolom -->
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">1. Tanggal <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">2. No Kontainer <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">3. Size <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">4. No Seal</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">5. Dari <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">6. Ke <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">7. Gudang Tujuan <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">8. Supir</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">9. No Plat</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">10. Biaya</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">11. Status</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">12. OB Pelabuhan</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">13. Keterangan</span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-900 text-xs border border-indigo-300 font-bold shadow-sm">14. No. Surat Jalan (Unik)</span>
                     </div>
-                    <p class="text-xs text-emerald-600 mt-1">
-                        <strong>Contoh:</strong> 2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345
-                    </p>
+
+                    <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100">
+                        <strong>Template:</strong> Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; No Surat Jalan
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-700">
+                        <strong>Contoh Baris Data:</strong>
+                        <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
+                            2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
