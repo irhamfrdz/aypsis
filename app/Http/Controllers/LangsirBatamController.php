@@ -15,7 +15,7 @@ class LangsirBatamController extends Controller
         $this->middleware('permission:langsir-batam-view')->only(['index', 'show']);
         $this->middleware('permission:langsir-batam-create')->only(['create', 'store', 'storeBulk']);
         $this->middleware('permission:langsir-batam-update')->only(['edit', 'update']);
-        $this->middleware('permission:langsir-batam-delete')->only(['destroy']);
+        $this->middleware('permission:langsir-batam-delete')->only(['destroy', 'bulkDelete']);
     }
 
     /**
@@ -479,5 +479,25 @@ class LangsirBatamController extends Controller
         $langsir->delete();
 
         return redirect()->route('langsir-batam.index')->with('success', 'Data Langsir Batam berhasil dihapus.');
+    }
+
+    /**
+     * Remove multiple resources from storage.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:langsir_batams,id',
+        ]);
+
+        $langsirs = LangsirBatam::whereIn('id', $request->ids)->get();
+
+        foreach ($langsirs as $langsir) {
+            \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->delete();
+            $langsir->delete();
+        }
+
+        return redirect()->route('langsir-batam.index')->with('success', count($request->ids) . ' Data Langsir Batam berhasil dihapus.');
     }
 }

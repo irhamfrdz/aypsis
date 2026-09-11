@@ -35,6 +35,36 @@
             </div>
         </div>
 
+        @if(session('success'))
+            <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-emerald-800">{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Filter dan Search -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
             <div class="px-6 py-4">
@@ -96,6 +126,26 @@
             </div>
         </div>
 
+        @can('langsir-batam-delete')
+        <!-- Bulk Delete Action Bar -->
+        <div id="bulkDeleteBar" class="hidden mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-center justify-between shadow-sm transition-all duration-200">
+            <div class="flex items-center text-sm font-medium text-red-800">
+                <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span><span id="bulkSelectedCount" class="font-bold">0</span> data dipilih</span>
+            </div>
+            <button type="button" 
+                    onclick="openBulkDeleteModal()" 
+                    class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Hapus Data Terpilih
+            </button>
+        </div>
+        @endcan
+
         <!-- Tabel Data Langsir -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             @if($langsirs->count() > 0)
@@ -103,6 +153,11 @@
                     <table class="min-w-full divide-y divide-gray-200 text-xs">
                         <thead class="bg-gray-50">
                             <tr>
+                                @can('langsir-batam-delete')
+                                <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">
+                                    <input type="checkbox" id="selectAllLangsir" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4">
+                                </th>
+                                @endcan
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Transaksi</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -116,6 +171,11 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($langsirs as $index => $langsir)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    @can('langsir-batam-delete')
+                                    <td class="px-3 py-3 whitespace-nowrap text-center">
+                                        <input type="checkbox" value="{{ $langsir->id }}" class="langsir-row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4">
+                                    </td>
+                                    @endcan
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-900">
                                         {{ $langsirs->firstItem() + $index }}
                                     </td>
@@ -250,8 +310,44 @@
                 </form>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Confirmation Modal -->
+<div id="bulkDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Konfirmasi Hapus Massal</h3>
+            <p class="text-sm text-gray-500 mb-1">
+                Apakah Anda yakin ingin menghapus
+            </p>
+            <p class="text-base font-bold text-red-600 mb-2">
+                <span id="bulkDeleteModalCount">0</span> data langsir yang dipilih?
+            </p>
+            <p class="text-xs text-gray-400 mb-4">Data dan riwayat pergerakan terkait akan dihapus.</p>
+            <div class="flex gap-3 justify-center">
+                <button type="button" 
+                        onclick="closeBulkDeleteModal()"
+                        class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-medium rounded-lg transition-colors duration-200">
+                    Batal
+                </button>
+                <form id="bulkDeleteForm" method="POST" action="{{ route('langsir-batam.bulk-delete') }}" class="inline">
+                    @csrf
+                    <div id="bulkDeleteInputsContainer"></div>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        Ya, Hapus Semua
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
+</div>
 
     <!-- Modal Buat Langsir Massal -->
     <div id="modalBuatLangsirMassal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -575,6 +671,88 @@ function submitBulkLangsir() {
         submitText.classList.remove('hidden');
         submitLoading.classList.add('hidden');
         showBulkAlert('Terjadi Kesalahan', 'Gagal memproses ke server. Periksa koneksi Anda.', 'error');
+    });
+}
+
+// Bulk Selection and Bulk Delete Handling
+const selectAllLangsir = document.getElementById('selectAllLangsir');
+const langsirRowCheckboxes = document.querySelectorAll('.langsir-row-checkbox');
+const bulkDeleteBar = document.getElementById('bulkDeleteBar');
+const bulkSelectedCount = document.getElementById('bulkSelectedCount');
+
+function updateBulkState() {
+    const checkedBoxes = document.querySelectorAll('.langsir-row-checkbox:checked');
+    const checkedCount = checkedBoxes.length;
+    
+    if (bulkSelectedCount) {
+        bulkSelectedCount.textContent = checkedCount;
+    }
+    
+    if (bulkDeleteBar) {
+        if (checkedCount > 0) {
+            bulkDeleteBar.classList.remove('hidden');
+        } else {
+            bulkDeleteBar.classList.add('hidden');
+        }
+    }
+    
+    if (selectAllLangsir) {
+        if (checkedCount === 0) {
+            selectAllLangsir.checked = false;
+            selectAllLangsir.indeterminate = false;
+        } else if (checkedCount === langsirRowCheckboxes.length) {
+            selectAllLangsir.checked = true;
+            selectAllLangsir.indeterminate = false;
+        } else {
+            selectAllLangsir.checked = false;
+            selectAllLangsir.indeterminate = true;
+        }
+    }
+}
+
+if (selectAllLangsir) {
+    selectAllLangsir.addEventListener('change', function() {
+        langsirRowCheckboxes.forEach(cb => {
+            cb.checked = selectAllLangsir.checked;
+        });
+        updateBulkState();
+    });
+}
+
+langsirRowCheckboxes.forEach(cb => {
+    cb.addEventListener('change', updateBulkState);
+});
+
+function openBulkDeleteModal() {
+    const checkedBoxes = document.querySelectorAll('.langsir-row-checkbox:checked');
+    if (checkedBoxes.length === 0) return;
+
+    const container = document.getElementById('bulkDeleteInputsContainer');
+    container.innerHTML = '';
+    
+    checkedBoxes.forEach(cb => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = cb.value;
+        container.appendChild(input);
+    });
+
+    document.getElementById('bulkDeleteModalCount').textContent = checkedBoxes.length;
+    document.getElementById('bulkDeleteModal').classList.remove('hidden');
+}
+
+function closeBulkDeleteModal() {
+    const modal = document.getElementById('bulkDeleteModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+if (bulkDeleteModal) {
+    bulkDeleteModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeBulkDeleteModal();
+        }
     });
 }
 </script>

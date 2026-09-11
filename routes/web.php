@@ -4011,6 +4011,9 @@ Route::middleware([
         Route::post('langsir-batam/store-bulk', [\App\Http\Controllers\LangsirBatamController::class, 'storeBulk'])
             ->name('langsir-batam.store-bulk')
             ->middleware('can:langsir-batam-create');
+        Route::post('langsir-batam/bulk-delete', [\App\Http\Controllers\LangsirBatamController::class, 'bulkDelete'])
+            ->name('langsir-batam.bulk-delete')
+            ->middleware('can:langsir-batam-delete');
         Route::get('langsir-batam/{id}', [\App\Http\Controllers\LangsirBatamController::class, 'show'])
             ->name('langsir-batam.show')
             ->middleware('can:langsir-batam-view');
