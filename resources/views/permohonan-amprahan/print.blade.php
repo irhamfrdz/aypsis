@@ -242,7 +242,8 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 35%;">Nama Barang</th>
+                    <th style="width: 30%;">Nama Barang</th>
+                    <th style="width: 15%;">Link Barang</th>
                     <th style="width: 15%;">Jumlah</th>
                     <th style="width: 15%;">Satuan</th>
                     <th style="width: 30%;">Keterangan</th>
@@ -259,6 +260,13 @@
                 <tr>
                     <td class="text-center">{{ $printIndex++ }}</td>
                     <td>{{ $item->nama_barang }}</td>
+                    <td>
+                        @if($item->link_barang)
+                            <a href="{{ $item->link_barang }}" target="_blank" rel="noopener noreferrer">Buka link</a>
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td class="text-center font-bold">{{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }}</td>
                     <td class="text-center">{{ $item->satuan }}</td>
                     <td>{{ $item->keterangan }}</td>

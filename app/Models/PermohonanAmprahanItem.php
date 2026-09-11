@@ -17,6 +17,7 @@ class PermohonanAmprahanItem extends Model
     protected $fillable = [
         'permohonan_id',
         'nama_barang',
+        'link_barang',
         'jumlah',
         'satuan',
         'keterangan',

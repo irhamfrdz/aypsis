@@ -91,6 +91,7 @@
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Link Barang</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Satuan</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
@@ -105,6 +106,15 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $item->nama_barang }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        @if($item->link_barang)
+                                            <a href="{{ $item->link_barang }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap">
+                                                <i class="fas fa-external-link-alt mr-1"></i> Buka link
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
                                         {{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }}
@@ -127,7 +137,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
+                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
                                         Tidak ada item barang dalam permintaan ini.
                                     </td>
                                 </tr>
