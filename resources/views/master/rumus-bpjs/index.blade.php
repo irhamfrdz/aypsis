@@ -84,7 +84,7 @@
                         <th class="px-4 py-3 border-b w-10 text-center">No</th>
                         <th class="px-4 py-3 border-b">Group Name</th>
                         <th class="px-4 py-3 border-b">Cabang BPJS</th>
-                        <th class="px-4 py-3 border-b text-center">Tunjangan (%)</th>
+                        <th class="px-4 py-3 border-b text-center">Tunjangan (Rp)</th>
                         <th class="px-4 py-3 border-b text-center">Hutang (%)</th>
                         <th class="px-4 py-3 border-b text-center">Biaya (Rp)</th>
                         <th class="px-4 py-3 border-b text-center">Diskon</th>
@@ -101,7 +101,7 @@
                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">BPU</span>
                             </td>
                             <td class="px-4 py-3 text-gray-600">{{ $item->cabang_bpjs ?: '-' }}</td>
-                            <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
+                            <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? 'Rp ' . number_format((float)$item->tunjangan_persen, 0, ',', '.') : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? 'Rp ' . number_format((float)$item->biaya_persen, 0, ',', '.') : '-' }}</td>
                             <td class="px-4 py-3 text-center">
@@ -256,8 +256,8 @@
                             <div class="bpu-fields mb-4">
                                 <div class="grid grid-cols-3 gap-4 mb-3">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                                        <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (Rp)</label>
+                                        <input type="number" name="tunjangan_persen[]" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="1" min="0" placeholder="Cth: 35000">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
@@ -375,8 +375,8 @@
                     <div id="edit_bpu_fields" class="mb-4">
                         <div class="grid grid-cols-3 gap-4 mb-3">
                             <div>
-                                <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (%)</label>
-                                <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="0.01" min="0" placeholder="Cth: 4">
+                                <label for="edit_tunjangan_persen" class="block text-sm font-medium text-gray-700 mb-1">Tunjangan (Rp)</label>
+                                <input type="number" id="edit_tunjangan_persen" name="tunjangan_persen" class="form-input w-full border-gray-300 rounded-md shadow-sm" step="1" min="0" placeholder="Cth: 35000">
                             </div>
                             <div>
                                 <label for="edit_hutang_persen" class="block text-sm font-medium text-gray-700 mb-1">Hutang (%)</label>
