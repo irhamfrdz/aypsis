@@ -14,7 +14,7 @@ class DashboardPemakaianBarangController extends Controller
         $usages = null;
         $totalNilai = 0;
 
-        if ($request->hasAny(['kategori_pemakai', 'from_date', 'to_date'])) {
+        if ($request->routeIs('stock-amprahan.dashboard-pemakaian.hasil')) {
             $filters = $request->validate([
                 'kategori_pemakai' => 'required|in:penerima,kendaraan,alat_berat,kapal,kantor',
                 'from_date' => 'required|date_format:Y-m-d',

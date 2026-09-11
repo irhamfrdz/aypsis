@@ -8,7 +8,8 @@
         <p class="text-sm text-gray-500 mt-1">Valuasi pemakaian Stock Amprahan berdasarkan kategori pemakai dan tanggal pengambilan.</p>
         <a href="{{ route('stock-amprahan.index') }}" class="text-sm text-indigo-600 hover:underline">Kembali ke Stock Amprahan</a>
     </div>
-    <form method="GET" action="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="bg-white border rounded-xl p-5 shadow-sm">
+    @if($usages === null)
+    <form method="GET" action="{{ route('stock-amprahan.dashboard-pemakaian.hasil') }}" class="bg-white border rounded-xl p-5 shadow-sm">
         @if($errors->any())
             <div role="alert" class="mb-4 text-sm text-red-700 bg-red-50 p-3 rounded-lg">
                 @foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach
@@ -38,7 +39,9 @@
             <button type="submit" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">Tampilkan Data</button>
         </div>
     </form>
+    @endif
     @if($usages !== null)
+        <a href="{{ route('stock-amprahan.dashboard-pemakaian', request()->only(['kategori_pemakai', 'from_date', 'to_date'])) }}" class="inline-flex px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg">Kembali / Ubah Pilihan</a>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border rounded-xl p-5"><p class="text-sm text-gray-500">Kategori Pemakai</p><p class="font-semibold mt-2">{{ $categories[request('kategori_pemakai')] }}</p></div>
             <div class="bg-white border rounded-xl p-5"><p class="text-sm text-gray-500">Jumlah Catatan Pemakaian</p><p class="text-2xl font-bold mt-2">{{ number_format($usages->total(), 0, ',', '.') }}</p></div>
