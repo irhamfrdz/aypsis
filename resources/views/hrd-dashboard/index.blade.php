@@ -4,68 +4,56 @@
 @section('page_title', 'Dashboard HRD')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6 pb-8">
 
     <style>
         .stat-card {
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 1.5px solid #e2e8f0;
         }
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.03);
         }
-        .stat-card[data-color="red"].active {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 4px rgba(239,68,68,0.13), 0 4px 16px 0 rgba(239,68,68,0.10);
-            background-color: #fff5f5;
-            transform: translateY(-2px);
-        }
-        .stat-card[data-color="yellow"].active {
-            border-color: #eab308;
-            box-shadow: 0 0 0 4px rgba(234,179,8,0.13), 0 4px 16px 0 rgba(234,179,8,0.10);
-            background-color: #fefce8;
+        .stat-card[data-color="red"].active,
+        .diagram-stat-card[data-color="red"].active {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22), 0 12px 24px -6px rgba(239, 68, 68, 0.12) !important;
+            background-color: #fffbfb !important;
             transform: translateY(-2px);
         }
-        .stat-card[data-color="orange"].active {
-            border-color: #f97316;
-            box-shadow: 0 0 0 4px rgba(249,115,22,0.13), 0 4px 16px 0 rgba(249,115,22,0.10);
-            background-color: #fff7ed;
+        .stat-card[data-color="yellow"].active,
+        .diagram-stat-card[data-color="yellow"].active {
+            border-color: #eab308 !important;
+            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.22), 0 12px 24px -6px rgba(234, 179, 8, 0.12) !important;
+            background-color: #fffef2 !important;
             transform: translateY(-2px);
         }
-        .stat-card[data-color="rose"].active {
-            border-color: #e11d48;
-            box-shadow: 0 0 0 4px rgba(225,29,72,0.13), 0 4px 16px 0 rgba(225,29,72,0.10);
-            background-color: #fff1f2;
+        .stat-card[data-color="orange"].active,
+        .diagram-stat-card[data-color="orange"].active {
+            border-color: #ea580c !important;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.22), 0 12px 24px -6px rgba(234, 88, 12, 0.12) !important;
+            background-color: #fffaf5 !important;
+            transform: translateY(-2px);
+        }
+        .stat-card[data-color="rose"].active,
+        .diagram-stat-card[data-color="rose"].active {
+            border-color: #e11d48 !important;
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.22), 0 12px 24px -6px rgba(225, 29, 72, 0.12) !important;
+            background-color: #fff5f7 !important;
             transform: translateY(-2px);
         }
         .diagram-stat-card {
-            transition: all 0.2s ease;
-            border: 1.5px solid #e5e7eb;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1.5px solid #e2e8f0;
         }
-        .diagram-stat-card[data-color="red"].active {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 3px rgba(239,68,68,0.18), 0 4px 16px 0 rgba(239,68,68,0.08);
-            background-color: #fffbfb;
-        }
-        .diagram-stat-card[data-color="yellow"].active {
-            border-color: #eab308 !important;
-            box-shadow: 0 0 0 3px rgba(234,179,8,0.18), 0 4px 16px 0 rgba(234,179,8,0.08);
-            background-color: #fffef2;
-        }
-        .diagram-stat-card[data-color="orange"].active {
-            border-color: #ea580c !important;
-            box-shadow: 0 0 0 3px rgba(234,88,12,0.18), 0 4px 16px 0 rgba(234,88,12,0.08);
-            background-color: #fffaf5;
-        }
-        .diagram-stat-card[data-color="rose"].active {
-            border-color: #e11d48 !important;
-            box-shadow: 0 0 0 3px rgba(225,29,72,0.18), 0 4px 16px 0 rgba(225,29,72,0.08);
-            background-color: #fff5f7;
+        .diagram-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.06);
         }
         #detail-panel {
-            animation: panelSlideDown 0.28s cubic-bezier(0.16,1,0.3,1);
+            animation: panelSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes panelSlideDown {
             from { opacity: 0; transform: translateY(-12px); }
@@ -73,150 +61,6 @@
         }
     </style>
 
-    <!-- Welcome Message & Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-semibold text-gray-800">Dashboard HRD</h2>
-            <p class="text-gray-500">Ringkasan aktivitas kehadiran karyawan pada <strong>{{ $filterDate->translatedFormat('l, d F Y') }}</strong>.</p>
-        </div>
-        
-        <div class="flex flex-wrap items-center gap-3">
-            <form action="{{ route('hrd.dashboard') }}" method="GET" class="flex items-center gap-2">
-                @foreach(request()->except(['tanggal_dashboard', 'page']) as $key => $value)
-                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                @endforeach
-                <label for="tanggal_dashboard" class="text-sm text-gray-600 font-medium whitespace-nowrap">Tanggal:</label>
-                <input type="date" id="tanggal_dashboard" name="tanggal_dashboard" 
-                       value="{{ request('tanggal_dashboard', $filterDate->format('Y-m-d')) }}" 
-                       class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1.5">
-                <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors">
-                    <i class="fas fa-filter mr-1"></i> Filter
-                </button>
-                @if(request('tanggal_dashboard'))
-                    <a href="{{ route('hrd.dashboard', request()->except(['tanggal_dashboard', 'page'])) }}" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors" title="Reset Tanggal">
-                        <i class="fas fa-times"></i>
-                    </a>
-                @endif
-            </form>
-
-            {{-- Filter Group --}}
-            @if(count($allGroups) > 0)
-            <div class="flex items-center gap-2">
-                <label for="global_group_filter" class="text-sm text-gray-600 font-medium whitespace-nowrap">
-                    <i class="fas fa-layer-group mr-1 text-indigo-500"></i> Group:
-                </label>
-                <select id="global_group_filter" onchange="applyGroupFilter(this.value)"
-                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1.5 pr-8">
-                    <option value="">Semua Group</option>
-                    @foreach($allGroups as $grp)
-                        <option value="{{ $grp }}">{{ $grp }}</option>
-                    @endforeach
-                </select>
-                <button type="button" onclick="resetGroupFilter()" id="reset_group_btn"
-                        class="hidden px-2 py-1.5 bg-gray-100 text-gray-600 text-sm rounded-md hover:bg-gray-200 transition-colors" title="Reset Filter Group">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            @endif
-            
-            <button onclick="openExportModal()" class="px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center shadow-sm">
-                <i class="fas fa-file-excel mr-2"></i> Rekap Absen
-            </button>
-        </div>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-
-        {{-- Total Karyawan Aktif (non-clickable) --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-users text-2xl text-blue-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Total Karyawan Aktif</p>
-                <p class="text-3xl font-bold text-gray-800">{{ number_format($totalKaryawanAktif) }}</p>
-            </div>
-        </div>
-
-        {{-- Belum Absen Masuk (clickable) --}}
-        <div class="stat-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 select-none"
-             id="card-belum-masuk"
-             data-color="red"
-             onclick="showDetailTable('belum-masuk')"
-             title="Klik untuk melihat daftar karyawan yang belum absen masuk">
-            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-user-times text-2xl text-red-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Belum Absen Masuk</p>
-                <p class="text-3xl font-bold text-red-600">{{ number_format($karyawanBelumAbsen->count()) }}</p>
-                <p class="text-xs text-red-400 mt-0.5"><i class="fas fa-hand-pointer text-xs mr-1"></i>Klik untuk detail</p>
-            </div>
-        </div>
-
-        {{-- Belum Absen Pulang (clickable) --}}
-        <div class="stat-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 select-none"
-             id="card-belum-pulang"
-             data-color="yellow"
-             onclick="showDetailTable('belum-pulang')"
-             title="Klik untuk melihat daftar karyawan yang belum absen pulang">
-            <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-running text-2xl text-yellow-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Belum Absen Pulang</p>
-                <p class="text-3xl font-bold text-yellow-600">{{ number_format($karyawanBelumAbsenPulang->count()) }}</p>
-                <p class="text-xs text-yellow-500 mt-0.5"><i class="fas fa-hand-pointer text-xs mr-1"></i>Klik untuk detail</p>
-            </div>
-        </div>
-
-        {{-- Absen Terlambat (clickable) --}}
-        <div class="stat-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 select-none"
-             id="card-terlambat"
-             data-color="orange"
-             onclick="showDetailTable('terlambat')"
-             title="Klik untuk melihat daftar karyawan yang terlambat">
-            <div class="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-clock text-2xl text-orange-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Absen Terlambat</p>
-                <p class="text-3xl font-bold text-orange-600">{{ number_format($karyawanTerlambat->count()) }}</p>
-                <p class="text-xs text-orange-400 mt-0.5"><i class="fas fa-hand-pointer text-xs mr-1"></i>Klik untuk detail</p>
-            </div>
-        </div>
-
-        {{-- Cuti / Izin Berjalan (non-clickable) --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-calendar-alt text-2xl text-purple-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Cuti & Izin Berjalan</p>
-                <p class="text-3xl font-bold text-purple-600">{{ number_format($karyawanCuti->count()) }}</p>
-            </div>
-        </div>
-
-        {{-- Absen Luar Radius (clickable) --}}
-        <div class="stat-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 select-none"
-             id="card-luar-radius"
-             data-color="rose"
-             onclick="showDetailTable('luar-radius')"
-             title="Klik untuk melihat daftar karyawan yang absen di luar radius">
-            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-map-marker-alt text-2xl text-red-600"></i>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Absen Luar Radius</p>
-                <p class="text-3xl font-bold text-red-600">{{ number_format($absensiLuarRadius->count()) }}</p>
-                <p class="text-xs text-red-400 mt-0.5"><i class="fas fa-hand-pointer text-xs mr-1"></i>Klik untuk detail</p>
-            </div>
-        </div>
-
-    </div>{{-- end Summary Cards --}}
-
-    <!-- Section: Diagram Analisis Variabel Kehadiran (Dipisah per Variabel) -->
     @php
         $totalKaryawan = $totalKaryawanAktif;
         $totalKaryawanMasuk = max(0, $totalKaryawan - $karyawanBelumAbsen->count());
@@ -224,6 +68,7 @@
         // 1. Hadir Normal (Tepat waktu)
         $cntHadirNormal = max(0, $totalKaryawanMasuk - $karyawanTerlambat->count());
         $pctHadirNormal = $totalKaryawan > 0 ? round(($cntHadirNormal / $totalKaryawan) * 100, 1) : 0;
+        $pctHadirOfMasuk = $totalKaryawanMasuk > 0 ? round(($cntHadirNormal / $totalKaryawanMasuk) * 100, 1) : 0;
 
         // 2. Belum Absen Masuk
         $cntBelumMasuk = $karyawanBelumAbsen->count();
@@ -248,7 +93,283 @@
         $cntLuarRadius = $absensiLuarRadius->count();
         $pctLuarRadius = $totalPresensi > 0 ? round(($cntLuarRadius / max(1, $totalPresensi)) * 100, 1) : 0;
         $cntDalamRadius = max(0, $totalPresensi - $cntLuarRadius);
+
+        // Overall rates
+        $rateKehadiran = $totalKaryawan > 0 ? round(($totalKaryawanMasuk / $totalKaryawan) * 100, 1) : 0;
+        $rateKepatuhanRadius = $totalPresensi > 0 ? round(($cntDalamRadius / max(1, $totalPresensi)) * 100, 1) : 100;
     @endphp
+
+    <!-- Executive Command Header Banner -->
+    <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-xs relative overflow-hidden border border-slate-200">
+        <div class="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+            {{-- Title & Status --}}
+            <div class="space-y-2 max-w-2xl">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        HR Analytics Live Command
+                    </span>
+                    <span class="text-xs text-slate-500 font-medium">
+                        <i class="far fa-calendar-alt mr-1 text-slate-400"></i>
+                        {{ $filterDate->translatedFormat('l, d F Y') }}
+                    </span>
+                    @if($filterDate->isToday())
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Hari Ini</span>
+                    @endif
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+                    Dashboard Kehadiran HRD
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Ringkasan performa kehadiran, kepatuhan tapping lokasi, kedisiplinan jam masuk, serta status izin kerja operasional.
+                </p>
+            </div>
+
+            {{-- Filter & Actions Bar --}}
+            <div class="flex flex-wrap items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-xs">
+                <form action="{{ route('hrd.dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2">
+                    @foreach(request()->except(['tanggal_dashboard', 'page']) as $key => $value)
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endforeach
+
+                    {{-- Quick Date Shortcuts --}}
+                    <div class="inline-flex rounded-lg shadow-xs bg-white p-0.5 border border-slate-200">
+                        <a href="{{ route('hrd.dashboard', array_merge(request()->except(['tanggal_dashboard', 'page']), ['tanggal_dashboard' => \Carbon\Carbon::today()->format('Y-m-d')])) }}"
+                           class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {{ request('tanggal_dashboard', \Carbon\Carbon::today()->format('Y-m-d')) == \Carbon\Carbon::today()->format('Y-m-d') ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                            Hari Ini
+                        </a>
+                        <a href="{{ route('hrd.dashboard', array_merge(request()->except(['tanggal_dashboard', 'page']), ['tanggal_dashboard' => \Carbon\Carbon::yesterday()->format('Y-m-d')])) }}"
+                           class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {{ request('tanggal_dashboard') == \Carbon\Carbon::yesterday()->format('Y-m-d') ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                            Kemarin
+                        </a>
+                    </div>
+
+                    {{-- Date Input --}}
+                    <div class="relative">
+                        <input type="date" id="tanggal_dashboard" name="tanggal_dashboard" 
+                               value="{{ request('tanggal_dashboard', $filterDate->format('Y-m-d')) }}" 
+                               class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs">
+                    </div>
+
+                    <button type="submit" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-xs transition-all flex items-center gap-1.5">
+                        <i class="fas fa-filter text-[10px]"></i>
+                        <span>Filter</span>
+                    </button>
+                    @if(request('tanggal_dashboard'))
+                        <a href="{{ route('hrd.dashboard', request()->except(['tanggal_dashboard', 'page'])) }}" 
+                           class="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-700 text-xs rounded-lg border border-slate-200 transition-colors" title="Reset Tanggal">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    @endif
+                </form>
+
+                {{-- Group Filter --}}
+                @if(count($allGroups) > 0)
+                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                <div class="flex items-center gap-1.5">
+                    <select id="global_group_filter" onchange="applyGroupFilter(this.value)"
+                            class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-7 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs">
+                        <option value="">Semua Group</option>
+                        @foreach($allGroups as $grp)
+                            <option value="{{ $grp }}">{{ $grp }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" onclick="resetGroupFilter()" id="reset_group_btn"
+                            class="hidden px-2 py-1.5 bg-white text-slate-500 hover:text-slate-700 text-xs rounded-lg border border-slate-200 transition-colors" title="Reset Filter Group">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                @endif
+
+                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                <button onclick="openExportModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all shadow-xs flex items-center gap-1.5">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Export Rekap</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Executive Quick Insights Metrics --}}
+        <div class="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div class="bg-emerald-50/50 rounded-xl p-3.5 border border-emerald-100/80 shadow-xs">
+                <div class="flex items-center justify-between text-slate-500">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Tingkat Kehadiran</span>
+                    <i class="fas fa-chart-line text-xs text-emerald-600"></i>
+                </div>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span class="text-2xl font-black text-emerald-600">{{ $rateKehadiran }}%</span>
+                    <span class="text-xs text-slate-500 font-medium">({{ number_format($totalKaryawanMasuk) }} / {{ number_format($totalKaryawanAktif) }})</span>
+                </div>
+            </div>
+            <div class="bg-blue-50/50 rounded-xl p-3.5 border border-blue-100/80 shadow-xs">
+                <div class="flex items-center justify-between text-slate-500">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Ketepatan Masuk</span>
+                    <i class="fas fa-stopwatch text-xs text-blue-600"></i>
+                </div>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span class="text-2xl font-black text-blue-600">{{ $pctHadirOfMasuk }}%</span>
+                    <span class="text-xs text-slate-500 font-medium">({{ number_format($cntHadirNormal) }} tepat)</span>
+                </div>
+            </div>
+            <div class="bg-purple-50/50 rounded-xl p-3.5 border border-purple-100/80 shadow-xs">
+                <div class="flex items-center justify-between text-slate-500">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Kepatuhan Geofence</span>
+                    <i class="fas fa-map-marked-alt text-xs text-purple-600"></i>
+                </div>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span class="text-2xl font-black text-purple-600">{{ $rateKepatuhanRadius }}%</span>
+                    <span class="text-xs text-slate-500 font-medium">dalam radius</span>
+                </div>
+            </div>
+            <div class="bg-amber-50/50 rounded-xl p-3.5 border border-amber-100/80 shadow-xs">
+                <div class="flex items-center justify-between text-slate-500">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Cuti & Izin Aktif</span>
+                    <i class="fas fa-calendar-check text-xs text-amber-600"></i>
+                </div>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span class="text-2xl font-black text-amber-600">{{ number_format($cntCuti) }}</span>
+                    <span class="text-xs text-slate-500 font-medium">karyawan</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+
+        {{-- 1. Total Karyawan Aktif --}}
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Karyawan Aktif</span>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center ring-1 ring-blue-500/15">
+                    <i class="fas fa-users text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-slate-900 tracking-tight">{{ number_format($totalKaryawanAktif) }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">Basis headcount aktif</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>100% total aktif</span>
+                <span class="font-bold text-blue-600">Total</span>
+            </div>
+        </div>
+
+        {{-- 2. Belum Absen Masuk --}}
+        <div class="stat-card bg-white rounded-2xl shadow-xs p-5 flex flex-col justify-between select-none group"
+             id="card-belum-masuk"
+             data-color="red"
+             onclick="showDetailTable('belum-masuk')"
+             title="Klik untuk melihat daftar karyawan yang belum absen masuk">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Masuk</span>
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center ring-1 ring-rose-500/15 group-hover:scale-105 transition-transform">
+                    <i class="fas fa-user-times text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-rose-600 tracking-tight">{{ number_format($cntBelumMasuk) }}</p>
+                <p class="text-xs text-rose-500 mt-0.5 font-medium">{{ $pctBelumMasuk }}% dari headcount</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-rose-600 font-semibold">
+                <span class="flex items-center gap-1">
+                    <i class="fas fa-hand-pointer text-[10px]"></i> Rincian data
+                </span>
+                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </div>
+
+        {{-- 3. Belum Absen Pulang --}}
+        <div class="stat-card bg-white rounded-2xl shadow-xs p-5 flex flex-col justify-between select-none group"
+             id="card-belum-pulang"
+             data-color="yellow"
+             onclick="showDetailTable('belum-pulang')"
+             title="Klik untuk melihat daftar karyawan yang belum absen pulang">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Pulang</span>
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center ring-1 ring-amber-500/15 group-hover:scale-105 transition-transform">
+                    <i class="fas fa-running text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-amber-600 tracking-tight">{{ number_format($cntBelumPulang) }}</p>
+                <p class="text-xs text-amber-600 mt-0.5 font-medium">{{ $pctBelumPulang }}% dari yang hadir</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-amber-600 font-semibold">
+                <span class="flex items-center gap-1">
+                    <i class="fas fa-hand-pointer text-[10px]"></i> Rincian data
+                </span>
+                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </div>
+
+        {{-- 4. Absen Terlambat --}}
+        <div class="stat-card bg-white rounded-2xl shadow-xs p-5 flex flex-col justify-between select-none group"
+             id="card-terlambat"
+             data-color="orange"
+             onclick="showDetailTable('terlambat')"
+             title="Klik untuk melihat daftar karyawan yang terlambat">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Terlambat</span>
+                <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center ring-1 ring-orange-500/15 group-hover:scale-105 transition-transform">
+                    <i class="fas fa-clock text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-orange-600 tracking-tight">{{ number_format($cntTerlambat) }}</p>
+                <p class="text-xs text-orange-500 mt-0.5 font-medium">> {{ sprintf('%02d:05', $jamBatas) }} WIB ({{ $pctTerlambat }}%)</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-orange-600 font-semibold">
+                <span class="flex items-center gap-1">
+                    <i class="fas fa-hand-pointer text-[10px]"></i> Rincian data
+                </span>
+                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </div>
+
+        {{-- 5. Cuti & Izin Berjalan --}}
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Cuti & Izin</span>
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center ring-1 ring-purple-500/15">
+                    <i class="fas fa-calendar-alt text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-purple-600 tracking-tight">{{ number_format($cntCuti) }}</p>
+                <p class="text-xs text-purple-500 mt-0.5 font-medium">{{ $pctCuti }}% dari headcount</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-purple-600 font-semibold">
+                <span>Status Approved</span>
+                <i class="fas fa-check-double text-[10px]"></i>
+            </div>
+        </div>
+
+        {{-- 6. Absen Luar Radius --}}
+        <div class="stat-card bg-white rounded-2xl shadow-xs p-5 flex flex-col justify-between select-none group"
+             id="card-luar-radius"
+             data-color="rose"
+             onclick="showDetailTable('luar-radius')"
+             title="Klik untuk melihat daftar karyawan yang absen di luar radius">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Luar Radius</span>
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center ring-1 ring-rose-500/15 group-hover:scale-105 transition-transform">
+                    <i class="fas fa-map-marker-alt text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-rose-600 tracking-tight">{{ number_format($cntLuarRadius) }}</p>
+                <p class="text-xs text-rose-500 mt-0.5 font-medium">{{ $pctLuarRadius }}% dari total presensi</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-rose-600 font-semibold">
+                <span class="flex items-center gap-1">
+                    <i class="fas fa-hand-pointer text-[10px]"></i> Rincian data
+                </span>
+                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </div>
+
+    </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
         <!-- Header Section -->
@@ -663,72 +784,96 @@
 
     <!-- Detail Panel (muncul saat kartu diklik) -->
     <div id="detail-panel" class="hidden">
-        <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
 
             <!-- Panel Header -->
-            <div id="detail-panel-header" class="px-5 py-4 flex items-center justify-between border-b border-gray-100 transition-colors duration-200">
-                <div class="flex items-center gap-3">
-                    <div id="detail-icon-wrap" class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+            <div id="detail-panel-header" class="px-6 py-4.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b transition-colors duration-200">
+                <div class="flex items-center gap-3.5">
+                    <div id="detail-icon-wrap" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xs">
                         <i id="detail-icon-el" class="fas text-xl"></i>
                     </div>
                     <div>
-                        <h3 id="detail-title" class="font-semibold text-gray-800 text-base leading-tight"></h3>
-                        <p id="detail-subtitle" class="text-xs text-gray-500 mt-0.5"></p>
+                        <h3 id="detail-title" class="font-black text-slate-900 text-base leading-tight tracking-tight"></h3>
+                        <p id="detail-subtitle" class="text-xs text-slate-500 mt-0.5"></p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span id="detail-badge" class="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"></span>
+
+                {{-- Quick Table Search Filter & Close --}}
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="relative flex-1 sm:w-64">
+                        <input type="text" id="detail_search_input" oninput="filterDetailTable(this.value)" 
+                               placeholder="Cari nama atau NIK..." 
+                               class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border-slate-200 bg-white shadow-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                        <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <span id="detail-badge" class="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-xs"></span>
+
                     <button onclick="closeDetailPanel()"
-                            class="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100 ml-1"
+                            class="text-slate-400 hover:text-slate-700 transition-colors p-2 rounded-xl hover:bg-slate-100 flex-shrink-0"
                             title="Tutup panel">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-times text-sm"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Filter Group Info Bar -->
-            <div id="detail-filter-bar" class="hidden px-5 py-2 bg-indigo-50 border-b border-indigo-100 flex items-center gap-2 text-xs text-indigo-700">
-                <i class="fas fa-filter"></i>
-                <span>Difilter berdasarkan group: <strong id="active-group-label"></strong></span>
-                <button onclick="resetGroupFilter()" class="ml-auto text-indigo-500 hover:text-indigo-800 underline font-medium">Reset Filter</button>
+            <div id="detail-filter-bar" class="hidden px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex items-center gap-2 text-xs text-indigo-800">
+                <i class="fas fa-filter text-indigo-500"></i>
+                <span>Difilter berdasarkan group: <strong id="active-group-label" class="font-bold"></strong></span>
+                <button onclick="resetGroupFilter()" class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Reset Filter Group</button>
             </div>
 
             <!-- Tables Container -->
-            <div style="max-height: 520px; overflow-y: auto;">
+            <div style="max-height: 540px; overflow-y: auto;" class="divide-y divide-slate-100">
 
                 <!-- Table: Belum Absen Masuk -->
                 <div id="table-belum-masuk" class="hidden">
                     @if($karyawanBelumAbsen->count() > 0)
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50 sticky top-0 z-10">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">NIK</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanBelumAbsen as $i => $k)
-                            <tr class="hover:bg-red-50/50 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}">
-                                <td class="px-5 py-3 text-gray-400 text-xs">{{ $i + 1 }}</td>
-                                <td class="px-5 py-3 text-gray-500 font-mono text-xs">{{ $k->nik }}</td>
-                                <td class="px-5 py-3 font-medium text-gray-800">
-                                    <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank"
-                                       class="hover:text-red-600 transition-colors inline-flex items-center gap-1 group">
-                                        {{ $k->nama_lengkap }}
-                                        <i class="fas fa-external-link-alt text-xs opacity-0 group-hover:opacity-50 transition-opacity"></i>
-                                    </a>
+                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '')) }}">
+                                <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
+                                <td class="px-6 py-3.5">
+                                    <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $k->nik }}</span>
                                 </td>
-                                <td class="px-5 py-3 text-gray-500 text-xs uppercase">{{ $k->divisi ?: '-' }}</td>
+                                <td class="px-6 py-3.5 font-medium text-slate-800">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                            {{ strtoupper(mb_substr($k->nama_lengkap ?? 'K', 0, 2)) }}
+                                        </div>
+                                        <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank"
+                                           class="hover:text-rose-600 transition-colors inline-flex items-center gap-1.5 group font-bold">
+                                            <span>{{ $k->nama_lengkap }}</span>
+                                            <i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-70 transition-opacity"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                        {{ $k->divisi ?: '-' }}
+                                    </span>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                     @else
-                    <div class="py-16 text-center text-gray-500 flex flex-col items-center">
-                        <i class="fas fa-check-circle text-5xl text-green-300 mb-3"></i>
-                        <p class="font-medium">Semua karyawan telah melakukan absensi masuk.</p>
+                    <div class="py-20 text-center text-slate-500 flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 text-2xl shadow-inner">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="font-bold text-slate-800 text-base">Semua Karyawan Telah Absen Masuk</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Tidak ada karyawan yang belum tapping presensi masuk.</p>
                     </div>
                     @endif
                 </div>{{-- end table-belum-masuk --}}
@@ -736,36 +881,50 @@
                 <!-- Table: Belum Absen Pulang -->
                 <div id="table-belum-pulang" class="hidden">
                     @if($karyawanBelumAbsenPulang->count() > 0)
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50 sticky top-0 z-10">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">NIK</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanBelumAbsenPulang as $i => $k)
-                            <tr class="hover:bg-yellow-50/50 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}">
-                                <td class="px-5 py-3 text-gray-400 text-xs">{{ $i + 1 }}</td>
-                                <td class="px-5 py-3 text-gray-500 font-mono text-xs">{{ $k->nik }}</td>
-                                <td class="px-5 py-3 font-medium text-gray-800">
-                                    <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank"
-                                       class="hover:text-yellow-600 transition-colors inline-flex items-center gap-1 group">
-                                        {{ $k->nama_lengkap }}
-                                        <i class="fas fa-external-link-alt text-xs opacity-0 group-hover:opacity-50 transition-opacity"></i>
-                                    </a>
+                            <tr class="hover:bg-amber-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '')) }}">
+                                <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
+                                <td class="px-6 py-3.5">
+                                    <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $k->nik }}</span>
                                 </td>
-                                <td class="px-5 py-3 text-gray-500 text-xs uppercase">{{ $k->divisi ?: '-' }}</td>
+                                <td class="px-6 py-3.5 font-medium text-slate-800">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                            {{ strtoupper(mb_substr($k->nama_lengkap ?? 'K', 0, 2)) }}
+                                        </div>
+                                        <a href="{{ route('master.karyawan.show', $k->id) }}" target="_blank"
+                                           class="hover:text-amber-600 transition-colors inline-flex items-center gap-1.5 group font-bold">
+                                            <span>{{ $k->nama_lengkap }}</span>
+                                            <i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-70 transition-opacity"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                        {{ $k->divisi ?: '-' }}
+                                    </span>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                     @else
-                    <div class="py-16 text-center text-gray-500 flex flex-col items-center">
-                        <i class="fas fa-check-circle text-5xl text-green-300 mb-3"></i>
-                        <p class="font-medium">Semua karyawan (yang absen masuk) telah absen pulang.</p>
+                    <div class="py-20 text-center text-slate-500 flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 text-2xl shadow-inner">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="font-bold text-slate-800 text-base">Semua Karyawan Telah Absen Pulang</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Seluruh karyawan yang tapping masuk telah menyelesaikan absensi pulang.</p>
                     </div>
                     @endif
                 </div>{{-- end table-belum-pulang --}}
@@ -773,35 +932,47 @@
                 <!-- Table: Terlambat -->
                 <div id="table-terlambat" class="hidden">
                     @if($karyawanTerlambat->count() > 0)
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50 sticky top-0 z-10">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Divisi</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu Absen</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu Tapping Masuk</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanTerlambat as $i => $absen)
-                            <tr class="hover:bg-orange-50/50 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}">
-                                <td class="px-5 py-3 text-gray-400 text-xs">{{ $i + 1 }}</td>
-                                <td class="px-5 py-3 font-medium text-gray-800">
+                            <tr class="hover:bg-orange-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '')) }}">
+                                <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
+                                <td class="px-6 py-3.5 font-medium text-slate-800">
                                     @if($absen->karyawan)
-                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank"
-                                           class="hover:text-orange-600 transition-colors inline-flex items-center gap-1 group">
-                                            {{ $absen->karyawan->nama_lengkap }}
-                                            <i class="fas fa-external-link-alt text-xs opacity-0 group-hover:opacity-50 transition-opacity"></i>
-                                        </a>
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                                {{ strtoupper(mb_substr($absen->karyawan->nama_lengkap ?? 'K', 0, 2)) }}
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank"
+                                                   class="hover:text-orange-600 transition-colors inline-flex items-center gap-1.5 group font-bold">
+                                                    <span>{{ $absen->karyawan->nama_lengkap }}</span>
+                                                    <i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-70 transition-opacity"></i>
+                                                </a>
+                                                <span class="block font-mono text-[11px] text-slate-400">{{ $absen->karyawan->nik }}</span>
+                                            </div>
+                                        </div>
                                     @else
-                                        <span class="text-gray-400">N/A</span>
+                                        <span class="text-slate-400 italic">Data karyawan tidak ditemukan</span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-3 text-gray-500 text-xs uppercase">{{ $absen->karyawan->divisi ?? '-' }}</td>
-                                <td class="px-5 py-3">
-                                    <span class="inline-flex items-center gap-1 font-semibold text-orange-700 bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-full text-xs">
-                                        <i class="fas fa-clock"></i>
-                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i') }}
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                        {{ $absen->karyawan->divisi ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full text-xs shadow-xs">
+                                        <i class="fas fa-clock text-[10px]"></i>
+                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB
                                     </span>
                                 </td>
                             </tr>
@@ -809,9 +980,12 @@
                         </tbody>
                     </table>
                     @else
-                    <div class="py-16 text-center text-gray-500 flex flex-col items-center">
-                        <i class="fas fa-check-circle text-5xl text-green-300 mb-3"></i>
-                        <p class="font-medium">Tidak ada karyawan yang terlambat.</p>
+                    <div class="py-20 text-center text-slate-500 flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 text-2xl shadow-inner">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="font-bold text-slate-800 text-base">Nol Keterlambatan</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Semua karyawan yang hadir masuk tepat waktu sebelum jam batas.</p>
                     </div>
                     @endif
                 </div>{{-- end table-terlambat --}}
@@ -819,54 +993,75 @@
                 <!-- Table: Absen Luar Radius -->
                 <div id="table-luar-radius" class="hidden">
                     @if($absensiLuarRadius->count() > 0)
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-50 sticky top-0 z-10">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Detail Lokasi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tipe</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detail Lokasi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($absensiLuarRadius as $i => $absen)
-                            <tr class="hover:bg-red-50/50 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}">
-                                <td class="px-5 py-3 text-gray-400 text-xs">{{ $i + 1 }}</td>
-                                <td class="px-5 py-3 font-medium text-gray-800">
+                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->tipe ?? '') . ' ' . ($absen->detail_lokasi ?? '')) }}">
+                                <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
+                                <td class="px-6 py-3.5 font-medium text-slate-800">
                                     @if($absen->karyawan)
-                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank"
-                                           class="hover:text-red-600 transition-colors inline-flex items-center gap-1 group">
-                                            {{ $absen->karyawan->nama_lengkap }}
-                                            <i class="fas fa-external-link-alt text-xs opacity-0 group-hover:opacity-50 transition-opacity"></i>
-                                        </a>
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                                {{ strtoupper(mb_substr($absen->karyawan->nama_lengkap ?? 'K', 0, 2)) }}
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank"
+                                                   class="hover:text-rose-600 transition-colors inline-flex items-center gap-1.5 group font-bold">
+                                                    <span>{{ $absen->karyawan->nama_lengkap }}</span>
+                                                    <i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-70 transition-opacity"></i>
+                                                </a>
+                                                <span class="block font-mono text-[11px] text-slate-400">{{ $absen->karyawan->nik }}</span>
+                                            </div>
+                                        </div>
                                     @else
-                                        <span class="text-gray-400">N/A</span>
+                                        <span class="text-slate-400 italic">Data karyawan tidak ditemukan</span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-3">
-                                    <span class="inline-flex items-center gap-1 font-semibold text-red-700 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full text-xs">
-                                        <i class="fas fa-clock"></i>
-                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i') }}
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full text-xs shadow-xs">
+                                        <i class="fas fa-clock text-[10px]"></i>
+                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB
                                     </span>
                                 </td>
-                                <td class="px-5 py-3 text-gray-500 text-xs">{{ $absen->tipe }}</td>
-                                <td class="px-5 py-3 text-gray-600 text-xs">{{ $absen->detail_lokasi }}</td>
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold {{ $absen->tipe == 'Masuk' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
+                                        {{ $absen->tipe }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-3.5 text-xs text-slate-600 font-medium">
+                                    <div class="flex items-center gap-1.5 text-slate-700">
+                                        <i class="fas fa-map-pin text-rose-500"></i>
+                                        <span>{{ $absen->detail_lokasi ?: 'Koordinat di luar radius' }}</span>
+                                    </div>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                     @else
-                    <div class="py-16 text-center text-gray-500 flex flex-col items-center">
-                        <i class="fas fa-check-circle text-5xl text-green-300 mb-3"></i>
-                        <p class="font-medium">Tidak ada karyawan yang absen di luar radius.</p>
+                    <div class="py-20 text-center text-slate-500 flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 text-2xl shadow-inner">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="font-bold text-slate-800 text-base">Kepatuhan Lokasi 100%</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Seluruh presensi tapping masuk & pulang berada di dalam radius kantor yang ditentukan.</p>
                     </div>
                     @endif
                 </div>{{-- end table-luar-radius --}}
 
             </div>{{-- end Tables Container --}}
 
-</div>{{-- end detail-panel --}}
+        </div>{{-- end detail-panel card --}}
+    </div>{{-- end detail-panel --}}
 
 </div>
 
@@ -1233,6 +1428,10 @@
         var panel = document.getElementById('detail-panel');
         var isSame = (_activeTable === type);
 
+        // Reset search input saat berganti tabel
+        var searchInput = document.getElementById('detail_search_input');
+        if (searchInput) searchInput.value = '';
+
         // Nonaktifkan semua kartu
         document.querySelectorAll('.stat-card, .diagram-stat-card').forEach(function(c) {
             c.classList.remove('active');
@@ -1288,11 +1487,9 @@
         // Tampilkan panel
         panel.classList.remove('hidden');
 
-        // Re-apply group filter jika aktif
+        // Re-apply filter jika grup aktif
         var groupSelect = document.getElementById('global_group_filter');
-        if (groupSelect && groupSelect.value) {
-            applyGroupFilter(groupSelect.value);
-        }
+        applyCombinedFilter(groupSelect ? groupSelect.value : '', '');
 
         // Scroll ke panel dengan smooth
         setTimeout(function() {
@@ -1307,6 +1504,8 @@
         document.querySelectorAll('.stat-card, .diagram-stat-card').forEach(function(c) {
             c.classList.remove('active');
         });
+        var searchInput = document.getElementById('detail_search_input');
+        if (searchInput) searchInput.value = '';
         _activeTable = null;
     }
 
@@ -1318,28 +1517,54 @@
     }
 
     /**
+     * Filter gabungan untuk grup dan pencarian teks live.
+     */
+    function applyCombinedFilter(group, query) {
+        query = (query || '').toLowerCase().trim();
+        var rows = document.querySelectorAll('tr[data-grup]');
+
+        rows.forEach(function(row) {
+            var matchGroup = true;
+            if (group) {
+                var grupAttr = row.getAttribute('data-grup') || '';
+                var grups = grupAttr.split(',').map(function(g) {
+                    return g.trim().split(':')[0].trim();
+                }).filter(function(g) { return g; });
+                matchGroup = grups.includes(group);
+            }
+
+            var matchSearch = true;
+            if (query) {
+                var searchData = row.getAttribute('data-search') || '';
+                matchSearch = searchData.includes(query);
+            }
+
+            row.style.display = (matchGroup && matchSearch) ? '' : 'none';
+        });
+
+        // Update badge jumlah di panel
+        updatePanelBadge();
+    }
+
+    /**
+     * Live search pada panel detail (NIK / Nama / Divisi / Lokasi)
+     */
+    function filterDetailTable(query) {
+        var groupSelect = document.getElementById('global_group_filter');
+        var group = groupSelect ? groupSelect.value : '';
+        applyCombinedFilter(group, query);
+    }
+
+    /**
      * Filter semua tabel berdasarkan grup karyawan.
-     * Setiap <tr data-grup="..."> berisi daftar grup penuh (misal "LEMBUR:KANTOR JAKARTA,CUTI").
-     * Filter mencocokkan berdasarkan prefix SEBELUM ':' saja.
-     * @param {string} group - Nama group (tanpa sub-group) yang dipilih, atau string kosong untuk semua.
      */
     function applyGroupFilter(group) {
         var resetBtn = document.getElementById('reset_group_btn');
         var filterBar = document.getElementById('detail-filter-bar');
-        var rows = document.querySelectorAll('tr[data-grup]');
+        var searchInput = document.getElementById('detail_search_input');
+        var query = searchInput ? searchInput.value : '';
 
-        rows.forEach(function(row) {
-            if (!group) {
-                row.style.display = '';
-            } else {
-                var grupAttr = row.getAttribute('data-grup') || '';
-                // Pecah berdasarkan koma, lalu ambil prefix sebelum ':' dari setiap item
-                var grups = grupAttr.split(',').map(function(g) {
-                    return g.trim().split(':')[0].trim();
-                }).filter(function(g) { return g; });
-                row.style.display = grups.includes(group) ? '' : 'none';
-            }
-        });
+        applyCombinedFilter(group, query);
 
         // Tampilkan/sembunyikan tombol reset
         if (resetBtn) {
@@ -1356,9 +1581,6 @@
                 filterBar.classList.add('hidden');
             }
         }
-
-        // Update badge jumlah di panel
-        updatePanelBadge();
     }
 
     function resetGroupFilter() {
@@ -1378,10 +1600,14 @@
         var visibleRows = activeTableEl.querySelectorAll('tbody tr[data-grup]:not([style*="display: none"])');
         var badge = document.getElementById('detail-badge');
         if (badge) {
-            if (visibleRows.length === allRows.length) {
+            var groupSelect = document.getElementById('global_group_filter');
+            var searchInput = document.getElementById('detail_search_input');
+            var hasFilter = (groupSelect && groupSelect.value) || (searchInput && searchInput.value.trim());
+
+            if (!hasFilter && visibleRows.length === allRows.length) {
                 badge.textContent = DETAIL_CONFIG[_activeTable].count + ' Orang';
             } else {
-                badge.textContent = visibleRows.length + ' Orang';
+                badge.textContent = visibleRows.length + ' / ' + DETAIL_CONFIG[_activeTable].count + ' Orang';
             }
         }
     }
