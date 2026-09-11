@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AbsensiImportController;
 use App\Http\Controllers\AktivitasLainnyaController;
+use App\Http\Controllers\Api\ADMSController;
 use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\AsuransiTandaTerimaController;
 use App\Http\Controllers\AuditLogController;
@@ -12,13 +13,9 @@ use App\Http\Controllers\BtmKontainerSewaController;
 use App\Http\Controllers\BuruhController;
 use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CheckpointController;
+use App\Http\Controllers\CutiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisiController;
-use App\Http\Controllers\CutiController;
-use App\Http\Controllers\UangMakanController;
-use App\Http\Controllers\PranotaUangMakanController;
-use App\Http\Controllers\EmailController;
-use App\Http\Controllers\EmailAccountController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KontainerController;
@@ -65,13 +62,13 @@ use App\Http\Controllers\PenerimaController;
 use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PermohonanController;
+use App\Http\Controllers\PranotaBpjsController;
 use App\Http\Controllers\PranotaOngkosTrukController;
 use App\Http\Controllers\PranotaSupirController;
 use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PricelistCatController;
 use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\ProspekController;
-use App\Http\Controllers\PranotaBpjsController;
 // use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 // use App\Http\Controllers\PranotaRitKenekController; // Removed - not used
 use App\Http\Controllers\RealisasiUangMukaController;
@@ -86,13 +83,12 @@ use App\Http\Controllers\TipeBarangController;
 use App\Http\Controllers\TipeStockBanController;
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\TujuanKegiatanUtamaController;
+use App\Http\Controllers\UangMakanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorAmprahanController;
 use App\Http\Controllers\VendorAsuransiController;
 use App\Http\Controllers\VendorBengkelController;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -109,7 +105,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Rute untuk login dan logout
-use App\Http\Controllers\Api\ADMSController;
+use Illuminate\Support\Facades\Route;
 
 // ADMS ZKTeco Push Endpoint
 Route::get('iclock/cdata', [ADMSController::class, 'handshake']);
@@ -117,13 +113,17 @@ Route::post('iclock/cdata', [ADMSController::class, 'receiveData']);
 Route::get('iclock/getrequest', [ADMSController::class, 'getRequest']);
 Route::post('iclock/devicecmd', [ADMSController::class, 'deviceCmd']);
 
-Route::get('debug-adms', function() {
+Route::get('debug-adms', function () {
     $logPath = storage_path('logs/laravel.log');
-    if (!file_exists($logPath)) return 'Log file not found di: ' . $logPath;
-    
+    if (! file_exists($logPath)) {
+        return 'Log file not found di: '.$logPath;
+    }
+
     $lines = file($logPath);
-    if (!$lines) return 'Log file empty or unreadable';
-    
+    if (! $lines) {
+        return 'Log file empty or unreadable';
+    }
+
     $output = '';
     // Ambil 3000 baris terakhir agar pasti tertangkap
     $tail = array_slice($lines, -3000);
@@ -132,12 +132,12 @@ Route::get('debug-adms', function() {
             $output .= htmlspecialchars($line);
         }
     }
-    
-    return response("<pre>". ($output ?: "Belum ada log ADMS dalam 3000 baris terakhir. Pastikan mesin dalam keadaan menyala dan terhubung ke internet.") ."</pre>");
+
+    return response('<pre>'.($output ?: 'Belum ada log ADMS dalam 3000 baris terakhir. Pastikan mesin dalam keadaan menyala dan terhubung ke internet.').'</pre>');
 });
 
 // ADMS Command Queue Routes
-Route::middleware(['auth'])->group(function() {
+Route::middleware(['auth'])->group(function () {
     Route::get('master/mesin-users', [\App\Http\Controllers\MesinUserController::class, 'index'])->name('mesin-users.index');
     Route::post('master/mesin-users/queue-sync', [\App\Http\Controllers\MesinUserController::class, 'queueSync'])->name('mesin-users.queue-sync');
     Route::get('master/mesin-users/export', [\App\Http\Controllers\MesinUserController::class, 'export'])->name('mesin-users.export');
@@ -151,6 +151,7 @@ Route::get('/', function () {
 // Public Pelabuhan Tujuan
 Route::get('/pelabuhan-tujuan', function () {
     $pelabuhans = \App\Models\MasterPelabuhan::aktif()->orderBy('nama_pelabuhan', 'asc')->get();
+
     return view('pelabuhan-tujuan', compact('pelabuhans'));
 })->name('public.pelabuhan');
 
@@ -328,7 +329,7 @@ Route::middleware([
     Route::delete('/chat/{sessionId}', [\App\Http\Controllers\ChatController::class, 'destroy'])
         ->name('chat.destroy')
         ->middleware('can:chatbox-delete');
-        
+
     // Chatbox FAQ Management Routes
     Route::get('/chat-faqs', [\App\Http\Controllers\ChatFaqController::class, 'index'])
         ->name('chat.faq.index')
@@ -436,8 +437,6 @@ Route::middleware([
     |===========================================================================
     */
 
-
-
     // Backup database route
     Route::get('/backup-database', [\App\Http\Controllers\BackupController::class, 'download'])
         ->name('backup.database')
@@ -450,7 +449,7 @@ Route::middleware([
     // Dashboard khusus divisi HRD
     Route::get('/hrd-dashboard', [\App\Http\Controllers\HrdDashboardController::class, 'index'])
         ->name('hrd.dashboard');
-        
+
     Route::get('/hrd-dashboard/export', [\App\Http\Controllers\HrdDashboardController::class, 'exportExcel'])
         ->name('hrd.dashboard.export');
 
@@ -511,20 +510,20 @@ Route::middleware([
                     if ($data) {
                         $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                         $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
-                        
+
                         $tanggal_mulai = \Carbon\Carbon::parse($data->tanggal_mulai);
                         $tanggal_selesai = \Carbon\Carbon::parse($data->tanggal_selesai);
-                        
+
                         $lama_cuti = 0;
                         $currentDate = $tanggal_mulai->copy();
                         while ($currentDate <= $tanggal_selesai) {
-                            if (!$currentDate->isWeekend()) {
+                            if (! $currentDate->isWeekend()) {
                                 $lama_cuti++;
                             }
                             $currentDate->addDay();
                         }
                         $data->lama_cuti = $lama_cuti;
-                        
+
                         $tahun = $tanggal_mulai->format('Y');
                         $saldo = DB::table('saldo_cutis')
                             ->where('karyawan_id', $data->karyawan_id)
@@ -533,7 +532,7 @@ Route::middleware([
                         $data->saldo = $saldo;
 
                         $data->nama_hrd = '';
-                        if (!empty($data->approved_by_hrd)) {
+                        if (! empty($data->approved_by_hrd)) {
                             $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
                             if ($hrdUser) {
                                 $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
@@ -543,7 +542,7 @@ Route::middleware([
 
                         $dataToPrint[] = ['type' => 'cuti', 'data' => $data];
                     }
-                } else if ($type === 'permohonan_izins') {
+                } elseif ($type === 'permohonan_izins') {
                     $data = DB::table('permohonan_izins')
                         ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                         ->select('permohonan_izins.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik_supervisor')
@@ -552,10 +551,10 @@ Route::middleware([
                     if ($data) {
                         $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                         $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
-                        
+
                         $dataToPrint[] = ['type' => 'izin', 'data' => $data];
                     }
-                } else if ($type === 'persetujuan_absensi_lemburs') {
+                } elseif ($type === 'persetujuan_absensi_lemburs') {
                     $data = DB::table('persetujuan_absensi_lemburs')
                         ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
                         ->select('persetujuan_absensi_lemburs.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
@@ -565,10 +564,10 @@ Route::middleware([
                         $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                         $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
                         $data->lembur_id = $data->id;
-                        
+
                         $dataToPrint[] = ['type' => 'lembur', 'data' => $data];
                     }
-                } else if ($type === 'persetujuan_absensi_lupas') {
+                } elseif ($type === 'persetujuan_absensi_lupas') {
                     $data = DB::table('persetujuan_absensi_lupas')
                         ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
                         ->select('persetujuan_absensi_lupas.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
@@ -578,17 +577,19 @@ Route::middleware([
                         $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                         $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
                         $data->lembur_id = $data->id;
-                        
+
                         $data->jam_mulai = stripos($data->tipe_absen, 'mulai') !== false ? $data->waktu : null;
                         $data->jam_selesai = stripos($data->tipe_absen, 'selesai') !== false ? $data->waktu : null;
                         $data->keterangan = $data->alasan;
-                        
+
                         $dataToPrint[] = ['type' => 'lembur', 'data' => $data];
                     }
                 }
             }
 
-            if (empty($dataToPrint)) abort(404);
+            if (empty($dataToPrint)) {
+                abort(404);
+            }
 
             return view('master-persetujuan-absensi.print-multiple', compact('dataToPrint'));
         })->name('persetujuan-absensi.print-multiple')->middleware('can:approval-absensi-view');
@@ -600,8 +601,10 @@ Route::middleware([
                     ->select('cutis.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
                     ->where('cutis.id', $id)
                     ->first();
-                if (!$data) abort(404);
-                
+                if (! $data) {
+                    abort(404);
+                }
+
                 // Get supervisor name
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
@@ -609,17 +612,17 @@ Route::middleware([
                 // Hitung Lama Cuti
                 $tanggal_mulai = \Carbon\Carbon::parse($data->tanggal_mulai);
                 $tanggal_selesai = \Carbon\Carbon::parse($data->tanggal_selesai);
-                
+
                 $lama_cuti = 0;
                 $currentDate = $tanggal_mulai->copy();
                 while ($currentDate <= $tanggal_selesai) {
-                    if (!$currentDate->isWeekend()) {
+                    if (! $currentDate->isWeekend()) {
                         $lama_cuti++;
                     }
                     $currentDate->addDay();
                 }
                 $data->lama_cuti = $lama_cuti;
-                
+
                 // Ambil Saldo Cuti
                 $tahun = $tanggal_mulai->format('Y');
                 $saldo = DB::table('saldo_cutis')
@@ -630,7 +633,7 @@ Route::middleware([
 
                 // HRD Name
                 $data->nama_hrd = '';
-                if (!empty($data->approved_by_hrd)) {
+                if (! empty($data->approved_by_hrd)) {
                     $hrdUser = DB::table('users')->where('id', $data->approved_by_hrd)->first();
                     if ($hrdUser) {
                         $hrdKaryawan = DB::table('karyawans')->where('user_id', $hrdUser->id)->first();
@@ -639,59 +642,66 @@ Route::middleware([
                 }
 
                 return view('master-persetujuan-absensi.print-cuti', compact('data'));
-            } else if ($type === 'permohonan_izins') {
+            } elseif ($type === 'permohonan_izins') {
                 $data = DB::table('permohonan_izins')
                     ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                     ->select('permohonan_izins.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik_supervisor')
                     ->where('permohonan_izins.id', $id)
                     ->first();
-                if (!$data) abort(404);
-                
+                if (! $data) {
+                    abort(404);
+                }
+
                 // Get supervisor name
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : '';
-                
+
                 return view('master-persetujuan-absensi.print-izin', compact('data'));
-            } else if ($type === 'persetujuan_absensi_lemburs') {
+            } elseif ($type === 'persetujuan_absensi_lemburs') {
                 $data = DB::table('persetujuan_absensi_lemburs')
                     ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
                     ->select('persetujuan_absensi_lemburs.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
                     ->where('persetujuan_absensi_lemburs.id', $id)
                     ->first();
-                if (!$data) abort(404);
-                
+                if (! $data) {
+                    abort(404);
+                }
+
                 // Get supervisor name
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
-                
+
                 // Assign id for consistency
                 $data->lembur_id = $data->id;
 
                 return view('master-persetujuan-absensi.print-lembur', compact('data'));
-            } else if ($type === 'persetujuan_absensi_lupas') {
+            } elseif ($type === 'persetujuan_absensi_lupas') {
                 $data = DB::table('persetujuan_absensi_lupas')
                     ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
                     ->select('persetujuan_absensi_lupas.*', 'karyawans.nama_lengkap', 'karyawans.divisi', 'karyawans.nik', 'karyawans.nik_supervisor', 'karyawans.supervisor')
                     ->where('persetujuan_absensi_lupas.id', $id)
                     ->first();
-                if (!$data) abort(404);
-                
+                if (! $data) {
+                    abort(404);
+                }
+
                 // Get supervisor name
                 $supervisor = DB::table('karyawans')->where('nik', $data->nik_supervisor ?? '')->first();
                 $data->nama_supervisor = $supervisor ? $supervisor->nama_lengkap : ($data->supervisor ?? '');
-                
+
                 $data->lembur_id = $data->id;
-                
+
                 // Adapt to lembur format
                 if (stripos($data->tipe_absen, 'lembur') !== false) {
                     $data->jam_mulai = stripos($data->tipe_absen, 'mulai') !== false ? $data->waktu : null;
                     $data->jam_selesai = stripos($data->tipe_absen, 'selesai') !== false ? $data->waktu : null;
                     $data->keterangan = $data->alasan;
+
                     return view('master-persetujuan-absensi.print-lembur', compact('data'));
                 }
-                
+
                 // Fallback for non-lembur lupa absen if forced to print
-                abort(404, "Cetak untuk Lupa Absen jenis ini belum didukung.");
+                abort(404, 'Cetak untuk Lupa Absen jenis ini belum didukung.');
             }
             abort(404);
         })->name('persetujuan-absensi.print')->middleware('can:approval-absensi-view');
@@ -707,7 +717,7 @@ Route::middleware([
             Route::post('/{persetujuanAbsensiLupa}/approve', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'approve'])->name('approve')->middleware('can:approval-absensi-lupa-approve');
             Route::post('/{persetujuanAbsensiLupa}/reject', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'reject'])->name('reject')->middleware('can:approval-absensi-lupa-approve');
         });
-        
+
         // Persetujuan Absensi Lembur
         Route::group(['prefix' => 'persetujuan-absensi-lembur', 'as' => 'persetujuan-absensi-lembur.'], function () {
             Route::get('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'index'])->name('index')->middleware('can:approval-absensi-lembur-view');
@@ -785,13 +795,13 @@ Route::middleware([
                 ->name('assign-template')
                 ->middleware('can:master-user-update');
         });
-        
+
         // API Endpoints for Persetujuan Absensi (Protected by Auth)
         Route::prefix('api')->group(function () {
-            Route::get('/admin/pending-attendance', function() {
+            Route::get('/admin/pending-attendance', function () {
                 $user = auth()->user();
                 $karyawanUser = $user->karyawan;
-                
+
                 $canApproveAll = false;
                 $userNik = null;
                 if ($karyawanUser) {
@@ -806,24 +816,25 @@ Route::middleware([
                 }
 
                 $rows = DB::table('absensis as a')
-                    ->leftJoin('karyawans as k', function($join) {
+                    ->leftJoin('karyawans as k', function ($join) {
                         $join->on('a.karyawan_id', '=', 'k.id')
-                             ->orOn('a.nik', '=', 'k.nik');
+                            ->orOn('a.nik', '=', 'k.nik');
                     })
                     ->select('a.*', 'k.nama_lengkap', 'k.divisi', 'k.pekerjaan')
                     ->where('a.status', 'PERSETUJUAN')
-                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                    ->when(! $canApproveAll, function ($query) use ($userNik) {
                         $query->where('k.nik_supervisor', $userNik);
                     })
                     ->orderBy('a.waktu', 'desc')
                     ->get();
+
                 return response()->json($rows);
             });
 
-            Route::get('/admin/pending-permissions', function() {
+            Route::get('/admin/pending-permissions', function () {
                 $user = auth()->user();
                 $karyawanUser = $user->karyawan;
-                
+
                 $canApproveAll = false;
                 $userNik = null;
                 if ($karyawanUser) {
@@ -840,7 +851,7 @@ Route::middleware([
                 $cutis = DB::table('cutis')
                     ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
                     ->whereIn('cutis.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
-                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                    ->when(! $canApproveAll, function ($query) use ($userNik) {
                         $query->where('karyawans.nik_supervisor', $userNik);
                     })
                     ->select(
@@ -852,9 +863,9 @@ Route::middleware([
                         'cutis.jenis_cuti as jenis_izin',
                         'cutis.tanggal_mulai',
                         'cutis.tanggal_selesai',
-                        DB::raw("NULL as waktu"),
+                        DB::raw('NULL as waktu'),
                         'cutis.keterangan as alasan',
-                        DB::raw("NULL as lampiran"),
+                        DB::raw('NULL as lampiran'),
                         'cutis.status',
                         'cutis.created_at',
                         'cutis.updated_at',
@@ -864,7 +875,7 @@ Route::middleware([
                 $lupas = DB::table('persetujuan_absensi_lupas')
                     ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
                     ->whereIn('persetujuan_absensi_lupas.status', ['pending'])
-                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                    ->when(! $canApproveAll, function ($query) use ($userNik) {
                         $query->where('karyawans.nik_supervisor', $userNik);
                     })
                     ->select(
@@ -878,7 +889,7 @@ Route::middleware([
                         'persetujuan_absensi_lupas.tanggal as tanggal_selesai',
                         'persetujuan_absensi_lupas.waktu',
                         'persetujuan_absensi_lupas.alasan',
-                        DB::raw("NULL as lampiran"),
+                        DB::raw('NULL as lampiran'),
                         'persetujuan_absensi_lupas.status',
                         'persetujuan_absensi_lupas.created_at',
                         'persetujuan_absensi_lupas.updated_at',
@@ -888,7 +899,7 @@ Route::middleware([
                 $rows = DB::table('permohonan_izins')
                     ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                     ->whereIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
-                    ->when(!$canApproveAll, function($query) use ($userNik) {
+                    ->when(! $canApproveAll, function ($query) use ($userNik) {
                         $query->where('karyawans.nik_supervisor', $userNik);
                     })
                     ->select(
@@ -912,7 +923,7 @@ Route::middleware([
                     ->union($lupas)
                     ->orderBy('created_at', 'desc')
                     ->get();
-                    
+
                 foreach ($rows as $row) {
                     if (strtolower($row->jenis_izin) === 'tahunan') {
                         $tahun = date('Y', strtotime($row->tanggal_mulai));
@@ -920,18 +931,18 @@ Route::middleware([
                             ->where('karyawan_id', $row->karyawan_id)
                             ->where('tahun', $tahun)
                             ->first();
-                        
+
                         $row->sisa_cuti = $saldo ? $saldo->sisa_cuti : 12;
                     }
                 }
-                    
+
                 return response()->json($rows);
             });
 
-            Route::get('/admin/history-permissions', function() {
+            Route::get('/admin/history-permissions', function () {
                 $user = auth()->user();
                 $karyawanUser = $user->karyawan;
-                
+
                 $canApproveAll = false;
                 $userNik = null;
                 if ($karyawanUser) {
@@ -948,12 +959,12 @@ Route::middleware([
                 $filter = request('filter_jenis');
                 $queries = collect();
 
-                if (!$filter || $filter === 'cuti') {
+                if (! $filter || $filter === 'cuti') {
                     $queries->push(
                         DB::table('cutis')
                             ->leftJoin('karyawans', 'cutis.karyawan_id', '=', 'karyawans.id')
                             ->whereNotIn('cutis.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
-                            ->when(!$canApproveAll, function($query) use ($userNik) {
+                            ->when(! $canApproveAll, function ($query) use ($userNik) {
                                 $query->where('karyawans.nik_supervisor', $userNik);
                             })
                             ->select(
@@ -965,9 +976,9 @@ Route::middleware([
                                 'cutis.jenis_cuti as jenis_izin',
                                 'cutis.tanggal_mulai',
                                 'cutis.tanggal_selesai',
-                                DB::raw("NULL as waktu"),
+                                DB::raw('NULL as waktu'),
                                 'cutis.keterangan as alasan',
-                                DB::raw("NULL as lampiran"),
+                                DB::raw('NULL as lampiran'),
                                 'cutis.status',
                                 'cutis.created_at',
                                 'cutis.updated_at',
@@ -976,12 +987,12 @@ Route::middleware([
                     );
                 }
 
-                if (!$filter || $filter === 'lupa') {
+                if (! $filter || $filter === 'lupa') {
                     $queries->push(
                         DB::table('persetujuan_absensi_lupas')
                             ->leftJoin('karyawans', 'persetujuan_absensi_lupas.karyawan_id', '=', 'karyawans.id')
                             ->whereNotIn('persetujuan_absensi_lupas.status', ['pending'])
-                            ->when(!$canApproveAll, function($query) use ($userNik) {
+                            ->when(! $canApproveAll, function ($query) use ($userNik) {
                                 $query->where('karyawans.nik_supervisor', $userNik);
                             })
                             ->select(
@@ -995,7 +1006,7 @@ Route::middleware([
                                 'persetujuan_absensi_lupas.tanggal as tanggal_selesai',
                                 'persetujuan_absensi_lupas.waktu',
                                 'persetujuan_absensi_lupas.alasan',
-                                DB::raw("NULL as lampiran"),
+                                DB::raw('NULL as lampiran'),
                                 'persetujuan_absensi_lupas.status',
                                 'persetujuan_absensi_lupas.created_at',
                                 'persetujuan_absensi_lupas.updated_at',
@@ -1004,11 +1015,11 @@ Route::middleware([
                     );
                 }
 
-                if (!$filter || !in_array($filter, ['cuti', 'lupa', 'lembur'])) {
+                if (! $filter || ! in_array($filter, ['cuti', 'lupa', 'lembur'])) {
                     $izinQuery = DB::table('permohonan_izins')
                         ->leftJoin('karyawans', 'permohonan_izins.nik', '=', 'karyawans.nik')
                         ->whereNotIn('permohonan_izins.status', ['PENDING', 'Pending', 'pending', 'Menunggu Persetujuan', 'Menunggu', 'menunggu', 'Pending SPV', 'PENDING SPV', 'Pending HRD', 'PENDING HRD'])
-                        ->when(!$canApproveAll, function($query) use ($userNik) {
+                        ->when(! $canApproveAll, function ($query) use ($userNik) {
                             $query->where('karyawans.nik_supervisor', $userNik);
                         })
                         ->select(
@@ -1028,19 +1039,19 @@ Route::middleware([
                             'permohonan_izins.updated_at',
                             DB::raw("'permohonan_izins' as tabel_sumber")
                         );
-                    
+
                     if ($filter) {
                         $izinQuery->where('permohonan_izins.jenis_izin', $filter);
                     }
                     $queries->push($izinQuery);
                 }
 
-                if (!$filter || $filter === 'lembur') {
+                if (! $filter || $filter === 'lembur') {
                     $queries->push(
                         DB::table('persetujuan_absensi_lemburs')
                             ->leftJoin('karyawans', 'persetujuan_absensi_lemburs.karyawan_id', '=', 'karyawans.id')
                             ->whereNotIn('persetujuan_absensi_lemburs.status', ['pending'])
-                            ->when(!$canApproveAll, function($query) use ($userNik) {
+                            ->when(! $canApproveAll, function ($query) use ($userNik) {
                                 $query->where('karyawans.nik_supervisor', $userNik);
                             })
                             ->select(
@@ -1063,14 +1074,13 @@ Route::middleware([
                     );
                 }
 
-
                 $mainQuery = $queries->shift();
                 foreach ($queries as $q) {
                     $mainQuery->union($q);
                 }
 
                 $rows = $mainQuery->orderBy('created_at', 'desc')->limit(200)->get();
-                    
+
                 foreach ($rows as $row) {
                     if (strtolower($row->jenis_izin) === 'tahunan') {
                         $tahun = date('Y', strtotime($row->tanggal_mulai));
@@ -1078,81 +1088,81 @@ Route::middleware([
                             ->where('karyawan_id', $row->karyawan_id)
                             ->where('tahun', $tahun)
                             ->first();
-                        
+
                         $row->sisa_cuti = $saldo ? $saldo->sisa_cuti : 12;
                     }
                 }
-                    
+
                 return response()->json($rows);
             });
 
-            Route::post('/attendance/approve', function(\Illuminate\Http\Request $request) {
+            Route::post('/attendance/approve', function (\Illuminate\Http\Request $request) {
                 $data = $request->validate(['attendance_id' => 'required|integer']);
-                
+
                 $updateData = [
                     'status' => 'HADIR',
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ];
-                
+
                 if ($request->hasFile('admin_lampiran')) {
                     $file = $request->file('admin_lampiran');
-                    $filename = time() . '_approve_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filename = time().'_approve_'.uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('uploads/admin_attachments'), $filename);
-                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/'.$filename;
                 }
-                
+
                 DB::table('absensis')->where('id', $data['attendance_id'])->update($updateData);
-                
+
                 return response()->json(['message' => 'Absensi berhasil disetujui, status berubah menjadi HADIR.']);
             });
 
-            Route::post('/attendance/reject', function(\Illuminate\Http\Request $request) {
+            Route::post('/attendance/reject', function (\Illuminate\Http\Request $request) {
                 $data = $request->validate(['attendance_id' => 'required|integer']);
-                
+
                 $updateData = [
                     'status' => 'DITOLAK',
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ];
-                
+
                 if ($request->hasFile('admin_lampiran')) {
                     $file = $request->file('admin_lampiran');
-                    $filename = time() . '_reject_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filename = time().'_reject_'.uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('uploads/admin_attachments'), $filename);
-                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/'.$filename;
                 }
-                
+
                 DB::table('absensis')->where('id', $data['attendance_id'])->update($updateData);
-                
+
                 return response()->json(['message' => 'Absensi berhasil ditolak, status berubah menjadi DITOLAK.']);
             });
 
-            Route::post('/admin/permissions/approve', function(\Illuminate\Http\Request $request) {
+            Route::post('/admin/permissions/approve', function (\Illuminate\Http\Request $request) {
                 $data = $request->validate([
                     'permission_id' => 'required|integer',
-                    'tabel_sumber' => 'nullable|string'
+                    'tabel_sumber' => 'nullable|string',
                 ]);
-                
+
                 $table = $data['tabel_sumber'] ?? 'permohonan_izins';
-                
+
                 $permission = DB::table($table)->where('id', $data['permission_id'])->first();
-                if (!$permission) {
+                if (! $permission) {
                     return response()->json(['error' => 'Permohonan tidak ditemukan.'], 404);
                 }
-                
+
                 // Jika permohonan sebelumnya belum APPROVED dan jenisnya adalah tahunan
                 $jenis = $table === 'cutis' ? $permission->jenis_cuti : ($table === 'persetujuan_absensi_lupas' ? $permission->tipe_absen : $permission->jenis_izin);
-                if (strtoupper($permission->status) !== 'APPROVED' && strtolower((string)$jenis) === 'tahunan') {
+                if (strtoupper($permission->status) !== 'APPROVED' && strtolower((string) $jenis) === 'tahunan') {
                     $karyawan_id = $permission->karyawan_id;
                     $tahun = date('Y', strtotime($permission->tanggal_mulai));
-                    
+
                     $start = \Carbon\Carbon::parse($permission->tanggal_mulai)->startOfDay();
                     $end = \Carbon\Carbon::parse($permission->tanggal_selesai)->startOfDay();
                     $diffDays = $start->diffInDays($end) + 1;
-                    
+
                     $saldo = \App\Models\SaldoCuti::where('karyawan_id', $karyawan_id)
-                                ->where('tahun', $tahun)
-                                ->first();
-                                
+                        ->where('tahun', $tahun)
+                        ->first();
+
                     if ($saldo) {
                         $saldo->cuti_terpakai += $diffDays;
                         $saldo->sisa_cuti = $saldo->total_cuti - $saldo->cuti_terpakai;
@@ -1163,31 +1173,31 @@ Route::middleware([
                             'tahun' => $tahun,
                             'total_cuti' => 12,
                             'cuti_terpakai' => $diffDays,
-                            'sisa_cuti' => 12 - $diffDays
+                            'sisa_cuti' => 12 - $diffDays,
                         ]);
                     }
                 }
-                
+
                 $updateData = [
                     'status' => $table === 'persetujuan_absensi_lupas' ? 'approved' : 'APPROVED',
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ];
-                
+
                 if ($request->hasFile('admin_lampiran')) {
                     $file = $request->file('admin_lampiran');
-                    $filename = time() . '_approve_izin_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filename = time().'_approve_izin_'.uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('uploads/admin_attachments'), $filename);
-                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/'.$filename;
                 }
-                
+
                 DB::table($table)->where('id', $data['permission_id'])->update($updateData);
 
                 // SYNC KE ABSENSI UNTUK LUPA ABSEN & LEMBUR
                 $karyawan = \App\Models\Karyawan::find($permission->karyawan_id);
                 if ($karyawan && strtoupper($permission->status) !== 'APPROVED' && $permission->status !== 'approved') {
                     if ($table === 'persetujuan_absensi_lupas') {
-                        $waktuDateTime = \Carbon\Carbon::parse($permission->tanggal)->format('Y-m-d') . ' ' . \Carbon\Carbon::parse($permission->waktu)->format('H:i:s');
-                        
+                        $waktuDateTime = \Carbon\Carbon::parse($permission->tanggal)->format('Y-m-d').' '.\Carbon\Carbon::parse($permission->waktu)->format('H:i:s');
+
                         $tanggalAbsen = \Carbon\Carbon::parse($permission->tanggal);
                         $startDateObj = $tanggalAbsen->copy()->setTime(6, 0, 0);
                         $endDateObj = $tanggalAbsen->copy()->addDays(1)->setTime(5, 59, 59);
@@ -1212,7 +1222,7 @@ Route::middleware([
                         if ($existingLog) {
                             $existingLog->update([
                                 'waktu' => $waktuDateTime,
-                                'keterangan' => 'Lupa Absen: ' . $permission->alasan,
+                                'keterangan' => 'Lupa Absen: '.$permission->alasan,
                                 'status' => 'Valid',
                                 'device' => 'Manual Approval',
                             ]);
@@ -1222,7 +1232,7 @@ Route::middleware([
                                 'nik' => $karyawan->nik,
                                 'waktu' => $waktuDateTime,
                                 'tipe' => $mappedTipe,
-                                'keterangan' => 'Lupa Absen: ' . $permission->alasan,
+                                'keterangan' => 'Lupa Absen: '.$permission->alasan,
                                 'status' => 'Valid',
                                 'device' => 'Manual Approval',
                             ]);
@@ -1230,7 +1240,7 @@ Route::middleware([
                     } elseif ($table === 'persetujuan_absensi_lemburs') {
                         $waktuMasuk = \Carbon\Carbon::parse($permission->tanggal)->setTimeFromTimeString($permission->jam_mulai);
                         $waktuPulang = \Carbon\Carbon::parse($permission->tanggal)->setTimeFromTimeString($permission->jam_selesai);
-                        
+
                         if ($waktuPulang->lt($waktuMasuk)) {
                             $waktuPulang->addDay();
                         }
@@ -1254,36 +1264,35 @@ Route::middleware([
                         }
                     }
                 }
-                
+
                 return response()->json(['message' => 'Permohonan berhasil disetujui.']);
             });
 
-            Route::post('/admin/permissions/reject', function(\Illuminate\Http\Request $request) {
+            Route::post('/admin/permissions/reject', function (\Illuminate\Http\Request $request) {
                 $data = $request->validate([
                     'permission_id' => 'required|integer',
-                    'tabel_sumber' => 'nullable|string'
+                    'tabel_sumber' => 'nullable|string',
                 ]);
-                
+
                 $table = $data['tabel_sumber'] ?? 'permohonan_izins';
-                
+
                 $updateData = [
                     'status' => $table === 'persetujuan_absensi_lupas' ? 'rejected' : 'REJECTED',
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ];
-                
+
                 if ($request->hasFile('admin_lampiran')) {
                     $file = $request->file('admin_lampiran');
-                    $filename = time() . '_reject_izin_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filename = time().'_reject_izin_'.uniqid().'.'.$file->getClientOriginalExtension();
                     $file->move(public_path('uploads/admin_attachments'), $filename);
-                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/' . $filename;
+                    $updateData['admin_lampiran'] = '/uploads/admin_attachments/'.$filename;
                 }
-                
+
                 DB::table($table)->where('id', $data['permission_id'])->update($updateData);
-                
+
                 return response()->json(['message' => 'Permohonan ditolak.']);
             });
         });
-        
 
     });
 
@@ -1384,7 +1393,7 @@ Route::middleware([
         Route::get('karyawan/import-update', [KaryawanController::class, 'importUpdateForm'])
             ->name('karyawan.import-update')
             ->middleware(['auth', 'can:master-karyawan-update']);
-            
+
         Route::post('karyawan/import-dpp', [KaryawanController::class, 'importDpp'])
             ->name('karyawan.import-dpp')
             ->middleware(['auth', 'can:master-karyawan-update']);
@@ -2603,7 +2612,7 @@ Route::middleware([
         Route::post('absensi/hari-libur', [AbsensiController::class, 'storeHariLibur'])
             ->name('absensi.hari_libur.store')
             ->middleware('can:absensi-rekap');
-            
+
         Route::delete('absensi/hari-libur/{id}', [AbsensiController::class, 'destroyHariLibur'])
             ->name('absensi.hari_libur.destroy')
             ->middleware('can:absensi-rekap');
@@ -2668,7 +2677,7 @@ Route::middleware([
         Route::post('master/shipper-consignee/import', [\App\Http\Controllers\ShipperConsigneeController::class, 'import'])->name('master.shipper-consignee.import');
         Route::get('master/shipper-consignee/template-contact', [\App\Http\Controllers\ShipperConsigneeController::class, 'templateContact'])->name('master.shipper-consignee.template-contact');
         Route::post('master/shipper-consignee/import-contact', [\App\Http\Controllers\ShipperConsigneeController::class, 'importContact'])->name('master.shipper-consignee.import-contact');
-        
+
         Route::resource('master/shipper-consignee', \App\Http\Controllers\ShipperConsigneeController::class)
             ->names('master.shipper-consignee')
             ->middleware([
@@ -3009,7 +3018,7 @@ Route::middleware([
         Route::get('biaya-bensin/print/{id}', [BiayaBensinController::class, 'print'])
             ->name('biaya-bensin.print')
             ->middleware('can:biaya-bensin-view');
-            
+
         Route::get('biaya-bensin/approval', [BiayaBensinController::class, 'approvalList'])
             ->name('biaya-bensin.approval')
             ->middleware('can:biaya-bensin-view');
@@ -3034,7 +3043,7 @@ Route::middleware([
         Route::get('pranota-biaya-bensin/print/{id}', [\App\Http\Controllers\PranotaBiayaBensinController::class, 'print'])
             ->name('pranota-biaya-bensin.print')
             ->middleware('can:pranota-biaya-bensin-view');
-        
+
         Route::resource('pranota-biaya-bensin', \App\Http\Controllers\PranotaBiayaBensinController::class)->middleware([
             'index' => 'can:pranota-biaya-bensin-view',
             'show' => 'can:pranota-biaya-bensin-view',
@@ -3069,7 +3078,7 @@ Route::middleware([
         Route::post('biaya-kapal/export-buruh-range', [\App\Http\Controllers\BiayaKapalController::class, 'exportBuruhRange'])
             ->name('biaya-kapal.export-buruh-range')
             ->middleware('can:biaya-kapal-view');
-            
+
         Route::post('biaya-kapal/export-valuasi', [\App\Http\Controllers\BiayaKapalController::class, 'exportValuasi'])
             ->name('biaya-kapal.export-valuasi')
             ->middleware('can:biaya-kapal-view');
@@ -3116,7 +3125,7 @@ Route::middleware([
         Route::get('rekap-biaya-kapal/get-voyages', [\App\Http\Controllers\RekapBiayaKapalController::class, 'getVoyages'])
             ->name('rekap-biaya-kapal.get-voyages')
             ->middleware('can:biaya-kapal-view');
-            
+
         Route::get('rekap-biaya-asset', [\App\Http\Controllers\RekapBiayaAssetController::class, 'index'])
             ->name('rekap-biaya-asset.index')
             ->middleware('can:rekap-biaya-asset-view');
@@ -3124,7 +3133,7 @@ Route::middleware([
         Route::get('rekap-biaya-asset/show', [\App\Http\Controllers\RekapBiayaAssetController::class, 'show'])
             ->name('rekap-biaya-asset.show')
             ->middleware('can:rekap-biaya-asset-view');
-            
+
         Route::get('rekap-pemakaian-barang', [\App\Http\Controllers\RekapPemakaianBarangController::class, 'index'])
             ->name('rekap-pemakaian-barang.index')
             ->middleware('can:rekap-pemakaian-barang-view');
@@ -3479,7 +3488,6 @@ Route::middleware([
         Route::post('master/pengirim-import-update', [PengirimController::class, 'importUpdate'])
             ->name('pengirim.import-update')
             ->middleware('can:master-pengirim-create');
-
 
         // Master Pengirim/Penerima - Download Template & Import (HARUS SEBELUM RESOURCE!)
         Route::get('master-pengirim-penerima/download-template', [MasterPengirimPenerimaController::class, 'downloadTemplate'])
@@ -7057,6 +7065,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('stock-amprahan/valuasi/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPrint'])->name('stock-amprahan.valuasi-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi/excel', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiExcel'])->name('stock-amprahan.valuasi-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pemakaian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianPrint'])->name('stock-amprahan.valuasi-pemakaian-print')->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/dashboard-pemakaian', [\App\Http\Controllers\DashboardPemakaianBarangController::class, 'index'])->name('stock-amprahan.dashboard-pemakaian')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pemakaian/excel', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianExcel'])->name('stock-amprahan.valuasi-pemakaian-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pembelian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPembelianPrint'])->name('stock-amprahan.valuasi-pembelian-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')->middleware('can:stock-amprahan-view');
@@ -7236,7 +7245,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('bl.import')
         ->middleware('can:bl-create');
 
-        Route::get('bl/rekap-bongkaran-kontainer/select', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainerSelect'])->name('bl.rekap-bongkaran-kontainer.select')
+    Route::get('bl/rekap-bongkaran-kontainer/select', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainerSelect'])->name('bl.rekap-bongkaran-kontainer.select')
         ->middleware('can:bl-view');
 
     Route::get('bl/rekap-bongkaran-kontainer', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainer'])->name('bl.rekap-bongkaran-kontainer')
@@ -7786,7 +7795,7 @@ Route::middleware(['auth',
         Route::get('/compose', [\App\Http\Controllers\EmailController::class, 'create'])->name('create')->middleware('can:email-create');
         Route::post('/store', [\App\Http\Controllers\EmailController::class, 'store'])->name('store')->middleware('can:email-create');
         Route::get('/{email}', [\App\Http\Controllers\EmailController::class, 'show'])->name('show')->middleware('can:email-view');
-        
+
         // Actions
         Route::patch('/{email}/trash', [\App\Http\Controllers\EmailController::class, 'moveToTrash'])->name('moveToTrash')->middleware('can:email-delete');
         Route::patch('/{email}/spam', [\App\Http\Controllers\EmailController::class, 'markAsSpam'])->name('markAsSpam')->middleware('can:email-delete');
@@ -7799,10 +7808,10 @@ Route::middleware(['auth',
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
     Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
-    
+
     // Restore PranotaUangMakan untuk menyimpan draft Kalkulasi Uang Makan
     Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');
-    
+
     // Tambah controller baru untuk Pranota Gabungan PUML
     Route::post('pranota-puml/{id}/potongan', [\App\Http\Controllers\PranotaPumlController::class, 'storePotongan'])->name('pranota-puml.store-potongan')->middleware('can:pranota-puml-view');
     Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:pranota-puml-view');
@@ -7814,7 +7823,7 @@ Route::middleware(['auth',
     Route::get('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'show'])->name('pranota-lembur-karyawan.show')->middleware('can:payroll-view');
     Route::get('/payroll/pranota-lembur-karyawan/{id}/export', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'export'])->name('pranota-lembur-karyawan.export')->middleware('can:payroll-view');
     Route::delete('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'destroy'])->name('pranota-lembur-karyawan.destroy')->middleware('can:payroll-view');
-    
+
     // Master Tunjangan
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)
         ->names('master.tunjangan')
@@ -7855,7 +7864,7 @@ Route::middleware(['auth',
     Route::get('permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'index'])->name('permohonan-amprahan.index')->middleware('can:permohonan-amprahan-view');
     Route::get('permohonan-amprahan/{id}', [\App\Http\Controllers\PermohonanAmprahanController::class, 'show'])->name('permohonan-amprahan.show')->middleware('can:permohonan-amprahan-view');
     Route::get('permohonan-amprahan/{id}/print', [\App\Http\Controllers\PermohonanAmprahanController::class, 'print'])->name('permohonan-amprahan.print')->middleware('can:permohonan-amprahan-view');
-    
+
     // Approval Permintaan Amprahan
     Route::get('approval-permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'approvalIndex'])->name('approval-permohonan-amprahan.index')->middleware('can:permohonan-amprahan-approve');
     Route::get('approval-permohonan-amprahan/{id}/process-form', [\App\Http\Controllers\PermohonanAmprahanController::class, 'approvalProcessForm'])->name('approval-permohonan-amprahan.process-form')->middleware('can:permohonan-amprahan-approve');

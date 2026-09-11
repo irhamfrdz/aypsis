@@ -1343,6 +1343,11 @@
         @endif
         
         {{-- Rekap Pemakaian Barang --}}
+        @can('stock-amprahan-view')
+        <div class="mx-2 mb-3">
+            <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 {{ Request::routeIs('stock-amprahan.dashboard-pemakaian') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">Dashboard Pemakaian Barang</a>
+        </div>
+        @endcan
         @if($user && $user->can('rekap-pemakaian-barang-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('rekap-pemakaian-barang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-pemakaian-barang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">

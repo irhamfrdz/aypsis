@@ -10,6 +10,7 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Manajemen Stock Amprahan</h1>
             <p class="text-gray-500 text-sm mt-1">Kelola ketersediaan barang operasional dan kantor.</p>
+            <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="inline-flex items-center mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg"><i class="fas fa-chart-bar mr-2"></i>Dashboard Pemakaian Barang</a>
         </div>
         <div class="mt-4 md:mt-0 flex space-x-2">
             <a href="{{ route('stock-amprahan.all-history', ['lokasi' => request('lokasi'), 'mobil_id' => request('mobil_id')]) }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
@@ -3064,4 +3065,3 @@
     }
 </script>
 @endpush
-
