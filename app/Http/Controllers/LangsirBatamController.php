@@ -7,6 +7,7 @@ use App\Models\LangsirBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class LangsirBatamController extends Controller
 {
@@ -32,6 +33,7 @@ class LangsirBatamController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('no_transaksi', 'like', "%{$search}%")
+                    ->orWhere('no_surat_jalan', 'like', "%{$search}%")
                     ->orWhere('no_kontainer', 'like', "%{$search}%")
                     ->orWhere('supir', 'like', "%{$search}%");
             });
@@ -50,7 +52,7 @@ class LangsirBatamController extends Controller
         $stockContainers = \App\Models\StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('ukuran', 'nomor_seri_gabungan')->toArray();
         $containers = \App\Models\Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('ukuran', 'nomor_seri_gabungan')->toArray();
         $containerSizesRaw = array_merge($containers, $stockContainers);
-        
+
         $containerSizes = [];
         foreach ($containerSizesRaw as $no => $size) {
             // Normalize size format, e.g. "20" to "20FT"
@@ -93,7 +95,7 @@ class LangsirBatamController extends Controller
     public function getContainerManifestHistory(Request $request)
     {
         $no_kontainer = $request->input('no_kontainer');
-        if (!$no_kontainer) {
+        if (! $no_kontainer) {
             return response()->json(['success' => false, 'message' => 'No kontainer provided']);
         }
 
@@ -112,7 +114,7 @@ class LangsirBatamController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         }
 
@@ -126,6 +128,12 @@ class LangsirBatamController extends Controller
     {
         $validated = $request->validate([
             'no_transaksi' => 'required|unique:langsir_batams,no_transaksi',
+            'no_surat_jalan' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('langsir_batams', 'no_surat_jalan')->whereNull('deleted_at'),
+            ],
             'tanggal' => 'required|date',
             'no_kontainer' => 'required|string',
             'size' => 'required|string',
@@ -139,6 +147,8 @@ class LangsirBatamController extends Controller
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
+        ], [
+            'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
         ]);
 
         $validated['input_by'] = Auth::id();
@@ -159,7 +169,7 @@ class LangsirBatamController extends Controller
             $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
                 ->where('status', '!=', 'inactive')
                 ->first();
-            
+
             if ($stockKontainer) {
                 $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
             }
@@ -175,7 +185,7 @@ class LangsirBatamController extends Controller
         $tujuanGudang = \App\Models\Gudang::find($validated['gudang_tujuan_id']);
         $namaTujuan = $tujuanGudang ? $tujuanGudang->nama_gudang : $validated['ke'];
 
-        $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
+        $obSuffix = $validated['ob_dalam_pelabuhan'] ? ' [OB Dalam Pelabuhan]' : '';
 
         \App\Models\HistoryKontainer::create([
             'nomor_kontainer' => $validated['no_kontainer'],
@@ -184,7 +194,7 @@ class LangsirBatamController extends Controller
             'tanggal_kegiatan' => $validated['tanggal'],
             'asal_gudang_id' => $asalGudang?->id,
             'gudang_id' => $validated['gudang_tujuan_id'],
-            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}].".($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ''),
             'created_by' => Auth::id(),
         ]);
 
@@ -209,8 +219,12 @@ class LangsirBatamController extends Controller
         $supirMap = [];
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
         foreach ($karyawanSupirs as $k) {
-            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k;
-            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k;
+            if ($k->nama_panggilan) {
+                $supirMap[strtolower(trim($k->nama_panggilan))] = $k;
+            }
+            if ($k->nama_lengkap) {
+                $supirMap[strtolower(trim($k->nama_lengkap))] = $k;
+            }
         }
 
         $allKendaraansMap = [];
@@ -225,6 +239,14 @@ class LangsirBatamController extends Controller
             $gudangMap[strtolower(trim($g->nama_gudang))] = $g->id;
         }
 
+        // Map existing no_surat_jalan in DB for uniqueness check
+        $existingSjList = LangsirBatam::whereNotNull('no_surat_jalan')
+            ->pluck('no_surat_jalan')
+            ->map(fn ($sj) => strtoupper(trim($sj)))
+            ->toArray();
+        $existingSjMap = array_flip($existingSjList);
+        $seenBatchSj = [];
+
         try {
             DB::beginTransaction();
 
@@ -233,32 +255,57 @@ class LangsirBatamController extends Controller
 
                 if (empty($row['tanggal']) || empty($row['no_kontainer']) || empty($row['size'])) {
                     $errors[] = "Baris {$rowNumber}: Tanggal, No Kontainer, dan Size wajib diisi.";
+
                     continue;
+                }
+
+                // Validasi Unik Nomor Surat Jalan jika diisi
+                if (! empty($row['no_surat_jalan'])) {
+                    $noSuratJalanTrim = trim($row['no_surat_jalan']);
+                    $sjKey = strtoupper($noSuratJalanTrim);
+
+                    if (isset($seenBatchSj[$sjKey])) {
+                        $prevRow = $seenBatchSj[$sjKey];
+                        $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$noSuratJalanTrim}' duplikat dengan baris {$prevRow} pada input massal.";
+
+                        continue;
+                    }
+
+                    if (isset($existingSjMap[$sjKey])) {
+                        $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$noSuratJalanTrim}' sudah terdaftar di database.";
+
+                        continue;
+                    }
+
+                    $seenBatchSj[$sjKey] = $rowNumber;
                 }
 
                 $obDalamPelabuhan = (strtolower(trim($row['ob_dalam_pelabuhan'] ?? '')) === 'ya');
 
-                if (!$obDalamPelabuhan && (empty($row['dari']) || empty($row['ke']))) {
+                if (! $obDalamPelabuhan && (empty($row['dari']) || empty($row['ke']))) {
                     $errors[] = "Baris {$rowNumber}: Dari dan Ke wajib diisi jika bukan OB Dalam Pelabuhan.";
+
                     continue;
                 }
 
                 // Cek Gudang Tujuan
                 if (empty($row['gudang_tujuan'])) {
                     $errors[] = "Baris {$rowNumber}: Gudang Tujuan wajib diisi.";
+
                     continue;
                 }
-                
+
                 $gudangKey = strtolower(trim($row['gudang_tujuan']));
                 if (isset($gudangMap[$gudangKey])) {
                     $row['gudang_tujuan_id'] = $gudangMap[$gudangKey];
                 } else {
                     $errors[] = "Baris {$rowNumber}: Gudang '{$row['gudang_tujuan']}' tidak ditemukan atau tidak aktif.";
+
                     continue;
                 }
 
                 // Check Supir in Master Karyawan (divisi supir)
-                if (!empty($row['supir'])) {
+                if (! empty($row['supir'])) {
                     $supirKey = strtolower(trim($row['supir']));
                     if (isset($supirMap[$supirKey])) {
                         $row['supir'] = $supirMap[$supirKey]->nama_panggilan ?: $supirMap[$supirKey]->nama_lengkap;
@@ -268,25 +315,28 @@ class LangsirBatamController extends Controller
                         }
                     } else {
                         $errors[] = "Baris {$rowNumber}: Supir '{$row['supir']}' tidak terdaftar di Master Karyawan dengan divisi Supir.";
+
                         continue;
                     }
                 }
 
                 // Check No Plat in Master Kendaraan and auto-correct formatting
-                if (!empty($row['no_plat'])) {
+                if (! empty($row['no_plat'])) {
                     $platClean = strtolower(trim(str_replace(' ', '', $row['no_plat'])));
                     if (isset($allKendaraansMap[$platClean])) {
                         $row['no_plat'] = $allKendaraansMap[$platClean];
                     } else {
                         $errors[] = "Baris {$rowNumber}: No Plat '{$row['no_plat']}' tidak terdaftar di Master Mobil.";
+
                         continue;
                     }
                 }
 
                 $noTransaksi = LangsirBatam::generateNoTransaksi();
-                
+
                 $dataInsert = [
                     'no_transaksi' => $noTransaksi,
+                    'no_surat_jalan' => ! empty($row['no_surat_jalan']) ? trim($row['no_surat_jalan']) : null,
                     'tanggal' => $row['tanggal'],
                     'no_kontainer' => $row['no_kontainer'],
                     'size' => $row['size'],
@@ -309,7 +359,7 @@ class LangsirBatamController extends Controller
                 $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $dataInsert['no_kontainer'])
                     ->where('status', '!=', 'inactive')
                     ->first();
-                
+
                 if ($stockKontainer) {
                     $stockKontainer->update(['gudangs_id' => $dataInsert['gudang_tujuan_id']]);
                 }
@@ -319,7 +369,7 @@ class LangsirBatamController extends Controller
                 $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($dataInsert['dari']))->first();
                 $tujuanGudang = \App\Models\Gudang::find($dataInsert['gudang_tujuan_id']);
                 $namaTujuan = $tujuanGudang ? $tujuanGudang->nama_gudang : $dataInsert['ke'];
-                $obSuffix = $dataInsert['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
+                $obSuffix = $dataInsert['ob_dalam_pelabuhan'] ? ' [OB Dalam Pelabuhan]' : '';
 
                 \App\Models\HistoryKontainer::create([
                     'nomor_kontainer' => $dataInsert['no_kontainer'],
@@ -328,34 +378,37 @@ class LangsirBatamController extends Controller
                     'tanggal_kegiatan' => $dataInsert['tanggal'],
                     'asal_gudang_id' => $asalGudang?->id,
                     'gudang_id' => $dataInsert['gudang_tujuan_id'],
-                    'keterangan' => "Langsir ({$dataInsert['status']}) dari {$dataInsert['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$dataInsert['no_transaksi']}]." . ($dataInsert['keterangan'] ? " Ket: {$dataInsert['keterangan']}" : ""),
+                    'keterangan' => "Langsir ({$dataInsert['status']}) dari {$dataInsert['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$dataInsert['no_transaksi']}].".($dataInsert['keterangan'] ? " Ket: {$dataInsert['keterangan']}" : ''),
                     'created_by' => Auth::id(),
                 ]);
 
                 $successCount++;
             }
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 DB::rollBack();
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Terdapat kesalahan pada sebagian data. Seluruh proses dibatalkan.',
-                    'errors' => $errors
+                    'errors' => $errors,
                 ], 422);
             }
 
             DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil menyimpan {$successCount} data Langsir Batam massal.",
-                'redirect' => route('langsir-batam.index')
+                'redirect' => route('langsir-batam.index'),
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan sistem: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -403,6 +456,12 @@ class LangsirBatamController extends Controller
         $langsir = LangsirBatam::findOrFail($id);
 
         $validated = $request->validate([
+            'no_surat_jalan' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('langsir_batams', 'no_surat_jalan')->ignore($langsir->id)->whereNull('deleted_at'),
+            ],
             'tanggal' => 'required|date',
             'no_kontainer' => 'required|string',
             'size' => 'required|string',
@@ -415,6 +474,8 @@ class LangsirBatamController extends Controller
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
+        ], [
+            'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
         ]);
 
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
@@ -438,7 +499,7 @@ class LangsirBatamController extends Controller
 
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
 
-        $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
+        $obSuffix = $validated['ob_dalam_pelabuhan'] ? ' [OB Dalam Pelabuhan]' : '';
 
         $history = \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->first();
         if ($history) {
@@ -449,7 +510,7 @@ class LangsirBatamController extends Controller
                 'tipe_kontainer' => $tipeKontainer,
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
-                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}].".($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ''),
             ]);
         } else {
             \App\Models\HistoryKontainer::create([
@@ -458,7 +519,7 @@ class LangsirBatamController extends Controller
                 'jenis_kegiatan' => 'Langsir',
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
-                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}].".($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ''),
                 'created_by' => Auth::id(),
             ]);
         }
@@ -472,7 +533,7 @@ class LangsirBatamController extends Controller
     public function destroy($id)
     {
         $langsir = LangsirBatam::findOrFail($id);
-        
+
         // Delete HistoryKontainer
         \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->delete();
 
@@ -498,6 +559,6 @@ class LangsirBatamController extends Controller
             $langsir->delete();
         }
 
-        return redirect()->route('langsir-batam.index')->with('success', count($request->ids) . ' Data Langsir Batam berhasil dihapus.');
+        return redirect()->route('langsir-batam.index')->with('success', count($request->ids).' Data Langsir Batam berhasil dihapus.');
     }
 }

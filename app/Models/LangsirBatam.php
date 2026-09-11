@@ -14,6 +14,7 @@ class LangsirBatam extends Model
 
     protected $fillable = [
         'no_transaksi',
+        'no_surat_jalan',
         'tanggal',
         'no_kontainer',
         'size',

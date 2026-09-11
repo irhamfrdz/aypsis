@@ -55,6 +55,12 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Surat Jalan</label>
+                            <input type="text" name="no_surat_jalan" value="{{ old('no_surat_jalan') }}" placeholder="Contoh: SJ-2026/001 (Opsional)"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                        </div>
+
+                        <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Tanggal <span class="text-red-500">*</span></label>
                             <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">

@@ -77,7 +77,7 @@
                                        id="search" 
                                        name="search" 
                                        value="{{ $search }}" 
-                                       placeholder="Cari No. Transaksi, Kontainer, Supir..."
+                                       placeholder="Cari No. Transaksi, No. Surat Jalan, Kontainer, Supir..."
                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@
                                 </th>
                                 @endcan
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Transaksi</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Transaksi / SJ</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kontainer</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dari - Ke</th>
@@ -179,8 +179,13 @@
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-900">
                                         {{ $langsirs->firstItem() + $index }}
                                     </td>
-                                    <td class="px-4 py-3 whitespace-nowrap font-medium text-blue-600">
-                                        {{ $langsir->no_transaksi }}
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="font-medium text-blue-600">{{ $langsir->no_transaksi }}</div>
+                                        @if($langsir->no_surat_jalan)
+                                            <div class="text-[11px] font-semibold text-gray-700 mt-0.5">
+                                                <span class="text-gray-400 font-normal">SJ:</span> {{ $langsir->no_surat_jalan }}
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-700">
                                         {{ $langsir->tanggal->format('d/m/Y') }}
@@ -367,17 +372,17 @@
                     </h4>
                     <p class="text-xs text-emerald-700 mb-1">Setiap baris = 1 data langsir. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100 whitespace-nowrap">
-                        Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan
+                        Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; No Surat Jalan
                     </div>
                     <p class="text-xs text-emerald-600 mt-1">
-                        <strong>Contoh:</strong> 2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat
+                        <strong>Contoh:</strong> 2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345
                     </p>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Langsir <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat"></textarea>
+                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;SJ-12345"></textarea>
                 </div>
                 <div class="flex items-center gap-3 mb-4">
                     <button type="button" onclick="parseBulkData()" class="inline-flex items-center px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -394,6 +399,7 @@
                                 <tr>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">#</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">No. SJ</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Kontainer</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Size</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Dari & Ke</th>
@@ -541,6 +547,8 @@ function parseBulkData() {
 
     const lines = text.split(/\r?\n/);
     let validCount = 0;
+    const seenSjInBulk = {};
+    let duplicateSjErrors = [];
     
     lines.forEach((line) => {
         if (!line.trim()) return;
@@ -572,6 +580,16 @@ function parseBulkData() {
             }
 
             const tanggalVal = convertExcelDate(cols[0] || '');
+            const noSuratJalanVal = cols[13] || '';
+
+            if (noSuratJalanVal) {
+                const sjKey = noSuratJalanVal.toUpperCase();
+                if (seenSjInBulk[sjKey]) {
+                    duplicateSjErrors.push(`Baris ${validCount + 1}: No. Surat Jalan '${noSuratJalanVal}' duplikat dengan baris ${seenSjInBulk[sjKey]}`);
+                } else {
+                    seenSjInBulk[sjKey] = validCount + 1;
+                }
+            }
 
             const rowData = {
                 tanggal: tanggalVal,
@@ -586,7 +604,8 @@ function parseBulkData() {
                 biaya: biayaVal,
                 status: statusVal,
                 ob_dalam_pelabuhan: obVal,
-                keterangan: cols[12] || ''
+                keterangan: cols[12] || '',
+                no_surat_jalan: noSuratJalanVal
             };
             bulkParsedRows.push(rowData);
             
@@ -594,6 +613,7 @@ function parseBulkData() {
             tr.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${validCount + 1}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.tanggal}</td>
+                <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_surat_jalan || '-'}</td>
                 <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_kontainer}<br><span class="text-gray-500 text-[10px]">${rowData.no_seal}</span></td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${rowData.size}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.dari} <br> ${rowData.ke}</td>
@@ -607,6 +627,19 @@ function parseBulkData() {
             validCount++;
         }
     });
+
+    if (duplicateSjErrors.length > 0) {
+        let errorMsg = '<ul class="list-disc pl-5 mt-1 text-left">';
+        duplicateSjErrors.forEach(e => { errorMsg += `<li>${e}</li>`; });
+        errorMsg += '</ul>';
+        showBulkAlert('Duplikasi Nomor Surat Jalan', errorMsg, 'error');
+        submitBtn.disabled = true;
+        if (validCount > 0) {
+            previewContainer.classList.remove('hidden');
+            parseInfo.innerHTML = `<span class="text-red-600 font-semibold">${validCount} baris (ada duplikat No. SJ)</span>`;
+        }
+        return;
+    }
 
     if (validCount > 0) {
         previewContainer.classList.remove('hidden');

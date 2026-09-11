@@ -34,10 +34,14 @@
 
             <div class="p-6">
                 <!-- Info Header Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <div class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">No. Transaksi</div>
                         <div class="text-lg font-black text-blue-900">{{ $langsir->no_transaksi }}</div>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1">No. Surat Jalan</div>
+                        <div class="text-lg font-black text-indigo-900">{{ $langsir->no_surat_jalan ?? '-' }}</div>
                     </div>
                     <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                         <div class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Tanggal</div>
@@ -61,6 +65,10 @@
                             Detail Kontainer & Rute
                         </h3>
                         <div class="bg-gray-50 rounded-xl p-4 space-y-4 border border-gray-100 shadow-inner">
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                <span class="text-xs text-gray-500 uppercase">No. Surat Jalan</span>
+                                <span class="text-sm font-bold text-gray-900">{{ $langsir->no_surat_jalan ?? '-' }}</span>
+                            </div>
                             <div class="flex justify-between items-center border-b border-gray-200 pb-2">
                                 <span class="text-xs text-gray-500 uppercase">No. Kontainer</span>
                                 <span class="text-sm font-bold text-gray-900">{{ $langsir->no_kontainer }}</span>
