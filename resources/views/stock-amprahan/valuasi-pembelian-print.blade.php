@@ -117,6 +117,7 @@
             <tr>
                 <th style="width: 80px;">Tanggal Beli</th>
                 <th style="width: 100px;">No. Bukti</th>
+                <th style="width: 120px;">No. Pranota</th>
                 <th>Nama Barang</th>
                 <th>Vendor / Toko</th>
                 <th style="width: 90px;">Tipe Amprahan</th>
@@ -147,6 +148,7 @@
                 <tr class="row-separator">
                     <td>{{ $purchase->tanggal_beli ? $purchase->tanggal_beli->format('d M Y') : ($purchase->created_at ? $purchase->created_at->format('d M Y') : '-') }}</td>
                     <td>{{ $purchase->nomor_bukti ?? '-' }}</td>
+                    <td>{{ implode(', ', $pranotaNumbersByStockId[$purchase->id] ?? []) ?: '-' }}</td>
                     <td>{{ $purchase->nama_barang ?? ($purchase->masterNamaBarangAmprahan->nama_barang ?? '-') }}</td>
                     <td>{{ $purchase->vendorAmprahan->nama_toko ?? '-' }}</td>
                     <td>{{ $purchase->type_amprahan ?? '-' }}</td>
@@ -159,11 +161,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="11" class="center" style="padding: 20px;">Tidak ada transaksi pembelian dalam periode ini.</td>
+                    <td colspan="12" class="center" style="padding: 20px;">Tidak ada transaksi pembelian dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
-                <td colspan="5">TOTAL</td>
+                <td colspan="6">TOTAL</td>
                 <td class="right">{{ number_format($totalQtyBeli, 0, ',', '.') }}</td>
                 <td></td>
                 <td></td>

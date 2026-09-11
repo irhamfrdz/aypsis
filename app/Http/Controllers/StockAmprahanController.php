@@ -2710,11 +2710,27 @@ class StockAmprahanController extends Controller
 
         $purchases = $query->orderBy('tanggal_beli', 'asc')->orderBy('created_at', 'asc')->get();
 
+        $pranotaNumbersByStockId = [];
+        if ($purchases->isNotEmpty()) {
+            $purchaseIds = array_fill_keys($purchases->modelKeys(), true);
+
+            // Stock references are stored in the pranota's JSON items.
+            foreach (\App\Models\PranotaStock::select('id', 'nomor_pranota', 'items')->orderBy('id')->lazyById() as $pranota) {
+                foreach ($pranota->items ?? [] as $item) {
+                    $stockId = $item['id'] ?? null;
+                    if ($stockId && isset($purchaseIds[$stockId])) {
+                        $pranotaNumbersByStockId[$stockId][$pranota->id] = $pranota->nomor_pranota;
+                    }
+                }
+            }
+        }
+
         return view('stock-amprahan.valuasi-pembelian-print', [
             'lokasiName' => $lokasiName,
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'purchases' => $purchases,
+            'pranotaNumbersByStockId' => $pranotaNumbersByStockId,
         ]);
     }
 }
