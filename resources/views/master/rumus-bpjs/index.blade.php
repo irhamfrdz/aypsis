@@ -86,7 +86,7 @@
                         <th class="px-4 py-3 border-b">Cabang BPJS</th>
                         <th class="px-4 py-3 border-b text-center">Tunjangan (%)</th>
                         <th class="px-4 py-3 border-b text-center">Hutang (%)</th>
-                        <th class="px-4 py-3 border-b text-center">Biaya (%)</th>
+                        <th class="px-4 py-3 border-b text-center">Biaya (Rp)</th>
                         <th class="px-4 py-3 border-b text-center">Diskon</th>
                         <th class="px-4 py-3 border-b">Keterangan / Custom</th>
                         <th class="px-4 py-3 border-b text-center w-24">Aksi</th>
@@ -103,7 +103,7 @@
                             <td class="px-4 py-3 text-gray-600">{{ $item->cabang_bpjs ?: '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->tunjangan_persen ? $item->tunjangan_persen . '%' : '-' }}</td>
                             <td class="px-4 py-3 text-center font-medium">{{ $item->hutang_persen ? $item->hutang_persen . '%' : '-' }}</td>
-                            <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? $item->biaya_persen . '%' : '-' }}</td>
+                            <td class="px-4 py-3 text-center font-medium">{{ $item->biaya_persen ? 'Rp ' . number_format((float)$item->biaya_persen, 0, ',', '.') : '-' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="inline-flex flex-col items-center space-y-1" id="diskon-cell-{{ $item->id }}">
                                     <select onchange="handleTableDiskonStatusChange(this, {{ $item->id }})" 
