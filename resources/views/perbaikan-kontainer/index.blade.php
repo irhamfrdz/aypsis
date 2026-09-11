@@ -12,6 +12,13 @@
             <p class="text-xs text-gray-600">Kelola data perbaikan kontainer yang rusak dan dalam perawatan.</p>
         </div>
         <div>
+            @can('perbaikan-kontainer-view')
+            <a href="{{ route('perbaikan-kontainer.excel', request()->query()) }}"
+               class="inline-flex items-center px-4 py-2 mr-2 border border-green-600 rounded-lg text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-sm">
+                <i class="fas fa-file-excel mr-2"></i>
+                Download Excel
+            </a>
+            @endcan
             @can('perbaikan-kontainer-update')
             <a href="{{ route('perbaikan-kontainer.create') }}" 
                class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm">

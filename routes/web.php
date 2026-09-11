@@ -7714,6 +7714,10 @@ Route::middleware(['auth',
         ->name('perbaikan-kontainer.generate-nomor-pranota')
         ->middleware('can:perbaikan-kontainer-view');
 
+    Route::get('perbaikan-kontainer/excel', [\App\Http\Controllers\PerbaikanKontainerController::class, 'excel'])
+        ->name('perbaikan-kontainer.excel')
+        ->middleware('can:perbaikan-kontainer-view');
+
     Route::post('perbaikan-kontainer/masuk-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'masukPranota'])
         ->name('perbaikan-kontainer.masuk-pranota')
         ->middleware('can:perbaikan-kontainer-view');
@@ -7859,4 +7863,3 @@ Route::middleware(['auth',
     // Tanggal Gerak Voyage
     Route::resource('gerak-voyage', \App\Http\Controllers\GerakVoyageController::class)->middleware('can:gerak-voyage-view');
 });
-

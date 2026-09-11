@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\PerbaikanKontainer;
 use App\Models\PranotaPerbaikanKontainer;
 use App\Models\VendorBengkel;
+use App\Exports\PerbaikanKontainerExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PerbaikanKontainerController extends Controller
 {
@@ -52,6 +54,26 @@ class PerbaikanKontainerController extends Controller
         $bengkels = VendorBengkel::all();
 
         return view('perbaikan-kontainer.index', compact('perbaikanKontainers', 'bengkels'));
+    }
+
+    /**
+     * Download all filtered container repair data as Excel.
+     */
+    public function excel(Request $request)
+    {
+        $filters = $request->only([
+            'search',
+            'status',
+            'status_pranota',
+            'vendor_bengkel_id',
+            'tanggal_masuk_start',
+            'tanggal_masuk_end',
+        ]);
+
+        return Excel::download(
+            new PerbaikanKontainerExport($filters),
+            'perbaikan_kontainer_'.now()->format('Ymd_His').'.xlsx'
+        );
     }
 
     /**
