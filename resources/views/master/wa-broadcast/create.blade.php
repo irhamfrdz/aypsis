@@ -32,8 +32,8 @@
             <!-- Pilihan Voyage -->
             <div>
                 <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">No Voyage <span class="text-red-500">*</span></label>
-                <select name="no_voyage" id="no_voyage" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
-                    <option value="">-- Pilih Voyage --</option>
+                <select name="no_voyage" id="no_voyage" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required {{ empty(old('nama_kapal')) ? 'disabled' : '' }}>
+                    <option value="">{{ empty(old('nama_kapal')) ? '-- Pilih Kapal Terlebih Dahulu --' : '-- Pilih Voyage --' }}</option>
                     @foreach($voyages as $voyage)
                         <option value="{{ $voyage }}" {{ old('no_voyage') == $voyage ? 'selected' : '' }}>{{ $voyage }}</option>
                     @endforeach
@@ -96,6 +96,54 @@
                 width: '100%'
             });
         }
+
+        const $namaKapal = $('#nama_kapal');
+        const $noVoyage = $('#no_voyage');
+
+        $namaKapal.on('change', function() {
+            const namaKapal = $(this).val();
+
+            if (!namaKapal) {
+                $noVoyage.empty().append('<option value="">-- Pilih Kapal Terlebih Dahulu --</option>');
+                $noVoyage.prop('disabled', true);
+                $noVoyage.trigger('change');
+                return;
+            }
+
+            $noVoyage.empty().append('<option value="">Memuat data voyage...</option>');
+            $noVoyage.prop('disabled', true);
+            $noVoyage.trigger('change');
+
+            $.ajax({
+                url: "{{ route('master.wa-broadcast.get-voyages') }}",
+                type: 'GET',
+                data: { nama_kapal: namaKapal },
+                dataType: 'json',
+                success: function(response) {
+                    $noVoyage.empty();
+                    if (response.success && response.voyages && response.voyages.length > 0) {
+                        $noVoyage.append('<option value="">-- Pilih Voyage --</option>');
+                        $.each(response.voyages, function(index, voyage) {
+                            $noVoyage.append($('<option>', {
+                                value: voyage,
+                                text: voyage
+                            }));
+                        });
+                        $noVoyage.prop('disabled', false);
+                    } else {
+                        $noVoyage.append('<option value="">-- Tidak ada voyage untuk kapal ini --</option>');
+                        $noVoyage.prop('disabled', false);
+                    }
+                    $noVoyage.trigger('change');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching voyages:', error);
+                    $noVoyage.empty().append('<option value="">-- Gagal memuat voyage --</option>');
+                    $noVoyage.prop('disabled', false);
+                    $noVoyage.trigger('change');
+                }
+            });
+        });
     });
 </script>
 @endpush
