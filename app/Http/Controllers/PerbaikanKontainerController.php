@@ -61,6 +61,11 @@ class PerbaikanKontainerController extends Controller
      */
     public function excel(Request $request)
     {
+        $request->validate([
+            'tanggal_masuk_start' => 'required|date',
+            'tanggal_masuk_end' => 'required|date|after_or_equal:tanggal_masuk_start',
+        ]);
+
         $filters = $request->only([
             'search',
             'status',

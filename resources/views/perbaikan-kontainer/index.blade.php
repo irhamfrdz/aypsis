@@ -13,11 +13,11 @@
         </div>
         <div>
             @can('perbaikan-kontainer-view')
-            <a href="{{ route('perbaikan-kontainer.excel', request()->query()) }}"
+            <button type="button" onclick="openExcelModal()"
                class="inline-flex items-center px-4 py-2 mr-2 border border-green-600 rounded-lg text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-sm">
                 <i class="fas fa-file-excel mr-2"></i>
                 Download Excel
-            </a>
+            </button>
             @endcan
             @can('perbaikan-kontainer-update')
             <a href="{{ route('perbaikan-kontainer.create') }}" 
@@ -136,6 +136,60 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    <!-- Excel Date Range Modal -->
+    <div id="excelModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-24 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-2xl bg-white">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Download Excel</h3>
+                    <p class="text-xs text-gray-500 mt-1">Pilih periode tanggal masuk perbaikan.</p>
+                </div>
+                <button type="button" onclick="closeExcelModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form action="{{ route('perbaikan-kontainer.excel') }}" method="GET" class="mt-5" onsubmit="return validateExcelDateRange()">
+                <input type="hidden" name="search" value="{{ request('search') }}">
+                <input type="hidden" name="status" value="{{ request('status') }}">
+                <input type="hidden" name="status_pranota" value="{{ request('status_pranota', 'Belum') }}">
+                <input type="hidden" name="vendor_bengkel_id" value="{{ request('vendor_bengkel_id') }}">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="excel_tanggal_dari" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tanggal Dari <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="excel_tanggal_dari" name="tanggal_masuk_start" required
+                               value="{{ request('tanggal_masuk_start') }}"
+                               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label for="excel_tanggal_ke" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tanggal Ke <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="excel_tanggal_ke" name="tanggal_masuk_end" required
+                               value="{{ request('tanggal_masuk_end') }}"
+                               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <p id="excelDateError" class="hidden text-xs text-red-600 mt-3">Tanggal ke harus sama atau setelah tanggal dari.</p>
+
+                <div class="flex justify-end gap-3 pt-5 mt-5 border-t border-gray-100">
+                    <button type="button" onclick="closeExcelModal()"
+                            class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-lg transition-all">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-sm">
+                        <i class="fas fa-download mr-2"></i>Download
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Bulk Actions -->
@@ -500,6 +554,30 @@
 </div>
 
 <script>
+    function openExcelModal() {
+        document.getElementById('excelModal').classList.remove('hidden');
+        document.getElementById('excel_tanggal_dari').focus();
+    }
+
+    function closeExcelModal() {
+        document.getElementById('excelModal').classList.add('hidden');
+        document.getElementById('excelDateError').classList.add('hidden');
+    }
+
+    function validateExcelDateRange() {
+        const tanggalDari = document.getElementById('excel_tanggal_dari').value;
+        const tanggalKe = document.getElementById('excel_tanggal_ke').value;
+        const error = document.getElementById('excelDateError');
+
+        if (tanggalDari && tanggalKe && tanggalKe < tanggalDari) {
+            error.classList.remove('hidden');
+            return false;
+        }
+
+        error.classList.add('hidden');
+        return true;
+    }
+
     function getSelectedCheckboxes() {
         return document.querySelectorAll('.row-checkbox:checked');
     }
@@ -778,6 +856,16 @@
         const biayaModal = document.getElementById('biayaRiilModal');
         if (event.target === biayaModal) {
             closeBiayaRiilModal();
+        }
+        const excelModal = document.getElementById('excelModal');
+        if (event.target === excelModal) {
+            closeExcelModal();
+        }
+    });
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeExcelModal();
         }
     });
 </script>
