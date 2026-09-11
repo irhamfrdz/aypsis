@@ -23,7 +23,10 @@ class DashboardPemakaianBarangController extends Controller
             'from_date' => 'required|date_format:Y-m-d',
             'to_date' => 'required|date_format:Y-m-d|after_or_equal:from_date',
         ]);
-        $query = StockAmprahanUsage::whereBetween('tanggal_pengambilan', [Carbon::parse($filters['from_date'])->startOfDay(), Carbon::parse($filters['to_date'])->endOfDay()]);
+        $fromDate = Carbon::parse($filters['from_date'])->startOfDay();
+        $toDate = Carbon::parse($filters['to_date'])->endOfDay();
+        $yearStart = $fromDate->copy()->startOfYear();
+        $query = StockAmprahanUsage::whereBetween('tanggal_pengambilan', [$yearStart, $toDate]);
         if ($filters['kategori_pemakai'] === 'kendaraan') {
             $query->where(fn ($q) => $q->whereNotNull('kendaraan_id')->orWhereNotNull('truck_id')->orWhereNotNull('buntut_id'));
         } else {
@@ -39,12 +42,38 @@ class DashboardPemakaianBarangController extends Controller
             && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
             $query->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%BATAM%'));
         }
-        $totalNilai = (clone $query)
-            ->leftJoin('stock_amprahans', 'stock_amprahans.id', '=', 'stock_amprahan_usages.stock_amprahan_id')
-            ->selectRaw('COALESCE(SUM(stock_amprahan_usages.jumlah * COALESCE(stock_amprahans.harga_satuan, 0)), 0) as total_nilai')->value('total_nilai');
-        $usages = $query->with(['stockAmprahan.masterNamaBarangAmprahan', 'stockAmprahan.vendorAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat', 'kapal'])
-            ->orderByDesc('tanggal_pengambilan')->orderByDesc('id')->paginate(25)->withQueryString();
+        $kategori = $filters['kategori_pemakai'];
+        $names = match ($kategori) {
+            'kapal' => \App\Models\MasterKapal::orderBy('nama_kapal')->pluck('nama_kapal', 'id'),
+            'penerima' => \App\Models\Karyawan::orderBy('nama_lengkap')->pluck('nama_lengkap', 'id'),
+            'kendaraan' => \App\Models\Mobil::orderBy('nomor_polisi')->get()->mapWithKeys(fn ($mobil) => [
+                $mobil->id => ($mobil->nomor_polisi && $mobil->nomor_polisi !== '-' ? $mobil->nomor_polisi : ($mobil->no_kir ?: 'Kendaraan #'.$mobil->id)),
+            ]),
+            'alat_berat' => \App\Models\AlatBerat::orderBy('nama')->get()->mapWithKeys(fn ($alat) => [
+                $alat->id => trim($alat->kode_alat.' '.$alat->nama),
+            ]),
+            // Offices are stored as text on usage records, not as a master relation.
+            'kantor' => (clone $query)->reorder()->distinct()->pluck('kantor')->mapWithKeys(fn ($name) => [$name => $name]),
+        };
+        $cards = $names->mapWithKeys(fn ($name, $id) => [$id => [
+            'nama' => $name, 'saldo_awal' => 0, 'saldo_berjalan' => 0,
+        ]])->all();
 
-        return view('dashboard-pemakaian-barang.show', compact('categories', 'usages', 'totalNilai'));
+        foreach ($query->with('stockAmprahan')->lazyById(500) as $usage) {
+            $ids = $kategori === 'kendaraan'
+                ? array_unique(array_filter([$usage->kendaraan_id, $usage->truck_id, $usage->buntut_id]))
+                : [$usage->{$kategori === 'kantor' ? 'kantor' : $kategori.'_id'}];
+            $balance = Carbon::parse($usage->tanggal_pengambilan)->lt($fromDate) ? 'saldo_awal' : 'saldo_berjalan';
+            $nilai = (float) $usage->jumlah * (float) ($usage->stockAmprahan->harga_satuan ?? 0);
+            foreach ($ids as $id) {
+                if (! isset($cards[$id])) {
+                    $cards[$id] = ['nama' => $categories[$kategori].' #'.$id, 'saldo_awal' => 0, 'saldo_berjalan' => 0];
+                }
+                $cards[$id][$balance] += $nilai;
+            }
+        }
+        $cards = collect($cards)->sortBy('nama')->values();
+
+        return view('dashboard-pemakaian-barang.show', compact('categories', 'cards', 'kategori', 'fromDate', 'toDate', 'yearStart'));
     }
 }
