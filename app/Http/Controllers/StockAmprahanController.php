@@ -2679,13 +2679,22 @@ class StockAmprahanController extends Controller
         $lokasi = $request->lokasi;
         $lokasiName = 'Semua Lokasi';
 
+        // Valuasi pembelian mengikuti tanggal pranota. Item pranota disimpan
+        // sebagai JSON, sehingga ID stock perlu dikumpulkan terlebih dahulu.
+        $pranotas = \App\Models\PranotaStock::select('id', 'nomor_pranota', 'tanggal_pranota', 'items')
+            ->whereDate('tanggal_pranota', '>=', $fromDate->toDateString())
+            ->whereDate('tanggal_pranota', '<=', $toDate->toDateString())
+            ->orderBy('id')
+            ->get();
+
+        $purchaseIds = $pranotas
+            ->flatMap(fn ($pranota) => collect($pranota->items ?? [])->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values();
+
         $query = \App\Models\StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'usages'])
-            ->where(function ($q) use ($fromDate, $toDate) {
-                $q->whereBetween('tanggal_beli', [$fromDate, $toDate])
-                    ->orWhere(function ($sq) use ($fromDate, $toDate) {
-                        $sq->whereNull('tanggal_beli')->whereBetween('created_at', [$fromDate, $toDate]);
-                    });
-            });
+            ->whereIn('id', $purchaseIds);
 
         if ($lokasi) {
             $lokasiName = $lokasi;
@@ -2711,15 +2720,17 @@ class StockAmprahanController extends Controller
         $purchases = $query->orderBy('tanggal_beli', 'asc')->orderBy('created_at', 'asc')->get();
 
         $pranotaNumbersByStockId = [];
+        $pranotaDatesByStockId = [];
         if ($purchases->isNotEmpty()) {
             $purchaseIds = array_fill_keys($purchases->modelKeys(), true);
 
             // Stock references are stored in the pranota's JSON items.
-            foreach (\App\Models\PranotaStock::select('id', 'nomor_pranota', 'items')->orderBy('id')->lazyById() as $pranota) {
+            foreach ($pranotas as $pranota) {
                 foreach ($pranota->items ?? [] as $item) {
                     $stockId = $item['id'] ?? null;
                     if ($stockId && isset($purchaseIds[$stockId])) {
                         $pranotaNumbersByStockId[$stockId][$pranota->id] = $pranota->nomor_pranota;
+                        $pranotaDatesByStockId[$stockId][$pranota->id] = $pranota->tanggal_pranota;
                     }
                 }
             }
@@ -2731,6 +2742,7 @@ class StockAmprahanController extends Controller
             'toDate' => $toDate,
             'purchases' => $purchases,
             'pranotaNumbersByStockId' => $pranotaNumbersByStockId,
+            'pranotaDatesByStockId' => $pranotaDatesByStockId,
         ]);
     }
 }

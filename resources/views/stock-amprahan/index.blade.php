@@ -2423,11 +2423,11 @@
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Dari Tanggal Pranota <span class="text-red-500">*</span></label>
                         <input type="date" name="from_date" required value="{{ date('Y-m-01') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sampai Tanggal Pranota <span class="text-red-500">*</span></label>
                         <input type="date" name="to_date" required value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
                     </div>
                 </div>

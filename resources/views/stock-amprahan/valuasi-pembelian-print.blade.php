@@ -98,11 +98,11 @@
     <div class="header-container">
         <div class="company-name">AYPSIS</div>
         <div class="report-title">Rincian Valuasi Pembelian Stock Amprahan</div>
-        <div class="report-period">Dari {{ $fromDate->format('d M Y') }} ke {{ $toDate->format('d M Y') }}</div>
+        <div class="report-period">Tanggal Pranota: {{ $fromDate->format('d M Y') }} sampai {{ $toDate->format('d M Y') }}</div>
     </div>
 
     <div class="filter-text">
-        Filter berdasarkan : Tanggal, Lokasi
+        Filter berdasarkan : Tanggal Pranota, Lokasi
     </div>
 
     <table class="info-table">
@@ -118,6 +118,7 @@
                 <th style="width: 80px;">Tanggal Beli</th>
                 <th style="width: 100px;">No. Bukti</th>
                 <th style="width: 120px;">No. Pranota</th>
+                <th style="width: 90px;">Tanggal Pranota</th>
                 <th>Nama Barang</th>
                 <th>Vendor / Toko</th>
                 <th style="width: 90px;">Tipe Amprahan</th>
@@ -149,6 +150,7 @@
                     <td>{{ $purchase->tanggal_beli ? $purchase->tanggal_beli->format('d M Y') : ($purchase->created_at ? $purchase->created_at->format('d M Y') : '-') }}</td>
                     <td>{{ $purchase->nomor_bukti ?? '-' }}</td>
                     <td>{{ implode(', ', $pranotaNumbersByStockId[$purchase->id] ?? []) ?: '-' }}</td>
+                    <td>{{ collect($pranotaDatesByStockId[$purchase->id] ?? [])->map(fn ($date) => $date ? $date->format('d M Y') : '-')->implode(', ') ?: '-' }}</td>
                     <td>{{ $purchase->nama_barang ?? ($purchase->masterNamaBarangAmprahan->nama_barang ?? '-') }}</td>
                     <td>{{ $purchase->vendorAmprahan->nama_toko ?? '-' }}</td>
                     <td>{{ $purchase->type_amprahan ?? '-' }}</td>
@@ -161,11 +163,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="center" style="padding: 20px;">Tidak ada transaksi pembelian dalam periode ini.</td>
+                    <td colspan="13" class="center" style="padding: 20px;">Tidak ada transaksi pembelian dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
-                <td colspan="6">TOTAL</td>
+                <td colspan="7">TOTAL</td>
                 <td class="right">{{ number_format($totalQtyBeli, 0, ',', '.') }}</td>
                 <td></td>
                 <td></td>
