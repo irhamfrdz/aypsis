@@ -161,6 +161,30 @@ class TandaTerimaApprovalController extends Controller
 
     public function upload(Request $request, $sourceType, $id)
     {
+        // PHP can reject a file before Laravel validation runs. Translate that
+        // upload error first so the user gets the actual reason.
+        foreach ($request->allFiles() as $field => $files) {
+            foreach (is_array($files) ? $files : [$files] as $index => $file) {
+                if (! $file instanceof \Illuminate\Http\UploadedFile || $file->getError() === UPLOAD_ERR_OK) {
+                    continue;
+                }
+
+                $errorMessage = match ($file->getError()) {
+                    UPLOAD_ERR_INI_SIZE => 'Ukuran file melebihi batas PHP upload_max_filesize. Saat ini server membatasi upload terlalu kecil; minta administrator menaikkannya minimal ke 10M.',
+                    UPLOAD_ERR_FORM_SIZE => 'Ukuran file melebihi batas upload pada form.',
+                    UPLOAD_ERR_PARTIAL => 'File hanya terupload sebagian. Periksa koneksi lalu coba lagi.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Folder temporary upload PHP tidak tersedia di server.',
+                    UPLOAD_ERR_CANT_WRITE => 'Server tidak dapat menulis file upload ke penyimpanan temporary.',
+                    UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh extension PHP di server.',
+                    default => 'File gagal diupload oleh server (kode error '.$file->getError().').',
+                };
+
+                return back()->withInput()
+                    ->with('error', 'Upload dokumen gagal: '.$errorMessage)
+                    ->withErrors(["{$field}.{$index}" => $errorMessage]);
+            }
+        }
+
         $request->validate([
             'file_ppbj' => 'nullable|array',
             'file_ppbj.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
