@@ -572,7 +572,7 @@ class AbsensiController extends Controller
                 }
 
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
                     $waktu->addDay(); 
                 }
 
@@ -654,7 +654,7 @@ class AbsensiController extends Controller
             if ($existingLog) {
                 if (!empty($time)) {
                     $waktu = Carbon::parse($tanggal . ' ' . $time);
-                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
                         $waktu->addDay(); 
                     }
                     
@@ -693,7 +693,7 @@ class AbsensiController extends Controller
             // Jika belum ada dan form diisi
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
                     $waktu->addDay(); 
                 }
 
