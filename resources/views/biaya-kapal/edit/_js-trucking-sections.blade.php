@@ -169,6 +169,23 @@
             calculateTruckingTotals(sectionIndex);
         });
 
+        document.getElementById('biayaKapalForm')?.addEventListener('submit', function() {
+            document.querySelectorAll('.trucking-section').forEach(section => {
+                const adjustmentInput = section.querySelector('.trucking-adjustment-input');
+                const pphHalfInput = section.querySelector('.trucking-pph-half-input');
+                const pphPercentInput = section.querySelector('.trucking-pph-percent-input');
+                if (adjustmentInput) {
+                    const value = adjustmentInput.value.trim();
+                    adjustmentInput.value = !value || value === '-'
+                        ? '0'
+                        : value.replace(/\./g, '').replace(',', '.');
+                }
+                if (pphHalfInput && pphPercentInput) {
+                    pphPercentInput.value = pphHalfInput.checked ? '0.5' : '2';
+                }
+            });
+        }, { once: true });
+
         const subtotalInput = section.querySelector('.trucking-subtotal-input');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
         subtotalInput.addEventListener('input', function(e) {

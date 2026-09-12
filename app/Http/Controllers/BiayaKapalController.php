@@ -299,9 +299,6 @@ class BiayaKapalController extends Controller
                 }
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
-                    if (! is_numeric($section['adjustment'])) {
-                        $section['adjustment'] = 0;
-                    }
                 }
 
                 if (isset($section['bank_id']) && !empty($section['bank_id'])) {
@@ -419,14 +416,18 @@ class BiayaKapalController extends Controller
                 if (isset($section['pph'])) {
                     $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 }
-                if (isset($section['total_biaya'])) {
-                    $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+                if (isset($section['pph_percent'])) {
+                    $section['pph_percent'] = str_replace(',', '.', trim((string) $section['pph_percent']));
+                    $section['pph_percent'] = (float) $section['pph_percent'] === 0.5 ? 0.5 : 2;
                 }
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                     if (! is_numeric($section['adjustment'])) {
                         $section['adjustment'] = 0;
                     }
+                }
+                if (isset($section['total_biaya'])) {
+                    $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
                 foreach (['total_biaya_20ft', 'total_biaya_40ft'] as $field) {
                     if (isset($section[$field])) {
@@ -801,7 +802,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
             'trucking_sections.*.notes_adjustment' => 'nullable|string',
-            'trucking_sections.*.pph_percent' => 'nullable|in:0.5,2',
+            'trucking_sections.*.pph_percent' => 'nullable|numeric|in:0.5,2',
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -3753,7 +3754,14 @@ class BiayaKapalController extends Controller
                     $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 }
                 if (isset($section['pph_percent'])) {
-                    $section['pph_percent'] = str_replace(',', '.', str_replace('.', '', $section['pph_percent']));
+                    $section['pph_percent'] = str_replace(',', '.', trim((string) $section['pph_percent']));
+                    $section['pph_percent'] = (float) $section['pph_percent'] === 0.5 ? 0.5 : 2;
+                }
+                if (isset($section['adjustment'])) {
+                    $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                    if (! is_numeric($section['adjustment'])) {
+                        $section['adjustment'] = 0;
+                    }
                 }
                 if (isset($section['total_biaya'])) {
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -4069,7 +4077,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
             'trucking_sections.*.notes_adjustment' => 'nullable|string',
-            'trucking_sections.*.pph_percent' => 'nullable|in:0.5,2',
+            'trucking_sections.*.pph_percent' => 'nullable|numeric|in:0.5,2',
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
