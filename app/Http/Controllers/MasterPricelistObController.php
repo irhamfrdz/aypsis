@@ -23,6 +23,7 @@ class MasterPricelistObController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('size_kontainer', 'like', "%{$search}%")
                     ->orWhere('status_kontainer', 'like', "%{$search}%")
+                    ->orWhere('status_service', 'like', "%{$search}%")
                     ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
@@ -37,10 +38,15 @@ class MasterPricelistObController extends Controller
             $query->where('status_kontainer', $request->status_kontainer);
         }
 
+        if ($request->filled('status_service')) {
+            $query->where('status_service', $request->status_service);
+        }
+
         // Pagination
         $perPage = $request->get('per_page', 15);
         $pricelistOb = $query->orderBy('size_kontainer')
             ->orderBy('status_kontainer')
+            ->orderBy('status_service')
             ->paginate($perPage)
             ->withQueryString();
 
@@ -54,8 +60,9 @@ class MasterPricelistObController extends Controller
     {
         $sizeOptions = MasterPricelistOb::getSizeKontainerOptions();
         $statusOptions = MasterPricelistOb::getStatusKontainerOptions();
+        $statusServiceOptions = MasterPricelistOb::getStatusServiceOptions();
 
-        return view('master.pricelist-ob.create', compact('sizeOptions', 'statusOptions'));
+        return view('master.pricelist-ob.create', compact('sizeOptions', 'statusOptions', 'statusServiceOptions'));
     }
 
     /**
@@ -66,6 +73,7 @@ class MasterPricelistObController extends Controller
         $validator = Validator::make($request->all(), [
             'size_kontainer' => 'required|in:20ft,40ft',
             'status_kontainer' => 'required|in:full,empty',
+            'status_service' => 'required|in:service,non_service',
             'biaya' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000',
         ], [
@@ -73,6 +81,8 @@ class MasterPricelistObController extends Controller
             'size_kontainer.in' => 'Size kontainer tidak valid',
             'status_kontainer.required' => 'Status kontainer harus diisi',
             'status_kontainer.in' => 'Status kontainer tidak valid',
+            'status_service.required' => 'Status service harus diisi',
+            'status_service.in' => 'Status service tidak valid',
             'biaya.required' => 'Biaya harus diisi',
             'biaya.numeric' => 'Biaya harus berupa angka',
             'biaya.min' => 'Biaya tidak boleh negatif',
@@ -86,10 +96,11 @@ class MasterPricelistObController extends Controller
         // Cek duplikasi
         $exists = MasterPricelistOb::where('size_kontainer', $request->size_kontainer)
             ->where('status_kontainer', $request->status_kontainer)
+            ->where('status_service', $request->status_service)
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Kombinasi size kontainer dan status kontainer sudah ada!')
+            return back()->with('error', 'Kombinasi size, status kontainer, dan status service sudah ada!')
                 ->withInput();
         }
 
@@ -119,8 +130,9 @@ class MasterPricelistObController extends Controller
     {
         $sizeOptions = MasterPricelistOb::getSizeKontainerOptions();
         $statusOptions = MasterPricelistOb::getStatusKontainerOptions();
+        $statusServiceOptions = MasterPricelistOb::getStatusServiceOptions();
 
-        return view('master.pricelist-ob.edit', compact('pricelistOb', 'sizeOptions', 'statusOptions'));
+        return view('master.pricelist-ob.edit', compact('pricelistOb', 'sizeOptions', 'statusOptions', 'statusServiceOptions'));
     }
 
     /**
@@ -131,6 +143,7 @@ class MasterPricelistObController extends Controller
         $validator = Validator::make($request->all(), [
             'size_kontainer' => 'required|in:20ft,40ft',
             'status_kontainer' => 'required|in:full,empty',
+            'status_service' => 'required|in:service,non_service',
             'biaya' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000',
         ], [
@@ -138,6 +151,8 @@ class MasterPricelistObController extends Controller
             'size_kontainer.in' => 'Size kontainer tidak valid',
             'status_kontainer.required' => 'Status kontainer harus diisi',
             'status_kontainer.in' => 'Status kontainer tidak valid',
+            'status_service.required' => 'Status service harus diisi',
+            'status_service.in' => 'Status service tidak valid',
             'biaya.required' => 'Biaya harus diisi',
             'biaya.numeric' => 'Biaya harus berupa angka',
             'biaya.min' => 'Biaya tidak boleh negatif',
@@ -151,11 +166,12 @@ class MasterPricelistObController extends Controller
         // Cek duplikasi kecuali untuk record yang sedang diedit
         $exists = MasterPricelistOb::where('size_kontainer', $request->size_kontainer)
             ->where('status_kontainer', $request->status_kontainer)
+            ->where('status_service', $request->status_service)
             ->where('id', '!=', $pricelistOb->id)
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Kombinasi size kontainer dan status kontainer sudah ada!')
+            return back()->with('error', 'Kombinasi size, status kontainer, dan status service sudah ada!')
                 ->withInput();
         }
 
@@ -203,7 +219,7 @@ class MasterPricelistObController extends Controller
         $callback = function () {
             $file = fopen('php://output', 'w');
             // Write header with semicolon delimiter
-            fputcsv($file, ['size_kontainer', 'status_kontainer', 'biaya', 'keterangan'], ';');
+            fputcsv($file, ['size_kontainer', 'status_kontainer', 'status_service', 'biaya', 'keterangan'], ';');
             fclose($file);
         };
 

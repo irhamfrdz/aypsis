@@ -81,6 +81,16 @@
                         </div>
 
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Service</label>
+                            <div class="text-sm text-gray-900">
+                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
+                                    {{ $pricelistOb->status_service === 'service' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $pricelistOb->status_service_label }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Biaya</label>
                             <div class="text-lg font-semibold text-gray-900 bg-green-50 px-3 py-2 rounded-md border border-green-200">
                                 {{ $pricelistOb->formatted_biaya }}

@@ -25,6 +25,7 @@ class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvS
         try {
             $sizeRaw = $this->getRowValue($row, ['size_kontainer', 'size', 'ukuran', 'ukuran_kontainer']);
             $statusRaw = $this->getRowValue($row, ['status_kontainer', 'status']);
+            $statusServiceRaw = $this->getRowValue($row, ['status_service', 'service']);
             $biayaRaw = $this->getRowValue($row, ['biaya', 'cost', 'harga']);
             $keterangan = $this->getRowValue($row, ['keterangan', 'note', 'notes']);
 
@@ -35,9 +36,10 @@ class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvS
 
             $size = $this->normalizeSize($sizeRaw);
             $status = $this->normalizeStatus($statusRaw);
+            $statusService = $this->normalizeStatusService($statusServiceRaw ?: 'non_service');
             $biaya = $this->cleanNumber($biayaRaw);
 
-            if (empty($size) || empty($status) || $biaya <= 0) {
+            if (empty($size) || empty($status) || empty($statusService) || $biaya <= 0) {
                 $this->errorCount++;
                 $this->errors[] = "Baris {$this->rowNumber}: Data tidak lengkap atau tidak valid";
 
@@ -47,10 +49,12 @@ class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvS
             // Update existing or create new
             $exists = MasterPricelistOb::where('size_kontainer', $size)
                 ->where('status_kontainer', $status)
+                ->where('status_service', $statusService)
                 ->first();
 
             if ($exists) {
                 $exists->update([
+                    'status_service' => $statusService,
                     'biaya' => $biaya,
                     'keterangan' => $keterangan,
                 ]);
@@ -64,6 +68,7 @@ class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvS
             return new MasterPricelistOb([
                 'size_kontainer' => $size,
                 'status_kontainer' => $status,
+                'status_service' => $statusService,
                 'biaya' => $biaya,
                 'keterangan' => $keterangan,
             ]);
@@ -115,6 +120,20 @@ class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvS
         }
         if (in_array($s, ['empty', 'e', '1'])) {
             return 'empty';
+        }
+
+        return null;
+    }
+
+    private function normalizeStatusService($statusService)
+    {
+        $s = strtolower(trim((string) $statusService));
+
+        if (in_array($s, ['service', 'servis', 'yes', 'ya', '1'])) {
+            return 'service';
+        }
+        if (in_array($s, ['non_service', 'non-service', 'bukan service', 'bukan servis', 'no', 'tidak', '0'])) {
+            return 'non_service';
         }
 
         return null;

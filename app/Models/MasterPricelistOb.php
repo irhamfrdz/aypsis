@@ -15,6 +15,7 @@ class MasterPricelistOb extends Model
     protected $fillable = [
         'size_kontainer',
         'status_kontainer',
+        'status_service',
         'biaya',
         'keterangan',
     ];
@@ -31,6 +32,14 @@ class MasterPricelistOb extends Model
         return [
             'full' => 'Full',
             'empty' => 'Empty',
+        ];
+    }
+
+    public static function getStatusServiceOptions()
+    {
+        return [
+            'service' => 'Service',
+            'non_service' => 'Bukan Service',
         ];
     }
 
@@ -61,6 +70,13 @@ class MasterPricelistOb extends Model
         $options = self::getStatusKontainerOptions();
 
         return $options[$this->status_kontainer] ?? $this->status_kontainer;
+    }
+
+    public function getStatusServiceLabelAttribute()
+    {
+        $options = self::getStatusServiceOptions();
+
+        return $options[$this->status_service] ?? $this->status_service;
     }
 
     /**

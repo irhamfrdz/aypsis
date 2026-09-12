@@ -50,7 +50,7 @@
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Filter & Pencarian</h3>
                 <form method="GET" action="{{ route('master.pricelist-ob.index') }}" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Pencarian</label>
                             <input type="text" id="search" name="search" value="{{ request('search') }}" 
@@ -71,6 +71,14 @@
                                 <option value="">Semua Status</option>
                                 <option value="full" {{ request('status_kontainer') == 'full' ? 'selected' : '' }}>Full</option>
                                 <option value="empty" {{ request('status_kontainer') == 'empty' ? 'selected' : '' }}>Empty</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="status_service" class="block text-sm font-medium text-gray-700">Status Service</label>
+                            <select id="status_service" name="status_service" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">Semua Status</option>
+                                <option value="service" {{ request('status_service') == 'service' ? 'selected' : '' }}>Service</option>
+                                <option value="non_service" {{ request('status_service') == 'non_service' ? 'selected' : '' }}>Bukan Service</option>
                             </select>
                         </div>
                         <div class="flex items-end space-x-2">
@@ -112,7 +120,7 @@
                             <h4 class="text-sm font-medium text-blue-800 mb-2">Format yang Diharapkan:</h4>
                             <p class="text-xs text-blue-700 mb-2">Header kolom (case-insensitive):</p>
                             <div class="text-xs text-blue-700 font-mono bg-white p-2 rounded border">
-                                size_kontainer;status_kontainer;biaya;keterangan
+                                size_kontainer;status_kontainer;status_service;biaya;keterangan
                             </div>
                         </div>
 
@@ -145,6 +153,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size Kontainer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Kontainer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Service</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -167,6 +176,12 @@
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
                                     {{ $pricelist->status_kontainer === 'full' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800' }}">
                                     {{ $pricelist->status_kontainer_label }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    {{ $pricelist->status_service === 'service' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $pricelist->status_service_label }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -199,7 +214,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 002 2v14a2 2 0 002 2z"/>
