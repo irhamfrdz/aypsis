@@ -163,9 +163,10 @@
                     <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
                         @foreach($expiringAssets[$type] as $index => $asset)
                         @php
-                            $tanggal = \Carbon\Carbon::parse($asset->$dateField);
+                            // Gunakan tanggal kalender, bukan waktu lengkap dari database.
+                            $tanggal = \Carbon\Carbon::parse($asset->$dateField)->startOfDay();
                             $today = \Carbon\Carbon::today();
-                            $diffDays = $today->diffInDays($tanggal, false);
+                            $diffDays = (int) $today->diffInDays($tanggal, false);
                             
                             $bulanIndonesia = [
                                 1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
@@ -289,9 +290,10 @@
                     <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
                         @foreach($expiredAssets[$type] as $index => $asset)
                         @php
-                            $tanggal = \Carbon\Carbon::parse($asset->$dateField);
+                            // Gunakan tanggal kalender, bukan waktu lengkap dari database.
+                            $tanggal = \Carbon\Carbon::parse($asset->$dateField)->startOfDay();
                             $today = \Carbon\Carbon::today();
-                            $diffDays = abs($today->diffInDays($tanggal, false));
+                            $diffDays = abs((int) $today->diffInDays($tanggal, false));
                             
                             $bulanIndonesia = [
                                 1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
