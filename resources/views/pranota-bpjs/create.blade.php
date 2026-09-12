@@ -170,19 +170,19 @@
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 border-r border-indigo-100" style="min-width:105px" title="BPJS Kesehatan 1%">KIS 1% (Hutang)</th>
                             
                             {{-- PPU --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:100px" title="Jaminan Hari Tua Biaya 3.7%">JHT 3.7%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:90px" title="Jaminan Hari Tua Hutang 2%">JHT 2%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="Jaminan Kecelakaan Kerja Tunjangan 0.24%">JKK 0.24%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30" style="min-width:115px" title="JKK Karyawan (Hutang Potongan)">JKK (Hutang)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="Jaminan Kematian Tunjangan 0.3%">JKM 0.3%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:100px" title="Jaminan Hari Tua Biaya 3.7%">PPU JHT 3.7%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:90px" title="Jaminan Hari Tua Hutang 2%">PPU JHT 2%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="Jaminan Kecelakaan Kerja Tunjangan 0.24%">PPU JKK 0.24%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30" style="min-width:115px" title="JKK Karyawan (Hutang Potongan)">BPU JHT (KARY)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="Jaminan Kematian Tunjangan 0.3%">PPU JKM 0.3%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-emerald-100" style="min-width:115px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
                             
                             {{-- BPU --}}
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-sky-100" style="min-width:100px" title="BPU JKM">BPU JKM</th>
                             
                             {{-- JP --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:90px" title="Jaminan Pensiun Biaya 2%">JP 2%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-gray-200" style="min-width:90px" title="Jaminan Pensiun Hutang 1%">JP 1%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:90px" title="Jaminan Pensiun Biaya 2%">PPU JP 2%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-gray-200" style="min-width:90px" title="Jaminan Pensiun Hutang 1%">PPU JP 1%</th>
                         </tr>
                     </thead>
                     <tbody id="detail-container" class="divide-y divide-gray-100 bg-white">
