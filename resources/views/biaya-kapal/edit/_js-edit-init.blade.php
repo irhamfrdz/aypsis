@@ -270,6 +270,10 @@
                 'voyage' => $truck->voyage,
                 'nama_vendor' => $truck->nama_vendor,
                 'no_bl_ids' => $truck->no_bl ?? [], 
+                'total_biaya_20ft' => $truck->total_biaya_20ft,
+                'total_biaya_40ft' => $truck->total_biaya_40ft,
+                'adjustment' => $truck->adjustment,
+                'notes_adjustment' => $truck->notes_adjustment,
                 'subtotal' => $truck->subtotal,
             ];
         }
@@ -1116,6 +1120,10 @@
                         }
                         
                         section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
+                        const adjustmentInput = section.querySelector('.trucking-adjustment-input');
+                        if (adjustmentInput) adjustmentInput.value = new Intl.NumberFormat('id-ID').format(myData.adjustment || 0);
+                        const notesAdjustmentInput = section.querySelector('.trucking-notes-adjustment-input');
+                        if (notesAdjustmentInput) notesAdjustmentInput.value = myData.notes_adjustment || '';
                         calculateTruckingTotals(sectionIndex);
                     }
                 })();

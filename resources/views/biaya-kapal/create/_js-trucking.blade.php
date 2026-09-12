@@ -95,7 +95,25 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-4 mt-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya Kontainer 20ft</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][total_biaya_20ft]"
+                               class="trucking-total-20ft-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0"
+                               value="0" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya Kontainer 40ft</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][total_biaya_40ft]"
+                               class="trucking-total-40ft-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0"
+                               value="0" readonly>
+                    </div>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
                     <div class="relative">
@@ -113,6 +131,21 @@
                                class="trucking-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
                                value="0" readonly>
                     </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment Subtotal</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                        <input type="text" name="trucking_sections[${sectionIndex}][adjustment]"
+                               class="trucking-adjustment-input w-full pl-10 pr-3 py-2 border border-yellow-300 rounded-lg bg-yellow-50 focus:ring-2 focus:ring-yellow-500"
+                               value="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Adjustment</label>
+                    <input type="text" name="trucking_sections[${sectionIndex}][notes_adjustment]"
+                           class="trucking-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                           placeholder="Keterangan adjustment">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
@@ -133,6 +166,7 @@
         const voyageSelect = section.querySelector('.trucking-voyage-select');
         const blDropdown = section.querySelector('.trucking-bl-dropdown');
         const vendorSelect = section.querySelector('.trucking-vendor-select');
+        const adjustmentInput = section.querySelector('.trucking-adjustment-input');
         
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForTruckingSection(sectionIndex, this.value);
@@ -160,15 +194,14 @@
                  this.value = '';
             }
             
-            // Recalculate PPh (2%) & Total
-            const pph = Math.round(numericValue * 0.02);
-            const total = numericValue - pph;
-            
-            section.querySelector('.trucking-pph-input').value = new Intl.NumberFormat('id-ID').format(pph);
-            section.querySelector('.trucking-total-input').value = new Intl.NumberFormat('id-ID').format(total);
-            
-            // Update Grand Total
-            calculateTotalFromAllTruckingSections();
+            calculateTruckingTotals(sectionIndex);
+        });
+
+        adjustmentInput.addEventListener('input', function() {
+            const isNegative = this.value.trim().startsWith('-');
+            const numericValue = parseFloat(this.value.replace(/[^0-9]/g, '')) || 0;
+            this.value = (isNegative && numericValue > 0 ? '-' : '') + (numericValue ? new Intl.NumberFormat('id-ID').format(numericValue) : '0');
+            calculateTruckingTotals(sectionIndex);
         });
 
         // Close dropdown when clicking outside
@@ -399,8 +432,13 @@
         const subtotalInput = section.querySelector('.trucking-subtotal-input');
         const pphInput = section.querySelector('.trucking-pph-input');
         const totalInput = section.querySelector('.trucking-total-input');
+        const total20Input = section.querySelector('.trucking-total-20ft-input');
+        const total40Input = section.querySelector('.trucking-total-40ft-input');
+        const adjustmentInput = section.querySelector('.trucking-adjustment-input');
 
         let subtotal = 0;
+        let total20 = 0;
+        let total40 = 0;
 
         if (vendor && selectedOptions.length > 0) {
             // Get all price items for this vendor once to optimize
@@ -425,6 +463,8 @@
                     } else if (typeof priceItem.biaya === 'string') {
                         cost = parseFloat(priceItem.biaya);
                     }
+                    if (size === '20') total20 += cost;
+                    if (size === '40') total40 += cost;
                     subtotal += cost;
                 }
             });
@@ -433,14 +473,18 @@
             subtotal = parseFloat(subtotalInput.value.replace(/\D/g, '')) || 0;
         }
 
-        const pph = Math.round(subtotal * 0.02);
-        const total = subtotal - pph; 
+        const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+        const adjustedSubtotal = subtotal + adjustment;
+        const pph = Math.round(adjustedSubtotal * 0.02);
+        const total = adjustedSubtotal - pph;
         
         const formatRupiah = (val) => {
             return new Intl.NumberFormat('id-ID').format(Math.round(val));
         };
 
         subtotalInput.value = subtotal > 0 ? formatRupiah(subtotal) : '0';
+        total20Input.value = formatRupiah(total20);
+        total40Input.value = formatRupiah(total40);
         pphInput.value = formatRupiah(pph);
         totalInput.value = formatRupiah(total);
 

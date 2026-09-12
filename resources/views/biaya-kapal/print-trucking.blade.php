@@ -334,7 +334,10 @@
             </thead>
             <tbody>
                 @php 
-                    $grandTotalSubtotal = 0; 
+                    $grandTotal20ft = 0;
+                    $grandTotal40ft = 0;
+                    $grandTotalSubtotal = 0;
+                    $grandTotalAdjustment = 0;
                     $grandTotalPph = 0;
                     $grandTotalFinal = 0;
                 @endphp
@@ -350,18 +353,28 @@
                         <td>{{ $detail->nama_vendor }}</td>
 
                         <td class="right">
-                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
-                            
-                            @if($detail->pph > 0)
-                            <div style="margin-top: 4px; border-top: 1px dotted #ccc; padding-top: 2px; font-size: 0.9em; color: #666;">
-                                Subtotal: {{ number_format($detail->subtotal, 0, ',', '.') }}<br>
-                                PPh: {{ number_format($detail->pph, 0, ',', '.') }}
+                            <div style="font-size: 0.9em; color: #555; line-height: 1.5; text-align: left;">
+                                20ft: Rp {{ number_format($detail->total_biaya_20ft ?? 0, 0, ',', '.') }}<br>
+                                40ft: Rp {{ number_format($detail->total_biaya_40ft ?? 0, 0, ',', '.') }}<br>
+                                Subtotal: Rp {{ number_format($detail->subtotal, 0, ',', '.') }}<br>
+                                @if(($detail->adjustment ?? 0) != 0)
+                                    Adjustment: {{ $detail->adjustment < 0 ? '-' : '+' }}Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}<br>
+                                @endif
+                                PPh (2%): (Rp {{ number_format($detail->pph, 0, ',', '.') }})
                             </div>
+                            @if(!empty($detail->notes_adjustment))
+                                <div style="margin-top: 4px; border-top: 1px dotted #ccc; padding-top: 3px; font-size: 0.85em; color: #555; text-align: left;">
+                                    <strong>Keterangan:</strong> {{ $detail->notes_adjustment }}
+                                </div>
                             @endif
+                            <div style="margin-top: 5px; border-top: 1px solid #333; padding-top: 3px; font-weight: bold; text-align: right;">Total: Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
                         </td>
                     </tr>
                     @php 
+                        $grandTotal20ft += $detail->total_biaya_20ft ?? 0;
+                        $grandTotal40ft += $detail->total_biaya_40ft ?? 0;
                         $grandTotalSubtotal += $detail->subtotal;
+                        $grandTotalAdjustment += $detail->adjustment ?? 0;
                         $grandTotalPph += $detail->pph;
                         $grandTotalFinal += $detail->total_biaya;
                     @endphp
@@ -378,9 +391,23 @@
         <div class="summary-box">
             <table class="summary-table">
                 <tr>
+                    <td class="label">Total Kontainer 20ft:</td>
+                    <td class="value">Rp {{ number_format($grandTotal20ft, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Total Kontainer 40ft:</td>
+                    <td class="value">Rp {{ number_format($grandTotal40ft, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
                     <td class="label">Subtotal:</td>
                     <td class="value">Rp {{ number_format($grandTotalSubtotal, 0, ',', '.') }}</td>
                 </tr>
+                @if($grandTotalAdjustment != 0)
+                <tr>
+                    <td class="label">Adjustment:</td>
+                    <td class="value">{{ $grandTotalAdjustment < 0 ? '-' : '+' }}Rp {{ number_format(abs($grandTotalAdjustment), 0, ',', '.') }}</td>
+                </tr>
+                @endif
                 @if($grandTotalPph > 0)
                 <tr>
                     <td class="label">Total PPh (2%):</td>
