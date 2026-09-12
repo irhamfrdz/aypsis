@@ -366,18 +366,15 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateTotals();
         };
 
-        // Format saat kehilangan fokus atau nilai berubah (oleh sistem)
-        inputKes.addEventListener('change', function() {
-            this.value = formatNumber(parseIdNumber(this.value));
-            updateSubtotal();
+        // Format saat kehilangan fokus atau nilai berubah (oleh sistem / user)
+        [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkkHutang, inputJkm, inputBpuJkk, inputBpuJkm, inputJpBiaya, inputJpHutang].forEach(function(input) {
+            if (!input) return;
+            input.addEventListener('change', function() {
+                this.value = formatNumber(parseIdNumber(this.value));
+                updateSubtotal();
+            });
+            input.addEventListener('input', updateSubtotal);
         });
-        inputKet.addEventListener('change', function() {
-            this.value = formatNumber(parseIdNumber(this.value));
-            updateSubtotal();
-        });
-
-        inputKes.addEventListener('input', updateSubtotal);
-        inputKet.addEventListener('input', updateSubtotal);
 
         // (submit handler dipasang sekali di luar addRow — lihat bawah)
 
@@ -479,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (rumus) {
                     const dppJamsostek = parseIdNumber(karyawan.dpp_bp_jamsostek);
-                    let jhtBiaya = 0, jhtHutang = 0, jkkTunj = 0, jkkHutangVal = 0, jkmTunj = 0, jpBiaya = 0, jpHutang = 0;
+                    let jhtBiaya = 0, jhtHutang = 0, jkkTunj = 0, jkkHutangVal = 0, jkmTunj = 0, bpuJkkTunjVal = 0, bpuJkmVal = 0, jpBiaya = 0, jpHutang = 0;
                     
                     if (rumus.group_name.toUpperCase().includes('PPU')) {
                         const jhtBiayaMaster  = parseFloat(rumus.jht_biaya   || 0);
@@ -524,6 +521,44 @@ document.addEventListener('DOMContentLoaded', function() {
                                 jkkHutangVal = tiers.reduce((sum, t) => sum + parseFloat(t.potongan || 0), 0);
                             }
                         }
+
+                        /**
+                         * BPU JKK 1% (TUNJ.) =
+                         * (DPP BP Jamsostek * Tunjangan JKK 1% Master) * Diskon (jika ada) - Potongan (jkkHutangVal)
+                         */
+                        const tunjPersenMaster = parseFloat(rumus.tunjangan_persen || 0);
+                        let baseTunjangan = (tunjPersenMaster / 100) * dppJamsostek;
+
+                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
+                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
+                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
+                            if (diskonTipe === 'persen') {
+                                baseTunjangan = baseTunjangan * (diskonNilai / 100);
+                            } else {
+                                baseTunjangan = baseTunjangan * diskonNilai;
+                            }
+                        }
+
+                        bpuJkkTunjVal = Math.max(0, baseTunjangan - jkkHutangVal);
+
+                        /**
+                         * BPU JKM =
+                         * Ambil data BIAYA (RP) dari master rumus bpjs.
+                         * Jika ada DISKON, kalikan dengan DISKON.
+                         * Jika tidak ada, tampilkan langsung nilai BIAYA (RP).
+                         */
+                        const biayaMaster = parseFloat(rumus.biaya_persen || 0);
+                        bpuJkmVal = biayaMaster;
+
+                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
+                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
+                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
+                            if (diskonTipe === 'persen') {
+                                bpuJkmVal = biayaMaster * (diskonNilai / 100);
+                            } else {
+                                bpuJkmVal = biayaMaster * diskonNilai;
+                            }
+                        }
                     }
                     
                     inputJhtBiaya.value  = formatNumber(jhtBiaya);
@@ -531,8 +566,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     inputJkk.value       = formatNumber(jkkTunj);
                     inputJkkHutang.value = formatNumber(Math.round(jkkHutangVal));
                     inputJkm.value       = formatNumber(jkmTunj);
-                    inputBpuJkk.value    = 0; // diisi manual oleh user
-                    inputBpuJkm.value    = 0; // diisi manual oleh user
+                    inputBpuJkk.value    = formatNumber(Math.round(bpuJkkTunjVal));
+                    inputBpuJkm.value    = formatNumber(Math.round(bpuJkmVal));
                     inputJpBiaya.value   = formatNumber(jpBiaya);
                     inputJpHutang.value  = formatNumber(jpHutang);
                 }
