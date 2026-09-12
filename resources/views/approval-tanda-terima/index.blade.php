@@ -52,6 +52,28 @@
     </div>
     @endif
 
+    @if(session('error') || $errors->any())
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-6 animate-fade-in">
+        <div class="flex items-start">
+            <div class="p-2 bg-rose-100 rounded-lg shrink-0">
+                <i class="fas fa-exclamation-triangle text-rose-600 text-lg"></i>
+            </div>
+            <div class="ml-3 min-w-0">
+                <p class="text-sm font-semibold text-rose-800">
+                    {{ session('error', 'Dokumen gagal diupload. Periksa detail error berikut.') }}
+                </p>
+                @if($errors->any())
+                    <ul class="mt-2 list-disc list-inside text-sm text-rose-700 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Main Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <!-- Filters -->

@@ -8,6 +8,7 @@ use App\Models\TandaTerimaTanpaSuratJalan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TandaTerimaApprovalController extends Controller
@@ -173,20 +174,21 @@ class TandaTerimaApprovalController extends Controller
             'file_si.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
-        $model = $this->getModel($sourceType, $id);
+        try {
+            $model = $this->getModel($sourceType, $id);
 
-        $documentColumns = [
+            $documentColumns = [
             'file_ppbj' => 'dokumen_ppbj',
             'file_packing_list' => 'dokumen_packing_list',
             'file_invoice' => 'dokumen_invoice',
             'file_faktur_pajak' => 'dokumen_faktur_pajak',
             'file_si' => 'dokumen_si',
-        ];
+            ];
 
-        $uploaded = false;
-        $updateData = [];
+            $uploaded = false;
+            $updateData = [];
 
-        foreach ($documentColumns as $inputName => $column) {
+            foreach ($documentColumns as $inputName => $column) {
             if ($request->hasFile($inputName)) {
                 $rawExisting = $model->{$column};
                 $existingFiles = [];
@@ -203,15 +205,26 @@ class TandaTerimaApprovalController extends Controller
                 }
                 $updateData[$column] = json_encode($existingFiles);
             }
-        }
+            }
 
-        if ($uploaded) {
-            $updateData['asuransi_uploaded_at'] = now();
-            $updateData['asuransi_uploaded_by'] = Auth::id();
-            $model->update($updateData);
-        }
+            if ($uploaded) {
+                $updateData['asuransi_uploaded_at'] = now();
+                $updateData['asuransi_uploaded_by'] = Auth::id();
+                $model->update($updateData);
+            } else {
+                return back()->with('error', 'Upload gagal: tidak ada dokumen yang dipilih.');
+            }
 
-        return back()->with('success', 'Dokumen berhasil diupload.');
+            return back()->with('success', 'Dokumen berhasil diupload.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal upload dokumen tanda terima', [
+                'source_type' => $sourceType,
+                'id' => $id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'Upload dokumen gagal: '.$e->getMessage());
+        }
     }
 
     public function deleteDocument($sourceType, $id, $column, $index)
