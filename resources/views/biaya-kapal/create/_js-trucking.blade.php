@@ -126,13 +126,18 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh 2%</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh <span class="trucking-pph-rate-label">2%</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                         <input type="text" name="trucking_sections[${sectionIndex}][pph]" 
                                class="trucking-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
                                value="0" readonly>
                     </div>
+                    <label class="mt-1 flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                        <input type="checkbox" class="trucking-pph-half-input rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Gunakan PPh 0,5%
+                    </label>
+                    <input type="hidden" name="trucking_sections[${sectionIndex}][pph_percent]" class="trucking-pph-percent-input" value="2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment Subtotal</label>
@@ -169,6 +174,7 @@
         const blDropdown = section.querySelector('.trucking-bl-dropdown');
         const vendorSelect = section.querySelector('.trucking-vendor-select');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
+        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
         
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForTruckingSection(sectionIndex, this.value);
@@ -203,6 +209,9 @@
             const isNegative = this.value.trim().startsWith('-');
             const numericValue = parseFloat(this.value.replace(/[^0-9]/g, '')) || 0;
             this.value = (isNegative && numericValue > 0 ? '-' : '') + (numericValue ? new Intl.NumberFormat('id-ID').format(numericValue) : '0');
+            calculateTruckingTotals(sectionIndex);
+        });
+        pphHalfInput.addEventListener('change', function() {
             calculateTruckingTotals(sectionIndex);
         });
 
@@ -439,6 +448,9 @@
         const total20Info = section.querySelector('.trucking-total-20ft-info');
         const total40Info = section.querySelector('.trucking-total-40ft-info');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
+        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
+        const pphPercentInput = section.querySelector('.trucking-pph-percent-input');
+        const pphRateLabel = section.querySelector('.trucking-pph-rate-label');
 
         let subtotal = 0;
         let total20 = 0;
@@ -483,7 +495,10 @@
 
         const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '').replace(',', '.')) || 0;
         const adjustedSubtotal = subtotal + adjustment;
-        const pph = Math.round(adjustedSubtotal * 0.02);
+        const pphPercent = pphHalfInput.checked ? 0.5 : 2;
+        pphPercentInput.value = pphPercent;
+        pphRateLabel.textContent = `${String(pphPercent).replace('.', ',')}%`;
+        const pph = Math.round(adjustedSubtotal * pphPercent / 100);
         const total = adjustedSubtotal - pph;
         
         const formatRupiah = (val) => {

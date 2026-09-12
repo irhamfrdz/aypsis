@@ -366,6 +366,9 @@ class BiayaKapalController extends Controller
                 if (isset($section['pph'])) {
                     $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 }
+                if (isset($section['pph_percent'])) {
+                    $section['pph_percent'] = str_replace(',', '.', str_replace('.', '', $section['pph_percent']));
+                }
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
@@ -792,6 +795,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
             'trucking_sections.*.notes_adjustment' => 'nullable|string',
+            'trucking_sections.*.pph_percent' => 'nullable|in:0.5,2',
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -1161,7 +1165,8 @@ class BiayaKapalController extends Controller
                     $subtotal = (float) ($section['subtotal'] ?? 0);
                     $adjustment = (float) ($section['adjustment'] ?? 0);
                     $adjustedSubtotal = $subtotal + $adjustment;
-                    $pph = round($adjustedSubtotal * 0.02);
+                    $pphPercent = (float) ($section['pph_percent'] ?? 2);
+                    $pph = round($adjustedSubtotal * $pphPercent / 100);
 
                     BiayaKapalTrucking::create([
                         'biaya_kapal_id' => $biayaKapal->id,
@@ -1173,6 +1178,7 @@ class BiayaKapalController extends Controller
                         'total_biaya_40ft' => $containerTotals['40ft'],
                         'subtotal' => $subtotal,
                         'pph' => $pph,
+                        'pph_percent' => $pphPercent,
                         'adjustment' => $adjustment,
                         'notes_adjustment' => $section['notes_adjustment'] ?? null,
                         'total_biaya' => $adjustedSubtotal - $pph,
@@ -3604,6 +3610,9 @@ class BiayaKapalController extends Controller
                 if (isset($section['pph'])) {
                     $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 }
+                if (isset($section['pph_percent'])) {
+                    $section['pph_percent'] = str_replace(',', '.', str_replace('.', '', $section['pph_percent']));
+                }
             }
             unset($section);
         }
@@ -3736,6 +3745,9 @@ class BiayaKapalController extends Controller
                 }
                 if (isset($section['pph'])) {
                     $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                }
+                if (isset($section['pph_percent'])) {
+                    $section['pph_percent'] = str_replace(',', '.', str_replace('.', '', $section['pph_percent']));
                 }
                 if (isset($section['total_biaya'])) {
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -4051,6 +4063,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
             'trucking_sections.*.notes_adjustment' => 'nullable|string',
+            'trucking_sections.*.pph_percent' => 'nullable|in:0.5,2',
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -4622,7 +4635,8 @@ class BiayaKapalController extends Controller
                         $subtotal = (float) ($section['subtotal'] ?? 0);
                         $adjustment = (float) ($section['adjustment'] ?? 0);
                         $adjustedSubtotal = $subtotal + $adjustment;
-                        $pph = round($adjustedSubtotal * 0.02);
+                        $pphPercent = (float) ($section['pph_percent'] ?? 2);
+                        $pph = round($adjustedSubtotal * $pphPercent / 100);
 
                         BiayaKapalTrucking::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -4634,6 +4648,7 @@ class BiayaKapalController extends Controller
                             'total_biaya_40ft' => $containerTotals['40ft'],
                             'subtotal' => $subtotal,
                             'pph' => $pph,
+                            'pph_percent' => $pphPercent,
                             'adjustment' => $adjustment,
                             'notes_adjustment' => $section['notes_adjustment'] ?? null,
                             'total_biaya' => $adjustedSubtotal - $pph,

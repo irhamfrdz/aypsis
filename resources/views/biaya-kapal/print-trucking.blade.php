@@ -361,7 +361,7 @@
                                 @if(($detail->adjustment ?? 0) != 0)
                                     Adjustment: {{ $detail->adjustment < 0 ? '-' : '+' }}Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}<br>
                                 @endif
-                                PPh (2%): (Rp {{ number_format($detail->pph, 0, ',', '.') }})
+                                PPh ({{ number_format($detail->pph_percent ?? 2, 2, ',', '.') }}%): (Rp {{ number_format($detail->pph, 0, ',', '.') }})
                             </div>
                             @if(!empty($detail->notes_adjustment))
                                 <div style="margin-top: 4px; border-top: 1px dotted #ccc; padding-top: 3px; font-size: 0.85em; color: #555; text-align: left;">
@@ -411,7 +411,7 @@
                 @endif
                 @if($grandTotalPph > 0)
                 <tr>
-                    <td class="label">Total PPh (2%):</td>
+                    <td class="label">Total PPh:</td>
                     <td class="value" style="color: #d00;">(Rp {{ number_format($grandTotalPph, 0, ',', '.') }})</td>
                 </tr>
                 @endif

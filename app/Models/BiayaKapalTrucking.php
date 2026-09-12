@@ -18,6 +18,7 @@ class BiayaKapalTrucking extends Model
         'total_biaya_40ft',
         'subtotal',
         'pph',
+        'pph_percent',
         'adjustment',
         'notes_adjustment',
         'total_biaya',
@@ -29,6 +30,7 @@ class BiayaKapalTrucking extends Model
         'total_biaya_40ft' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'pph' => 'decimal:2',
+        'pph_percent' => 'decimal:2',
         'adjustment' => 'decimal:2',
         'total_biaya' => 'decimal:2',
     ];

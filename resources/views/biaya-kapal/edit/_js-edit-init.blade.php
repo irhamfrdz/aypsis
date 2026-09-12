@@ -274,6 +274,7 @@
                 'total_biaya_40ft' => $truck->total_biaya_40ft,
                 'adjustment' => $truck->adjustment,
                 'notes_adjustment' => $truck->notes_adjustment,
+                'pph_percent' => $truck->pph_percent ?? 2,
                 'subtotal' => $truck->subtotal,
             ];
         }
@@ -1122,6 +1123,8 @@
                         section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
                         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
                         if (adjustmentInput) adjustmentInput.value = new Intl.NumberFormat('id-ID').format(myData.adjustment || 0);
+                        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
+                        if (pphHalfInput) pphHalfInput.checked = parseFloat(myData.pph_percent || 2) === 0.5;
                         const notesAdjustmentInput = section.querySelector('.trucking-notes-adjustment-input');
                         if (notesAdjustmentInput) notesAdjustmentInput.value = myData.notes_adjustment || '';
                         calculateTruckingTotals(sectionIndex);
