@@ -215,6 +215,17 @@
             calculateTruckingTotals(sectionIndex);
         });
 
+        document.getElementById('biayaKapalForm')?.addEventListener('submit', function() {
+            document.querySelectorAll('.trucking-adjustment-input').forEach(input => {
+                const value = input.value.trim();
+                if (!value || value === '-') {
+                    input.value = '0';
+                    return;
+                }
+                input.value = value.replace(/\./g, '').replace(',', '.');
+            });
+        }, { once: true });
+
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!section.contains(e.target)) {

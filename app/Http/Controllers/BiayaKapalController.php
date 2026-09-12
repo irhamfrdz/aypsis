@@ -299,6 +299,9 @@ class BiayaKapalController extends Controller
                 }
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                    if (! is_numeric($section['adjustment'])) {
+                        $section['adjustment'] = 0;
+                    }
                 }
 
                 if (isset($section['bank_id']) && !empty($section['bank_id'])) {
@@ -421,6 +424,9 @@ class BiayaKapalController extends Controller
                 }
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                    if (! is_numeric($section['adjustment'])) {
+                        $section['adjustment'] = 0;
+                    }
                 }
                 foreach (['total_biaya_20ft', 'total_biaya_40ft'] as $field) {
                     if (isset($section[$field])) {
