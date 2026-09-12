@@ -36,6 +36,11 @@ class DashboardPemakaianBarangController extends Controller
                 $query->where('kantor', '!=', '');
             }
         }
+        if ($filters['kategori_pemakai'] === 'kapal') {
+            $query->whereHas('kapal', function ($q) {
+                $q->whereRaw('UPPER(TRIM(pelayaran)) = ?', ['PT. ALEXINDO YAKIN PRIMA']);
+            });
+        }
         // Same branch restriction as valuasi pemakaian.
         $user = $request->user();
         if ($user && $user->karyawan && strtoupper($user->karyawan->cabang ?? '') === 'BATAM'
@@ -44,7 +49,12 @@ class DashboardPemakaianBarangController extends Controller
         }
         $kategori = $filters['kategori_pemakai'];
         $names = match ($kategori) {
-            'kapal' => \App\Models\MasterKapal::orderBy('nama_kapal')->pluck('nama_kapal', 'id'),
+            'kapal' => \App\Models\MasterKapal::whereRaw('UPPER(TRIM(pelayaran)) = ?', ['PT. ALEXINDO YAKIN PRIMA'])
+                ->orderBy('nama_kapal')
+                ->get()
+                ->mapWithKeys(fn ($kapal) => [
+                    $kapal->id => $kapal->nama_kapal.' — '.$kapal->pelayaran,
+                ]),
             'penerima' => \App\Models\Karyawan::orderBy('nama_lengkap')->pluck('nama_lengkap', 'id'),
             'kendaraan' => \App\Models\Mobil::orderBy('nomor_polisi')->get()->mapWithKeys(fn ($mobil) => [
                 $mobil->id => ($mobil->nomor_polisi && $mobil->nomor_polisi !== '-' ? $mobil->nomor_polisi : ($mobil->no_kir ?: 'Kendaraan #'.$mobil->id)),

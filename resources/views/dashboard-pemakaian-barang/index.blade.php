@@ -24,7 +24,7 @@
                         'penerima' => ['fa-users', 'Barang yang diterima karyawan'],
                         'kendaraan' => ['fa-truck', 'Kebutuhan kendaraan dan truck'],
                         'alat_berat' => ['fa-tractor', 'Operasional alat berat'],
-                        'kapal' => ['fa-ship', 'Kebutuhan operasional kapal'],
+                        'kapal' => ['fa-ship', 'Kapal dengan pelayaran PT. ALEXINDO YAKIN PRIMA'],
                         'kantor' => ['fa-building', 'Perlengkapan dan kebutuhan kantor'],
                     ];
                 @endphp
