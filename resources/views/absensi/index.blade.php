@@ -718,6 +718,21 @@
 
 @push('scripts')
 <script>
+    // Gunakan locale Indonesia agar kontrol waktu menampilkan format 24 jam.
+    function apply24HourTimeFormat() {
+        document.querySelectorAll('input[type="time"]').forEach(input => {
+            input.setAttribute('lang', 'id-ID');
+            input.setAttribute('step', '60');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', apply24HourTimeFormat);
+
+    new MutationObserver(apply24HourTimeFormat).observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
     function toggleEntryInputsState(entry, disabled) {
         const inputs = entry.querySelectorAll('input[type="time"]');
         inputs.forEach(input => {
