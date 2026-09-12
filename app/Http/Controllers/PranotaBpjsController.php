@@ -65,6 +65,10 @@ class PranotaBpjsController extends Controller
             'details.*.jkm_tunjangan'        => 'nullable',
             'details.*.bpu_jkk_tunjangan'    => 'nullable',
             'details.*.bpu_jkm'              => 'nullable',
+            'details.*.noncrew_jht_biaya'    => 'nullable',
+            'details.*.noncrew_jht_hutang'   => 'nullable',
+            'details.*.noncrew_jkk_tunjangan' => 'nullable',
+            'details.*.noncrew_jkm_tunjangan' => 'nullable',
             'details.*.jp_biaya'             => 'nullable',
             'details.*.jp_hutang'            => 'nullable',
             'keterangan' => 'nullable|string',
@@ -95,10 +99,17 @@ class PranotaBpjsController extends Controller
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0);
-                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0);
-                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0);
-                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0);
+                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0)
+                              + $this->parseIndonesianNumber($detail['noncrew_jht_biaya'] ?? 0);
+                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0)
+                               + $this->parseIndonesianNumber($detail['jkk_hutang'] ?? 0)
+                               + $this->parseIndonesianNumber($detail['noncrew_jht_hutang'] ?? 0);
+                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['bpu_jkk_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['noncrew_jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['bpu_jkm'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['noncrew_jkm_tunjangan'] ?? 0);
                     $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
                     $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
                     
@@ -180,14 +191,21 @@ class PranotaBpjsController extends Controller
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
-            'details.*.bpjs_kesehatan' => 'nullable',
+            'details.*.bpjs_kesehatan'      => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
-            'details.*.jht_biaya' => 'nullable',
-            'details.*.jht_hutang' => 'nullable',
-            'details.*.jkk_tunjangan' => 'nullable',
-            'details.*.jkm_tunjangan' => 'nullable',
-            'details.*.jp_biaya' => 'nullable',
-            'details.*.jp_hutang' => 'nullable',
+            'details.*.jht_biaya'            => 'nullable',
+            'details.*.jht_hutang'           => 'nullable',
+            'details.*.jkk_tunjangan'        => 'nullable',
+            'details.*.jkk_hutang'           => 'nullable',
+            'details.*.jkm_tunjangan'        => 'nullable',
+            'details.*.bpu_jkk_tunjangan'    => 'nullable',
+            'details.*.bpu_jkm'              => 'nullable',
+            'details.*.noncrew_jht_biaya'    => 'nullable',
+            'details.*.noncrew_jht_hutang'   => 'nullable',
+            'details.*.noncrew_jkk_tunjangan' => 'nullable',
+            'details.*.noncrew_jkm_tunjangan' => 'nullable',
+            'details.*.jp_biaya'             => 'nullable',
+            'details.*.jp_hutang'            => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -215,10 +233,17 @@ class PranotaBpjsController extends Controller
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
 
-                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0);
-                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0);
-                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0);
-                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0);
+                    $jhtBiaya = $this->parseIndonesianNumber($detail['jht_biaya'] ?? 0)
+                              + $this->parseIndonesianNumber($detail['noncrew_jht_biaya'] ?? 0);
+                    $jhtHutang = $this->parseIndonesianNumber($detail['jht_hutang'] ?? 0)
+                               + $this->parseIndonesianNumber($detail['jkk_hutang'] ?? 0)
+                               + $this->parseIndonesianNumber($detail['noncrew_jht_hutang'] ?? 0);
+                    $jkkTunjangan = $this->parseIndonesianNumber($detail['jkk_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['bpu_jkk_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['noncrew_jkk_tunjangan'] ?? 0);
+                    $jkmTunjangan = $this->parseIndonesianNumber($detail['jkm_tunjangan'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['bpu_jkm'] ?? 0)
+                                  + $this->parseIndonesianNumber($detail['noncrew_jkm_tunjangan'] ?? 0);
                     $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
                     $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
                     

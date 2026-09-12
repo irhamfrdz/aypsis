@@ -195,7 +195,10 @@
                                 <i class="fas fa-building text-emerald-600 mr-1"></i> BP Jamsostek (PPU)
                             </th>
                             <th colspan="3" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900">
-                                <i class="fas fa-user-gear text-sky-600 mr-1"></i> BP Jamsostek (BPU)
+                                <i class="fas fa-ship text-sky-600 mr-1"></i> BP Jamsostek (BPU-CREW)
+                            </th>
+                            <th colspan="4" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900">
+                                <i class="fas fa-user-tag text-purple-600 mr-1"></i> BP Jamsostek (Non BPU-CREW)
                             </th>
                             <th colspan="2" class="px-3 py-2 text-center border-r border-amber-200 bg-amber-50 text-amber-900">
                                 <i class="fas fa-piggy-bank text-amber-600 mr-1"></i> Jaminan Pensiun (JP)
@@ -226,11 +229,17 @@
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="JKK Tunjangan 0.24%">PPU JKK 0.24%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-emerald-100" style="min-width:95px" title="JKM Tunjangan 0.3%">PPU JKM 0.3%</th>
 
-                            {{-- BPU (3) --}}
+                            {{-- BPU-CREW (3) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30" style="min-width:115px" title="BPU JHT Karyawan (Hutang Potongan)">BPU JHT (Kary)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30" style="min-width:110px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-sky-100" style="min-width:100px" title="BPU JKM Biaya">BPU JKM</th>
                             
+                            {{-- Non BPU-CREW (4) --}}
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:100px" title="JHT 2% Biaya Perusahaan">JHT 2% (Biaya)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:100px" title="JHT 2% Hutang Karyawan Tabel DPP">JHT 2% (Hutang)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:95px" title="JKK 1% Tunjangan">JKK 1% (Tunj)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 border-r border-purple-100" style="min-width:95px" title="JKM Tunjangan Nominal (Rp)">JKM (Rp)</th>
+
                             {{-- JP (2) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 border-r border-gray-200" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
@@ -254,11 +263,17 @@
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jkm">Rp 0</td>
                             
-                            {{-- BPU --}}
+                            {{-- BPU-CREW --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50" id="total_jkk_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50" id="total_bpu_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50" id="total_bpu_jkm">Rp 0</td>
                             
+                            {{-- Non BPU-CREW --}}
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jht_biaya">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jht_hutang">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jkk">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jkm">Rp 0</td>
+
                             {{-- JP --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50" id="total_jp_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50" id="total_jp_hutang">Rp 0</td>
@@ -342,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let sumKes = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0;
         let sumBpuJht = 0, sumBpuJkk = 0, sumBpuJkm = 0;
+        let sumNcJhtB = 0, sumNcJhtH = 0, sumNcJkk = 0, sumNcJkm = 0;
         let sumJpB = 0, sumJpH = 0;
         
         document.querySelectorAll('.input-kes').forEach(i => sumKes += parseIdNumber(i.value));
@@ -353,23 +369,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.input-jkk-hutang').forEach(i => sumBpuJht += parseIdNumber(i.value));
         document.querySelectorAll('.input-bpu-jkk').forEach(i => sumBpuJkk += parseIdNumber(i.value));
         document.querySelectorAll('.input-bpu-jkm').forEach(i => sumBpuJkm += parseIdNumber(i.value));
+        document.querySelectorAll('.input-noncrew-jht-biaya').forEach(i => sumNcJhtB += parseIdNumber(i.value));
+        document.querySelectorAll('.input-noncrew-jht-hutang').forEach(i => sumNcJhtH += parseIdNumber(i.value));
+        document.querySelectorAll('.input-noncrew-jkk').forEach(i => sumNcJkk += parseIdNumber(i.value));
+        document.querySelectorAll('.input-noncrew-jkm').forEach(i => sumNcJkm += parseIdNumber(i.value));
         document.querySelectorAll('.input-jp-biaya').forEach(i => sumJpB += parseIdNumber(i.value));
         document.querySelectorAll('.input-jp-hutang').forEach(i => sumJpH += parseIdNumber(i.value));
 
-        document.getElementById('total_kes').innerText        = 'Rp ' + formatNumber(sumKes);
-        document.getElementById('total_ket').innerText        = 'Rp ' + formatNumber(sumKet);
-        document.getElementById('total_jht_biaya').innerText  = 'Rp ' + formatNumber(sumJhtB);
-        document.getElementById('total_jht_hutang').innerText = 'Rp ' + formatNumber(sumJhtH);
-        document.getElementById('total_jkk').innerText        = 'Rp ' + formatNumber(sumJkk);
-        document.getElementById('total_jkm').innerText        = 'Rp ' + formatNumber(sumJkm);
-        document.getElementById('total_jkk_hutang').innerText = 'Rp ' + formatNumber(sumBpuJht);
-        document.getElementById('total_bpu_jkk').innerText    = 'Rp ' + formatNumber(sumBpuJkk);
-        document.getElementById('total_bpu_jkm').innerText    = 'Rp ' + formatNumber(sumBpuJkm);
-        document.getElementById('total_jp_biaya').innerText   = 'Rp ' + formatNumber(sumJpB);
-        document.getElementById('total_jp_hutang').innerText  = 'Rp ' + formatNumber(sumJpH);
+        document.getElementById('total_kes').innerText                 = 'Rp ' + formatNumber(sumKes);
+        document.getElementById('total_ket').innerText                 = 'Rp ' + formatNumber(sumKet);
+        document.getElementById('total_jht_biaya').innerText           = 'Rp ' + formatNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').innerText          = 'Rp ' + formatNumber(sumJhtH);
+        document.getElementById('total_jkk').innerText                 = 'Rp ' + formatNumber(sumJkk);
+        document.getElementById('total_jkm').innerText                 = 'Rp ' + formatNumber(sumJkm);
+        document.getElementById('total_jkk_hutang').innerText          = 'Rp ' + formatNumber(sumBpuJht);
+        document.getElementById('total_bpu_jkk').innerText             = 'Rp ' + formatNumber(sumBpuJkk);
+        document.getElementById('total_bpu_jkm').innerText             = 'Rp ' + formatNumber(sumBpuJkm);
+        document.getElementById('total_noncrew_jht_biaya').innerText   = 'Rp ' + formatNumber(sumNcJhtB);
+        document.getElementById('total_noncrew_jht_hutang').innerText  = 'Rp ' + formatNumber(sumNcJhtH);
+        document.getElementById('total_noncrew_jkk').innerText         = 'Rp ' + formatNumber(sumNcJkk);
+        document.getElementById('total_noncrew_jkm').innerText         = 'Rp ' + formatNumber(sumNcJkm);
+        document.getElementById('total_jp_biaya').innerText            = 'Rp ' + formatNumber(sumJpB);
+        document.getElementById('total_jp_hutang').innerText           = 'Rp ' + formatNumber(sumJpH);
         
         const totalJkn = sumKes + sumKet;
-        const totalJamsostek = sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumJpB + sumJpH;
+        const totalJamsostek = sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
         const grandTotal = totalJkn + totalJamsostek;
         
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
@@ -447,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right font-mono text-xs input-jkm font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
 
-            {{-- BPU (3) --}}
+            {{-- BPU-CREW (3) --}}
             <td class="px-1.5 py-2 align-middle bg-rose-50/10">
                 <input type="text" name="details[${rowCount}][jkk_hutang]" class="w-full text-right font-mono text-xs input-jkk-hutang font-semibold text-rose-600 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -456,6 +480,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td class="px-1.5 py-2 align-middle bg-sky-50/10 border-r border-sky-100">
                 <input type="text" name="details[${rowCount}][bpu_jkm]" class="w-full text-right font-mono text-xs input-bpu-jkm font-semibold text-sky-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-sky-400 focus:ring-1 focus:ring-sky-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+            </td>
+
+            {{-- Non BPU-CREW (4) --}}
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+                <input type="text" name="details[${rowCount}][noncrew_jht_biaya]" class="w-full text-right font-mono text-xs input-noncrew-jht-biaya font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+            </td>
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+                <input type="text" name="details[${rowCount}][noncrew_jht_hutang]" class="w-full text-right font-mono text-xs input-noncrew-jht-hutang font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+            </td>
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+                <input type="text" name="details[${rowCount}][noncrew_jkk_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkk font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+            </td>
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10 border-r border-purple-100">
+                <input type="text" name="details[${rowCount}][noncrew_jkm_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkm font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             
             {{-- JP (2) --}}
@@ -491,6 +529,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputBpuJht    = tr.querySelector('.input-jkk-hutang');
         const inputBpuJkk    = tr.querySelector('.input-bpu-jkk');
         const inputBpuJkm    = tr.querySelector('.input-bpu-jkm');
+        const inputNcJhtBiaya = tr.querySelector('.input-noncrew-jht-biaya');
+        const inputNcJhtHutang = tr.querySelector('.input-noncrew-jht-hutang');
+        const inputNcJkk     = tr.querySelector('.input-noncrew-jkk');
+        const inputNcJkm     = tr.querySelector('.input-noncrew-jkm');
         const inputJpBiaya   = tr.querySelector('.input-jp-biaya');
         const inputJpHutang  = tr.querySelector('.input-jp-hutang');
         
@@ -504,14 +546,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const bpuJht    = parseIdNumber(inputBpuJht.value);
             const bpuJkk    = parseIdNumber(inputBpuJkk.value);
             const bpuJkm    = parseIdNumber(inputBpuJkm.value);
+            const ncJhtB    = parseIdNumber(inputNcJhtBiaya.value);
+            const ncJhtH    = parseIdNumber(inputNcJhtHutang.value);
+            const ncJkk     = parseIdNumber(inputNcJkk.value);
+            const ncJkm     = parseIdNumber(inputNcJkm.value);
             const jpB       = parseIdNumber(inputJpBiaya.value);
             const jpH       = parseIdNumber(inputJpHutang.value);
-            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + jpB + jpH);
+            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + ncJhtB + ncJhtH + ncJkk + ncJkm + jpB + jpH);
             calculateTotals();
         };
 
         // Format saat kehilangan fokus atau nilai berubah (oleh sistem / user)
-        [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputBpuJht, inputBpuJkk, inputBpuJkm, inputJpBiaya, inputJpHutang].forEach(function(input) {
+        [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputBpuJht, inputBpuJkk, inputBpuJkm, inputNcJhtBiaya, inputNcJhtHutang, inputNcJkk, inputNcJkm, inputJpBiaya, inputJpHutang].forEach(function(input) {
             if (!input) return;
             input.addEventListener('change', function() {
                 this.value = formatNumber(parseIdNumber(this.value));
@@ -547,7 +593,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (karyawan.group_bp_jamsostek) {
                 const isPpu = karyawan.group_bp_jamsostek.toUpperCase().includes('PPU');
-                const badgeClass = isPpu ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800';
+                const isBpuCrew = karyawan.group_bp_jamsostek.toUpperCase().includes('BPU-CREW');
+                let badgeClass = 'bg-purple-100 text-purple-800';
+                if (isPpu) badgeClass = 'bg-emerald-100 text-emerald-800';
+                else if (isBpuCrew) badgeClass = 'bg-sky-100 text-sky-800';
                 badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}" title="Group Jamsostek">${karyawan.group_bp_jamsostek}</span>`);
             }
 
@@ -602,9 +651,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const dppJamsostek = parseIdNumber(karyawan.dpp_bp_jamsostek);
                     let jhtBiaya = 0, jhtHutang = 0, jkkTunj = 0, jkmTunj = 0;
                     let bpuJhtVal = 0, bpuJkkTunjVal = 0, bpuJkmVal = 0;
+                    let ncJhtBiayaVal = 0, ncJhtHutangVal = 0, ncJkkTunjVal = 0, ncJkmTunjVal = 0;
                     let jpBiaya = 0, jpHutang = 0;
                     
-                    if (rumus.group_name.toUpperCase().includes('PPU')) {
+                    const groupNameUpper = (rumus.group_name || '').toUpperCase();
+
+                    if (groupNameUpper.includes('PPU')) {
                         const jhtBiayaMaster  = parseFloat(rumus.jht_biaya   || 0);
                         const jhtHutangMaster = parseFloat(rumus.jht_hutang  || 0);
                         
@@ -620,8 +672,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         jkkTunj = (parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek;
                         jkmTunj = (parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek;
 
-                    } else {
-                        // ── BPU (non-PPU) ────────────────────────────────────────────
+                    } else if (groupNameUpper.includes('BPU-CREW')) {
+                        // ── BPU-CREW ────────────────────────────────────────────
                         const hutangPersen = parseFloat(rumus.hutang_persen || 0);
                         if (tipeJkn === 'tunjangan_hutang') {
                             nominalKet += (hutangPersen / 100) * dppJamsostek;
@@ -669,28 +721,85 @@ document.addEventListener('DOMContentLoaded', function() {
                                 bpuJkmVal = biayaMaster * diskonNilai;
                             }
                         }
+                    } else {
+                        // ── Non BPU-CREW ─────────────────────────────────────────
+                        // 1. JHT 2% Biaya (%)
+                        const jhtBiayaPersen = parseFloat(rumus.jht_biaya || 0);
+                        ncJhtBiayaVal = (jhtBiayaPersen / 100) * dppJamsostek;
+
+                        // 2. JHT 2% Hutang (Rp) dari Tabel DPP Tier
+                        let tiers = rumus.hutang_tiers;
+                        if (typeof tiers === 'string') {
+                            try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
+                        }
+                        if (Array.isArray(tiers) && tiers.length > 0) {
+                            const matchedTier = tiers.find(t => parseFloat(t.dpp || 0) === dppJamsostek);
+                            if (matchedTier) {
+                                ncJhtHutangVal = parseFloat(matchedTier.potongan || 0);
+                            } else {
+                                ncJhtHutangVal = tiers.reduce((sum, t) => sum + parseFloat(t.potongan || 0), 0);
+                            }
+                        } else {
+                            const jhtHutangPersen = parseFloat(rumus.jht_hutang || 0);
+                            ncJhtHutangVal = (jhtHutangPersen / 100) * dppJamsostek;
+                        }
+
+                        // 3. JKK 1% Tunjangan (%)
+                        const jkkPersen = parseFloat(rumus.jkk_tunjangan || 0);
+                        let baseJkk = (jkkPersen / 100) * dppJamsostek;
+                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
+                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
+                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
+                            if (diskonTipe === 'persen') {
+                                baseJkk = baseJkk * (diskonNilai / 100);
+                            } else {
+                                baseJkk = baseJkk * diskonNilai;
+                            }
+                        }
+                        ncJkkTunjVal = baseJkk;
+
+                        // 4. JKM Tunjangan (Nominal Rp)
+                        let baseJkm = parseFloat(rumus.jkm_tunjangan || 0);
+                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
+                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
+                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
+                            if (diskonTipe === 'persen') {
+                                baseJkm = baseJkm * (diskonNilai / 100);
+                            } else {
+                                baseJkm = baseJkm * diskonNilai;
+                            }
+                        }
+                        ncJkmTunjVal = baseJkm;
                     }
                     
-                    inputJhtBiaya.value  = formatNumber(jhtBiaya);
-                    inputJhtHutang.value = formatNumber(jhtHutang);
-                    inputJkk.value       = formatNumber(jkkTunj);
-                    inputJkm.value       = formatNumber(jkmTunj);
-                    inputBpuJht.value    = formatNumber(Math.round(bpuJhtVal));
-                    inputBpuJkk.value    = formatNumber(Math.round(bpuJkkTunjVal));
-                    inputBpuJkm.value    = formatNumber(Math.round(bpuJkmVal));
-                    inputJpBiaya.value   = formatNumber(jpBiaya);
-                    inputJpHutang.value  = formatNumber(jpHutang);
+                    inputJhtBiaya.value     = formatNumber(jhtBiaya);
+                    inputJhtHutang.value    = formatNumber(jhtHutang);
+                    inputJkk.value          = formatNumber(jkkTunj);
+                    inputJkm.value          = formatNumber(jkmTunj);
+                    inputBpuJht.value       = formatNumber(Math.round(bpuJhtVal));
+                    inputBpuJkk.value       = formatNumber(Math.round(bpuJkkTunjVal));
+                    inputBpuJkm.value       = formatNumber(Math.round(bpuJkmVal));
+                    inputNcJhtBiaya.value   = formatNumber(Math.round(ncJhtBiayaVal));
+                    inputNcJhtHutang.value  = formatNumber(Math.round(ncJhtHutangVal));
+                    inputNcJkk.value        = formatNumber(Math.round(ncJkkTunjVal));
+                    inputNcJkm.value        = formatNumber(Math.round(ncJkmTunjVal));
+                    inputJpBiaya.value      = formatNumber(jpBiaya);
+                    inputJpHutang.value     = formatNumber(jpHutang);
                 }
             } else {
-                inputJhtBiaya.value  = 0;
-                inputJhtHutang.value = 0;
-                inputJkk.value       = 0;
-                inputJkm.value       = 0;
-                inputBpuJht.value    = 0;
-                inputBpuJkk.value    = 0;
-                inputBpuJkm.value    = 0;
-                inputJpBiaya.value   = 0;
-                inputJpHutang.value  = 0;
+                inputJhtBiaya.value     = 0;
+                inputJhtHutang.value    = 0;
+                inputJkk.value          = 0;
+                inputJkm.value          = 0;
+                inputBpuJht.value       = 0;
+                inputBpuJkk.value       = 0;
+                inputBpuJkm.value       = 0;
+                inputNcJhtBiaya.value   = 0;
+                inputNcJhtHutang.value  = 0;
+                inputNcJkk.value        = 0;
+                inputNcJkm.value        = 0;
+                inputJpBiaya.value      = 0;
+                inputJpHutang.value     = 0;
             }
 
             if (tipeJkn !== 'manual') {
@@ -741,6 +850,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll(
             '.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, ' +
             '.input-jkk, .input-jkk-hutang, .input-jkm, .input-bpu-jkk, .input-bpu-jkm, ' +
+            '.input-noncrew-jht-biaya, .input-noncrew-jht-hutang, .input-noncrew-jkk, .input-noncrew-jkm, ' +
             '.input-jp-biaya, .input-jp-hutang'
         ).forEach(function(input) {
             input.value = parseIdNumber(input.value);

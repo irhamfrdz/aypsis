@@ -103,17 +103,18 @@
     </div>
 
     @php
-        $rumusJamsostekBpu = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU'));
+        $rumusJamsostekBpuCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && str_contains(strtoupper($item->group_name), 'BPU-CREW'));
+        $rumusJamsostekBpuNonCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && !str_contains(strtoupper($item->group_name), 'BPU-CREW'));
         $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => str_contains(strtoupper($item->group_name), 'PPU'));
     @endphp
 
-    {{-- ── Tabel Group BP Jamsostek BPU ─────────────────────────────────── --}}
+    {{-- ── Tabel Group BP Jamsostek BPU-CREW ─────────────────────────────── --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100 bg-gray-50">
             <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-sky-100 text-sky-700">
                 <i class="fas fa-users text-xs"></i>
             </span>
-            <h3 class="text-base font-semibold text-gray-800">Group BP Jamsostek <span class="text-sky-600">(BPU)</span></h3>
+            <h3 class="text-base font-semibold text-gray-800">Group BP Jamsostek <span class="text-sky-600">(BPU-CREW)</span></h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
@@ -131,12 +132,12 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($rumusJamsostekBpu as $index => $item)
+                    @forelse($rumusJamsostekBpuCrew as $index => $item)
                         <tr class="hover:bg-sky-50/30 transition duration-150">
                             <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3 font-semibold text-gray-800">
                                 {{ $item->group_name }}
-                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-sky-100 text-sky-700">BPU</span>
+                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-sky-100 text-sky-700">BPU-CREW</span>
                             </td>
                             <td class="px-4 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
@@ -208,7 +209,125 @@
                         <tr>
                             <td colspan="9" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
-                                Belum ada data Group BP Jamsostek BPU.
+                                Belum ada data Group BP Jamsostek BPU-CREW.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ── Tabel Group BP Jamsostek Non BPU-CREW ────────────────────────── --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700">
+                <i class="fas fa-user-tag text-xs"></i>
+            </span>
+            <h3 class="text-base font-semibold text-gray-800">Group BP Jamsostek <span class="text-indigo-600">(Non BPU-CREW)</span></h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 w-10 text-center font-semibold">No</th>
+                        <th class="px-3 py-3 font-semibold">Group Name</th>
+                        <th class="px-3 py-3 font-semibold">Cabang</th>
+                        <th class="px-3 py-3 font-semibold text-center">JHT 2% Biaya</th>
+                        <th class="px-3 py-3 font-semibold text-center">JHT 2% Hutang (Rp) — Tabel DPP</th>
+                        <th class="px-3 py-3 font-semibold text-center">JKK 1% Tunj.</th>
+                        <th class="px-3 py-3 font-semibold text-center">JKM Tunj. (Rp)</th>
+                        <th class="px-3 py-3 font-semibold text-center">Diskon</th>
+                        <th class="px-3 py-3 font-semibold">Keterangan</th>
+                        <th class="px-3 py-3 font-semibold text-center w-20">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($rumusJamsostekBpuNonCrew as $index => $item)
+                        <tr class="hover:bg-indigo-50/30 transition duration-150">
+                            <td class="px-3 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
+                            <td class="px-3 py-3 font-semibold text-gray-800">
+                                {{ $item->group_name }}
+                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700">Non BPU-CREW</span>
+                            </td>
+                            <td class="px-3 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
+                            <td class="px-3 py-3 text-center">
+                                @if($item->jht_biaya)
+                                    <span class="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->jht_biaya }}%</span>
+                                @else <span class="text-gray-300">—</span> @endif
+                            </td>
+                            <td class="px-3 py-3">
+                                @if($item->hutang_tiers && count($item->hutang_tiers) > 0)
+                                    <div class="space-y-1">
+                                        @foreach($item->hutang_tiers as $tier)
+                                        <div class="flex items-center gap-1.5 text-xs">
+                                             <span class="text-gray-400 font-mono">Rp {{ number_format((float)($tier['dpp'] ?? 0), 0, ',', '.') }}</span>
+                                            <span class="text-gray-300">→</span>
+                                            <span class="font-semibold text-gray-700 font-mono">Rp {{ number_format((float)($tier['potongan'] ?? 0), 0, ',', '.') }}</span>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                @elseif($item->jht_hutang)
+                                    <span class="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->jht_hutang }}%</span>
+                                @else
+                                    <span class="text-gray-300">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                @if($item->jkk_tunjangan)
+                                    <span class="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->jkk_tunjangan }}%</span>
+                                @else <span class="text-gray-300">—</span> @endif
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                @if($item->jkm_tunjangan)
+                                    <span class="text-xs font-mono font-semibold text-gray-700">Rp {{ number_format((float)$item->jkm_tunjangan, 0, ',', '.') }}</span>
+                                @else <span class="text-gray-300">—</span> @endif
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                <div class="inline-flex flex-col items-center gap-1" id="diskon-cell-{{ $item->id }}">
+                                    <select onchange="handleTableDiskonStatusChange(this, {{ $item->id }})"
+                                            class="diskon-status-select text-xs border border-gray-300 rounded-lg shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold' : 'bg-white text-gray-600' }}">
+                                        <option value="tidak_ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'tidak_ada' ? 'selected' : '' }}>Tidak Ada</option>
+                                        <option value="ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'selected' : '' }}>Ada Diskon</option>
+                                    </select>
+                                    <div class="diskon-inputs flex items-center gap-1 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? '' : 'hidden' }}">
+                                        <input type="number" step="0.01" min="0"
+                                               value="{{ $item->diskon_nilai ? (float)$item->diskon_nilai : '' }}"
+                                               placeholder="Nilai"
+                                               onchange="handleTableDiskonValueChange(this, {{ $item->id }})"
+                                               class="diskon-nilai text-xs w-16 border border-gray-300 rounded-lg py-1 px-2 text-right font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                                        <select onchange="handleTableDiskonTipeChange(this, {{ $item->id }})"
+                                                class="diskon-tipe text-xs border border-gray-300 rounded-lg py-1 px-1 bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="persen" {{ ($item->diskon_tipe ?? 'persen') === 'persen' ? 'selected' : '' }}>%</option>
+                                            <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
+                                        </select>
+                                    </div>
+                                    <span class="save-status-msg text-[10px] text-emerald-600 hidden font-semibold">✓ Tersimpan</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
+                            <td class="px-3 py-3 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <button onclick="editModal({{ $item->toJson() }})"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </button>
+                                    <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST"
+                                          onsubmit="return confirm('Hapus data ini?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit"
+                                                class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 transition" title="Hapus">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
+                                <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                Belum ada data Group BP Jamsostek Non BPU-CREW.
                             </td>
                         </tr>
                     @endforelse
@@ -343,7 +462,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nama Group</label>
                                 <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                       required placeholder="Cth: JKN-KIS-HARIAN" oninput="togglePpuFields(this)">
+                                       required placeholder="Cth: JKN-KIS-HARIAN / BPU-CREW / BPU-HARIAN / PPU" oninput="toggleJamsostekFields(this)">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
@@ -385,8 +504,8 @@
                             </div>
                         </div>
 
-                        {{-- BPU Fields (hanya muncul saat jenis = jamsostek) --}}
-                        <div class="bpu-fields hidden">
+                        {{-- BPU-CREW Fields (hanya muncul saat jenis = jamsostek dan nama group = BPU-CREW) --}}
+                        <div class="bpu-crew-fields hidden">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
                                 {{-- Tunjangan --}}
@@ -440,53 +559,115 @@
                                 </div>
                             </div>
 
-                            {{-- Biaya + Diskon --}}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            {{-- Biaya --}}
+                            <div class="mb-4">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Biaya (% / Rp)</label>
+                                <input type="number" name="biaya_persen[]"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="Cth: 5 atau 6800">
+                            </div>
+                        </div>
+
+                        {{-- Jamsostek Rate Fields (muncul saat jenis = jamsostek: PPU atau Non BPU-CREW) --}}
+                        <div class="jamsostek-rate-fields hidden mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-4 transition-all">
+                            <p class="rate-section-title text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide">Variabel PPU Jamsostek</p>
+                            
+                            {{-- Rates Grid --}}
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Biaya (% / Rp)</label>
-                                    <input type="number" name="biaya_persen[]"
-                                           class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                           step="0.01" min="0" placeholder="Cth: 5 atau 6800">
+                                    <label class="rate-jht-biaya-label block text-xs font-semibold text-gray-600 mb-1.5">JHT Biaya (%)</label>
+                                    <input type="number" name="jht_biaya[]" class="rate-jht-biaya form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="3.7">
                                 </div>
-                                <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                                    <label class="block text-xs font-semibold text-amber-700 mb-2 uppercase tracking-wide">Variabel Diskon</label>
-                                    <div class="flex flex-col gap-2">
-                                        <select name="diskon_status[]" class="form-select w-full border-amber-200 rounded-lg shadow-sm text-sm bg-white" onchange="toggleDiskonInputs(this)">
-                                            <option value="tidak_ada">Tidak Ada (0%)</option>
-                                            <option value="ada">Ada Diskon</option>
-                                        </select>
-                                        <div class="diskon-nilai-wrapper hidden flex gap-2">
-                                            <input type="number" name="diskon_nilai[]"
-                                                   class="form-input flex-1 border-gray-300 rounded-lg shadow-sm text-sm"
-                                                   step="0.01" min="0" placeholder="Nilai diskon">
-                                            <select name="diskon_tipe[]" class="form-select border-gray-300 rounded-lg shadow-sm text-sm">
-                                                <option value="persen">%</option>
-                                                <option value="nominal">Rp</option>
-                                            </select>
+                                <div class="jht-hutang-field">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">JHT Hutang (%)</label>
+                                    <input type="number" name="jht_hutang[]" class="rate-jht-hutang form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="2">
+                                </div>
+                                <div>
+                                    <label class="rate-jkk-label block text-xs font-semibold text-gray-600 mb-1.5">JKK Tunjangan (%)</label>
+                                    <input type="number" name="jkk_tunjangan[]" class="rate-jkk form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="0.24">
+                                </div>
+                                <div>
+                                    <label class="rate-jkm-label block text-xs font-semibold text-gray-600 mb-1.5">JKM Tunjangan (%)</label>
+                                    <input type="number" name="jkm_tunjangan[]" class="rate-jkm form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="0.3">
+                                </div>
+                                <div class="jp-field-biaya">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">JP Biaya (%)</label>
+                                    <input type="number" name="jp_biaya[]" class="rate-jp-biaya form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="2">
+                                </div>
+                                <div class="jp-field-hutang">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">JP Hutang (%)</label>
+                                    <input type="number" name="jp_hutang[]" class="rate-jp-hutang form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                           step="0.01" min="0" placeholder="1">
+                                </div>
+                            </div>
+
+                            {{-- Non BPU-CREW: JHT 2% Hutang (Rp) DPP Tier --}}
+                            <div class="noncrew-tier-section hidden mt-4 pt-3 border-t border-indigo-100">
+                                <label class="block text-xs font-semibold text-indigo-900 mb-1.5 uppercase tracking-wide">
+                                    JHT 2% Hutang (Rp) — Tabel DPP
+                                    <span class="ml-1 normal-case font-normal text-gray-400">(DPP → Potongan)</span>
+                                </label>
+                                <div class="border border-indigo-200 rounded-xl bg-white/70 p-3">
+                                    <div class="hutang-tiers-container space-y-2 mb-2">
+                                        <div class="hutang-tier-row grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2">
+                                            <div>
+                                                <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">DPP (Rp)</label>
+                                                <input type="number" class="tier-dpp w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"
+                                                       step="1" min="0" placeholder="0" oninput="syncTiersJson(this)">
+                                            </div>
+                                            <div class="flex flex-col items-center pt-5">
+                                                <i class="fas fa-arrow-right text-indigo-300 text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Potongan (Rp)</label>
+                                                <input type="number" class="tier-potongan w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"
+                                                       step="1" min="0" placeholder="0" oninput="syncTiersJson(this)">
+                                            </div>
+                                            <div class="flex flex-col items-center pt-5">
+                                                <button type="button" onclick="removeTierRow(this)"
+                                                        class="remove-tier-btn hidden text-red-400 hover:text-red-600 transition w-6 h-6 flex items-center justify-center rounded-md hover:bg-red-50"
+                                                        title="Hapus baris">
+                                                    <i class="fas fa-times text-xs"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <button type="button" onclick="addTierRow(this)"
+                                            class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition">
+                                        <i class="fas fa-plus"></i> Tambah Baris DPP
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- PPU Fields --}}
-                        <div class="ppu-fields hidden mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-                            <p class="text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide">Variabel PPU Jamsostek</p>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                @foreach([
-                                    ['jht_biaya[]','JHT Biaya (%)','3.7'],
-                                    ['jht_hutang[]','JHT Hutang (%)','2'],
-                                    ['jkk_tunjangan[]','JKK Tunjangan (%)','0.24'],
-                                    ['jkm_tunjangan[]','JKM Tunjangan (%)','0.3'],
-                                    ['jp_biaya[]','JP Biaya (%)','2'],
-                                    ['jp_hutang[]','JP Hutang (%)','1'],
-                                ] as [$fname, $flabel, $fph])
+                        {{-- Diskon Section (BPU-CREW & Non BPU-CREW) --}}
+                        <div class="diskon-section hidden mb-4 bg-amber-50/80 border border-amber-200 rounded-xl p-3.5">
+                            <label class="block text-xs font-bold text-amber-800 mb-2 uppercase tracking-wide">Variabel Diskon</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">{{ $flabel }}</label>
-                                    <input type="number" name="{{ $fname }}" class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                           step="0.01" min="0" placeholder="{{ $fph }}">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Status Diskon</label>
+                                    <select name="diskon_status[]" class="form-select w-full border-amber-200 rounded-lg shadow-sm text-sm bg-white" onchange="toggleDiskonInputs(this)">
+                                        <option value="tidak_ada">Tidak Ada (0%)</option>
+                                        <option value="ada">Ada Diskon</option>
+                                    </select>
                                 </div>
-                                @endforeach
+                                <div class="diskon-nilai-wrapper hidden">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nilai & Tipe Diskon</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" name="diskon_nilai[]"
+                                               class="form-input flex-1 border-gray-300 rounded-lg shadow-sm text-sm"
+                                               step="0.01" min="0" placeholder="Nilai diskon">
+                                        <select name="diskon_tipe[]" class="form-select border-gray-300 rounded-lg shadow-sm text-sm">
+                                            <option value="persen">%</option>
+                                            <option value="nominal">Rp</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -596,7 +777,7 @@
                             <label for="edit_group_name" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nama Group</label>
                             <input type="text" id="edit_group_name" name="group_name"
                                    class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                   required placeholder="Cth: JKN-KIS-HARIAN" oninput="toggleEditPpuFields(this)">
+                                   required placeholder="Cth: JKN-KIS-HARIAN / BPU-CREW / BPU-HARIAN / PPU" oninput="toggleEditJamsostekFields(this)">
                         </div>
                         <div>
                             <label for="edit_cabang_bpjs" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
@@ -606,8 +787,8 @@
                         </div>
                     </div>
 
-                    {{-- BPU Fields (edit) --}}
-                    <div id="edit_bpu_fields">
+                    {{-- BPU-CREW Fields (edit) --}}
+                    <div id="edit_bpu_crew_fields">
 
                         {{-- Tunjangan + DPP + Biaya --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -645,57 +826,97 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
 
-                        {{-- Diskon (edit) --}}
-                        <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4">
-                            <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-wide">Variabel Diskon</label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                    <label for="edit_diskon_status" class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
-                                    <select id="edit_diskon_status" name="diskon_status"
-                                            class="form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                            onchange="toggleEditDiskonInputs(this)">
-                                        <option value="tidak_ada">Tidak Ada (0%)</option>
-                                        <option value="ada">Ada Diskon</option>
-                                    </select>
+                    {{-- Jamsostek Rate Fields Edit (muncul saat jenis = jamsostek: PPU atau Non BPU-CREW) --}}
+                    <div id="edit_jamsostek_rate_fields" class="hidden mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-4 transition-all">
+                        <p id="edit_rate_section_title" class="text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide">Variabel PPU Jamsostek</p>
+                        
+                        {{-- Rates Grid --}}
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div>
+                                <label id="edit_jht_biaya_label" for="edit_jht_biaya" class="block text-xs font-semibold text-gray-600 mb-1.5">JHT Biaya (%)</label>
+                                <input type="number" id="edit_jht_biaya" name="jht_biaya"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="3.7">
+                            </div>
+                            <div id="edit_jht_hutang_field">
+                                <label id="edit_jht_hutang_label" for="edit_jht_hutang" class="block text-xs font-semibold text-gray-600 mb-1.5">JHT Hutang (%)</label>
+                                <input type="number" id="edit_jht_hutang" name="jht_hutang"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="2">
+                            </div>
+                            <div>
+                                <label id="edit_jkk_tunjangan_label" for="edit_jkk_tunjangan" class="block text-xs font-semibold text-gray-600 mb-1.5">JKK Tunjangan (%)</label>
+                                <input type="number" id="edit_jkk_tunjangan" name="jkk_tunjangan"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="0.24">
+                            </div>
+                            <div>
+                                <label id="edit_jkm_tunjangan_label" for="edit_jkm_tunjangan" class="block text-xs font-semibold text-gray-600 mb-1.5">JKM Tunjangan (%)</label>
+                                <input type="number" id="edit_jkm_tunjangan" name="jkm_tunjangan"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="0.3">
+                            </div>
+                            <div id="edit_jp_biaya_wrapper">
+                                <label for="edit_jp_biaya" class="block text-xs font-semibold text-gray-600 mb-1.5">JP Biaya (%)</label>
+                                <input type="number" id="edit_jp_biaya" name="jp_biaya"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="2">
+                            </div>
+                            <div id="edit_jp_hutang_wrapper">
+                                <label for="edit_jp_hutang" class="block text-xs font-semibold text-gray-600 mb-1.5">JP Hutang (%)</label>
+                                <input type="number" id="edit_jp_hutang" name="jp_hutang"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="1">
+                            </div>
+                        </div>
+
+                        {{-- Non BPU-CREW: JHT 2% Hutang (Rp) DPP Tier (Edit) --}}
+                        <div id="edit_noncrew_tier_section" class="hidden mt-4 pt-3 border-t border-indigo-100">
+                            <label class="block text-xs font-semibold text-indigo-900 mb-1.5 uppercase tracking-wide">
+                                JHT 2% Hutang (Rp) — Tabel DPP
+                                <span class="ml-1 normal-case font-normal text-gray-400">(DPP → Potongan)</span>
+                            </label>
+                            <div class="border border-indigo-200 rounded-xl bg-white/70 p-3">
+                                <div id="edit-noncrew-hutang-tiers-container" class="space-y-2 mb-2">
+                                    {{-- filled by JS --}}
                                 </div>
-                                <div id="edit_diskon_nilai_wrapper" class="hidden">
-                                    <label for="edit_diskon_nilai" class="block text-xs font-semibold text-gray-600 mb-1">Nilai Diskon</label>
-                                    <input type="number" id="edit_diskon_nilai" name="diskon_nilai"
-                                           class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                           step="0.01" min="0" placeholder="Cth: 50">
-                                </div>
-                                <div id="edit_diskon_tipe_wrapper" class="hidden">
-                                    <label for="edit_diskon_tipe" class="block text-xs font-semibold text-gray-600 mb-1">Tipe Diskon</label>
-                                    <select id="edit_diskon_tipe" name="diskon_tipe"
-                                            class="form-select w-full border-gray-300 rounded-lg shadow-sm text-sm">
-                                        <option value="persen">Persentase (%)</option>
-                                        <option value="nominal">Nominal (Rp)</option>
-                                    </select>
-                                </div>
+                                <button type="button" onclick="editAddNonCrewTierRow()"
+                                        class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition">
+                                    <i class="fas fa-plus"></i> Tambah Baris DPP
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {{-- PPU Fields (edit) --}}
-                    <div id="edit_ppu_fields" class="hidden bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-4">
-                        <p class="text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide">Variabel PPU Jamsostek</p>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            @foreach([
-                                ['edit_jht_biaya','jht_biaya','JHT Biaya (%)','3.7'],
-                                ['edit_jht_hutang','jht_hutang','JHT Hutang (%)','2'],
-                                ['edit_jkk_tunjangan','jkk_tunjangan','JKK Tunjangan (%)','0.24'],
-                                ['edit_jkm_tunjangan','jkm_tunjangan','JKM Tunjangan (%)','0.3'],
-                                ['edit_jp_biaya','jp_biaya','JP Biaya (%)','2'],
-                                ['edit_jp_hutang','jp_hutang','JP Hutang (%)','1'],
-                            ] as [$fid, $fname, $flabel, $fph])
+                    {{-- Diskon (edit) --}}
+                    <div id="edit_diskon_section" class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 mb-4">
+                        <label class="block text-xs font-bold text-amber-800 mb-2 uppercase tracking-wide">Variabel Diskon</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
-                                <label for="{{ $fid }}" class="block text-xs font-semibold text-gray-600 mb-1.5">{{ $flabel }}</label>
-                                <input type="number" id="{{ $fid }}" name="{{ $fname }}"
-                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                       step="0.01" min="0" placeholder="{{ $fph }}">
+                                <label for="edit_diskon_status" class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+                                <select id="edit_diskon_status" name="diskon_status"
+                                        class="form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                        onchange="toggleEditDiskonInputs(this)">
+                                    <option value="tidak_ada">Tidak Ada (0%)</option>
+                                    <option value="ada">Ada Diskon</option>
+                                </select>
                             </div>
-                            @endforeach
+                            <div id="edit_diskon_nilai_wrapper" class="hidden">
+                                <label for="edit_diskon_nilai" class="block text-xs font-semibold text-gray-600 mb-1">Nilai Diskon</label>
+                                <input type="number" id="edit_diskon_nilai" name="diskon_nilai"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       step="0.01" min="0" placeholder="Cth: 50">
+                            </div>
+                            <div id="edit_diskon_tipe_wrapper" class="hidden">
+                                <label for="edit_diskon_tipe" class="block text-xs font-semibold text-gray-600 mb-1">Tipe Diskon</label>
+                                <select id="edit_diskon_tipe" name="diskon_tipe"
+                                        class="form-select w-full border-gray-300 rounded-lg shadow-sm text-sm">
+                                    <option value="persen">Persentase (%)</option>
+                                    <option value="nominal">Nominal (Rp)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -752,17 +973,27 @@
         firstRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
         toggleDiskonInputs(firstRow.querySelector('select[name="diskon_status[]"]'));
 
-        const tiersContainer = firstRow.querySelector('.hutang-tiers-container');
-        if (tiersContainer) {
-            tiersContainer.innerHTML = '';
-            tiersContainer.appendChild(buildTierRow('', ''));
-            updateTierRemoveBtns(tiersContainer);
+        // Reset tiers container in BPU-CREW
+        const crewTiersContainer = firstRow.querySelector('.bpu-crew-fields .hutang-tiers-container');
+        if (crewTiersContainer) {
+            crewTiersContainer.innerHTML = '';
+            crewTiersContainer.appendChild(buildTierRow('', ''));
+            updateTierRemoveBtns(crewTiersContainer);
         }
+
+        // Reset tiers container in Non BPU-CREW
+        const nonCrewTiersContainer = firstRow.querySelector('.noncrew-tier-section .hutang-tiers-container');
+        if (nonCrewTiersContainer) {
+            nonCrewTiersContainer.innerHTML = '';
+            nonCrewTiersContainer.appendChild(buildTierRow('', ''));
+            updateTierRemoveBtns(nonCrewTiersContainer);
+        }
+
         const tiersJson = firstRow.querySelector('.hutang-tiers-json');
         if (tiersJson) tiersJson.value = '';
 
         toggleJenisFields(firstRow.querySelector('select[name="jenis[]"]'));
-        togglePpuFields(firstRow.querySelector('input[name="group_name[]"]'));
+        toggleJamsostekFields(firstRow.querySelector('input[name="group_name[]"]'));
         updateRemoveButtons();
         document.getElementById('createModal').classList.remove('hidden');
     }
@@ -793,16 +1024,23 @@
         newRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
         toggleDiskonInputs(newRow.querySelector('select[name="diskon_status[]"]'));
 
-        const tiersContainer = newRow.querySelector('.hutang-tiers-container');
-        if (tiersContainer) {
-            tiersContainer.innerHTML = '';
-            tiersContainer.appendChild(buildTierRow('', ''));
-            updateTierRemoveBtns(tiersContainer);
+        const crewTiersContainer = newRow.querySelector('.bpu-crew-fields .hutang-tiers-container');
+        if (crewTiersContainer) {
+            crewTiersContainer.innerHTML = '';
+            crewTiersContainer.appendChild(buildTierRow('', ''));
+            updateTierRemoveBtns(crewTiersContainer);
+        }
+
+        const nonCrewTiersContainer = newRow.querySelector('.noncrew-tier-section .hutang-tiers-container');
+        if (nonCrewTiersContainer) {
+            nonCrewTiersContainer.innerHTML = '';
+            nonCrewTiersContainer.appendChild(buildTierRow('', ''));
+            updateTierRemoveBtns(nonCrewTiersContainer);
         }
 
         container.appendChild(newRow);
         toggleJenisFields(newRow.querySelector('select[name="jenis[]"]'));
-        togglePpuFields(newRow.querySelector('input[name="group_name[]"]'));
+        toggleJamsostekFields(newRow.querySelector('input[name="group_name[]"]'));
         updateRemoveButtons();
     }
 
@@ -845,12 +1083,21 @@
         document.getElementById('edit_diskon_tipe').value = data.diskon_tipe || 'persen';
         toggleEditDiskonInputs(document.getElementById('edit_diskon_status'));
 
-        var container = document.getElementById('edit-hutang-tiers-container');
-        container.innerHTML = '';
         var tiers = data.hutang_tiers;
         if (typeof tiers === 'string') { try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; } }
         if (!tiers || !tiers.length) tiers = [{ dpp: '', potongan: '' }];
-        tiers.forEach(function(t) { editAddTierRow(t.dpp, t.potongan); });
+
+        var crewContainer = document.getElementById('edit-hutang-tiers-container');
+        if (crewContainer) {
+            crewContainer.innerHTML = '';
+            tiers.forEach(function(t) { editAddTierRow(t.dpp, t.potongan); });
+        }
+
+        var nonCrewContainer = document.getElementById('edit-noncrew-hutang-tiers-container');
+        if (nonCrewContainer) {
+            nonCrewContainer.innerHTML = '';
+            tiers.forEach(function(t) { editAddNonCrewTierRow(t.dpp, t.potongan); });
+        }
         syncEditTiersJson();
 
         // Populate JKN fields
@@ -859,7 +1106,7 @@
         document.getElementById('edit_biaya_persen_jkn').value    = data.biaya_persen || '';
 
         toggleEditJenisFields(document.getElementById('edit_jenis'));
-        toggleEditPpuFields(document.getElementById('edit_group_name'));
+        toggleEditJamsostekFields(document.getElementById('edit_group_name'));
         document.getElementById('editModal').classList.remove('hidden');
     }
 
@@ -867,12 +1114,12 @@
         document.getElementById('editModal').classList.add('hidden');
     }
 
-    // ── Toggle PPU / Diskon ───────────────────────────────────────────────────
+    // ── Toggle Jamsostek / PPU / BPU / Diskon ──────────────────────────────────
 
     function toggleDiskonInputs(select) {
-        const bpuRow = select.closest('.bpu-fields');
-        if (!bpuRow) return;
-        const wrapper = bpuRow.querySelector('.diskon-nilai-wrapper');
+        const row = select.closest('.bpjs-row');
+        if (!row) return;
+        const wrapper = row.querySelector('.diskon-nilai-wrapper');
         if (select.value === 'ada') wrapper?.classList.remove('hidden');
         else wrapper?.classList.add('hidden');
     }
@@ -883,54 +1130,382 @@
         document.getElementById('edit_diskon_tipe_wrapper')?.classList.toggle('hidden', !show);
     }
 
-    function togglePpuFields(input) {
+    function toggleJamsostekFields(input) {
         const row = input.closest('.bpjs-row');
         const jenis = row.querySelector('select[name="jenis[]"]')?.value;
-        if (jenis !== 'jamsostek') return; // hanya berlaku saat jamsostek
-        const ppu = row.querySelector('.ppu-fields');
-        const bpu = row.querySelector('.bpu-fields');
-        const isPpu = input.value.toUpperCase().includes('PPU');
-        ppu.classList.toggle('hidden', !isPpu);
-        bpu.classList.toggle('hidden', isPpu);
+        if (jenis !== 'jamsostek') return;
+
+        const rateFields = row.querySelector('.jamsostek-rate-fields');
+        const bpuCrewFields = row.querySelector('.bpu-crew-fields');
+        const diskonSection = row.querySelector('.diskon-section');
+        const name = (input.value || '').trim().toUpperCase();
+
+        const isPpu = name.includes('PPU');
+        const isBpuCrew = name.includes('BPU-CREW');
+
+        if (isBpuCrew) {
+            bpuCrewFields?.classList.remove('hidden');
+            rateFields?.classList.add('hidden');
+            diskonSection?.classList.remove('hidden');
+        } else {
+            bpuCrewFields?.classList.add('hidden');
+            rateFields?.classList.remove('hidden');
+
+            const title = rateFields.querySelector('.rate-section-title');
+            const jhtBiayaLabel = rateFields.querySelector('.rate-jht-biaya-label');
+            const jhtBiayaInput = rateFields.querySelector('.rate-jht-biaya');
+            const jhtHutangField = rateFields.querySelector('.jht-hutang-field');
+            const jkkLabel = rateFields.querySelector('.rate-jkk-label');
+            const jkkInput = rateFields.querySelector('.rate-jkk');
+            const jkmLabel = rateFields.querySelector('.rate-jkm-label');
+            const jkmInput = rateFields.querySelector('.rate-jkm');
+            const jpFieldBiaya = rateFields.querySelector('.jp-field-biaya');
+            const jpFieldHutang = rateFields.querySelector('.jp-field-hutang');
+            const nonCrewTierSection = rateFields.querySelector('.noncrew-tier-section');
+
+            if (isPpu) {
+                rateFields.className = 'jamsostek-rate-fields mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-4 transition-all';
+                if (title) {
+                    title.className = 'rate-section-title text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide';
+                    title.textContent = 'Variabel PPU Jamsostek';
+                }
+                if (jhtBiayaLabel) jhtBiayaLabel.textContent = 'JHT Biaya (%)';
+                if (jhtBiayaInput) jhtBiayaInput.placeholder = '3.7';
+
+                if (jkkLabel) jkkLabel.textContent = 'JKK Tunjangan (%)';
+                if (jkkInput) jkkInput.placeholder = '0.24';
+
+                if (jkmLabel) jkmLabel.textContent = 'JKM Tunjangan (%)';
+                if (jkmInput) {
+                    jkmInput.placeholder = '0.3';
+                    jkmInput.step = '0.01';
+                }
+
+                jhtHutangField?.classList.remove('hidden');
+                jpFieldBiaya?.classList.remove('hidden');
+                jpFieldHutang?.classList.remove('hidden');
+                nonCrewTierSection?.classList.add('hidden');
+                diskonSection?.classList.add('hidden');
+            } else {
+                rateFields.className = 'jamsostek-rate-fields mb-4 bg-indigo-50/60 border border-indigo-100 rounded-xl p-4 transition-all';
+                if (title) {
+                    title.className = 'rate-section-title text-xs font-bold text-indigo-700 mb-3 uppercase tracking-wide';
+                    title.textContent = 'Variabel BP Jamsostek (Non BPU-CREW)';
+                }
+                if (jhtBiayaLabel) jhtBiayaLabel.textContent = 'JHT 2% Biaya (%)';
+                if (jhtBiayaInput) jhtBiayaInput.placeholder = '2';
+
+                if (jkkLabel) jkkLabel.textContent = 'JKK 1% Tunjangan (%)';
+                if (jkkInput) jkkInput.placeholder = '1';
+
+                if (jkmLabel) jkmLabel.textContent = 'JKM Tunjangan (Rp)';
+                if (jkmInput) {
+                    jkmInput.placeholder = 'Cth: 6800';
+                    jkmInput.step = '1';
+                }
+
+                jhtHutangField?.classList.add('hidden');
+                jpFieldBiaya?.classList.add('hidden');
+                jpFieldHutang?.classList.add('hidden');
+                nonCrewTierSection?.classList.remove('hidden');
+                diskonSection?.classList.remove('hidden');
+            }
+        }
     }
 
-    function toggleEditPpuFields(input) {
+    function toggleEditJamsostekFields(input) {
         const jenis = document.getElementById('edit_jenis')?.value;
         if (jenis !== 'jamsostek') return;
-        const isPpu = input.value.toUpperCase().includes('PPU');
-        document.getElementById('edit_ppu_fields')?.classList.toggle('hidden', !isPpu);
-        document.getElementById('edit_bpu_fields')?.classList.toggle('hidden', isPpu);
+
+        const rateFields = document.getElementById('edit_jamsostek_rate_fields');
+        const bpuCrewFields = document.getElementById('edit_bpu_crew_fields');
+        const diskonSection = document.getElementById('edit_diskon_section');
+        const name = (input.value || '').trim().toUpperCase();
+
+        const isPpu = name.includes('PPU');
+        const isBpuCrew = name.includes('BPU-CREW');
+
+        if (isBpuCrew) {
+            bpuCrewFields?.classList.remove('hidden');
+            rateFields?.classList.add('hidden');
+            diskonSection?.classList.remove('hidden');
+        } else {
+            bpuCrewFields?.classList.add('hidden');
+            rateFields?.classList.remove('hidden');
+
+            const title = document.getElementById('edit_rate_section_title');
+            const jhtBiayaLabel = document.getElementById('edit_jht_biaya_label');
+            const jhtBiayaInput = document.getElementById('edit_jht_biaya');
+            const jhtHutangField = document.getElementById('edit_jht_hutang_field');
+            const jkkLabel = document.getElementById('edit_jkk_tunjangan_label');
+            const jkkInput = document.getElementById('edit_jkk_tunjangan');
+            const jkmLabel = document.getElementById('edit_jkm_tunjangan_label');
+            const jkmInput = document.getElementById('edit_jkm_tunjangan');
+            const jpFieldBiaya = document.getElementById('edit_jp_biaya_wrapper');
+            const jpFieldHutang = document.getElementById('edit_jp_hutang_wrapper');
+            const nonCrewTierSection = document.getElementById('edit_noncrew_tier_section');
+
+            if (isPpu) {
+                rateFields.className = 'mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-4 transition-all';
+                if (title) {
+                    title.className = 'text-xs font-bold text-emerald-700 mb-3 uppercase tracking-wide';
+                    title.textContent = 'Variabel PPU Jamsostek';
+                }
+                if (jhtBiayaLabel) jhtBiayaLabel.textContent = 'JHT Biaya (%)';
+                if (jhtBiayaInput) jhtBiayaInput.placeholder = '3.7';
+
+                if (jkkLabel) jkkLabel.textContent = 'JKK Tunjangan (%)';
+                if (jkkInput) jkkInput.placeholder = '0.24';
+
+                if (jkmLabel) jkmLabel.textContent = 'JKM Tunjangan (%)';
+                if (jkmInput) {
+                    jkmInput.placeholder = '0.3';
+                    jkmInput.step = '0.01';
+                }
+
+                jhtHutangField?.classList.remove('hidden');
+                jpFieldBiaya?.classList.remove('hidden');
+                jpFieldHutang?.classList.remove('hidden');
+                nonCrewTierSection?.classList.add('hidden');
+                diskonSection?.classList.add('hidden');
+            } else {
+                rateFields.className = 'mb-4 bg-indigo-50/60 border border-indigo-100 rounded-xl p-4 transition-all';
+                if (title) {
+                    title.className = 'text-xs font-bold text-indigo-700 mb-3 uppercase tracking-wide';
+                    title.textContent = 'Variabel BP Jamsostek (Non BPU-CREW)';
+                }
+                if (jhtBiayaLabel) jhtBiayaLabel.textContent = 'JHT 2% Biaya (%)';
+                if (jhtBiayaInput) jhtBiayaInput.placeholder = '2';
+
+                if (jkkLabel) jkkLabel.textContent = 'JKK 1% Tunjangan (%)';
+                if (jkkInput) jkkInput.placeholder = '1';
+
+                if (jkmLabel) jkmLabel.textContent = 'JKM Tunjangan (Rp)';
+                if (jkmInput) {
+                    jkmInput.placeholder = 'Cth: 6800';
+                    jkmInput.step = '1';
+                }
+
+                jhtHutangField?.classList.add('hidden');
+                jpFieldBiaya?.classList.add('hidden');
+                jpFieldHutang?.classList.add('hidden');
+                nonCrewTierSection?.classList.remove('hidden');
+                diskonSection?.classList.remove('hidden');
+            }
+        }
     }
+
+    // Aliases for compatibility
+    function togglePpuFields(input) { toggleJamsostekFields(input); }
+    function toggleEditPpuFields(input) { toggleEditJamsostekFields(input); }
 
     /** Toggle antara JKN fields dan Jamsostek fields (Create modal) */
     function toggleJenisFields(select) {
         const row = select.closest('.bpjs-row');
         const jknFields = row.querySelector('.jkn-fields');
-        const bpuFields = row.querySelector('.bpu-fields');
-        const ppuFields = row.querySelector('.ppu-fields');
+        const bpuCrewFields = row.querySelector('.bpu-crew-fields');
+        const rateFields = row.querySelector('.jamsostek-rate-fields');
+        const diskonSection = row.querySelector('.diskon-section');
         const isJamsostek = select.value === 'jamsostek';
-        jknFields?.classList.toggle('hidden',  isJamsostek);
-        bpuFields?.classList.toggle('hidden', !isJamsostek);
-        if (ppuFields) ppuFields.classList.add('hidden'); // reset PPU
-        // Jika jamsostek, cek PPU dari nama group
-        if (isJamsostek) {
+
+        jknFields?.classList.toggle('hidden', isJamsostek);
+        if (!isJamsostek) {
+            bpuCrewFields?.classList.add('hidden');
+            rateFields?.classList.add('hidden');
+            diskonSection?.classList.add('hidden');
+        } else {
             const groupInput = row.querySelector('input[name="group_name[]"]');
-            if (groupInput) togglePpuFields(groupInput);
+            if (groupInput) toggleJamsostekFields(groupInput);
         }
     }
 
     /** Toggle antara JKN fields dan Jamsostek fields (Edit modal) */
     function toggleEditJenisFields(select) {
         const isJamsostek = select.value === 'jamsostek';
-        document.getElementById('edit_jkn_fields')?.classList.toggle('hidden',  isJamsostek);
-        document.getElementById('edit_bpu_fields')?.classList.toggle('hidden', !isJamsostek);
+        document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
-            // Reset PPU fields saat JKN
-            document.getElementById('edit_ppu_fields')?.classList.add('hidden');
+            document.getElementById('edit_bpu_crew_fields')?.classList.add('hidden');
+            document.getElementById('edit_jamsostek_rate_fields')?.classList.add('hidden');
+            document.getElementById('edit_diskon_section')?.classList.add('hidden');
         } else {
-            // Cek PPU dari nama group
-            toggleEditPpuFields(document.getElementById('edit_group_name'));
+            toggleEditJamsostekFields(document.getElementById('edit_group_name'));
         }
+    }
+
+    // ── Table Diskon AJAX ─────────────────────────────────────────────────────
+
+    function handleTableDiskonStatusChange(selectEl, id) {
+        const cell = document.getElementById('diskon-cell-' + id);
+        const inputsDiv = cell.querySelector('.diskon-inputs');
+        if (selectEl.value === 'ada') {
+            inputsDiv.classList.remove('hidden');
+            selectEl.classList.add('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');
+            selectEl.classList.remove('bg-white', 'text-gray-600');
+        } else {
+            inputsDiv.classList.add('hidden');
+            selectEl.classList.remove('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');
+            selectEl.classList.add('bg-white', 'text-gray-600');
+        }
+        saveDiskonAjax(id, cell);
+    }
+
+    function handleTableDiskonValueChange(inputEl, id) {
+        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
+    }
+
+    function handleTableDiskonTipeChange(selectEl, id) {
+        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
+    }
+
+    function saveDiskonAjax(id, cell) {
+        const status = cell.querySelector('.diskon-status-select').value;
+        const nilai  = cell.querySelector('.diskon-nilai').value;
+        const tipe   = cell.querySelector('.diskon-tipe').value;
+        const statusMsg = cell.querySelector('.save-status-msg');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+        fetch(`/master-rumus-bpjs/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ _method: 'PUT', diskon_status: status, diskon_nilai: status === 'ada' ? (nilai || 0) : 0, diskon_tipe: tipe })
+        })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(() => {
+            if (statusMsg) {
+                statusMsg.classList.remove('hidden');
+                setTimeout(() => statusMsg.classList.add('hidden'), 2000);
+            }
+        })
+        .catch(() => alert('Gagal menyimpan perubahan diskon.'));
+    }
+
+    // ── Hutang Tiers — Create Modal ───────────────────────────────────────────
+
+    function buildTierRow(dpp, potongan) {
+        var row = document.createElement('div');
+        row.className = 'hutang-tier-row grid items-end gap-2';
+        row.style.gridTemplateColumns = '1fr auto 1fr auto';
+        row.innerHTML =
+            '<div>' +
+            '  <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">DPP (Rp)</label>' +
+            '  <input type="number" class="tier-dpp w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"' +
+            '         step="1" min="0" placeholder="0" value="' + (dpp || '') + '" oninput="syncTiersJson(this)">' +
+            '</div>' +
+            '<div class="flex items-center pb-1.5"><i class="fas fa-arrow-right text-indigo-300 text-xs"></i></div>' +
+            '<div>' +
+            '  <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Potongan (Rp)</label>' +
+            '  <input type="number" class="tier-potongan w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"' +
+            '         step="1" min="0" placeholder="0" value="' + (potongan || '') + '" oninput="syncTiersJson(this)">' +
+            '</div>' +
+            '<div class="flex items-center pb-1.5">' +
+            '  <button type="button" onclick="removeTierRow(this)"' +
+            '          class="remove-tier-btn hidden text-red-400 hover:text-red-600 hover:bg-red-50 transition w-7 h-7 flex items-center justify-center rounded-lg" title="Hapus baris">' +
+            '    <i class="fas fa-times text-xs"></i>' +
+            '  </button>' +
+            '</div>';
+        return row;
+    }
+
+    function syncTiersJson(el) {
+        var bpjsRow = el.closest('.bpjs-row');
+        if (!bpjsRow) return;
+        var name = (bpjsRow.querySelector('input[name="group_name[]"]')?.value || '').trim().toUpperCase();
+        var isBpuCrew = name.includes('BPU-CREW');
+        var activeContainer = isBpuCrew
+            ? bpjsRow.querySelector('.bpu-crew-fields .hutang-tiers-container')
+            : bpjsRow.querySelector('.noncrew-tier-section .hutang-tiers-container');
+
+        var tiers = [];
+        if (activeContainer) {
+            activeContainer.querySelectorAll('.hutang-tier-row').forEach(function(row) {
+                var dpp      = row.querySelector('.tier-dpp')?.value;
+                var potongan = row.querySelector('.tier-potongan')?.value;
+                if (dpp || potongan) {
+                    tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
+                }
+            });
+        }
+        var hiddenInput = bpjsRow.querySelector('.hutang-tiers-json');
+        if (hiddenInput) hiddenInput.value = JSON.stringify(tiers);
+    }
+
+    function addTierRow(addBtn) {
+        var container = addBtn.closest('.border').querySelector('.hutang-tiers-container');
+        var newRow = buildTierRow('', '');
+        container.appendChild(newRow);
+        updateTierRemoveBtns(container);
+    }
+
+    function removeTierRow(btn) {
+        var row = btn.closest('.hutang-tier-row');
+        var container = row.closest('.hutang-tiers-container, #edit-hutang-tiers-container, #edit-noncrew-hutang-tiers-container');
+        row.remove();
+        if (container) {
+            updateTierRemoveBtns(container);
+            var firstInput = container.querySelector('.tier-dpp');
+            if (firstInput) {
+                if (container.id === 'edit-hutang-tiers-container' || container.id === 'edit-noncrew-hutang-tiers-container') syncEditTiersJson();
+                else syncTiersJson(firstInput);
+            }
+        }
+    }
+
+    function updateTierRemoveBtns(container) {
+        var rows = container.querySelectorAll('.hutang-tier-row');
+        rows.forEach(function(row) {
+            var btn = row.querySelector('.remove-tier-btn');
+            if (btn) btn.classList.toggle('hidden', rows.length <= 1);
+        });
+    }
+
+    // ── Hutang Tiers — Edit Modal ─────────────────────────────────────────────
+
+    function editAddTierRow(dpp, potongan) {
+        var container = document.getElementById('edit-hutang-tiers-container');
+        var newRow = buildTierRow(dpp || '', potongan || '');
+        newRow.querySelectorAll('.tier-dpp, .tier-potongan').forEach(function(inp) {
+            inp.setAttribute('oninput', 'syncEditTiersJson()');
+        });
+        container.appendChild(newRow);
+        updateTierRemoveBtns(container);
+        syncEditTiersJson();
+    }
+
+    function editAddNonCrewTierRow(dpp, potongan) {
+        var container = document.getElementById('edit-noncrew-hutang-tiers-container');
+        var newRow = buildTierRow(dpp || '', potongan || '');
+        newRow.querySelectorAll('.tier-dpp, .tier-potongan').forEach(function(inp) {
+            inp.setAttribute('oninput', 'syncEditTiersJson()');
+        });
+        container.appendChild(newRow);
+        updateTierRemoveBtns(container);
+        syncEditTiersJson();
+    }
+
+    function syncEditTiersJson() {
+        var name = (document.getElementById('edit_group_name')?.value || '').trim().toUpperCase();
+        var isBpuCrew = name.includes('BPU-CREW');
+        var activeContainer = isBpuCrew
+            ? document.getElementById('edit-hutang-tiers-container')
+            : document.getElementById('edit-noncrew-hutang-tiers-container');
+
+        var tiers = [];
+        if (activeContainer) {
+            activeContainer.querySelectorAll('.hutang-tier-row').forEach(function(row) {
+                var dpp      = row.querySelector('.tier-dpp')?.value;
+                var potongan = row.querySelector('.tier-potongan')?.value;
+                if (dpp || potongan) {
+                    tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
+                }
+            });
+        }
+        var hidden = document.getElementById('edit_hutang_tiers');
+        if (hidden) hidden.value = JSON.stringify(tiers);
     }
 
     // ── Table Diskon AJAX ─────────────────────────────────────────────────────
