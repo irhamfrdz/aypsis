@@ -560,19 +560,37 @@ class AbsensiController extends Controller
                     continue;
                 }
 
+                // Cek juga berdasarkan karyawan_id + tipe + waktu (sesuai unique constraint DB)
+                if ($karyawan_id) {
+                    $existingById = Absensi::where('karyawan_id', $karyawan_id)
+                        ->where('tipe', $tipe)
+                        ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                        ->exists();
+                    if ($existingById) {
+                        continue;
+                    }
+                }
+
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
                 if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
                     $waktu->addDay(); 
                 }
 
-                Absensi::create([
-                    'karyawan_id' => $karyawan_id,
-                    'nik' => $nik,
-                    'waktu' => $waktu,
-                    'tipe' => $tipe,
-                    'status' => 'Manual',
-                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
-                ]);
+                try {
+                    Absensi::create([
+                        'karyawan_id' => $karyawan_id,
+                        'nik'         => $nik,
+                        'waktu'       => $waktu,
+                        'tipe'        => $tipe,
+                        'status'      => 'Manual',
+                        'keterangan'  => $request->keterangan ?? 'Ditambahkan secara manual',
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Abaikan jika duplikat (1062) — data sudah ada, tidak perlu insert ulang
+                    if ($e->errorInfo[1] !== 1062) {
+                        throw $e;
+                    }
+                }
             }
         }
 

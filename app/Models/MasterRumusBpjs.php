@@ -21,6 +21,7 @@ class MasterRumusBpjs extends Model
         'nilai',
         'tunjangan_persen',
         'hutang_persen',
+        'hutang_tiers',
         'biaya_persen',
         'keterangan_custom',
         'created_by',
@@ -34,5 +35,9 @@ class MasterRumusBpjs extends Model
         'diskon_status',
         'diskon_tipe',
         'diskon_nilai',
+    ];
+
+    protected $casts = [
+        'hutang_tiers' => 'array',
     ];
 }

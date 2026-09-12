@@ -41,7 +41,7 @@ class PranotaBpjsController extends Controller
         // Get active Karyawan that might have BPJS
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek']);
+            ->get(['id', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs']);
             
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
             
@@ -56,14 +56,17 @@ class PranotaBpjsController extends Controller
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required|exists:karyawans,id',
-            'details.*.bpjs_kesehatan' => 'nullable',
+            'details.*.bpjs_kesehatan'      => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
-            'details.*.jht_biaya' => 'nullable',
-            'details.*.jht_hutang' => 'nullable',
-            'details.*.jkk_tunjangan' => 'nullable',
-            'details.*.jkm_tunjangan' => 'nullable',
-            'details.*.jp_biaya' => 'nullable',
-            'details.*.jp_hutang' => 'nullable',
+            'details.*.jht_biaya'            => 'nullable',
+            'details.*.jht_hutang'           => 'nullable',
+            'details.*.jkk_tunjangan'        => 'nullable',
+            'details.*.jkk_hutang'           => 'nullable',
+            'details.*.jkm_tunjangan'        => 'nullable',
+            'details.*.bpu_jkk_tunjangan'    => 'nullable',
+            'details.*.bpu_jkm'              => 'nullable',
+            'details.*.jp_biaya'             => 'nullable',
+            'details.*.jp_hutang'            => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 

@@ -36,6 +36,8 @@ class MasterRumusBpjsController extends Controller
             'tunjangan_persen.*' => 'nullable|numeric|min:0',
             'hutang_persen' => 'nullable|array',
             'hutang_persen.*' => 'nullable|numeric|min:0',
+            'hutang_tiers' => 'nullable|array',
+            'hutang_tiers.*' => 'nullable|string',
             'biaya_persen' => 'nullable|array',
             'biaya_persen.*' => 'nullable|numeric|min:0',
             'keterangan_custom' => 'nullable|array',
@@ -62,12 +64,25 @@ class MasterRumusBpjsController extends Controller
 
         foreach ($request->jenis as $key => $jenis) {
             if (!empty($request->group_name[$key])) {
+                // Decode hutang_tiers JSON dari hidden input
+                $tiersRaw = $request->hutang_tiers[$key] ?? null;
+                $tiers = null;
+                if ($tiersRaw) {
+                    $decoded = json_decode($tiersRaw, true);
+                    // Filter tier kosong
+                    if (is_array($decoded)) {
+                        $tiers = array_values(array_filter($decoded, fn($t) => !empty($t['dpp']) || !empty($t['potongan'])));
+                        $tiers = count($tiers) ? $tiers : null;
+                    }
+                }
+
                 MasterRumusBpjs::create([
                     'jenis' => $jenis,
                     'group_name' => $request->group_name[$key],
                     'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
                     'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
                     'hutang_persen' => $request->hutang_persen[$key] ?? null,
+                    'hutang_tiers' => $tiers,
                     'biaya_persen' => $request->biaya_persen[$key] ?? null,
                     'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
                     'diskon_status' => $request->diskon_status[$key] ?? 'tidak_ada',
@@ -96,6 +111,7 @@ class MasterRumusBpjsController extends Controller
             'nilai' => 'nullable|numeric|min:0',
             'tunjangan_persen' => 'nullable|numeric|min:0',
             'hutang_persen' => 'nullable|numeric|min:0',
+            'hutang_tiers' => 'nullable|string',
             'biaya_persen' => 'nullable|numeric|min:0',
             'keterangan_custom' => 'nullable|string|max:255',
             'diskon_status' => 'nullable|string|in:tidak_ada,ada',
@@ -133,6 +149,20 @@ class MasterRumusBpjsController extends Controller
         }
         if ($request->has('diskon_tipe')) $dataToUpdate['diskon_tipe'] = $request->diskon_tipe;
         if ($request->has('diskon_nilai')) $dataToUpdate['diskon_nilai'] = $request->diskon_nilai;
+
+        // Handle hutang_tiers (JSON string dari form)
+        if ($request->has('hutang_tiers')) {
+            $tiersRaw = $request->hutang_tiers;
+            $tiers = null;
+            if ($tiersRaw) {
+                $decoded = json_decode($tiersRaw, true);
+                if (is_array($decoded)) {
+                    $filtered = array_values(array_filter($decoded, fn($t) => !empty($t['dpp']) || !empty($t['potongan'])));
+                    $tiers = count($filtered) ? $filtered : null;
+                }
+            }
+            $dataToUpdate['hutang_tiers'] = $tiers;
+        }
 
         $rumus->update($dataToUpdate);
 
