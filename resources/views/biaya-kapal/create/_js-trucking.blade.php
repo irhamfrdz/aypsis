@@ -104,6 +104,7 @@
                                class="trucking-total-20ft-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0"
                                value="0" readonly>
                     </div>
+                    <div class="trucking-total-20ft-info mt-1 text-xs text-gray-500">0 kontainer × Rp 0 = Rp 0</div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya Kontainer 40ft</label>
@@ -113,6 +114,7 @@
                                class="trucking-total-40ft-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0"
                                value="0" readonly>
                     </div>
+                    <div class="trucking-total-40ft-info mt-1 text-xs text-gray-500">0 kontainer × Rp 0 = Rp 0</div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
@@ -434,11 +436,17 @@
         const totalInput = section.querySelector('.trucking-total-input');
         const total20Input = section.querySelector('.trucking-total-20ft-input');
         const total40Input = section.querySelector('.trucking-total-40ft-input');
+        const total20Info = section.querySelector('.trucking-total-20ft-info');
+        const total40Info = section.querySelector('.trucking-total-40ft-info');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
 
         let subtotal = 0;
         let total20 = 0;
         let total40 = 0;
+        let count20 = 0;
+        let count40 = 0;
+        let unitPrice20 = 0;
+        let unitPrice40 = 0;
 
         if (vendor && selectedOptions.length > 0) {
             // Get all price items for this vendor once to optimize
@@ -463,8 +471,8 @@
                     } else if (typeof priceItem.biaya === 'string') {
                         cost = parseFloat(priceItem.biaya);
                     }
-                    if (size === '20') total20 += cost;
-                    if (size === '40') total40 += cost;
+                    if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
+                    if (size === '40') { total40 += cost; count40++; unitPrice40 = cost; }
                     subtotal += cost;
                 }
             });
@@ -485,6 +493,8 @@
         subtotalInput.value = subtotal > 0 ? formatRupiah(subtotal) : '0';
         total20Input.value = formatRupiah(total20);
         total40Input.value = formatRupiah(total40);
+        total20Info.textContent = `${count20} kontainer × Rp ${formatRupiah(unitPrice20)} = Rp ${formatRupiah(total20)}`;
+        total40Info.textContent = `${count40} kontainer × Rp ${formatRupiah(unitPrice40)} = Rp ${formatRupiah(total40)}`;
         pphInput.value = formatRupiah(pph);
         totalInput.value = formatRupiah(total);
 
