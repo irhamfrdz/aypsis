@@ -172,6 +172,10 @@ class TandaTerimaApprovalController extends Controller
             'file_faktur_pajak.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
             'file_si' => 'nullable|array',
             'file_si.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ], [
+            '*.uploaded' => 'File gagal diupload oleh server. Pastikan ukuran file tidak lebih dari 10 MB dan coba lagi.',
+            '*.max' => 'Ukuran :attribute tidak boleh lebih dari 10 MB.',
+            '*.mimes' => 'Format :attribute harus PDF, JPG, JPEG, atau PNG.',
         ]);
 
         try {
