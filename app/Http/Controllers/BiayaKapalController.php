@@ -3226,7 +3226,34 @@ class BiayaKapalController extends Controller
             }
         }
 
-        return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
+        // Prepare a transparent count x pricelist breakdown for the print view.
+        $truckingBreakdowns = [];
+        foreach ($biayaKapal->truckingDetails as $detail) {
+            $selectedIds = collect($detail->no_bl ?? [])->map(fn ($id) => (string) $id);
+            $counts = ['20' => 0, '40' => 0];
+            foreach ($selectedIds as $id) {
+                $container = $blDetails->get(is_numeric($id) ? (int) $id : $id);
+                $size = preg_replace('/\D/', '', (string) ($container->size ?? ''));
+                if (isset($counts[$size])) {
+                    $counts[$size]++;
+                }
+            }
+
+            $prices = \App\Models\MasterPricelistBiayaTrucking::query()
+                ->where('status', 'aktif')
+                ->where('nama_vendor', $detail->nama_vendor)
+                ->get()
+                ->keyBy(fn ($price) => preg_replace('/\D/', '', (string) $price->size));
+
+            $truckingBreakdowns[$detail->id] = [
+                'count20' => $counts['20'],
+                'count40' => $counts['40'],
+                'price20' => (float) ($prices['20']->biaya ?? 0),
+                'price40' => (float) ($prices['40']->biaya ?? 0),
+            ];
+        }
+
+        return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails', 'truckingBreakdowns'));
     }
 
     /**

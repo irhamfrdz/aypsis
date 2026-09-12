@@ -344,6 +344,7 @@
                 
                 @if($biayaKapal->truckingDetails->count() > 0)
                     @foreach($biayaKapal->truckingDetails as $index => $detail)
+                    @php $breakdown = (isset($truckingBreakdowns) ? ($truckingBreakdowns[$detail->id] ?? null) : null) ?? ['count20' => 0, 'count40' => 0, 'price20' => 0, 'price40' => 0]; @endphp
                     <tr>
                         <td class="center">{{ $index + 1 }}</td>
                         <td>
@@ -354,8 +355,8 @@
 
                         <td class="right">
                             <div style="font-size: 0.9em; color: #555; line-height: 1.5; text-align: left;">
-                                20ft: Rp {{ number_format($detail->total_biaya_20ft ?? 0, 0, ',', '.') }}<br>
-                                40ft: Rp {{ number_format($detail->total_biaya_40ft ?? 0, 0, ',', '.') }}<br>
+                                20ft: {{ $breakdown['count20'] }} × Rp {{ number_format($breakdown['price20'], 0, ',', '.') }} = Rp {{ number_format($detail->total_biaya_20ft ?? 0, 0, ',', '.') }}<br>
+                                40ft: {{ $breakdown['count40'] }} × Rp {{ number_format($breakdown['price40'], 0, ',', '.') }} = Rp {{ number_format($detail->total_biaya_40ft ?? 0, 0, ',', '.') }}<br>
                                 Subtotal: Rp {{ number_format($detail->subtotal, 0, ',', '.') }}<br>
                                 @if(($detail->adjustment ?? 0) != 0)
                                     Adjustment: {{ $detail->adjustment < 0 ? '-' : '+' }}Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}<br>
