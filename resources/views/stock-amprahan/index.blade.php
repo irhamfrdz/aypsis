@@ -4,15 +4,23 @@
 @section('page_title', 'Stock Amprahan')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
     {{-- Header Section --}}
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Manajemen Stock Amprahan</h1>
-            <p class="text-gray-500 text-sm mt-1">Kelola ketersediaan barang operasional dan kantor.</p>
-            <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="inline-flex items-center mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg"><i class="fas fa-chart-bar mr-2"></i>Dashboard Pemakaian Barang</a>
-        </div>
-        <div class="mt-4 md:mt-0 flex space-x-2">
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-boxes-stacked text-lg"></i>
+                    </span>
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-slate-800">Manajemen Stock Amprahan</h1>
+                        <p class="mt-1 text-sm text-slate-500">Kelola ketersediaan barang operasional dan kantor.</p>
+                    </div>
+                </div>
+                <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"><i class="fas fa-chart-bar mr-2"></i>Dashboard Pemakaian Barang</a>
+            </div>
+            <div class="flex flex-wrap gap-2 xl:max-w-[800px] xl:justify-end">
             <a href="{{ route('stock-amprahan.all-history', ['lokasi' => request('lokasi'), 'mobil_id' => request('mobil_id')]) }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -65,6 +73,7 @@
                 </svg>
                 Tambah Stock
             </a>
+            </div>
         </div>
     </div>
 
@@ -151,7 +160,14 @@
     </div>
 
     {{-- Search Section --}}
-    <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div>
+                <h2 class="text-base font-bold text-slate-800"><i class="fas fa-filter mr-2 text-indigo-500"></i>Filter Data</h2>
+                <p class="mt-0.5 text-xs text-slate-500">Gunakan filter untuk menampilkan stock yang lebih spesifik.</p>
+            </div>
+            <span class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 sm:inline-flex">{{ $items->total() }} data</span>
+        </div>
         <form method="GET" action="{{ route('stock-amprahan.index') }}" class="space-y-4">
             @if(request('lokasi'))
                 <input type="hidden" name="lokasi" value="{{ request('lokasi') }}">
@@ -291,6 +307,8 @@
                 </div>
                 <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Global</span>
             </div>
+            <p class="text-3xl font-black tracking-tight text-slate-800">{{ number_format($stats['total_qty'], 0, ',', '.') }}</p>
+            <p class="mt-1 text-[10px] font-bold uppercase text-slate-500">Total Kuantitas</p>
         </div>
 
         {{-- Jakarta --}}
@@ -303,6 +321,8 @@
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'KANTOR AYP JAKARTA' ? 'text-emerald-600' : 'text-gray-400' }} uppercase tracking-widest">Jakarta</span>
             </div>
+            <p class="text-3xl font-black tracking-tight text-slate-800">{{ number_format($stats['jakarta'], 0, ',', '.') }}</p>
+            <p class="mt-1 text-[10px] font-bold uppercase text-slate-500">Item tersedia</p>
         </a>
 
         {{-- Batam --}}
@@ -315,6 +335,8 @@
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'KANTOR AYP BATAM' ? 'text-orange-600' : 'text-gray-400' }} uppercase tracking-widest">Batam</span>
             </div>
+            <p class="text-3xl font-black tracking-tight text-slate-800">{{ number_format($stats['batam'], 0, ',', '.') }}</p>
+            <p class="mt-1 text-[10px] font-bold uppercase text-slate-500">Item tersedia</p>
         </a>
 
         {{-- Lainnya --}}
@@ -327,6 +349,8 @@
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'LAINNYA' ? 'text-amber-600' : 'text-gray-400' }} uppercase tracking-widest">Lainnya</span>
             </div>
+            <p class="text-3xl font-black tracking-tight text-slate-800">{{ number_format($stats['lainnya'], 0, ',', '.') }}</p>
+            <p class="mt-1 text-[10px] font-bold uppercase text-slate-500">Item tersedia</p>
         </a>
     </div>
 
