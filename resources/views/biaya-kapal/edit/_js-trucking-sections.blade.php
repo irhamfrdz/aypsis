@@ -171,9 +171,6 @@
 
         const subtotalInput = section.querySelector('.trucking-subtotal-input');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
-        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
-        const pphPercentInput = section.querySelector('.trucking-pph-percent-input');
-        const pphRateLabel = section.querySelector('.trucking-pph-rate-label');
         subtotalInput.addEventListener('input', function(e) {
             let rawValue = this.value.replace(/[^0-9]/g, '');
             const numericValue = parseFloat(rawValue) || 0;
@@ -420,6 +417,9 @@
         const totalInput = section.querySelector('.trucking-total-input');
         const total20Input = section.querySelector('.trucking-total-20ft-input');
         const total40Input = section.querySelector('.trucking-total-40ft-input');
+        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
+        const pphPercentInput = section.querySelector('.trucking-pph-percent-input');
+        const pphRateLabel = section.querySelector('.trucking-pph-rate-label');
         const total20Info = section.querySelector('.trucking-total-20ft-info');
         const total40Info = section.querySelector('.trucking-total-40ft-info');
         const adjustmentInput = section.querySelector('.trucking-adjustment-input');
