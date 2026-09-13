@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Karyawan;
 use App\Models\MasterRumusBpjs;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,41 @@ class MasterRumusBpjsController extends Controller
     {
         $rumusJkn = MasterRumusBpjs::where('jenis', 'jkn')->get();
         $rumusJamsostek = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
-        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek'));
+
+        // Ambil data grup unik dari database Karyawan
+        $groupsJkn = Karyawan::whereNotNull('group_jkn')
+            ->where('group_jkn', '!=', '')
+            ->distinct()
+            ->pluck('group_jkn')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $defaultJkn = [
+            'JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN',
+            'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI',
+            'JKN-REIMBURSEMENT-CREW'
+        ];
+        $groupsJkn = array_values(array_unique(array_merge($groupsJkn, $defaultJkn)));
+        sort($groupsJkn);
+
+        $groupsJamsostek = Karyawan::whereNotNull('group_bp_jamsostek')
+            ->where('group_bp_jamsostek', '!=', '')
+            ->distinct()
+            ->pluck('group_bp_jamsostek')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $defaultJamsostek = [
+            'BPU-CREW', 'BPU-HARIAN', 'BPU-LAPANGAN', 'BPU-NON KARY-PBM',
+            'BPU-NON KARY-UMKM', 'BPU-NON KARY-UMKM NO PP', 'BPU-TUNAI',
+            'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI'
+        ];
+        $groupsJamsostek = array_values(array_unique(array_merge($groupsJamsostek, $defaultJamsostek)));
+        sort($groupsJamsostek);
+
+        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'groupsJkn', 'groupsJamsostek'));
     }
 
     public function store(Request $request)
@@ -29,7 +64,6 @@ class MasterRumusBpjsController extends Controller
             'jenis' => 'required|array',
             'jenis.*' => 'required|in:jkn,jamsostek',
             'group_name' => 'required|array',
-            'group_name.*' => 'required|string|max:255',
             'cabang_bpjs' => 'nullable|array',
             'cabang_bpjs.*' => 'nullable|string|max:255',
             'tunjangan_persen' => 'nullable|array',
@@ -63,7 +97,13 @@ class MasterRumusBpjsController extends Controller
         ]);
 
         foreach ($request->jenis as $key => $jenis) {
-            if (!empty($request->group_name[$key])) {
+            $rawGroupNames = $request->group_name[$key] ?? [];
+            if (is_string($rawGroupNames)) {
+                $rawGroupNames = explode(',', $rawGroupNames);
+            }
+            $groupNames = array_values(array_filter(array_map('trim', (array)$rawGroupNames)));
+
+            if (!empty($groupNames)) {
                 // Decode hutang_tiers JSON dari hidden input
                 $tiersRaw = $request->hutang_tiers[$key] ?? null;
                 $tiers = null;
@@ -76,25 +116,27 @@ class MasterRumusBpjsController extends Controller
                     }
                 }
 
-                MasterRumusBpjs::create([
-                    'jenis' => $jenis,
-                    'group_name' => $request->group_name[$key],
-                    'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
-                    'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
-                    'hutang_persen' => $request->hutang_persen[$key] ?? null,
-                    'hutang_tiers' => $tiers,
-                    'biaya_persen' => $request->biaya_persen[$key] ?? null,
-                    'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
-                    'diskon_status' => $request->diskon_status[$key] ?? 'tidak_ada',
-                    'diskon_tipe' => $request->diskon_tipe[$key] ?? 'persen',
-                    'diskon_nilai' => ($request->diskon_status[$key] ?? 'tidak_ada') === 'ada' ? ($request->diskon_nilai[$key] ?? 0) : 0,
-                    'jht_biaya' => $request->jht_biaya[$key] ?? null,
-                    'jht_hutang' => $request->jht_hutang[$key] ?? null,
-                    'jkk_tunjangan' => $request->jkk_tunjangan[$key] ?? null,
-                    'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
-                    'jp_biaya' => $request->jp_biaya[$key] ?? null,
-                    'jp_hutang' => $request->jp_hutang[$key] ?? null,
-                ]);
+                foreach ($groupNames as $gName) {
+                    MasterRumusBpjs::create([
+                        'jenis' => $jenis,
+                        'group_name' => $gName,
+                        'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
+                        'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
+                        'hutang_persen' => $request->hutang_persen[$key] ?? null,
+                        'hutang_tiers' => $tiers,
+                        'biaya_persen' => $request->biaya_persen[$key] ?? null,
+                        'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
+                        'diskon_status' => $request->diskon_status[$key] ?? 'tidak_ada',
+                        'diskon_tipe' => $request->diskon_tipe[$key] ?? 'persen',
+                        'diskon_nilai' => ($request->diskon_status[$key] ?? 'tidak_ada') === 'ada' ? ($request->diskon_nilai[$key] ?? 0) : 0,
+                        'jht_biaya' => $request->jht_biaya[$key] ?? null,
+                        'jht_hutang' => $request->jht_hutang[$key] ?? null,
+                        'jkk_tunjangan' => $request->jkk_tunjangan[$key] ?? null,
+                        'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
+                        'jp_biaya' => $request->jp_biaya[$key] ?? null,
+                        'jp_hutang' => $request->jp_hutang[$key] ?? null,
+                    ]);
+                }
             }
         }
 
@@ -105,7 +147,8 @@ class MasterRumusBpjsController extends Controller
     {
         $request->validate([
             'jenis' => 'sometimes|required|in:jkn,jamsostek',
-            'group_name' => 'sometimes|required|string|max:255',
+            'group_name' => 'sometimes|required',
+            'existing_ids' => 'nullable|string',
             'cabang_bpjs' => 'nullable|string|max:255',
             'tipe_rumus' => 'nullable|in:nominal,persentase',
             'nilai' => 'nullable|numeric|min:0',
@@ -128,7 +171,6 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
 
         $dataToUpdate = [];
-        if ($request->has('group_name')) $dataToUpdate['group_name'] = $request->group_name;
         if ($request->has('cabang_bpjs')) $dataToUpdate['cabang_bpjs'] = $request->cabang_bpjs;
         if ($request->has('jenis')) $dataToUpdate['jenis'] = $request->jenis;
         if ($request->has('tunjangan_persen')) $dataToUpdate['tunjangan_persen'] = $request->tunjangan_persen;
@@ -164,23 +206,70 @@ class MasterRumusBpjsController extends Controller
             $dataToUpdate['hutang_tiers'] = $tiers;
         }
 
-        $rumus->update($dataToUpdate);
+        // Existing IDs from group
+        $existingIds = [];
+        if ($request->has('existing_ids') && !empty($request->existing_ids)) {
+            $existingIds = array_values(array_filter(explode(',', $request->existing_ids)));
+        }
+        if (empty($existingIds)) {
+            $existingIds = [$rumus->id];
+        }
+
+        // Handle group_name (bisa string atau array multi-pilihan)
+        if ($request->has('group_name')) {
+            $rawGroupNames = $request->group_name;
+            if (is_string($rawGroupNames)) {
+                $rawGroupNames = explode(',', $rawGroupNames);
+            }
+            $groupNames = array_values(array_filter(array_map('trim', (array)$rawGroupNames)));
+
+            if (!empty($groupNames)) {
+                $existingRecords = MasterRumusBpjs::whereIn('id', $existingIds)->get()->keyBy('id');
+                $existingIdList = $existingRecords->keys()->toArray();
+
+                foreach ($groupNames as $i => $gName) {
+                    $groupData = array_merge($dataToUpdate, ['group_name' => $gName]);
+                    if (isset($existingIdList[$i])) {
+                        $targetId = $existingIdList[$i];
+                        $existingRecords[$targetId]->update($groupData);
+                    } else {
+                        $newRecordData = array_merge($rumus->toArray(), $groupData);
+                        unset($newRecordData['id'], $newRecordData['created_at'], $newRecordData['updated_at']);
+                        MasterRumusBpjs::create($newRecordData);
+                    }
+                }
+
+                // If fewer group names than existing records, delete surplus
+                if (count($existingIdList) > count($groupNames)) {
+                    $surplusIds = array_slice($existingIdList, count($groupNames));
+                    MasterRumusBpjs::whereIn('id', $surplusIds)->delete();
+                }
+            }
+        } else {
+            // Update all existing_ids (e.g. diskon AJAX)
+            MasterRumusBpjs::whereIn('id', $existingIds)->update($dataToUpdate);
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Data rumus berhasil diperbarui.',
-                'data' => $rumus,
+                'data' => $rumus->fresh(),
             ]);
         }
 
         return redirect()->route('master-rumus-bpjs.index')->with('success', 'Data rumus berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $rumus = MasterRumusBpjs::findOrFail($id);
-        $rumus->delete();
+        if ($request->has('ids') && !empty($request->ids)) {
+            $ids = array_values(array_filter(explode(',', $request->ids)));
+            MasterRumusBpjs::whereIn('id', $ids)->delete();
+        } else {
+            $rumus = MasterRumusBpjs::findOrFail($id);
+            $rumus->delete();
+        }
 
         return redirect()->route('master-rumus-bpjs.index')->with('success', 'Data rumus berhasil dihapus.');
     }

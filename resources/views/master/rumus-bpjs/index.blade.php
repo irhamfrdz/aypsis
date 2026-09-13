@@ -28,6 +28,27 @@
         </div>
     @endif
 
+    @php
+        $groupRows = function($collection) {
+            return $collection->groupBy(function($item) {
+                $cabang = trim(strtoupper($item->cabang_bpjs ?? ''));
+                if ($cabang !== '') {
+                    return 'cabang_' . $cabang;
+                }
+                return 'single_' . $item->id;
+            });
+        };
+
+        $groupedJkn = $groupRows($rumusJkn);
+        $rumusJamsostekBpuCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && str_contains(strtoupper($item->group_name), 'BPU-CREW'));
+        $rumusJamsostekBpuNonCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && !str_contains(strtoupper($item->group_name), 'BPU-CREW'));
+        $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => str_contains(strtoupper($item->group_name), 'PPU'));
+
+        $groupedBpuCrew = $groupRows($rumusJamsostekBpuCrew);
+        $groupedBpuNonCrew = $groupRows($rumusJamsostekBpuNonCrew);
+        $groupedPpu = $groupRows($rumusJamsostekPpu);
+    @endphp
+
     {{-- ── Tabel Group JKN ────────────────────────────────────────────────── --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100 bg-gray-50">
@@ -51,11 +72,24 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($rumusJkn as $index => $item)
+                    @forelse($groupedJkn as $groupKey => $groupItems)
+                        @php
+                            $item = $groupItems->first();
+                            $allIds = $groupItems->pluck('id')->implode(',');
+                            $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                        @endphp
                         <tr class="hover:bg-blue-50/30 transition duration-150">
-                            <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $index + 1 }}</td>
-                            <td class="px-4 py-3 font-semibold text-gray-800">{{ $item->group_name }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
+                            <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3 font-semibold text-gray-800">
+                                <div class="flex flex-wrap gap-1 items-center">
+                                    @foreach($groupNames as $gName)
+                                        <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
+                                            {{ $gName }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
                                     <span class="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->tunjangan_persen }}%</span>
@@ -74,13 +108,14 @@
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }})"
+                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
                                     <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST"
-                                          onsubmit="return confirm('Hapus data ini?');">
+                                          onsubmit="return confirm('Hapus data rumus cabang ini? (Semua group terkait akan dihapus)');">
                                         @csrf @method('DELETE')
+                                        <input type="hidden" name="ids" value="{{ $allIds }}">
                                         <button type="submit"
                                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 transition" title="Hapus">
                                             <i class="fas fa-trash text-xs"></i>
@@ -101,12 +136,6 @@
             </table>
         </div>
     </div>
-
-    @php
-        $rumusJamsostekBpuCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && str_contains(strtoupper($item->group_name), 'BPU-CREW'));
-        $rumusJamsostekBpuNonCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && !str_contains(strtoupper($item->group_name), 'BPU-CREW'));
-        $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => str_contains(strtoupper($item->group_name), 'PPU'));
-    @endphp
 
     {{-- ── Tabel Group BP Jamsostek BPU-CREW ─────────────────────────────── --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -132,14 +161,29 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($rumusJamsostekBpuCrew as $index => $item)
+                    @forelse($groupedBpuCrew as $groupKey => $groupItems)
+                        @php
+                            $item = $groupItems->first();
+                            $allIds = $groupItems->pluck('id')->implode(',');
+                            $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                        @endphp
                         <tr class="hover:bg-sky-50/30 transition duration-150">
                             <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3 font-semibold text-gray-800">
-                                {{ $item->group_name }}
-                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-sky-100 text-sky-700">BPU-CREW</span>
+                                <div class="space-y-1">
+                                    <div class="flex flex-wrap gap-1 items-center">
+                                        @foreach($groupNames as $gName)
+                                            <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
+                                                {{ $gName }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    <div>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-100 text-sky-700">BPU-CREW</span>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-4 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
                                     <span class="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->tunjangan_persen }}%</span>
@@ -167,7 +211,7 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="inline-flex flex-col items-center gap-1" id="diskon-cell-{{ $item->id }}">
-                                    <select onchange="handleTableDiskonStatusChange(this, {{ $item->id }})"
+                                    <select onchange="handleTableDiskonStatusChange(this, '{{ $allIds }}')"
                                             class="diskon-status-select text-xs border border-gray-300 rounded-lg shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold' : 'bg-white text-gray-600' }}">
                                         <option value="tidak_ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'tidak_ada' ? 'selected' : '' }}>Tidak Ada</option>
                                         <option value="ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'selected' : '' }}>Ada Diskon</option>
@@ -176,9 +220,9 @@
                                         <input type="number" step="0.01" min="0"
                                                value="{{ $item->diskon_nilai ? (float)$item->diskon_nilai : '' }}"
                                                placeholder="Nilai"
-                                               onchange="handleTableDiskonValueChange(this, {{ $item->id }})"
+                                               onchange="handleTableDiskonValueChange(this, '{{ $allIds }}')"
                                                class="diskon-nilai text-xs w-16 border border-gray-300 rounded-lg py-1 px-2 text-right font-medium focus:ring-indigo-500 focus:border-indigo-500">
-                                        <select onchange="handleTableDiskonTipeChange(this, {{ $item->id }})"
+                                        <select onchange="handleTableDiskonTipeChange(this, '{{ $allIds }}')"
                                                 class="diskon-tipe text-xs border border-gray-300 rounded-lg py-1 px-1 bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500">
                                             <option value="persen" {{ ($item->diskon_tipe ?? 'persen') === 'persen' ? 'selected' : '' }}>%</option>
                                             <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
@@ -190,13 +234,14 @@
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }})"
+                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
                                     <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST"
-                                          onsubmit="return confirm('Hapus data ini?');">
+                                          onsubmit="return confirm('Hapus data rumus cabang ini? (Semua group terkait akan dihapus)');">
                                         @csrf @method('DELETE')
+                                        <input type="hidden" name="ids" value="{{ $allIds }}">
                                         <button type="submit"
                                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 transition" title="Hapus">
                                             <i class="fas fa-trash text-xs"></i>
@@ -243,14 +288,29 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($rumusJamsostekBpuNonCrew as $index => $item)
+                    @forelse($groupedBpuNonCrew as $groupKey => $groupItems)
+                        @php
+                            $item = $groupItems->first();
+                            $allIds = $groupItems->pluck('id')->implode(',');
+                            $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                        @endphp
                         <tr class="hover:bg-indigo-50/30 transition duration-150">
                             <td class="px-3 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                             <td class="px-3 py-3 font-semibold text-gray-800">
-                                {{ $item->group_name }}
-                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700">Non BPU-CREW</span>
+                                <div class="space-y-1">
+                                    <div class="flex flex-wrap gap-1 items-center">
+                                        @foreach($groupNames as $gName)
+                                            <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
+                                                {{ $gName }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    <div>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-700">Non BPU-CREW</span>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-3 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-3 py-3 text-center">
                                 @if($item->jht_biaya)
                                     <span class="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $item->jht_biaya }}%</span>
@@ -285,7 +345,7 @@
                             </td>
                             <td class="px-3 py-3 text-center">
                                 <div class="inline-flex flex-col items-center gap-1" id="diskon-cell-{{ $item->id }}">
-                                    <select onchange="handleTableDiskonStatusChange(this, {{ $item->id }})"
+                                    <select onchange="handleTableDiskonStatusChange(this, '{{ $allIds }}')"
                                             class="diskon-status-select text-xs border border-gray-300 rounded-lg shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold' : 'bg-white text-gray-600' }}">
                                         <option value="tidak_ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'tidak_ada' ? 'selected' : '' }}>Tidak Ada</option>
                                         <option value="ada" {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'selected' : '' }}>Ada Diskon</option>
@@ -294,9 +354,9 @@
                                         <input type="number" step="0.01" min="0"
                                                value="{{ $item->diskon_nilai ? (float)$item->diskon_nilai : '' }}"
                                                placeholder="Nilai"
-                                               onchange="handleTableDiskonValueChange(this, {{ $item->id }})"
+                                               onchange="handleTableDiskonValueChange(this, '{{ $allIds }}')"
                                                class="diskon-nilai text-xs w-16 border border-gray-300 rounded-lg py-1 px-2 text-right font-medium focus:ring-indigo-500 focus:border-indigo-500">
-                                        <select onchange="handleTableDiskonTipeChange(this, {{ $item->id }})"
+                                        <select onchange="handleTableDiskonTipeChange(this, '{{ $allIds }}')"
                                                 class="diskon-tipe text-xs border border-gray-300 rounded-lg py-1 px-1 bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500">
                                             <option value="persen" {{ ($item->diskon_tipe ?? 'persen') === 'persen' ? 'selected' : '' }}>%</option>
                                             <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
@@ -308,13 +368,14 @@
                             <td class="px-3 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }})"
+                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
                                     <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST"
-                                          onsubmit="return confirm('Hapus data ini?');">
+                                          onsubmit="return confirm('Hapus data rumus cabang ini? (Semua group terkait akan dihapus)');">
                                         @csrf @method('DELETE')
+                                        <input type="hidden" name="ids" value="{{ $allIds }}">
                                         <button type="submit"
                                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 transition" title="Hapus">
                                             <i class="fas fa-trash text-xs"></i>
@@ -361,14 +422,29 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($rumusJamsostekPpu as $index => $item)
+                    @forelse($groupedPpu as $groupKey => $groupItems)
+                        @php
+                            $item = $groupItems->first();
+                            $allIds = $groupItems->pluck('id')->implode(',');
+                            $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                        @endphp
                         <tr class="hover:bg-emerald-50/30 transition duration-150">
                             <td class="px-3 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                             <td class="px-3 py-3 font-semibold text-gray-800">
-                                {{ $item->group_name }}
-                                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700">PPU</span>
+                                <div class="space-y-1">
+                                    <div class="flex flex-wrap gap-1 items-center">
+                                        @foreach($groupNames as $gName)
+                                            <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
+                                                {{ $gName }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    <div>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">PPU</span>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-3 py-3 text-gray-500">{{ $item->cabang_bpjs ?: '—' }}</td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             @foreach(['jht_biaya','jht_hutang','jkk_tunjangan','jkm_tunjangan','jp_biaya','jp_hutang'] as $field)
                             <td class="px-3 py-3 text-center">
                                 @if($item->$field)
@@ -378,13 +454,14 @@
                             @endforeach
                             <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }})"
+                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
                                     <form action="{{ route('master-rumus-bpjs.destroy', $item->id) }}" method="POST"
-                                          onsubmit="return confirm('Hapus data ini?');">
+                                          onsubmit="return confirm('Hapus data rumus cabang ini? (Semua group terkait akan dihapus)');">
                                         @csrf @method('DELETE')
+                                        <input type="hidden" name="ids" value="{{ $allIds }}">
                                         <button type="submit"
                                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 transition" title="Hapus">
                                             <i class="fas fa-trash text-xs"></i>
@@ -460,9 +537,12 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nama Group</label>
-                                <input type="text" name="group_name[]" class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                       required placeholder="Cth: JKN-KIS-HARIAN / BPU-CREW / BPU-HARIAN / PPU" oninput="toggleJamsostekFields(this)">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                                    Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(bisa pilih > 1)</span>
+                                </label>
+                                <select name="group_name[0][]" multiple class="group-name-select form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                        required onchange="toggleJamsostekFields(this)">
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
@@ -726,6 +806,7 @@
             <form id="editForm" method="POST" action="">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="existing_ids" id="edit_existing_ids" value="">
                 <div class="px-6 py-4 max-h-[70vh] overflow-y-auto space-y-4">
 
                     {{-- Jenis --}}
@@ -774,10 +855,12 @@
                     {{-- Nama & Cabang --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="edit_group_name" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nama Group</label>
-                            <input type="text" id="edit_group_name" name="group_name"
-                                   class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                   required placeholder="Cth: JKN-KIS-HARIAN / BPU-CREW / BPU-HARIAN / PPU" oninput="toggleEditJamsostekFields(this)">
+                            <label for="edit_group_name" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                                Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(bisa pilih > 1)</span>
+                            </label>
+                            <select id="edit_group_name" name="group_name[]" multiple class="group-name-select form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                    required onchange="toggleEditJamsostekFields(this)">
+                            </select>
                         </div>
                         <div>
                             <label for="edit_cabang_bpjs" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
@@ -947,7 +1030,109 @@
     </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+.select2-container--default .select2-selection--multiple {
+    border-color: #d1d5db !important;
+    border-radius: 0.5rem !important;
+    min-height: 38px !important;
+    padding: 2px 6px !important;
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 1px #6366f1 !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #e0e7ff !important;
+    border-color: #c7d2fe !important;
+    color: #3730a3 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    border-radius: 0.375rem !important;
+    padding: 2px 8px !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #4338ca !important;
+    margin-right: 4px !important;
+}
+.select2-dropdown {
+    border-color: #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    z-index: 99999 !important;
+}
+</style>
+
 <script>
+    const groupsJkn = @json($groupsJkn ?? []);
+    const groupsJamsostek = @json($groupsJamsostek ?? []);
+
+    function initSelect2ForGroup(selectEl) {
+        if (!selectEl) return;
+        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+            const $sel = jQuery(selectEl);
+            if ($sel.data('select2')) {
+                $sel.select2('destroy');
+            }
+            $sel.select2({
+                placeholder: "-- Pilih 1 atau Lebih Group --",
+                width: '100%',
+                tags: true,
+                dropdownParent: $sel.closest('.fixed, #createModal, #editModal')
+            });
+            $sel.off('change.bpjs').on('change.bpjs', function() {
+                if (selectEl.id === 'edit_group_name') {
+                    toggleEditJamsostekFields(selectEl);
+                } else {
+                    toggleJamsostekFields(selectEl);
+                }
+            });
+        }
+    }
+
+    function populateGroupOptions(selectEl, jenis, selectedValues = []) {
+        if (!selectEl) return;
+        const options = jenis === 'jkn' ? groupsJkn : groupsJamsostek;
+        
+        const currentSelected = Array.isArray(selectedValues) 
+            ? selectedValues 
+            : (selectedValues ? [selectedValues] : Array.from(selectEl.selectedOptions).map(o => o.value));
+
+        selectEl.innerHTML = '';
+        options.forEach(opt => {
+            const optEl = document.createElement('option');
+            optEl.value = opt;
+            optEl.textContent = opt;
+            if (currentSelected.includes(opt)) {
+                optEl.selected = true;
+            }
+            selectEl.appendChild(optEl);
+        });
+
+        currentSelected.forEach(sel => {
+            if (sel && !options.includes(sel)) {
+                const optEl = document.createElement('option');
+                optEl.value = sel;
+                optEl.textContent = sel;
+                optEl.selected = true;
+                selectEl.appendChild(optEl);
+            }
+        });
+
+        initSelect2ForGroup(selectEl);
+    }
+
+    function getSelectedGroupNames(input) {
+        if (!input) return [];
+        if (input.tagName === 'SELECT') {
+            return Array.from(input.selectedOptions).map(o => o.value.trim().toUpperCase()).filter(Boolean);
+        }
+        return (input.value || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+    }
+
     // ── Modal Open/Close ──────────────────────────────────────────────────────
 
     function openModal() {
@@ -956,8 +1141,13 @@
         while(rows.length > 1) rows[1].remove();
 
         const firstRow = rows[0];
-        firstRow.querySelector('select[name="jenis[]"]').value = 'jkn';
-        firstRow.querySelector('input[name="group_name[]"]').value = '';
+        const jenisSelect = firstRow.querySelector('select[name="jenis[]"]');
+        jenisSelect.value = 'jkn';
+
+        const groupSelect = firstRow.querySelector('.group-name-select');
+        groupSelect.name = 'group_name[0][]';
+        populateGroupOptions(groupSelect, 'jkn', []);
+
         firstRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         firstRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -992,8 +1182,8 @@
         const tiersJson = firstRow.querySelector('.hutang-tiers-json');
         if (tiersJson) tiersJson.value = '';
 
-        toggleJenisFields(firstRow.querySelector('select[name="jenis[]"]'));
-        toggleJamsostekFields(firstRow.querySelector('input[name="group_name[]"]'));
+        toggleJenisFields(jenisSelect);
+        toggleJamsostekFields(groupSelect);
         updateRemoveButtons();
         document.getElementById('createModal').classList.remove('hidden');
     }
@@ -1004,11 +1194,20 @@
 
     function addRow() {
         const container = document.getElementById('dynamic-rows-container');
-        const firstRow = container.querySelector('.bpjs-row');
+        const rows = container.querySelectorAll('.bpjs-row');
+        const rowIndex = rows.length;
+        const firstRow = rows[0];
         const newRow = firstRow.cloneNode(true);
 
-        newRow.querySelector('select[name="jenis[]"]').value = 'jkn';
-        newRow.querySelector('input[name="group_name[]"]').value = '';
+        const jenisSelect = newRow.querySelector('select[name="jenis[]"]');
+        jenisSelect.value = 'jkn';
+
+        // Remove cloned select2 container if any
+        newRow.querySelectorAll('.select2-container').forEach(el => el.remove());
+
+        const groupSelect = newRow.querySelector('.group-name-select');
+        groupSelect.name = `group_name[${rowIndex}][]`;
+
         newRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         newRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -1039,8 +1238,9 @@
         }
 
         container.appendChild(newRow);
-        toggleJenisFields(newRow.querySelector('select[name="jenis[]"]'));
-        toggleJamsostekFields(newRow.querySelector('input[name="group_name[]"]'));
+        populateGroupOptions(groupSelect, 'jkn', []);
+        toggleJenisFields(jenisSelect);
+        toggleJamsostekFields(groupSelect);
         updateRemoveButtons();
     }
 
@@ -1064,10 +1264,18 @@
 
     // ── Edit Modal ────────────────────────────────────────────────────────────
 
-    function editModal(data) {
+    function editModal(data, groupNames, allIds) {
         document.getElementById('editForm').action = `/master-rumus-bpjs/${data.id}`;
+        document.getElementById('edit_existing_ids').value = allIds || data.id;
         document.getElementById('edit_jenis').value = data.jenis;
-        document.getElementById('edit_group_name').value = data.group_name;
+
+        const editGroupSelect = document.getElementById('edit_group_name');
+        const selectedGroups = groupNames && Array.isArray(groupNames) && groupNames.length > 0
+            ? groupNames
+            : [data.group_name];
+
+        populateGroupOptions(editGroupSelect, data.jenis, selectedGroups);
+
         document.getElementById('edit_cabang_bpjs').value = data.cabang_bpjs || '';
         document.getElementById('edit_tunjangan_persen').value = data.tunjangan_persen || '';
         document.getElementById('edit_biaya_persen').value = data.biaya_persen || '';
@@ -1106,7 +1314,7 @@
         document.getElementById('edit_biaya_persen_jkn').value    = data.biaya_persen || '';
 
         toggleEditJenisFields(document.getElementById('edit_jenis'));
-        toggleEditJamsostekFields(document.getElementById('edit_group_name'));
+        toggleEditJamsostekFields(editGroupSelect);
         document.getElementById('editModal').classList.remove('hidden');
     }
 
@@ -1138,10 +1346,12 @@
         const rateFields = row.querySelector('.jamsostek-rate-fields');
         const bpuCrewFields = row.querySelector('.bpu-crew-fields');
         const diskonSection = row.querySelector('.diskon-section');
-        const name = (input.value || '').trim().toUpperCase();
+        
+        const names = getSelectedGroupNames(input);
+        const nameString = names.join(' ');
 
-        const isPpu = name.includes('PPU');
-        const isBpuCrew = name.includes('BPU-CREW');
+        const isPpu = nameString.includes('PPU');
+        const isBpuCrew = nameString.includes('BPU-CREW');
 
         if (isBpuCrew) {
             bpuCrewFields?.classList.remove('hidden');
@@ -1220,10 +1430,12 @@
         const rateFields = document.getElementById('edit_jamsostek_rate_fields');
         const bpuCrewFields = document.getElementById('edit_bpu_crew_fields');
         const diskonSection = document.getElementById('edit_diskon_section');
-        const name = (input.value || '').trim().toUpperCase();
+        
+        const names = getSelectedGroupNames(input);
+        const nameString = names.join(' ');
 
-        const isPpu = name.includes('PPU');
-        const isBpuCrew = name.includes('BPU-CREW');
+        const isPpu = nameString.includes('PPU');
+        const isBpuCrew = nameString.includes('BPU-CREW');
 
         if (isBpuCrew) {
             bpuCrewFields?.classList.remove('hidden');
@@ -1308,34 +1520,43 @@
         const diskonSection = row.querySelector('.diskon-section');
         const isJamsostek = select.value === 'jamsostek';
 
+        const groupSelect = row.querySelector('.group-name-select');
+        if (groupSelect) {
+            populateGroupOptions(groupSelect, select.value, []);
+        }
+
         jknFields?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
             bpuCrewFields?.classList.add('hidden');
             rateFields?.classList.add('hidden');
             diskonSection?.classList.add('hidden');
         } else {
-            const groupInput = row.querySelector('input[name="group_name[]"]');
-            if (groupInput) toggleJamsostekFields(groupInput);
+            if (groupSelect) toggleJamsostekFields(groupSelect);
         }
     }
 
     /** Toggle antara JKN fields dan Jamsostek fields (Edit modal) */
     function toggleEditJenisFields(select) {
         const isJamsostek = select.value === 'jamsostek';
+        const editGroupSelect = document.getElementById('edit_group_name');
+        
+        populateGroupOptions(editGroupSelect, select.value);
+
         document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
             document.getElementById('edit_bpu_crew_fields')?.classList.add('hidden');
             document.getElementById('edit_jamsostek_rate_fields')?.classList.add('hidden');
             document.getElementById('edit_diskon_section')?.classList.add('hidden');
         } else {
-            toggleEditJamsostekFields(document.getElementById('edit_group_name'));
+            toggleEditJamsostekFields(editGroupSelect);
         }
     }
 
     // ── Table Diskon AJAX ─────────────────────────────────────────────────────
 
-    function handleTableDiskonStatusChange(selectEl, id) {
-        const cell = document.getElementById('diskon-cell-' + id);
+    function handleTableDiskonStatusChange(selectEl, ids) {
+        const primaryId = String(ids).split(',')[0].trim();
+        const cell = document.getElementById('diskon-cell-' + primaryId);
         const inputsDiv = cell.querySelector('.diskon-inputs');
         if (selectEl.value === 'ada') {
             inputsDiv.classList.remove('hidden');
@@ -1346,25 +1567,30 @@
             selectEl.classList.remove('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');
             selectEl.classList.add('bg-white', 'text-gray-600');
         }
-        saveDiskonAjax(id, cell);
+        saveDiskonAjax(ids, cell);
     }
 
-    function handleTableDiskonValueChange(inputEl, id) {
-        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
+    function handleTableDiskonValueChange(inputEl, ids) {
+        const primaryId = String(ids).split(',')[0].trim();
+        saveDiskonAjax(ids, document.getElementById('diskon-cell-' + primaryId));
     }
 
-    function handleTableDiskonTipeChange(selectEl, id) {
-        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
+    function handleTableDiskonTipeChange(selectEl, ids) {
+        const primaryId = String(ids).split(',')[0].trim();
+        saveDiskonAjax(ids, document.getElementById('diskon-cell-' + primaryId));
     }
 
-    function saveDiskonAjax(id, cell) {
+    function saveDiskonAjax(ids, cell) {
         const status = cell.querySelector('.diskon-status-select').value;
         const nilai  = cell.querySelector('.diskon-nilai').value;
         const tipe   = cell.querySelector('.diskon-tipe').value;
         const statusMsg = cell.querySelector('.save-status-msg');
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
-        fetch(`/master-rumus-bpjs/${id}`, {
+        const idList = String(ids).split(',').map(s => s.trim()).filter(Boolean);
+        const primaryId = idList[0];
+
+        fetch(`/master-rumus-bpjs/${primaryId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1372,7 +1598,13 @@
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ _method: 'PUT', diskon_status: status, diskon_nilai: status === 'ada' ? (nilai || 0) : 0, diskon_tipe: tipe })
+            body: JSON.stringify({
+                _method: 'PUT',
+                existing_ids: idList.join(','),
+                diskon_status: status,
+                diskon_nilai: status === 'ada' ? (nilai || 0) : 0,
+                diskon_tipe: tipe
+            })
         })
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(() => {
@@ -1414,8 +1646,8 @@
     function syncTiersJson(el) {
         var bpjsRow = el.closest('.bpjs-row');
         if (!bpjsRow) return;
-        var name = (bpjsRow.querySelector('input[name="group_name[]"]')?.value || '').trim().toUpperCase();
-        var isBpuCrew = name.includes('BPU-CREW');
+        var names = getSelectedGroupNames(bpjsRow.querySelector('.group-name-select'));
+        var isBpuCrew = names.some(n => n.includes('BPU-CREW'));
         var activeContainer = isBpuCrew
             ? bpjsRow.querySelector('.bpu-crew-fields .hutang-tiers-container')
             : bpjsRow.querySelector('.noncrew-tier-section .hutang-tiers-container');
@@ -1488,8 +1720,8 @@
     }
 
     function syncEditTiersJson() {
-        var name = (document.getElementById('edit_group_name')?.value || '').trim().toUpperCase();
-        var isBpuCrew = name.includes('BPU-CREW');
+        var names = getSelectedGroupNames(document.getElementById('edit_group_name'));
+        var isBpuCrew = names.some(n => n.includes('BPU-CREW'));
         var activeContainer = isBpuCrew
             ? document.getElementById('edit-hutang-tiers-container')
             : document.getElementById('edit-noncrew-hutang-tiers-container');
@@ -1504,152 +1736,6 @@
                 }
             });
         }
-        var hidden = document.getElementById('edit_hutang_tiers');
-        if (hidden) hidden.value = JSON.stringify(tiers);
-    }
-
-    // ── Table Diskon AJAX ─────────────────────────────────────────────────────
-
-    function handleTableDiskonStatusChange(selectEl, id) {
-        const cell = document.getElementById('diskon-cell-' + id);
-        const inputsDiv = cell.querySelector('.diskon-inputs');
-        if (selectEl.value === 'ada') {
-            inputsDiv.classList.remove('hidden');
-            selectEl.classList.add('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');
-            selectEl.classList.remove('bg-white', 'text-gray-600');
-        } else {
-            inputsDiv.classList.add('hidden');
-            selectEl.classList.remove('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');
-            selectEl.classList.add('bg-white', 'text-gray-600');
-        }
-        saveDiskonAjax(id, cell);
-    }
-
-    function handleTableDiskonValueChange(inputEl, id) {
-        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
-    }
-
-    function handleTableDiskonTipeChange(selectEl, id) {
-        saveDiskonAjax(id, document.getElementById('diskon-cell-' + id));
-    }
-
-    function saveDiskonAjax(id, cell) {
-        const status = cell.querySelector('.diskon-status-select').value;
-        const nilai  = cell.querySelector('.diskon-nilai').value;
-        const tipe   = cell.querySelector('.diskon-tipe').value;
-        const statusMsg = cell.querySelector('.save-status-msg');
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-
-        fetch(`/master-rumus-bpjs/${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ _method: 'PUT', diskon_status: status, diskon_nilai: status === 'ada' ? (nilai || 0) : 0, diskon_tipe: tipe })
-        })
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(() => {
-            if (statusMsg) {
-                statusMsg.classList.remove('hidden');
-                setTimeout(() => statusMsg.classList.add('hidden'), 2000);
-            }
-        })
-        .catch(() => alert('Gagal menyimpan perubahan diskon.'));
-    }
-
-    // ── Hutang Tiers — Create Modal ───────────────────────────────────────────
-
-    function buildTierRow(dpp, potongan) {
-        var row = document.createElement('div');
-        row.className = 'hutang-tier-row grid items-end gap-2';
-        row.style.gridTemplateColumns = '1fr auto 1fr auto';
-        row.innerHTML =
-            '<div>' +
-            '  <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">DPP (Rp)</label>' +
-            '  <input type="number" class="tier-dpp w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"' +
-            '         step="1" min="0" placeholder="0" value="' + (dpp || '') + '" oninput="syncTiersJson(this)">' +
-            '</div>' +
-            '<div class="flex items-center pb-1.5"><i class="fas fa-arrow-right text-indigo-300 text-xs"></i></div>' +
-            '<div>' +
-            '  <label class="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Potongan (Rp)</label>' +
-            '  <input type="number" class="tier-potongan w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right focus:ring-indigo-500 focus:border-indigo-500"' +
-            '         step="1" min="0" placeholder="0" value="' + (potongan || '') + '" oninput="syncTiersJson(this)">' +
-            '</div>' +
-            '<div class="flex items-center pb-1.5">' +
-            '  <button type="button" onclick="removeTierRow(this)"' +
-            '          class="remove-tier-btn w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition" title="Hapus baris">' +
-            '    <i class="fas fa-times text-xs"></i>' +
-            '  </button>' +
-            '</div>';
-        return row;
-    }
-
-    function syncTiersJson(el) {
-        var bpjsRow = el.closest('.bpjs-row');
-        if (!bpjsRow) return;
-        var tiers = [];
-        bpjsRow.querySelectorAll('.hutang-tier-row').forEach(function(row) {
-            var dpp      = row.querySelector('.tier-dpp')?.value;
-            var potongan = row.querySelector('.tier-potongan')?.value;
-            tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
-        });
-        var hiddenInput = bpjsRow.querySelector('.hutang-tiers-json');
-        if (hiddenInput) hiddenInput.value = JSON.stringify(tiers);
-    }
-
-    function addTierRow(addBtn) {
-        var container = addBtn.closest('.border').querySelector('.hutang-tiers-container');
-        var newRow = buildTierRow('', '');
-        container.appendChild(newRow);
-        updateTierRemoveBtns(container);
-    }
-
-    function removeTierRow(btn) {
-        var row = btn.closest('.hutang-tier-row');
-        var container = row.closest('.hutang-tiers-container, #edit-hutang-tiers-container');
-        row.remove();
-        if (container) {
-            updateTierRemoveBtns(container);
-            var firstInput = container.querySelector('.tier-dpp');
-            if (firstInput) {
-                if (container.id === 'edit-hutang-tiers-container') syncEditTiersJson();
-                else syncTiersJson(firstInput);
-            }
-        }
-    }
-
-    function updateTierRemoveBtns(container) {
-        var rows = container.querySelectorAll('.hutang-tier-row');
-        rows.forEach(function(row) {
-            var btn = row.querySelector('.remove-tier-btn');
-            if (btn) btn.classList.toggle('hidden', rows.length <= 1);
-        });
-    }
-
-    // ── Hutang Tiers — Edit Modal ─────────────────────────────────────────────
-
-    function editAddTierRow(dpp, potongan) {
-        var container = document.getElementById('edit-hutang-tiers-container');
-        var newRow = buildTierRow(dpp || '', potongan || '');
-        newRow.querySelectorAll('.tier-dpp, .tier-potongan').forEach(function(inp) {
-            inp.setAttribute('oninput', 'syncEditTiersJson()');
-        });
-        container.appendChild(newRow);
-        updateTierRemoveBtns(container);
-        syncEditTiersJson();
-    }
-
-    function syncEditTiersJson() {
-        var container = document.getElementById('edit-hutang-tiers-container');
-        var tiers = [];
-        container.querySelectorAll('.hutang-tier-row').forEach(function(row) {
-            var dpp      = row.querySelector('.tier-dpp')?.value;
-            var potongan = row.querySelector('.tier-potongan')?.value;
-            tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
-        });
         var hidden = document.getElementById('edit_hutang_tiers');
         if (hidden) hidden.value = JSON.stringify(tiers);
     }

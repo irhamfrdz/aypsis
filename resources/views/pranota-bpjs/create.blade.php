@@ -597,7 +597,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 let badgeClass = 'bg-purple-100 text-purple-800';
                 if (isPpu) badgeClass = 'bg-emerald-100 text-emerald-800';
                 else if (isBpuCrew) badgeClass = 'bg-sky-100 text-sky-800';
-                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}" title="Group Jamsostek">${karyawan.group_bp_jamsostek}</span>`);
+
+                let label = karyawan.group_bp_jamsostek;
+                if (karyawan.cabang_bpjs) {
+                    label += ` — ${karyawan.cabang_bpjs}`;
+                }
+                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}" title="Group Jamsostek">${label}</span>`);
+            } else if (karyawan.cabang_bpjs) {
+                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800" title="Cabang BPJS">${karyawan.cabang_bpjs}</span>`);
             }
 
             groupText.innerHTML = badges.length > 0 ? badges.join('<br>') : '-';
@@ -635,17 +642,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 nominalKes = parseIdNumber(inputKes.value);
             }
 
-            if (karyawan.group_bp_jamsostek && tipeJkn !== 'manual') {
+            if ((karyawan.group_bp_jamsostek || karyawan.cabang_bpjs) && tipeJkn !== 'manual') {
+                const karyawanGroup = (karyawan.group_bp_jamsostek || '').trim().toUpperCase();
                 const karyawanCabang = (karyawan.cabang_bpjs || '').trim().toLowerCase();
-                const rumus = rumusBpjs.find(r => {
-                    if (r.jenis !== 'jamsostek') return false;
-                    if (r.group_name !== karyawan.group_bp_jamsostek) return false;
+
+                const isPpu = karyawanGroup.includes('PPU');
+                const isBpuCrew = !isPpu && karyawanGroup.includes('BPU-CREW');
+
+                let rumus = null;
+
+                if (isPpu) {
+                    rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && (r.group_name || '').toUpperCase().includes('PPU'));
+                } else if (isBpuCrew) {
                     if (karyawanCabang) {
-                        const rumusCabang = (r.cabang_bpjs || '').trim().toLowerCase();
-                        return rumusCabang === karyawanCabang;
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            if (!rGroup.includes('BPU-CREW') || rGroup.includes('PPU')) return false;
+                            return (r.cabang_bpjs || '').trim().toLowerCase() === karyawanCabang;
+                        });
                     }
-                    return true;
-                });
+                    if (!rumus) {
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            return rGroup.includes('BPU-CREW') && !rGroup.includes('PPU');
+                        });
+                    }
+                } else {
+                    // ── Non BPU-CREW: Cari berdasarkan cabang_bpjs data karyawan ──
+                    if (karyawanCabang) {
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            const isRNonCrew = !rGroup.includes('PPU') && !rGroup.includes('BPU-CREW');
+                            if (!isRNonCrew) return false;
+                            return (r.cabang_bpjs || '').trim().toLowerCase() === karyawanCabang;
+                        });
+                    }
+
+                    // Fallback jika belum ketemu dengan cabang_bpjs, cari berdasarkan group_name
+                    if (!rumus && karyawan.group_bp_jamsostek) {
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            const isRNonCrew = !rGroup.includes('PPU') && !rGroup.includes('BPU-CREW');
+                            if (!isRNonCrew) return false;
+                            return r.group_name === karyawan.group_bp_jamsostek;
+                        });
+                    }
+
+                    // Fallback rumus Non BPU-CREW lainnya
+                    if (!rumus) {
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            return !rGroup.includes('PPU') && !rGroup.includes('BPU-CREW');
+                        });
+                    }
+                }
 
                 if (rumus) {
                     const dppJamsostek = parseIdNumber(karyawan.dpp_bp_jamsostek);
@@ -723,11 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     } else {
                         // ── Non BPU-CREW ─────────────────────────────────────────
-                        // 1. JHT 2% Biaya (%)
-                        const jhtBiayaPersen = parseFloat(rumus.jht_biaya || 0);
-                        ncJhtBiayaVal = (jhtBiayaPersen / 100) * dppJamsostek;
-
-                        // 2. JHT 2% Hutang (Rp) dari Tabel DPP Tier
+                        // 1. JHT 2% Hutang / Potongan (Rp) dari Tabel DPP Tier atau Persen
                         let tiers = rumus.hutang_tiers;
                         if (typeof tiers === 'string') {
                             try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
@@ -743,6 +794,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             const jhtHutangPersen = parseFloat(rumus.jht_hutang || 0);
                             ncJhtHutangVal = (jhtHutangPersen / 100) * dppJamsostek;
                         }
+
+                        // 2. JHT 2% Biaya: (DPP * JHT 2% Biaya Master Rumus) - Potongan JHT 2% (Tunjangan/Hutang Karyawan)
+                        const jhtBiayaPersen = parseFloat(rumus.jht_biaya || 0);
+                        const baseJhtBiaya = (jhtBiayaPersen / 100) * dppJamsostek;
+                        ncJhtBiayaVal = Math.max(0, baseJhtBiaya - ncJhtHutangVal);
 
                         // 3. JKK 1% Tunjangan (%)
                         const jkkPersen = parseFloat(rumus.jkk_tunjangan || 0);
@@ -863,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let count = 0;
         karyawans.forEach(k => {
-            if (k.group_jkn || k.group_bp_jamsostek) {
+            if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
                 addRow(k.id, true);
                 count++;
             }
