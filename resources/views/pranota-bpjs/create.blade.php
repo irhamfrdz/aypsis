@@ -180,6 +180,48 @@
                 </div>
             </div>
 
+            {{-- ── Filter & Search Bar ───────────────────────────────────────── --}}
+            <div class="px-6 py-3 bg-gray-50/60 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3 flex-1">
+                    {{-- Filter Group BPJS Dropdown --}}
+                    <div class="flex items-center gap-2 min-w-[240px]">
+                        <label for="filter-group-bpjs" class="text-xs font-semibold text-gray-700 whitespace-nowrap flex items-center gap-1.5">
+                            <i class="fas fa-filter text-teal-600 text-xs"></i>
+                            <span>Filter Group BPJS:</span>
+                        </label>
+                        <select id="filter-group-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium flex-1 cursor-pointer">
+                            <option value="all">Semua Group BPJS</option>
+                        </select>
+                    </div>
+
+                    {{-- Search Karyawan Input --}}
+                    <div class="relative min-w-[200px] flex-1 max-w-xs">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                        <input type="text" id="search-karyawan" placeholder="Cari nama karyawan..."
+                            class="w-full pl-8 pr-7 text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 bg-white transition">
+                        <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 hidden" title="Hapus pencarian">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+
+                    {{-- Reset Filter Button --}}
+                    <button type="button" id="btn-reset-filter" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-300 hover:border-rose-200 rounded-lg transition-colors font-medium hidden">
+                        <i class="fas fa-rotate-left text-[11px]"></i>
+                        Reset Filter
+                    </button>
+                </div>
+
+                {{-- Filtered Count & Status Badge --}}
+                <div class="flex items-center gap-2 text-xs">
+                    <span id="filter-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600">
+                        <i class="fas fa-list text-[10px]"></i>
+                        <span id="filter-count-text">0 Karyawan</span>
+                    </span>
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left border-collapse" id="tabel-detail">
                     <thead>
@@ -250,7 +292,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50/95 border-t-2 border-gray-300 shadow-xs text-xs">
                         <tr class="divide-x divide-gray-200/60 font-semibold">
-                            <td colspan="5" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90">
+                            <td colspan="5" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90" id="footer-total-label">
                                 Total Keseluruhan:
                             </td>
                             {{-- JKN --}}
@@ -286,13 +328,26 @@
                 </table>
             </div>
 
-            {{-- Empty State (Shown when 0 rows) --}}
+            {{-- Empty State (Shown when 0 rows in table) --}}
             <div id="table-empty-state" class="py-12 px-4 text-center border-t border-gray-100">
                 <div class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-users-slash text-xl"></i>
                 </div>
                 <h3 class="text-sm font-semibold text-gray-700">Belum ada data karyawan</h3>
                 <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Klik tombol <strong>Hitung Semua Karyawan</strong> untuk memuat data otomatis atau <strong>Tambah Baris</strong> untuk mengisi manual.</p>
+            </div>
+
+            {{-- Filter Empty State (Shown when search/filter yields 0 matches) --}}
+            <div id="table-filter-empty-state" class="py-12 px-4 text-center border-t border-gray-100 hidden">
+                <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-filter-circle-xmark text-xl"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-700">Tidak ada karyawan yang sesuai filter</h3>
+                <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Tidak ditemukan karyawan dengan Group BPJS atau kata kunci pencarian yang dipilih.</p>
+                <button type="button" id="btn-reset-filter-empty" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors">
+                    <i class="fas fa-rotate-left text-xs"></i>
+                    Reset Filter
+                </button>
             </div>
         </div>
 
@@ -322,7 +377,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('detail-container');
     const emptyState = document.getElementById('table-empty-state');
+    const filterEmptyState = document.getElementById('table-filter-empty-state');
     const btnAdd = document.getElementById('btn-add-karyawan');
+    const filterGroupSelect = document.getElementById('filter-group-bpjs');
+    const searchKaryawanInput = document.getElementById('search-karyawan');
+    const btnClearSearch = document.getElementById('btn-clear-search');
+    const btnResetFilter = document.getElementById('btn-reset-filter');
+    const btnResetFilterEmpty = document.getElementById('btn-reset-filter-empty');
+    const filterStatusBadge = document.getElementById('filter-status-badge');
+    const filterCountText = document.getElementById('filter-count-text');
     
     // Convert karyawans to JSON for select options
     const karyawans = @json($karyawans);
@@ -343,39 +406,221 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(cleaned) || 0;
     }
 
-    function updateEmptyState() {
-        const rows = container.querySelectorAll('tr.detail-row');
-        if (rows.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
+    /**
+     * Populate options for the Group BPJS filter dropdown
+     */
+    function populateGroupFilterOptions() {
+        if (!filterGroupSelect) return;
+
+        const jknGroups = new Set();
+        const jamsostekGroups = new Set();
+        const cabangGroups = new Set();
+
+        karyawans.forEach(k => {
+            if (k.group_jkn) jknGroups.add(k.group_jkn.trim());
+            if (k.group_bp_jamsostek) jamsostekGroups.add(k.group_bp_jamsostek.trim());
+            if (k.cabang_bpjs) cabangGroups.add(k.cabang_bpjs.trim());
+        });
+
+        rumusBpjs.forEach(r => {
+            if (r.jenis === 'jkn' && r.group_name) jknGroups.add(r.group_name.trim());
+            if (r.jenis === 'jamsostek' && r.group_name) jamsostekGroups.add(r.group_name.trim());
+            if (r.cabang_bpjs) cabangGroups.add(r.cabang_bpjs.trim());
+        });
+
+        let html = '<option value="all">Semua Group BPJS</option>';
+
+        if (jknGroups.size > 0) {
+            html += '<optgroup label="── BPJS Kesehatan (JKN) ──">';
+            Array.from(jknGroups).sort().forEach(g => {
+                html += `<option value="jkn:${g}">JKN: ${g}</option>`;
+            });
+            html += '</optgroup>';
         }
-        document.getElementById('card_total_karyawan').innerText = rows.length + ' Orang';
+
+        if (jamsostekGroups.size > 0) {
+            html += '<optgroup label="── BP Jamsostek ──">';
+            Array.from(jamsostekGroups).sort().forEach(g => {
+                html += `<option value="jamsostek:${g}">Jamsostek: ${g}</option>`;
+            });
+            html += '</optgroup>';
+        }
+
+        if (cabangGroups.size > 0) {
+            html += '<optgroup label="── Cabang BPJS ──">';
+            Array.from(cabangGroups).sort().forEach(c => {
+                html += `<option value="cabang:${c}">Cabang: ${c}</option>`;
+            });
+            html += '</optgroup>';
+        }
+
+        filterGroupSelect.innerHTML = html;
     }
 
-    function calculateTotals() {
+    /**
+     * Apply filter and search on table rows
+     */
+    function applyFilter() {
+        const selectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
+        const query = searchKaryawanInput ? (searchKaryawanInput.value || '').trim().toLowerCase() : '';
+        const rows = container.querySelectorAll('tr.detail-row');
+        
+        let totalRows = rows.length;
+        let visibleRows = 0;
+
+        rows.forEach(tr => {
+            const kName = tr.dataset.namaKaryawan || '';
+            const gJkn = tr.dataset.groupJkn || '';
+            const gJamsostek = tr.dataset.groupJamsostek || '';
+            const cab = tr.dataset.cabang || '';
+
+            // Check group match
+            let matchGroup = false;
+            if (selectedGroup === 'all' || !selectedGroup) {
+                matchGroup = true;
+            } else if (selectedGroup.startsWith('jkn:')) {
+                const target = selectedGroup.substring(4);
+                matchGroup = (gJkn === target);
+            } else if (selectedGroup.startsWith('jamsostek:')) {
+                const target = selectedGroup.substring(10);
+                matchGroup = (gJamsostek === target);
+            } else if (selectedGroup.startsWith('cabang:')) {
+                const target = selectedGroup.substring(7);
+                matchGroup = (cab === target);
+            } else {
+                matchGroup = (gJkn === selectedGroup || gJamsostek === selectedGroup || cab === selectedGroup);
+            }
+
+            // Check search match
+            let matchSearch = true;
+            if (query) {
+                matchSearch = kName.includes(query) ||
+                              gJkn.toLowerCase().includes(query) ||
+                              gJamsostek.toLowerCase().includes(query) ||
+                              cab.toLowerCase().includes(query);
+            }
+
+            if (matchGroup && matchSearch) {
+                tr.classList.remove('hidden');
+                visibleRows++;
+                const rowNumEl = tr.querySelector('.row-number');
+                if (rowNumEl) {
+                    rowNumEl.innerText = visibleRows;
+                }
+            } else {
+                tr.classList.add('hidden');
+            }
+        });
+
+        // Filter status indicators
+        const isFiltered = (selectedGroup !== 'all' && selectedGroup !== '') || query.length > 0;
+        
+        if (btnResetFilter) {
+            btnResetFilter.classList.toggle('hidden', !isFiltered);
+        }
+        if (btnClearSearch) {
+            btnClearSearch.classList.toggle('hidden', query.length === 0);
+        }
+
+        if (filterStatusBadge && filterCountText) {
+            if (isFiltered) {
+                filterStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs';
+                filterCountText.innerText = `Menampilkan ${visibleRows} dari ${totalRows} Karyawan`;
+            } else {
+                filterStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600';
+                filterCountText.innerText = `${totalRows} Karyawan`;
+            }
+        }
+
+        // Empty states logic
+        if (totalRows === 0) {
+            emptyState.classList.remove('hidden');
+            if (filterEmptyState) filterEmptyState.classList.add('hidden');
+        } else if (visibleRows === 0) {
+            emptyState.classList.add('hidden');
+            if (filterEmptyState) filterEmptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+            if (filterEmptyState) filterEmptyState.classList.add('hidden');
+        }
+
+        calculateTotals(isFiltered, visibleRows, totalRows);
+    }
+
+    function calculateTotals(isFiltered = false, visibleCount = 0, totalCount = 0) {
+        // Global sums across all rows
+        let globalKes = 0, globalKet = 0;
+        let globalJhtB = 0, globalJhtH = 0, globalJkk = 0, globalJkm = 0;
+        let globalBpuJht = 0, globalBpuJkk = 0, globalBpuJkm = 0;
+        let globalNcJhtB = 0, globalNcJhtH = 0, globalNcJkk = 0, globalNcJkm = 0;
+        let globalJpB = 0, globalJpH = 0;
+
+        // Visible sums for table footer
         let sumKes = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0;
         let sumBpuJht = 0, sumBpuJkk = 0, sumBpuJkm = 0;
         let sumNcJhtB = 0, sumNcJhtH = 0, sumNcJkk = 0, sumNcJkm = 0;
         let sumJpB = 0, sumJpH = 0;
-        
-        document.querySelectorAll('.input-kes').forEach(i => sumKes += parseIdNumber(i.value));
-        document.querySelectorAll('.input-ket').forEach(i => sumKet += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jht-biaya').forEach(i => sumJhtB += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jht-hutang').forEach(i => sumJhtH += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jkk').forEach(i => sumJkk += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jkm').forEach(i => sumJkm += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jkk-hutang').forEach(i => sumBpuJht += parseIdNumber(i.value));
-        document.querySelectorAll('.input-bpu-jkk').forEach(i => sumBpuJkk += parseIdNumber(i.value));
-        document.querySelectorAll('.input-bpu-jkm').forEach(i => sumBpuJkm += parseIdNumber(i.value));
-        document.querySelectorAll('.input-noncrew-jht-biaya').forEach(i => sumNcJhtB += parseIdNumber(i.value));
-        document.querySelectorAll('.input-noncrew-jht-hutang').forEach(i => sumNcJhtH += parseIdNumber(i.value));
-        document.querySelectorAll('.input-noncrew-jkk').forEach(i => sumNcJkk += parseIdNumber(i.value));
-        document.querySelectorAll('.input-noncrew-jkm').forEach(i => sumNcJkm += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jp-biaya').forEach(i => sumJpB += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jp-hutang').forEach(i => sumJpH += parseIdNumber(i.value));
 
+        const allRows = container.querySelectorAll('tr.detail-row');
+        
+        allRows.forEach(tr => {
+            const isVisible = !tr.classList.contains('hidden');
+
+            const valKes   = parseIdNumber(tr.querySelector('.input-kes')?.value);
+            const valKet   = parseIdNumber(tr.querySelector('.input-ket')?.value);
+            const valJhtB  = parseIdNumber(tr.querySelector('.input-jht-biaya')?.value);
+            const valJhtH  = parseIdNumber(tr.querySelector('.input-jht-hutang')?.value);
+            const valJkk   = parseIdNumber(tr.querySelector('.input-jkk')?.value);
+            const valJkm   = parseIdNumber(tr.querySelector('.input-jkm')?.value);
+            const valBpuJht = parseIdNumber(tr.querySelector('.input-jkk-hutang')?.value);
+            const valBpuJkk = parseIdNumber(tr.querySelector('.input-bpu-jkk')?.value);
+            const valBpuJkm = parseIdNumber(tr.querySelector('.input-bpu-jkm')?.value);
+            const valNcJhtB = parseIdNumber(tr.querySelector('.input-noncrew-jht-biaya')?.value);
+            const valNcJhtH = parseIdNumber(tr.querySelector('.input-noncrew-jht-hutang')?.value);
+            const valNcJkk = parseIdNumber(tr.querySelector('.input-noncrew-jkk')?.value);
+            const valNcJkm = parseIdNumber(tr.querySelector('.input-noncrew-jkm')?.value);
+            const valJpB   = parseIdNumber(tr.querySelector('.input-jp-biaya')?.value);
+            const valJpH   = parseIdNumber(tr.querySelector('.input-jp-hutang')?.value);
+
+            // Global accumulator
+            globalKes += valKes;
+            globalKet += valKet;
+            globalJhtB += valJhtB;
+            globalJhtH += valJhtH;
+            globalJkk += valJkk;
+            globalJkm += valJkm;
+            globalBpuJht += valBpuJht;
+            globalBpuJkk += valBpuJkk;
+            globalBpuJkm += valBpuJkm;
+            globalNcJhtB += valNcJhtB;
+            globalNcJhtH += valNcJhtH;
+            globalNcJkk += valNcJkk;
+            globalNcJkm += valNcJkm;
+            globalJpB += valJpB;
+            globalJpH += valJpH;
+
+            // Visible accumulator
+            if (isVisible) {
+                sumKes += valKes;
+                sumKet += valKet;
+                sumJhtB += valJhtB;
+                sumJhtH += valJhtH;
+                sumJkk += valJkk;
+                sumJkm += valJkm;
+                sumBpuJht += valBpuJht;
+                sumBpuJkk += valBpuJkk;
+                sumBpuJkm += valBpuJkm;
+                sumNcJhtB += valNcJhtB;
+                sumNcJhtH += valNcJhtH;
+                sumNcJkk += valNcJkk;
+                sumNcJkm += valNcJkm;
+                sumJpB += valJpB;
+                sumJpH += valJpH;
+            }
+        });
+
+        // Update footer table cells
         document.getElementById('total_kes').innerText                 = 'Rp ' + formatNumber(sumKes);
         document.getElementById('total_ket').innerText                 = 'Rp ' + formatNumber(sumKet);
         document.getElementById('total_jht_biaya').innerText           = 'Rp ' + formatNumber(sumJhtB);
@@ -392,17 +637,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total_jp_biaya').innerText            = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').innerText           = 'Rp ' + formatNumber(sumJpH);
         
-        const totalJkn = sumKes + sumKet;
-        const totalJamsostek = sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
-        const grandTotal = totalJkn + totalJamsostek;
+        const visibleTotalJkn = sumKes + sumKet;
+        const visibleTotalJamsostek = sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
+        const visibleGrandTotal = visibleTotalJkn + visibleTotalJamsostek;
         
-        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
+        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(visibleGrandTotal);
 
-        // Update Summary Cards
-        document.getElementById('card_total_jkn').innerText = 'Rp ' + formatNumber(totalJkn);
-        document.getElementById('card_total_jamsostek').innerText = 'Rp ' + formatNumber(totalJamsostek);
-        document.getElementById('card_grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
-        updateEmptyState();
+        // Update Footer Label
+        const footerLabel = document.getElementById('footer-total-label');
+        if (footerLabel) {
+            if (isFiltered) {
+                footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total Terfilter (${visibleCount} Karyawan):</span></div>`;
+            } else {
+                footerLabel.innerText = 'Total Keseluruhan:';
+            }
+        }
+
+        // Global Grand Totals for summary cards
+        const globalTotalJkn = globalKes + globalKet;
+        const globalTotalJamsostek = globalJhtB + globalJhtH + globalJkk + globalJkm + globalBpuJht + globalBpuJkk + globalBpuJkm + globalNcJhtB + globalNcJhtH + globalNcJkk + globalNcJkm + globalJpB + globalJpH;
+        const globalGrandTotal = globalTotalJkn + globalTotalJamsostek;
+
+        document.getElementById('card_total_karyawan').innerText = allRows.length + ' Orang';
+        document.getElementById('card_total_jkn').innerText = 'Rp ' + formatNumber(globalTotalJkn);
+        document.getElementById('card_total_jamsostek').innerText = 'Rp ' + formatNumber(globalTotalJamsostek);
+        document.getElementById('card_grand_total').innerText = 'Rp ' + formatNumber(globalGrandTotal);
     }
 
     function addRow(karyawanId = null, autoCalculate = false) {
@@ -431,6 +690,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 detail-row hover:bg-gray-50/70 transition-colors";
+        
+        if (karyawanId) {
+            const k = karyawans.find(k => k.id == karyawanId);
+            if (k) {
+                tr.dataset.karyawanId = k.id;
+                tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
+                tr.dataset.groupJkn = k.group_jkn || '';
+                tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
+                tr.dataset.cabang = k.cabang_bpjs || '';
+            }
+        }
+
         tr.innerHTML = `
             <td class="px-3 py-2.5 text-center align-middle row-number text-gray-400 font-mono font-medium">${rowCount}</td>
             <td class="px-3 py-2.5 align-middle">
@@ -468,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right font-mono text-xs input-jkk font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             <td class="px-1.5 py-2 align-middle bg-emerald-50/10 border-r border-emerald-100">
-                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right font-mono text-xs input-jkm font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right font-mono text-xs input-jkm font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
 
             {{-- BPU-CREW (3) --}}
@@ -553,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const jpB       = parseIdNumber(inputJpBiaya.value);
             const jpH       = parseIdNumber(inputJpHutang.value);
             subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + ncJhtB + ncJhtH + ncJkk + ncJkm + jpB + jpH);
-            calculateTotals();
+            applyFilter();
         };
 
         // Format saat kehilangan fokus atau nilai berubah (oleh sistem / user)
@@ -568,8 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tr.querySelector('.btn-remove').addEventListener('click', function() {
             tr.remove();
-            updateRowNumbers();
-            calculateTotals();
+            applyFilter();
         });
         
         let $select = null;
@@ -866,7 +1136,25 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSubtotal();
         }
 
-        const handleKaryawanChange = function(kId) { calculateBpjsForKaryawan(kId, selectTipe.value); };
+        const handleKaryawanChange = function(kId) {
+            const k = karyawans.find(item => item.id == kId);
+            if (k) {
+                tr.dataset.karyawanId = k.id;
+                tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
+                tr.dataset.groupJkn = k.group_jkn || '';
+                tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
+                tr.dataset.cabang = k.cabang_bpjs || '';
+            } else {
+                tr.dataset.karyawanId = '';
+                tr.dataset.namaKaryawan = '';
+                tr.dataset.groupJkn = '';
+                tr.dataset.groupJamsostek = '';
+                tr.dataset.cabang = '';
+            }
+            updateInfoBadgeJkn(kId);
+            calculateBpjsForKaryawan(kId, selectTipe.value);
+            applyFilter();
+        };
 
         if ($select) { 
             $select.on('change', function() { handleKaryawanChange($select.val()); }); 
@@ -889,14 +1177,35 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
 
-        updateEmptyState();
+        applyFilter();
     }
 
-    function updateRowNumbers() {
-        document.querySelectorAll('.row-number').forEach((td, index) => {
-            td.innerText = index + 1;
+    // Filter event listeners
+    if (filterGroupSelect) {
+        filterGroupSelect.addEventListener('change', applyFilter);
+    }
+    if (searchKaryawanInput) {
+        searchKaryawanInput.addEventListener('input', applyFilter);
+    }
+    if (btnClearSearch) {
+        btnClearSearch.addEventListener('click', () => {
+            searchKaryawanInput.value = '';
+            applyFilter();
+            searchKaryawanInput.focus();
         });
-        updateEmptyState();
+    }
+
+    function resetAllFilters() {
+        if (filterGroupSelect) filterGroupSelect.value = 'all';
+        if (searchKaryawanInput) searchKaryawanInput.value = '';
+        applyFilter();
+    }
+
+    if (btnResetFilter) {
+        btnResetFilter.addEventListener('click', resetAllFilters);
+    }
+    if (btnResetFilterEmpty) {
+        btnResetFilterEmpty.addEventListener('click', resetAllFilters);
     }
 
     btnAdd.addEventListener('click', () => addRow(null));
@@ -929,11 +1238,12 @@ document.addEventListener('DOMContentLoaded', function() {
             addRow(null);
         }
         
-        updateRowNumbers();
+        applyFilter();
     });
 
     // Inisialisasi awal
-    updateEmptyState();
+    populateGroupFilterOptions();
+    applyFilter();
 });
 </script>
 @endsection
