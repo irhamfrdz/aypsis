@@ -1,12 +1,60 @@
-<form action="{{ $action }}" method="POST" class="space-y-5">
-    @csrf @if($method !== 'POST') @method($method) @endif
-    @if(session('error'))<div class="rounded bg-red-100 px-4 py-3 text-red-800">{{ session('error') }}</div>@endif
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div><label class="mb-1 block text-sm font-medium">Size Kontainer</label><select name="size_kontainer" required class="w-full rounded border-gray-300">@foreach($sizeOptions as $value => $label)<option value="{{ $value }}" @selected(old('size_kontainer', $pricelist?->size_kontainer) === $value)>{{ $label }}</option>@endforeach</select>@error('size_kontainer')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
-        <div><label class="mb-1 block text-sm font-medium">Status Kontainer</label><select name="status_kontainer" required class="w-full rounded border-gray-300">@foreach($statusOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_kontainer', $pricelist?->status_kontainer) === $value)>{{ $label }}</option>@endforeach</select>@error('status_kontainer')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
-        <div><label class="mb-1 block text-sm font-medium">Status Service</label><select name="status_service" required class="w-full rounded border-gray-300">@foreach($statusServiceOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_service', $pricelist?->status_service ?? 'non_service') === $value)>{{ $label }}</option>@endforeach</select>@error('status_service')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
-        <div><label class="mb-1 block text-sm font-medium">Biaya</label><input type="number" name="biaya" min="0" step="0.01" required value="{{ old('biaya', $pricelist?->biaya) }}" class="w-full rounded border-gray-300">@error('biaya')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+<form action="{{ $action }}" method="POST" class="space-y-7">
+    @csrf
+    @if($method !== 'POST') @method($method) @endif
+
+    @if(session('error'))
+        <div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <i class="fas fa-circle-exclamation mt-0.5"></i><span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <i class="fas fa-circle-exclamation mt-0.5"></i><span>Periksa kembali data yang diisi.</span>
+        </div>
+    @endif
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div>
+            <label for="size_kontainer" class="mb-2 block text-sm font-semibold text-gray-700">Size Kontainer <span class="text-red-500">*</span></label>
+            <select id="size_kontainer" name="size_kontainer" required class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('size_kontainer') border-red-400 @enderror">
+                @foreach($sizeOptions as $value => $label)<option value="{{ $value }}" @selected(old('size_kontainer', $pricelist?->size_kontainer) === $value)>{{ $label }}</option>@endforeach
+            </select>
+            @error('size_kontainer')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label for="status_kontainer" class="mb-2 block text-sm font-semibold text-gray-700">Status Kontainer <span class="text-red-500">*</span></label>
+            <select id="status_kontainer" name="status_kontainer" required class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('status_kontainer') border-red-400 @enderror">
+                @foreach($statusOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_kontainer', $pricelist?->status_kontainer) === $value)>{{ $label }}</option>@endforeach
+            </select>
+            @error('status_kontainer')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label for="status_service" class="mb-2 block text-sm font-semibold text-gray-700">Status Service <span class="text-red-500">*</span></label>
+            <select id="status_service" name="status_service" required class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('status_service') border-red-400 @enderror">
+                @foreach($statusServiceOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_service', $pricelist?->status_service ?? 'non_service') === $value)>{{ $label }}</option>@endforeach
+            </select>
+            @error('status_service')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label for="biaya" class="mb-2 block text-sm font-semibold text-gray-700">Biaya <span class="text-red-500">*</span></label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm font-medium text-gray-500">Rp</span>
+                <input id="biaya" type="number" name="biaya" min="0" step="0.01" required value="{{ old('biaya', $pricelist?->biaya) }}" placeholder="0" class="block w-full rounded-lg border-gray-300 py-2.5 pl-11 pr-3 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('biaya') border-red-400 @enderror">
+            </div>
+            <p class="mt-1.5 text-xs text-gray-500">Masukkan nominal tarif dalam Rupiah.</p>
+            @error('biaya')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
     </div>
-    <div><label class="mb-1 block text-sm font-medium">Keterangan</label><textarea name="keterangan" rows="3" class="w-full rounded border-gray-300">{{ old('keterangan', $pricelist?->keterangan) }}</textarea>@error('keterangan')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
-    <div class="flex justify-end gap-3 border-t pt-5"><a href="{{ route('master.pricelist-ob-antar-gudang.index') }}" class="rounded border px-4 py-2 text-sm">Batal</a><button class="rounded bg-teal-600 px-4 py-2 text-sm font-medium text-white">Simpan</button></div>
+
+    <div>
+        <label for="keterangan" class="mb-2 block text-sm font-semibold text-gray-700">Keterangan <span class="font-normal text-gray-400">(opsional)</span></label>
+        <textarea id="keterangan" name="keterangan" rows="4" placeholder="Tambahkan catatan tarif jika diperlukan..." class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('keterangan') border-red-400 @enderror">{{ old('keterangan', $pricelist?->keterangan) }}</textarea>
+        <div class="mt-1.5 flex justify-between"><p class="text-xs text-gray-500">Maksimal 1.000 karakter.</p>@error('keterangan')<p class="text-xs text-red-600">{{ $message }}</p>@enderror</div>
+    </div>
+
+    <div class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
+        <a href="{{ route('master.pricelist-ob-antar-gudang.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"><i class="fas fa-arrow-left mr-2"></i>Batal</a>
+        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-300"><i class="fas fa-save mr-2"></i>Simpan Pricelist</button>
+    </div>
 </form>
