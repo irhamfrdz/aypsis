@@ -16,6 +16,8 @@ use Illuminate\Validation\Rule;
 
 class ObAntarGudangController extends Controller
 {
+    private const COMBO_BIAYA_20FT_SERVICE = 37500;
+
     /**
      * Return the warehouse where a container was located on a given date.
      */
@@ -191,6 +193,7 @@ class ObAntarGudangController extends Controller
                 'in:full,empty',
                 Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
             ],
+            'is_combo' => 'sometimes|boolean',
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -199,6 +202,12 @@ class ObAntarGudangController extends Controller
         ]);
 
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
+        $validated['is_combo'] = $request->boolean('is_combo');
+
+        if ($validated['is_combo'] && ($ukuran !== '20' || $validated['status_service'] !== 'service')) {
+            return back()->withInput()->with('error', 'Combo hanya tersedia untuk kontainer 20 ft dengan status Service.');
+        }
+
         $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
             ->where('size_kontainer', $ukuran.'ft')
             ->where('status_service', $validated['status_service']);
@@ -242,13 +251,16 @@ class ObAntarGudangController extends Controller
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
             $tagihan->status_kontainer = $pricelist->status_kontainer;
+            $tagihan->is_combo = $validated['is_combo'];
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
             $tagihan->keterangan = $validated['keterangan']
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
             // Use the selected pricelist as the authoritative OB price.
-            $tagihan->biaya = $pricelist->biaya;
+            $tagihan->biaya = $validated['is_combo']
+                ? self::COMBO_BIAYA_20FT_SERVICE
+                : $pricelist->biaya;
 
             $tagihan->save();
 

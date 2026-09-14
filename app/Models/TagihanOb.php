@@ -21,6 +21,7 @@ class TagihanOb extends Model
         'nama_supir',
         'barang',
         'status_kontainer', // full atau empty
+        'is_combo',
         'biaya',
         'dp',
         'size_kontainer',
@@ -33,6 +34,7 @@ class TagihanOb extends Model
     protected $casts = [
         'biaya' => 'float',
         'dp' => 'float',
+        'is_combo' => 'boolean',
     ];
 
     /**

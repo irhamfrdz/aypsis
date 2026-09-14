@@ -509,6 +509,14 @@
                                     </select>
                                 </div>
 
+                                <div id="modal_combo_wrapper" class="hidden rounded-md border border-orange-200 bg-orange-50 p-3">
+                                    <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-orange-900">
+                                        <input type="checkbox" name="is_combo" id="modal_combo" value="1" class="h-4 w-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500">
+                                        <span>Combo 20 ft Service</span>
+                                    </label>
+                                    <p class="mt-1 pl-6 text-[10px] text-orange-700">Jika dicentang, nominal OB menjadi Rp 37.500.</p>
+                                </div>
+
                                 <div id="modal_status_kontainer_wrapper">
                                     <label for="modal_status_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
                                     <select name="status_kontainer" id="modal_status_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
@@ -576,6 +584,7 @@
         document.getElementById('modal_source').value = source;
         document.getElementById('modal_status_service').value = 'non_service';
         document.getElementById('modal_status_kontainer').value = '';
+        document.getElementById('modal_combo').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
@@ -610,6 +619,7 @@
         gudangTujuanSelect.value = '';
 
         updateStatusKontainerVisibility();
+        updateComboVisibility();
         
         const modal = document.getElementById('tagihanModal');
         modal.classList.remove('hidden');
@@ -650,10 +660,24 @@
         statusKontainer.required = !isService;
         if (isService) statusKontainer.value = '';
         updatePricelistOptions();
+        updateComboVisibility();
+    }
+
+    function updateComboVisibility() {
+        const isEligible = document.getElementById('display_ukuran').innerText === '20'
+            && document.getElementById('modal_status_service').value === 'service';
+        const comboWrapper = document.getElementById('modal_combo_wrapper');
+        const comboCheckbox = document.getElementById('modal_combo');
+
+        comboWrapper.classList.toggle('hidden', !isEligible);
+        comboCheckbox.disabled = !isEligible;
+        if (!isEligible) comboCheckbox.checked = false;
+        updateNominalFromSelection();
     }
 
     document.getElementById('modal_status_service').addEventListener('change', updateStatusKontainerVisibility);
     document.getElementById('modal_status_kontainer').addEventListener('change', updatePricelistOptions);
+    document.getElementById('modal_combo').addEventListener('change', updateNominalFromSelection);
 
     function updateGudangAsalFromHistory() {
         const nomor = document.getElementById('modal_nomor_kontainer').value;
@@ -704,14 +728,24 @@
 
     // Update nominal input when selecting Harga OB
     document.getElementById('pricelist_id').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+        updateNominalFromSelection();
+    });
+
+    function updateNominalFromSelection() {
+        if (document.getElementById('modal_combo').checked) {
+            document.getElementById('nominal').value = '37500';
+            return;
+        }
+
+        const pricelistSelect = document.getElementById('pricelist_id');
+        const selectedOption = pricelistSelect.options[pricelistSelect.selectedIndex];
         if (selectedOption && selectedOption.value) {
             const biaya = selectedOption.getAttribute('data-biaya');
             document.getElementById('nominal').value = biaya;
         } else {
             document.getElementById('nominal').value = '';
         }
-    });
+    }
 
     function closeTagihanModal() {
         const modal = document.getElementById('tagihanModal');
