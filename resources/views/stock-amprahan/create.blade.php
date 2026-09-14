@@ -1220,13 +1220,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+let typeBonSidebarActiveClasses = [];
+
+function toggleTypeBonSidebarHighlight(hide) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    if (hide) {
+        if (typeBonSidebarActiveClasses.length > 0) return;
+
+        const activeClasses = ['bg-blue-50', 'text-blue-700', 'bg-green-50', 'text-green-700'];
+        sidebar.querySelectorAll('a, button').forEach(element => {
+            const removedClasses = activeClasses.filter(className => element.classList.contains(className));
+
+            if (removedClasses.length > 0) {
+                typeBonSidebarActiveClasses.push({ element, classes: removedClasses });
+                removedClasses.forEach(className => element.classList.remove(className));
+            }
+        });
+    } else {
+        typeBonSidebarActiveClasses.forEach(({ element, classes }) => {
+            classes.forEach(className => element.classList.add(className));
+        });
+        typeBonSidebarActiveClasses = [];
+    }
+}
+
 function openTypeBonModal() {
+    toggleTypeBonSidebarHighlight(true);
     document.getElementById('typeBonModal').classList.remove('hidden');
     document.querySelector('#typeBonForm input[name="nama"]').focus();
 }
 
 function closeTypeBonModal() {
     document.getElementById('typeBonModal').classList.add('hidden');
+    toggleTypeBonSidebarHighlight(false);
 }
 </script>
 @endpush
