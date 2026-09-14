@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistObAntarGudang;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 class MasterPricelistObAntarGudangController extends Controller
@@ -97,19 +98,31 @@ class MasterPricelistObAntarGudangController extends Controller
 
     private function validateData(Request $request): array
     {
-        return Validator::make($request->all(), [
+        $validated = Validator::make($request->all(), [
             'size_kontainer' => 'required|in:20ft,40ft',
-            'status_kontainer' => 'required|in:full,empty',
+            'status_kontainer' => [
+                'nullable',
+                'in:full,empty',
+                Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
+            ],
             'status_service' => 'required|in:service,non_service',
             'biaya' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000',
         ])->validate();
+
+        if ($validated['status_service'] === 'service') {
+            $validated['status_kontainer'] = null;
+        }
+
+        return $validated;
     }
 
     private function combinationExists(array $data, ?int $exceptId = null): bool
     {
         return MasterPricelistObAntarGudang::where('size_kontainer', $data['size_kontainer'])
-            ->where('status_kontainer', $data['status_kontainer'])
+            ->when($data['status_kontainer'] === null,
+                fn ($query) => $query->whereNull('status_kontainer'),
+                fn ($query) => $query->where('status_kontainer', $data['status_kontainer']))
             ->where('status_service', $data['status_service'])
             ->when($exceptId, fn ($query) => $query->where('id', '!=', $exceptId))
             ->exists();

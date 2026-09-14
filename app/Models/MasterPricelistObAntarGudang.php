@@ -49,7 +49,7 @@ class MasterPricelistObAntarGudang extends Model
         return self::getSizeKontainerOptions()[$this->size_kontainer] ?? $this->size_kontainer;
     }
 
-    public function getStatusKontainerLabelAttribute(): string
+    public function getStatusKontainerLabelAttribute(): ?string
     {
         return self::getStatusKontainerOptions()[$this->status_kontainer] ?? $this->status_kontainer;
     }

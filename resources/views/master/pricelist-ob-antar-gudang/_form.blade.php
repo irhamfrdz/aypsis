@@ -23,10 +23,12 @@
             @error('size_kontainer')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
         <div>
-            <label for="status_kontainer" class="mb-2 block text-sm font-semibold text-gray-700">Status Kontainer <span class="text-red-500">*</span></label>
+            <label for="status_kontainer" class="mb-2 block text-sm font-semibold text-gray-700">Status Kontainer <span id="status_kontainer_required" class="text-red-500">*</span></label>
             <select id="status_kontainer" name="status_kontainer" required class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('status_kontainer') border-red-400 @enderror">
+                <option value="">Tidak berlaku untuk service</option>
                 @foreach($statusOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_kontainer', $pricelist?->status_kontainer) === $value)>{{ $label }}</option>@endforeach
             </select>
+            <p id="status_kontainer_hint" class="mt-1.5 hidden text-xs text-gray-500">Status kontainer tidak diperlukan untuk tarif service.</p>
             @error('status_kontainer')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
         <div>
@@ -58,3 +60,29 @@
         <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-300"><i class="fas fa-save mr-2"></i>Simpan Pricelist</button>
     </div>
 </form>
+
+<script>
+    (() => {
+        const serviceSelect = document.getElementById('status_service');
+        const containerSelect = document.getElementById('status_kontainer');
+        const requiredMark = document.getElementById('status_kontainer_required');
+        const hint = document.getElementById('status_kontainer_hint');
+
+        function updateContainerStatus() {
+            const isService = serviceSelect.value === 'service';
+            containerSelect.disabled = isService;
+            containerSelect.required = !isService;
+            containerSelect.classList.toggle('bg-gray-100', isService);
+            containerSelect.classList.toggle('text-gray-400', isService);
+            requiredMark.classList.toggle('hidden', isService);
+            hint.classList.toggle('hidden', !isService);
+
+            if (isService) {
+                containerSelect.value = '';
+            }
+        }
+
+        serviceSelect.addEventListener('change', updateContainerStatus);
+        updateContainerStatus();
+    })();
+</script>
