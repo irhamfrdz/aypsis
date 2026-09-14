@@ -502,22 +502,40 @@
                                 </div>
 
                                 <div>
+                                    <label for="modal_status_service" class="block text-sm font-medium text-gray-700 mb-1">Status Service <span class="text-red-500">*</span></label>
+                                    <select name="status_service" id="modal_status_service" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="non_service">Bukan Service</option>
+                                        <option value="service">Service</option>
+                                    </select>
+                                </div>
+
+                                <div id="modal_status_kontainer_wrapper">
+                                    <label for="modal_status_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
+                                    <select name="status_kontainer" id="modal_status_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="">--Pilih Status Kontainer--</option>
+                                        <option value="full">Full</option>
+                                        <option value="empty">Empty</option>
+                                    </select>
+                                    <p class="text-[10px] text-gray-500 mt-1">Tidak diperlukan jika status service dipilih.</p>
+                                </div>
+
+                                <div>
                                     <label for="pricelist_id" class="block text-sm font-medium text-gray-700 mb-1">Harga OB <span class="text-red-500">*</span></label>
                                     <select name="pricelist_id" id="pricelist_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-biaya="{{ $pl->biaya }}">
-                                                {{ ucfirst($pl->status_kontainer) }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-biaya="{{ $pl->biaya }}">
+                                                {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">*Opsi yang tampil menyesuaikan dengan ukuran kontainer (20/40)</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">*Harga menyesuaikan ukuran, status service, dan status kontainer.</p>
                                 </div>
 
                                 <div>
                                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal OB <span class="text-red-500">*</span></label>
-                                    <input type="number" name="nominal" id="nominal" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required placeholder="Masukkan nominal...">
+                                    <input type="number" name="nominal" id="nominal" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required readonly placeholder="Pilih status untuk mengisi harga...">
                                 </div>
 
                                 <div>
@@ -556,6 +574,8 @@
         document.getElementById('modal_nomor_kontainer').value = nomor;
         document.getElementById('modal_ukuran').value = ukuran;
         document.getElementById('modal_source').value = source;
+        document.getElementById('modal_status_service').value = 'non_service';
+        document.getElementById('modal_status_kontainer').value = '';
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
@@ -588,6 +608,8 @@
         
         const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
         gudangTujuanSelect.value = '';
+
+        updateStatusKontainerVisibility();
         
         const modal = document.getElementById('tagihanModal');
         modal.classList.remove('hidden');
@@ -596,6 +618,42 @@
         // Recalculate the origin from movement history for the selected OB date.
         updateGudangAsalFromHistory();
     }
+
+    function updatePricelistOptions() {
+        const pricelistSelect = document.getElementById('pricelist_id');
+        const statusService = document.getElementById('modal_status_service').value;
+        const statusKontainer = document.getElementById('modal_status_kontainer').value;
+        const normalizedUkuran = document.getElementById('display_ukuran').innerText;
+
+        Array.from(pricelistSelect.options).forEach(option => {
+            if (option.value === '') return;
+
+            const matches = option.getAttribute('data-ukuran').replace(/ft/i, '').trim() === normalizedUkuran
+                && option.getAttribute('data-status-service') === statusService
+                && (statusService === 'service' || option.getAttribute('data-status-kontainer') === statusKontainer);
+
+            option.style.display = matches ? '' : 'none';
+            option.disabled = !matches;
+        });
+
+        const selected = pricelistSelect.options[pricelistSelect.selectedIndex];
+        if (!selected || selected.disabled || !selected.value) {
+            pricelistSelect.value = '';
+            document.getElementById('nominal').value = '';
+        }
+    }
+
+    function updateStatusKontainerVisibility() {
+        const isService = document.getElementById('modal_status_service').value === 'service';
+        const statusKontainer = document.getElementById('modal_status_kontainer');
+        document.getElementById('modal_status_kontainer_wrapper').classList.toggle('hidden', isService);
+        statusKontainer.required = !isService;
+        if (isService) statusKontainer.value = '';
+        updatePricelistOptions();
+    }
+
+    document.getElementById('modal_status_service').addEventListener('change', updateStatusKontainerVisibility);
+    document.getElementById('modal_status_kontainer').addEventListener('change', updatePricelistOptions);
 
     function updateGudangAsalFromHistory() {
         const nomor = document.getElementById('modal_nomor_kontainer').value;

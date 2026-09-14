@@ -12,6 +12,7 @@ use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ObAntarGudangController extends Controller
 {
@@ -184,6 +185,12 @@ class ObAntarGudangController extends Controller
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
             'pricelist_id' => 'required|exists:master_pricelist_ob_antar_gudang,id',
+            'status_service' => 'required|in:service,non_service',
+            'status_kontainer' => [
+                'nullable',
+                'in:full,empty',
+                Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
+            ],
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -191,13 +198,28 @@ class ObAntarGudangController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
+        $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
+        $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
+            ->where('size_kontainer', $ukuran.'ft')
+            ->where('status_service', $validated['status_service']);
+
+        if ($validated['status_service'] === 'service') {
+            $pricelistQuery->whereNull('status_kontainer');
+            $validated['status_kontainer'] = null;
+        } else {
+            $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
+        }
+
+        $pricelist = $pricelistQuery->first();
+        if (! $pricelist) {
+            return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran dan status kontainer yang dipilih.');
+        }
+
         try {
             DB::beginTransaction();
 
             $gudangAsal = Gudang::find($validated['gudang_id']);
             $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
-            $pricelist = MasterPricelistObAntarGudang::find($validated['pricelist_id']);
-
             // The origin must be the container's historical position on the OB date.
             $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
                 ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
@@ -225,8 +247,8 @@ class ObAntarGudangController extends Controller
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
-            // Gunakan harga nominal yang diinput oleh user
-            $tagihan->biaya = $validated['nominal'];
+            // Use the selected pricelist as the authoritative OB price.
+            $tagihan->biaya = $pricelist->biaya;
 
             $tagihan->save();
 
