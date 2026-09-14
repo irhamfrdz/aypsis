@@ -17,4 +17,15 @@ class MasterTypeBonAmprahan extends Model
         'keterangan',
         'status',
     ];
+
+    public static function generateNextKode(): string
+    {
+        $lastNumber = static::query()->get('kode')->max(function ($record) {
+            return preg_match('/^TBA(\d+)$/i', (string) $record->kode, $matches)
+                ? (int) $matches[1]
+                : 0;
+        });
+
+        return 'TBA'.str_pad((string) ($lastNumber + 1), 3, '0', STR_PAD_LEFT);
+    }
 }

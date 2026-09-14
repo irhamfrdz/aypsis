@@ -32,12 +32,19 @@ class MasterTypeBonAmprahanController extends Controller
 
     public function create()
     {
-        return view('master-type-bon-amprahan.create');
+        return view('master-type-bon-amprahan.create', [
+            'nextKode' => MasterTypeBonAmprahan::generateNextKode(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $this->validated($request);
+        $data = $request->validate([
+            'nama' => 'required|string|max:255',
+            'keterangan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+        $data['kode'] = MasterTypeBonAmprahan::generateNextKode();
         MasterTypeBonAmprahan::create($data);
 
         return redirect()->route('master.type-bon-amprahan.index')
