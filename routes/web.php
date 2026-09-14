@@ -7038,6 +7038,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ]);
 
     // 📦 Stock Amprahan
+    Route::post('stock-amprahan/type-bon', [\App\Http\Controllers\StockAmprahanController::class, 'storeTypeBon'])
+        ->name('stock-amprahan.type-bon.store')
+        ->middleware('can:stock-amprahan-create');
     Route::post('stock-amprahan/bulk-store', [\App\Http\Controllers\StockAmprahanController::class, 'bulkStore'])
         ->name('stock-amprahan.bulk-store')
         ->middleware('can:stock-amprahan-create');

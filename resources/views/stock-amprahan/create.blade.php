@@ -123,9 +123,12 @@
 
                             {{-- Type Bon Amprahan --}}
                             <div class="group">
-                                <label for="type_bon_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                <label for="type_bon_amprahan_id" class="block text-sm font-bold text-gray-700 group-focus-within:text-indigo-600 transition-colors">
                                     <i class="fas fa-file-invoice-dollar mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Bon <span class="text-red-500">*</span>
                                 </label>
+                                <button type="button" onclick="openTypeBonModal()" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700" title="Tambah Type Bon"><i class="fas fa-plus mr-1"></i>Tambah</button>
+                                </div>
                                 <div class="relative">
                                     <div class="dropdown-container-type-bon relative">
                                         <input type="text" id="search_type_bon" placeholder="Cari type bon..." autocomplete="off"
@@ -608,6 +611,25 @@
     </div>
 </div>
 
+{{-- Modal Tambah Type Bon --}}
+<div id="typeBonModal" class="fixed inset-0 z-[110] hidden overflow-y-auto" aria-modal="true" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-60" onclick="closeTypeBonModal()"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-file-invoice-dollar mr-2 text-indigo-600"></i>Tambah Type Bon</h3>
+                <button type="button" onclick="closeTypeBonModal()" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+            </div>
+            <form id="typeBonForm">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nama Type Bon <span class="text-red-500">*</span></label><input type="text" name="nama" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+                <div class="mb-5"><label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label><textarea name="keterangan" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                <div id="typeBonError" class="hidden mb-4 text-sm text-red-600"></div>
+                <div class="flex justify-end gap-2"><button type="button" onclick="closeTypeBonModal()" class="px-4 py-2 bg-gray-400 text-white rounded-lg">Batal</button><button type="submit" id="typeBonSubmit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg"><i class="fas fa-save mr-1"></i>Simpan</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Import Excel Modal --}}
 <div id="importExcelModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -674,6 +696,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById(config.searchId);
         const dropdownOptions = document.getElementById(config.dropdownId);
         let originalOptions = Array.from(selectElement.options);
+
+        selectElement.addEventListener('change', function() {
+            originalOptions = Array.from(selectElement.options);
+        });
 
         // Initially populate dropdown options
         populateDropdown(originalOptions);
@@ -1107,8 +1133,7 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.addEventListener('click', function() {
                 input.value = this.getAttribute('data-value');
                 optionsDiv.classList.add('hidden');
-            });
-        });
+    });
 
         document.addEventListener('click', (e) => {
             if (!container.contains(e.target)) {
@@ -1140,6 +1165,41 @@ document.addEventListener('DOMContentLoaded', function() {
         checkOdometerVisibility();
     }
 
+    document.getElementById('typeBonForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const form = event.target;
+        const submitButton = document.getElementById('typeBonSubmit');
+        const errorBox = document.getElementById('typeBonError');
+        submitButton.disabled = true;
+        errorBox.classList.add('hidden');
+
+        try {
+            const response = await fetch('{{ route('stock-amprahan.type-bon.store') }}', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                body: new FormData(form)
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || Object.values(result.errors || {}).flat().join(' ') || 'Gagal menyimpan Type Bon.');
+
+            const typeBon = result.type_bon;
+            const select = document.getElementById('type_bon_amprahan_id');
+            const search = document.getElementById('search_type_bon');
+            const option = new Option(`${typeBon.kode} - ${typeBon.nama}`, typeBon.id, true, true);
+            select.add(option);
+            select.value = typeBon.id;
+            search.value = option.text;
+            closeTypeBonModal();
+            form.reset();
+            select.dispatchEvent(new Event('change'));
+        } catch (error) {
+            errorBox.textContent = error.message;
+            errorBox.classList.remove('hidden');
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+
     // Form submit validation
     const form = document.querySelector('form');
     if (form) {
@@ -1158,6 +1218,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function openTypeBonModal() {
+    document.getElementById('typeBonModal').classList.remove('hidden');
+    document.querySelector('#typeBonForm input[name="nama"]').focus();
+}
+
+function closeTypeBonModal() {
+    document.getElementById('typeBonModal').classList.add('hidden');
+}
 </script>
 @endpush
 @endsection

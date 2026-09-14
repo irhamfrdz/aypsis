@@ -227,6 +227,32 @@ class StockAmprahanController extends Controller
         return view('stock-amprahan.create', compact('masterItems', 'typeBonAmprahans', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
     }
 
+    public function storeTypeBon(Request $request)
+    {
+        $data = $request->validate([
+            'nama' => 'required|string|max:255',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $typeBon = DB::transaction(function () use ($data) {
+            return MasterTypeBonAmprahan::create([
+                'kode' => MasterTypeBonAmprahan::generateNextKode(),
+                'nama' => $data['nama'],
+                'keterangan' => $data['keterangan'] ?? null,
+                'status' => 'active',
+            ]);
+        });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'type_bon' => $typeBon,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Type Bon Amprahan berhasil ditambahkan.');
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
