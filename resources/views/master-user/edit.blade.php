@@ -1206,6 +1206,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Type Bon Amprahan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Type Bon Amprahan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-type-bon-amprahan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-type-bon-amprahan']['view']) && $userMatrixPermissions['master-type-bon-amprahan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-type-bon-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-type-bon-amprahan']['create']) && $userMatrixPermissions['master-type-bon-amprahan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-type-bon-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-type-bon-amprahan']['update']) && $userMatrixPermissions['master-type-bon-amprahan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-type-bon-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-type-bon-amprahan']['delete']) && $userMatrixPermissions['master-type-bon-amprahan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Gudang Ban --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

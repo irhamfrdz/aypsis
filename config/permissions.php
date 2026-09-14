@@ -52,6 +52,7 @@ return [
                 'master-shipper-consignee' => 'Manajemen Shipper Consignee',
                 'master-wa-templates' => 'Manajemen WA Templates',
                 'master-wa-broadcast' => 'Manajemen WA Broadcast',
+                'master-type-bon-amprahan' => 'Manajemen Type Bon Amprahan',
             ],
         ],
         'user-approval' => [
@@ -382,4 +383,3 @@ return [
         'permohonan-amprahan' => ['permohonan-amprahan-view'],
     ],
 ];
-

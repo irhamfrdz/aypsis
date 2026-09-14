@@ -28,6 +28,7 @@ use App\Http\Controllers\MasterItemKwitansiController;
 use App\Http\Controllers\MasterKegiatanController;
 use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
+use App\Http\Controllers\MasterTypeBonAmprahanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
@@ -1315,6 +1316,19 @@ Route::middleware([
 
         // Master Gudang Amprahan
         Route::resource('gudang-amprahan', MasterGudangAmprahanController::class);
+
+        // Master Type Bon Amprahan
+        Route::resource('type-bon-amprahan', MasterTypeBonAmprahanController::class)
+            ->parameters(['type-bon-amprahan' => 'typeBonAmprahan'])
+            ->middleware([
+                'index' => 'can:master-type-bon-amprahan-view',
+                'show' => 'can:master-type-bon-amprahan-view',
+                'create' => 'can:master-type-bon-amprahan-create',
+                'store' => 'can:master-type-bon-amprahan-create',
+                'edit' => 'can:master-type-bon-amprahan-update',
+                'update' => 'can:master-type-bon-amprahan-update',
+                'destroy' => 'can:master-type-bon-amprahan-delete',
+            ]);
 
         // Master Alat Berat
         Route::get('alat-berat/template', [\App\Http\Controllers\AlatBeratController::class, 'downloadTemplate'])->name('alat-berat.template');

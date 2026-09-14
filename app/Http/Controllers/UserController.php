@@ -3229,6 +3229,24 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle Master Type Bon Amprahan permissions explicitly
+                    if ($module === 'master-type-bon-amprahan' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'master-type-bon-amprahan-view',
+                            'create' => 'master-type-bon-amprahan-create',
+                            'update' => 'master-type-bon-amprahan-update',
+                            'delete' => 'master-type-bon-amprahan-delete',
+                        ];
+
+                        $directPermission = Permission::where('name', $actionMap[$action])->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
+
+                            continue;
+                        }
+                    }
+
                     // DIRECT FIX: Handle master-term permissions explicitly
                     if ($module === 'master-term' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         // Map action to correct permission name
