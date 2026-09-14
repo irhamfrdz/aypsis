@@ -34,6 +34,7 @@ use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPricelistObController;
+use App\Http\Controllers\MasterPricelistObAntarGudangController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\MerkBanController;
 use App\Http\Controllers\MesinController;
@@ -2320,6 +2321,26 @@ Route::middleware([
         Route::delete('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'destroy'])
             ->name('pricelist-ob.destroy')
             ->middleware('can:master-pricelist-ob-delete');
+
+        // Pricelist OB Antar Gudang
+        Route::get('pricelist-ob-antar-gudang', [MasterPricelistObAntarGudangController::class, 'index'])
+            ->name('pricelist-ob-antar-gudang.index')
+            ->middleware('can:master-pricelist-ob-antar-gudang-view');
+        Route::get('pricelist-ob-antar-gudang/create', [MasterPricelistObAntarGudangController::class, 'create'])
+            ->name('pricelist-ob-antar-gudang.create')
+            ->middleware('can:master-pricelist-ob-antar-gudang-create');
+        Route::post('pricelist-ob-antar-gudang', [MasterPricelistObAntarGudangController::class, 'store'])
+            ->name('pricelist-ob-antar-gudang.store')
+            ->middleware('can:master-pricelist-ob-antar-gudang-create');
+        Route::get('pricelist-ob-antar-gudang/{pricelistObAntarGudang}/edit', [MasterPricelistObAntarGudangController::class, 'edit'])
+            ->name('pricelist-ob-antar-gudang.edit')
+            ->middleware('can:master-pricelist-ob-antar-gudang-update');
+        Route::put('pricelist-ob-antar-gudang/{pricelistObAntarGudang}', [MasterPricelistObAntarGudangController::class, 'update'])
+            ->name('pricelist-ob-antar-gudang.update')
+            ->middleware('can:master-pricelist-ob-antar-gudang-update');
+        Route::delete('pricelist-ob-antar-gudang/{pricelistObAntarGudang}', [MasterPricelistObAntarGudangController::class, 'destroy'])
+            ->name('pricelist-ob-antar-gudang.destroy')
+            ->middleware('can:master-pricelist-ob-antar-gudang-delete');
 
         // Pricelist Air Tawar Management - Separate routes to avoid middleware conflicts
         Route::get('pricelist-air-tawar', [MasterPricelistAirTawarController::class, 'index'])

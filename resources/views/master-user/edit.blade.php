@@ -2840,6 +2840,16 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist OB Antar Gudang --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">â””â”€</span><span>Pricelist OB Antar Gudang</span></div></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob-antar-gudang']['view']) && $userMatrixPermissions['master-pricelist-ob-antar-gudang']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob-antar-gudang][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob-antar-gudang']['create']) && $userMatrixPermissions['master-pricelist-ob-antar-gudang']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob-antar-gudang][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob-antar-gudang']['update']) && $userMatrixPermissions['master-pricelist-ob-antar-gudang']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-ob-antar-gudang][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-ob-antar-gudang']['delete']) && $userMatrixPermissions['master-pricelist-ob-antar-gudang']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Air Tawar --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

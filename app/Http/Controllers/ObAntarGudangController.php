@@ -6,7 +6,7 @@ use App\Models\Gudang;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\HistoryKontainer;
-use App\Models\MasterPricelistOb;
+use App\Models\MasterPricelistObAntarGudang;
 use App\Models\StockKontainer;
 use App\Models\TagihanOb;
 use Illuminate\Http\Request;
@@ -149,7 +149,10 @@ class ObAntarGudangController extends Controller
             ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
         // Fetch pricelists for Harga OB logic
-        $pricelists = MasterPricelistOb::all();
+        $pricelists = MasterPricelistObAntarGudang::orderBy('size_kontainer')
+            ->orderBy('status_kontainer')
+            ->orderBy('status_service')
+            ->get();
 
         return view('ob-antar-gudang.index', compact(
             'gudang',
@@ -180,7 +183,7 @@ class ObAntarGudangController extends Controller
             'nomor_kontainer' => 'required|string',
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
-            'pricelist_id' => 'required|exists:master_pricelist_ob,id',
+            'pricelist_id' => 'required|exists:master_pricelist_ob_antar_gudang,id',
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -193,7 +196,7 @@ class ObAntarGudangController extends Controller
 
             $gudangAsal = Gudang::find($validated['gudang_id']);
             $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
-            $pricelist = MasterPricelistOb::find($validated['pricelist_id']);
+            $pricelist = MasterPricelistObAntarGudang::find($validated['pricelist_id']);
 
             // The origin must be the container's historical position on the OB date.
             $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])

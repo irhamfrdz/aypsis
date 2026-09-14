@@ -1,0 +1,12 @@
+<form action="{{ $action }}" method="POST" class="space-y-5">
+    @csrf @if($method !== 'POST') @method($method) @endif
+    @if(session('error'))<div class="rounded bg-red-100 px-4 py-3 text-red-800">{{ session('error') }}</div>@endif
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div><label class="mb-1 block text-sm font-medium">Size Kontainer</label><select name="size_kontainer" required class="w-full rounded border-gray-300">@foreach($sizeOptions as $value => $label)<option value="{{ $value }}" @selected(old('size_kontainer', $pricelist?->size_kontainer) === $value)>{{ $label }}</option>@endforeach</select>@error('size_kontainer')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+        <div><label class="mb-1 block text-sm font-medium">Status Kontainer</label><select name="status_kontainer" required class="w-full rounded border-gray-300">@foreach($statusOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_kontainer', $pricelist?->status_kontainer) === $value)>{{ $label }}</option>@endforeach</select>@error('status_kontainer')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+        <div><label class="mb-1 block text-sm font-medium">Status Service</label><select name="status_service" required class="w-full rounded border-gray-300">@foreach($statusServiceOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_service', $pricelist?->status_service ?? 'non_service') === $value)>{{ $label }}</option>@endforeach</select>@error('status_service')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+        <div><label class="mb-1 block text-sm font-medium">Biaya</label><input type="number" name="biaya" min="0" step="0.01" required value="{{ old('biaya', $pricelist?->biaya) }}" class="w-full rounded border-gray-300">@error('biaya')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    </div>
+    <div><label class="mb-1 block text-sm font-medium">Keterangan</label><textarea name="keterangan" rows="3" class="w-full rounded border-gray-300">{{ old('keterangan', $pricelist?->keterangan) }}</textarea>@error('keterangan')<p class="text-sm text-red-600">{{ $message }}</p>@enderror</div>
+    <div class="flex justify-end gap-3 border-t pt-5"><a href="{{ route('master.pricelist-ob-antar-gudang.index') }}" class="rounded border px-4 py-2 text-sm">Batal</a><button class="rounded bg-teal-600 px-4 py-2 text-sm font-medium text-white">Simpan</button></div>
+</form>
