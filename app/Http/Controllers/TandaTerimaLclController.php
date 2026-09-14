@@ -607,7 +607,8 @@ class TandaTerimaLclController extends Controller
 
         DB::transaction(function () use ($tandaTerima) {
             $tandaTerima->items()->delete();
-            $tandaTerima->delete();
+            // Hapus permanen karena penghapusan LCL tidak menggunakan soft delete.
+            $tandaTerima->forceDelete();
         });
 
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
@@ -920,7 +921,8 @@ class TandaTerimaLclController extends Controller
             })->delete();
 
             // Then delete main records
-            TandaTerimaLcl::whereIn('id', $ids)->delete();
+            // Hapus permanen karena penghapusan LCL tidak menggunakan soft delete.
+            TandaTerimaLcl::withTrashed()->whereIn('id', $ids)->forceDelete();
         });
 
         $count = count($ids);
