@@ -1133,7 +1133,8 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.addEventListener('click', function() {
                 input.value = this.getAttribute('data-value');
                 optionsDiv.classList.add('hidden');
-    });
+            });
+        });
 
         document.addEventListener('click', (e) => {
             if (!container.contains(e.target)) {
