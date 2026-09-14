@@ -612,7 +612,7 @@
 </div>
 
 {{-- Modal Tambah Type Bon --}}
-<div id="typeBonModal" class="fixed inset-0 z-[110] hidden overflow-y-auto" aria-modal="true" role="dialog">
+<div id="typeBonModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" style="z-index: 9999;" aria-modal="true" role="dialog">
     <div class="flex items-center justify-center min-h-screen px-4">
         <div class="fixed inset-0 bg-gray-900 bg-opacity-60" onclick="closeTypeBonModal()"></div>
         <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
@@ -631,7 +631,7 @@
 </div>
 
 {{-- Import Excel Modal --}}
-<div id="importExcelModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div id="importExcelModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" style="z-index: 9999;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="document.getElementById('importExcelModal').classList.add('hidden')"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -1220,41 +1220,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-let typeBonSidebarActiveClasses = [];
-
-function toggleTypeBonSidebarHighlight(hide) {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-
-    if (hide) {
-        if (typeBonSidebarActiveClasses.length > 0) return;
-
-        const activeClasses = ['bg-blue-50', 'text-blue-700', 'bg-green-50', 'text-green-700'];
-        sidebar.querySelectorAll('a, button').forEach(element => {
-            const removedClasses = activeClasses.filter(className => element.classList.contains(className));
-
-            if (removedClasses.length > 0) {
-                typeBonSidebarActiveClasses.push({ element, classes: removedClasses });
-                removedClasses.forEach(className => element.classList.remove(className));
-            }
-        });
-    } else {
-        typeBonSidebarActiveClasses.forEach(({ element, classes }) => {
-            classes.forEach(className => element.classList.add(className));
-        });
-        typeBonSidebarActiveClasses = [];
-    }
-}
-
 function openTypeBonModal() {
-    toggleTypeBonSidebarHighlight(true);
     document.getElementById('typeBonModal').classList.remove('hidden');
     document.querySelector('#typeBonForm input[name="nama"]').focus();
 }
 
 function closeTypeBonModal() {
     document.getElementById('typeBonModal').classList.add('hidden');
-    toggleTypeBonSidebarHighlight(false);
 }
 </script>
 @endpush
