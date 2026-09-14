@@ -154,16 +154,6 @@
                     </div>
 
                     <div>
-                        <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
-                        <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
-                            <option value="">-- Pilih Status Pajak --</option>
-                            @foreach($pajaks as $pajak)
-                                <option value="{{ $pajak->nama_status }}" {{ old('status_pajak') == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
                         <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
                         <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Penempatan --</option>
@@ -189,6 +179,83 @@
                                 <option value="{{ $sg }}" {{ (is_array(old('sub_group')) && in_array($sg, old('sub_group'))) ? 'selected' : '' }}>{{ $sg }}</option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        {{-- Informasi Pajak & JKN --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pajak & JKN</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
+                        <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Status Pajak --</option>
+                            @foreach($pajaks as $pajak)
+                            <option value="{{ $pajak->nama_status }}" {{ old('status_pajak') == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="jkn" class="{{ $labelClasses }}">JKN</label>
+                        <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS" value="{{ old('jkn') }}">
+                    </div>
+
+                    <div>
+                        <label for="dpp_jkn" class="{{ $labelClasses }}">DPP JKN</label>
+                        <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn') }}">
+                    </div>
+
+                    <div>
+                        <label for="group_jkn" class="{{ $labelClasses }}">Group JKN</label>
+                        <select name="group_jkn" id="group_jkn" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Group JKN --</option>
+                            <option value="JKN-KIS-HARIAN" {{ old('group_jkn') == 'JKN-KIS-HARIAN' ? 'selected' : '' }}>JKN-KIS-HARIAN</option>
+                            <option value="JKN-KIS-KANTOR" {{ old('group_jkn') == 'JKN-KIS-KANTOR' ? 'selected' : '' }}>JKN-KIS-KANTOR</option>
+                            <option value="JKN-KIS-LAPANGAN" {{ old('group_jkn') == 'JKN-KIS-LAPANGAN' ? 'selected' : '' }}>JKN-KIS-LAPANGAN</option>
+                            <option value="JKN-KIS-NON KARY" {{ old('group_jkn') == 'JKN-KIS-NON KARY' ? 'selected' : '' }}>JKN-KIS-NON KARY</option>
+                            <option value="JKN-KIS-NON KARY-UMKM KIS" {{ old('group_jkn') == 'JKN-KIS-NON KARY-UMKM KIS' ? 'selected' : '' }}>JKN-KIS-NON KARY-UMKM KIS</option>
+                            <option value="JKN-KIS-TRANSFER" {{ old('group_jkn') == 'JKN-KIS-TRANSFER' ? 'selected' : '' }}>JKN-KIS-TRANSFER</option>
+                            <option value="JKN-KIS-TUNAI" {{ old('group_jkn') == 'JKN-KIS-TUNAI' ? 'selected' : '' }}>JKN-KIS-TUNAI</option>
+                            <option value="JKN-REIMBURSEMENT-CREW" {{ old('group_jkn') == 'JKN-REIMBURSEMENT-CREW' ? 'selected' : '' }}>JKN-REIMBURSEMENT-CREW</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
+                        <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan') }}">
+                    </div>
+
+                    <div>
+                        <label for="dpp_bp_jamsostek" class="{{ $labelClasses }}">DPP BP Jamsostek</label>
+                        <input type="text" name="dpp_bp_jamsostek" id="dpp_bp_jamsostek" class="{{ $inputClasses }}" placeholder="DPP BP Jamsostek" value="{{ old('dpp_bp_jamsostek') }}">
+                    </div>
+
+                    <div>
+                        <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
+                        <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Group BP Jamsostek --</option>
+                            <option value="BPU-CREW" {{ old('group_bp_jamsostek') == 'BPU-CREW' ? 'selected' : '' }}>BPU-CREW</option>
+                            <option value="BPU-HARIAN" {{ old('group_bp_jamsostek') == 'BPU-HARIAN' ? 'selected' : '' }}>BPU-HARIAN</option>
+                            <option value="BPU-LAPANGAN" {{ old('group_bp_jamsostek') == 'BPU-LAPANGAN' ? 'selected' : '' }}>BPU-LAPANGAN</option>
+                            <option value="BPU-NON KARY-PBM" {{ old('group_bp_jamsostek') == 'BPU-NON KARY-PBM' ? 'selected' : '' }}>BPU-NON KARY-PBM</option>
+                            <option value="BPU-NON KARY-UMKM" {{ old('group_bp_jamsostek') == 'BPU-NON KARY-UMKM' ? 'selected' : '' }}>BPU-NON KARY-UMKM</option>
+                            <option value="BPU-NON KARY-UMKM NO PP" {{ old('group_bp_jamsostek') == 'BPU-NON KARY-UMKM NO PP' ? 'selected' : '' }}>BPU-NON KARY-UMKM NO PP</option>
+                            <option value="BPU-TUNAI" {{ old('group_bp_jamsostek') == 'BPU-TUNAI' ? 'selected' : '' }}>BPU-TUNAI</option>
+                            <option value="PPU-HARIAN" {{ old('group_bp_jamsostek') == 'PPU-HARIAN' ? 'selected' : '' }}>PPU-HARIAN</option>
+                            <option value="PPU-KANTOR" {{ old('group_bp_jamsostek') == 'PPU-KANTOR' ? 'selected' : '' }}>PPU-KANTOR</option>
+                            <option value="PPU-LAPANGAN" {{ old('group_bp_jamsostek') == 'PPU-LAPANGAN' ? 'selected' : '' }}>PPU-LAPANGAN</option>
+                            <option value="PPU-TRANSFER" {{ old('group_bp_jamsostek') == 'PPU-TRANSFER' ? 'selected' : '' }}>PPU-TRANSFER</option>
+                            <option value="PPU-TUNAI" {{ old('group_bp_jamsostek') == 'PPU-TUNAI' ? 'selected' : '' }}>PPU-TUNAI</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>
+                        <input type="text" name="cabang_bpjs" id="cabang_bpjs" class="{{ $inputClasses }}" placeholder="Contoh: Cabang Batam" value="{{ old('cabang_bpjs') }}">
                     </div>
                 </div>
             </div>

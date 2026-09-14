@@ -81,7 +81,12 @@
                     @foreach($pranota_bpj->details as $index => $detail)
                         <tr>
                             <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
-                            <td class="border border-gray-300 px-3 py-2">{{ $detail->karyawan->nama_lengkap ?? '-' }}</td>
+                            <td class="border border-gray-300 px-3 py-2">
+                                {{ $detail->karyawan->nama_lengkap ?? '-' }}
+                                @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>
+                                @endif
+                            </td>
                             <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_kesehatan + $detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->jht_biaya + $detail->jht_hutang + $detail->jkk_tunjangan + $detail->jkm_tunjangan + $detail->jp_biaya + $detail->jp_hutang, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 px-3 py-2 text-right font-medium">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>

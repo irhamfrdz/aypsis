@@ -499,6 +499,7 @@
                         <option value="JKN-KIS-HARIAN" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-HARIAN' ? 'selected' : '' }}>JKN-KIS-HARIAN</option>
                         <option value="JKN-KIS-KANTOR" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-KANTOR' ? 'selected' : '' }}>JKN-KIS-KANTOR</option>
                         <option value="JKN-KIS-LAPANGAN" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-LAPANGAN' ? 'selected' : '' }}>JKN-KIS-LAPANGAN</option>
+                        <option value="JKN-KIS-NON KARY" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-NON KARY' ? 'selected' : '' }}>JKN-KIS-NON KARY</option>
                         <option value="JKN-KIS-NON KARY-UMKM KIS" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-NON KARY-UMKM KIS' ? 'selected' : '' }}>JKN-KIS-NON KARY-UMKM KIS</option>
                         <option value="JKN-KIS-TRANSFER" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-TRANSFER' ? 'selected' : '' }}>JKN-KIS-TRANSFER</option>
                         <option value="JKN-KIS-TUNAI" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-TUNAI' ? 'selected' : '' }}>JKN-KIS-TUNAI</option>

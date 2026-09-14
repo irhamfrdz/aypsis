@@ -218,6 +218,24 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
     }
 
+    function findKaryawan(detailOrId) {
+        if (!detailOrId) return null;
+        if (typeof detailOrId === 'object') {
+            const kId = detailOrId.karyawan_id || detailOrId.id;
+            const tipe = detailOrId.tipe_karyawan || (detailOrId.unique_id ? (detailOrId.unique_id.startsWith('KaryawanTidakTetap_') ? 'App\\Models\\KaryawanTidakTetap' : 'App\\Models\\Karyawan') : null);
+            if (detailOrId.unique_id) {
+                const found = karyawans.find(k => k.unique_id === detailOrId.unique_id);
+                if (found) return found;
+            }
+            if (tipe) {
+                const found = karyawans.find(k => k.tipe_karyawan === tipe && k.id == kId);
+                if (found) return found;
+            }
+            return karyawans.find(k => k.id == kId);
+        }
+        return karyawans.find(k => k.unique_id == detailOrId || k.id == detailOrId);
+    }
+
     /**
      * addRow(detail, isGenerated) — detail: objek existing, atau null untuk baris baru
      * Existing row: tipe default 'manual' agar nilai lama tidak ditimpa
@@ -226,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function addRow(detail = null, isGenerated = false) {
         rowCount++;
         
-        let selectedKaryawanId = detail ? detail.karyawan_id : '';
         let karyawanId = detail ? detail.karyawan_id : null;
         let valKes   = detail ? detail.bpjs_kesehatan         : 0;
         let valKet   = detail ? detail.bpjs_ketenagakerjaan   : 0;
@@ -240,22 +257,32 @@ document.addEventListener('DOMContentLoaded', function() {
         let isExistingRow = (detail !== null) && !isGenerated;
         let tipeJkn = isExistingRow ? 'manual' : 'tunjangan_hutang';
 
+        const k = findKaryawan(detail || karyawanId);
+        const statusBadge = k && k.tipe_label === 'Tidak Tetap'
+            ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>`
+            : '';
+
         let karyawanInputHTML = '';
-        if (karyawanId) {
-            const k = karyawans.find(k => k.id == karyawanId);
+        if (karyawanId && k) {
             karyawanInputHTML = `
-                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${karyawanId}" class="karyawan-hidden-input">
-                <div class="px-2 py-2 text-sm text-gray-700 font-semibold truncate" style="max-width: 250px;">
-                    ${k ? k.nama_lengkap : ''}
+                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${k.id}" class="karyawan-hidden-input">
+                <input type="hidden" name="details[${rowCount}][tipe_karyawan]" value="${k.tipe_karyawan || 'App\\Models\\Karyawan'}" class="tipe-karyawan-hidden-input">
+                <div class="px-2 py-2 text-sm text-gray-700 font-semibold truncate flex items-center gap-1" style="max-width: 250px;" title="${k.nama_lengkap}">
+                    <span>${k.nama_lengkap}</span>
+                    ${statusBadge}
                 </div>
             `;
         } else {
             let options = '<option value="">-- Pilih Karyawan --</option>';
-            karyawans.forEach(k => {
-                options += `<option value="${k.id}">${k.nama_lengkap}</option>`;
+            karyawans.forEach(item => {
+                const nikLabel = item.nik ? ` [${item.nik}]` : '';
+                const statusLabel = item.tipe_label ? ` (${item.tipe_label})` : '';
+                options += `<option value="${item.unique_id}">${item.nama_lengkap}${nikLabel}${statusLabel}</option>`;
             });
             karyawanInputHTML = `
-                <select name="details[${rowCount}][karyawan_id]" class="form-select w-full text-sm select2" required>
+                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="" class="karyawan-hidden-input">
+                <input type="hidden" name="details[${rowCount}][tipe_karyawan]" value="App\\Models\\Karyawan" class="tipe-karyawan-hidden-input">
+                <select class="form-select w-full text-sm select2 select-karyawan" required>
                     ${options}
                 </select>
             `;
@@ -364,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function updateInfoBadgeJkn(kId) {
-            const karyawan = karyawans.find(k => k.id == kId);
+            const karyawan = findKaryawan(kId);
             if (!karyawan) { groupText.innerHTML = '-'; return; }
 
             let groupHtml = '';
@@ -400,24 +427,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             updateInfoBadgeJkn(kId);
-            const karyawan = karyawans.find(k => k.id == kId);
+            const karyawan = findKaryawan(kId);
             if (!karyawan) return;
 
             let nominalKes = 0;
             let nominalKet = 0;
 
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
-                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                const normalizedKaryawanGroup = (karyawan.group_jkn || '').replace(/[\s\-_]+/g, '').toUpperCase();
+                let rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                if (!rumus) {
+                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase() === normalizedKaryawanGroup);
+                }
+                if (!rumus && (normalizedKaryawanGroup.includes('NONKARY') || normalizedKaryawanGroup.includes('NONKARYAWAN'))) {
+                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase().includes('NONKARY'));
+                }
+
                 if (rumus) {
+                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
-                    let persen = 0;
-                    if (tipeJkn === 'tunjangan_hutang') { 
-                        persen = tunjPersen; 
-                        nominalKet += (hutangPersen / 100) * dpp; 
+                    const biayaPersen  = parseFloat(rumus.biaya_persen     || 0);
+
+                    const groupUpper = (karyawan.group_jkn || '').toUpperCase();
+                    if (groupUpper.includes('NON KARY') || groupUpper.includes('NON-KARY') || groupUpper.includes('NONKARY')) {
+                        const totalPersen = tunjPersen > 0 ? tunjPersen : (biayaPersen > 0 ? biayaPersen : (hutangPersen > 0 ? hutangPersen : 0));
+                        nominalKes = (totalPersen / 100) * dpp;
+                        nominalKet = (hutangPersen > 0 && tunjPersen > 0) ? (hutangPersen / 100) * dpp : 0;
+                    } else {
+                        let persen = 0;
+                        if (tipeJkn === 'tunjangan_hutang') { 
+                            persen = tunjPersen; 
+                            nominalKet += (hutangPersen / 100) * dpp; 
+                        }
+                        nominalKes = (persen / 100) * dpp;
                     }
-                    nominalKes = (persen / 100) * dpp;
                 }
             } else if (tipeJkn === 'manual') {
                 nominalKes = parseIdNumber(inputKes.value);
@@ -438,9 +482,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         const jpBiayaMaster = parseFloat(rumus.jp_biaya || 0);
                         const jpHutangMaster = parseFloat(rumus.jp_hutang || 0);
+                        const jpMaxDpp = parseFloat(rumus.jp_max_dpp || 0);
+                        const jpMaxAge = parseFloat(rumus.jp_max_age || 0);
                         
-                        jpHutang = (jpHutangMaster / 100) * dppJamsostek;
-                        jpBiaya = ((jpBiayaMaster / 100) * dppJamsostek) - jpHutang;
+                        // Hitung Usia Karyawan dari Tanggal Lahir
+                        let usiaKaryawan = null;
+                        if (karyawan.tanggal_lahir) {
+                            const tglLahir = new Date(karyawan.tanggal_lahir);
+                            if (!isNaN(tglLahir.getTime())) {
+                                const tglPranotaInput = document.getElementById('tanggal_pranota')?.value;
+                                const refDate = tglPranotaInput ? new Date(tglPranotaInput) : new Date();
+                                
+                                let age = refDate.getFullYear() - tglLahir.getFullYear();
+                                const m = refDate.getMonth() - tglLahir.getMonth();
+                                if (m < 0 || (m === 0 && refDate.getDate() < tglLahir.getDate())) {
+                                    age--;
+                                }
+                                usiaKaryawan = age;
+                            }
+                        }
+
+                        // Alur Logika Batas Usia & Maksimal DPP JP Group PPU
+                        if (jpMaxAge > 0 && usiaKaryawan !== null && usiaKaryawan >= jpMaxAge) {
+                            jpBiaya = 0;
+                            jpHutang = 0;
+                        } else {
+                            let dppJp = dppJamsostek;
+                            if (jpMaxDpp > 0 && dppJamsostek > jpMaxDpp) {
+                                dppJp = jpMaxDpp;
+                            }
+
+                            // PPU JP 1% (Hutang Karyawan)
+                            jpHutang = (jpHutangMaster / 100) * dppJp;
+
+                            // PPU JP 2% (Biaya Perusahaan) = (JP Biaya % * dppJp) - PPU JP 1% (jpHutang)
+                            jpBiaya = Math.max(0, ((jpBiayaMaster / 100) * dppJp) - jpHutang);
+                        }
 
                         jkkTunj = (parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek;
                         jkmTunj = (parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek;
@@ -477,23 +554,32 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSubtotal();
         }
 
-        const handleKaryawanChange = function(kId) { calculateBpjsForKaryawan(kId, selectTipe.value); };
+        const handleKaryawanChange = function(kId) {
+            const k = findKaryawan(kId);
+            const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
+            const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
+            if (k) {
+                if (hiddenKaryawanId) hiddenKaryawanId.value = k.id;
+                if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = k.tipe_karyawan || 'App\\Models\\Karyawan';
+            }
+            calculateBpjsForKaryawan(k ? k.unique_id : kId, selectTipe.value);
+        };
 
         if ($select) { 
             $select.on('change', function() { handleKaryawanChange($select.val()); }); 
         } else if (!karyawanId) { 
-            tr.querySelector('.select2').addEventListener('change', function(e) { handleKaryawanChange(e.target.value); }); 
+            tr.querySelector('.select-karyawan')?.addEventListener('change', function(e) { handleKaryawanChange(e.target.value); }); 
         }
 
         selectTipe.addEventListener('change', function() {
-            const kId = karyawanId ? karyawanId : ($select ? $select.val() : tr.querySelector('.select2').value);
+            const kId = karyawanId ? karyawanId : ($select ? $select.val() : tr.querySelector('.select-karyawan')?.value);
             calculateBpjsForKaryawan(kId, this.value);
         });
 
         if (isExistingRow) {
             setTimeout(() => {
                 selectTipe.value = 'manual';
-                updateInfoBadgeJkn(karyawanId);
+                updateInfoBadgeJkn(k ? k.unique_id : karyawanId);
                 
                 inputKes.value = formatNumber(valKes);
                 inputKet.value = formatNumber(valKet);
@@ -503,8 +589,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (isGenerated && karyawanId) {
             setTimeout(() => {
                 selectTipe.value = 'tunjangan_hutang';
-                updateInfoBadgeJkn(karyawanId);
-                calculateBpjsForKaryawan(karyawanId, 'tunjangan_hutang');
+                updateInfoBadgeJkn(k ? k.unique_id : karyawanId);
+                calculateBpjsForKaryawan(k ? k.unique_id : karyawanId, 'tunjangan_hutang');
             }, 100);
         }
     }
@@ -530,8 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
             rowCount = 0;
             let count = 0;
             karyawans.forEach(k => {
-                if (k.group_jkn || k.group_bp_jamsostek) {
-                    addRow({karyawan_id: k.id}, true);
+                if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
+                    addRow({karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id}, true);
                     count++;
                 }
             });
@@ -555,8 +641,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         // 2. Jika draft kosong sama sekali, generate otomatis untuk semua yang punya group
         karyawans.forEach(k => {
-            if (k.group_jkn || k.group_bp_jamsostek) {
-                addRow({karyawan_id: k.id}, true);
+            if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
+                addRow({karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id}, true);
             }
         });
     }

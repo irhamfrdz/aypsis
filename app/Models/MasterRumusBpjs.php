@@ -32,6 +32,8 @@ class MasterRumusBpjs extends Model
         'jkm_tunjangan',
         'jp_biaya',
         'jp_hutang',
+        'jp_max_dpp',
+        'jp_max_age',
         'diskon_status',
         'diskon_tipe',
         'diskon_nilai',
@@ -39,5 +41,7 @@ class MasterRumusBpjs extends Model
 
     protected $casts = [
         'hutang_tiers' => 'array',
+        'jp_max_dpp'   => 'decimal:2',
+        'jp_max_age'   => 'integer',
     ];
 }

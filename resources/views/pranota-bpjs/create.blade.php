@@ -181,25 +181,27 @@
             </div>
 
             {{-- ── Filter & Search Bar ───────────────────────────────────────── --}}
-            <div class="px-6 py-3 bg-gray-50/60 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-3 flex-1">
+            <div class="px-6 py-3 bg-slate-50/80 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     {{-- Filter Group BPJS Dropdown --}}
                     <div class="flex items-center gap-2 min-w-[240px]">
                         <label for="filter-group-bpjs" class="text-xs font-semibold text-gray-700 whitespace-nowrap flex items-center gap-1.5">
-                            <i class="fas fa-filter text-teal-600 text-xs"></i>
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-teal-100 text-teal-800">
+                                <i class="fas fa-filter text-[10px]"></i>
+                            </span>
                             <span>Filter Group BPJS:</span>
                         </label>
-                        <select id="filter-group-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium flex-1 cursor-pointer">
+                        <select id="filter-group-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium cursor-pointer min-w-[200px]">
                             <option value="all">Semua Group BPJS</option>
                         </select>
                     </div>
 
                     {{-- Search Karyawan Input --}}
-                    <div class="relative min-w-[200px] flex-1 max-w-xs">
+                    <div class="relative min-w-[220px]">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-search text-xs"></i>
                         </div>
-                        <input type="text" id="search-karyawan" placeholder="Cari nama karyawan..."
+                        <input type="text" id="search-karyawan" placeholder="Cari nama karyawan / NIK..."
                             class="w-full pl-8 pr-7 text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 bg-white transition">
                         <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 hidden" title="Hapus pencarian">
                             <i class="fas fa-times text-xs"></i>
@@ -207,42 +209,43 @@
                     </div>
 
                     {{-- Reset Filter Button --}}
-                    <button type="button" id="btn-reset-filter" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-300 hover:border-rose-200 rounded-lg transition-colors font-medium hidden">
+                    <button type="button" id="btn-reset-filter" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors font-semibold hidden">
                         <i class="fas fa-rotate-left text-[11px]"></i>
                         Reset Filter
                     </button>
                 </div>
 
-                {{-- Filtered Count & Status Badge --}}
-                <div class="flex items-center gap-2 text-xs">
+                {{-- Counter / Status Badge --}}
+                <div class="flex items-center gap-2">
                     <span id="filter-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600">
-                        <i class="fas fa-list text-[10px]"></i>
+                        <i class="fas fa-users text-xs"></i>
                         <span id="filter-count-text">0 Karyawan</span>
                     </span>
                 </div>
             </div>
 
+            {{-- ── Table Detail ──────────────────────────────────────────────── --}}
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left border-collapse" id="tabel-detail">
                     <thead>
                         {{-- ── Group Header Row ── --}}
                         <tr class="text-[11px] uppercase tracking-wider font-bold border-b border-gray-200 text-gray-700">
-                            <th colspan="5" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
+                            <th id="th-group-info" colspan="5" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
                                 <i class="fas fa-id-card-clip text-gray-500 mr-1"></i> Informasi Karyawan
                             </th>
-                            <th colspan="2" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900">
+                            <th id="th-group-jkn" colspan="2" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
                                 <i class="fas fa-heart-pulse text-indigo-600 mr-1"></i> BPJS Kesehatan (JKN)
                             </th>
-                            <th colspan="4" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900">
+                            <th id="th-group-ppu" colspan="4" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900 col-group-ppu">
                                 <i class="fas fa-building text-emerald-600 mr-1"></i> BP Jamsostek (PPU)
                             </th>
-                            <th colspan="3" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900">
+                            <th id="th-group-bpu-crew" colspan="3" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900 col-group-bpu-crew">
                                 <i class="fas fa-ship text-sky-600 mr-1"></i> BP Jamsostek (BPU-CREW)
                             </th>
-                            <th colspan="4" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900">
+                            <th id="th-group-bpu-noncrew" colspan="4" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900 col-group-bpu-noncrew">
                                 <i class="fas fa-user-tag text-purple-600 mr-1"></i> BP Jamsostek (Non BPU-CREW)
                             </th>
-                            <th colspan="2" class="px-3 py-2 text-center border-r border-amber-200 bg-amber-50 text-amber-900">
+                            <th id="th-group-jp" colspan="2" class="px-3 py-2 text-center border-r border-amber-200 bg-amber-50 text-amber-900 col-group-jp">
                                 <i class="fas fa-piggy-bank text-amber-600 mr-1"></i> Jaminan Pensiun (JP)
                             </th>
                             <th rowspan="2" class="px-4 py-3 text-right bg-teal-50 text-teal-900 border-l border-teal-200 font-bold whitespace-nowrap" style="min-width:130px">
@@ -255,36 +258,36 @@
                         {{-- ── Sub Header Row ── --}}
                         <tr class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 border-b-2 border-gray-200 bg-gray-50">
                             {{-- Info --}}
-                            <th class="px-3 py-2.5 w-10 text-center font-bold text-gray-400">#</th>
-                            <th class="px-3 py-2.5 text-left font-bold text-gray-700" style="min-width:200px">Nama Karyawan</th>
-                            <th class="px-3 py-2.5 text-center font-bold text-gray-600" style="min-width:120px">Group BPJS</th>
-                            <th class="px-3 py-2.5 text-center font-bold text-gray-600" style="min-width:130px">Tipe JKN</th>
-                            <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200" style="min-width:140px">Tipe Jamsostek</th>
+                            <th class="px-3 py-2.5 w-10 text-center font-bold text-gray-400 col-info-no">#</th>
+                            <th class="px-3 py-2.5 text-left font-bold text-gray-700 col-info-nama" style="min-width:200px">Nama Karyawan</th>
+                            <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-group" style="min-width:120px">Group BPJS</th>
+                            <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-tipe-jkn" style="min-width:130px">Tipe JKN</th>
+                            <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200 col-info-tipe-jam" style="min-width:140px">Tipe Jamsostek</th>
                             
                             {{-- JKN (2) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (Tunj)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 border-r border-indigo-100" style="min-width:105px" title="BPJS Kesehatan 1% Hutang">KIS 1% (Hutang)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (Tunj)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 border-r border-indigo-100 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 1% Hutang">KIS 1% (Hutang)</th>
                             
                             {{-- PPU (4) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:100px" title="JHT Biaya Perusahaan 3.7%">PPU JHT 3.7%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:90px" title="JHT Hutang Karyawan 2%">PPU JHT 2%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30" style="min-width:95px" title="JKK Tunjangan 0.24%">PPU JKK 0.24%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-emerald-100" style="min-width:95px" title="JKM Tunjangan 0.3%">PPU JKM 0.3%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:100px" title="JHT Biaya Perusahaan 3.7%">PPU JHT 3.7%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:90px" title="JHT Hutang Karyawan 2%">PPU JHT 2%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:95px" title="JKK Tunjangan 0.24%">PPU JKK 0.24%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-emerald-100 col-group-ppu" style="min-width:95px" title="JKM Tunjangan 0.3%">PPU JKM 0.3%</th>
 
                             {{-- BPU-CREW (3) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30" style="min-width:115px" title="BPU JHT Karyawan (Hutang Potongan)">BPU JHT (Kary)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30" style="min-width:110px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-sky-100" style="min-width:100px" title="BPU JKM Biaya">BPU JKM</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30 col-group-bpu-crew" style="min-width:115px" title="BPU JHT Karyawan (Hutang Potongan)">BPU JHT (Kary)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 col-group-bpu-crew" style="min-width:110px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-sky-100 col-group-bpu-crew" style="min-width:100px" title="BPU JKM Biaya">BPU JKM</th>
                             
                             {{-- Non BPU-CREW (4) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:100px" title="JHT 2% Biaya Perusahaan">JHT 2% (Biaya)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:100px" title="JHT 2% Hutang Karyawan Tabel DPP">JHT 2% (Hutang)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30" style="min-width:95px" title="JKK 1% Tunjangan">JKK 1% (Tunj)</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 border-r border-purple-100" style="min-width:95px" title="JKM Tunjangan Nominal (Rp)">JKM (Rp)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:100px" title="JHT 2% Biaya Perusahaan">JHT 2% (Biaya)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:100px" title="JHT 2% Hutang Karyawan Tabel DPP">JHT 2% (Hutang)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:95px" title="JKK 1% Tunjangan">JKK 1% (Tunj)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 border-r border-purple-100 col-group-bpu-noncrew" style="min-width:95px" title="JKM Tunjangan Nominal (Rp)">JKM (Rp)</th>
 
                             {{-- JP (2) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
-                            <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 border-r border-gray-200" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 col-group-jp" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 border-r border-gray-200 col-group-jp" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
                         </tr>
                     </thead>
                     <tbody id="detail-container" class="divide-y divide-gray-100 bg-white font-medium">
@@ -296,29 +299,29 @@
                                 Total Keseluruhan:
                             </td>
                             {{-- JKN --}}
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50" id="total_kes">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50" id="total_ket">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_kes">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_ket">Rp 0</td>
                             
                             {{-- PPU --}}
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jht_biaya">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jht_hutang">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jkk">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50" id="total_jkm">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jht_biaya">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jht_hutang">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jkk">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jkm">Rp 0</td>
                             
                             {{-- BPU-CREW --}}
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50" id="total_jkk_hutang">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50" id="total_bpu_jkk">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50" id="total_bpu_jkm">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50 col-group-bpu-crew" id="total_jkk_hutang">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew" id="total_bpu_jkk">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew" id="total_bpu_jkm">Rp 0</td>
                             
                             {{-- Non BPU-CREW --}}
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jht_biaya">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jht_hutang">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jkk">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50" id="total_noncrew_jkm">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jht_biaya">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jht_hutang">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jkk">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jkm">Rp 0</td>
 
                             {{-- JP --}}
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50" id="total_jp_biaya">Rp 0</td>
-                            <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50" id="total_jp_hutang">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50 col-group-jp" id="total_jp_biaya">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50 col-group-jp" id="total_jp_hutang">Rp 0</td>
                             
                             {{-- Grand Total --}}
                             <td class="px-4 py-3.5 text-right font-mono font-bold text-teal-800 text-sm bg-teal-100/70" id="grand_total">Rp 0</td>
@@ -407,58 +410,82 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Helper to toggle class hidden on selectors
+     */
+    function toggleElements(selector, show) {
+        document.querySelectorAll(selector).forEach(el => {
+            if (show) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        });
+    }
+
+    /**
+     * Update column visibility based on selected BPJS group
+     */
+    function updateColumnVisibility(selectedGroup) {
+        const showAll = (selectedGroup === 'all' || !selectedGroup);
+        const showJkn = showAll || (selectedGroup === 'JKN-KIS');
+        const showPpu = showAll || (selectedGroup === 'PPU');
+        const showBpuCrew = showAll || (selectedGroup === 'BPU-CREW');
+        const showBpuNonCrew = showAll || (selectedGroup === 'BPU-NON-CREW');
+        const showJp = showAll || (selectedGroup === 'PPU'); // JP is part of PPU
+
+        // Tipe selector visibility
+        const showTipeJkn = showAll || (selectedGroup === 'JKN-KIS');
+        const showTipeJam = showAll || (selectedGroup !== 'JKN-KIS');
+
+        toggleElements('.col-group-jkn', showJkn);
+        toggleElements('.col-group-ppu', showPpu);
+        toggleElements('.col-group-bpu-crew', showBpuCrew);
+        toggleElements('.col-group-bpu-noncrew', showBpuNonCrew);
+        toggleElements('.col-group-jp', showJp);
+
+        toggleElements('.col-info-tipe-jkn', showTipeJkn);
+        toggleElements('.col-info-tipe-jam', showTipeJam);
+
+        // Group Header Row 1 colspans and visibility
+        const thInfo = document.getElementById('th-group-info');
+        const thJkn = document.getElementById('th-group-jkn');
+        const thPpu = document.getElementById('th-group-ppu');
+        const thBpuCrew = document.getElementById('th-group-bpu-crew');
+        const thBpuNonCrew = document.getElementById('th-group-bpu-noncrew');
+        const thJp = document.getElementById('th-group-jp');
+        const footerInfo = document.getElementById('footer-total-label');
+
+        if (thJkn) thJkn.classList.toggle('hidden', !showJkn);
+        if (thPpu) thPpu.classList.toggle('hidden', !showPpu);
+        if (thBpuCrew) thBpuCrew.classList.toggle('hidden', !showBpuCrew);
+        if (thBpuNonCrew) thBpuNonCrew.classList.toggle('hidden', !showBpuNonCrew);
+        if (thJp) thJp.classList.toggle('hidden', !showJp);
+
+        let infoColspan = 3; // #, Nama, Group
+        if (showTipeJkn) infoColspan++;
+        if (showTipeJam) infoColspan++;
+
+        if (thInfo) thInfo.setAttribute('colspan', infoColspan);
+        if (footerInfo) footerInfo.setAttribute('colspan', infoColspan);
+    }
+
+    /**
      * Populate options for the Group BPJS filter dropdown
      */
     function populateGroupFilterOptions() {
         if (!filterGroupSelect) return;
 
-        const jknGroups = new Set();
-        const jamsostekGroups = new Set();
-        const cabangGroups = new Set();
-
-        karyawans.forEach(k => {
-            if (k.group_jkn) jknGroups.add(k.group_jkn.trim());
-            if (k.group_bp_jamsostek) jamsostekGroups.add(k.group_bp_jamsostek.trim());
-            if (k.cabang_bpjs) cabangGroups.add(k.cabang_bpjs.trim());
-        });
-
-        rumusBpjs.forEach(r => {
-            if (r.jenis === 'jkn' && r.group_name) jknGroups.add(r.group_name.trim());
-            if (r.jenis === 'jamsostek' && r.group_name) jamsostekGroups.add(r.group_name.trim());
-            if (r.cabang_bpjs) cabangGroups.add(r.cabang_bpjs.trim());
-        });
-
-        let html = '<option value="all">Semua Group BPJS</option>';
-
-        if (jknGroups.size > 0) {
-            html += '<optgroup label="── BPJS Kesehatan (JKN) ──">';
-            Array.from(jknGroups).sort().forEach(g => {
-                html += `<option value="jkn:${g}">JKN: ${g}</option>`;
-            });
-            html += '</optgroup>';
-        }
-
-        if (jamsostekGroups.size > 0) {
-            html += '<optgroup label="── BP Jamsostek ──">';
-            Array.from(jamsostekGroups).sort().forEach(g => {
-                html += `<option value="jamsostek:${g}">Jamsostek: ${g}</option>`;
-            });
-            html += '</optgroup>';
-        }
-
-        if (cabangGroups.size > 0) {
-            html += '<optgroup label="── Cabang BPJS ──">';
-            Array.from(cabangGroups).sort().forEach(c => {
-                html += `<option value="cabang:${c}">Cabang: ${c}</option>`;
-            });
-            html += '</optgroup>';
-        }
-
-        filterGroupSelect.innerHTML = html;
+        filterGroupSelect.innerHTML = `
+            <option value="all">Semua Group BPJS</option>
+            <option value="JKN-KIS">Group JKN-KIS</option>
+            <option value="PPU">Group PPU</option>
+            <option value="BPU-CREW">Group BPU-CREW</option>
+            <option value="BPU-NON-CREW">Group BPU-NON-CREW</option>
+        `;
     }
 
     /**
-     * Apply filter and search on table rows
+     * Apply filter and search on table rows and columns
      */
     function applyFilter() {
         const selectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
@@ -470,33 +497,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
         rows.forEach(tr => {
             const kName = tr.dataset.namaKaryawan || '';
-            const gJkn = tr.dataset.groupJkn || '';
-            const gJamsostek = tr.dataset.groupJamsostek || '';
-            const cab = tr.dataset.cabang || '';
+            const kNik = tr.dataset.nik || '';
+            const gJknUpper = (tr.dataset.groupJkn || '').toUpperCase().trim();
+            const gJamUpper = (tr.dataset.groupJamsostek || '').toUpperCase().trim();
+            const cab = (tr.dataset.cabang || '').trim();
+            const dppJkn = parseFloat(tr.dataset.dppJkn || 0);
+            const dppJam = parseFloat(tr.dataset.dppJamsostek || 0);
 
             // Check group match
             let matchGroup = false;
             if (selectedGroup === 'all' || !selectedGroup) {
                 matchGroup = true;
-            } else if (selectedGroup.startsWith('jkn:')) {
-                const target = selectedGroup.substring(4);
-                matchGroup = (gJkn === target);
-            } else if (selectedGroup.startsWith('jamsostek:')) {
-                const target = selectedGroup.substring(10);
-                matchGroup = (gJamsostek === target);
-            } else if (selectedGroup.startsWith('cabang:')) {
-                const target = selectedGroup.substring(7);
-                matchGroup = (cab === target);
-            } else {
-                matchGroup = (gJkn === selectedGroup || gJamsostek === selectedGroup || cab === selectedGroup);
+            } else if (selectedGroup === 'JKN-KIS') {
+                matchGroup = (gJknUpper !== '' || gJknUpper.includes('JKN') || gJknUpper.includes('KIS') || dppJkn > 0);
+            } else if (selectedGroup === 'PPU') {
+                matchGroup = gJamUpper.includes('PPU');
+            } else if (selectedGroup === 'BPU-CREW') {
+                matchGroup = (!gJamUpper.includes('PPU') && gJamUpper.includes('BPU-CREW'));
+            } else if (selectedGroup === 'BPU-NON-CREW') {
+                matchGroup = ((gJamUpper !== '' || cab !== '' || dppJam > 0) && !gJamUpper.includes('PPU') && !gJamUpper.includes('BPU-CREW'));
             }
 
             // Check search match
             let matchSearch = true;
             if (query) {
                 matchSearch = kName.includes(query) ||
-                              gJkn.toLowerCase().includes(query) ||
-                              gJamsostek.toLowerCase().includes(query) ||
+                              kNik.toLowerCase().includes(query) ||
+                              gJknUpper.toLowerCase().includes(query) ||
+                              gJamUpper.toLowerCase().includes(query) ||
                               cab.toLowerCase().includes(query);
             }
 
@@ -511,6 +539,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 tr.classList.add('hidden');
             }
         });
+
+        // Update column visibility for the selected group
+        updateColumnVisibility(selectedGroup);
 
         // Filter status indicators
         const isFiltered = (selectedGroup !== 'all' && selectedGroup !== '') || query.length > 0;
@@ -544,10 +575,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filterEmptyState) filterEmptyState.classList.add('hidden');
         }
 
-        calculateTotals(isFiltered, visibleRows, totalRows);
+        calculateTotals(isFiltered, visibleRows, totalRows, selectedGroup);
     }
 
-    function calculateTotals(isFiltered = false, visibleCount = 0, totalCount = 0) {
+    function calculateTotals(isFiltered = false, visibleCount = 0, totalCount = 0, selectedGroup = 'all') {
         // Global sums across all rows
         let globalKes = 0, globalKet = 0;
         let globalJhtB = 0, globalJhtH = 0, globalJkk = 0, globalJkm = 0;
@@ -582,6 +613,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const valNcJkm = parseIdNumber(tr.querySelector('.input-noncrew-jkm')?.value);
             const valJpB   = parseIdNumber(tr.querySelector('.input-jp-biaya')?.value);
             const valJpH   = parseIdNumber(tr.querySelector('.input-jp-hutang')?.value);
+
+            // Update row subtotal based on active group
+            let rowSubtotal = 0;
+            if (selectedGroup === 'JKN-KIS') {
+                rowSubtotal = valKes + valKet;
+            } else if (selectedGroup === 'PPU') {
+                rowSubtotal = valJhtB + valJhtH + valJkk + valJkm + valJpB + valJpH;
+            } else if (selectedGroup === 'BPU-CREW') {
+                rowSubtotal = valBpuJht + valBpuJkk + valBpuJkm;
+            } else if (selectedGroup === 'BPU-NON-CREW') {
+                rowSubtotal = valNcJhtB + valNcJhtH + valNcJkk + valNcJkm;
+            } else {
+                rowSubtotal = valKes + valKet + valJhtB + valJhtH + valJkk + valJkm + valBpuJht + valBpuJkk + valBpuJkm + valNcJhtB + valNcJhtH + valNcJkk + valNcJkm + valJpB + valJpH;
+            }
+            const rowSubtotalEl = tr.querySelector('.subtotal-text');
+            if (rowSubtotalEl) {
+                rowSubtotalEl.innerText = 'Rp ' + formatNumber(rowSubtotal);
+            }
 
             // Global accumulator
             globalKes += valKes;
@@ -637,9 +686,18 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total_jp_biaya').innerText            = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').innerText           = 'Rp ' + formatNumber(sumJpH);
         
-        const visibleTotalJkn = sumKes + sumKet;
-        const visibleTotalJamsostek = sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
-        const visibleGrandTotal = visibleTotalJkn + visibleTotalJamsostek;
+        let visibleGrandTotal = 0;
+        if (selectedGroup === 'JKN-KIS') {
+            visibleGrandTotal = sumKes + sumKet;
+        } else if (selectedGroup === 'PPU') {
+            visibleGrandTotal = sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
+        } else if (selectedGroup === 'BPU-CREW') {
+            visibleGrandTotal = sumBpuJht + sumBpuJkk + sumBpuJkm;
+        } else if (selectedGroup === 'BPU-NON-CREW') {
+            visibleGrandTotal = sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm;
+        } else {
+            visibleGrandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
+        }
         
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(visibleGrandTotal);
 
@@ -647,7 +705,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const footerLabel = document.getElementById('footer-total-label');
         if (footerLabel) {
             if (isFiltered) {
-                footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total Terfilter (${visibleCount} Karyawan):</span></div>`;
+                const groupLabel = selectedGroup !== 'all' ? selectedGroup : 'Semua Group';
+                footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total ${groupLabel} (${visibleCount} Karyawan):</span></div>`;
             } else {
                 footerLabel.innerText = 'Total Keseluruhan:';
             }
@@ -669,22 +728,33 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let karyawanInputHTML = '';
         if (karyawanId) {
-            const k = karyawans.find(k => k.id == karyawanId);
+            const k = karyawans.find(k => k.unique_id == karyawanId || k.id == karyawanId);
+            const statusBadge = k && k.tipe_label === 'Tidak Tetap'
+                ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>`
+                : '';
             karyawanInputHTML = `
-                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${karyawanId}" class="karyawan-hidden-input">
-                <div class="font-semibold text-gray-800 text-xs truncate" style="max-width: 200px;" title="${k ? k.nama_lengkap : ''}">
-                    ${k ? k.nama_lengkap : ''}
+                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${k ? k.id : karyawanId}" class="karyawan-hidden-input">
+                <input type="hidden" name="details[${rowCount}][tipe_karyawan]" value="${k ? k.tipe_karyawan : 'App\\Models\\Karyawan'}" class="tipe-karyawan-hidden-input">
+                <div class="font-semibold text-gray-800 text-xs truncate flex items-center gap-1" style="max-width: 220px;" title="${k ? k.nama_lengkap : ''}">
+                    <span>${k ? k.nama_lengkap : ''}</span>
+                    ${statusBadge}
                 </div>
+                ${k && k.nik ? `<div class="text-[10px] text-gray-400 font-mono tracking-tight">NIK: ${k.nik}</div>` : ''}
             `;
         } else {
             let options = '<option value="">-- Pilih Karyawan --</option>';
             karyawans.forEach(k => {
-                options += `<option value="${k.id}">${k.nama_lengkap}</option>`;
+                const nikLabel = k.nik ? ` [${k.nik}]` : '';
+                const statusLabel = k.tipe_label ? ` (${k.tipe_label})` : '';
+                options += `<option value="${k.unique_id}">${k.nama_lengkap}${nikLabel}${statusLabel}</option>`;
             });
             karyawanInputHTML = `
-                <select name="details[${rowCount}][karyawan_id]" class="w-full text-xs rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 select2" required>
+                <input type="hidden" name="details[${rowCount}][karyawan_id]" value="" class="karyawan-hidden-input">
+                <input type="hidden" name="details[${rowCount}][tipe_karyawan]" value="App\\Models\\Karyawan" class="tipe-karyawan-hidden-input">
+                <select class="w-full text-xs rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 select2 select-karyawan" required>
                     ${options}
                 </select>
+                <div class="nik-display text-[10px] text-gray-400 font-mono tracking-tight mt-0.5 hidden"></div>
             `;
         }
 
@@ -692,86 +762,91 @@ document.addEventListener('DOMContentLoaded', function() {
         tr.className = "border-b border-gray-100 detail-row hover:bg-gray-50/70 transition-colors";
         
         if (karyawanId) {
-            const k = karyawans.find(k => k.id == karyawanId);
+            const k = karyawans.find(k => k.unique_id == karyawanId || k.id == karyawanId);
             if (k) {
                 tr.dataset.karyawanId = k.id;
+                tr.dataset.tipeKaryawan = k.tipe_karyawan || 'App\\Models\\Karyawan';
+                tr.dataset.uniqueId = k.unique_id || '';
                 tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
+                tr.dataset.nik = k.nik || '';
                 tr.dataset.groupJkn = k.group_jkn || '';
                 tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
                 tr.dataset.cabang = k.cabang_bpjs || '';
+                tr.dataset.dppJkn = k.dpp_jkn || 0;
+                tr.dataset.dppJamsostek = k.dpp_bp_jamsostek || 0;
             }
         }
 
         tr.innerHTML = `
-            <td class="px-3 py-2.5 text-center align-middle row-number text-gray-400 font-mono font-medium">${rowCount}</td>
-            <td class="px-3 py-2.5 align-middle">
+            <td class="px-3 py-2.5 text-center align-middle row-number text-gray-400 font-mono font-medium col-info-no">${rowCount}</td>
+            <td class="px-3 py-2.5 align-middle col-info-nama">
                 ${karyawanInputHTML}
                 <div class="info-jkn mt-1 hidden"></div>
             </td>
-            <td class="px-3 py-2.5 align-middle text-center text-[11px] group-text whitespace-nowrap">-</td>
-            <td class="px-2 py-2.5 align-middle text-center">
+            <td class="px-3 py-2.5 align-middle text-center text-[11px] group-text whitespace-nowrap col-info-group">-</td>
+            <td class="px-2 py-2.5 align-middle text-center col-info-tipe-jkn">
                 <select class="w-full text-[11px] py-1 px-1.5 text-center select-tipe-jkn border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-md bg-gray-50/60 shadow-2xs font-medium" name="details[${rowCount}][tipe_jkn]">
                     <option value="tunjangan_hutang">TOTAL JKN</option>
                 </select>
             </td>
-            <td class="px-2 py-2.5 align-middle text-center border-r border-gray-200">
+            <td class="px-2 py-2.5 align-middle text-center border-r border-gray-200 col-info-tipe-jam">
                 <select class="w-full text-[11px] py-1 px-1.5 text-center select-tipe-bp-jamsostek border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-md bg-gray-50/60 shadow-2xs font-medium" name="details[${rowCount}][tipe_bp_jamsostek]">
                     <option value="total">TOTAL BP JAMSOSTEK</option>
                 </select>
             </td>
             
             {{-- JKN (2) --}}
-            <td class="px-1.5 py-2 align-middle bg-indigo-50/10">
+            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn">
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right font-mono text-xs input-kes font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 border-r border-indigo-100">
+            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 border-r border-indigo-100 col-group-jkn">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right font-mono text-xs input-ket font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             
             {{-- PPU (4) --}}
-            <td class="px-1.5 py-2 align-middle bg-emerald-50/10">
+            <td class="px-1.5 py-2 align-middle bg-emerald-50/10 col-group-ppu">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right font-mono text-xs input-jht-biaya font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-emerald-50/10">
+            <td class="px-1.5 py-2 align-middle bg-emerald-50/10 col-group-ppu">
                 <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right font-mono text-xs input-jht-hutang font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-emerald-50/10">
+            <td class="px-1.5 py-2 align-middle bg-emerald-50/10 col-group-ppu">
                 <input type="text" name="details[${rowCount}][jkk_tunjangan]" class="w-full text-right font-mono text-xs input-jkk font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-emerald-50/10 border-r border-emerald-100">
-                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right font-mono text-xs input-jkm font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
+            <td class="px-1.5 py-2 align-middle bg-emerald-50/10 border-r border-emerald-100 col-group-ppu">
+                <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right font-mono text-xs input-jkm font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
 
             {{-- BPU-CREW (3) --}}
-            <td class="px-1.5 py-2 align-middle bg-rose-50/10">
+            <td class="px-1.5 py-2 align-middle bg-rose-50/10 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][jkk_hutang]" class="w-full text-right font-mono text-xs input-jkk-hutang font-semibold text-rose-600 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-sky-50/10">
+            <td class="px-1.5 py-2 align-middle bg-sky-50/10 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][bpu_jkk_tunjangan]" class="w-full text-right font-mono text-xs input-bpu-jkk font-semibold text-sky-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-sky-400 focus:ring-1 focus:ring-sky-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-sky-50/10 border-r border-sky-100">
+            <td class="px-1.5 py-2 align-middle bg-sky-50/10 border-r border-sky-100 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][bpu_jkm]" class="w-full text-right font-mono text-xs input-bpu-jkm font-semibold text-sky-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-sky-400 focus:ring-1 focus:ring-sky-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
 
             {{-- Non BPU-CREW (4) --}}
-            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jht_biaya]" class="w-full text-right font-mono text-xs input-noncrew-jht-biaya font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jht_hutang]" class="w-full text-right font-mono text-xs input-noncrew-jht-hutang font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-purple-50/10">
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jkk_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkk font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-purple-50/10 border-r border-purple-100">
+            <td class="px-1.5 py-2 align-middle bg-purple-50/10 border-r border-purple-100 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jkm_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkm font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             
             {{-- JP (2) --}}
-            <td class="px-1.5 py-2 align-middle bg-amber-50/10">
+            <td class="px-1.5 py-2 align-middle bg-amber-50/10 col-group-jp">
                 <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right font-mono text-xs input-jp-biaya font-semibold text-amber-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-1.5 py-2 align-middle bg-amber-50/10 border-r border-gray-200">
+            <td class="px-1.5 py-2 align-middle bg-amber-50/10 border-r border-gray-200 col-group-jp">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right font-mono text-xs input-jp-hutang font-semibold text-amber-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             
@@ -808,6 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputJpHutang  = tr.querySelector('.input-jp-hutang');
         
         const updateSubtotal = () => {
+            const currentSelectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
             const kes       = parseIdNumber(inputKes.value);
             const ket       = parseIdNumber(inputKet.value);
             const jhtB      = parseIdNumber(inputJhtBiaya.value);
@@ -823,7 +899,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const ncJkm     = parseIdNumber(inputNcJkm.value);
             const jpB       = parseIdNumber(inputJpBiaya.value);
             const jpH       = parseIdNumber(inputJpHutang.value);
-            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + ncJhtB + ncJhtH + ncJkk + ncJkm + jpB + jpH);
+
+            let rowTotal = 0;
+            if (currentSelectedGroup === 'JKN-KIS') {
+                rowTotal = kes + ket;
+            } else if (currentSelectedGroup === 'PPU') {
+                rowTotal = jhtB + jhtH + jkk + jkm + jpB + jpH;
+            } else if (currentSelectedGroup === 'BPU-CREW') {
+                rowTotal = bpuJht + bpuJkk + bpuJkm;
+            } else if (currentSelectedGroup === 'BPU-NON-CREW') {
+                rowTotal = ncJhtB + ncJhtH + ncJkk + ncJkm;
+            } else {
+                rowTotal = kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + ncJhtB + ncJhtH + ncJkk + ncJkm + jpB + jpH;
+            }
+
+            subtotalText.innerText = 'Rp ' + formatNumber(rowTotal);
             applyFilter();
         };
 
@@ -851,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function updateInfoBadgeJkn(kId) {
-            const karyawan = karyawans.find(k => k.id == kId);
+            const karyawan = karyawans.find(k => k.unique_id == kId || k.id == kId);
             if (!karyawan) { groupText.innerHTML = '-'; return; }
 
             let badges = [];
@@ -888,25 +978,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const karyawan = karyawans.find(k => k.id == kId);
+            const karyawan = karyawans.find(k => k.unique_id == kId || k.id == kId);
             if (!karyawan) return;
 
             let nominalKes = 0;
             let nominalKet = 0;
 
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
-                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                const normalizedKaryawanGroup = (karyawan.group_jkn || '').replace(/[\s\-_]+/g, '').toUpperCase();
+                let rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                if (!rumus) {
+                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase() === normalizedKaryawanGroup);
+                }
+                if (!rumus && (normalizedKaryawanGroup.includes('NONKARY') || normalizedKaryawanGroup.includes('NONKARYAWAN'))) {
+                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase().includes('NONKARY'));
+                }
+
                 if (rumus) {
                     const dpp = parseIdNumber(karyawan.dpp_jkn);
                     const tunjPersen = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen || 0);
-                    let persen = 0;
+                    const biayaPersen = parseFloat(rumus.biaya_persen || 0);
 
-                    if (tipeJkn === 'tunjangan_hutang') {
-                        persen = tunjPersen;
-                        nominalKet += (hutangPersen / 100) * dpp;
+                    const groupUpper = (karyawan.group_jkn || '').toUpperCase();
+                    if (groupUpper.includes('NON KARY') || groupUpper.includes('NON-KARY') || groupUpper.includes('NONKARY')) {
+                        // ── Rumus Group JKN-KIS-NON KARY: DPP Karyawan * Berapa Persen di Master Rumus ──
+                        const totalPersen = tunjPersen > 0 ? tunjPersen : (biayaPersen > 0 ? biayaPersen : (hutangPersen > 0 ? hutangPersen : 0));
+                        nominalKes = (totalPersen / 100) * dpp;
+                        nominalKet = (hutangPersen > 0 && tunjPersen > 0) ? (hutangPersen / 100) * dpp : 0;
+                    } else {
+                        let persen = 0;
+                        if (tipeJkn === 'tunjangan_hutang') {
+                            persen = tunjPersen;
+                            nominalKet += (hutangPersen / 100) * dpp;
+                        }
+                        nominalKes = (persen / 100) * dpp;
                     }
-                    nominalKes = (persen / 100) * dpp;
                 }
             } else if (tipeJkn === 'manual') {
                 nominalKes = parseIdNumber(inputKes.value);
@@ -922,7 +1029,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 let rumus = null;
 
                 if (isPpu) {
-                    rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && (r.group_name || '').toUpperCase().includes('PPU'));
+                    if (karyawanCabang) {
+                        rumus = rumusBpjs.find(r => {
+                            if (r.jenis !== 'jamsostek') return false;
+                            const rGroup = (r.group_name || '').toUpperCase();
+                            if (!rGroup.includes('PPU')) return false;
+                            return (r.cabang_bpjs || '').trim().toLowerCase() === karyawanCabang;
+                        });
+                    }
+                    if (!rumus && karyawan.group_bp_jamsostek) {
+                        rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && r.group_name === karyawan.group_bp_jamsostek);
+                    }
+                    if (!rumus) {
+                        rumus = rumusBpjs.find(r => r.jenis === 'jamsostek' && (r.group_name || '').toUpperCase().includes('PPU'));
+                    }
                 } else if (isBpuCrew) {
                     if (karyawanCabang) {
                         rumus = rumusBpjs.find(r => {
@@ -990,9 +1110,44 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         const jpBiayaMaster  = parseFloat(rumus.jp_biaya  || 0);
                         const jpHutangMaster = parseFloat(rumus.jp_hutang || 0);
+                        const jpMaxDpp       = parseFloat(rumus.jp_max_dpp || 0);
+                        const jpMaxAge       = parseFloat(rumus.jp_max_age || 0);
                         
-                        jpHutang = (jpHutangMaster / 100) * dppJamsostek;
-                        jpBiaya  = ((jpBiayaMaster  / 100) * dppJamsostek) - jpHutang;
+                        // ── Hitung Usia Karyawan dari Tanggal Lahir ──
+                        let usiaKaryawan = null;
+                        if (karyawan.tanggal_lahir) {
+                            const tglLahir = new Date(karyawan.tanggal_lahir);
+                            if (!isNaN(tglLahir.getTime())) {
+                                const tglPranotaInput = document.getElementById('tanggal_pranota')?.value;
+                                const refDate = tglPranotaInput ? new Date(tglPranotaInput) : new Date();
+                                
+                                let age = refDate.getFullYear() - tglLahir.getFullYear();
+                                const m = refDate.getMonth() - tglLahir.getMonth();
+                                if (m < 0 || (m === 0 && refDate.getDate() < tglLahir.getDate())) {
+                                    age--;
+                                }
+                                usiaKaryawan = age;
+                            }
+                        }
+
+                        // ── Alur Logika Batas Usia & Maksimal DPP JP Group PPU ──
+                        // Jika melewati batas umur yang ditentukan di rumus BPJS, PPU JP tidak dihitung (0)
+                        if (jpMaxAge > 0 && usiaKaryawan !== null && usiaKaryawan >= jpMaxAge) {
+                            jpBiaya  = 0;
+                            jpHutang = 0;
+                        } else {
+                            // 1. Cek DPP BP Jamsostek apakah melebihi Maksimal DPP JP
+                            let dppJp = dppJamsostek;
+                            if (jpMaxDpp > 0 && dppJamsostek > jpMaxDpp) {
+                                dppJp = jpMaxDpp;
+                            }
+
+                            // 2. PPU JP 1% (Hutang Karyawan)
+                            jpHutang = (jpHutangMaster / 100) * dppJp;
+
+                            // 3. PPU JP 2% (Biaya Perusahaan) = (JP Biaya % * dppJp) - PPU JP 1% (jpHutang)
+                            jpBiaya = Math.max(0, ((jpBiayaMaster / 100) * dppJp) - jpHutang);
+                        }
 
                         jkkTunj = (parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek;
                         jkmTunj = (parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek;
@@ -1137,19 +1292,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const handleKaryawanChange = function(kId) {
-            const k = karyawans.find(item => item.id == kId);
+            const k = karyawans.find(item => item.unique_id == kId || item.id == kId);
+            const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
+            const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
+
             if (k) {
+                if (hiddenKaryawanId) hiddenKaryawanId.value = k.id;
+                if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = k.tipe_karyawan || 'App\\Models\\Karyawan';
                 tr.dataset.karyawanId = k.id;
+                tr.dataset.tipeKaryawan = k.tipe_karyawan || 'App\\Models\\Karyawan';
+                tr.dataset.uniqueId = k.unique_id || '';
                 tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
+                tr.dataset.nik = k.nik || '';
                 tr.dataset.groupJkn = k.group_jkn || '';
                 tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
                 tr.dataset.cabang = k.cabang_bpjs || '';
+                tr.dataset.dppJkn = k.dpp_jkn || 0;
+                tr.dataset.dppJamsostek = k.dpp_bp_jamsostek || 0;
             } else {
+                if (hiddenKaryawanId) hiddenKaryawanId.value = '';
+                if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = 'App\\Models\\Karyawan';
                 tr.dataset.karyawanId = '';
+                tr.dataset.tipeKaryawan = '';
+                tr.dataset.uniqueId = '';
                 tr.dataset.namaKaryawan = '';
+                tr.dataset.nik = '';
                 tr.dataset.groupJkn = '';
                 tr.dataset.groupJamsostek = '';
                 tr.dataset.cabang = '';
+                tr.dataset.dppJkn = 0;
+                tr.dataset.dppJamsostek = 0;
+            }
+            const nikDisplay = tr.querySelector('.nik-display');
+            if (nikDisplay) {
+                if (k && k.nik) {
+                    const statusBadge = k.tipe_label === 'Tidak Tetap' ? ' <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">Tidak Tetap</span>' : '';
+                    nikDisplay.innerHTML = `NIK: ${k.nik} ${statusBadge}`;
+                    nikDisplay.classList.remove('hidden');
+                } else if (k && k.tipe_label === 'Tidak Tetap') {
+                    nikDisplay.innerHTML = `<span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">Tidak Tetap</span>`;
+                    nikDisplay.classList.remove('hidden');
+                } else {
+                    nikDisplay.classList.add('hidden');
+                }
             }
             updateInfoBadgeJkn(kId);
             calculateBpjsForKaryawan(kId, selectTipe.value);
@@ -1159,11 +1344,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if ($select) { 
             $select.on('change', function() { handleKaryawanChange($select.val()); }); 
         } else if (!karyawanId) { 
-            tr.querySelector('.select2').addEventListener('change', function(e) { handleKaryawanChange(e.target.value); }); 
+            tr.querySelector('.select-karyawan')?.addEventListener('change', function(e) { handleKaryawanChange(e.target.value); }); 
         }
 
         selectTipe.addEventListener('change', function() {
-            const kId = karyawanId ? karyawanId : ($select ? $select.val() : tr.querySelector('.select2').value);
+            const kId = karyawanId ? karyawanId : ($select ? $select.val() : tr.querySelector('.select-karyawan')?.value);
             calculateBpjsForKaryawan(kId, this.value);
         });
 
@@ -1229,7 +1414,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let count = 0;
         karyawans.forEach(k => {
             if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
-                addRow(k.id, true);
+                addRow(k.unique_id, true);
                 count++;
             }
         });

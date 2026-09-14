@@ -33,7 +33,7 @@ class MasterRumusBpjsController extends Controller
 
         $defaultJkn = [
             'JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN',
-            'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI',
+            'JKN-KIS-NON KARY', 'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI',
             'JKN-REIMBURSEMENT-CREW'
         ];
         $groupsJkn = array_values(array_unique(array_merge($groupsJkn, $defaultJkn)));
@@ -94,6 +94,10 @@ class MasterRumusBpjsController extends Controller
             'jp_biaya.*' => 'nullable|numeric|min:0',
             'jp_hutang' => 'nullable|array',
             'jp_hutang.*' => 'nullable|numeric|min:0',
+            'jp_max_dpp' => 'nullable|array',
+            'jp_max_dpp.*' => 'nullable|numeric|min:0',
+            'jp_max_age' => 'nullable|array',
+            'jp_max_age.*' => 'nullable|integer|min:0',
         ]);
 
         foreach ($request->jenis as $key => $jenis) {
@@ -135,6 +139,8 @@ class MasterRumusBpjsController extends Controller
                         'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
                         'jp_biaya' => $request->jp_biaya[$key] ?? null,
                         'jp_hutang' => $request->jp_hutang[$key] ?? null,
+                        'jp_max_dpp' => $request->jp_max_dpp[$key] ?? null,
+                        'jp_max_age' => $request->jp_max_age[$key] ?? null,
                     ]);
                 }
             }
@@ -166,6 +172,8 @@ class MasterRumusBpjsController extends Controller
             'jkm_tunjangan' => 'nullable|numeric|min:0',
             'jp_biaya' => 'nullable|numeric|min:0',
             'jp_hutang' => 'nullable|numeric|min:0',
+            'jp_max_dpp' => 'nullable|numeric|min:0',
+            'jp_max_age' => 'nullable|integer|min:0',
         ]);
 
         $rumus = MasterRumusBpjs::findOrFail($id);
@@ -183,6 +191,8 @@ class MasterRumusBpjsController extends Controller
         if ($request->has('jkm_tunjangan')) $dataToUpdate['jkm_tunjangan'] = $request->jkm_tunjangan;
         if ($request->has('jp_biaya')) $dataToUpdate['jp_biaya'] = $request->jp_biaya;
         if ($request->has('jp_hutang')) $dataToUpdate['jp_hutang'] = $request->jp_hutang;
+        if ($request->has('jp_max_dpp')) $dataToUpdate['jp_max_dpp'] = $request->jp_max_dpp;
+        if ($request->has('jp_max_age')) $dataToUpdate['jp_max_age'] = $request->jp_max_age;
         if ($request->has('diskon_status')) {
             $dataToUpdate['diskon_status'] = $request->diskon_status;
             if ($request->diskon_status === 'tidak_ada') {

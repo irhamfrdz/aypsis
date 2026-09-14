@@ -30,6 +30,6 @@ class PranotaBpjsDetail extends Model
 
     public function karyawan()
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');
     }
 }

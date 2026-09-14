@@ -837,12 +837,12 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Download template for DPP import
+     * Download template for DPP & Group BPJS import
      */
     public function downloadDppTemplate()
     {
-        $columns = ['nik', 'dpp_jkn', 'dpp_bp_jamsostek'];
-        $fileName = 'template_dpp_karyawan.csv';
+        $columns = ['nik', 'dpp_jkn', 'dpp_bp_jamsostek', 'group_jkn', 'group_bp_jamsostek', 'cabang_bpjs'];
+        $fileName = 'template_dpp_bpjs_karyawan.csv';
 
         $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
@@ -2376,7 +2376,7 @@ class KaryawanController extends Controller
             $hasSuccess = $import->successCount > 0;
 
             if ($hasSuccess) {
-                $messages[] = "✅ {$import->successCount} data DPP berhasil diperbarui.";
+                $messages[] = "✅ {$import->successCount} data DPP & Group BPJS berhasil diperbarui.";
             }
 
             if ($hasErrors) {
@@ -2398,11 +2398,11 @@ class KaryawanController extends Controller
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
             } else {
-                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data DPP berhasil diperbarui secara massal.');
+                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data DPP & Group BPJS berhasil diperbarui secara massal.');
             }
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel DPP: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel DPP & Group BPJS: ' . $e->getMessage());
         }
     }
 

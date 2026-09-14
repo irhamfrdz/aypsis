@@ -34,7 +34,7 @@
                                 <a href="{{ route('master.karyawan.template') }}" class="p-1.5 text-gray-400 hover:text-green-600 transition-colors" title="Download Template"><i class="fas fa-file-download border-r pr-2 border-gray-200"></i></a>
                                 <a href="{{ route('master.karyawan.import') }}" class="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Import Data"><i class="fas fa-file-import border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <a href="{{ route('master.karyawan.import-update') }}" class="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="Import Update Data"><i class="fas fa-sync-alt border-r pr-2 border-gray-200 ml-1"></i></a>
-                                <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
+                                <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP & Group BPJS"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <button type="button" onclick="openImportSupervisorModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal Supervisor"><i class="fas fa-user-tie border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <button type="button" onclick="openTarikDataModal()" class="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors border-r pr-2 border-gray-200 ml-1" title="Tarik Data (NIK, Nama, Tgl Lahir, Tgl Masuk)"><i class="fas fa-table"></i></button>
@@ -1035,18 +1035,21 @@
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
-                                Update Massal DPP (JKN & Jamsostek)
+                                Update Massal DPP & Group BPJS (JKN & Jamsostek)
                             </h3>
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
-                                <p>Silakan unggah file Excel yang berisi data NIK, DPP JKN, dan DPP BP Jamsostek.</p>
+                                <p>Silakan unggah file Excel yang berisi data NIK, DPP JKN, DPP BP Jamsostek, Group JKN, Group BP Jamsostek, dan Cabang BPJS.</p>
                                 <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div>
                                             <p class="font-semibold text-blue-800 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel:</p>
-                                            <ul class="list-disc list-inside text-xs text-blue-700 ml-1">
+                                            <ul class="list-disc list-inside text-xs text-blue-700 ml-1 space-y-0.5">
                                                 <li><strong>nik</strong> (Wajib)</li>
                                                 <li><strong>dpp_jkn</strong> (Opsional)</li>
                                                 <li><strong>dpp_bp_jamsostek</strong> (Opsional)</li>
+                                                <li><strong>group_jkn</strong> (Opsional)</li>
+                                                <li><strong>group_bp_jamsostek</strong> (Opsional)</li>
+                                                <li><strong>cabang_bpjs</strong> (Opsional)</li>
                                             </ul>
                                         </div>
                                         <div>

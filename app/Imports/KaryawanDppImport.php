@@ -51,6 +51,18 @@ class KaryawanDppImport implements ToCollection, WithHeadingRow
                     $karyawan->dpp_bp_jamsostek = $row['dpp_bp_jamsostek'] === '' || $row['dpp_bp_jamsostek'] === null ? 0 : $row['dpp_bp_jamsostek'];
                 }
 
+                if (isset($row['group_jkn'])) {
+                    $karyawan->group_jkn = $row['group_jkn'] === '' || $row['group_jkn'] === null ? null : trim((string)$row['group_jkn']);
+                }
+
+                if (isset($row['group_bp_jamsostek'])) {
+                    $karyawan->group_bp_jamsostek = $row['group_bp_jamsostek'] === '' || $row['group_bp_jamsostek'] === null ? null : trim((string)$row['group_bp_jamsostek']);
+                }
+
+                if (isset($row['cabang_bpjs'])) {
+                    $karyawan->cabang_bpjs = $row['cabang_bpjs'] === '' || $row['cabang_bpjs'] === null ? null : trim((string)$row['cabang_bpjs']);
+                }
+
                 if ($karyawan->isDirty()) {
                     $karyawan->save();
                     $this->successCount++;

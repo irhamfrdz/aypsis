@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PranotaBpjsHeader;
 use App\Models\PranotaBpjsDetail;
 use App\Models\Karyawan;
+use App\Models\KaryawanTidakTetap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,8 +31,13 @@ class PranotaBpjsController extends Controller
         if ($request->filled('tahun')) {
             $query->where('periode_tahun', $request->tahun);
         }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        $pranotas = $query->orderBy('tanggal_pranota', 'desc')->paginate(10);
+        $pranotas = $query->orderBy('tanggal_pranota', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         return view('pranota-bpjs.index', compact('pranotas'));
     }
@@ -39,9 +45,27 @@ class PranotaBpjsController extends Controller
     public function create()
     {
         // Get active Karyawan that might have BPJS
-        $karyawans = Karyawan::whereNull('tanggal_berhenti')
+        $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs']);
+            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'tanggal_lahir'])
+            ->map(function ($k) {
+                $k->unique_id = 'Karyawan_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\Karyawan';
+                $k->tipe_label = 'Tetap';
+                return $k;
+            });
+
+        $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
+            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs'])
+            ->map(function ($k) {
+                $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
+                $k->tipe_label = 'Tidak Tetap';
+                $k->tanggal_lahir = null;
+                return $k;
+            });
+
+        $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
             
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
             
@@ -55,7 +79,8 @@ class PranotaBpjsController extends Controller
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
-            'details.*.karyawan_id' => 'required|exists:karyawans,id',
+            'details.*.karyawan_id' => 'required',
+            'details.*.tipe_karyawan' => 'nullable|string',
             'details.*.bpjs_kesehatan'      => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
             'details.*.jht_biaya'            => 'nullable',
@@ -118,8 +143,10 @@ class PranotaBpjsController extends Controller
                     $total = $jknTotal + $jamsostekTotal;
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
+                        $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
                         PranotaBpjsDetail::create([
                             'pranota_bpjs_header_id' => $header->id,
+                            'tipe_karyawan' => $tipeKaryawan,
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
                             'bpjs_ketenagakerjaan' => $bpjsKetInput,
@@ -170,9 +197,27 @@ class PranotaBpjsController extends Controller
 
         $pranota_bpj->load('details');
         
-        $karyawans = Karyawan::whereNull('tanggal_berhenti')
+        $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
-            ->get();
+            ->get()
+            ->map(function ($k) {
+                $k->unique_id = 'Karyawan_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\Karyawan';
+                $k->tipe_label = 'Tetap';
+                return $k;
+            });
+
+        $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
+            ->get()
+            ->map(function ($k) {
+                $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
+                $k->tipe_label = 'Tidak Tetap';
+                $k->tanggal_lahir = null;
+                return $k;
+            });
+
+        $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
             
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
             
@@ -190,7 +235,8 @@ class PranotaBpjsController extends Controller
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
-            'details.*.karyawan_id' => 'required|exists:karyawans,id',
+            'details.*.karyawan_id' => 'required',
+            'details.*.tipe_karyawan' => 'nullable|string',
             'details.*.bpjs_kesehatan'      => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
             'details.*.jht_biaya'            => 'nullable',
@@ -252,8 +298,10 @@ class PranotaBpjsController extends Controller
                     $total = $jknTotal + $jamsostekTotal;
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
+                        $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
                         PranotaBpjsDetail::create([
                             'pranota_bpjs_header_id' => $pranota_bpj->id,
+                            'tipe_karyawan' => $tipeKaryawan,
                             'karyawan_id' => $detail['karyawan_id'],
                             'bpjs_kesehatan' => $bpjsKes,
                             'bpjs_ketenagakerjaan' => $bpjsKetInput,

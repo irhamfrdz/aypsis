@@ -108,7 +108,11 @@
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
+                                    <button type="button"
+                                            onclick="handleEditClick(this)"
+                                            data-rumus="{{ json_encode($item) }}"
+                                            data-groups="{{ json_encode($groupNames) }}"
+                                            data-ids="{{ $allIds }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
@@ -234,7 +238,11 @@
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
+                                    <button type="button"
+                                            onclick="handleEditClick(this)"
+                                            data-rumus="{{ json_encode($item) }}"
+                                            data-groups="{{ json_encode($groupNames) }}"
+                                            data-ids="{{ $allIds }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
@@ -368,7 +376,11 @@
                             <td class="px-3 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
+                                    <button type="button"
+                                            onclick="handleEditClick(this)"
+                                            data-rumus="{{ json_encode($item) }}"
+                                            data-groups="{{ json_encode($groupNames) }}"
+                                            data-ids="{{ $allIds }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
@@ -418,6 +430,8 @@
                         <th class="px-3 py-3 font-semibold text-center">JKM 0.3% Tunj.</th>
                         <th class="px-3 py-3 font-semibold text-center">JP 2% Biaya</th>
                         <th class="px-3 py-3 font-semibold text-center">JP 1% Hutang</th>
+                        <th class="px-3 py-3 font-semibold text-center">Maksimal DPP JP (Rp)</th>
+                        <th class="px-3 py-3 font-semibold text-center">Batas Usia JP (Thn)</th>
                         <th class="px-3 py-3 font-semibold text-center w-20">Aksi</th>
                     </tr>
                 </thead>
@@ -453,8 +467,30 @@
                             </td>
                             @endforeach
                             <td class="px-3 py-3 text-center">
+                                @if($item->jp_max_dpp)
+                                    <span class="inline-block bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold px-2 py-0.5 rounded-md font-mono">
+                                        Rp {{ number_format((float)$item->jp_max_dpp, 0, ',', '.') }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-300">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                @if($item->jp_max_age)
+                                    <span class="inline-block bg-teal-50 text-teal-800 border border-teal-200 text-xs font-semibold px-2 py-0.5 rounded-md font-mono">
+                                        {{ $item->jp_max_age }} Thn
+                                    </span>
+                                @else
+                                    <span class="text-gray-300">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
-                                    <button onclick="editModal({{ $item->toJson() }}, {{ json_encode($groupNames) }}, '{{ $allIds }}')"
+                                    <button type="button"
+                                            onclick="handleEditClick(this)"
+                                            data-rumus="{{ json_encode($item) }}"
+                                            data-groups="{{ json_encode($groupNames) }}"
+                                            data-ids="{{ $allIds }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
@@ -472,7 +508,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="12" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek PPU.
                             </td>
@@ -683,6 +719,22 @@
                                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">JP Hutang (%)</label>
                                     <input type="number" name="jp_hutang[]" class="rate-jp-hutang form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
                                            step="0.01" min="0" placeholder="1">
+                                </div>
+                                <div class="jp-field-max-dpp">
+                                    <label class="block text-xs font-semibold text-amber-800 mb-1.5 flex items-center gap-1">
+                                        <i class="fas fa-shield text-[10px] text-amber-600"></i>
+                                        <span>Maksimal DPP JP (Rp)</span>
+                                    </label>
+                                    <input type="number" name="jp_max_dpp[]" class="rate-jp-max-dpp form-input w-full border-amber-300 bg-amber-50/50 rounded-lg shadow-sm text-sm text-right font-mono"
+                                           step="1" min="0" placeholder="11086300" title="Batas maksimal nominal upah/DPP untuk perhitungan JP (cth: 11086300)">
+                                </div>
+                                <div class="jp-field-max-age">
+                                    <label class="block text-xs font-semibold text-teal-800 mb-1.5 flex items-center gap-1">
+                                        <i class="fas fa-user-clock text-[10px] text-teal-600"></i>
+                                        <span>Batas Usia JP (Tahun)</span>
+                                    </label>
+                                    <input type="number" name="jp_max_age[]" class="rate-jp-max-age form-input w-full border-teal-300 bg-teal-50/50 rounded-lg shadow-sm text-sm text-right font-mono"
+                                           step="1" min="0" max="100" placeholder="58" title="Batas usia maksimal karyawan yang mendapatkan PPU JP (cth: 58)">
                                 </div>
                             </div>
 
@@ -953,6 +1005,24 @@
                                        class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
                                        step="0.01" min="0" placeholder="1">
                             </div>
+                            <div id="edit_jp_max_dpp_wrapper">
+                                <label for="edit_jp_max_dpp" class="block text-xs font-semibold text-amber-800 mb-1.5 flex items-center gap-1">
+                                    <i class="fas fa-shield text-[10px] text-amber-600"></i>
+                                    <span>Maksimal DPP JP (Rp)</span>
+                                </label>
+                                <input type="number" id="edit_jp_max_dpp" name="jp_max_dpp"
+                                       class="form-input w-full border-amber-300 bg-amber-50/50 rounded-lg shadow-sm text-sm text-right font-mono"
+                                       step="1" min="0" placeholder="11086300" title="Batas maksimal nominal upah/DPP untuk perhitungan JP (cth: 11086300)">
+                            </div>
+                            <div id="edit_jp_max_age_wrapper">
+                                <label for="edit_jp_max_age" class="block text-xs font-semibold text-teal-800 mb-1.5 flex items-center gap-1">
+                                    <i class="fas fa-user-clock text-[10px] text-teal-600"></i>
+                                    <span>Batas Usia JP (Tahun)</span>
+                                </label>
+                                <input type="number" id="edit_jp_max_age" name="jp_max_age"
+                                       class="form-input w-full border-teal-300 bg-teal-50/50 rounded-lg shadow-sm text-sm text-right font-mono"
+                                       step="1" min="0" max="100" placeholder="58" title="Batas usia maksimal karyawan yang mendapatkan PPU JP (cth: 58)">
+                            </div>
                         </div>
 
                         {{-- Non BPU-CREW: JHT 2% Hutang (Rp) DPP Tier (Edit) --}}
@@ -1070,6 +1140,17 @@
     const groupsJkn = @json($groupsJkn ?? []);
     const groupsJamsostek = @json($groupsJamsostek ?? []);
 
+    function handleEditClick(btn) {
+        try {
+            const data = JSON.parse(btn.getAttribute('data-rumus'));
+            const groupNames = JSON.parse(btn.getAttribute('data-groups') || '[]');
+            const allIds = btn.getAttribute('data-ids');
+            editModal(data, groupNames, allIds);
+        } catch (e) {
+            console.error('Error opening edit modal:', e);
+        }
+    }
+
     function initSelect2ForGroup(selectEl) {
         if (!selectEl) return;
         if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
@@ -1095,14 +1176,18 @@
 
     function populateGroupOptions(selectEl, jenis, selectedValues = []) {
         if (!selectEl) return;
-        const options = jenis === 'jkn' ? groupsJkn : groupsJamsostek;
+        const options = jenis === 'jkn' ? (groupsJkn || []) : (groupsJamsostek || []);
         
-        const currentSelected = Array.isArray(selectedValues) 
+        let currentSelected = Array.isArray(selectedValues) 
             ? selectedValues 
-            : (selectedValues ? [selectedValues] : Array.from(selectEl.selectedOptions).map(o => o.value));
+            : (selectedValues ? [selectedValues] : []);
+
+        currentSelected = currentSelected.map(s => String(s).trim()).filter(Boolean);
 
         selectEl.innerHTML = '';
-        options.forEach(opt => {
+        const allOpts = Array.from(new Set([...options, ...currentSelected]));
+        
+        allOpts.forEach(opt => {
             const optEl = document.createElement('option');
             optEl.value = opt;
             optEl.textContent = opt;
@@ -1112,21 +1197,22 @@
             selectEl.appendChild(optEl);
         });
 
-        currentSelected.forEach(sel => {
-            if (sel && !options.includes(sel)) {
-                const optEl = document.createElement('option');
-                optEl.value = sel;
-                optEl.textContent = sel;
-                optEl.selected = true;
-                selectEl.appendChild(optEl);
-            }
-        });
-
         initSelect2ForGroup(selectEl);
+        if (typeof jQuery !== 'undefined') {
+            jQuery(selectEl).val(currentSelected).trigger('change.select2');
+        }
     }
 
     function getSelectedGroupNames(input) {
         if (!input) return [];
+        if (typeof jQuery !== 'undefined') {
+            const val = jQuery(input).val();
+            if (Array.isArray(val) && val.length > 0) {
+                return val.map(s => String(s).trim().toUpperCase()).filter(Boolean);
+            } else if (typeof val === 'string' && val.trim() !== '') {
+                return [val.trim().toUpperCase()];
+            }
+        }
         if (input.tagName === 'SELECT') {
             return Array.from(input.selectedOptions).map(o => o.value.trim().toUpperCase()).filter(Boolean);
         }
@@ -1158,6 +1244,8 @@
         firstRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
         firstRow.querySelector('input[name="jp_biaya[]"]').value = '';
         firstRow.querySelector('input[name="jp_hutang[]"]').value = '';
+        firstRow.querySelector('input[name="jp_max_dpp[]"]').value = '';
+        firstRow.querySelector('input[name="jp_max_age[]"]').value = '';
         firstRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
         firstRow.querySelector('input[name="diskon_nilai[]"]').value = '';
         firstRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
@@ -1218,6 +1306,8 @@
         newRow.querySelector('input[name="jkm_tunjangan[]"]').value = '';
         newRow.querySelector('input[name="jp_biaya[]"]').value = '';
         newRow.querySelector('input[name="jp_hutang[]"]').value = '';
+        newRow.querySelector('input[name="jp_max_dpp[]"]').value = '';
+        newRow.querySelector('input[name="jp_max_age[]"]').value = '';
         newRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
         newRow.querySelector('input[name="diskon_nilai[]"]').value = '';
         newRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
@@ -1272,7 +1362,7 @@
         const editGroupSelect = document.getElementById('edit_group_name');
         const selectedGroups = groupNames && Array.isArray(groupNames) && groupNames.length > 0
             ? groupNames
-            : [data.group_name];
+            : (data.group_name ? [data.group_name] : []);
 
         populateGroupOptions(editGroupSelect, data.jenis, selectedGroups);
 
@@ -1286,6 +1376,8 @@
         document.getElementById('edit_jkm_tunjangan').value = data.jkm_tunjangan || '';
         document.getElementById('edit_jp_biaya').value = data.jp_biaya || '';
         document.getElementById('edit_jp_hutang').value = data.jp_hutang || '';
+        document.getElementById('edit_jp_max_dpp').value = data.jp_max_dpp ? parseFloat(data.jp_max_dpp) : '';
+        document.getElementById('edit_jp_max_age').value = data.jp_max_age ? parseInt(data.jp_max_age) : '';
         document.getElementById('edit_diskon_status').value = data.diskon_status || 'tidak_ada';
         document.getElementById('edit_diskon_nilai').value = data.diskon_nilai ? parseFloat(data.diskon_nilai) : '';
         document.getElementById('edit_diskon_tipe').value = data.diskon_tipe || 'persen';
@@ -1313,8 +1405,17 @@
         document.getElementById('edit_hutang_persen_jkn').value   = data.hutang_persen || '';
         document.getElementById('edit_biaya_persen_jkn').value    = data.biaya_persen || '';
 
-        toggleEditJenisFields(document.getElementById('edit_jenis'));
-        toggleEditJamsostekFields(editGroupSelect);
+        // Update Visibility without overriding selected groups
+        const isJamsostek = data.jenis === 'jamsostek';
+        document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
+        if (!isJamsostek) {
+            document.getElementById('edit_bpu_crew_fields')?.classList.add('hidden');
+            document.getElementById('edit_jamsostek_rate_fields')?.classList.add('hidden');
+            document.getElementById('edit_diskon_section')?.classList.add('hidden');
+        } else {
+            toggleEditJamsostekFields(editGroupSelect);
+        }
+
         document.getElementById('editModal').classList.remove('hidden');
     }
 
@@ -1371,6 +1472,8 @@
             const jkmInput = rateFields.querySelector('.rate-jkm');
             const jpFieldBiaya = rateFields.querySelector('.jp-field-biaya');
             const jpFieldHutang = rateFields.querySelector('.jp-field-hutang');
+            const jpFieldMaxDpp = rateFields.querySelector('.jp-field-max-dpp');
+            const jpFieldMaxAge = rateFields.querySelector('.jp-field-max-age');
             const nonCrewTierSection = rateFields.querySelector('.noncrew-tier-section');
 
             if (isPpu) {
@@ -1394,6 +1497,8 @@
                 jhtHutangField?.classList.remove('hidden');
                 jpFieldBiaya?.classList.remove('hidden');
                 jpFieldHutang?.classList.remove('hidden');
+                jpFieldMaxDpp?.classList.remove('hidden');
+                jpFieldMaxAge?.classList.remove('hidden');
                 nonCrewTierSection?.classList.add('hidden');
                 diskonSection?.classList.add('hidden');
             } else {
@@ -1417,6 +1522,8 @@
                 jhtHutangField?.classList.add('hidden');
                 jpFieldBiaya?.classList.add('hidden');
                 jpFieldHutang?.classList.add('hidden');
+                jpFieldMaxDpp?.classList.add('hidden');
+                jpFieldMaxAge?.classList.add('hidden');
                 nonCrewTierSection?.classList.remove('hidden');
                 diskonSection?.classList.remove('hidden');
             }
@@ -1455,6 +1562,8 @@
             const jkmInput = document.getElementById('edit_jkm_tunjangan');
             const jpFieldBiaya = document.getElementById('edit_jp_biaya_wrapper');
             const jpFieldHutang = document.getElementById('edit_jp_hutang_wrapper');
+            const jpFieldMaxDpp = document.getElementById('edit_jp_max_dpp_wrapper');
+            const jpFieldMaxAge = document.getElementById('edit_jp_max_age_wrapper');
             const nonCrewTierSection = document.getElementById('edit_noncrew_tier_section');
 
             if (isPpu) {
@@ -1478,6 +1587,8 @@
                 jhtHutangField?.classList.remove('hidden');
                 jpFieldBiaya?.classList.remove('hidden');
                 jpFieldHutang?.classList.remove('hidden');
+                jpFieldMaxDpp?.classList.remove('hidden');
+                jpFieldMaxAge?.classList.remove('hidden');
                 nonCrewTierSection?.classList.add('hidden');
                 diskonSection?.classList.add('hidden');
             } else {
@@ -1501,6 +1612,8 @@
                 jhtHutangField?.classList.add('hidden');
                 jpFieldBiaya?.classList.add('hidden');
                 jpFieldHutang?.classList.add('hidden');
+                jpFieldMaxDpp?.classList.add('hidden');
+                jpFieldMaxAge?.classList.add('hidden');
                 nonCrewTierSection?.classList.remove('hidden');
                 diskonSection?.classList.remove('hidden');
             }
@@ -1540,7 +1653,7 @@
         const isJamsostek = select.value === 'jamsostek';
         const editGroupSelect = document.getElementById('edit_group_name');
         
-        populateGroupOptions(editGroupSelect, select.value);
+        populateGroupOptions(editGroupSelect, select.value, []);
 
         document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
