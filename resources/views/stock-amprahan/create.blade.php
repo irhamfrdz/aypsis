@@ -167,11 +167,11 @@
                                 <label for="vendor_amprahan_id" class="text-sm font-bold text-gray-700 group-focus-within:text-indigo-600 transition-colors">
                                     <i class="fas fa-store mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Toko <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('master.vendor-amprahan.create') }}" id="add_vendor_link"
+                                <button type="button" onclick="openNamaTokoModal()" id="add_vendor_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
-                                </a>
+                                </button>
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-vendor">
@@ -203,11 +203,11 @@
                                     <label for="master_nama_barang_amprahan_id" class="text-sm font-bold text-gray-700 group-focus-within:text-indigo-600 transition-colors">
                                         <i class="fas fa-tags mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Barang <span class="text-red-500">*</span>
                                     </label>
-                                    <a href="{{ route('master.nama-barang-amprahan.create') }}" id="add_type_barang_link"
+                                    <button type="button" onclick="openTypeBarangModal()" id="add_type_barang_link"
                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                        title="Tambah">
                                         Tambah
-                                    </a>
+                                    </button>
                                 </div>
                                 <div class="relative">
                                     <div class="dropdown-container-type-barang">
@@ -630,6 +630,43 @@
     </div>
 </div>
 
+{{-- Modal Tambah Nama Toko --}}
+<div id="namaTokoModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" style="z-index: 9999;" aria-modal="true" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-60" onclick="closeNamaTokoModal()"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-store mr-2 text-indigo-600"></i>Tambah Nama Toko</h3>
+                <button type="button" onclick="closeNamaTokoModal()" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+            </div>
+            <form id="namaTokoForm">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nama Toko <span class="text-red-500">*</span></label><input type="text" name="nama_toko" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+                <div class="mb-5"><label class="block text-sm font-medium text-gray-700 mb-1">Alamat Toko</label><textarea name="alamat_toko" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                <div id="namaTokoError" class="hidden mb-4 text-sm text-red-600"></div>
+                <div class="flex justify-end gap-2"><button type="button" onclick="closeNamaTokoModal()" class="px-4 py-2 bg-gray-400 text-white rounded-lg">Batal</button><button type="submit" id="namaTokoSubmit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg"><i class="fas fa-save mr-1"></i>Simpan</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Tambah Type Barang --}}
+<div id="typeBarangModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" style="z-index: 9999;" aria-modal="true" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-60" onclick="closeTypeBarangModal()"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-tags mr-2 text-indigo-600"></i>Tambah Type Barang</h3>
+                <button type="button" onclick="closeTypeBarangModal()" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+            </div>
+            <form id="typeBarangForm">
+                <div class="mb-5"><label class="block text-sm font-medium text-gray-700 mb-1">Nama Type Barang <span class="text-red-500">*</span></label><input type="text" name="nama_barang" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"></div>
+                <div id="typeBarangError" class="hidden mb-4 text-sm text-red-600"></div>
+                <div class="flex justify-end gap-2"><button type="button" onclick="closeTypeBarangModal()" class="px-4 py-2 bg-gray-400 text-white rounded-lg">Batal</button><button type="submit" id="typeBarangSubmit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg"><i class="fas fa-save mr-1"></i>Simpan</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Import Excel Modal --}}
 <div id="importExcelModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" style="z-index: 9999;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -699,6 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         selectElement.addEventListener('change', function() {
             originalOptions = Array.from(selectElement.options);
+            populateDropdown(originalOptions);
         });
 
         // Initially populate dropdown options
@@ -979,69 +1017,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle Vendor "Tambah" link to pass search parameter
-    const addVendorLink = document.getElementById('add_vendor_link');
-    const searchVendorInput = document.getElementById('search_vendor');
-    if (addVendorLink && searchVendorInput) {
-        addVendorLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            const searchValue = searchVendorInput.value.trim();
-            let url = "{{ route('master.vendor-amprahan.create', [], false) }}";
-
-            const params = new URLSearchParams();
-            params.append('popup', '1');
-
-            if (searchValue) {
-                params.append('search', searchValue);
-            }
-
-            url += '?' + params.toString();
-
-            const popup = window.open(
-                url,
-                'addVendor',
-                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-            );
-
-            if (popup) {
-                popup.focus();
-            }
-        });
-    }
-
-    // Handle Type Barang "Tambah" link to pass search parameter
-    const addTypeBarangLink = document.getElementById('add_type_barang_link');
-    const searchTypeBarangInput = document.getElementById('search_type_barang');
-    if (addTypeBarangLink && searchTypeBarangInput) {
-        addTypeBarangLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            const searchValue = searchTypeBarangInput.value.trim();
-            let url = "{{ route('master.nama-barang-amprahan.create', [], false) }}";
-
-            // Add popup parameter and nama_barang if available
-            const params = new URLSearchParams();
-            params.append('popup', '1');
-
-            if (searchValue) {
-                params.append('search', searchValue);
-            }
-
-            url += '?' + params.toString();
-
-            // Open as popup window with specific dimensions
-            const popup = window.open(
-                url,
-                'addTypeBarang',
-                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-            );
-
-            // Focus on the popup window
-            if (popup) {
-                popup.focus();
-            }
-        });
-    }
-
     // Function to calculate and update total price
     function updateHargaTotal(isManualTotal = false) {
         const hargaSatuanInput = document.getElementById('harga_satuan');
@@ -1201,6 +1176,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    async function submitInlineMasterForm(event, config) {
+        event.preventDefault();
+        const form = event.target;
+        const submitButton = document.getElementById(config.submitId);
+        const errorBox = document.getElementById(config.errorId);
+        submitButton.disabled = true;
+        errorBox.classList.add('hidden');
+
+        try {
+            const response = await fetch(config.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new FormData(form)
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.message || Object.values(result.errors || {}).flat().join(' ') || 'Gagal menyimpan data.');
+            }
+
+            const record = result[config.responseKey];
+            const select = document.getElementById(config.selectId);
+            const search = document.getElementById(config.searchId);
+            const option = new Option(config.text(record), record.id, true, true);
+            select.add(option);
+            select.value = record.id;
+            search.value = option.text;
+            select.dispatchEvent(new Event('change'));
+            config.close();
+            form.reset();
+        } catch (error) {
+            errorBox.textContent = error.message;
+            errorBox.classList.remove('hidden');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    document.getElementById('namaTokoForm').addEventListener('submit', event => submitInlineMasterForm(event, {
+        url: '{{ route('stock-amprahan.nama-toko.store') }}',
+        responseKey: 'vendor',
+        submitId: 'namaTokoSubmit',
+        errorId: 'namaTokoError',
+        selectId: 'vendor_amprahan_id',
+        searchId: 'search_vendor',
+        text: record => record.nama_toko,
+        close: closeNamaTokoModal
+    }));
+
+    document.getElementById('typeBarangForm').addEventListener('submit', event => submitInlineMasterForm(event, {
+        url: '{{ route('stock-amprahan.type-barang.store') }}',
+        responseKey: 'type_barang',
+        submitId: 'typeBarangSubmit',
+        errorId: 'typeBarangError',
+        selectId: 'master_nama_barang_amprahan_id',
+        searchId: 'search_type_barang',
+        text: record => record.nama_barang,
+        close: closeTypeBarangModal
+    }));
+
     // Form submit validation
     const form = document.querySelector('form');
     if (form) {
@@ -1220,13 +1258,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+let typeBonSidebarActiveClasses = [];
+
+function toggleTypeBonSidebarHighlight(hide) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    if (hide) {
+        if (typeBonSidebarActiveClasses.length > 0) return;
+
+        ['bg-blue-50', 'text-blue-700', 'bg-green-50', 'text-green-700'].forEach(className => {
+            sidebar.querySelectorAll(`.${className}`).forEach(element => {
+                if (!typeBonSidebarActiveClasses.some(item => item.element === element)) {
+                    typeBonSidebarActiveClasses.push({ element, classes: [] });
+                }
+                typeBonSidebarActiveClasses.find(item => item.element === element).classes.push(className);
+                element.classList.remove(className);
+            });
+        });
+    } else {
+        typeBonSidebarActiveClasses.forEach(({ element, classes }) => {
+            classes.forEach(className => element.classList.add(className));
+        });
+        typeBonSidebarActiveClasses = [];
+    }
+}
+
 function openTypeBonModal() {
+    toggleTypeBonSidebarHighlight(true);
     document.getElementById('typeBonModal').classList.remove('hidden');
     document.querySelector('#typeBonForm input[name="nama"]').focus();
 }
 
 function closeTypeBonModal() {
     document.getElementById('typeBonModal').classList.add('hidden');
+    toggleTypeBonSidebarHighlight(false);
+}
+
+function openNamaTokoModal() {
+    toggleTypeBonSidebarHighlight(true);
+    document.getElementById('namaTokoModal').classList.remove('hidden');
+    document.querySelector('#namaTokoForm input[name="nama_toko"]').focus();
+}
+
+function closeNamaTokoModal() {
+    document.getElementById('namaTokoModal').classList.add('hidden');
+    toggleTypeBonSidebarHighlight(false);
+}
+
+function openTypeBarangModal() {
+    toggleTypeBonSidebarHighlight(true);
+    document.getElementById('typeBarangModal').classList.remove('hidden');
+    document.querySelector('#typeBarangForm input[name="nama_barang"]').focus();
+}
+
+function closeTypeBarangModal() {
+    document.getElementById('typeBarangModal').classList.add('hidden');
+    toggleTypeBonSidebarHighlight(false);
 }
 </script>
 @endpush

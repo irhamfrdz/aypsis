@@ -7038,6 +7038,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ]);
 
     // 📦 Stock Amprahan
+    Route::post('stock-amprahan/nama-toko', [\App\Http\Controllers\StockAmprahanController::class, 'storeNamaToko'])
+        ->name('stock-amprahan.nama-toko.store')
+        ->middleware('can:stock-amprahan-create');
+    Route::post('stock-amprahan/type-barang', [\App\Http\Controllers\StockAmprahanController::class, 'storeTypeBarang'])
+        ->name('stock-amprahan.type-barang.store')
+        ->middleware('can:stock-amprahan-create');
     Route::post('stock-amprahan/type-bon', [\App\Http\Controllers\StockAmprahanController::class, 'storeTypeBon'])
         ->name('stock-amprahan.type-bon.store')
         ->middleware('can:stock-amprahan-create');

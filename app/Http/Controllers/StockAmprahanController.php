@@ -253,6 +253,47 @@ class StockAmprahanController extends Controller
         return redirect()->back()->with('success', 'Type Bon Amprahan berhasil ditambahkan.');
     }
 
+    public function storeNamaToko(Request $request)
+    {
+        $data = $request->validate([
+            'nama_toko' => 'required|string|max:255|unique:vendor_amprahans,nama_toko',
+            'alamat_toko' => 'nullable|string',
+        ]);
+
+        $vendor = DB::transaction(function () use ($data) {
+            return VendorAmprahan::create([
+                'nama_toko' => $data['nama_toko'],
+                'alamat_toko' => $data['alamat_toko'] ?? null,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'vendor' => $vendor,
+        ]);
+    }
+
+    public function storeTypeBarang(Request $request)
+    {
+        $data = $request->validate([
+            'nama_barang' => 'required|string|max:255|unique:master_nama_barang_amprahans,nama_barang',
+        ]);
+
+        $typeBarang = DB::transaction(function () use ($data) {
+            return MasterNamaBarangAmprahan::create([
+                'nama_barang' => $data['nama_barang'],
+                'status' => 'active',
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'type_barang' => $typeBarang,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
