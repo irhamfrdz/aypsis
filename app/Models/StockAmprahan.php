@@ -12,6 +12,7 @@ class StockAmprahan extends Model
         'nomor_bukti',
         'tanggal_beli',
         'type_amprahan',
+        'type_bon_amprahan_id',
         'status_pranota',
         'master_nama_barang_amprahan_id',
         'nama_barang',
@@ -37,6 +38,11 @@ class StockAmprahan extends Model
     public function masterNamaBarangAmprahan()
     {
         return $this->belongsTo(MasterNamaBarangAmprahan::class, 'master_nama_barang_amprahan_id');
+    }
+
+    public function typeBonAmprahan()
+    {
+        return $this->belongsTo(MasterTypeBonAmprahan::class, 'type_bon_amprahan_id');
     }
 
     public function vendorAmprahan()

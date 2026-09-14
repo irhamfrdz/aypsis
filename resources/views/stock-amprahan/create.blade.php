@@ -120,6 +120,29 @@
                                     </p>
                                 @enderror
                             </div>
+
+                            {{-- Type Bon Amprahan --}}
+                            <div class="group">
+                                <label for="type_bon_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    <i class="fas fa-file-invoice-dollar mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Bon <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="dropdown-container-type-bon relative">
+                                        <input type="text" id="search_type_bon" placeholder="Cari type bon..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                        <select name="type_bon_amprahan_id" id="type_bon_amprahan_id" required class="hidden">
+                                            <option value="">Pilih Type Bon</option>
+                                            @foreach($typeBonAmprahans as $typeBon)
+                                                <option value="{{ $typeBon->id }}" {{ old('type_bon_amprahan_id') == $typeBon->id ? 'selected' : '' }}>{{ $typeBon->kode }} - {{ $typeBon->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_type_bon" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                </div>
+                                @error('type_bon_amprahan_id')
+                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Nama Barang --}}
@@ -731,6 +754,13 @@ document.addEventListener('DOMContentLoaded', function() {
         searchId: 'search_type_barang',
         dropdownId: 'dropdown_options_type_barang',
         containerClass: 'dropdown-container-type-barang'
+    });
+
+    createSearchableDropdown({
+        selectId: 'type_bon_amprahan_id',
+        searchId: 'search_type_bon',
+        dropdownId: 'dropdown_options_type_bon',
+        containerClass: 'dropdown-container-type-bon'
     });
 
     // Initialize Lokasi dropdown

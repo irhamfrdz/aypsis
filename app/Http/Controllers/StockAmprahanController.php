@@ -11,6 +11,7 @@ use App\Models\MasterChasisBatam;
 use App\Models\MasterGudangAmprahan;
 use App\Models\MasterKapal;
 use App\Models\MasterNamaBarangAmprahan;
+use App\Models\MasterTypeBonAmprahan;
 use App\Models\Mobil;
 use App\Models\StockAmprahan;
 use App\Models\StockAmprahanUsage;
@@ -211,6 +212,7 @@ class StockAmprahanController extends Controller
     public function create()
     {
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $typeBonAmprahans = MasterTypeBonAmprahan::where('status', 'active')->orderBy('kode')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
 
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
@@ -222,7 +224,7 @@ class StockAmprahanController extends Controller
 
         $mobils = $kendaraans;
 
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
+        return view('stock-amprahan.create', compact('masterItems', 'typeBonAmprahans', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
     }
 
     public function store(Request $request)
@@ -231,6 +233,7 @@ class StockAmprahanController extends Controller
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
             'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
+            'type_bon_amprahan_id' => 'required|exists:master_type_bon_amprahans,id',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -271,6 +274,7 @@ class StockAmprahanController extends Controller
             'nomor_bukti' => $data['nomor_bukti'],
             'tanggal_beli' => $data['tanggal_beli'],
             'type_amprahan' => $data['type_amprahan'],
+            'type_bon_amprahan_id' => $data['type_bon_amprahan_id'],
             'nama_barang' => $data['nama_barang'],
             'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
             'harga_satuan' => $data['harga_satuan'],
