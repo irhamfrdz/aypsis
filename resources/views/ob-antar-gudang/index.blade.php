@@ -557,6 +557,7 @@
         document.getElementById('modal_ukuran').value = ukuran;
         document.getElementById('modal_source').value = source;
         document.getElementById('modal_gudang_id').value = gudangId;
+        document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
         document.getElementById('display_ukuran').innerText = ukuran.replace('ft', '').trim();
         
@@ -591,7 +592,35 @@
         const modal = document.getElementById('tagihanModal');
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+        // Recalculate the origin from movement history for the selected OB date.
+        updateGudangAsalFromHistory();
     }
+
+    function updateGudangAsalFromHistory() {
+        const nomor = document.getElementById('modal_nomor_kontainer').value;
+        const tanggal = document.getElementById('tanggal_ob').value;
+        const gudangAsalSelect = document.getElementById('modal_gudang_id');
+
+        if (!nomor || !tanggal) return;
+
+        fetch('{{ route('ob-antar-gudang.gudang-asal') }}?' + new URLSearchParams({
+            nomor_kontainer: nomor,
+            tanggal_ob: tanggal
+        }), { headers: { 'Accept': 'application/json' } })
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                if (data.gudang_id) {
+                    gudangAsalSelect.value = String(data.gudang_id);
+                    gudangAsalSelect.dispatchEvent(new Event('change'));
+                }
+            })
+            .catch(() => {
+                // Keep the current warehouse selection if history cannot be loaded.
+            });
+    }
+
+    document.getElementById('tanggal_ob').addEventListener('change', updateGudangAsalFromHistory);
 
     // Filter Gudang Tujuan based on Gudang Asal
     document.getElementById('modal_gudang_id').addEventListener('change', function() {

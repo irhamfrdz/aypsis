@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Gudang;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
+use App\Models\HistoryKontainer;
 use App\Models\MasterPricelistOb;
 use App\Models\StockKontainer;
 use App\Models\TagihanOb;
@@ -14,6 +15,29 @@ use Illuminate\Support\Facades\DB;
 
 class ObAntarGudangController extends Controller
 {
+    /**
+     * Return the warehouse where a container was located on a given date.
+     */
+    public function gudangAsal(Request $request)
+    {
+        $validated = $request->validate([
+            'nomor_kontainer' => 'required|string',
+            'tanggal_ob' => 'required|date',
+        ]);
+
+        $history = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
+            ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
+            ->whereNotNull('gudang_id')
+            ->orderByDesc('tanggal_kegiatan')
+            ->orderByDesc('id')
+            ->first();
+
+        return response()->json([
+            'gudang_id' => $history?->gudang_id,
+            'history_date' => $history?->tanggal_kegiatan?->format('Y-m-d'),
+        ]);
+    }
+
     /**
      * Display the index page with kontainer data.
      */
@@ -170,6 +194,19 @@ class ObAntarGudangController extends Controller
             $gudangAsal = Gudang::find($validated['gudang_id']);
             $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
             $pricelist = MasterPricelistOb::find($validated['pricelist_id']);
+
+            // The origin must be the container's historical position on the OB date.
+            $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
+                ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
+                ->whereNotNull('gudang_id')
+                ->orderByDesc('tanggal_kegiatan')
+                ->orderByDesc('id')
+                ->value('gudang_id');
+
+            if ($historyGudangId) {
+                $validated['gudang_id'] = $historyGudangId;
+                $gudangAsal = Gudang::find($historyGudangId);
+            }
 
             $tagihan = new TagihanOb;
             $tagihan->tanggal_ob = $validated['tanggal_ob'];

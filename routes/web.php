@@ -6393,6 +6393,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('ob-antar-gudang.index')
         ->middleware('can:ob-antar-gudang-view');
 
+    Route::get('ob-antar-gudang/gudang-asal', [\App\Http\Controllers\ObAntarGudangController::class, 'gudangAsal'])
+        ->name('ob-antar-gudang.gudang-asal')
+        ->middleware('can:ob-antar-gudang-create');
+
     Route::post('ob-antar-gudang/tagihan', [\App\Http\Controllers\ObAntarGudangController::class, 'storeTagihan'])
         ->name('ob-antar-gudang.store-tagihan')
         ->middleware('can:ob-antar-gudang-create');
