@@ -117,7 +117,15 @@ class MasterPricelistObAntarGudangController extends Controller
             'status_kontainer' => [
                 'nullable',
                 'in:full,empty',
-                Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
+                Rule::requiredIf(function () use ($request) {
+                    if ($request->input('status_service') === 'service') {
+                        return false;
+                    }
+
+                    $namaGudangTujuan = Gudang::whereKey($request->input('gudang_tujuan_id'))->value('nama_gudang');
+
+                    return ! str_contains(mb_strtolower($namaGudangTujuan ?? ''), 'temas jkt');
+                }),
             ],
             'status_service' => 'required|in:service,non_service',
             'gudang_tujuan_id' => 'nullable|exists:gudangs,id',
@@ -125,7 +133,8 @@ class MasterPricelistObAntarGudangController extends Controller
             'keterangan' => 'nullable|string|max:1000',
         ])->validate();
 
-        if ($validated['status_service'] === 'service') {
+        $namaGudangTujuan = Gudang::whereKey($validated['gudang_tujuan_id'] ?? null)->value('nama_gudang');
+        if ($validated['status_service'] === 'service' || str_contains(mb_strtolower($namaGudangTujuan ?? ''), 'temas jkt')) {
             $validated['status_kontainer'] = null;
         }
 
