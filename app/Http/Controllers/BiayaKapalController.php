@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
+use App\Models\Bl;
 use App\Models\BiayaKapalAir;
 use App\Models\BiayaKapalBarang;
 use App\Models\BiayaKapalLabuhTambat;
