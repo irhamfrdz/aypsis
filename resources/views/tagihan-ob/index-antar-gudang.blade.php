@@ -444,11 +444,41 @@
 
 @push('scripts')
 <script>
+const selectedTagihanStorageKey = 'tagihan-ob-antar-gudang:selected';
+
+function getStoredSelectedTagihan() {
+    try {
+        return JSON.parse(sessionStorage.getItem(selectedTagihanStorageKey) || '{}');
+    } catch (error) {
+        return {};
+    }
+}
+
+function saveStoredSelectedTagihan(selected) {
+    sessionStorage.setItem(selectedTagihanStorageKey, JSON.stringify(selected));
+}
+
+function updateStoredSelectionFromCheckbox(checkbox) {
+    const selected = getStoredSelectedTagihan();
+    if (checkbox.checked) {
+        const row = checkbox.closest('tr');
+        const biayaInput = row?.querySelector('.editable-field[data-field="biaya"] .field-input');
+        selected[checkbox.value] = parseFloat(biayaInput?.value || 0) || 0;
+    } else {
+        delete selected[checkbox.value];
+    }
+    saveStoredSelectedTagihan(selected);
+}
+
 function formatNumber(num) {
     return new Intl.NumberFormat('id-ID').format(num);
 }
 
 function confirmDelete(id) {
+    const selected = getStoredSelectedTagihan();
+    delete selected[id];
+    saveStoredSelectedTagihan(selected);
+    updateFloatingBar();
     document.getElementById('deleteForm').action = `/tagihan-ob/${id}`;
     document.getElementById('deleteModal').classList.remove('hidden');
 }
@@ -458,6 +488,10 @@ function closeDeleteModal() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    @if(session('success') && str_starts_with(session('success'), 'Pranota OB Antar Gudang'))
+        sessionStorage.removeItem(selectedTagihanStorageKey);
+    @endif
+
     // Close modals when clicking outside
     const deleteModal = document.getElementById('deleteModal');
     if (deleteModal) {
@@ -498,6 +532,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function initCheckboxes() {
     const selectAll = document.getElementById('selectAll');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const selected = getStoredSelectedTagihan();
+
+    rowCheckboxes.forEach(cb => {
+        cb.checked = Object.prototype.hasOwnProperty.call(selected, cb.value);
+    });
 
     if (selectAll) {
         selectAll.addEventListener('change', function() {
@@ -507,28 +546,37 @@ function initCheckboxes() {
                 const tr = cb.closest('tr');
                 if (tr && tr.style.display !== 'none') {
                     cb.checked = isChecked;
+                    updateStoredSelectionFromCheckbox(cb);
                 }
             });
+            updateSelectAllState();
             updateFloatingBar();
         });
     }
 
     rowCheckboxes.forEach(cb => {
         cb.addEventListener('change', function() {
-            if (!this.checked) {
-                selectAll.checked = false;
-            } else {
-                const totalVisible = Array.from(rowCheckboxes).filter(c => c.closest('tr').style.display !== 'none').length;
-                const totalChecked = Array.from(rowCheckboxes).filter(c => c.checked && c.closest('tr').style.display !== 'none').length;
-                selectAll.checked = (totalVisible === totalChecked);
-            }
+            updateStoredSelectionFromCheckbox(this);
+            updateSelectAllState();
             updateFloatingBar();
         });
     });
+
+    updateSelectAllState();
+    updateFloatingBar();
+}
+
+function updateSelectAllState() {
+    const selectAll = document.getElementById('selectAll');
+    if (!selectAll) return;
+
+    const visibleCheckboxes = Array.from(document.querySelectorAll('.row-checkbox'))
+        .filter(cb => cb.closest('tr')?.style.display !== 'none');
+    selectAll.checked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked);
 }
 
 function updateFloatingBar() {
-    const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+    const checkedCount = Object.keys(getStoredSelectedTagihan()).length;
     const selectedCount = document.getElementById('selectedCount');
     const selectedCountHeader = document.getElementById('selectedCountHeader');
     const btnMasukkanPranota = document.getElementById('btnMasukkanPranota');
@@ -552,7 +600,7 @@ function updateFloatingBar() {
         } else {
             floatingBar.classList.remove('show');
             setTimeout(() => {
-                if (document.querySelectorAll('.row-checkbox:checked').length === 0) {
+                if (Object.keys(getStoredSelectedTagihan()).length === 0) {
                     floatingBar.classList.add('hidden');
                 }
             }, 300);
@@ -580,25 +628,18 @@ function updateGrandTotal() {
 }
 
 function openPranotaModal() {
-    const checkedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+    const selected = getStoredSelectedTagihan();
     const container = document.getElementById('selectedIdsContainer');
     container.innerHTML = ''; // Clear previous
 
     let totalBiaya = 0;
-    checkedCheckboxes.forEach(cb => {
+    Object.entries(selected).forEach(([id, biaya]) => {
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'selected_ids[]';
-        hiddenInput.value = cb.value;
+        hiddenInput.value = id;
         container.appendChild(hiddenInput);
-
-        const tr = cb.closest('tr');
-        if (tr) {
-            const biayaInput = tr.querySelector('.editable-field[data-field="biaya"] .field-input');
-            if (biayaInput) {
-                totalBiaya += parseFloat(biayaInput.value) || 0;
-            }
-        }
+        totalBiaya += parseFloat(biaya) || 0;
     });
 
     window.currentNominal = totalBiaya;
@@ -671,12 +712,8 @@ function filterTable() {
         row.style.display = (statusMatch && pranotaMatch) ? '' : 'none';
     });
 
-    // Uncheck selectAll and update floating bar on filter
-    const selectAll = document.getElementById('selectAll');
-    if (selectAll) selectAll.checked = false;
-    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
-    
-    // Trigger update
+    // Keep selections while filtering; only update the visible select-all state.
+    updateSelectAllState();
     updateFloatingBar();
 }
 
