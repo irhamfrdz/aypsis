@@ -62,4 +62,53 @@ class WhatsAppGatewayService
             ];
         }
     }
+
+    /**
+     * Dapatkan data QR Code dari Gateway
+     */
+    public function getQrData(): array
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->gatewayUrl}/qr-data");
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'status' => false,
+                'isReady' => false,
+                'message' => 'Gagal mengambil QR code dari Gateway'
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'status' => false,
+                'isReady' => false,
+                'message' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Putuskan sesi login di Gateway
+     */
+    public function logout(): array
+    {
+        try {
+            $response = Http::timeout(5)->post("{$this->gatewayUrl}/logout");
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'status' => false,
+                'error' => 'Gagal melakukan logout di Gateway'
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'status' => false,
+                'error' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+            ];
+        }
+    }
 }
+

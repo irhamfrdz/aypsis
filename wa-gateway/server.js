@@ -87,7 +87,7 @@ app.get('/status', (req, res) => {
     });
 });
 
-// Tampilkan QR Code di Browser
+// Tampilkan QR Code di Browser (HTML)
 app.get('/qr', async (req, res) => {
     if (connectionStatus === 'open') {
         return res.send(`
@@ -130,6 +130,58 @@ app.get('/qr', async (req, res) => {
         `);
     } catch (e) {
         res.status(500).send('Gagal membuat gambar QR: ' + e.message);
+    }
+});
+
+// Endpoint JSON QR Data untuk dirender di dalam Blade View AYPSIS
+app.get('/qr-data', async (req, res) => {
+    if (connectionStatus === 'open') {
+        return res.json({
+            status: true,
+            isReady: true,
+            user: connectedUser,
+            qrImage: null
+        });
+    }
+
+    if (!qrCodeString) {
+        return res.json({
+            status: false,
+            isReady: false,
+            message: 'Menyiapkan QR Code...',
+            qrImage: null
+        });
+    }
+
+    try {
+        const qrImage = await QRCode.toDataURL(qrCodeString);
+        res.json({
+            status: true,
+            isReady: false,
+            user: null,
+            qrImage: qrImage
+        });
+    } catch (e) {
+        res.status(500).json({ status: false, error: e.message });
+    }
+});
+
+// Endpoint Logout Sesi
+app.post('/logout', async (req, res) => {
+    try {
+        if (sock) {
+            try { await sock.logout(); } catch(err) {}
+        }
+        if (fs.existsSync(SESSION_DIR)) {
+            fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+        }
+        connectionStatus = 'connecting';
+        connectedUser = null;
+        qrCodeString = null;
+        setTimeout(startWhatsApp, 1500);
+        res.json({ status: true, message: 'Berhasil logout. Sesi dihapus dan QR baru dibuat.' });
+    } catch (e) {
+        res.status(500).json({ status: false, error: e.message });
     }
 });
 

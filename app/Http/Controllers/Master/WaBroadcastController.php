@@ -151,6 +151,25 @@ class WaBroadcastController extends Controller
         return redirect()->route('master.wa-broadcast.index')->with('success', 'Riwayat broadcast berhasil dihapus.');
     }
 
+    public function gatewayIndex(\App\Services\WhatsAppGatewayService $gateway)
+    {
+        $status = $gateway->getStatus();
+
+        return view('master.wa-broadcast.gateway', compact('status'));
+    }
+
+    public function gatewayQrData(\App\Services\WhatsAppGatewayService $gateway)
+    {
+        return response()->json($gateway->getQrData());
+    }
+
+    public function gatewayLogout(\App\Services\WhatsAppGatewayService $gateway)
+    {
+        $result = $gateway->logout();
+
+        return response()->json($result);
+    }
+
     public function gatewayStatus(\App\Services\WhatsAppGatewayService $gateway)
     {
         return response()->json($gateway->getStatus());
@@ -167,5 +186,11 @@ class WaBroadcastController extends Controller
 
         return response()->json($result);
     }
+
+    public function gatewayTestSend(Request $request, \App\Services\WhatsAppGatewayService $gateway)
+    {
+        return $this->gatewaySendSingle($request, $gateway);
+    }
 }
+
 
