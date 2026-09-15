@@ -28,7 +28,7 @@
                 <option value="">Tidak berlaku untuk service</option>
                 @foreach($statusOptions as $value => $label)<option value="{{ $value }}" @selected(old('status_kontainer', $pricelist?->status_kontainer) === $value)>{{ $label }}</option>@endforeach
             </select>
-            <p id="status_kontainer_hint" class="mt-1.5 hidden text-xs text-gray-500">Status kontainer tidak diperlukan untuk service atau tujuan Temas JKT.</p>
+            <p id="status_kontainer_hint" class="mt-1.5 hidden text-xs text-gray-500">Status kontainer tidak diperlukan untuk tarif service.</p>
             @error('status_kontainer')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
         <div>
@@ -43,7 +43,7 @@
             <select id="gudang_tujuan_id" name="gudang_tujuan_id" class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('gudang_tujuan_id') border-red-400 @enderror">
                 <option value="">Semua Gudang (Tarif Umum)</option>
                 @foreach($gudangs as $gudang)
-                    <option value="{{ $gudang->id }}" data-is-temas-jkt="{{ str_contains(mb_strtolower($gudang->nama_gudang), 'temas jkt') ? '1' : '0' }}" @selected((string) old('gudang_tujuan_id', $pricelist?->gudang_tujuan_id) === (string) $gudang->id)>{{ $gudang->nama_gudang }}{{ $gudang->lokasi ? ' - '.$gudang->lokasi : '' }}</option>
+                    <option value="{{ $gudang->id }}" @selected((string) old('gudang_tujuan_id', $pricelist?->gudang_tujuan_id) === (string) $gudang->id)>{{ $gudang->nama_gudang }}{{ $gudang->lokasi ? ' - '.$gudang->lokasi : '' }}</option>
                 @endforeach
             </select>
             <p class="mt-1.5 text-xs text-gray-500">Pilih tujuan khusus atau gunakan Semua Gudang sebagai tarif cadangan.</p>
@@ -76,14 +76,12 @@
     (() => {
         const serviceSelect = document.getElementById('status_service');
         const containerSelect = document.getElementById('status_kontainer');
-        const destinationSelect = document.getElementById('gudang_tujuan_id');
         const requiredMark = document.getElementById('status_kontainer_required');
         const hint = document.getElementById('status_kontainer_hint');
 
         function updateContainerStatus() {
             const isService = serviceSelect.value === 'service';
-            const isTemasJkt = destinationSelect.selectedOptions[0]?.dataset.isTemasJkt === '1';
-            const statusNotRequired = isService || isTemasJkt;
+            const statusNotRequired = isService;
             containerSelect.disabled = statusNotRequired;
             containerSelect.required = !statusNotRequired;
             containerSelect.classList.toggle('bg-gray-100', statusNotRequired);
@@ -97,7 +95,6 @@
         }
 
         serviceSelect.addEventListener('change', updateContainerStatus);
-        destinationSelect.addEventListener('change', updateContainerStatus);
         updateContainerStatus();
     })();
 </script>

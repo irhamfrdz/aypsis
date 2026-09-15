@@ -206,7 +206,9 @@ class ObAntarGudangController extends Controller
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
         $validated['is_combo'] = $request->boolean('is_combo');
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
-        $abaikanStatusKontainer = str_contains(mb_strtolower($gudangTujuan->nama_gudang), 'temas');
+        $namaGudangTujuan = mb_strtolower($gudangTujuan->nama_gudang);
+        $abaikanStatusKontainer = str_contains($namaGudangTujuan, 'temas')
+            && ! str_contains($namaGudangTujuan, 'temas jkt');
 
         if ($validated['is_combo'] && ($ukuran !== '20' || $validated['status_service'] !== 'service')) {
             return back()->withInput()->with('error', 'Combo hanya tersedia untuk kontainer 20 ft dengan status Service.');

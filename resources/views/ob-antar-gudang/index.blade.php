@@ -551,7 +551,7 @@
                                     <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Tujuan--</option>
                                         @foreach($gudangs as $g)
-                                            <option value="{{ $g->id }}" data-is-temas="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            <option value="{{ $g->id }}" data-is-temas="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas') && ! str_contains(mb_strtolower($g->nama_gudang), 'temas jkt') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
