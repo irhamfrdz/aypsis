@@ -189,7 +189,7 @@
                                 <input type="checkbox" id="selectAll" class="rounded text-teal-600 focus:ring-teal-500">
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal OB</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Supir</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan Rute</th>
@@ -210,7 +210,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $tagihanOb->firstItem() + $index }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->tanggal_ob ? \Carbon\Carbon::parse($item->tanggal_ob)->format('d/m/Y') : '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs">
                                     <div class="editable-field" data-field="nomor_kontainer" data-id="{{ $item->id }}" title="Klik untuk edit nomor kontainer">
                                         <span class="field-display font-semibold font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded border border-gray-200">
