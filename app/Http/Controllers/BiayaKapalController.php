@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
-use App\Models\Bl;
 use App\Models\BiayaKapalAir;
 use App\Models\BiayaKapalBarang;
 use App\Models\BiayaKapalLabuhTambat;
@@ -22,6 +21,7 @@ use App\Models\MasterKapal;
 use App\Models\MasterPricelistBiayaStorage;
 use App\Models\MasterPricelistFreight;
 use App\Models\MasterPricelistLolo;
+use App\Models\Manifest;
 use App\Models\PricelistBuruh;
 use App\Models\PricelistThc;
 use App\Models\PricelistTkbm;
@@ -3153,7 +3153,7 @@ class BiayaKapalController extends Controller
                 ->values();
 
             if ($selectedBlIds->isNotEmpty()) {
-                $selectedBlDetails = Bl::whereIn('id', $selectedBlIds)
+                $selectedBlDetails = Manifest::whereIn('id', $selectedBlIds)
                     ->get(['nomor_kontainer', 'nomor_bl', 'size_kontainer']);
             }
         }
