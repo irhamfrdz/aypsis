@@ -16,6 +16,7 @@ class MasterPricelistObAntarGudang extends Model
         'size_kontainer',
         'status_kontainer',
         'status_service',
+        'gudang_tujuan_id',
         'biaya',
         'keterangan',
     ];
@@ -57,5 +58,10 @@ class MasterPricelistObAntarGudang extends Model
     public function getStatusServiceLabelAttribute(): string
     {
         return self::getStatusServiceOptions()[$this->status_service] ?? $this->status_service;
+    }
+
+    public function gudangTujuan()
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_tujuan_id');
     }
 }

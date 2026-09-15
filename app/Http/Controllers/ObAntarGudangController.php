@@ -151,8 +151,10 @@ class ObAntarGudangController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
-        // Fetch pricelists for Harga OB logic
-        $pricelists = MasterPricelistObAntarGudang::orderBy('size_kontainer')
+        // Fetch pricelists for Harga OB logic, including destination-specific rates.
+        $pricelists = MasterPricelistObAntarGudang::with('gudangTujuan')
+            ->orderBy('size_kontainer')
+            ->orderBy('gudang_tujuan_id')
             ->orderBy('status_kontainer')
             ->orderBy('status_service')
             ->get();
@@ -208,20 +210,32 @@ class ObAntarGudangController extends Controller
             return back()->withInput()->with('error', 'Combo hanya tersedia untuk kontainer 20 ft dengan status Service.');
         }
 
-        $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
-            ->where('size_kontainer', $ukuran.'ft')
+        $pricelistDimensions = MasterPricelistObAntarGudang::where('size_kontainer', $ukuran.'ft')
             ->where('status_service', $validated['status_service']);
 
         if ($validated['status_service'] === 'service') {
-            $pricelistQuery->whereNull('status_kontainer');
+            $pricelistDimensions->whereNull('status_kontainer');
             $validated['status_kontainer'] = null;
         } else {
-            $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
+            $pricelistDimensions->where('status_kontainer', $validated['status_kontainer']);
         }
 
-        $pricelist = $pricelistQuery->first();
-        if (! $pricelist) {
-            return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran dan status kontainer yang dipilih.');
+        $destinationPricelist = (clone $pricelistDimensions)
+            ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+            ->first();
+        $pricelist = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
+            ->where('size_kontainer', $ukuran.'ft')
+            ->where('status_service', $validated['status_service'])
+            ->when($validated['status_service'] === 'service',
+                fn ($query) => $query->whereNull('status_kontainer'),
+                fn ($query) => $query->where('status_kontainer', $validated['status_kontainer']))
+            ->when($destinationPricelist,
+                fn ($query) => $query->where('gudang_tujuan_id', $validated['gudang_tujuan_id']),
+                fn ($query) => $query->whereNull('gudang_tujuan_id'))
+            ->first();
+
+        if (! $pricelist || ($destinationPricelist && $pricelist->id !== $destinationPricelist->id)) {
+            return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran, status, dan gudang tujuan. Tarif khusus tujuan akan digunakan jika tersedia.');
         }
 
         try {

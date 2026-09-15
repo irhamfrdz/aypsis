@@ -39,6 +39,17 @@
             @error('status_service')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
         <div>
+            <label for="gudang_tujuan_id" class="mb-2 block text-sm font-semibold text-gray-700">Gudang Tujuan</label>
+            <select id="gudang_tujuan_id" name="gudang_tujuan_id" class="block w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm shadow-sm transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 @error('gudang_tujuan_id') border-red-400 @enderror">
+                <option value="">Semua Gudang (Tarif Umum)</option>
+                @foreach($gudangs as $gudang)
+                    <option value="{{ $gudang->id }}" @selected((string) old('gudang_tujuan_id', $pricelist?->gudang_tujuan_id) === (string) $gudang->id)>{{ $gudang->nama_gudang }}{{ $gudang->lokasi ? ' - '.$gudang->lokasi : '' }}</option>
+                @endforeach
+            </select>
+            <p class="mt-1.5 text-xs text-gray-500">Pilih tujuan khusus atau gunakan Semua Gudang sebagai tarif cadangan.</p>
+            @error('gudang_tujuan_id')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
             <label for="biaya" class="mb-2 block text-sm font-semibold text-gray-700">Biaya <span class="text-red-500">*</span></label>
             <div class="relative">
                 <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm font-medium text-gray-500">Rp</span>

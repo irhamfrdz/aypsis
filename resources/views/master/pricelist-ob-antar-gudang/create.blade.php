@@ -12,7 +12,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">Tambah Pricelist OB Antar Gudang</h1>
-                        <p class="mt-1 text-sm text-teal-100">Atur tarif perpindahan kontainer berdasarkan ukuran dan statusnya.</p>
+                        <p class="mt-1 text-sm text-teal-100">Atur tarif berdasarkan ukuran, status, dan gudang tujuan.</p>
                     </div>
                 </div>
             </div>

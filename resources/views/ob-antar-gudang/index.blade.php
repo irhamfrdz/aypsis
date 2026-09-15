@@ -533,12 +533,12 @@
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-biaya="{{ $pl->biaya }}">
-                                                {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-biaya="{{ $pl->biaya }}">
+                                                {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - {{ $pl->gudangTujuan?->nama_gudang ?? 'Semua Gudang' }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">*Harga menyesuaikan ukuran, status service, dan status kontainer.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status. Jika tersedia, tarif khusus gudang tujuan akan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -634,13 +634,27 @@
         const statusService = document.getElementById('modal_status_service').value;
         const statusKontainer = document.getElementById('modal_status_kontainer').value;
         const normalizedUkuran = document.getElementById('display_ukuran').innerText;
+        const gudangTujuanId = document.getElementById('gudang_tujuan_id').value;
+
+        const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
+            if (!option.value) return false;
+            return option.getAttribute('data-ukuran').replace(/ft/i, '').trim() === normalizedUkuran
+                && option.getAttribute('data-status-service') === statusService
+                && (statusService === 'service' || option.getAttribute('data-status-kontainer') === statusKontainer);
+        });
+        const hasDestinationRate = gudangTujuanId && eligibleOptions.some(option =>
+            option.getAttribute('data-gudang-tujuan-id') === gudangTujuanId
+        );
 
         Array.from(pricelistSelect.options).forEach(option => {
             if (option.value === '') return;
 
-            const matches = option.getAttribute('data-ukuran').replace(/ft/i, '').trim() === normalizedUkuran
-                && option.getAttribute('data-status-service') === statusService
-                && (statusService === 'service' || option.getAttribute('data-status-kontainer') === statusKontainer);
+            const destinationId = option.getAttribute('data-gudang-tujuan-id');
+            const matchesDimensions = eligibleOptions.includes(option);
+            const matchesDestination = hasDestinationRate
+                ? destinationId === gudangTujuanId
+                : destinationId === '';
+            const matches = matchesDimensions && matchesDestination;
 
             option.style.display = matches ? '' : 'none';
             option.disabled = !matches;
@@ -677,6 +691,7 @@
 
     document.getElementById('modal_status_service').addEventListener('change', updateStatusKontainerVisibility);
     document.getElementById('modal_status_kontainer').addEventListener('change', updatePricelistOptions);
+    document.getElementById('gudang_tujuan_id').addEventListener('change', updatePricelistOptions);
     document.getElementById('modal_combo').addEventListener('change', updateNominalFromSelection);
 
     function updateGudangAsalFromHistory() {
