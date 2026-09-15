@@ -527,6 +527,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Jadwal Kapal Berlabuh --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Jadwal Kapal Berlabuh</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[jadwal-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jadwal-kapal']['view']) && $userMatrixPermissions['jadwal-kapal']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jadwal-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jadwal-kapal']['create']) && $userMatrixPermissions['jadwal-kapal']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jadwal-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jadwal-kapal']['update']) && $userMatrixPermissions['jadwal-kapal']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jadwal-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jadwal-kapal']['delete']) && $userMatrixPermissions['jadwal-kapal']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data COA --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -4678,6 +4695,23 @@
                                 <td class="text-center"><input type="checkbox" name="permissions[master-wa-broadcast][create]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-broadcast.create') || (isset($userMatrixPermissions['master-wa-broadcast']['create']) && $userMatrixPermissions['master-wa-broadcast']['create']) || ($user && $user->can('master-wa-broadcast-create'))) checked @endif></td>
                                 <td class="text-center"><input type="checkbox" name="permissions[master-wa-broadcast][update]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-broadcast.update') || (isset($userMatrixPermissions['master-wa-broadcast']['update']) && $userMatrixPermissions['master-wa-broadcast']['update']) || ($user && $user->can('master-wa-broadcast-update'))) checked @endif></td>
                                 <td class="text-center"><input type="checkbox" name="permissions[master-wa-broadcast][delete]" value="1" class="permission-checkbox" @if(old('permissions.master-wa-broadcast.delete') || (isset($userMatrixPermissions['master-wa-broadcast']['delete']) && $userMatrixPermissions['master-wa-broadcast']['delete']) || ($user && $user->can('master-wa-broadcast-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Jadwal Kapal Berlabuh Sub-modules --}}
+                            <tr class="submodule-row" data-parent="master-wa-templates">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Jadwal Kapal Berlabuh</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[jadwal-kapal][view]" value="1" class="permission-checkbox" @if(old('permissions.jadwal-kapal.view') || (isset($userMatrixPermissions['jadwal-kapal']['view']) && $userMatrixPermissions['jadwal-kapal']['view']) || ($user && $user->can('jadwal-kapal-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[jadwal-kapal][create]" value="1" class="permission-checkbox" @if(old('permissions.jadwal-kapal.create') || (isset($userMatrixPermissions['jadwal-kapal']['create']) && $userMatrixPermissions['jadwal-kapal']['create']) || ($user && $user->can('jadwal-kapal-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[jadwal-kapal][update]" value="1" class="permission-checkbox" @if(old('permissions.jadwal-kapal.update') || (isset($userMatrixPermissions['jadwal-kapal']['update']) && $userMatrixPermissions['jadwal-kapal']['update']) || ($user && $user->can('jadwal-kapal-update'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[jadwal-kapal][delete]" value="1" class="permission-checkbox" @if(old('permissions.jadwal-kapal.delete') || (isset($userMatrixPermissions['jadwal-kapal']['delete']) && $userMatrixPermissions['jadwal-kapal']['delete']) || ($user && $user->can('jadwal-kapal-delete'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
