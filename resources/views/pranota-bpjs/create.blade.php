@@ -168,9 +168,10 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="btn-export-excel"
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all">
-                        <i class="fas fa-file-excel text-xs"></i>
-                        Export Excel
+                        style="background-color: #107c41; color: #ffffff;"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-white text-xs font-bold rounded-lg shadow-sm hover:opacity-90 transition-all cursor-pointer">
+                        <i class="fas fa-file-excel text-sm text-emerald-200"></i>
+                        <span>Export Excel</span>
                     </button>
                     <button type="button" id="btn-generate-all"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all">
