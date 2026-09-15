@@ -207,7 +207,14 @@ class TagihanObController extends Controller
         $this->authorize('tagihan-ob-delete');
 
         try {
+            $isAntarGudang = $tagihanOb->kapal === 'ANTAR GUDANG'
+                && $tagihanOb->voyage === 'ANTAR GUDANG';
             $tagihanOb->delete();
+
+            if ($isAntarGudang) {
+                return redirect()->route('tagihan-ob-antar-gudang.index')
+                    ->with('success', 'Tagihan OB berhasil dihapus');
+            }
 
             return redirect()->route('tagihan-ob.index')
                 ->with('success', 'Tagihan OB berhasil dihapus');
