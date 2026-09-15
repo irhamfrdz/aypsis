@@ -1253,11 +1253,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
                         }
                         if (Array.isArray(tiers) && tiers.length > 0) {
-                            const matchedTier = tiers.find(t => parseFloat(t.dpp || 0) === dppJamsostek);
+                            const matchedTier = tiers.find(t => parseIdNumber(t.dpp) === dppJamsostek);
                             if (matchedTier) {
-                                bpuJhtVal = parseFloat(matchedTier.potongan || 0);
+                                bpuJhtVal = parseIdNumber(matchedTier.potongan);
                             } else {
-                                bpuJhtVal = tiers.reduce((sum, t) => sum + parseFloat(t.potongan || 0), 0);
+                                bpuJhtVal = 0;
                             }
                         }
 
@@ -1298,11 +1298,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
                         }
                         if (Array.isArray(tiers) && tiers.length > 0) {
-                            const matchedTier = tiers.find(t => parseFloat(t.dpp || 0) === dppJamsostek);
+                            const matchedTier = tiers.find(t => parseIdNumber(t.dpp) === dppJamsostek);
                             if (matchedTier) {
-                                ncJhtHutangVal = parseFloat(matchedTier.potongan || 0);
+                                ncJhtHutangVal = parseIdNumber(matchedTier.potongan);
                             } else {
-                                ncJhtHutangVal = tiers.reduce((sum, t) => sum + parseFloat(t.potongan || 0), 0);
+                                const jhtHutangPersen = parseFloat(rumus.jht_hutang || rumus.hutang_persen || 0);
+                                ncJhtHutangVal = (jhtHutangPersen / 100) * dppJamsostek;
                             }
                         } else {
                             const jhtHutangPersen = parseFloat(rumus.jht_hutang || rumus.hutang_persen || 0);
