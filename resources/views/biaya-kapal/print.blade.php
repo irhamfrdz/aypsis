@@ -402,8 +402,7 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 42%;">Nomor Kontainer</th>
-                        <th style="width: 30%;">Nomor BL</th>
+                        <th style="width: 72%;">Nomor Kontainer</th>
                         <th style="width: 20%;">Size</th>
                     </tr>
                 </thead>
@@ -412,7 +411,6 @@
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $bl->nomor_kontainer ?: '-' }}</td>
-                        <td>{{ $bl->nomor_bl ?: '-' }}</td>
                         <td class="text-center">{{ $bl->size_kontainer ?: '-' }}</td>
                     </tr>
                     @endforeach
@@ -634,7 +632,7 @@
         <!-- Keterangan -->
         <div style="margin-bottom: 5px; border: 2px solid #333; padding: 4px; min-height: 25px;">
             <strong style="font-size: 9px;">Keterangan:</strong><br>
-            <span style="font-size: 9px;">{{ $biayaKapal->keterangan }}</span>
+            <span style="font-size: 9px; font-weight: 700;">{{ $biayaKapal->keterangan }}</span>
         </div>
 
         <!-- Signature Section -->
