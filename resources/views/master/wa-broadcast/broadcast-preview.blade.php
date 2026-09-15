@@ -11,220 +11,353 @@
         /* Custom DataTables Styling */
         div.dataTables_wrapper div.dataTables_filter input {
             border-radius: 0.5rem;
-            border: 1px solid #d1d5db;
-            padding: 0.4rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            padding: 0.45rem 0.85rem;
             font-size: 0.875rem;
-            line-height: 1.25rem;
-            margin-left: 0.5rem;
+            background-color: #ffffff;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
         }
         div.dataTables_wrapper div.dataTables_filter input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         div.dataTables_wrapper div.dataTables_length select {
             border-radius: 0.5rem;
-            border: 1px solid #d1d5db;
-            padding: 0.4rem 2rem 0.4rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            padding: 0.45rem 2rem 0.45rem 0.85rem;
             font-size: 0.875rem;
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+            background-color: #ffffff;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         div.dataTables_wrapper div.dataTables_length select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.25em 0.5em;
+            padding: 0.35em 0.75em;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border: 1px solid #2563eb !important;
         }
         .dataTables_wrapper .grid {
             margin-bottom: 1rem;
             align-items: center;
         }
+        /* Custom scrollbar for container list */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
     </style>
 @endpush
 
-<div class="bg-white shadow-md rounded-lg p-6 font-sans">
-    <div class="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 class="text-xl font-bold text-gray-800">Preview Pesan Broadcast</h2>
-        <a href="{{ route('master.wa-broadcast.index') }}" class="text-gray-600 hover:text-gray-900 font-medium flex items-center text-sm">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Kembali
-        </a>
+<div class="space-y-6 font-sans max-w-7xl mx-auto pb-12">
+    
+    <!-- Top Bar Navigation & Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center space-x-3.5">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                <i class="fab fa-whatsapp text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight">Preview Broadcast WhatsApp</h1>
+                <p class="text-xs text-slate-500 mt-0.5">Periksa dan sesuaikan nomor kontak shipper sebelum mengirim notifikasi</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2.5">
+            <a href="{{ route('master.wa-broadcast.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 rounded-xl transition-all duration-200 shadow-sm">
+                <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                Kembali
+            </a>
+        </div>
     </div>
 
-    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
+    <!-- Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Kapal & Voyage -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-blue-300 transition-all">
+            <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-ship text-base"></i>
+                </div>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                    Voyage {{ $noVoyage }}
+                </span>
             </div>
-            <div class="ml-3">
-                <p class="text-sm text-blue-700">
-                    <strong>Kapal:</strong> {{ $namaKapal }} | <strong>Voyage:</strong> {{ $noVoyage }} <br>
-                    <strong>Masalah:</strong> {{ $kategoriMasalah }} <br>
-                    Total ada <strong>{{ count($broadcastData) }}</strong> shipper dan <strong>{{ collect($broadcastData)->sum('jumlah_kontainer') }}</strong> kontainer yang terdampak (sudah digabung per-shipper). 
-                    Silakan klik tombol <strong>Kirim WA</strong> untuk membuka WhatsApp Web / Aplikasi WA Anda.
-                </p>
+            <div class="mt-3">
+                <p class="text-xs font-medium text-slate-400">Kapal & Voyage</p>
+                <h4 class="text-base font-bold text-slate-800 truncate mt-0.5" title="{{ $namaKapal }}">{{ $namaKapal }}</h4>
+            </div>
+        </div>
+
+        <!-- Kendala / Masalah -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-amber-300 transition-all">
+            <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-exclamation-triangle text-base"></i>
+                </div>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100">
+                    Kategori
+                </span>
+            </div>
+            <div class="mt-3">
+                <p class="text-xs font-medium text-slate-400">Kendala Operasional</p>
+                <h4 class="text-base font-bold text-slate-800 truncate mt-0.5" title="{{ $kategoriMasalah }}">{{ $kategoriMasalah }}</h4>
+            </div>
+        </div>
+
+        <!-- Total Shipper Terdampak -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all">
+            <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-building text-base"></i>
+                </div>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                    Shipper
+                </span>
+            </div>
+            <div class="mt-3">
+                <p class="text-xs font-medium text-slate-400">Total Shipper</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                    <h4 class="text-xl font-bold text-slate-800">{{ count($broadcastData) }}</h4>
+                    <span class="text-xs text-slate-500 font-medium">perusahaan</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Kontainer Terdampak -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-indigo-300 transition-all">
+            <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-boxes-stacked text-base"></i>
+                </div>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
+                    Kontainer
+                </span>
+            </div>
+            <div class="mt-3">
+                <p class="text-xs font-medium text-slate-400">Kontainer Terdampak</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                    <h4 class="text-xl font-bold text-slate-800">{{ collect($broadcastData)->sum('jumlah_kontainer') }}</h4>
+                    <span class="text-xs text-slate-500 font-medium">unit kontainer</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="mb-6 overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-        <div class="px-5 py-4 border-b border-gray-200 bg-gray-50">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <h3 class="text-base font-bold text-gray-800">Daftar Contact Person Shipper</h3>
-                <span id="selected-recipient-summary" class="text-xs font-semibold text-blue-700"></span>
+    <!-- Main Card & Data Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        
+        <!-- Table Control & Toolbar Header -->
+        <div class="p-5 border-b border-slate-100 bg-slate-50/60">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span>Daftar Kontak & Pesan Shipper</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Pilih shipper yang ingin dikirimi pesan dan klik <strong>Kirim WA</strong> untuk membuka chat secara otomatis.
+                    </p>
+                </div>
+                
+                <!-- Summary Tag & Status Counter -->
+                <div class="flex items-center flex-wrap gap-2">
+                    <div class="inline-flex items-center px-3 py-1.5 rounded-xl bg-blue-50/80 border border-blue-200/70 text-blue-700 text-xs font-semibold shadow-2xs">
+                        <i class="fas fa-check-circle mr-1.5 text-blue-500"></i>
+                        <span id="selected-recipient-summary">Memuat...</span>
+                    </div>
+                </div>
             </div>
-            <p class="mt-1 text-xs text-gray-500">Data kontak diambil dari setiap shipper pada kapal dan voyage yang dipilih.</p>
         </div>
-        <table id="contactTable" class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs w-16">
-                        <input type="checkbox" id="select-all-recipients" checked class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" title="Pilih semua shipper">
-                    </th>
-                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-12">No</th>
-                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Shipper</th>
-                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Contact Person / No. WhatsApp</th>
-                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No. Kontainer</th>
-                    <th class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Sumber Data</th>
-                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Status</th>
-                    <th class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @forelse($broadcastData as $index => $data)
-                    <tr class="hover:bg-gray-50">
-                        <td class="recipient-select-cell px-5 py-3 text-center">
-                            <input type="checkbox"
-                                   class="recipient-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                   data-recipient-index="{{ $index }}"
-                                   checked
-                                   title="Pilih {{ $data['shipper_name'] }}">
-                        </td>
-                        <td class="px-5 py-3 text-gray-500">{{ $index + 1 }}</td>
-                        <td class="px-5 py-3 font-semibold text-gray-900">{{ $data['shipper_name'] }}</td>
-                        <td class="px-5 py-3">
-                            <input type="text"
-                                   class="contact-person-input w-full min-w-[190px] rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-blue-500 focus:ring-blue-500"
-                                   data-recipient-index="{{ $index }}"
-                                   value="{{ $data['telepon'] }}"
-                                   placeholder="Masukkan Contact Person / No. WhatsApp"
-                                   autocomplete="off">
-                            <p class="mt-1 text-[11px] text-gray-500">Bisa diisi atau dikoreksi sebelum kirim.</p>
-                        </td>
-                        <td class="px-5 py-3">
-                            @if(!empty($data['daftar_kontainer']))
-                                <div class="flex max-w-sm flex-wrap gap-1">
-                                    @foreach($data['daftar_kontainer'] as $kontainer)
-                                        <span class="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] font-mono text-gray-700">{{ $kontainer }}</span>
-                                    @endforeach
+
+        <!-- Table Content -->
+        <div class="p-5 overflow-x-auto">
+            <table id="contactTable" class="w-full text-left text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/90 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                        <th class="py-3.5 px-4 text-center w-12 rounded-l-xl">
+                            <input type="checkbox" id="select-all-recipients" checked class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" title="Pilih semua shipper">
+                        </th>
+                        <th class="py-3.5 px-3 text-center w-12">No</th>
+                        <th class="py-3.5 px-4 min-w-[200px]">Shipper & Sumber</th>
+                        <th class="py-3.5 px-4 min-w-[240px]">No. WhatsApp / Kontak</th>
+                        <th class="py-3.5 px-4 min-w-[180px]">Kontainer Terdampak</th>
+                        <th class="py-3.5 px-3 text-center min-w-[120px]">Status</th>
+                        <th class="py-3.5 px-4 text-center min-w-[160px] rounded-r-xl">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($broadcastData as $index => $data)
+                        <tr class="hover:bg-slate-50/70 transition-colors group">
+                            <!-- Checkbox -->
+                            <td class="recipient-select-cell py-3.5 px-4 text-center">
+                                <input type="checkbox"
+                                       class="recipient-checkbox h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                                       data-recipient-index="{{ $index }}"
+                                       checked
+                                       title="Pilih {{ $data['shipper_name'] }}">
+                            </td>
+
+                            <!-- Nomor Baris -->
+                            <td class="py-3.5 px-3 text-center text-xs font-medium text-slate-400">
+                                {{ $index + 1 }}
+                            </td>
+
+                            <!-- Nama Shipper & Sumber -->
+                            <td class="py-3.5 px-4">
+                                <div class="font-bold text-slate-800 text-sm leading-snug group-hover:text-blue-600 transition-colors">
+                                    {{ $data['shipper_name'] }}
                                 </div>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
-                        <td class="px-5 py-3 text-gray-500">{{ $data['sumber_tabel'] }}</td>
-                        <td class="contact-status px-5 py-3 text-center" data-recipient-index="{{ $index }}"></td>
-                        <td class="px-5 py-3 text-center">
-                            <div class="wa-action" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
-                                @if($data['wa_url'])
-                                    <a href="{{ $data['wa_url'] }}" target="_blank" class="inline-flex items-center justify-center rounded bg-green-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-green-600">Kirim WA</a>
+                                <div class="mt-1 flex items-center gap-1.5">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                        <i class="fas fa-database text-[9px] mr-1 text-slate-400"></i>
+                                        {{ $data['sumber_tabel'] }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <!-- Input No WhatsApp -->
+                            <td class="py-3.5 px-4">
+                                <div class="relative rounded-xl shadow-2xs">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                        <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
+                                    </div>
+                                    <input type="text"
+                                           class="contact-person-input block w-full rounded-xl border border-slate-200 pl-9 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                                           data-recipient-index="{{ $index }}"
+                                           value="{{ $data['telepon'] }}"
+                                           placeholder="Contoh: 08123456789"
+                                           autocomplete="off">
+                                </div>
+                                <p class="mt-1 text-[10px] text-slate-400">Dapat diedit langsung sebelum kirim</p>
+                            </td>
+
+                            <!-- Kontainer Terdampak -->
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                        {{ $data['jumlah_kontainer'] }} Kontainer
+                                    </span>
+                                </div>
+                                @if(!empty($data['daftar_kontainer']))
+                                    <div class="flex max-w-xs flex-wrap gap-1 custom-scrollbar max-h-16 overflow-y-auto">
+                                        @foreach($data['daftar_kontainer'] as $kontainer)
+                                            <span class="rounded bg-slate-50 border border-slate-200 px-1.5 py-0.5 text-[10px] font-mono text-slate-700 font-medium">{{ $kontainer }}</span>
+                                        @endforeach
+                                    </div>
                                 @else
-                                    <span class="inline-flex items-center justify-center rounded bg-gray-300 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Ada No</span>
+                                    <span class="text-xs text-slate-400 italic">-</span>
                                 @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="px-5 py-6 text-center text-gray-500">Tidak ada data Contact Person untuk voyage ini.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                            </td>
 
-    @if(false)
-    <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-        <table id="previewTable" class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-12">No</th>
-                    <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs w-1/4">Shipper</th>
-                    <th class="px-5 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Preview Pesan</th>
-                    <th class="px-5 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs w-32">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @forelse($broadcastData as $index => $data)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-5 py-4 text-gray-500 align-top">{{ $index + 1 }}</td>
-                        <td class="px-5 py-4 align-top">
-                            <div class="font-bold text-gray-900 text-base">{{ $data['shipper_name'] }}</div>
-                            <div class="text-gray-500 text-xs mt-1.5">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                    Sumber: {{ $data['sumber_tabel'] }}
-                                </span>
-                            </div>
-                            <div class="mt-3">
-                                <div class="text-xs font-semibold text-indigo-700 flex items-center mb-1.5">
-                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                    {{ $data['jumlah_kontainer'] }} Kontainer Terdampak:
+                            <!-- Status Kontak -->
+                            <td class="contact-status py-3.5 px-3 text-center" data-recipient-index="{{ $index }}">
+                                <!-- Dynamic status pill rendered by JS -->
+                            </td>
+
+                            <!-- Tombol Aksi -->
+                            <td class="py-3.5 px-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <!-- Preview Button -->
+                                    <button type="button"
+                                            class="preview-msg-btn inline-flex items-center justify-center px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-colors border border-slate-200/80 shadow-2xs"
+                                            data-shipper="{{ $data['shipper_name'] }}"
+                                            data-recipient-index="{{ $index }}"
+                                            data-message="{{ $data['pesan'] }}"
+                                            title="Lihat isi pesan WA untuk shipper ini">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </button>
+
+                                    <!-- Send WA Action Container -->
+                                    <div class="wa-action inline-block" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
+                                        @if($data['wa_url'])
+                                            <a href="{{ $data['wa_url'] }}" target="_blank" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-semibold rounded-xl shadow-2xs hover:shadow-sm transition-all">
+                                                <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
+                                                Kirim WA
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center justify-center px-3 py-1.5 bg-slate-100 text-slate-400 text-xs font-medium rounded-xl border border-slate-200 cursor-not-allowed">
+                                                <i class="fas fa-phone-slash mr-1.5 text-xs text-slate-400"></i>
+                                                No. Kosong
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
-                                @if(isset($data['daftar_kontainer']) && count($data['daftar_kontainer']) > 0)
-                                <div class="flex flex-wrap gap-1">
-                                    @foreach($data['daftar_kontainer'] as $kontainer)
-                                        <span class="bg-white border border-gray-300 text-gray-700 px-2 py-0.5 rounded-md text-[10px] font-mono shadow-sm">
-                                            {{ $kontainer }}
-                                        </span>
-                                    @endforeach
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-12 px-4 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                                        <i class="fas fa-inbox text-xl"></i>
+                                    </div>
+                                    <p class="font-medium text-slate-600">Tidak ada data shipper untuk kapal dan voyage ini.</p>
+                                    <p class="text-xs text-slate-400 mt-0.5">Silakan periksa manifest kapal atau pilih voyage lainnya.</p>
                                 </div>
-                                @endif
-                            </div>
-                        </td>
-                        <td class="px-5 py-4">
-                            <div class="relative bg-[#e1f5cd] border border-[#d2e8bd] p-3.5 rounded-2xl rounded-tl-sm text-[13px] text-gray-800 whitespace-pre-wrap font-sans shadow-sm leading-relaxed max-w-xl">
-                                {{ $data['pesan'] }}
-                                <!-- chat tail pointer -->
-                                <div class="absolute top-0 -left-2 w-0 h-0 border-t-[12px] border-t-[#e1f5cd] border-l-[10px] border-l-transparent drop-shadow-sm"></div>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 text-center align-top">
-                            <div class="wa-action" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
-                            @if($data['wa_url'])
-                                <a href="{{ $data['wa_url'] }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 bg-green-500 text-white text-xs font-bold rounded hover:bg-green-600 transition-colors shadow-sm">
-                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                    </svg>
-                                    Kirim WA
-                                </a>
-                            @else
-                                <span class="inline-flex items-center justify-center px-3 py-2 bg-gray-300 text-gray-500 text-xs font-bold rounded cursor-not-allowed shadow-sm">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                    Tidak Ada No
-                                </span>
-                            @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-gray-500">
-                            Tidak ada data shipper pada manifest untuk kapal dan voyage ini.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-    @endif
+</div>
+
+<!-- Modal Preview Pesan WhatsApp Modern -->
+<div id="messagePreviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all">
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+        <!-- Header Modal -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                    <i class="fab fa-whatsapp text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800" id="modalShipperName">Nama Shipper</h3>
+                    <p class="text-xs text-slate-500" id="modalRecipientPhone">Nomor WhatsApp</p>
+                </div>
+            </div>
+            <button type="button" id="closeModalBtn" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200/60 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Body Modal (WA Chat Bubble Style) -->
+        <div class="p-6 bg-[#efeae2] relative min-h-[220px] max-h-[60vh] overflow-y-auto custom-scrollbar" style="background-image: radial-gradient(#d1d7db 1px, transparent 1px); background-size: 16px 16px;">
+            <div class="bg-white rounded-2xl rounded-tl-xs p-4 shadow-sm border border-slate-200/60 text-xs text-slate-800 font-sans leading-relaxed whitespace-pre-wrap select-all relative" id="modalMessageContent">
+                <!-- Message content injected by JS -->
+            </div>
+        </div>
+
+        <!-- Footer Modal -->
+        <div class="px-6 py-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3">
+            <button type="button" id="copyMessageBtn" class="inline-flex items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                <i class="fas fa-copy mr-1.5 text-slate-500"></i>
+                <span id="copyBtnText">Salin Teks</span>
+            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" id="closeModalFooterBtn" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                    Tutup
+                </button>
+                <a href="#" id="modalDirectWaLink" target="_blank" class="inline-flex items-center px-4 py-2 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-bold rounded-xl shadow-sm transition-all">
+                    <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
+                    Buka di WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -248,7 +381,7 @@
         function updateSelectedSummary() {
             const total = Object.keys(selectedRecipients).length;
             const selected = Object.values(selectedRecipients).filter(Boolean).length;
-            $('#selected-recipient-summary').text(selected + ' dari ' + total + ' shipper dipilih');
+            $('#selected-recipient-summary').text(selected + ' dari ' + total + ' Shipper Dipilih');
             $('#select-all-recipients').prop('checked', total > 0 && selected === total);
             $('#select-all-recipients').prop('indeterminate', selected > 0 && selected < total);
         }
@@ -273,13 +406,28 @@
             const message = $action.attr('data-message') || '';
 
             if (!selectedRecipients[index]) {
-                $status.html('<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500">Tidak dipilih</span>');
-                $action.html('<span class="inline-flex items-center justify-center rounded bg-gray-200 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Dipilih</span>');
+                $status.html(`
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        Tidak Dipilih
+                    </span>
+                `);
+                $action.html(`
+                    <span class="inline-flex items-center justify-center px-3 py-1.5 bg-slate-100 text-slate-400 text-xs font-medium rounded-xl border border-slate-200 cursor-not-allowed">
+                        <i class="fas fa-minus mr-1.5 text-[10px]"></i>
+                        Dilewati
+                    </span>
+                `);
                 return;
             }
 
             if (phone) {
-                $status.html('<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">Siap dikirim</span>');
+                $status.html(`
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Siap Kirim
+                    </span>
+                `);
 
                 const url = 'https://web.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(message);
                 const $link = $action.find('a');
@@ -289,13 +437,23 @@
                     $('<a>', {
                         href: url,
                         target: '_blank',
-                        class: 'inline-flex items-center justify-center rounded bg-green-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-green-600',
-                        text: 'Kirim WA'
+                        class: 'inline-flex items-center justify-center px-3 py-1.5 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-semibold rounded-xl shadow-2xs hover:shadow-sm transition-all',
+                        html: '<i class="fab fa-whatsapp mr-1.5 text-sm"></i> Kirim WA'
                     }).appendTo($action.empty());
                 }
             } else {
-                $status.html('<span class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">Tidak ada nomor</span>');
-                $action.html('<span class="inline-flex items-center justify-center rounded bg-gray-300 px-3 py-2 text-xs font-bold text-gray-500 shadow-sm">Tidak Ada No</span>');
+                $status.html(`
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        Nomor Kosong
+                    </span>
+                `);
+                $action.html(`
+                    <span class="inline-flex items-center justify-center px-3 py-1.5 bg-slate-100 text-slate-400 text-xs font-medium rounded-xl border border-slate-200 cursor-not-allowed" title="Nomor WhatsApp belum diisi">
+                        <i class="fas fa-phone-slash mr-1.5 text-xs text-slate-400"></i>
+                        No. Kosong
+                    </span>
+                `);
             }
         }
 
@@ -312,17 +470,19 @@
         contactTable = $('#contactTable').DataTable({
             responsive: true,
             pageLength: 10,
+            dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"lf>rt<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 text-xs text-slate-500"ip>',
             language: {
-                search: "Cari shipper/kontak:",
+                search: "",
+                searchPlaceholder: "Cari shipper / kontak...",
                 lengthMenu: "Tampilkan _MENU_ data",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                info: "Menampilkan _START_ s/d _END_ dari total _TOTAL_ shipper",
+                infoEmpty: "Tidak ada data shipper",
                 infoFiltered: "(disaring dari _MAX_ total data)",
                 paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Selanjutnya",
-                    previous: "Sebelumnya"
+                    first: '<i class="fas fa-angle-double-left"></i>',
+                    last: '<i class="fas fa-angle-double-right"></i>',
+                    next: '<i class="fas fa-chevron-right text-xs"></i>',
+                    previous: '<i class="fas fa-chevron-left text-xs"></i>'
                 }
             }
         });
@@ -354,9 +514,63 @@
             updateSelectedSummary();
         });
 
-        updateSelectedSummary();
+        // ── Preview Modal Handler ──
+        $(document).on('click', '.preview-msg-btn', function() {
+            const index = $(this).attr('data-recipient-index');
+            const shipper = $(this).attr('data-shipper');
+            const message = $(this).attr('data-message');
+            const phone = contactValues[index] || '';
+            const normalizedPhone = normalizeWaPhone(phone);
 
+            $('#modalShipperName').text(shipper);
+            $('#modalRecipientPhone').text(phone ? 'No: ' + phone : 'Nomor WhatsApp belum diisi');
+            $('#modalMessageContent').text(message);
+
+            if (normalizedPhone) {
+                $('#modalDirectWaLink').attr('href', 'https://web.whatsapp.com/send?phone=' + normalizedPhone + '&text=' + encodeURIComponent(message)).removeClass('opacity-50 pointer-events-none');
+            } else {
+                $('#modalDirectWaLink').attr('href', '#').addClass('opacity-50 pointer-events-none');
+            }
+
+            $('#copyBtnText').text('Salin Teks');
+            $('#messagePreviewModal').removeClass('hidden');
+        });
+
+        function closeModal() {
+            $('#messagePreviewModal').addClass('hidden');
+        }
+
+        $('#closeModalBtn, #closeModalFooterBtn').on('click', closeModal);
+
+        $('#messagePreviewModal').on('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Copy message to clipboard
+        $('#copyMessageBtn').on('click', function() {
+            const textToCopy = $('#modalMessageContent').text();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    $('#copyBtnText').text('Tersalin!');
+                    setTimeout(() => { $('#copyBtnText').text('Salin Teks'); }, 2000);
+                });
+            } else {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                $('#copyBtnText').text('Tersalin!');
+                setTimeout(() => { $('#copyBtnText').text('Salin Teks'); }, 2000);
+            }
+        });
+
+        updateSelectedSummary();
     });
 </script>
 @endpush
 @endsection
+
