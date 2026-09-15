@@ -18,6 +18,8 @@ class ObAntarGudangController extends Controller
 {
     private const COMBO_BIAYA_20FT_SERVICE = 37500;
 
+    private const CKLS_MOBIL_PANJANG_BIAYA_20FT = 250000;
+
     /**
      * Return the warehouse where a container was located on a given date.
      */
@@ -196,6 +198,7 @@ class ObAntarGudangController extends Controller
                 Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
             ],
             'is_combo' => 'sometimes|boolean',
+            'is_ckls_mobil_panjang' => 'sometimes|boolean',
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -205,13 +208,21 @@ class ObAntarGudangController extends Controller
 
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
         $validated['is_combo'] = $request->boolean('is_combo');
+        $validated['is_ckls_mobil_panjang'] = $request->boolean('is_ckls_mobil_panjang');
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
         $namaGudangTujuan = mb_strtolower($gudangTujuan->nama_gudang);
+        $isTemasJkt = str_contains($namaGudangTujuan, 'temas jkt');
         $abaikanStatusKontainer = str_contains($namaGudangTujuan, 'temas')
-            && ! str_contains($namaGudangTujuan, 'temas jkt');
+            && ! $isTemasJkt;
 
         if ($validated['is_combo'] && ($ukuran !== '20' || $validated['status_service'] !== 'service')) {
             return back()->withInput()->with('error', 'Combo hanya tersedia untuk kontainer 20 ft dengan status Service.');
+        }
+        if ($validated['is_ckls_mobil_panjang'] && ($ukuran !== '20' || ! $isTemasJkt)) {
+            return back()->withInput()->with('error', 'CKLS menggunakan mobil panjang hanya tersedia untuk kontainer 20 ft dengan tujuan Temas JKT.');
+        }
+        if ($validated['is_combo'] && $validated['is_ckls_mobil_panjang']) {
+            return back()->withInput()->with('error', 'Pilih salah satu jenis tarif tambahan.');
         }
 
         $pricelistDimensions = MasterPricelistObAntarGudang::where('size_kontainer', $ukuran.'ft')
@@ -273,15 +284,18 @@ class ObAntarGudangController extends Controller
             $tagihan->nama_supir = $validated['nama_supir'];
             $tagihan->status_kontainer = $validated['status_kontainer'];
             $tagihan->is_combo = $validated['is_combo'];
+            $tagihan->is_ckls_mobil_panjang = $validated['is_ckls_mobil_panjang'];
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
             $tagihan->keterangan = $validated['keterangan']
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
             // Use the selected pricelist as the authoritative OB price.
-            $tagihan->biaya = $validated['is_combo']
-                ? self::COMBO_BIAYA_20FT_SERVICE
-                : $pricelist->biaya;
+            $tagihan->biaya = match (true) {
+                $validated['is_ckls_mobil_panjang'] => self::CKLS_MOBIL_PANJANG_BIAYA_20FT,
+                $validated['is_combo'] => self::COMBO_BIAYA_20FT_SERVICE,
+                default => $pricelist->biaya,
+            };
 
             $tagihan->save();
 

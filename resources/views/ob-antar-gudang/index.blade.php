@@ -517,6 +517,14 @@
                                     <p class="mt-1 pl-6 text-[10px] text-orange-700">Jika dicentang, nominal OB menjadi Rp 37.500.</p>
                                 </div>
 
+                                <div id="modal_ckls_mobil_panjang_wrapper" class="hidden rounded-md border border-blue-200 bg-blue-50 p-3">
+                                    <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-blue-900">
+                                        <input type="checkbox" name="is_ckls_mobil_panjang" id="modal_ckls_mobil_panjang" value="1" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                                        <span>CKLS menggunakan mobil panjang</span>
+                                    </label>
+                                    <p class="mt-1 pl-6 text-[10px] text-blue-700">Jika dicentang, nominal OB menjadi Rp 250.000.</p>
+                                </div>
+
                                 <div id="modal_status_kontainer_wrapper">
                                     <label for="modal_status_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
                                     <select name="status_kontainer" id="modal_status_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
@@ -538,7 +546,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status. Jika tujuan Temas, status kontainer diabaikan. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -551,7 +559,7 @@
                                     <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Tujuan--</option>
                                         @foreach($gudangs as $g)
-                                            <option value="{{ $g->id }}" data-is-temas="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas') && ! str_contains(mb_strtolower($g->nama_gudang), 'temas jkt') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            <option value="{{ $g->id }}" data-is-temas="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas') && ! str_contains(mb_strtolower($g->nama_gudang), 'temas jkt') ? '1' : '0' }}" data-is-temas-jkt="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas jkt') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -585,6 +593,7 @@
         document.getElementById('modal_status_service').value = 'non_service';
         document.getElementById('modal_status_kontainer').value = '';
         document.getElementById('modal_combo').checked = false;
+        document.getElementById('modal_ckls_mobil_panjang').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
@@ -680,21 +689,41 @@
     }
 
     function updateComboVisibility() {
-        const isEligible = document.getElementById('display_ukuran').innerText === '20'
-            && document.getElementById('modal_status_service').value === 'service';
+        const isTwentyFt = document.getElementById('display_ukuran').innerText === '20';
+        const isService = document.getElementById('modal_status_service').value === 'service';
+        const destinationOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
+        const isTemasJkt = destinationOption?.dataset.isTemasJkt === '1';
+        const isServiceComboEligible = isTwentyFt
+            && isService;
+        const isCklsEligible = isTwentyFt && isTemasJkt;
         const comboWrapper = document.getElementById('modal_combo_wrapper');
         const comboCheckbox = document.getElementById('modal_combo');
+        const cklsWrapper = document.getElementById('modal_ckls_mobil_panjang_wrapper');
+        const cklsCheckbox = document.getElementById('modal_ckls_mobil_panjang');
 
-        comboWrapper.classList.toggle('hidden', !isEligible);
-        comboCheckbox.disabled = !isEligible;
-        if (!isEligible) comboCheckbox.checked = false;
+        comboWrapper.classList.toggle('hidden', !isServiceComboEligible);
+        comboCheckbox.disabled = !isServiceComboEligible;
+        if (!isServiceComboEligible) comboCheckbox.checked = false;
+        cklsWrapper.classList.toggle('hidden', !isCklsEligible);
+        cklsCheckbox.disabled = !isCklsEligible;
+        if (!isCklsEligible) cklsCheckbox.checked = false;
         updateNominalFromSelection();
     }
 
     document.getElementById('modal_status_service').addEventListener('change', updateStatusKontainerVisibility);
     document.getElementById('modal_status_kontainer').addEventListener('change', updatePricelistOptions);
-    document.getElementById('gudang_tujuan_id').addEventListener('change', updatePricelistOptions);
-    document.getElementById('modal_combo').addEventListener('change', updateNominalFromSelection);
+    document.getElementById('gudang_tujuan_id').addEventListener('change', function() {
+        updatePricelistOptions();
+        updateComboVisibility();
+    });
+    document.getElementById('modal_combo').addEventListener('change', function() {
+        if (this.checked) document.getElementById('modal_ckls_mobil_panjang').checked = false;
+        updateNominalFromSelection();
+    });
+    document.getElementById('modal_ckls_mobil_panjang').addEventListener('change', function() {
+        if (this.checked) document.getElementById('modal_combo').checked = false;
+        updateNominalFromSelection();
+    });
 
     function updateGudangAsalFromHistory() {
         const nomor = document.getElementById('modal_nomor_kontainer').value;
@@ -737,6 +766,11 @@
     });
 
     function updateNominalFromSelection() {
+        if (document.getElementById('modal_ckls_mobil_panjang').checked) {
+            document.getElementById('nominal').value = '250000';
+            return;
+        }
+
         if (document.getElementById('modal_combo').checked) {
             document.getElementById('nominal').value = '37500';
             return;
