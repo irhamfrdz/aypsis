@@ -168,10 +168,10 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="btn-export-excel"
-                        style="background-color: #107c41; color: #ffffff;"
+                        style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-white text-xs font-bold rounded-lg shadow-sm hover:opacity-90 transition-all cursor-pointer">
-                        <i class="fas fa-file-excel text-sm text-emerald-200"></i>
-                        <span>Export Excel</span>
+                        <i class="fas fa-file-excel text-sm text-white"></i>
+                        <span>Export Excel (BPU)</span>
                     </button>
                     <button type="button" id="btn-generate-all"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all">
@@ -234,8 +234,14 @@
                     </button>
                 </div>
 
-                {{-- Counter / Status Badge --}}
+                {{-- Counter / Status Badge & Action --}}
                 <div class="flex items-center gap-2">
+                    <button type="button" id="btn-export-excel-2"
+                        style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg shadow-xs hover:opacity-90 transition-all cursor-pointer">
+                        <i class="fas fa-file-excel text-xs text-white"></i>
+                        <span>Export Excel</span>
+                    </button>
                     <span id="filter-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600">
                         <i class="fas fa-users text-xs"></i>
                         <span id="filter-count-text">0 Karyawan</span>
@@ -1699,6 +1705,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnExport = document.getElementById('btn-export-excel');
     if (btnExport) {
         btnExport.addEventListener('click', exportToExcel);
+    }
+    const btnExport2 = document.getElementById('btn-export-excel-2');
+    if (btnExport2) {
+        btnExport2.addEventListener('click', exportToExcel);
     }
 
     // Inisialisasi awal
