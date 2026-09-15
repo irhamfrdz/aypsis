@@ -187,7 +187,7 @@
                 <thead>
                     <tr class="bg-slate-50/90 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
                         <th class="py-3.5 px-4 text-center w-12 rounded-l-xl">
-                            <input type="checkbox" id="select-all-recipients" checked class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" title="Pilih semua shipper">
+                            <input type="checkbox" id="select-all-recipients" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" title="Pilih semua shipper">
                         </th>
                         <th class="py-3.5 px-3 text-center w-12">No</th>
                         <th class="py-3.5 px-4 min-w-[200px]">Shipper & Sumber</th>
@@ -205,7 +205,6 @@
                                 <input type="checkbox"
                                        class="recipient-checkbox h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
                                        data-recipient-index="{{ $index }}"
-                                       checked
                                        title="Pilih {{ $data['shipper_name'] }}">
                             </td>
 
