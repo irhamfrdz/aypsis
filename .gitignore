@@ -21,3 +21,5 @@ yarn-error.log
 /.idea
 /.vscode
 /.zed
+/wa-gateway/node_modules
+/wa-gateway/auth_session

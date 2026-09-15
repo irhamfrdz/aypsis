@@ -2704,6 +2704,8 @@ Route::middleware([
         // 📱 WA Templates Management
         Route::get('master/wa-broadcast/get-voyages', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getVoyages'])->name('master.wa-broadcast.get-voyages');
         Route::get('master/wa-broadcast/get-recipients', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getRecipients'])->name('master.wa-broadcast.get-recipients');
+        Route::get('master/wa-broadcast/gateway-status', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayStatus'])->name('master.wa-broadcast.gateway-status');
+        Route::post('master/wa-broadcast/gateway-send-single', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewaySendSingle'])->name('master.wa-broadcast.gateway-send-single');
         Route::resource('master/wa-templates', \App\Http\Controllers\Master\WaTemplateController::class)->names('master.wa-templates');
         Route::resource('master/wa-broadcast', \App\Http\Controllers\Master\WaBroadcastController::class)->names('master.wa-broadcast');
 

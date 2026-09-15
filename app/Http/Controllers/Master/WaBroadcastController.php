@@ -150,4 +150,22 @@ class WaBroadcastController extends Controller
 
         return redirect()->route('master.wa-broadcast.index')->with('success', 'Riwayat broadcast berhasil dihapus.');
     }
+
+    public function gatewayStatus(\App\Services\WhatsAppGatewayService $gateway)
+    {
+        return response()->json($gateway->getStatus());
+    }
+
+    public function gatewaySendSingle(Request $request, \App\Services\WhatsAppGatewayService $gateway)
+    {
+        $validated = $request->validate([
+            'phone' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        $result = $gateway->sendMessage($validated['phone'], $validated['message']);
+
+        return response()->json($result);
+    }
 }
+

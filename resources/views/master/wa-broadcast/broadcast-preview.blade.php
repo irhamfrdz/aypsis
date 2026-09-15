@@ -65,9 +65,9 @@
 <div class="space-y-6 font-sans max-w-7xl mx-auto pb-12">
     
     <!-- Top Bar Navigation & Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex items-center space-x-3.5">
-            <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm">
                 <i class="fab fa-whatsapp text-2xl"></i>
             </div>
             <div>
@@ -76,7 +76,13 @@
             </div>
         </div>
         <div class="flex items-center gap-2.5">
-            <a href="{{ route('master.wa-broadcast.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 rounded-xl transition-all duration-200 shadow-sm">
+            <!-- Gateway Status Pill -->
+            <div id="topGatewayStatusBadge" class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                <span class="w-2 h-2 rounded-full bg-slate-400 mr-2" id="topGatewayDot"></span>
+                <span id="topGatewayText">Memeriksa Gateway...</span>
+            </div>
+
+            <a href="{{ route('master.wa-broadcast.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 rounded-xl transition-all shadow-sm">
                 <i class="fas fa-arrow-left mr-2 text-xs"></i>
                 Kembali
             </a>
@@ -86,7 +92,7 @@
     <!-- Summary KPI Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Kapal & Voyage -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-blue-300 transition-all">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-blue-300 transition-all">
             <div class="flex items-center justify-between">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                     <i class="fas fa-ship text-base"></i>
@@ -102,7 +108,7 @@
         </div>
 
         <!-- Kendala / Masalah -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-amber-300 transition-all">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-amber-300 transition-all">
             <div class="flex items-center justify-between">
                 <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                     <i class="fas fa-exclamation-triangle text-base"></i>
@@ -118,7 +124,7 @@
         </div>
 
         <!-- Total Shipper Terdampak -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all">
             <div class="flex items-center justify-between">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                     <i class="fas fa-building text-base"></i>
@@ -137,7 +143,7 @@
         </div>
 
         <!-- Total Kontainer Terdampak -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden group hover:border-indigo-300 transition-all">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-indigo-300 transition-all">
             <div class="flex items-center justify-between">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
                     <i class="fas fa-boxes-stacked text-base"></i>
@@ -157,10 +163,10 @@
     </div>
 
     <!-- Main Card & Data Table -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         
         <!-- Table Control & Toolbar Header -->
-        <div class="p-5 border-b border-slate-100 bg-slate-50/60">
+        <div class="p-5 border-b border-slate-100 bg-slate-50/70">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -172,8 +178,8 @@
                 </div>
                 
                 <!-- Summary Tag & Bulk Send Button -->
-                <div class="flex items-center flex-wrap gap-2.5">
-                    <div class="inline-flex items-center px-3 py-1.5 rounded-xl bg-blue-50/80 border border-blue-200/70 text-blue-700 text-xs font-semibold shadow-2xs">
+                <div class="flex items-center flex-wrap gap-3">
+                    <div class="inline-flex items-center px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm">
                         <i class="fas fa-check-circle mr-1.5 text-blue-500"></i>
                         <span id="selected-recipient-summary">0 dari 0 Shipper Dipilih</span>
                     </div>
@@ -181,10 +187,10 @@
                     <!-- Tombol Kirim Massal -->
                     <button type="button" 
                             id="btn-open-bulk-modal" 
-                            class="inline-flex items-center justify-center px-4 py-1.5 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
                             disabled
                             title="Pilih minimal 1 shipper yang memiliki nomor kontak">
-                        <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
+                        <i class="fab fa-whatsapp mr-2 text-sm"></i>
                         <span>Kirim Massal (<span id="bulk-selected-count">0</span>)</span>
                     </button>
                 </div>
@@ -195,7 +201,7 @@
         <div class="p-5 overflow-x-auto">
             <table id="contactTable" class="w-full text-left text-sm border-collapse">
                 <thead>
-                    <tr class="bg-slate-50/90 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                    <tr class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
                         <th class="py-3.5 px-4 text-center w-12 rounded-l-xl">
                             <input type="checkbox" id="select-all-recipients" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" title="Pilih semua shipper">
                         </th>
@@ -238,7 +244,7 @@
 
                             <!-- Input No WhatsApp -->
                             <td class="py-3.5 px-4">
-                                <div class="relative rounded-xl shadow-2xs">
+                                <div class="relative rounded-xl shadow-sm">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                         <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
                                     </div>
@@ -280,7 +286,7 @@
                                 <div class="flex items-center justify-center gap-1.5">
                                     <!-- Preview Button -->
                                     <button type="button"
-                                            class="preview-msg-btn inline-flex items-center justify-center px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-colors border border-slate-200/80 shadow-2xs"
+                                            class="preview-msg-btn inline-flex items-center justify-center px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-colors border border-slate-200 shadow-sm"
                                             data-shipper="{{ $data['shipper_name'] }}"
                                             data-recipient-index="{{ $index }}"
                                             data-message="{{ $data['pesan'] }}"
@@ -291,7 +297,7 @@
                                     <!-- Send WA Action Container -->
                                     <div class="wa-action inline-block" data-recipient-index="{{ $index }}" data-message="{{ $data['pesan'] }}">
                                         @if($data['wa_url'])
-                                            <a href="{{ $data['wa_url'] }}" target="_blank" class="btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-semibold rounded-xl shadow-2xs hover:shadow-sm transition-all" data-recipient-index="{{ $index }}">
+                                            <a href="{{ $data['wa_url'] }}" target="_blank" class="btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all" data-recipient-index="{{ $index }}">
                                                 <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
                                                 Kirim WA
                                             </a>
@@ -325,20 +331,20 @@
 </div>
 
 <!-- Modal Asisten Pengiriman Massal (Broadcast Dispatcher) -->
-<div id="bulkBroadcastModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all">
+<div id="bulkBroadcastModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 transition-all">
     <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
         <!-- Header Modal -->
-        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-2xs">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
                     <i class="fab fa-whatsapp text-xl"></i>
                 </div>
                 <div>
                     <h3 class="text-base font-bold text-slate-800">Asisten Pengiriman Broadcast Massal</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Kirim pesan WhatsApp ke seluruh shipper terpilih secara terpandu</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Pilih mode pengiriman otomatis 1-klik (Gateway) atau buka WhatsApp Web</p>
                 </div>
             </div>
-            <button type="button" id="closeBulkModalBtn" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200/60 flex items-center justify-center transition-colors">
+            <button type="button" id="closeBulkModalBtn" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
@@ -346,33 +352,68 @@
         <!-- Body Modal -->
         <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto custom-scrollbar">
             
+            <!-- Gateway Status Alert Box -->
+            <div id="modalGatewayAlert" class="p-4 rounded-2xl border flex items-center justify-between text-xs transition-all bg-slate-50 border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <span class="w-3 h-3 rounded-full bg-slate-400" id="modalGatewayDot"></span>
+                    <div>
+                        <p class="font-bold text-slate-800" id="modalGatewayTitle">Memeriksa Status WA Gateway...</p>
+                        <p class="text-[11px] text-slate-500" id="modalGatewayDesc">Mendeteksi koneksi microservice Baileys di port 3000</p>
+                    </div>
+                </div>
+                <div id="modalGatewayAction">
+                    <!-- Dynamic button for QR Code if needed -->
+                </div>
+            </div>
+
             <!-- Progress Bar Card -->
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
                 <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
                     <span id="bulkProgressLabel">Proses: 0 dari 0 Shipper</span>
-                    <span id="bulkProgressPercent" class="text-emerald-600">0%</span>
+                    <span id="bulkProgressPercent" class="text-emerald-600 font-bold">0%</span>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                    <div id="bulkProgressBar" class="bg-[#25D366] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="bulkProgressBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- 1-Click Gateway Automatic Broadcast Card -->
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-400 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-emerald-800 font-bold text-sm">
+                            <i class="fas fa-bolt text-amber-500"></i>
+                            <span>Pengiriman Otomatis 1-Klik (Background)</span>
+                        </div>
+                        <p class="text-xs text-emerald-700 mt-1">
+                            Kirim ke seluruh shipper terpilih di background tanpa membuka tab WhatsApp satu per satu.
+                        </p>
+                    </div>
+                    <button type="button" 
+                            id="btnStartGatewayBulkSend" 
+                            class="inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition-all cursor-pointer whitespace-nowrap">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        <span>Kirim Semua Sekarang (1 Klik)</span>
+                    </button>
                 </div>
             </div>
 
             <!-- Current Shipper Card (Sedang Diproses) -->
-            <div id="bulkCurrentCard" class="bg-white border-2 border-emerald-400 rounded-2xl p-5 shadow-xs">
-                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
+            <div id="bulkCurrentCard" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2.5">
                     <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Sedang Diproses</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Detail Penerima Terpilih</span>
                     </div>
-                    <span id="bulkCurrentIndexBadge" class="text-xs font-semibold px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+                    <span id="bulkCurrentIndexBadge" class="text-xs font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
                         Penerima ke-1
                     </span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                     <div>
                         <p class="text-[11px] font-medium text-slate-400">Shipper</p>
-                        <h4 id="bulkCurrentShipper" class="text-base font-bold text-slate-800 truncate">-</h4>
+                        <h4 id="bulkCurrentShipper" class="text-sm font-bold text-slate-800 truncate">-</h4>
                     </div>
                     <div>
                         <p class="text-[11px] font-medium text-slate-400">No. WhatsApp</p>
@@ -382,8 +423,8 @@
 
                 <!-- Message Preview Box -->
                 <div>
-                    <p class="text-[11px] font-medium text-slate-400 mb-1.5">Isi Pesan WhatsApp:</p>
-                    <div id="bulkCurrentMessage" class="bg-[#efeae2] p-3.5 rounded-xl border border-slate-200/70 text-xs text-slate-800 leading-relaxed font-sans max-h-36 overflow-y-auto whitespace-pre-wrap select-all">
+                    <p class="text-[11px] font-medium text-slate-400 mb-1">Isi Pesan WhatsApp:</p>
+                    <div id="bulkCurrentMessage" class="bg-stone-100 p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed font-sans max-h-28 overflow-y-auto whitespace-pre-wrap select-all">
                         -
                     </div>
                 </div>
@@ -395,46 +436,43 @@
                     <i class="fas fa-check text-2xl"></i>
                 </div>
                 <h4 class="text-base font-bold text-emerald-800">Semua Broadcast Berhasil Diproses!</h4>
-                <p class="text-xs text-emerald-600 mt-1">Seluruh tab pesan WhatsApp shipper terpilih telah dibuka.</p>
+                <p class="text-xs text-emerald-600 mt-1">Seluruh pesan WhatsApp shipper terpilih telah diproses.</p>
             </div>
 
-            <!-- Option Checklist & Multi-Tab Shortcut -->
-            <div class="bg-blue-50/70 border border-blue-200/70 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-blue-900">
-                <div class="flex items-start gap-2.5">
-                    <i class="fas fa-info-circle text-blue-500 mt-0.5 text-sm"></i>
-                    <div>
-                        <p class="font-bold">Tips Pengiriman:</p>
-                        <p class="text-[11px] text-blue-700 mt-0.5">Klik tombol hijau untuk membuka chat WhatsApp dan mengirim pesan.</p>
-                    </div>
+            <!-- Option Multi-Tab Shortcut (WhatsApp Web) -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                    <i class="fab fa-chrome text-slate-400 text-sm"></i>
+                    <span>Alternatif: Buka semua tab WhatsApp Web di browser</span>
                 </div>
-                <button type="button" id="btnOpenAllTabs" class="inline-flex items-center justify-center px-3.5 py-1.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl font-bold shadow-2xs transition-all whitespace-nowrap">
+                <button type="button" id="btnOpenAllTabs" class="inline-flex items-center justify-center px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-bold shadow-sm transition-all whitespace-nowrap">
                     <i class="fas fa-external-link-alt mr-1.5 text-[11px]"></i>
-                    Buka Semua Tab Sekaligus
+                    Buka Semua Tab Web
                 </button>
             </div>
 
             <!-- Queue Mini List -->
             <div>
                 <h4 class="text-xs font-bold text-slate-700 mb-2">Daftar Antrean Penerima:</h4>
-                <div id="bulkQueueList" class="divide-y divide-slate-100 border border-slate-200/80 rounded-2xl max-h-40 overflow-y-auto bg-white custom-scrollbar">
+                <div id="bulkQueueList" class="divide-y divide-slate-100 border border-slate-200 rounded-2xl max-h-40 overflow-y-auto bg-white custom-scrollbar">
                     <!-- Queue items dynamically injected -->
                 </div>
             </div>
         </div>
 
         <!-- Footer Actions -->
-        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <button type="button" id="closeBulkModalFooterBtn" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
                 Tutup Asisten
             </button>
             <div class="flex items-center gap-2">
-                <button type="button" id="btnSkipCurrent" class="px-3.5 py-2 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-2xs">
+                <button type="button" id="btnSkipCurrent" class="px-3.5 py-2 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-sm">
                     <i class="fas fa-forward mr-1 text-slate-400"></i>
-                    Lewati Shipper Ini
+                    Lewati Shipper
                 </button>
-                <button type="button" id="btnSendAndNext" class="inline-flex items-center px-5 py-2 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-bold rounded-xl shadow-sm transition-all">
+                <button type="button" id="btnSendAndNext" class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition-all">
                     <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
-                    <span>Buka WhatsApp & Lanjut</span>
+                    <span>Buka Tab WA & Lanjut</span>
                 </button>
             </div>
         </div>
@@ -442,10 +480,10 @@
 </div>
 
 <!-- Modal Preview Pesan WhatsApp Modern (Individual) -->
-<div id="messagePreviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all">
+<div id="messagePreviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 transition-all">
     <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
         <!-- Header Modal -->
-        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
                     <i class="fab fa-whatsapp text-lg"></i>
@@ -455,14 +493,14 @@
                     <p class="text-xs text-slate-500" id="modalRecipientPhone">Nomor WhatsApp</p>
                 </div>
             </div>
-            <button type="button" id="closeModalBtn" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200/60 flex items-center justify-center transition-colors">
+            <button type="button" id="closeModalBtn" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
 
         <!-- Body Modal (WA Chat Bubble Style) -->
-        <div class="p-6 bg-[#efeae2] relative min-h-[220px] max-h-[60vh] overflow-y-auto custom-scrollbar" style="background-image: radial-gradient(#d1d7db 1px, transparent 1px); background-size: 16px 16px;">
-            <div class="bg-white rounded-2xl rounded-tl-xs p-4 shadow-sm border border-slate-200/60 text-xs text-slate-800 font-sans leading-relaxed whitespace-pre-wrap select-all relative" id="modalMessageContent">
+        <div class="p-6 bg-stone-100 relative min-h-[220px] max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <div class="bg-white rounded-2xl rounded-tl-xs p-4 shadow-sm border border-slate-200 text-xs text-slate-800 font-sans leading-relaxed whitespace-pre-wrap select-all relative" id="modalMessageContent">
                 <!-- Message content injected by JS -->
             </div>
         </div>
@@ -477,7 +515,7 @@
                 <button type="button" id="closeModalFooterBtn" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
                     Tutup
                 </button>
-                <a href="#" id="modalDirectWaLink" target="_blank" class="inline-flex items-center px-4 py-2 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-bold rounded-xl shadow-sm transition-all">
+                <a href="#" id="modalDirectWaLink" target="_blank" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition-all">
                     <i class="fab fa-whatsapp mr-1.5 text-sm"></i>
                     Buka di WhatsApp
                 </a>
@@ -495,6 +533,7 @@
         const selectedRecipients = {};
         const contactValues = {};
         const sentRecipients = {};
+        let isGatewayOnline = false;
 
         // Inisialisasi checkbox & nomor awal
         $('.recipient-checkbox').each(function() {
@@ -519,6 +558,54 @@
             return phone.startsWith('62') ? phone : '62' + phone;
         }
 
+        // Cek Status Gateway Baileys
+        function checkGateway() {
+            $.get("{{ route('master.wa-broadcast.gateway-status') }}")
+                .done(function(res) {
+                    if (res.isReady) {
+                        isGatewayOnline = true;
+                        $('#topGatewayStatusBadge').removeClass('bg-slate-100 bg-amber-50 text-slate-600 text-amber-700 border-slate-200 border-amber-200').addClass('bg-emerald-50 text-emerald-700 border-emerald-200');
+                        $('#topGatewayDot').removeClass('bg-slate-400 bg-amber-500').addClass('bg-emerald-500');
+                        $('#topGatewayText').text('WA Gateway Online (' + (res.user ? res.user.split('@')[0].split(':')[0] : 'Siap') + ')');
+
+                        $('#modalGatewayAlert').removeClass('bg-slate-50 bg-amber-50 border-slate-200 border-amber-200 text-slate-800 text-amber-800').addClass('bg-emerald-50 border-emerald-200 text-emerald-800');
+                        $('#modalGatewayDot').removeClass('bg-slate-400 bg-amber-500').addClass('bg-emerald-500 animate-pulse');
+                        $('#modalGatewayTitle').text('WA Gateway Terkoneksi & Siap Kirim Otomatis');
+                        $('#modalGatewayDesc').text('Nomor Aktif: ' + (res.user || '-'));
+                        $('#modalGatewayAction').empty();
+                    } else {
+                        isGatewayOnline = false;
+                        $('#topGatewayStatusBadge').removeClass('bg-emerald-50 text-emerald-700 border-emerald-200').addClass('bg-amber-50 text-amber-700 border-amber-200');
+                        $('#topGatewayDot').removeClass('bg-emerald-500').addClass('bg-amber-500');
+                        $('#topGatewayText').text('WA Gateway Belum Scan QR');
+
+                        $('#modalGatewayAlert').removeClass('bg-emerald-50 border-emerald-200 text-emerald-800').addClass('bg-amber-50 border-amber-200 text-amber-800');
+                        $('#modalGatewayDot').removeClass('bg-emerald-500 animate-pulse').addClass('bg-amber-500');
+                        $('#modalGatewayTitle').text('WA Gateway Belum Terkoneksi / Belum Scan QR');
+                        $('#modalGatewayDesc').text('Jalankan service di folder wa-gateway dan scan QR code.');
+                        $('#modalGatewayAction').html(`
+                            <a href="http://localhost:3000/qr" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all">
+                                <i class="fas fa-qrcode mr-1.5"></i> Buka Scan QR
+                            </a>
+                        `);
+                    }
+                })
+                .fail(function() {
+                    isGatewayOnline = false;
+                    $('#topGatewayStatusBadge').removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-amber-50 text-amber-700 border-amber-200').addClass('bg-slate-100 text-slate-600 border-slate-200');
+                    $('#topGatewayDot').removeClass('bg-emerald-500 bg-amber-500').addClass('bg-slate-400');
+                    $('#topGatewayText').text('WA Gateway Offline');
+
+                    $('#modalGatewayAlert').removeClass('bg-emerald-50 border-emerald-200 text-emerald-800 bg-amber-50 border-amber-200 text-amber-800').addClass('bg-slate-50 border-slate-200 text-slate-700');
+                    $('#modalGatewayDot').removeClass('bg-emerald-500 animate-pulse bg-amber-500').addClass('bg-slate-400');
+                    $('#modalGatewayTitle').text('Microservice WA Gateway Belum Dijalankan');
+                    $('#modalGatewayDesc').text('Jalankan "node server.js" di terminal folder wa-gateway untuk mengaktifkan kirim 1-klik.');
+                    $('#modalGatewayAction').empty();
+                });
+        }
+
+        checkGateway();
+
         function updateSelectedSummary() {
             const total = Object.keys(selectedRecipients).length;
             const selected = Object.values(selectedRecipients).filter(Boolean).length;
@@ -535,9 +622,15 @@
             $('#bulk-selected-count').text(validSelectedCount);
             
             if (validSelectedCount > 0) {
-                $('#btn-open-bulk-modal').prop('disabled', false);
+                $('#btn-open-bulk-modal')
+                    .prop('disabled', false)
+                    .removeClass('opacity-50 cursor-not-allowed bg-slate-300 text-slate-500')
+                    .addClass('bg-emerald-600 hover:bg-emerald-700 text-white shadow');
             } else {
-                $('#btn-open-bulk-modal').prop('disabled', true);
+                $('#btn-open-bulk-modal')
+                    .prop('disabled', true)
+                    .addClass('opacity-50 cursor-not-allowed bg-slate-300 text-slate-500')
+                    .removeClass('bg-emerald-600 hover:bg-emerald-700 text-white shadow');
             }
 
             $('#select-all-recipients').prop('checked', total > 0 && selected === total);
@@ -555,12 +648,12 @@
                 $status.html(`
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                         <i class="fas fa-check-double text-[10px] text-blue-500"></i>
-                        Sudah Dibuka
+                        Terkirim
                     </span>
                 `);
                 const url = 'https://web.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(message);
                 $action.html(`
-                    <a href="${url}" target="_blank" class="btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-2xs hover:shadow-sm transition-all" data-recipient-index="${index}">
+                    <a href="${url}" target="_blank" class="btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all" data-recipient-index="${index}">
                         <i class="fas fa-redo-alt mr-1 text-[10px]"></i> Kirim Ulang
                     </a>
                 `);
@@ -585,7 +678,7 @@
 
             if (phone) {
                 $status.html(`
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         Siap Kirim
                     </span>
@@ -599,7 +692,7 @@
                     $('<a>', {
                         href: url,
                         target: '_blank',
-                        class: 'btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-semibold rounded-xl shadow-2xs hover:shadow-sm transition-all',
+                        class: 'btn-single-send inline-flex items-center justify-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all',
                         html: '<i class="fab fa-whatsapp mr-1.5 text-sm"></i> Kirim WA',
                         'data-recipient-index': index
                     }).appendTo($action.empty());
@@ -755,6 +848,7 @@
         // ═══════════════════════════════════════════════════════════
         let bulkQueue = [];
         let currentQueueIndex = 0;
+        let isGatewaySending = false;
 
         function buildBulkQueue() {
             bulkQueue = [];
@@ -797,11 +891,13 @@
                 $('#bulkCompletedBanner').removeClass('hidden');
                 $('#btnSendAndNext').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
                 $('#btnSkipCurrent').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+                $('#btnStartGatewayBulkSend').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
             } else {
                 $('#bulkCurrentCard').removeClass('hidden');
                 $('#bulkCompletedBanner').addClass('hidden');
                 $('#btnSendAndNext').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
                 $('#btnSkipCurrent').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+                $('#btnStartGatewayBulkSend').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
 
                 const currentItem = bulkQueue[currentQueueIndex];
                 $('#bulkCurrentIndexBadge').text(`Penerima ke-${currentQueueIndex + 1} dari ${total}`);
@@ -814,20 +910,24 @@
             let listHtml = '';
             bulkQueue.forEach((item, i) => {
                 let badge = '';
-                let activeBg = (i === currentQueueIndex && currentQueueIndex < total) ? 'bg-emerald-50/70 font-semibold' : '';
+                let activeBg = (i === currentQueueIndex && currentQueueIndex < total) ? 'bg-emerald-50 font-semibold' : '';
 
                 if (item.status === 'sent') {
-                    badge = '<span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200"><i class="fas fa-check-double mr-1 text-[9px]"></i> Sudah Dibuka</span>';
+                    badge = '<span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"><i class="fas fa-check-double mr-1 text-[9px]"></i> Terkirim</span>';
+                } else if (item.status === 'sending') {
+                    badge = '<span class="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fas fa-spinner fa-spin mr-1 text-[9px]"></i> Mengirim...</span>';
+                } else if (item.status === 'failed') {
+                    badge = '<span class="text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200"><i class="fas fa-times mr-1 text-[9px]"></i> Gagal</span>';
                 } else if (item.status === 'skipped') {
                     badge = '<span class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><i class="fas fa-forward mr-1 text-[9px]"></i> Dilewati</span>';
                 } else if (i === currentQueueIndex) {
-                    badge = '<span class="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fas fa-paper-plane mr-1 text-[9px]"></i> Sedang Diproses</span>';
+                    badge = '<span class="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fas fa-paper-plane mr-1 text-[9px]"></i> Fokus</span>';
                 } else {
                     badge = '<span class="text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">Menunggu</span>';
                 }
 
                 listHtml += `
-                    <div class="px-4 py-2.5 flex items-center justify-between text-xs ${activeBg}">
+                    <div class="px-4 py-2 flex items-center justify-between text-xs ${activeBg}">
                         <div class="flex items-center space-x-2 truncate pr-2">
                             <span class="text-slate-400 font-mono w-5">${i + 1}.</span>
                             <span class="text-slate-800 font-medium truncate">${item.shipper}</span>
@@ -844,6 +944,7 @@
 
         // Buka modal Bulk Dispatcher
         $('#btn-open-bulk-modal').on('click', function() {
+            checkGateway();
             buildBulkQueue();
             if (bulkQueue.length === 0) {
                 alert('Silakan pilih minimal 1 shipper yang memiliki nomor WhatsApp valid terlebih dahulu.');
@@ -859,6 +960,11 @@
         });
 
         function closeBulkModal() {
+            if (isGatewaySending) {
+                if (!confirm('Proses pengiriman otomatis sedang berjalan. Apakah Anda yakin ingin menutup modal?')) {
+                    return;
+                }
+            }
             $('#bulkBroadcastModal').addClass('hidden');
         }
 
@@ -868,6 +974,72 @@
             if (e.target === this) {
                 closeBulkModal();
             }
+        });
+
+        // ── PENGIRIMAN 1-KLIK OTOMATIS VIA GATEWAY ──────────────────
+        $('#btnStartGatewayBulkSend').on('click', async function() {
+            if (isGatewaySending) return;
+
+            if (!isGatewayOnline) {
+                alert('Microservice WhatsApp Gateway belum terkoneksi. Silakan jalankan "node server.js" di folder wa-gateway dan scan QR code terlebih dahulu.');
+                return;
+            }
+
+            const pendingItems = bulkQueue.filter(q => q.status === 'pending' || q.status === 'failed');
+            if (pendingItems.length === 0) {
+                alert('Semua pesan dalam antrean sudah selesai dikirim.');
+                return;
+            }
+
+            if (!confirm(`Mulai pengiriman otomatis ke ${pendingItems.length} shipper di background?`)) {
+                return;
+            }
+
+            isGatewaySending = true;
+            $('#btnStartGatewayBulkSend').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim Otomatis...');
+
+            for (let i = 0; i < bulkQueue.length; i++) {
+                const item = bulkQueue[i];
+                if (item.status === 'sent') continue;
+
+                currentQueueIndex = i;
+                item.status = 'sending';
+                renderBulkQueueUI();
+
+                try {
+                    const response = await $.ajax({
+                        url: "{{ route('master.wa-broadcast.gateway-send-single') }}",
+                        method: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            phone: item.phone,
+                            message: item.message
+                        }
+                    });
+
+                    if (response.status) {
+                        item.status = 'sent';
+                        sentRecipients[item.index] = true;
+                    } else {
+                        item.status = 'failed';
+                    }
+                } catch (err) {
+                    console.error('Send error:', err);
+                    item.status = 'failed';
+                }
+
+                refreshRecipientContact(item.index, contactValues[item.index] || '');
+                renderBulkQueueUI();
+
+                // Delay aman 1 detik antar nomor agar tidak dianggap spam oleh WhatsApp
+                await new Promise(r => setTimeout(r, 1000));
+            }
+
+            currentQueueIndex = bulkQueue.length;
+            isGatewaySending = false;
+            $('#btnStartGatewayBulkSend').prop('disabled', false).html('<i class="fas fa-paper-plane mr-2"></i> Kirim Semua Sekarang (1 Klik)');
+            renderBulkQueueUI();
+            alert('Proses pengiriman broadcast otomatis selesai!');
         });
 
         // Kirim & Lanjut (Buka tab WA saat ini, lalu geser ke index berikutnya)
@@ -930,4 +1102,3 @@
 </script>
 @endpush
 @endsection
-
