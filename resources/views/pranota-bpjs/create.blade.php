@@ -196,6 +196,19 @@
                         </select>
                     </div>
 
+                    {{-- Filter Cabang BPJS Dropdown --}}
+                    <div class="flex items-center gap-2 min-w-[220px]">
+                        <label for="filter-cabang-bpjs" class="text-xs font-semibold text-gray-700 whitespace-nowrap flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-purple-100 text-purple-800">
+                                <i class="fas fa-building text-[10px]"></i>
+                            </span>
+                            <span>Filter Cabang:</span>
+                        </label>
+                        <select id="filter-cabang-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium cursor-pointer min-w-[180px]">
+                            <option value="all">Semua Cabang BPJS</option>
+                        </select>
+                    </div>
+
                     {{-- Search Karyawan Input --}}
                     <div class="relative min-w-[220px]">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
@@ -346,7 +359,7 @@
                     <i class="fas fa-filter-circle-xmark text-xl"></i>
                 </div>
                 <h3 class="text-sm font-semibold text-gray-700">Tidak ada karyawan yang sesuai filter</h3>
-                <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Tidak ditemukan karyawan dengan Group BPJS atau kata kunci pencarian yang dipilih.</p>
+                <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Tidak ditemukan karyawan dengan kriteria Group, Cabang BPJS, atau kata kunci pencarian yang dipilih.</p>
                 <button type="button" id="btn-reset-filter-empty" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors">
                     <i class="fas fa-rotate-left text-xs"></i>
                     Reset Filter
@@ -383,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterEmptyState = document.getElementById('table-filter-empty-state');
     const btnAdd = document.getElementById('btn-add-karyawan');
     const filterGroupSelect = document.getElementById('filter-group-bpjs');
+    const filterCabangSelect = document.getElementById('filter-cabang-bpjs');
     const searchKaryawanInput = document.getElementById('search-karyawan');
     const btnClearSearch = document.getElementById('btn-clear-search');
     const btnResetFilter = document.getElementById('btn-reset-filter');
@@ -485,10 +499,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Populate options for the Cabang BPJS filter dropdown
+     */
+    function populateCabangFilterOptions() {
+        if (!filterCabangSelect) return;
+
+        const cabangs = new Set();
+        karyawans.forEach(k => {
+            if (k.cabang_bpjs && k.cabang_bpjs.trim() !== '') {
+                cabangs.add(k.cabang_bpjs.trim());
+            }
+        });
+        rumusBpjs.forEach(r => {
+            if (r.cabang_bpjs && r.cabang_bpjs.trim() !== '') {
+                cabangs.add(r.cabang_bpjs.trim());
+            }
+        });
+
+        const sortedCabangs = Array.from(cabangs).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+
+        let html = '<option value="all">Semua Cabang BPJS</option>';
+        sortedCabangs.forEach(c => {
+            html += `<option value="${c}">${c}</option>`;
+        });
+        filterCabangSelect.innerHTML = html;
+    }
+
+    /**
      * Apply filter and search on table rows and columns
      */
     function applyFilter() {
         const selectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
+        const selectedCabang = filterCabangSelect ? filterCabangSelect.value : 'all';
         const query = searchKaryawanInput ? (searchKaryawanInput.value || '').trim().toLowerCase() : '';
         const rows = container.querySelectorAll('tr.detail-row');
         
@@ -518,6 +560,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 matchGroup = ((gJamUpper !== '' || cab !== '' || dppJam > 0) && !gJamUpper.includes('PPU') && !gJamUpper.includes('BPU-CREW'));
             }
 
+            // Check cabang match
+            let matchCabang = false;
+            if (selectedCabang === 'all' || !selectedCabang) {
+                matchCabang = true;
+            } else {
+                matchCabang = cab.toLowerCase() === selectedCabang.toLowerCase();
+            }
+
             // Check search match
             let matchSearch = true;
             if (query) {
@@ -528,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
                               cab.toLowerCase().includes(query);
             }
 
-            if (matchGroup && matchSearch) {
+            if (matchGroup && matchCabang && matchSearch) {
                 tr.classList.remove('hidden');
                 visibleRows++;
                 const rowNumEl = tr.querySelector('.row-number');
@@ -544,7 +594,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateColumnVisibility(selectedGroup);
 
         // Filter status indicators
-        const isFiltered = (selectedGroup !== 'all' && selectedGroup !== '') || query.length > 0;
+        const isFiltered = (selectedGroup !== 'all' && selectedGroup !== '') || 
+                           (selectedCabang !== 'all' && selectedCabang !== '') || 
+                           query.length > 0;
         
         if (btnResetFilter) {
             btnResetFilter.classList.toggle('hidden', !isFiltered);
@@ -575,10 +627,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filterEmptyState) filterEmptyState.classList.add('hidden');
         }
 
-        calculateTotals(isFiltered, visibleRows, totalRows, selectedGroup);
+        calculateTotals(isFiltered, visibleRows, totalRows, selectedGroup, selectedCabang);
     }
 
-    function calculateTotals(isFiltered = false, visibleCount = 0, totalCount = 0, selectedGroup = 'all') {
+    function calculateTotals(isFiltered = false, visibleCount = 0, totalCount = 0, selectedGroup = 'all', selectedCabang = 'all') {
         // Global sums across all rows
         let globalKes = 0, globalKet = 0;
         let globalJhtB = 0, globalJhtH = 0, globalJkk = 0, globalJkm = 0;
@@ -705,8 +757,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const footerLabel = document.getElementById('footer-total-label');
         if (footerLabel) {
             if (isFiltered) {
-                const groupLabel = selectedGroup !== 'all' ? selectedGroup : 'Semua Group';
-                footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total ${groupLabel} (${visibleCount} Karyawan):</span></div>`;
+                let filterLabels = [];
+                if (selectedGroup !== 'all' && selectedGroup !== '') filterLabels.push(selectedGroup);
+                if (selectedCabang !== 'all' && selectedCabang !== '') filterLabels.push(selectedCabang);
+                const filterText = filterLabels.length > 0 ? filterLabels.join(' — ') : 'Filter';
+                footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total ${filterText} (${visibleCount} Karyawan):</span></div>`;
             } else {
                 footerLabel.innerText = 'Total Keseluruhan:';
             }
@@ -1369,6 +1424,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterGroupSelect) {
         filterGroupSelect.addEventListener('change', applyFilter);
     }
+    if (filterCabangSelect) {
+        filterCabangSelect.addEventListener('change', applyFilter);
+    }
     if (searchKaryawanInput) {
         searchKaryawanInput.addEventListener('input', applyFilter);
     }
@@ -1382,6 +1440,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resetAllFilters() {
         if (filterGroupSelect) filterGroupSelect.value = 'all';
+        if (filterCabangSelect) filterCabangSelect.value = 'all';
         if (searchKaryawanInput) searchKaryawanInput.value = '';
         applyFilter();
     }
@@ -1428,6 +1487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inisialisasi awal
     populateGroupFilterOptions();
+    populateCabangFilterOptions();
     applyFilter();
 });
 </script>
