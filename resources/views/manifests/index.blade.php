@@ -197,6 +197,17 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
+                    @if(request()->boolean('tanpa_size'))
+                        <a href="{{ route('report.manifests.index', request()->except(['page', 'tanpa_size'])) }}"
+                           class="px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-lg hover:bg-amber-200 transition-colors duration-200">
+                            Tampilkan Semua Size
+                        </a>
+                    @else
+                        <a href="{{ route('report.manifests.index', array_merge(request()->except('page'), ['tanpa_size' => 1])) }}"
+                           class="px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-lg hover:bg-amber-200 transition-colors duration-200">
+                            Tampilkan Tanpa Size
+                        </a>
+                    @endif
                     <a href="{{ route('report.manifests.index') }}"
                        class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200">
                         Reset

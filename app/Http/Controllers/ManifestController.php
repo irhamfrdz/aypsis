@@ -106,8 +106,14 @@ class ManifestController extends Controller
             $query->whereRaw('UPPER(tipe_kontainer) = ?', [strtoupper($tipe)]);
         }
 
+        // Tampilkan manifest yang belum memiliki size.
+        if ($request->boolean('tanpa_size')) {
+            $query->where(function ($q) {
+                $q->whereNull('size_kontainer')
+                    ->orWhereRaw("TRIM(size_kontainer) = ''");
+            });
         // Filter by size kontainer
-        if ($request->filled('size_kontainer')) {
+        } elseif ($request->filled('size_kontainer')) {
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
