@@ -18,61 +18,102 @@ let sock = null;
 let qrCodeString = null;
 let connectionStatus = 'connecting'; // 'connecting' | 'open' | 'close'
 let connectedUser = null;
+let isStarting = false;
 
-async function startWhatsApp() {
-    if (!fs.existsSync(SESSION_DIR)) {
-        fs.mkdirSync(SESSION_DIR, { recursive: true });
-    }
+async function startWhatsApp(forceReset = false) {
+    if (isStarting) return;
+    isStarting = true;
 
-    const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
-    const { version } = await fetchLatestBaileysVersion();
-
-    sock = makeWASocket({
-        version,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false,
-        auth: state,
-        browser: ['AYPSIS Shipping System', 'Chrome', '1.0.0'],
-        syncFullHistory: false
-    });
-
-    sock.ev.on('creds.update', saveCreds);
-
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
-
-        if (qr) {
-            qrCodeString = qr;
-            connectionStatus = 'connecting';
-            console.log('\n📱 Scan QR Code berikut dengan WhatsApp HP Anda:');
-            qrcodeTerminal.generate(qr, { small: true });
-            console.log(`Atau buka di browser: http://localhost:${PORT}/qr\n`);
-        }
-
-        if (connection === 'close') {
-            connectionStatus = 'close';
-            connectedUser = null;
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-
-            console.log(`⚠️ Koneksi WhatsApp terputus (Status: ${statusCode}). Mencoba menghubungkan ulang: ${shouldReconnect}`);
-
-            if (shouldReconnect) {
-                setTimeout(startWhatsApp, 3000);
-            } else {
-                console.log('❌ Sesi telah logout. Silakan scan QR code baru.');
-                if (fs.existsSync(SESSION_DIR)) {
-                    fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-                }
-                setTimeout(startWhatsApp, 2000);
+    try {
+        if (forceReset) {
+            if (sock) {
+                try {
+                    sock.ev.removeAllListeners();
+                    sock.end(undefined);
+                } catch(e) {}
+                sock = null;
             }
-        } else if (connection === 'open') {
-            connectionStatus = 'open';
+            if (fs.existsSync(SESSION_DIR)) {
+                fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+            }
+            connectionStatus = 'connecting';
+            connectedUser = null;
             qrCodeString = null;
-            connectedUser = sock.user?.id || 'Connected';
-            console.log('✅ WhatsApp Gateway Terkoneksi Sukses! User:', connectedUser);
         }
-    });
+
+        if (!fs.existsSync(SESSION_DIR)) {
+            fs.mkdirSync(SESSION_DIR, { recursive: true });
+        }
+
+        const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
+        
+        let version = [2, 3000, 1015901307];
+        try {
+            const fetched = await fetchLatestBaileysVersion();
+            if (fetched && fetched.version) {
+                version = fetched.version;
+            }
+        } catch (e) {
+            console.log('Baileys fetch version note:', e.message);
+        }
+
+        sock = makeWASocket({
+            version,
+            logger: pino({ level: 'silent' }),
+            printQRInTerminal: false,
+            auth: state,
+            browser: ['AYPSIS Shipping System', 'Chrome', '120.0.0'],
+            syncFullHistory: false,
+            connectTimeoutMs: 60000,
+            defaultQueryTimeoutMs: 60000,
+            keepAliveIntervalMs: 10000
+        });
+
+        sock.ev.on('creds.update', saveCreds);
+
+        sock.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect, qr } = update;
+
+            if (qr) {
+                qrCodeString = qr;
+                connectionStatus = 'connecting';
+                console.log('\n📱 Scan QR Code baru tersedia!');
+                try {
+                    qrcodeTerminal.generate(qr, { small: true });
+                } catch (e) {}
+            }
+
+            if (connection === 'close') {
+                connectionStatus = 'close';
+                connectedUser = null;
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+                console.log(`⚠️ Koneksi WhatsApp terputus (Status: ${statusCode}). Reconnect: ${shouldReconnect}`);
+
+                if (shouldReconnect) {
+                    setTimeout(() => startWhatsApp(false), 3000);
+                } else {
+                    console.log('❌ Sesi logout / invalid. Membersihkan sesi...');
+                    if (fs.existsSync(SESSION_DIR)) {
+                        fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+                    }
+                    qrCodeString = null;
+                    setTimeout(() => startWhatsApp(false), 2000);
+                }
+            } else if (connection === 'open') {
+                connectionStatus = 'open';
+                qrCodeString = null;
+                connectedUser = sock.user?.id || 'Connected';
+                console.log('✅ WhatsApp Gateway Terkoneksi Sukses! User:', connectedUser);
+            }
+        });
+    } catch (err) {
+        console.error('Error starting WhatsApp socket:', err);
+        setTimeout(() => startWhatsApp(false), 5000);
+    } finally {
+        isStarting = false;
+    }
 }
 
 // ── ENDPOINTS ─────────────────────────────────────────────────────────────
@@ -146,7 +187,7 @@ app.get('/qr-data', async (req, res) => {
 
     if (!qrCodeString) {
         return res.json({
-            status: false,
+            status: true,
             isReady: false,
             message: 'Menyiapkan QR Code...',
             qrImage: null
@@ -166,19 +207,20 @@ app.get('/qr-data', async (req, res) => {
     }
 });
 
+// Endpoint Reset / Force Reload QR
+app.post('/reset', async (req, res) => {
+    try {
+        await startWhatsApp(true);
+        res.json({ status: true, message: 'Berhasil me-reset sesi dan membuat QR code baru.' });
+    } catch (e) {
+        res.status(500).json({ status: false, error: e.message });
+    }
+});
+
 // Endpoint Logout Sesi
 app.post('/logout', async (req, res) => {
     try {
-        if (sock) {
-            try { await sock.logout(); } catch(err) {}
-        }
-        if (fs.existsSync(SESSION_DIR)) {
-            fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-        }
-        connectionStatus = 'connecting';
-        connectedUser = null;
-        qrCodeString = null;
-        setTimeout(startWhatsApp, 1500);
+        await startWhatsApp(true);
         res.json({ status: true, message: 'Berhasil logout. Sesi dihapus dan QR baru dibuat.' });
     } catch (e) {
         res.status(500).json({ status: false, error: e.message });
@@ -232,5 +274,5 @@ app.listen(PORT, () => {
     console.log(`📡 Status API: http://localhost:${PORT}/status`);
     console.log(`📱 Scan QR:   http://localhost:${PORT}/qr`);
     console.log(`=========================================`);
-    startWhatsApp();
+    startWhatsApp(false);
 });

@@ -170,6 +170,13 @@ class WaBroadcastController extends Controller
         return response()->json($result);
     }
 
+    public function gatewayReset(\App\Services\WhatsAppGatewayService $gateway)
+    {
+        $result = $gateway->reset();
+
+        return response()->json($result);
+    }
+
     public function gatewayStatus(\App\Services\WhatsAppGatewayService $gateway)
     {
         return response()->json($gateway->getStatus());

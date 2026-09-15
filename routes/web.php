@@ -2705,6 +2705,7 @@ Route::middleware([
         Route::get('master/wa-gateway', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayIndex'])->name('master.wa-gateway.index');
         Route::get('master/wa-gateway/qr-data', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayQrData'])->name('master.wa-broadcast.gateway-qr-data');
         Route::post('master/wa-gateway/logout', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayLogout'])->name('master.wa-broadcast.gateway-logout');
+        Route::post('master/wa-gateway/reset', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayReset'])->name('master.wa-broadcast.gateway-reset');
         Route::post('master/wa-gateway/test-send', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayTestSend'])->name('master.wa-broadcast.gateway-test-send');
         Route::get('master/wa-broadcast/get-voyages', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getVoyages'])->name('master.wa-broadcast.get-voyages');
         Route::get('master/wa-broadcast/get-recipients', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getRecipients'])->name('master.wa-broadcast.get-recipients');

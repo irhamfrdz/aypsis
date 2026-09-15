@@ -29,14 +29,16 @@ class WhatsAppGatewayService
                 'status' => false,
                 'isReady' => false,
                 'connection' => 'error',
-                'message' => 'Gateway server merespon dengan error HTTP ' . $response->status()
+                'offline' => true,
+                'message' => 'Gateway server merespon dengan status HTTP ' . $response->status()
             ];
         } catch (\Throwable $e) {
             return [
                 'status' => false,
                 'isReady' => false,
                 'connection' => 'offline',
-                'message' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+                'offline' => true,
+                'message' => 'Microservice WA Gateway belum aktif di port 3000: ' . $e->getMessage()
             ];
         }
     }
@@ -69,21 +71,25 @@ class WhatsAppGatewayService
     public function getQrData(): array
     {
         try {
-            $response = Http::timeout(5)->get("{$this->gatewayUrl}/qr-data");
+            $response = Http::timeout(4)->get("{$this->gatewayUrl}/qr-data");
             if ($response->successful()) {
-                return $response->json();
+                $data = $response->json();
+                $data['offline'] = false;
+                return $data;
             }
 
             return [
                 'status' => false,
                 'isReady' => false,
-                'message' => 'Gagal mengambil QR code dari Gateway'
+                'offline' => true,
+                'message' => 'Gagal mengambil QR code dari Gateway (HTTP ' . $response->status() . ')'
             ];
         } catch (\Throwable $e) {
             return [
                 'status' => false,
                 'isReady' => false,
-                'message' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+                'offline' => true,
+                'message' => 'Microservice WA Gateway belum aktif di server: ' . $e->getMessage()
             ];
         }
     }
@@ -110,5 +116,27 @@ class WhatsAppGatewayService
             ];
         }
     }
-}
 
+    /**
+     * Reset sesi dan paksa buat QR code baru
+     */
+    public function reset(): array
+    {
+        try {
+            $response = Http::timeout(5)->post("{$this->gatewayUrl}/reset");
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'status' => false,
+                'error' => 'Gagal me-reset gateway'
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'status' => false,
+                'error' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+            ];
+        }
+    }
+}
