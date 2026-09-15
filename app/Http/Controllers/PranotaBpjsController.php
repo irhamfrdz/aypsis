@@ -47,21 +47,37 @@ class PranotaBpjsController extends Controller
         // Get active Karyawan that might have BPJS
         $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'tanggal_lahir'])
+            ->get([
+                'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
+                'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
+                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup'
+            ])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_' . $k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
                 $k->tipe_label = 'Tetap';
+                $k->nik_ktp = $k->ktp ?? '';
+                $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
+                $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
+                $k->group_posisi = !empty($k->grup) ? (is_array($k->grup) ? implode(', ', $k->grup) : $k->grup) : ($k->posisi ?? 'Crew');
                 return $k;
             });
 
         $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs'])
+            ->get([
+                'id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
+                'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
+                'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group'
+            ])
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
                 $k->tipe_label = 'Tidak Tetap';
                 $k->tanggal_lahir = null;
+                $k->nik_ktp = $k->nik_ktp ?? '';
+                $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
+                $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
+                $k->group_posisi = !empty($k->group) ? (is_array($k->group) ? implode(', ', $k->group) : $k->group) : ($k->pekerjaan ?? 'Crew');
                 return $k;
             });
 
