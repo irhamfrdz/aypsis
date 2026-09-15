@@ -3144,7 +3144,20 @@ class BiayaKapalController extends Controller
             return $this->printAir($biayaKapal);
         }
 
-        return view('biaya-kapal.print', compact('biayaKapal'));
+        $selectedBlDetails = collect();
+        if ($biayaKapal->klasifikasiBiaya && stripos($biayaKapal->klasifikasiBiaya->nama, 'klaim') !== false) {
+            $selectedBlIds = collect($biayaKapal->no_bl ?? [])
+                ->filter(fn ($id) => is_numeric($id))
+                ->unique()
+                ->values();
+
+            if ($selectedBlIds->isNotEmpty()) {
+                $selectedBlDetails = Bl::whereIn('id', $selectedBlIds)
+                    ->get(['nomor_kontainer', 'nomor_bl', 'size_kontainer']);
+            }
+        }
+
+        return view('biaya-kapal.print', compact('biayaKapal', 'selectedBlDetails'));
     }
 
     /**

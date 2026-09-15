@@ -395,6 +395,32 @@
             </table>
         </div>
 
+        @if(isset($selectedBlDetails) && $selectedBlDetails->isNotEmpty())
+        <div style="margin-bottom: 12px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Daftar Nomor Kontainer:</strong>
+            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 42%;">Nomor Kontainer</th>
+                        <th style="width: 30%;">Nomor BL</th>
+                        <th style="width: 20%;">Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($selectedBlDetails as $index => $bl)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $bl->nomor_kontainer ?: '-' }}</td>
+                        <td>{{ $bl->nomor_bl ?: '-' }}</td>
+                        <td class="text-center">{{ $bl->size_kontainer ?: '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+
         @if($biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0)
         <!-- Detail Barang -->
         <div style="margin-bottom: 12px;">
