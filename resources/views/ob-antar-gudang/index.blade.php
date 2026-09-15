@@ -704,25 +704,13 @@
 
     document.getElementById('tanggal_ob').addEventListener('change', updateGudangAsalFromHistory);
 
-    // Filter Gudang Tujuan based on Gudang Asal
+    // Semua gudang tetap bisa dipilih sebagai tujuan, termasuk gudang yang sama dengan asal.
     document.getElementById('modal_gudang_id').addEventListener('change', function() {
-        const selectedGudangId = this.value;
         const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
-        
-        if (gudangTujuanSelect.value === selectedGudangId) {
-            gudangTujuanSelect.value = '';
-        }
-        
+
         Array.from(gudangTujuanSelect.options).forEach(option => {
-            if(option.value === '') return;
-            
-            if (option.value === selectedGudangId) {
-                option.style.display = 'none';
-                option.disabled = true;
-            } else {
-                option.style.display = '';
-                option.disabled = false;
-            }
+            option.style.display = '';
+            option.disabled = false;
         });
     });
 
