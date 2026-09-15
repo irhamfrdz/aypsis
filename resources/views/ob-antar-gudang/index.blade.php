@@ -538,7 +538,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status. Jika tersedia, tarif khusus gudang tujuan akan diprioritaskan di atas tarif umum.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status. Jika tujuan Temas, status kontainer diabaikan. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -551,7 +551,7 @@
                                     <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Tujuan--</option>
                                         @foreach($gudangs as $g)
-                                            <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            <option value="{{ $g->id }}" data-is-temas="{{ str_contains(mb_strtolower($g->nama_gudang), 'temas') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -635,12 +635,14 @@
         const statusKontainer = document.getElementById('modal_status_kontainer').value;
         const normalizedUkuran = document.getElementById('display_ukuran').innerText;
         const gudangTujuanId = document.getElementById('gudang_tujuan_id').value;
+        const gudangTujuanOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
+        const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
 
         const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
             if (!option.value) return false;
             return option.getAttribute('data-ukuran').replace(/ft/i, '').trim() === normalizedUkuran
                 && option.getAttribute('data-status-service') === statusService
-                && (statusService === 'service' || option.getAttribute('data-status-kontainer') === statusKontainer);
+                && (statusService === 'service' || abaikanStatusKontainer || option.getAttribute('data-status-kontainer') === statusKontainer);
         });
         const hasDestinationRate = gudangTujuanId && eligibleOptions.some(option =>
             option.getAttribute('data-gudang-tujuan-id') === gudangTujuanId

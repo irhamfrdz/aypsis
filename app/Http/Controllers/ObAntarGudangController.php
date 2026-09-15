@@ -205,6 +205,8 @@ class ObAntarGudangController extends Controller
 
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
         $validated['is_combo'] = $request->boolean('is_combo');
+        $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
+        $abaikanStatusKontainer = str_contains(mb_strtolower($gudangTujuan->nama_gudang), 'temas');
 
         if ($validated['is_combo'] && ($ukuran !== '20' || $validated['status_service'] !== 'service')) {
             return back()->withInput()->with('error', 'Combo hanya tersedia untuk kontainer 20 ft dengan status Service.');
@@ -216,25 +218,29 @@ class ObAntarGudangController extends Controller
         if ($validated['status_service'] === 'service') {
             $pricelistDimensions->whereNull('status_kontainer');
             $validated['status_kontainer'] = null;
-        } else {
+        } elseif (! $abaikanStatusKontainer) {
             $pricelistDimensions->where('status_kontainer', $validated['status_kontainer']);
         }
 
-        $destinationPricelist = (clone $pricelistDimensions)
+        $destinationPricelists = (clone $pricelistDimensions)
             ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
-            ->first();
-        $pricelist = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
+            ->pluck('id');
+        $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
             ->where('size_kontainer', $ukuran.'ft')
-            ->where('status_service', $validated['status_service'])
-            ->when($validated['status_service'] === 'service',
-                fn ($query) => $query->whereNull('status_kontainer'),
-                fn ($query) => $query->where('status_kontainer', $validated['status_kontainer']))
-            ->when($destinationPricelist,
-                fn ($query) => $query->where('gudang_tujuan_id', $validated['gudang_tujuan_id']),
-                fn ($query) => $query->whereNull('gudang_tujuan_id'))
-            ->first();
+            ->where('status_service', $validated['status_service']);
+        if ($validated['status_service'] === 'service') {
+            $pricelistQuery->whereNull('status_kontainer');
+        } elseif (! $abaikanStatusKontainer) {
+            $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
+        }
+        if ($destinationPricelists->isNotEmpty()) {
+            $pricelistQuery->where('gudang_tujuan_id', $validated['gudang_tujuan_id']);
+        } else {
+            $pricelistQuery->whereNull('gudang_tujuan_id');
+        }
+        $pricelist = $pricelistQuery->first();
 
-        if (! $pricelist || ($destinationPricelist && $pricelist->id !== $destinationPricelist->id)) {
+        if (! $pricelist || ($destinationPricelists->isNotEmpty() && ! $destinationPricelists->contains($pricelist->id))) {
             return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran, status, dan gudang tujuan. Tarif khusus tujuan akan digunakan jika tersedia.');
         }
 
@@ -242,7 +248,6 @@ class ObAntarGudangController extends Controller
             DB::beginTransaction();
 
             $gudangAsal = Gudang::find($validated['gudang_id']);
-            $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
             // The origin must be the container's historical position on the OB date.
             $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
                 ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
@@ -264,7 +269,7 @@ class ObAntarGudangController extends Controller
             $tagihan->nomor_kontainer = $validated['nomor_kontainer'];
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
-            $tagihan->status_kontainer = $pricelist->status_kontainer;
+            $tagihan->status_kontainer = $validated['status_kontainer'];
             $tagihan->is_combo = $validated['is_combo'];
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
             $tagihan->keterangan = $validated['keterangan']
