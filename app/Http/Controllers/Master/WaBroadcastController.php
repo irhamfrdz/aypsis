@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ManifestController;
 use App\Models\Manifest;
 use App\Models\WaBroadcast;
+use App\Models\WaPhoneOverride;
 use App\Models\WaTemplate;
 use App\Services\WaBroadcastRecipientService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class WaBroadcastController extends Controller
@@ -386,6 +388,50 @@ class WaBroadcastController extends Controller
     {
         return $this->gatewaySendSingle($request, $gateway);
     }
+
+    /**
+     * Simpan nomor WA shipper yang diinput manual ke database wa_phone_overrides.
+     * Dipanggil secara AJAX (auto-save) setiap kali user mengedit input nomor.
+     */
+    public function savePhone(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'shipper_name' => 'required|string|max:500',
+            'telepon'      => 'nullable|string|max:30',
+        ]);
+
+        $shipperName = trim($validated['shipper_name']);
+        $telepon     = isset($validated['telepon']) ? trim($validated['telepon']) : null;
+
+        if (empty($telepon)) {
+            // Hapus override jika nomor dikosongkan
+            WaPhoneOverride::where('shipper_name', $shipperName)->delete();
+            return response()->json(['success' => true, 'action' => 'deleted']);
+        }
+
+        WaPhoneOverride::updateOrCreate(
+            ['shipper_name' => $shipperName],
+            ['telepon' => $telepon, 'updated_by' => auth()->id()]
+        );
+
+        return response()->json(['success' => true, 'action' => 'saved']);
+    }
+
+    /**
+     * Ambil semua wa_phone_overrides sebagai JSON (untuk inisialisasi form).
+     */
+    public function getPhoneOverrides(): JsonResponse
+    {
+        try {
+            $overrides = WaPhoneOverride::select('shipper_name', 'telepon')
+                ->whereNotNull('telepon')
+                ->where('telepon', '!=', '')
+                ->get()
+                ->pluck('telepon', 'shipper_name');
+
+            return response()->json(['success' => true, 'overrides' => $overrides]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'overrides' => []]);
+        }
+    }
 }
-
-

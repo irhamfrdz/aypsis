@@ -478,9 +478,36 @@
         let loadedRecipients     = [];
         let selectedShippers     = {};
         let customPhones         = {};
+        let phoneOverrides       = {};  // Nomor WA yang sudah disimpan ke DB
         let currentPage          = 1;
         let pageSize             = 10;
+        let phoneSaveTimers      = {};  // Debounce timers per shipper
         window.currentPortSchedules = [];
+
+        // URL endpoint save-phone (tanpa CSRF di JS, dikirim via hidden field)
+        const savePhoneUrl   = "{{ route('master.wa-broadcast.save-phone') }}";
+        const getOverridesUrl = "{{ route('master.wa-broadcast.get-phone-overrides') }}";
+
+        /**
+         * Muat semua override nomor WA dari database saat halaman dibuka.
+         */
+        function loadPhoneOverridesFromDb() {
+            $.get(getOverridesUrl, function(response) {
+                if (response.success && response.overrides) {
+                    phoneOverrides = response.overrides;
+                    // Apply ke customPhones agar tampil langsung
+                    $.each(phoneOverrides, function(name, phone) {
+                        if (customPhones[name] === undefined) {
+                            customPhones[name] = phone;
+                        }
+                    });
+                    // Re-render jika recipient sudah dimuat
+                    if (loadedRecipients.length > 0) {
+                        renderRecipients();
+                    }
+                }
+            });
+        }
 
         function updateSelectionSummary() {
             const selectedList = Object.keys(selectedShippers).filter(k => selectedShippers[k]);
@@ -577,31 +604,43 @@
                 $('<td>', { class: 'px-5 py-3 font-semibold text-slate-800' }).text(safeName).appendTo($row);
 
                 // Editable Phone Input Column
+                const isOverridden = phoneOverrides.hasOwnProperty(safeName);
                 const $phoneCell = $('<td>', { class: 'px-5 py-2.5' });
-                const $inputWrapper = $('<div>', { class: 'relative w-full max-w-[220px]' });
+                const $inputWrapper = $('<div>', { class: 'relative w-full max-w-[240px]' });
                 $('<span>', { class: 'absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 pointer-events-none' })
                     .html('<i class="fab fa-whatsapp ' + (hasPhone ? 'text-emerald-500' : 'text-slate-300') + ' text-xs"></i>')
                     .appendTo($inputWrapper);
 
                 $('<input>', {
                     type: 'text',
-                    class: 'recipient-phone-input w-full pl-7 pr-2.5 py-1 text-xs font-mono font-medium rounded-lg border border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 transition-all bg-white placeholder:text-slate-300 ' + (hasPhone ? 'text-emerald-800' : 'text-slate-500'),
+                    class: 'recipient-phone-input w-full pl-7 pr-8 py-1 text-xs font-mono font-medium rounded-lg border border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 transition-all bg-white placeholder:text-slate-300 ' + (hasPhone ? 'text-emerald-800' : 'text-slate-500'),
                     value: currentPhone,
                     placeholder: 'Contoh: 08123456789',
                     'data-shipper-name': safeName
                 }).appendTo($inputWrapper);
 
+                // Save indicator (spinner / saved icon)
+                $('<span>', {
+                    class: 'phone-save-indicator absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none',
+                    'data-shipper-name': safeName,
+                    html: isOverridden
+                        ? '<i class="fas fa-database text-[9px] text-emerald-500" title="Nomor tersimpan di database"></i>'
+                        : ''
+                }).appendTo($inputWrapper);
+
                 $inputWrapper.appendTo($phoneCell);
                 $phoneCell.appendTo($row);
 
-                // Source Table
-                $('<td>', { class: 'px-5 py-3 text-slate-500 text-[11px]' }).html(
-                    '<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium border border-slate-200">' + (r.sumber_tabel || '-') + '</span>'
-                ).appendTo($row);
+                // Source Table — tambahkan badge override jika ada
+                const displaySumber = isOverridden
+                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 font-medium border border-emerald-200 text-[10px]"><i class="fas fa-database text-[9px]"></i> Override WA</span>'
+                    : '<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium border border-slate-200">' + (r.sumber_tabel || '-') + '</span>';
+
+                $('<td>', { class: 'px-5 py-3 text-slate-500 text-[11px]' }).html(displaySumber).appendTo($row);
 
                 // Container Count
                 $('<td>', { class: 'px-5 py-3 text-right font-semibold text-slate-700' }).html(
-                    r.jumlah_kontainer > 0 
+                    r.jumlah_kontainer > 0
                         ? '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 text-[11px] font-bold border border-indigo-100">' + r.jumlah_kontainer + '</span>'
                         : '<span class="text-slate-300 text-xs">-</span>'
                 ).appendTo($row);
@@ -659,10 +698,12 @@
             updateSelectionSummary();
         });
 
-        // Handle user editing the phone number input
+        // Handle user editing the phone number input — dengan auto-save ke database
         $(document).on('input', '.recipient-phone-input', function() {
-            const shipperName = $(this).attr('data-shipper-name');
-            const newVal = $(this).val().trim();
+            const $input     = $(this);
+            const shipperName = $input.attr('data-shipper-name');
+            const newVal      = $input.val().trim();
+
             customPhones[shipperName] = newVal;
 
             const item = loadedRecipients.find(r => r.shipper_name === shipperName);
@@ -670,16 +711,61 @@
                 item.telepon = newVal;
             }
 
-            const icon = $(this).siblings('span').find('i');
+            const icon = $input.siblings('span').first().find('i');
             if (newVal) {
                 icon.removeClass('text-slate-300').addClass('text-emerald-500');
-                $(this).removeClass('text-slate-500').addClass('text-emerald-800');
+                $input.removeClass('text-slate-500').addClass('text-emerald-800');
             } else {
                 icon.removeClass('text-emerald-500').addClass('text-slate-300');
-                $(this).removeClass('text-emerald-800').addClass('text-slate-500');
+                $input.removeClass('text-emerald-800').addClass('text-slate-500');
             }
 
             $('#custom_phones_json').val(JSON.stringify(customPhones));
+
+            // --- Auto-save ke database (debounced 800ms) ---
+            const $indicator = $('[data-shipper-name="' + $input.attr('data-shipper-name') + '"].phone-save-indicator');
+
+            // Tampilkan spinner loading
+            $indicator.html('<i class="fas fa-circle-notch fa-spin text-[9px] text-slate-400"></i>');
+
+            // Debounce
+            if (phoneSaveTimers[shipperName]) {
+                clearTimeout(phoneSaveTimers[shipperName]);
+            }
+            phoneSaveTimers[shipperName] = setTimeout(function() {
+                $.ajax({
+                    url: savePhoneUrl,
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        shipper_name: shipperName,
+                        telepon: newVal
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            if (response.action === 'deleted' || !newVal) {
+                                // Nomor dihapus
+                                delete phoneOverrides[shipperName];
+                                $indicator.html('');
+                            } else {
+                                // Nomor tersimpan
+                                phoneOverrides[shipperName] = newVal;
+                                $indicator.html('<i class="fas fa-database text-[9px] text-emerald-500" title="Tersimpan di database"></i>');
+                                // Update badge sumber tabel di row ini
+                                $input.closest('tr').find('td:nth-child(5) span')
+                                    .removeClass('bg-slate-100 text-slate-700 border-slate-200')
+                                    .addClass('bg-emerald-50 text-emerald-800 border-emerald-200 gap-1')
+                                    .html('<i class="fas fa-database text-[9px]"></i> Override WA');
+                            }
+                        } else {
+                            $indicator.html('<i class="fas fa-exclamation-circle text-[9px] text-rose-400" title="Gagal menyimpan"></i>');
+                        }
+                    },
+                    error: function() {
+                        $indicator.html('<i class="fas fa-exclamation-circle text-[9px] text-rose-400" title="Gagal menyimpan"></i>');
+                    }
+                });
+            }, 800);
         });
 
         $('#broadcastForm').on('submit', function(e) {
@@ -1318,6 +1404,9 @@
         const initialTargetMode = $('input[name="target_penerima"]:checked').val() || 'all_master_shippers';
         updateTargetMode(initialTargetMode);
         loadRecipients();
+
+        // Load phone overrides dari database
+        loadPhoneOverridesFromDb();
 
         // Trigger pelabuhan jika sudah terpilih sebelumnya
         if ($pelabuhan.val()) {

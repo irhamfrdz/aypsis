@@ -6,6 +6,7 @@ use App\Models\Manifest;
 use App\Models\MasterPengirimPenerima;
 use App\Models\Pengirim;
 use App\Models\ShipperConsignee;
+use App\Models\WaPhoneOverride;
 use Illuminate\Support\Collection;
 
 class WaBroadcastRecipientService
@@ -22,6 +23,9 @@ class WaBroadcastRecipientService
         if ($source === 'all_master_shippers' || $source === 'master') {
             return $this->masterShippers();
         }
+
+        // Load wa_phone_overrides for this call
+        $phoneOverrides = $this->loadPhoneOverrides();
 
         $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
         $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
@@ -100,6 +104,13 @@ class WaBroadcastRecipientService
                 $nomorKontak = $firstManifest->contact_person;
             }
 
+            // Apply wa_phone_overrides (highest priority)
+            $overridePhone = $phoneOverrides->get($namaTujuan);
+            if ($overridePhone) {
+                $nomorKontak = $overridePhone;
+                $sumberTabel = $sumberTabel . ' (Override WA)';
+            }
+
             return [
                 'shipper_name' => $namaTujuan,
                 'telepon' => $nomorKontak,
@@ -112,6 +123,18 @@ class WaBroadcastRecipientService
                 ])->all(),
             ];
         })->values();
+    }
+
+    /**
+     * Load all wa_phone_overrides keyed by shipper_name.
+     */
+    protected function loadPhoneOverrides(): Collection
+    {
+        try {
+            return WaPhoneOverride::allKeyed();
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 
     /**
@@ -183,18 +206,29 @@ class WaBroadcastRecipientService
             return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $item['shipper_name']));
         });
 
-        $deduplicated = $groupedByName->map(function ($items) {
+        $phoneOverrides = $this->loadPhoneOverrides();
+
+        $deduplicated = $groupedByName->map(function ($items) use ($phoneOverrides) {
             $withPhone = $items->first(fn ($i) => !empty($i['telepon']));
             $sources = $items->pluck('sumber_tabel')->unique()->implode(', ');
-            
+
             if ($withPhone) {
                 $withPhone['sumber_tabel'] = $sources;
-                return $withPhone;
+                $base = $withPhone;
+            } else {
+                $first = $items->first();
+                $first['sumber_tabel'] = $sources;
+                $base = $first;
             }
 
-            $first = $items->first();
-            $first['sumber_tabel'] = $sources;
-            return $first;
+            // Apply wa_phone_overrides (highest priority)
+            $overridePhone = $phoneOverrides->get($base['shipper_name']);
+            if ($overridePhone) {
+                $base['telepon'] = $overridePhone;
+                $base['sumber_tabel'] = $base['sumber_tabel'] . ' (Override WA)';
+            }
+
+            return $base;
         })->filter(fn ($i) => !empty($i['shipper_name']))->sortBy('shipper_name')->values();
 
         return $deduplicated;
