@@ -42,11 +42,105 @@
             </div>
 
             <div>
-                <label for="isi_template" class="block text-sm font-semibold text-gray-700 mb-1">Isi Template</label>
-                <p class="text-xs text-gray-500 mb-2">Gunakan placeholder berikut yang akan diganti otomatis oleh sistem: <br>
-                    <code class="bg-gray-100 px-1 rounded">{shipper_name}</code>, <code class="bg-gray-100 px-1 rounded">{nama_kapal}</code>, <code class="bg-gray-100 px-1 rounded">{no_voyage}</code>, <code class="bg-gray-100 px-1 rounded">{pelabuhan}</code>, <code class="bg-gray-100 px-1 rounded">{close}</code>, <code class="bg-gray-100 px-1 rounded">{etd}</code>, <code class="bg-gray-100 px-1 rounded">{eta}</code>, <code class="bg-gray-100 px-1 rounded">{kategori_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{deskripsi_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{estimasi_keterlambatan}</code>, <code class="bg-gray-100 px-1 rounded">{daftar_resi}</code>
-                </p>
-                <textarea name="isi_template" id="isi_template" rows="10" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono">{{ old('isi_template') }}</textarea>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="isi_template" class="block text-sm font-semibold text-gray-700">Isi Template</label>
+                    <span class="text-xs text-indigo-600 font-medium cursor-default">
+                        <i class="fas fa-mouse-pointer mr-1"></i>Klik variabel di bawah untuk menyisipkan ke teks
+                    </span>
+                </div>
+
+                {{-- Interactive Variable Palette --}}
+                <div class="p-3.5 mb-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2.5">
+                    <div>
+                        <div class="flex items-center gap-1.5 font-semibold text-slate-700 mb-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Status Pengiriman & Kontainer (Data Real-time dari Database):</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" onclick="insertVariable('{status}')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-mono font-semibold text-xs border border-emerald-300 transition-all hover:scale-105"
+                                title="Klik untuk sisipkan. Mengambil data Status OB kontainer: Sudah OB / Belum OB / Sebagian Sudah OB">
+                                <i class="fas fa-bolt text-emerald-600 text-[10px]"></i>
+                                {status}
+                                <span class="text-[10px] font-sans font-normal text-emerald-700 ml-1">(Status OB)</span>
+                            </button>
+                            <button type="button" onclick="insertVariable('{status_ob}')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-mono font-semibold text-xs border border-emerald-300 transition-all hover:scale-105"
+                                title="Klik untuk sisipkan. Mengambil data Status OB muatan">
+                                <i class="fas fa-tag text-emerald-600 text-[10px]"></i>
+                                {status_ob}
+                            </button>
+                            <button type="button" onclick="insertVariable('{daftar_resi}')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-mono font-semibold text-xs border border-indigo-300 transition-all hover:scale-105"
+                                title="Klik untuk sisipkan. Menampilkan rincian nomor BL, nomor kontainer, serta status OB tiap kontainer">
+                                <i class="fas fa-list-check text-indigo-600 text-[10px]"></i>
+                                {daftar_resi}
+                                <span class="text-[10px] font-sans font-normal text-indigo-700 ml-1">(BL + Ctr + Status OB)</span>
+                            </button>
+                            <button type="button" onclick="insertVariable('{kategori_masalah}')"
+                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono text-xs border border-slate-300 transition-all hover:scale-105"
+                                title="Kategori masalah kapal atau status pengiriman">
+                                {kategori_masalah}
+                            </button>
+                            <button type="button" onclick="insertVariable('{deskripsi_masalah}')"
+                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono text-xs border border-slate-300 transition-all hover:scale-105"
+                                title="Deskripsi atau keterangan tambahan status muatan">
+                                {deskripsi_masalah}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-2">
+                        <div class="flex items-center gap-1.5 font-semibold text-slate-700 mb-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span>Data Kapal, Shipper & Jadwal:</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" onclick="insertVariable('{shipper_name}')"
+                                class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 font-mono text-xs border border-blue-200 transition-all hover:scale-105">
+                                {shipper_name}
+                            </button>
+                            <button type="button" onclick="insertVariable('{nama_kapal}')"
+                                class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 font-mono text-xs border border-blue-200 transition-all hover:scale-105">
+                                {nama_kapal}
+                            </button>
+                            <button type="button" onclick="insertVariable('{no_voyage}')"
+                                class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 font-mono text-xs border border-blue-200 transition-all hover:scale-105">
+                                {no_voyage}
+                            </button>
+                            <button type="button" onclick="insertVariable('{pelabuhan}')"
+                                class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 font-mono text-xs border border-blue-200 transition-all hover:scale-105">
+                                {pelabuhan}
+                            </button>
+                            <button type="button" onclick="insertVariable('{close}')"
+                                class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs border border-amber-200 transition-all hover:scale-105">
+                                {close}
+                            </button>
+                            <button type="button" onclick="insertVariable('{etd}')"
+                                class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs border border-amber-200 transition-all hover:scale-105">
+                                {etd}
+                            </button>
+                            <button type="button" onclick="insertVariable('{eta}')"
+                                class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs border border-amber-200 transition-all hover:scale-105">
+                                {eta}
+                            </button>
+                            <button type="button" onclick="insertVariable('{estimasi_keterlambatan}')"
+                                class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs border border-amber-200 transition-all hover:scale-105">
+                                {estimasi_keterlambatan}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 rounded-lg p-2 border border-emerald-200 text-[11px] text-emerald-800 flex items-start gap-2">
+                        <i class="fas fa-info-circle text-emerald-600 mt-0.5"></i>
+                        <span>
+                            <strong>Info Variabel Status:</strong> Variabel <code class="font-bold text-emerald-900 bg-emerald-200/70 px-1 rounded">{status}</code> atau <code class="font-bold text-emerald-900 bg-emerald-200/70 px-1 rounded">{status_ob}</code> otomatis mengambil status <strong>STATUS OB</strong> (Oper Bongkar) kontainer milik shipper dari database (misal: <em>Sudah OB (tanggal jam)</em>, <em>Belum OB</em>, atau <em>Sebagian Sudah OB</em>).
+                        </span>
+                    </div>
+                </div>
+
+                <textarea name="isi_template" id="isi_template" rows="10" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono leading-relaxed">{{ old('isi_template') }}</textarea>
             </div>
 
             <div class="flex items-center">
@@ -62,4 +156,21 @@
         </div>
     </form>
 </div>
+
+<script>
+function insertVariable(variable) {
+    const textarea = document.getElementById('isi_template');
+    if (!textarea) return;
+
+    const startPos = textarea.selectionStart;
+    const endPos = textarea.selectionEnd;
+    const textBefore = textarea.value.substring(0, startPos);
+    const textAfter = textarea.value.substring(endPos, textarea.value.length);
+
+    textarea.value = textBefore + variable + textAfter;
+    textarea.focus();
+    const newPos = startPos + variable.length;
+    textarea.setSelectionRange(newPos, newPos);
+}
+</script>
 @endsection

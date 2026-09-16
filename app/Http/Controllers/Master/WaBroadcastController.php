@@ -366,11 +366,23 @@ class WaBroadcastController extends Controller
         }
         $totalShipper = $allRecipients->count();
 
+        $template = WaTemplate::find($request->template_id);
+        $kategoriMasalah = $request->input('kategori_masalah');
+        if (!$kategoriMasalah) {
+            if ($isAllShipper) {
+                $kategoriMasalah = $pelabuhan ? "Jadwal Kapal {$pelabuhan}" : 'Jadwal Kapal Berlabuh';
+            } elseif ($request->input('type') === 'status_pengiriman' || ($template && (str_contains(strtolower($template->nama_template), 'status') || str_contains(strtolower($template->nama_template), 'pengiriman')))) {
+                $kategoriMasalah = 'Status OB';
+            } else {
+                $kategoriMasalah = '';
+            }
+        }
+
         // Save broadcast history
         WaBroadcast::create([
             'nama_kapal' => $namaKapal,
             'no_voyage' => $noVoyage,
-            'kategori_masalah' => $request->input('kategori_masalah', $isAllShipper ? ($pelabuhan ? "Jadwal Kapal {$pelabuhan}" : 'Jadwal Kapal Berlabuh') : ''),
+            'kategori_masalah' => $kategoriMasalah,
             'deskripsi_masalah' => $request->deskripsi_masalah,
             'wa_template_id' => $request->template_id,
             'total_shipper' => $totalShipper,

@@ -369,6 +369,9 @@
                 <div id="quickStatusOptions" class="hidden space-y-1.5">
                     <span class="text-[11px] font-semibold text-slate-500">Pilih Cepat Status Muatan:</span>
                     <div class="flex flex-wrap gap-1.5">
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 transition-colors shadow-2xs" data-status="Status OB" data-desc="Status Oper Bongkar (OB) kontainer otomatis diambil dari database real-time (Sudah OB / Belum OB).">
+                            ⚡ Status OB (Otomatis dari Database)
+                        </button>
                         <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Kapal Berangkat (Sailing)" data-desc="Kapal telah diberangkatkan dari pelabuhan asal menuju pelabuhan tujuan.">
                             🚢 Kapal Berangkat (Sailing)
                         </button>
@@ -987,9 +990,15 @@
                     $('#quickStatusOptions').removeClass('hidden');
 
                     // Tampilkan Variabel yang relevan untuk Status Pengiriman
-                    $varCountLabel.text('6 Variabel Status Pengiriman Aktif');
-                    $varSubtitleLabel.text('Variabel manifest & status muatan diaktifkan');
+                    $varCountLabel.text('7 Variabel Status Pengiriman Aktif');
+                    $varSubtitleLabel.text('Variabel manifest & status OB muatan real-time diaktifkan');
                     $activeVarsBox.html(`
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-300 shadow-2xs" title="Mengambil Status OB otomatis dari database">
+                            <i class="fas fa-bolt text-[10px] text-emerald-600"></i> {status} / {status_ob} (Status OB)
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-list-check text-[10px] text-indigo-600"></i> {daftar_resi} (BL + Ctr + Status OB)
+                        </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
                             <i class="fas fa-check text-[10px] text-indigo-600"></i> {nama_kapal}
                         </span>
@@ -997,13 +1006,10 @@
                             <i class="fas fa-check text-[10px] text-indigo-600"></i> {no_voyage}
                         </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {kategori_masalah} / {status}
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {kategori_masalah}
                         </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {deskripsi_masalah} / {keterangan}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {daftar_resi}
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {deskripsi_masalah}
                         </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
                             <i class="fas fa-check text-[10px] text-indigo-600"></i> {shipper_name}

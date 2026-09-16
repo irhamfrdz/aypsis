@@ -1623,22 +1623,173 @@ class ManifestController extends Controller
             }
         }
 
+        // Eager-load data Status OB dari tabel bls dan naik_kapal untuk seluruh resi / kontainer penerima
+        $allContainers = [];
+        $allBlNumbers = [];
+        foreach ($allRecipients as $r) {
+            foreach ($r['daftar_resi'] ?? [] as $resi) {
+                if (!empty($resi['nomor_kontainer'])) {
+                    $allContainers[] = trim($resi['nomor_kontainer']);
+                }
+                if (!empty($resi['nomor_bl'])) {
+                    $allBlNumbers[] = trim($resi['nomor_bl']);
+                }
+            }
+        }
+        $allContainers = array_values(array_unique(array_filter($allContainers)));
+        $allBlNumbers = array_values(array_unique(array_filter($allBlNumbers)));
+
+        $blRecords = collect();
+        if (!empty($allContainers) || !empty($allBlNumbers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+            $blRecords = \App\Models\Bl::query()
+                ->select('id', 'nama_kapal', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
+                ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers, $allBlNumbers) {
+                    if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
+                        $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
+                            $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
+                        });
+                    }
+                    if (!empty($allContainers) || !empty($allBlNumbers)) {
+                        $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
+                        $q->$method(function ($sub) use ($allContainers, $allBlNumbers) {
+                            if (!empty($allContainers)) {
+                                $sub->whereIn('nomor_kontainer', $allContainers);
+                            }
+                            if (!empty($allBlNumbers)) {
+                                $sub->orWhereIn('nomor_bl', $allBlNumbers);
+                            }
+                        });
+                    }
+                })
+                ->orderByDesc('id')
+                ->get();
+        }
+
+        $naikRecords = collect();
+        if (!empty($allContainers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+            $naikRecords = \App\Models\NaikKapal::query()
+                ->select('id', 'nama_kapal', 'no_voyage', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
+                ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers) {
+                    if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
+                        $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
+                            $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
+                        });
+                    }
+                    if (!empty($allContainers)) {
+                        $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
+                        $q->$method(function ($sub) use ($allContainers) {
+                            $sub->whereIn('nomor_kontainer', $allContainers);
+                        });
+                    }
+                })
+                ->orderByDesc('id')
+                ->get();
+        }
+
         $broadcastData = [];
 
         foreach ($allRecipients as $recipient) {
             $shipperName = $recipient['shipper_name'];
             $telepon = $customPhones[$shipperName] ?? $recipient['telepon'];
 
-            $daftarResi = collect($recipient['daftar_resi'])
-                ->map(fn (array $resi) => '- BL: '.$resi['nomor_bl'].' / Kontainer: '.$resi['nomor_kontainer'])
-                ->implode("\n");
+            $resiList = $recipient['daftar_resi'] ?? [];
+            $totalResi = count($resiList);
+            $obCount = 0;
+            $formattedResiLines = [];
+            $lastTglOb = null;
+
+            foreach ($resiList as $resi) {
+                $rawC = trim($resi['nomor_kontainer'] ?? '');
+                $rawB = trim($resi['nomor_bl'] ?? '');
+                $cleanC = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $rawC));
+                $cleanB = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $rawB));
+
+                // 1. Cari di Bl dengan prioritas nama_kapal & no_voyage sama
+                $matchedBl = $blRecords->first(function ($bl) use ($namaKapalVal, $noVoyageVal, $cleanC, $cleanB) {
+                    $matchShip = ($bl->nama_kapal == $namaKapalVal && $bl->no_voyage == $noVoyageVal);
+                    $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
+                    $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
+                    return $matchShip && (($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl));
+                });
+
+                // Fallback Bl tanpa filter kapal
+                if (!$matchedBl) {
+                    $matchedBl = $blRecords->first(function ($bl) use ($cleanC, $cleanB) {
+                        $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
+                        $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
+                        return ($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl);
+                    });
+                }
+
+                // 2. Cari di NaikKapal jika belum ketemu atau belum OB
+                $matchedNaik = null;
+                if (!$matchedBl || !$matchedBl->sudah_ob) {
+                    $matchedNaik = $naikRecords->first(function ($n) use ($namaKapalVal, $noVoyageVal, $cleanC) {
+                        $matchShip = ($n->nama_kapal == $namaKapalVal && $n->no_voyage == $noVoyageVal);
+                        $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
+                        return $matchShip && ($cleanC && $cleanC === $cNk);
+                    });
+                    if (!$matchedNaik) {
+                        $matchedNaik = $naikRecords->first(function ($n) use ($cleanC) {
+                            $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
+                            return $cleanC && $cleanC === $cNk;
+                        });
+                    }
+                }
+
+                $isOb = ($matchedBl && $matchedBl->sudah_ob) || ($matchedNaik && $matchedNaik->sudah_ob);
+                $tglOb = ($matchedBl && $matchedBl->tanggal_ob) ? $matchedBl->tanggal_ob : ($matchedNaik ? $matchedNaik->tanggal_ob : null);
+
+                if ($isOb) {
+                    $obCount++;
+                    if ($tglOb) {
+                        $lastTglOb = $tglOb;
+                    }
+                }
+
+                $badge = $isOb ? 'Sudah OB' : 'Belum OB';
+                if ($isOb && $tglOb) {
+                    $badge .= ' (' . \Carbon\Carbon::parse($tglOb)->format('d-M-Y H:i') . ')';
+                }
+
+                $line = '- BL: ' . ($rawB ?: '-') . ' / Kontainer: ' . ($rawC ?: '-') . ' [' . $badge . ']';
+                $formattedResiLines[] = $line;
+            }
+
+            // Evaluasi Status OB keseluruhan untuk shipper ini
+            if ($totalResi === 0) {
+                $statusOb = 'Belum OB';
+            } elseif ($obCount === $totalResi) {
+                if ($totalResi === 1 && $lastTglOb) {
+                    $statusOb = 'Sudah OB (' . \Carbon\Carbon::parse($lastTglOb)->format('d-M-Y H:i') . ')';
+                } else {
+                    $statusOb = 'Sudah OB';
+                }
+            } elseif ($obCount === 0) {
+                $statusOb = 'Belum OB';
+            } else {
+                $statusOb = "Sebagian Sudah OB ({$obCount}/{$totalResi} Kontainer)";
+            }
+
+            $daftarResi = implode("\n", $formattedResiLines);
 
             $isiPesan = $baseTemplate;
             $isiPesan = str_replace('{shipper_name}', $shipperName, $isiPesan);
             $isiPesan = str_replace('{pelabuhan}', $pelabuhanVal, $isiPesan);
-            $isiPesan = str_replace('{kategori_masalah}', $kategoriMasalah, $isiPesan);
-            $isiPesan = str_replace('{status_pengiriman}', $kategoriMasalah, $isiPesan);
-            $isiPesan = str_replace('{status}', $kategoriMasalah, $isiPesan);
+
+            // Variabel Status diambil langsung dari STATUS OB database
+            $isiPesan = str_replace('{status_ob}', $statusOb, $isiPesan);
+            $isiPesan = str_replace('{status}', $statusOb, $isiPesan);
+
+            // Cek apakah mode broadcast status atau user mengosongkan kategori
+            $isStatusBroadcast = ($request->input('type') === 'status_pengiriman')
+                || empty($kategoriMasalah)
+                || in_array(strtolower(trim($kategoriMasalah)), ['status ob', 'status pengiriman', 'status', 'overbrengen', 'oper bongkar']);
+
+            $effectiveKategori = $isStatusBroadcast ? $statusOb : $kategoriMasalah;
+            $isiPesan = str_replace('{kategori_masalah}', $effectiveKategori, $isiPesan);
+            $isiPesan = str_replace('{status_pengiriman}', $statusOb, $isiPesan);
+
             $isiPesan = str_replace('{deskripsi_masalah}', $deskripsiMasalah, $isiPesan);
             $isiPesan = str_replace('{keterangan}', $deskripsiMasalah, $isiPesan);
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
