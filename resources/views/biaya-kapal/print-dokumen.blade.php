@@ -413,10 +413,18 @@
                 foreach ($biayaKapal->dokumens as $dokumen) {
                     if ($dokumen->nomor_bl) {
                         $blNumbers = $dokumen->nomorBlArray;
-                        $bls = \DB::table('bls')
+                        // Nomor BL pada form biaya dokumen berasal dari manifest.
+                        // Gunakan data BL lama sebagai fallback untuk data historis.
+                        $bls = \DB::table('manifests')
                                   ->whereIn('nomor_bl', $blNumbers)
                                   ->where('no_voyage', $dokumen->voyage)
                                   ->get();
+                        if ($bls->isEmpty()) {
+                            $bls = \DB::table('bls')
+                                      ->whereIn('nomor_bl', $blNumbers)
+                                      ->where('no_voyage', $dokumen->voyage)
+                                      ->get();
+                        }
                         foreach($bls as $bl) {
                             $containers->push($bl);
                         }
@@ -473,7 +481,23 @@
         <div class="summary-box">
             @php
                 $jumlahKontainer = $containers->count();
-                $tarifPerKontainer = $jumlahKontainer > 0 ? ($biayaKapal->nominal / $jumlahKontainer) : $biayaKapal->nominal;
+                $dokumenDetails = $biayaKapal->dokumens ?? collect();
+                $subtotalDokumen = $dokumenDetails->sum('nominal');
+                $pphDokumen = $dokumenDetails->sum('pph');
+                // Hitung ulang total dari subtotal dan PPH agar data total lama
+                // yang tersimpan tidak menyebabkan angka print keliru.
+                $totalDokumen = $subtotalDokumen - $pphDokumen;
+
+                // Fallback untuk transaksi lama yang belum memiliki rincian dokumen.
+                if ($dokumenDetails->isEmpty()) {
+                    $subtotalDokumen = (float) ($biayaKapal->nominal ?? 0);
+                    $pphDokumen = (float) ($biayaKapal->pph_dokumen ?? 0);
+                    $totalDokumen = $biayaKapal->grand_total_dokumen !== null
+                        ? (float) $biayaKapal->grand_total_dokumen
+                        : $subtotalDokumen - $pphDokumen;
+                }
+
+                $tarifPerKontainer = $jumlahKontainer > 0 ? ($subtotalDokumen / $jumlahKontainer) : $subtotalDokumen;
             @endphp
             @if($jumlahKontainer > 0)
             <div class="summary-row">
@@ -487,17 +511,17 @@
             @endif
             <div class="summary-row">
                 <span class="label">Subtotal:</span>
-                <span class="value">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</span>
+                <span class="value">Rp {{ number_format($subtotalDokumen, 0, ',', '.') }}</span>
             </div>
-            @if($biayaKapal->pph_dokumen)
+            @if($pphDokumen > 0)
             <div class="summary-row">
                 <span class="label">PPh (2%):</span>
-                <span class="value">(Rp {{ number_format($biayaKapal->pph_dokumen, 0, ',', '.') }})</span>
+                <span class="value">(Rp {{ number_format($pphDokumen, 0, ',', '.') }})</span>
             </div>
             @endif
             <div class="summary-row total">
                 <span class="label">TOTAL BIAYA:</span>
-                <span class="value">Rp {{ number_format($biayaKapal->grand_total_dokumen ?? $biayaKapal->nominal, 0, ',', '.') }}</span>
+                <span class="value">Rp {{ number_format($totalDokumen, 0, ',', '.') }}</span>
             </div>
         </div>
 
