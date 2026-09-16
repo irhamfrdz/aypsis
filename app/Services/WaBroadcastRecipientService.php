@@ -63,7 +63,7 @@ class WaBroadcastRecipientService
             ->get()
             ->keyBy('shipper');
 
-        return $groupedManifests->map(function (Collection $shipperManifests) use ($masterPengirims, $pengirims, $shippersByName) {
+        return $groupedManifests->map(function (Collection $shipperManifests) use ($masterPengirims, $pengirims, $shippersByName, $phoneOverrides) {
             $firstManifest = $shipperManifests->first();
             $pengirimName = trim((string) $firstManifest->pengirim);
             $namaTujuan = $pengirimName ?: 'Shipper';
