@@ -211,12 +211,26 @@ function addDokumenSection() {
             .then(data => {
                 let options = '';
                 if(data.success && data.bls) {
-                    const uniqueBls = new Set();
+                    // Satu BL dapat memiliki beberapa kontainer; gabungkan nomor
+                    // kontainernya agar terlihat saat pengguna memilih nomor BL.
+                    const containersByBl = new Map();
                     Object.values(data.bls).forEach(bl => {
-                        if (bl.nomor_bl && !uniqueBls.has(bl.nomor_bl)) {
-                            uniqueBls.add(bl.nomor_bl);
-                            options += `<option value="${bl.nomor_bl}">BL: ${bl.nomor_bl}</option>`;
+                        if (!bl.nomor_bl) return;
+
+                        if (!containersByBl.has(bl.nomor_bl)) {
+                            containersByBl.set(bl.nomor_bl, []);
                         }
+
+                        if (bl.kontainer && !containersByBl.get(bl.nomor_bl).includes(bl.kontainer)) {
+                            containersByBl.get(bl.nomor_bl).push(bl.kontainer);
+                        }
+                    });
+
+                    containersByBl.forEach((containers, nomorBl) => {
+                        const containerLabel = containers.length > 0
+                            ? ` | Kontainer: ${containers.join(', ')}`
+                            : '';
+                        options += `<option value="${nomorBl}">BL: ${nomorBl}${containerLabel}</option>`;
                     });
                 }
                 blSelect.innerHTML = options;
@@ -338,8 +352,8 @@ function calculateDokumenSection(section) {
     const pphInput = section.querySelector('.dokumen-pph-input');
     const totalInput = section.querySelector('.dokumen-total-input');
     
-    const nominal = parseInt(nominalInput.value.replace(/\\./g, '')) || 0;
-    const pph = parseInt(pphInput.value.replace(/\\./g, '')) || 0;
+    const nominal = parseInt(nominalInput.value.replace(/\./g, '')) || 0;
+    const pph = parseInt(pphInput.value.replace(/\./g, '')) || 0;
     
     const total = nominal - pph;
     totalInput.value = total > 0 ? total.toLocaleString('id-ID') : '0';
@@ -353,7 +367,7 @@ function calculateAllDokumenSections() {
     document.querySelectorAll('.dokumen-section').forEach(section => {
         const totalInput = section.querySelector('.dokumen-total-input');
         if (totalInput) {
-            grandTotal += parseInt(totalInput.value.replace(/\\./g, '')) || 0;
+            grandTotal += parseInt(totalInput.value.replace(/\./g, '')) || 0;
         }
     });
     
