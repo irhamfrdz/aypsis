@@ -14,7 +14,7 @@
             </div>
             <div>
                 <h1 class="text-lg font-bold text-slate-800 tracking-tight">Riwayat Broadcast WhatsApp</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Kelola riwayat pengiriman pesan jadwal kapal dan kendala operasional ke shipper</p>
+                <p class="text-xs text-slate-400 mt-0.5">Kelola riwayat pengiriman pesan jadwal kapal, status pengiriman, dan kendala operasional ke shipper</p>
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -31,15 +31,19 @@
                 <i class="fas fa-ship mr-1.5"></i>
                 Broadcast Jadwal
             </a>
-            <a href="{{ route('master.wa-broadcast.create', ['type' => 'kendala']) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow transition-all">
-                <i class="fas fa-plus mr-1.5"></i>
+            <a href="{{ route('master.wa-broadcast.create', ['type' => 'status_pengiriman']) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow transition-all">
+                <i class="fas fa-shipping-fast mr-1.5"></i>
+                Broadcast Status Pengiriman
+            </a>
+            <a href="{{ route('master.wa-broadcast.create', ['type' => 'kendala']) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow transition-all">
+                <i class="fas fa-exclamation-triangle mr-1.5"></i>
                 Broadcast Kendala
             </a>
             @endcan
         </div>
     </div>
 
-    {{-- Tabs Switcher: Jadwal Kapal vs Kendala vs Semua --}}
+    {{-- Tabs Switcher: Jadwal Kapal vs Status Pengiriman vs Kendala vs Semua --}}
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
         <a href="{{ route('master.wa-broadcast.index', ['type' => 'all']) }}"
            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($type ?? 'all') === 'all' ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' }}">
@@ -56,6 +60,15 @@
             <span>Riwayat Broadcast Jadwal Kapal</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {{ ($type ?? '') === 'jadwal' ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800' }}">
                 {{ $totalJadwal ?? 0 }}
+            </span>
+        </a>
+
+        <a href="{{ route('master.wa-broadcast.index', ['type' => 'status_pengiriman']) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ in_array($type ?? '', ['status_pengiriman', 'status']) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-200' }}">
+            <i class="fas fa-shipping-fast"></i>
+            <span>Riwayat Broadcast Status Pengiriman</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {{ in_array($type ?? '', ['status_pengiriman', 'status']) ? 'bg-indigo-700 text-white' : 'bg-indigo-100 text-indigo-800' }}">
+                {{ $totalStatusPengiriman ?? 0 }}
             </span>
         </a>
 
@@ -84,21 +97,25 @@
     @endif
 
     {{-- Stats Summary --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs text-slate-400 font-medium">Total Broadcast Terfilter</p>
+            <p class="text-xs text-slate-400 font-medium">Total Terfilter</p>
             <p class="text-2xl font-bold text-slate-800 mt-1">{{ $broadcasts->count() }}</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs text-sky-600 font-medium">Broadcast Jadwal Kapal</p>
+            <p class="text-xs text-sky-600 font-medium">Broadcast Jadwal</p>
             <p class="text-2xl font-bold text-sky-700 mt-1">{{ $totalJadwal ?? 0 }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-indigo-600 font-medium">Status Pengiriman</p>
+            <p class="text-2xl font-bold text-indigo-700 mt-1">{{ $totalStatusPengiriman ?? 0 }}</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p class="text-xs text-amber-600 font-medium">Broadcast Kendala</p>
             <p class="text-2xl font-bold text-amber-700 mt-1">{{ $totalKendala ?? 0 }}</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs text-emerald-600 font-medium">Total Shipper Terkirim</p>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm col-span-2 sm:col-span-1">
+            <p class="text-xs text-emerald-600 font-medium">Total Shipper</p>
             <p class="text-2xl font-bold text-emerald-600 mt-1">{{ $totalShipper ?? $broadcasts->sum('total_shipper') }}</p>
         </div>
     </div>
@@ -121,7 +138,13 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($broadcasts as $index => $broadcast)
                     @php
-                        $isJadwal = ($broadcast->template && stripos($broadcast->template->nama_template, 'jadwal') !== false) || stripos($broadcast->kategori_masalah, 'jadwal') !== false || empty($broadcast->kategori_masalah);
+                        $isStatus = ($broadcast->template && (stripos($broadcast->template->nama_template, 'status') !== false || stripos($broadcast->template->nama_template, 'pengiriman') !== false))
+                            || stripos($broadcast->kategori_masalah, 'status') !== false
+                            || stripos($broadcast->kategori_masalah, 'pengiriman') !== false;
+
+                        $isJadwal = !$isStatus && (($broadcast->template && stripos($broadcast->template->nama_template, 'jadwal') !== false)
+                            || stripos($broadcast->kategori_masalah, 'jadwal') !== false
+                            || empty($broadcast->kategori_masalah));
                     @endphp
                     <tr class="hover:bg-slate-50/70 transition-colors group">
 
@@ -137,8 +160,8 @@
                         {{-- Kapal & Voyage --}}
                         <td class="px-5 py-3.5 whitespace-nowrap">
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded-lg {{ $isJadwal ? 'bg-sky-50 border-sky-100 text-sky-600' : 'bg-blue-50 border-blue-100 text-blue-500' }} border flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-ship text-xs"></i>
+                                <div class="w-8 h-8 rounded-lg {{ $isStatus ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : ($isJadwal ? 'bg-sky-50 border-sky-100 text-sky-600' : 'bg-amber-50 border-amber-100 text-amber-600') }} border flex items-center justify-center flex-shrink-0">
+                                    <i class="fas {{ $isStatus ? 'fa-shipping-fast' : ($isJadwal ? 'fa-ship' : 'fa-exclamation-triangle') }} text-xs"></i>
                                 </div>
                                 <div>
                                     <div class="text-xs font-bold text-slate-800 leading-tight">{{ $broadcast->nama_kapal }}</div>
@@ -149,7 +172,12 @@
 
                         {{-- Kategori / Informasi --}}
                         <td class="px-5 py-3.5 max-w-xs">
-                            @if($isJadwal)
+                            @if($isStatus)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                    <i class="fas fa-shipping-fast mr-1 text-indigo-500 text-[10px]"></i>
+                                    {{ $broadcast->kategori_masalah ?: 'Status Pengiriman' }}
+                                </span>
+                            @elseif($isJadwal)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
                                     <i class="fas fa-calendar-alt mr-1 text-sky-500 text-[10px]"></i>
                                     {{ $broadcast->kategori_masalah ?: 'Jadwal Kapal' }}
@@ -219,11 +247,19 @@
                             <div class="flex flex-col items-center space-y-3 text-slate-300">
                                 <i class="fab fa-whatsapp text-5xl"></i>
                                 <p class="text-sm font-semibold text-slate-400">Belum ada riwayat broadcast</p>
-                                <p class="text-xs text-slate-300">Klik "Buat Broadcast" untuk memulai pengiriman</p>
+                                <p class="text-xs text-slate-300">Pilih jenis broadcast di bawah untuk memulai pengiriman</p>
                                 @can('master-wa-broadcast-create')
-                                <a href="{{ route('master.wa-broadcast.create') }}" class="mt-2 inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow transition-all">
-                                    <i class="fas fa-plus mr-1.5"></i> Buat Broadcast
-                                </a>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <a href="{{ route('master.wa-broadcast.create', ['type' => 'jadwal']) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow transition-all">
+                                        <i class="fas fa-ship mr-1.5"></i> Broadcast Jadwal
+                                    </a>
+                                    <a href="{{ route('master.wa-broadcast.create', ['type' => 'status_pengiriman']) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow transition-all">
+                                        <i class="fas fa-shipping-fast mr-1.5"></i> Broadcast Status
+                                    </a>
+                                    <a href="{{ route('master.wa-broadcast.create', ['type' => 'kendala']) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow transition-all">
+                                        <i class="fas fa-exclamation-triangle mr-1.5"></i> Broadcast Kendala
+                                    </a>
+                                </div>
                                 @endcan
                             </div>
                         </td>

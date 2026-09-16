@@ -13,8 +13,18 @@
                 <i class="fab fa-whatsapp text-2xl"></i>
             </div>
             <div>
-                <h1 class="text-lg font-bold text-slate-800 tracking-tight">Buat Broadcast WhatsApp</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Kirim pesan informasi jadwal kapal atau pemberitahuan kendala ke seluruh shipper</p>
+                <h1 class="text-lg font-bold text-slate-800 tracking-tight">
+                    @if(in_array(request('type'), ['status_pengiriman', 'status']))
+                        Buat Broadcast Status Pengiriman
+                    @elseif(request('type') === 'kendala')
+                        Buat Broadcast Kendala & Masalah
+                    @elseif(request('type') === 'jadwal')
+                        Buat Broadcast Jadwal Kapal
+                    @else
+                        Buat Broadcast WhatsApp
+                    @endif
+                </h1>
+                <p class="text-xs text-slate-400 mt-0.5">Kirim pesan informasi jadwal kapal, status pengiriman muatan, atau kendala operasional ke shipper</p>
             </div>
         </div>
         <a href="{{ route('master.wa-broadcast.index') }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all shadow-sm">
@@ -46,7 +56,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- Option 1: Semua Data Shipper (Master: pengirims, master_pengirim_penerima, shipper_consignees) --}}
                     <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-emerald-50/30 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/40 border-slate-200" id="label-target-master">
-                        <input type="radio" name="target_penerima" value="all_master_shippers" class="target-radio mt-0.5 text-emerald-600 focus:ring-emerald-500" {{ old('target_penerima', request('type') === 'jadwal' || !request('type') ? 'all_master_shippers' : '') == 'all_master_shippers' ? 'checked' : '' }}>
+                        <input type="radio" name="target_penerima" value="all_master_shippers" class="target-radio mt-0.5 text-emerald-600 focus:ring-emerald-500" {{ old('target_penerima', in_array(request('type'), ['kendala', 'status_pengiriman', 'status']) ? '' : 'all_master_shippers') == 'all_master_shippers' ? 'checked' : '' }}>
                         <div class="ml-3">
                             <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
                                 <i class="fas fa-address-book text-emerald-600"></i>
@@ -61,7 +71,7 @@
 
                     {{-- Option 2: Shipper Khusus Manifest Kapal & Voyage --}}
                     <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-blue-50/30 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/40 border-slate-200" id="label-target-manifest">
-                        <input type="radio" name="target_penerima" value="manifest" class="target-radio mt-0.5 text-blue-600 focus:ring-blue-500" {{ old('target_penerima', request('type') === 'kendala' ? 'manifest' : '') == 'manifest' ? 'checked' : '' }}>
+                        <input type="radio" name="target_penerima" value="manifest" class="target-radio mt-0.5 text-blue-600 focus:ring-blue-500" {{ old('target_penerima', in_array(request('type'), ['kendala', 'status_pengiriman', 'status']) ? 'manifest' : '') == 'manifest' ? 'checked' : '' }}>
                         <div class="ml-3">
                             <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
                                 <i class="fas fa-file-invoice text-blue-600"></i>
@@ -69,7 +79,7 @@
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">Mode Manifest Voyage</span>
                             </span>
                             <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
-                                Hanya shipper yang memiliki muatan / resi / kontainer aktif pada manifest kapal & voyage tertentu.
+                                Hanya shipper yang memiliki muatan / resi / kontainer aktif pada manifest kapal & voyage tertentu (Cocok untuk Status Pengiriman & Kendala).
                             </span>
                         </div>
                     </label>
@@ -345,19 +355,41 @@
             </div>
         </div>
 
-        {{-- Step: Info Kendala / Masalah (Dihilangkan jika memilih Semua Master Data Shipper) --}}
+        {{-- Step: Info Kendala / Masalah / Status Pengiriman (Dihilangkan jika memilih Semua Master Data Shipper) --}}
         <div id="section-kendala" class="hidden bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition-all">
             <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/60">
                 <span class="step-badge w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0" id="kendalaStepBadge">3</span>
                 <div>
-                    <h2 class="text-sm font-bold text-slate-800">Informasi Kendala & Masalah (Mode Manifest)</h2>
-                    <p class="text-[11px] text-slate-400">Variabel masalah untuk pemberitahuan keterlambatan resi/kontainer manifest</p>
+                    <h2 class="text-sm font-bold text-slate-800" id="kendalaHeaderTitle">Informasi Kendala & Masalah (Mode Manifest)</h2>
+                    <p class="text-[11px] text-slate-400" id="kendalaHeaderSubtitle">Variabel masalah untuk pemberitahuan keterlambatan resi/kontainer manifest</p>
                 </div>
             </div>
             <div class="p-5 space-y-4">
-                {{-- Kategori Kendala --}}
+                {{-- Quick Status Chips (Aktif jika mode Status Pengiriman) --}}
+                <div id="quickStatusOptions" class="hidden space-y-1.5">
+                    <span class="text-[11px] font-semibold text-slate-500">Pilih Cepat Status Muatan:</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Kapal Berangkat (Sailing)" data-desc="Kapal telah diberangkatkan dari pelabuhan asal menuju pelabuhan tujuan.">
+                            🚢 Kapal Berangkat (Sailing)
+                        </button>
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Kapal Tiba di Pelabuhan Tujuan" data-desc="Kapal telah tiba dan bersandar di pelabuhan tujuan.">
+                            ⚓ Kapal Tiba / Sandar
+                        </button>
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Proses Pembongkaran Muatan" data-desc="Saat ini muatan kontainer sedang dalam proses pembongkaran dari kapal.">
+                            🏗️ Proses Pembongkaran
+                        </button>
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Siap Diambil (Ready for Delivery)" data-desc="Muatan kontainer telah selesai dibongkar di depo/lapangan dan siap untuk diambil.">
+                            📦 Siap Diambil (Delivery)
+                        </button>
+                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Selesai Diantar / Bongkar" data-desc="Seluruh proses pengiriman kontainer telah selesai dilaksanakan.">
+                            ✅ Selesai Bongkar
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Kategori Kendala / Status --}}
                 <div>
-                    <label for="kategori_masalah" class="block text-xs font-semibold text-slate-700 mb-1.5">Kategori Masalah / Jenis Kendala</label>
+                    <label for="kategori_masalah" id="kategoriLabel" class="block text-xs font-semibold text-slate-700 mb-1.5">Kategori Masalah / Jenis Kendala</label>
                     <input type="text" name="kategori_masalah" id="kategori_masalah" value="{{ old('kategori_masalah') }}"
                         class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-300"
                         placeholder="Contoh: Cuaca Buruk / Antrian Dermaga / Kerusakan Mesin">
@@ -366,7 +398,7 @@
 
                 {{-- Deskripsi --}}
                 <div>
-                    <label for="deskripsi_masalah" class="block text-xs font-semibold text-slate-700 mb-1.5">Deskripsi Masalah & Estimasi</label>
+                    <label for="deskripsi_masalah" id="deskripsiLabel" class="block text-xs font-semibold text-slate-700 mb-1.5">Deskripsi Masalah & Estimasi</label>
                     <textarea name="deskripsi_masalah" id="deskripsi_masalah" rows="3"
                         class="w-full px-3.5 py-2.5 text-xs font-medium text-slate-800 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-300 resize-none"
                         placeholder="Contoh: Keterlambatan diperkirakan sekitar 2 hari karena cuaca buruk di perairan...">{{ old('deskripsi_masalah') }}</textarea>
@@ -433,6 +465,7 @@
     $(document).ready(function() {
         const rawTemplates = @json($templatesJson ?? []);
         const defaultTemplateId = "{{ old('template_id', $defaultTemplateId ?? '') }}";
+        const requestType = "{{ request('type', '') }}";
 
         const $pelabuhan         = $('#pelabuhan');
         const $jadwalId          = $('#jadwal_id');
@@ -936,11 +969,88 @@
                 populateTemplateOptions('jadwal');
 
             } else {
-                // MODE 2: KENDALA MANIFEST (Shipper Khusus Manifest)
-                $targetModeBadge
-                    .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200')
-                    .addClass('bg-blue-50 text-blue-700 border-blue-200')
-                    .html('<i class="fas fa-file-invoice text-blue-500"></i> Mode Manifest Voyage');
+                // MODE 2: MANIFEST VOYAGE (Status Pengiriman atau Kendala)
+                const isStatusPengiriman = requestType === 'status_pengiriman' || requestType === 'status';
+
+                if (isStatusPengiriman) {
+                    $targetModeBadge
+                        .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-blue-50 text-blue-700 border-blue-200')
+                        .addClass('bg-indigo-50 text-indigo-700 border-indigo-200')
+                        .html('<i class="fas fa-shipping-fast text-indigo-500"></i> Mode Status Pengiriman (Manifest)');
+
+                    $('#kendalaHeaderTitle').text('Informasi Status Pengiriman (Mode Manifest)');
+                    $('#kendalaHeaderSubtitle').text('Variabel status pengiriman muatan / kontainer manifest yang akan dikirimkan ke shipper');
+                    $('#kategoriLabel').text('Status Pengiriman Saat Ini');
+                    $kategoriMasalah.attr('placeholder', 'Contoh: Kapal Sedang Berlayar / Sandar di Pelabuhan / Proses Bongkar / Siap Diambil');
+                    $('#deskripsiLabel').text('Keterangan Tambahan / Detail Status');
+                    $deskripsiMasalah.attr('placeholder', 'Contoh: Muatan kontainer telah tiba di pelabuhan tujuan dan saat ini sedang dalam proses pembongkaran...');
+                    $('#quickStatusOptions').removeClass('hidden');
+
+                    // Tampilkan Variabel yang relevan untuk Status Pengiriman
+                    $varCountLabel.text('6 Variabel Status Pengiriman Aktif');
+                    $varSubtitleLabel.text('Variabel manifest & status muatan diaktifkan');
+                    $activeVarsBox.html(`
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {nama_kapal}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {no_voyage}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {kategori_masalah} / {status}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {deskripsi_masalah} / {keterangan}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {daftar_resi}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {shipper_name}
+                        </span>
+                    `);
+
+                    populateTemplateOptions('status_pengiriman');
+                } else {
+                    $targetModeBadge
+                        .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-indigo-50 text-indigo-700 border-indigo-200')
+                        .addClass('bg-blue-50 text-blue-700 border-blue-200')
+                        .html('<i class="fas fa-file-invoice text-blue-500"></i> Mode Manifest Voyage');
+
+                    $('#kendalaHeaderTitle').text('Informasi Kendala & Masalah (Mode Manifest)');
+                    $('#kendalaHeaderSubtitle').text('Variabel masalah untuk pemberitahuan keterlambatan resi/kontainer manifest');
+                    $('#kategoriLabel').text('Kategori Masalah / Jenis Kendala');
+                    $kategoriMasalah.attr('placeholder', 'Contoh: Cuaca Buruk / Antrian Dermaga / Kerusakan Mesin');
+                    $('#deskripsiLabel').text('Deskripsi Masalah & Estimasi');
+                    $deskripsiMasalah.attr('placeholder', 'Contoh: Keterlambatan diperkirakan sekitar 2 hari karena cuaca buruk di perairan...');
+                    $('#quickStatusOptions').addClass('hidden');
+
+                    // Tampilkan Variabel yang relevan untuk Kendala Manifest
+                    $varCountLabel.text('6 Variabel Kendala Aktif');
+                    $varSubtitleLabel.text('Variabel manifest & kendala diaktifkan');
+                    $activeVarsBox.html(`
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {nama_kapal}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {no_voyage}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {kategori_masalah}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {deskripsi_masalah}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {daftar_resi}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
+                            <i class="fas fa-check text-[10px] text-blue-600"></i> {shipper_name}
+                        </span>
+                    `);
+
+                    populateTemplateOptions('kendala');
+                }
 
                 // Hilangkan Form Pilih Pelabuhan & Jadwal
                 $sectionPelabuhan.addClass('hidden');
@@ -960,33 +1070,6 @@
 
                 // Update Step Badge nomor template menjadi 4
                 $templateStepBadge.text('4');
-
-                // Tampilkan Variabel yang relevan untuk Kendala Manifest
-                $varCountLabel.text('6 Variabel Kendala Aktif');
-                $varSubtitleLabel.text('Variabel manifest & kendala diaktifkan');
-                $activeVarsBox.html(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {nama_kapal}
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {no_voyage}
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {kategori_masalah}
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {deskripsi_masalah}
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {daftar_resi}
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                        <i class="fas fa-check text-[10px] text-blue-600"></i> {shipper_name}
-                    </span>
-                `);
-
-                // Filter template untuk Kendala / Manifest
-                populateTemplateOptions('kendala');
             }
         }
 
@@ -1099,6 +1182,22 @@
                                    .replace(/{eta}/g, etaDate)
                                    .replace(/{shipper_name}/g, 'CONTOH SHIPPER');
                     }
+                } else {
+                    const kapalName = $namaKapal.val() || '{nama_kapal}';
+                    const voyageVal = $noVoyage.val() || '{no_voyage}';
+                    const katMasalah = $kategoriMasalah.val() || '{kategori_masalah}';
+                    const deskMasalah = $deskripsiMasalah.val() || '{deskripsi_masalah}';
+
+                    text = text.replace(/{nama_kapal}/g, kapalName)
+                               .replace(/{no_voyage}/g, voyageVal)
+                               .replace(/{kategori_masalah}/g, katMasalah)
+                               .replace(/{status_pengiriman}/g, katMasalah)
+                               .replace(/{status}/g, katMasalah)
+                               .replace(/{deskripsi_masalah}/g, deskMasalah)
+                               .replace(/{keterangan}/g, deskMasalah)
+                               .replace(/{estimasi_keterlambatan}/g, '')
+                               .replace(/{daftar_resi}/g, '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321')
+                               .replace(/{shipper_name}/g, 'CONTOH SHIPPER');
                 }
 
                 $templatePreviewText.text(text);
@@ -1109,6 +1208,18 @@
         }
 
         $templateId.on('change', renderTemplatePreview);
+        $kategoriMasalah.on('input change', renderTemplatePreview);
+        $deskripsiMasalah.on('input change', renderTemplatePreview);
+        $namaKapal.on('change', renderTemplatePreview);
+        $noVoyage.on('change', renderTemplatePreview);
+
+        $(document).on('click', '.btn-quick-status', function() {
+            const status = $(this).attr('data-status');
+            const desc = $(this).attr('data-desc');
+            $kategoriMasalah.val(status);
+            $deskripsiMasalah.val(desc);
+            renderTemplatePreview();
+        });
 
         function clearRecipients() {
             recipientRequestId++;

@@ -1637,7 +1637,10 @@ class ManifestController extends Controller
             $isiPesan = str_replace('{shipper_name}', $shipperName, $isiPesan);
             $isiPesan = str_replace('{pelabuhan}', $pelabuhanVal, $isiPesan);
             $isiPesan = str_replace('{kategori_masalah}', $kategoriMasalah, $isiPesan);
+            $isiPesan = str_replace('{status_pengiriman}', $kategoriMasalah, $isiPesan);
+            $isiPesan = str_replace('{status}', $kategoriMasalah, $isiPesan);
             $isiPesan = str_replace('{deskripsi_masalah}', $deskripsiMasalah, $isiPesan);
+            $isiPesan = str_replace('{keterangan}', $deskripsiMasalah, $isiPesan);
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
             $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
 
