@@ -35,6 +35,7 @@
 
     <form action="{{ route('master.wa-broadcast.store') }}" method="POST" id="broadcastForm">
         @csrf
+        <input type="hidden" name="type" id="broadcast_type" value="{{ old('type', request('type', 'jadwal')) }}">
         <input type="hidden" name="custom_phones_json" id="custom_phones_json">
         <input type="hidden" name="selected_shippers_json" id="selected_shippers_json">
 
@@ -45,41 +46,59 @@
                     <span class="step-badge w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
                     <div>
                         <h2 class="text-sm font-bold text-slate-800">Pilih Target Penerima Broadcast</h2>
-                        <p class="text-[11px] text-slate-400">Variabel & form akan disesuaikan otomatis berdasarkan target yang dipilih</p>
+                        <p class="text-[11px] text-slate-400">Variabel & form akan disesuaikan otomatis berdasarkan jenis dan target broadcast yang dipilih</p>
                     </div>
                 </div>
                 <span id="targetModeBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-                    <i class="fas fa-users text-emerald-500"></i> Semua Master Shipper
+                    <i class="fas fa-calendar-alt text-emerald-500"></i> Mode Jadwal Kapal (Master Shipper)
                 </span>
             </div>
             <div class="p-5 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Option 1: Semua Data Shipper (Master: pengirims, master_pengirim_penerima, shipper_consignees) --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    {{-- Option 1: Semua Data Shipper (Jadwal Kapal Berlabuh) --}}
                     <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-emerald-50/30 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/40 border-slate-200" id="label-target-master">
-                        <input type="radio" name="target_penerima" value="all_master_shippers" class="target-radio mt-0.5 text-emerald-600 focus:ring-emerald-500" {{ old('target_penerima', in_array(request('type'), ['kendala', 'status_pengiriman', 'status']) ? '' : 'all_master_shippers') == 'all_master_shippers' ? 'checked' : '' }}>
-                        <div class="ml-3">
+                        <input type="radio" name="target_penerima" value="all_master_shippers" class="target-radio mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                            {{ old('target_penerima', in_array(request('type'), ['kendala', 'status_pengiriman', 'status', 'status_kapal', 'kendala_kapal']) ? '' : 'all_master_shippers') == 'all_master_shippers' ? 'checked' : '' }}>
+                        <div class="ml-2.5">
                             <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                <i class="fas fa-address-book text-emerald-600"></i>
-                                Semua Master Data Shipper
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">Mode Master Shipper</span>
+                                <i class="fas fa-calendar-alt text-emerald-600"></i>
+                                Jadwal Kapal
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">Master Shipper</span>
                             </span>
-                            <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
-                                Kirim broadcast ke seluruh shipper di database (<strong>Pengirim</strong>, <strong>Master PP</strong>, & <strong>Shipper Consignee</strong>). Input Kapal & Voyage serta Kendala otomatis dihilangkan.
+                            <span class="block text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                                Kirim jadwal kapal (closing, ETD, ETA) ke seluruh master data shipper database. Input kapal manual & kendala ditiadakan.
                             </span>
                         </div>
                     </label>
 
-                    {{-- Option 2: Shipper Khusus Manifest Kapal & Voyage --}}
-                    <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-blue-50/30 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/40 border-slate-200" id="label-target-manifest">
-                        <input type="radio" name="target_penerima" value="manifest" class="target-radio mt-0.5 text-blue-600 focus:ring-blue-500" {{ old('target_penerima', in_array(request('type'), ['kendala', 'status_pengiriman', 'status']) ? 'manifest' : '') == 'manifest' ? 'checked' : '' }}>
-                        <div class="ml-3">
+                    {{-- Option 2: Status Kapal & Muatan (Manifest) --}}
+                    <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-indigo-50/30 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/40 border-slate-200" id="label-target-status">
+                        <input type="radio" name="target_penerima" value="status_kapal" class="target-radio mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                            {{ old('target_penerima', in_array(request('type'), ['status_pengiriman', 'status', 'status_kapal']) ? 'status_kapal' : '') == 'status_kapal' ? 'checked' : '' }}>
+                        <div class="ml-2.5">
                             <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                <i class="fas fa-file-invoice text-blue-600"></i>
-                                Shipper Manifest Kapal & Voyage
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">Mode Manifest Voyage</span>
+                                <i class="fas fa-ship text-indigo-600"></i>
+                                Status Kapal & Muatan
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-800">Status & OB</span>
                             </span>
-                            <span class="block text-[11px] text-slate-500 mt-1 leading-relaxed">
-                                Hanya shipper yang memiliki muatan / resi / kontainer aktif pada manifest kapal & voyage tertentu (Cocok untuk Status Pengiriman & Kendala).
+                            <span class="block text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                                Kirim update status pelayaran kapal, sandar, proses bongkar & <strong>Status OB</strong> kontainer ke shipper manifest kapal & voyage tertentu.
+                            </span>
+                        </div>
+                    </label>
+
+                    {{-- Option 3: Kendala & Masalah Kapal (Manifest) --}}
+                    <label class="relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all hover:bg-rose-50/30 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50/40 border-slate-200" id="label-target-kendala">
+                        <input type="radio" name="target_penerima" value="kendala_kapal" class="target-radio mt-0.5 text-rose-600 focus:ring-rose-500"
+                            {{ old('target_penerima', in_array(request('type'), ['kendala', 'kendala_kapal']) ? 'kendala_kapal' : '') == 'kendala_kapal' ? 'checked' : '' }}>
+                        <div class="ml-2.5">
+                            <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fas fa-triangle-exclamation text-rose-600"></i>
+                                Kendala & Masalah Kapal
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-800">Kendala & Delay</span>
+                            </span>
+                            <span class="block text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                                Kirim pemberitahuan kendala teknis kapal, delay cuaca buruk, atau antrian dermaga ke shipper manifest terdampak.
                             </span>
                         </div>
                     </label>
@@ -920,11 +939,11 @@
          */
         function updateTargetMode(targetMode) {
             if (targetMode === 'all_master_shippers') {
-                // MODE 1: SEMUA MASTER DATA SHIPPER (JADWAL BROADCAST)
+                // MODE 1: JADWAL KAPAL (SEMUA MASTER DATA SHIPPER)
                 $targetModeBadge
-                    .removeClass('bg-blue-50 text-blue-700 border-blue-200')
+                    .removeClass('bg-blue-50 text-blue-700 border-blue-200 bg-indigo-50 text-indigo-700 border-indigo-200 bg-rose-50 text-rose-700 border-rose-200')
                     .addClass('bg-emerald-50 text-emerald-700 border-emerald-200')
-                    .html('<i class="fas fa-users text-emerald-500"></i> Mode Semua Master Shipper');
+                    .html('<i class="fas fa-calendar-alt text-emerald-500"></i> Mode Jadwal Kapal (Master Shipper)');
 
                 // Tampilkan Form Pilih Pelabuhan & Jadwal
                 $sectionPelabuhan.removeClass('hidden');
@@ -968,95 +987,79 @@
                     </span>
                 `);
 
-                // Filter template untuk Jadwal Kapal / General
+                $('#broadcast_type').val('jadwal');
                 populateTemplateOptions('jadwal');
 
+            } else if (targetMode === 'status_kapal' || targetMode === 'status_pengiriman') {
+                // MODE 2: STATUS KAPAL & MUATAN (STATUS OB) - KHUSUS MANIFEST
+                $targetModeBadge
+                    .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-blue-50 text-blue-700 border-blue-200 bg-rose-50 text-rose-700 border-rose-200')
+                    .addClass('bg-indigo-50 text-indigo-700 border-indigo-200')
+                    .html('<i class="fas fa-ship text-indigo-500"></i> Mode Status Kapal & OB (Manifest)');
+
+                // Hilangkan Form Pilih Pelabuhan & Jadwal
+                $sectionPelabuhan.addClass('hidden');
+                $pelabuhan.prop('disabled', true).prop('required', false);
+                $jadwalId.prop('disabled', true).prop('required', false);
+                $scheduleDetails.addClass('hidden');
+
+                // Tampilkan Form Pilih Kapal & Voyage
+                $sectionKapal.removeClass('hidden');
+                $namaKapal.prop('disabled', false).prop('required', true);
+                $noVoyage.prop('disabled', false).prop('required', true);
+
+                // Tampilkan Form Status Kapal / Pengiriman
+                $sectionKendala.removeClass('hidden');
+                $kategoriMasalah.prop('disabled', false);
+                $deskripsiMasalah.prop('disabled', false);
+
+                $('#kendalaHeaderTitle').text('Informasi Status Kapal & Muatan (Mode Manifest)');
+                $('#kendalaHeaderSubtitle').text('Variabel status pengiriman & Status OB kontainer yang dikirimkan ke shipper manifest');
+                $('#kategoriLabel').text('Status Kapal / Muatan Saat Ini');
+                $kategoriMasalah.attr('placeholder', 'Pilih dari tombol cepat di bawah atau kosongkan untuk otomatis dari Status OB database');
+                $('#deskripsiLabel').text('Keterangan Tambahan / Detail Operasional');
+                $deskripsiMasalah.attr('placeholder', 'Contoh: Muatan kontainer telah selesai dibongkar di pelabuhan dan siap untuk diambil...');
+                $('#quickStatusOptions').removeClass('hidden');
+
+                // Step Badges
+                $templateStepBadge.text('4');
+
+                // Tampilkan Variabel yang relevan untuk Status Pengiriman
+                $varCountLabel.text('7 Variabel Status Kapal & OB Aktif');
+                $varSubtitleLabel.text('Variabel manifest & status OB muatan real-time diaktifkan');
+                $activeVarsBox.html(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-300 shadow-2xs" title="Mengambil Status OB otomatis dari database">
+                        <i class="fas fa-bolt text-[10px] text-emerald-600"></i> {status} / {status_ob} (Status OB)
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-list-check text-[10px] text-indigo-600"></i> {daftar_resi} (BL + Ctr + Status OB)
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-indigo-600"></i> {nama_kapal}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-indigo-600"></i> {no_voyage}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-indigo-600"></i> {kategori_masalah}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-indigo-600"></i> {deskripsi_masalah}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-indigo-600"></i> {shipper_name}
+                    </span>
+                `);
+
+                $('#broadcast_type').val('status_pengiriman');
+                populateTemplateOptions('status_pengiriman');
+
             } else {
-                // MODE 2: MANIFEST VOYAGE (Status Pengiriman atau Kendala)
-                const isStatusPengiriman = requestType === 'status_pengiriman' || requestType === 'status';
-
-                if (isStatusPengiriman) {
-                    $targetModeBadge
-                        .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-blue-50 text-blue-700 border-blue-200')
-                        .addClass('bg-indigo-50 text-indigo-700 border-indigo-200')
-                        .html('<i class="fas fa-shipping-fast text-indigo-500"></i> Mode Status Pengiriman (Manifest)');
-
-                    $('#kendalaHeaderTitle').text('Informasi Status Pengiriman (Mode Manifest)');
-                    $('#kendalaHeaderSubtitle').text('Variabel status pengiriman muatan / kontainer manifest yang akan dikirimkan ke shipper');
-                    $('#kategoriLabel').text('Status Pengiriman Saat Ini');
-                    $kategoriMasalah.attr('placeholder', 'Contoh: Kapal Sedang Berlayar / Sandar di Pelabuhan / Proses Bongkar / Siap Diambil');
-                    $('#deskripsiLabel').text('Keterangan Tambahan / Detail Status');
-                    $deskripsiMasalah.attr('placeholder', 'Contoh: Muatan kontainer telah tiba di pelabuhan tujuan dan saat ini sedang dalam proses pembongkaran...');
-                    $('#quickStatusOptions').removeClass('hidden');
-
-                    // Tampilkan Variabel yang relevan untuk Status Pengiriman
-                    $varCountLabel.text('7 Variabel Status Pengiriman Aktif');
-                    $varSubtitleLabel.text('Variabel manifest & status OB muatan real-time diaktifkan');
-                    $activeVarsBox.html(`
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-300 shadow-2xs" title="Mengambil Status OB otomatis dari database">
-                            <i class="fas fa-bolt text-[10px] text-emerald-600"></i> {status} / {status_ob} (Status OB)
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-list-check text-[10px] text-indigo-600"></i> {daftar_resi} (BL + Ctr + Status OB)
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {nama_kapal}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {no_voyage}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {kategori_masalah}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {deskripsi_masalah}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 font-mono text-xs font-semibold border border-indigo-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-indigo-600"></i> {shipper_name}
-                        </span>
-                    `);
-
-                    populateTemplateOptions('status_pengiriman');
-                } else {
-                    $targetModeBadge
-                        .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-indigo-50 text-indigo-700 border-indigo-200')
-                        .addClass('bg-blue-50 text-blue-700 border-blue-200')
-                        .html('<i class="fas fa-file-invoice text-blue-500"></i> Mode Manifest Voyage');
-
-                    $('#kendalaHeaderTitle').text('Informasi Kendala & Masalah (Mode Manifest)');
-                    $('#kendalaHeaderSubtitle').text('Variabel masalah untuk pemberitahuan keterlambatan resi/kontainer manifest');
-                    $('#kategoriLabel').text('Kategori Masalah / Jenis Kendala');
-                    $kategoriMasalah.attr('placeholder', 'Contoh: Cuaca Buruk / Antrian Dermaga / Kerusakan Mesin');
-                    $('#deskripsiLabel').text('Deskripsi Masalah & Estimasi');
-                    $deskripsiMasalah.attr('placeholder', 'Contoh: Keterlambatan diperkirakan sekitar 2 hari karena cuaca buruk di perairan...');
-                    $('#quickStatusOptions').addClass('hidden');
-
-                    // Tampilkan Variabel yang relevan untuk Kendala Manifest
-                    $varCountLabel.text('6 Variabel Kendala Aktif');
-                    $varSubtitleLabel.text('Variabel manifest & kendala diaktifkan');
-                    $activeVarsBox.html(`
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {nama_kapal}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {no_voyage}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {kategori_masalah}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {deskripsi_masalah}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {daftar_resi}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-mono text-xs font-semibold border border-blue-200 shadow-2xs">
-                            <i class="fas fa-check text-[10px] text-blue-600"></i> {shipper_name}
-                        </span>
-                    `);
-
-                    populateTemplateOptions('kendala');
-                }
+                // MODE 3: KENDALA & MASALAH KAPAL - KHUSUS MANIFEST
+                $targetModeBadge
+                    .removeClass('bg-emerald-50 text-emerald-700 border-emerald-200 bg-indigo-50 text-indigo-700 border-indigo-200 bg-blue-50 text-blue-700 border-blue-200')
+                    .addClass('bg-rose-50 text-rose-700 border-rose-200')
+                    .html('<i class="fas fa-triangle-exclamation text-rose-500"></i> Mode Kendala Kapal (Manifest)');
 
                 // Hilangkan Form Pilih Pelabuhan & Jadwal
                 $sectionPelabuhan.addClass('hidden');
@@ -1074,8 +1077,43 @@
                 $kategoriMasalah.prop('disabled', false);
                 $deskripsiMasalah.prop('disabled', false);
 
-                // Update Step Badge nomor template menjadi 4
+                $('#kendalaHeaderTitle').text('Informasi Kendala & Masalah Kapal (Mode Manifest)');
+                $('#kendalaHeaderSubtitle').text('Variabel kendala keterlambatan atau gangguan teknis yang dialami kapal');
+                $('#kategoriLabel').text('Kategori Masalah / Jenis Kendala');
+                $kategoriMasalah.attr('placeholder', 'Contoh: Cuaca Buruk / Antrian Dermaga / Kerusakan Mesin');
+                $('#deskripsiLabel').text('Deskripsi Masalah & Estimasi Keterlambatan');
+                $deskripsiMasalah.attr('placeholder', 'Contoh: Keterlambatan diperkirakan sekitar 2 hari karena cuaca buruk di perairan...');
+                $('#quickStatusOptions').addClass('hidden');
+
+                // Step Badges
                 $templateStepBadge.text('4');
+
+                // Tampilkan Variabel yang relevan untuk Kendala Manifest
+                $varCountLabel.text('6 Variabel Kendala Aktif');
+                $varSubtitleLabel.text('Variabel manifest & kendala masalah diaktifkan');
+                $activeVarsBox.html(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {nama_kapal}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {no_voyage}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {kategori_masalah}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {deskripsi_masalah}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {daftar_resi}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono text-xs font-semibold border border-rose-200 shadow-2xs">
+                        <i class="fas fa-check text-[10px] text-rose-600"></i> {shipper_name}
+                    </span>
+                `);
+
+                $('#broadcast_type').val('kendala');
+                populateTemplateOptions('kendala');
             }
         }
 
@@ -1194,15 +1232,22 @@
                     const katMasalah = $kategoriMasalah.val() || '{kategori_masalah}';
                     const deskMasalah = $deskripsiMasalah.val() || '{deskripsi_masalah}';
 
+                    const isStatusMode = targetPenerima === 'status_kapal' || $('#broadcast_type').val() === 'status_pengiriman';
+                    const sampleStatusText = katMasalah !== '{kategori_masalah}' ? katMasalah : (isStatusMode ? 'Sudah OB (Otomatis Database)' : '{kategori_masalah}');
+                    const sampleResi = isStatusMode
+                        ? '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567 [Sudah OB (15-Sep-2026 12:59)]\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321 [Belum OB]'
+                        : '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321';
+
                     text = text.replace(/{nama_kapal}/g, kapalName)
                                .replace(/{no_voyage}/g, voyageVal)
-                               .replace(/{kategori_masalah}/g, katMasalah)
-                               .replace(/{status_pengiriman}/g, katMasalah)
-                               .replace(/{status}/g, katMasalah)
+                               .replace(/{status_ob}/g, sampleStatusText)
+                               .replace(/{status}/g, sampleStatusText)
+                               .replace(/{kategori_masalah}/g, sampleStatusText)
+                               .replace(/{status_pengiriman}/g, sampleStatusText)
                                .replace(/{deskripsi_masalah}/g, deskMasalah)
                                .replace(/{keterangan}/g, deskMasalah)
                                .replace(/{estimasi_keterlambatan}/g, '')
-                               .replace(/{daftar_resi}/g, '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321')
+                               .replace(/{daftar_resi}/g, sampleResi)
                                .replace(/{shipper_name}/g, 'CONTOH SHIPPER');
                 }
 
@@ -1249,7 +1294,7 @@
             const namaKapal      = $namaKapal.val();
             const noVoyage       = $noVoyage.val();
 
-            if (targetPenerima === 'manifest' && (!namaKapal || !noVoyage)) {
+            if (targetPenerima !== 'all_master_shippers' && (!namaKapal || !noVoyage)) {
                 clearRecipients();
                 return;
             }
@@ -1266,7 +1311,7 @@
                 data: {
                     nama_kapal: namaKapal,
                     no_voyage: noVoyage,
-                    source: targetPenerima
+                    source: (targetPenerima === 'all_master_shippers' ? 'all_master_shippers' : 'manifest')
                 },
                 dataType: 'json',
                 success: function(response) {

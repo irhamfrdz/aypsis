@@ -1537,7 +1537,13 @@ class ManifestController extends Controller
         }
 
         $targetPenerima = $request->input('target_penerima');
-        if (!$targetPenerima) {
+        if ($targetPenerima === 'status_kapal') {
+            $targetPenerima = 'manifest';
+            $request->merge(['type' => 'status_pengiriman']);
+        } elseif ($targetPenerima === 'kendala_kapal') {
+            $targetPenerima = 'manifest';
+            $request->merge(['type' => 'kendala']);
+        } elseif (!$targetPenerima) {
             if (str_contains(strtolower($template->nama_template), 'jadwal') || $request->input('type') === 'jadwal') {
                 $targetPenerima = 'all_master_shippers';
             } else {

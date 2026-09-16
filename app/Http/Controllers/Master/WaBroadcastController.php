@@ -295,7 +295,9 @@ class WaBroadcastController extends Controller
         $noVoyage = $request->input('no_voyage', '');
         $source = $request->input('source', 'all_master_shippers');
 
-        if (!$request->has('source') && $request->input('type') === 'jadwal') {
+        if ($source === 'status_kapal' || $source === 'kendala_kapal') {
+            $source = 'manifest';
+        } elseif (!$request->has('source') && $request->input('type') === 'jadwal') {
             $source = 'all_master_shippers';
         }
 
@@ -315,7 +317,16 @@ class WaBroadcastController extends Controller
 
     public function store(Request $request, WaBroadcastRecipientService $recipientService)
     {
-        $isAllShipper = $request->input('target_penerima', 'all_master_shippers') === 'all_master_shippers';
+        $rawTarget = $request->input('target_penerima', 'all_master_shippers');
+        $isAllShipper = $rawTarget === 'all_master_shippers';
+
+        if ($rawTarget === 'status_kapal') {
+            $request->merge(['target_penerima' => 'manifest', 'type' => 'status_pengiriman']);
+        } elseif ($rawTarget === 'kendala_kapal') {
+            $request->merge(['target_penerima' => 'manifest', 'type' => 'kendala']);
+        } elseif ($rawTarget === 'all_master_shippers') {
+            $request->merge(['type' => 'jadwal']);
+        }
 
         $request->validate([
             'nama_kapal' => $isAllShipper ? 'nullable|string' : 'required|string',
