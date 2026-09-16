@@ -828,7 +828,7 @@
                                        title="Kirim ke Manifest">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
-                                <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
+                                <a href="{{ route('bl.show', $bl) }}" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                    title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                 </a>
@@ -1082,7 +1082,7 @@
                                            title="Kirim ke Manifest">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
-                                    <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
+                                    <a href="{{ route('naik-kapal.show', $naikKapal) }}" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                        title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
