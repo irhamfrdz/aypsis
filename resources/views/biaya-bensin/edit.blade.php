@@ -73,7 +73,7 @@
                                 <optgroup label="Mobil">
                                     @foreach($mobils as $mobil)
                                         @if(!empty(trim($mobil->nomor_polisi)) && trim($mobil->nomor_polisi) !== '-')
-                                            <option value="mobil_{{ $mobil->id }}" {{ old('kendaraan_id', $item->mobil_id ? 'mobil_'.$item->mobil_id : ($item->alat_berat_id ? 'alat_'.$item->alat_berat_id : '')) == 'mobil_'.$mobil->id ? 'selected' : '' }}>
+                                            <option value="mobil_{{ $mobil->id }}" data-karyawan-id="{{ $mobil->karyawan_id ?? '' }}" {{ old('kendaraan_id', $item->mobil_id ? 'mobil_'.$item->mobil_id : ($item->alat_berat_id ? 'alat_'.$item->alat_berat_id : '')) == 'mobil_'.$mobil->id ? 'selected' : '' }}>
                                                 {{ $mobil->nomor_polisi }}
                                             </option>
                                         @endif
@@ -357,6 +357,15 @@
             const mobilId = selectedOption.data('mobil-id');
             if (mobilId) {
                 $('#kendaraan_id').val('mobil_' + mobilId).trigger('change');
+            }
+        });
+
+        // Autofill driver based on selected vehicle
+        $('#kendaraan_id').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const karyawanId = selectedOption.data('karyawan-id');
+            if (karyawanId && !$('#karyawan_id').val()) {
+                $('#karyawan_id').val(karyawanId).trigger('change.select2');
             }
         });
 

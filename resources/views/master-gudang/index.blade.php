@@ -13,6 +13,9 @@
                 <p class="text-gray-600 mt-1">Kelola data gudang</p>
             </div>
             <div class="flex items-center space-x-2">
+                @can('master-gudang-view')
+                <a href="{{ route('denah-gudang.index') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">Denah Kontainer</a>
+                @endcan
                 @can('master-gudang-create')
                 <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-file-excel mr-2"></i>Import Excel
@@ -110,6 +113,12 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center space-x-2">
                                 @can('master-gudang-view')
+                                <a href="{{ route('master-gudang.layout', $gudang) }}" class="text-indigo-600 hover:text-indigo-900" title="Atur Layout Gudang" aria-label="Atur layout {{ $gudang->nama_gudang }}">
+                                    <i class="fas fa-border-all"></i>
+                                </a>
+                                <a href="{{ route('denah-gudang.show', $gudang) }}" class="text-green-600 hover:text-green-900" title="Posisi Kontainer" aria-label="Posisi kontainer {{ $gudang->nama_gudang }}">
+                                    <i class="fas fa-boxes-stacked"></i>
+                                </a>
                                 <a href="{{ route('master-gudang.show', $gudang) }}" class="text-blue-600 hover:text-blue-900" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                 </a>

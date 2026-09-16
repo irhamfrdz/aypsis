@@ -13,6 +13,10 @@
                 <p class="text-gray-600 mt-1">Informasi lengkap gudang</p>
             </div>
             <div class="flex gap-2">
+                @can('master-gudang-view')
+                <a href="{{ route('master-gudang.layout', $masterGudang) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Layout Gudang</a>
+                <a href="{{ route('denah-gudang.show', $masterGudang) }}" class="bg-green-600 text-white px-4 py-2 rounded-md">Posisi Kontainer</a>
+                @endcan
                 @can('master-gudang-edit')
                 <a href="{{ route('master-gudang.edit', $masterGudang) }}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-edit mr-2"></i>Edit

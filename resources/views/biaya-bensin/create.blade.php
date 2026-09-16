@@ -73,7 +73,7 @@
                                 <optgroup label="Mobil">
                                     @foreach($mobils as $mobil)
                                         @if(!empty(trim($mobil->nomor_polisi)) && trim($mobil->nomor_polisi) !== '-')
-                                            <option value="mobil_{{ $mobil->id }}" data-last-km-akhir="{{ $mobil->last_km_akhir }}" {{ old('kendaraan_id') == 'mobil_'.$mobil->id ? 'selected' : '' }}>
+                                            <option value="mobil_{{ $mobil->id }}" data-last-km-akhir="{{ $mobil->last_km_akhir }}" data-karyawan-id="{{ $mobil->karyawan_id ?? '' }}" {{ old('kendaraan_id') == 'mobil_'.$mobil->id ? 'selected' : '' }}>
                                                 {{ $mobil->nomor_polisi }}
                                             </option>
                                         @endif
@@ -351,14 +351,20 @@
             }
         });
 
-        // Autofill KM Awal based on selected vehicle/alat berat
+        // Autofill KM Awal & Supir based on selected vehicle/alat berat
         $('#kendaraan_id').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const lastKmAkhir = selectedOption.data('last-km-akhir');
+            const karyawanId = selectedOption.data('karyawan-id');
+
             if (lastKmAkhir !== undefined && lastKmAkhir !== '') {
                 $('#km_awal').val(lastKmAkhir);
             } else {
                 $('#km_awal').val(0);
+            }
+
+            if (karyawanId && !$('#karyawan_id').val()) {
+                $('#karyawan_id').val(karyawanId).trigger('change.select2');
             }
         }).trigger('change');
 

@@ -310,6 +310,18 @@ Route::middleware([
     Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
     Route::get('/kontainer-sewa-final/print-permohonan/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPermohonan'])->name('kontainer-sewa-final.print-permohonan');
 
+    // Denah gudang uses the existing warehouse view/edit permissions.
+    Route::middleware('can:master-gudang-view')->group(function () {
+        Route::get('/denah-gudang', [\App\Http\Controllers\GudangPlanController::class, 'index'])->name('denah-gudang.index');
+        Route::get('/denah-gudang/{gudang}', [\App\Http\Controllers\GudangPlanController::class, 'show'])->name('denah-gudang.show');
+        Route::get('/master-gudang/{master_gudang}/layout', [\App\Http\Controllers\GudangPlanController::class, 'layout'])->name('master-gudang.layout');
+        Route::middleware('can:master-gudang-edit')->group(function () {
+            Route::put('/master-gudang/{master_gudang}/layout', [\App\Http\Controllers\GudangPlanController::class, 'updateLayout'])->name('master-gudang.layout.update');
+            Route::put('/denah-gudang/{gudang}/positions', [\App\Http\Controllers\GudangPlanController::class, 'store'])->name('denah-gudang.positions.store');
+            Route::delete('/denah-gudang/{gudang}/positions/{position}', [\App\Http\Controllers\GudangPlanController::class, 'destroy'])->whereNumber('position')->name('denah-gudang.positions.destroy');
+        });
+    });
+
     // Stowage Plan Web View
     Route::get('/stowage-plan', [\App\Http\Controllers\StowagePlanWebController::class, 'index'])
         ->name('stowage-plan.index')

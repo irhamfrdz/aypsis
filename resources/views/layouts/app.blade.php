@@ -1205,6 +1205,9 @@
 @endphp
 
 @if($hasAktivaPermissions)
+@php
+    $isAktivaRoute = $isAktivaRoute || Request::routeIs('denah-gudang.*');
+@endphp
 <div class="mt-4 mb-6">
     <button id="aktiva-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isAktivaRoute ? 'bg-blue-50 text-blue-700' : '' }}">
         <span class="text-sm font-semibold">Aktiva</span>
@@ -1397,6 +1400,14 @@
         <div class="mx-2 mb-3">
             <a href="{{ route('master-gudang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-gudang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Master Gudang</span>
+            </a>
+        </div>
+        @endif
+
+        @if($user && $user->can('master-gudang-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('denah-gudang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('denah-gudang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Denah Kontainer Gudang</span>
             </a>
         </div>
         @endif

@@ -17,7 +17,14 @@ class Gudang extends Model
     ];
 
     protected $casts = [
+        'denah_layout' => 'array',
+        'denah_version' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function positions()
+    {
+        return $this->hasMany(GudangPosition::class);
+    }
 }

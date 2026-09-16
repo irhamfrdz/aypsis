@@ -11,6 +11,9 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Edit Gudang</h1>
                 <p class="text-gray-600 mt-1">Edit data gudang: <strong>{{ $masterGudang->nama_gudang }}</strong></p>
+                @can('master-gudang-view')
+                <a href="{{ route('master-gudang.layout', $masterGudang) }}" class="inline-block mt-3 text-indigo-600 font-medium">Atur Layout & Denah Gudang &rarr;</a>
+                @endcan
             </div>
             <a href="{{ route('master-gudang.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
                 <i class="fas fa-arrow-left mr-2"></i>Kembali
