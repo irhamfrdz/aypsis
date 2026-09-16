@@ -337,12 +337,14 @@ class WaBroadcastController extends Controller
             'deskripsi_masalah' => 'nullable|string',
             'template_id' => 'required|exists:wa_templates,id',
             'target_penerima' => 'nullable|string',
+            'kegiatan_ob' => 'nullable|string|in:all,bongkar,muat',
         ]);
 
         $targetPenerima = $request->input('target_penerima', 'all_master_shippers');
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage') ?: '-';
         $pelabuhan = $request->input('pelabuhan');
+        $kegiatanOb = $request->input('kegiatan_ob', 'all');
 
         if ($request->input('jadwal_id') === 'all') {
             $namaKapal = "Semua Kapal" . ($pelabuhan ? " ({$pelabuhan})" : '');
@@ -383,7 +385,13 @@ class WaBroadcastController extends Controller
             if ($isAllShipper) {
                 $kategoriMasalah = $pelabuhan ? "Jadwal Kapal {$pelabuhan}" : 'Jadwal Kapal Berlabuh';
             } elseif ($request->input('type') === 'status_pengiriman' || ($template && (str_contains(strtolower($template->nama_template), 'status') || str_contains(strtolower($template->nama_template), 'pengiriman')))) {
-                $kategoriMasalah = 'Status OB';
+                if ($kegiatanOb === 'bongkar') {
+                    $kategoriMasalah = 'Status OB Bongkar';
+                } elseif ($kegiatanOb === 'muat') {
+                    $kategoriMasalah = 'Status OB Muat';
+                } else {
+                    $kategoriMasalah = 'Status OB Bongkar & Muat';
+                }
             } else {
                 $kategoriMasalah = '';
             }

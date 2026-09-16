@@ -1645,51 +1645,67 @@ class ManifestController extends Controller
         $allContainers = array_values(array_unique(array_filter($allContainers)));
         $allBlNumbers = array_values(array_unique(array_filter($allBlNumbers)));
 
+        $kegiatanOb = $request->input('kegiatan_ob');
+        if (!$kegiatanOb) {
+            $katLower = strtolower($kategoriMasalah ?? '');
+            if (str_contains($katLower, 'bongkar') && !str_contains($katLower, 'muat')) {
+                $kegiatanOb = 'bongkar';
+            } elseif (str_contains($katLower, 'muat') && !str_contains($katLower, 'bongkar')) {
+                $kegiatanOb = 'muat';
+            } else {
+                $kegiatanOb = 'all';
+            }
+        }
+
         $blRecords = collect();
-        if (!empty($allContainers) || !empty($allBlNumbers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
-            $blRecords = \App\Models\Bl::query()
-                ->select('id', 'nama_kapal', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
-                ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers, $allBlNumbers) {
-                    if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
-                        $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
-                            $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
-                        });
-                    }
-                    if (!empty($allContainers) || !empty($allBlNumbers)) {
-                        $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
-                        $q->$method(function ($sub) use ($allContainers, $allBlNumbers) {
-                            if (!empty($allContainers)) {
-                                $sub->whereIn('nomor_kontainer', $allContainers);
-                            }
-                            if (!empty($allBlNumbers)) {
-                                $sub->orWhereIn('nomor_bl', $allBlNumbers);
-                            }
-                        });
-                    }
-                })
-                ->orderByDesc('id')
-                ->get();
+        if ($kegiatanOb !== 'muat') {
+            if (!empty($allContainers) || !empty($allBlNumbers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+                $blRecords = \App\Models\Bl::query()
+                    ->select('id', 'nama_kapal', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
+                    ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers, $allBlNumbers) {
+                        if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
+                            $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
+                                $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
+                            });
+                        }
+                        if (!empty($allContainers) || !empty($allBlNumbers)) {
+                            $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
+                            $q->$method(function ($sub) use ($allContainers, $allBlNumbers) {
+                                if (!empty($allContainers)) {
+                                    $sub->whereIn('nomor_kontainer', $allContainers);
+                                }
+                                if (!empty($allBlNumbers)) {
+                                    $sub->orWhereIn('nomor_bl', $allBlNumbers);
+                                }
+                            });
+                        }
+                    })
+                    ->orderByDesc('id')
+                    ->get();
+            }
         }
 
         $naikRecords = collect();
-        if (!empty($allContainers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
-            $naikRecords = \App\Models\NaikKapal::query()
-                ->select('id', 'nama_kapal', 'no_voyage', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
-                ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers) {
-                    if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
-                        $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
-                            $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
-                        });
-                    }
-                    if (!empty($allContainers)) {
-                        $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
-                        $q->$method(function ($sub) use ($allContainers) {
-                            $sub->whereIn('nomor_kontainer', $allContainers);
-                        });
-                    }
-                })
-                ->orderByDesc('id')
-                ->get();
+        if ($kegiatanOb !== 'bongkar') {
+            if (!empty($allContainers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+                $naikRecords = \App\Models\NaikKapal::query()
+                    ->select('id', 'nama_kapal', 'no_voyage', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
+                    ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers) {
+                        if ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') {
+                            $q->where(function ($sub) use ($namaKapalVal, $noVoyageVal) {
+                                $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
+                            });
+                        }
+                        if (!empty($allContainers)) {
+                            $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
+                            $q->$method(function ($sub) use ($allContainers) {
+                                $sub->whereIn('nomor_kontainer', $allContainers);
+                            });
+                        }
+                    })
+                    ->orderByDesc('id')
+                    ->get();
+            }
         }
 
         $broadcastData = [];
@@ -1710,26 +1726,29 @@ class ManifestController extends Controller
                 $cleanC = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $rawC));
                 $cleanB = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $rawB));
 
-                // 1. Cari di Bl dengan prioritas nama_kapal & no_voyage sama
-                $matchedBl = $blRecords->first(function ($bl) use ($namaKapalVal, $noVoyageVal, $cleanC, $cleanB) {
-                    $matchShip = ($bl->nama_kapal == $namaKapalVal && $bl->no_voyage == $noVoyageVal);
-                    $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
-                    $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
-                    return $matchShip && (($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl));
-                });
-
-                // Fallback Bl tanpa filter kapal
-                if (!$matchedBl) {
-                    $matchedBl = $blRecords->first(function ($bl) use ($cleanC, $cleanB) {
+                $matchedBl = null;
+                if ($kegiatanOb !== 'muat' && $blRecords->isNotEmpty()) {
+                    // 1. Cari di Bl dengan prioritas nama_kapal & no_voyage sama
+                    $matchedBl = $blRecords->first(function ($bl) use ($namaKapalVal, $noVoyageVal, $cleanC, $cleanB) {
+                        $matchShip = ($bl->nama_kapal == $namaKapalVal && $bl->no_voyage == $noVoyageVal);
                         $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
                         $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
-                        return ($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl);
+                        return $matchShip && (($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl));
                     });
+
+                    // Fallback Bl tanpa filter kapal
+                    if (!$matchedBl) {
+                        $matchedBl = $blRecords->first(function ($bl) use ($cleanC, $cleanB) {
+                            $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
+                            $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
+                            return ($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl);
+                        });
+                    }
                 }
 
-                // 2. Cari di NaikKapal jika belum ketemu atau belum OB
                 $matchedNaik = null;
-                if (!$matchedBl || !$matchedBl->sudah_ob) {
+                if ($kegiatanOb !== 'bongkar' && $naikRecords->isNotEmpty()) {
+                    // 2. Cari di NaikKapal
                     $matchedNaik = $naikRecords->first(function ($n) use ($namaKapalVal, $noVoyageVal, $cleanC) {
                         $matchShip = ($n->nama_kapal == $namaKapalVal && $n->no_voyage == $noVoyageVal);
                         $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
@@ -1743,8 +1762,32 @@ class ManifestController extends Controller
                     }
                 }
 
-                $isOb = ($matchedBl && $matchedBl->sudah_ob) || ($matchedNaik && $matchedNaik->sudah_ob);
-                $tglOb = ($matchedBl && $matchedBl->tanggal_ob) ? $matchedBl->tanggal_ob : ($matchedNaik ? $matchedNaik->tanggal_ob : null);
+                // Tentukan status OB berdasarkan jenis kegiatan OB
+                if ($kegiatanOb === 'bongkar') {
+                    $isOb = $matchedBl && (bool) $matchedBl->sudah_ob;
+                    $tglOb = ($matchedBl && $matchedBl->tanggal_ob) ? $matchedBl->tanggal_ob : null;
+                    $badge = $isOb ? 'Sudah OB Bongkar' : 'Belum OB Bongkar';
+                } elseif ($kegiatanOb === 'muat') {
+                    $isOb = $matchedNaik && (bool) $matchedNaik->sudah_ob;
+                    $tglOb = ($matchedNaik && $matchedNaik->tanggal_ob) ? $matchedNaik->tanggal_ob : null;
+                    $badge = $isOb ? 'Sudah OB Muat' : 'Belum OB Muat';
+                } else {
+                    // all: Bongkar & Muat
+                    $isBongkarOb = $matchedBl && (bool) $matchedBl->sudah_ob;
+                    $isMuatOb = $matchedNaik && (bool) $matchedNaik->sudah_ob;
+                    $isOb = $isBongkarOb || $isMuatOb;
+                    $tglOb = ($matchedBl && $matchedBl->tanggal_ob) ? $matchedBl->tanggal_ob : ($matchedNaik ? $matchedNaik->tanggal_ob : null);
+
+                    if ($isBongkarOb && $isMuatOb) {
+                        $badge = 'Sudah OB (Bongkar & Muat)';
+                    } elseif ($isBongkarOb) {
+                        $badge = 'Sudah OB Bongkar';
+                    } elseif ($isMuatOb) {
+                        $badge = 'Sudah OB Muat';
+                    } else {
+                        $badge = 'Belum OB';
+                    }
+                }
 
                 if ($isOb) {
                     $obCount++;
@@ -1753,7 +1796,6 @@ class ManifestController extends Controller
                     }
                 }
 
-                $badge = $isOb ? 'Sudah OB' : 'Belum OB';
                 if ($isOb && $tglOb) {
                     $badge .= ' (' . \Carbon\Carbon::parse($tglOb)->format('d-M-Y H:i') . ')';
                 }
@@ -1763,18 +1805,21 @@ class ManifestController extends Controller
             }
 
             // Evaluasi Status OB keseluruhan untuk shipper ini
+            $kegiatanLabel = $kegiatanOb === 'bongkar' ? 'Bongkar' : ($kegiatanOb === 'muat' ? 'Muat' : '');
+            $suffix = $kegiatanLabel ? " {$kegiatanLabel}" : '';
+
             if ($totalResi === 0) {
-                $statusOb = 'Belum OB';
+                $statusOb = "Belum OB{$suffix}";
             } elseif ($obCount === $totalResi) {
                 if ($totalResi === 1 && $lastTglOb) {
-                    $statusOb = 'Sudah OB (' . \Carbon\Carbon::parse($lastTglOb)->format('d-M-Y H:i') . ')';
+                    $statusOb = "Sudah OB{$suffix} (" . \Carbon\Carbon::parse($lastTglOb)->format('d-M-Y H:i') . ')';
                 } else {
-                    $statusOb = 'Sudah OB';
+                    $statusOb = "Sudah OB{$suffix}";
                 }
             } elseif ($obCount === 0) {
-                $statusOb = 'Belum OB';
+                $statusOb = "Belum OB{$suffix}";
             } else {
-                $statusOb = "Sebagian Sudah OB ({$obCount}/{$totalResi} Kontainer)";
+                $statusOb = "Sebagian Sudah OB{$suffix} ({$obCount}/{$totalResi} Kontainer)";
             }
 
             $daftarResi = implode("\n", $formattedResiLines);
@@ -1790,7 +1835,10 @@ class ManifestController extends Controller
             // Cek apakah mode broadcast status atau user mengosongkan kategori
             $isStatusBroadcast = ($request->input('type') === 'status_pengiriman')
                 || empty($kategoriMasalah)
-                || in_array(strtolower(trim($kategoriMasalah)), ['status ob', 'status pengiriman', 'status', 'overbrengen', 'oper bongkar']);
+                || in_array(strtolower(trim($kategoriMasalah)), [
+                    'status ob', 'status ob bongkar', 'status ob muat', 'status ob bongkar & muat', 'status ob bongkar dan muat',
+                    'status pengiriman', 'status', 'overbrengen', 'oper bongkar'
+                ]);
 
             $effectiveKategori = $isStatusBroadcast ? $statusOb : $kategoriMasalah;
             $isiPesan = str_replace('{kategori_masalah}', $effectiveKategori, $isiPesan);

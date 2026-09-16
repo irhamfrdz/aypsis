@@ -38,6 +38,7 @@
         <input type="hidden" name="type" id="broadcast_type" value="{{ old('type', request('type', 'jadwal')) }}">
         <input type="hidden" name="custom_phones_json" id="custom_phones_json">
         <input type="hidden" name="selected_shippers_json" id="selected_shippers_json">
+        <input type="hidden" name="kegiatan_ob" id="kegiatan_ob" value="{{ old('kegiatan_ob', 'all') }}">
 
         {{-- Step 1: Target Penerima (Shipper) --}}
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -384,27 +385,59 @@
                 </div>
             </div>
             <div class="p-5 space-y-4">
-                {{-- Quick Status Chips (Aktif jika mode Status Pengiriman) --}}
-                <div id="quickStatusOptions" class="hidden space-y-1.5">
-                    <span class="text-[11px] font-semibold text-slate-500">Pilih Cepat Status Muatan:</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 transition-colors shadow-2xs" data-status="Status OB" data-desc="Status Oper Bongkar (OB) kontainer otomatis diambil dari database real-time (Sudah OB / Belum OB).">
-                            ⚡ Status OB (Otomatis dari Database)
+                {{-- Quick Status Chips (Berdasarkan Variabel Kegiatan OB) --}}
+                <div id="quickStatusOptions" class="hidden space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+                            <i class="fas fa-filter text-emerald-600"></i>
+                            Pilih Cepat Status Muatan (Berdasarkan Kegiatan OB):
+                        </span>
+                        <span class="text-[10px] text-slate-400">Pilih mode operasional bongkar / muat</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="quickStatusGrid">
+                        {{-- 1. Status OB Bongkar & OB Muat --}}
+                        <button type="button"
+                            class="btn-quick-status flex items-start gap-2.5 p-3 text-left rounded-xl border transition-all cursor-pointer shadow-2xs group ring-2 ring-emerald-500 bg-emerald-50 border-emerald-300 text-emerald-900"
+                            data-kegiatan="all"
+                            data-status="Status OB Bongkar & Muat"
+                            data-desc="Status Oper Bongkar (OB) kegiatan Bongkar dan Muat kontainer otomatis diambil dari database real-time.">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-200 text-emerald-800 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-boxes-stacked text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-emerald-900">Status OB Bongkar & Muat</span>
+                                <span class="block text-[10px] text-emerald-700 mt-0.5 leading-tight">Mencakup kegiatan Bongkar (BL) & Muat (Naik Kapal)</span>
+                            </div>
                         </button>
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Kapal Berangkat (Sailing)" data-desc="Kapal telah diberangkatkan dari pelabuhan asal menuju pelabuhan tujuan.">
-                            🚢 Kapal Berangkat (Sailing)
+
+                        {{-- 2. OB Bongkar Saja --}}
+                        <button type="button"
+                            class="btn-quick-status flex items-start gap-2.5 p-3 text-left rounded-xl border transition-all cursor-pointer shadow-2xs group bg-white hover:bg-blue-50 border-slate-200 hover:border-blue-300 text-slate-800"
+                            data-kegiatan="bongkar"
+                            data-status="Status OB Bongkar"
+                            data-desc="Status Oper Bongkar (OB) khusus kegiatan Bongkar muatan kontainer dari kapal ke depo/lapangan penumpukan.">
+                            <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-truck-ramp-box text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-800 group-hover:text-blue-900">OB Bongkar Saja</span>
+                                <span class="block text-[10px] text-slate-500 group-hover:text-blue-700 mt-0.5 leading-tight">Khusus data kegiatan Bongkar dari tabel BL</span>
+                            </div>
                         </button>
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Kapal Tiba di Pelabuhan Tujuan" data-desc="Kapal telah tiba dan bersandar di pelabuhan tujuan.">
-                            ⚓ Kapal Tiba / Sandar
-                        </button>
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Proses Pembongkaran Muatan" data-desc="Saat ini muatan kontainer sedang dalam proses pembongkaran dari kapal.">
-                            🏗️ Proses Pembongkaran
-                        </button>
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Siap Diambil (Ready for Delivery)" data-desc="Muatan kontainer telah selesai dibongkar di depo/lapangan dan siap untuk diambil.">
-                            📦 Siap Diambil (Delivery)
-                        </button>
-                        <button type="button" class="btn-quick-status px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors" data-status="Selesai Diantar / Bongkar" data-desc="Seluruh proses pengiriman kontainer telah selesai dilaksanakan.">
-                            ✅ Selesai Bongkar
+
+                        {{-- 3. OB Muat Saja --}}
+                        <button type="button"
+                            class="btn-quick-status flex items-start gap-2.5 p-3 text-left rounded-xl border transition-all cursor-pointer shadow-2xs group bg-white hover:bg-amber-50 border-slate-200 hover:border-amber-300 text-slate-800"
+                            data-kegiatan="muat"
+                            data-status="Status OB Muat"
+                            data-desc="Status Oper Bongkar (OB) khusus kegiatan Muat kontainer naik ke atas kapal (On Board).">
+                            <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-dolly text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-800 group-hover:text-amber-900">OB Muat Saja</span>
+                                <span class="block text-[10px] text-slate-500 group-hover:text-amber-700 mt-0.5 leading-tight">Khusus data kegiatan Muat dari tabel Naik Kapal</span>
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -1020,6 +1053,7 @@
                 $('#deskripsiLabel').text('Keterangan Tambahan / Detail Operasional');
                 $deskripsiMasalah.attr('placeholder', 'Contoh: Muatan kontainer telah selesai dibongkar di pelabuhan dan siap untuk diambil...');
                 $('#quickStatusOptions').removeClass('hidden');
+                highlightActiveKegiatan($('#kegiatan_ob').val() || 'all');
 
                 // Step Badges
                 $templateStepBadge.text('4');
@@ -1233,10 +1267,29 @@
                     const deskMasalah = $deskripsiMasalah.val() || '{deskripsi_masalah}';
 
                     const isStatusMode = targetPenerima === 'status_kapal' || $('#broadcast_type').val() === 'status_pengiriman';
-                    const sampleStatusText = katMasalah !== '{kategori_masalah}' ? katMasalah : (isStatusMode ? 'Sudah OB (Otomatis Database)' : '{kategori_masalah}');
-                    const sampleResi = isStatusMode
-                        ? '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567 [Sudah OB (15-Sep-2026 12:59)]\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321 [Belum OB]'
-                        : '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321';
+                    const selectedKegiatan = $('#kegiatan_ob').val() || 'all';
+
+                    let defaultSampleStatus = 'Sudah OB';
+                    let sampleResi = '';
+
+                    if (isStatusMode) {
+                        if (selectedKegiatan === 'bongkar') {
+                            defaultSampleStatus = 'Sudah OB Bongkar';
+                            sampleResi = '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567 [Sudah OB Bongkar (15-Sep-2026 12:59)]\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321 [Belum OB Bongkar]';
+                        } else if (selectedKegiatan === 'muat') {
+                            defaultSampleStatus = 'Sudah OB Muat';
+                            sampleResi = '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567 [Sudah OB Muat (15-Sep-2026 12:59)]\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321 [Belum OB Muat]';
+                        } else {
+                            defaultSampleStatus = 'Sudah OB Bongkar & Muat';
+                            sampleResi = '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567 [Sudah OB Bongkar (15-Sep-2026 12:59)]\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321 [Belum OB]';
+                        }
+                    } else {
+                        sampleResi = '- BL: BL/SUB-BTM/001 / Kontainer: AYPU1234567\n- BL: BL/SUB-BTM/002 / Kontainer: AYPU7654321';
+                    }
+
+                    const sampleStatusText = (katMasalah && katMasalah !== '{kategori_masalah}') 
+                        ? katMasalah 
+                        : (isStatusMode ? defaultSampleStatus : '{kategori_masalah}');
 
                     text = text.replace(/{nama_kapal}/g, kapalName)
                                .replace(/{no_voyage}/g, voyageVal)
@@ -1258,6 +1311,20 @@
             }
         }
 
+        function highlightActiveKegiatan(kegiatan) {
+            $('.btn-quick-status').each(function() {
+                const k = $(this).attr('data-kegiatan');
+                const isMatch = (k === kegiatan);
+                if (isMatch) {
+                    $(this).removeClass('bg-white border-slate-200 text-slate-800 hover:bg-blue-50 hover:bg-amber-50')
+                           .addClass('ring-2 ring-emerald-500 bg-emerald-50 border-emerald-300 text-emerald-900');
+                } else {
+                    $(this).removeClass('ring-2 ring-emerald-500 bg-emerald-50 border-emerald-300 text-emerald-900')
+                           .addClass('bg-white border-slate-200 text-slate-800');
+                }
+            });
+        }
+
         $templateId.on('change', renderTemplatePreview);
         $kategoriMasalah.on('input change', renderTemplatePreview);
         $deskripsiMasalah.on('input change', renderTemplatePreview);
@@ -1265,10 +1332,15 @@
         $noVoyage.on('change', renderTemplatePreview);
 
         $(document).on('click', '.btn-quick-status', function() {
+            const kegiatan = $(this).attr('data-kegiatan') || 'all';
             const status = $(this).attr('data-status');
             const desc = $(this).attr('data-desc');
+
+            $('#kegiatan_ob').val(kegiatan);
             $kategoriMasalah.val(status);
             $deskripsiMasalah.val(desc);
+
+            highlightActiveKegiatan(kegiatan);
             renderTemplatePreview();
         });
 
