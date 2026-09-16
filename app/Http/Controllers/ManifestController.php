@@ -1425,29 +1425,192 @@ class ManifestController extends Controller
             return back()->with('error', 'Template WA tidak ditemukan.');
         }
 
+        // Cari jadwal kapal berlabuh terkait dari master_jadwal_kapal_berlabuhs jika ada jadwal_id, pelabuhan, atau namaKapal
+        $isAllShips = $request->input('jadwal_id') === 'all';
+        $jadwalKapal = null;
+
+        if (!$isAllShips && $request->filled('jadwal_id') && is_numeric($request->input('jadwal_id'))) {
+            $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::find($request->input('jadwal_id'));
+        }
+
+        if (!$isAllShips && !$jadwalKapal && $namaKapal && $namaKapal !== 'Semua Master Shipper' && !str_starts_with($namaKapal, 'Semua Kapal')) {
+            $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::where('nama_kapal', $namaKapal)
+                ->when($noVoyage && $noVoyage !== '-', fn($q) => $q->where('no_voyage', $noVoyage))
+                ->when($request->filled('pelabuhan'), fn($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
+                ->orderBy('tanggal_etd', 'desc')
+                ->first();
+
+            if (!$jadwalKapal) {
+                $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+                $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
+                $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                    ->when($request->filled('pelabuhan'), fn($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
+                    ->orderBy('tanggal_etd', 'desc')
+                    ->first();
+            }
+        }
+
+        $pelabuhanVal = $request->input('pelabuhan') ?: ($jadwalKapal ? $jadwalKapal->pelabuhan : '');
+
+        if ($isAllShips) {
+            $schedulesForPort = \App\Models\MasterJadwalKapalBerlabuh::where('pelabuhan', $pelabuhanVal)
+                ->where('status', 'aktif')
+                ->orderBy('tanggal_closing', 'asc')
+                ->orderBy('tanggal_etd', 'asc')
+                ->get();
+
+            if ($schedulesForPort->isEmpty() && $pelabuhanVal) {
+                $normalizedPort = strtoupper(trim(str_replace('.', '', $pelabuhanVal)));
+                $normalizedPort = preg_replace('/\s+/', ' ', $normalizedPort);
+                $schedulesForPort = \App\Models\MasterJadwalKapalBerlabuh::whereRaw("UPPER(REPLACE(REPLACE(pelabuhan, '.', ''), '  ', ' ')) = ?", [$normalizedPort])
+                    ->where('status', 'aktif')
+                    ->orderBy('tanggal_closing', 'asc')
+                    ->orderBy('tanggal_etd', 'asc')
+                    ->get();
+            }
+
+            $totalKapal = $schedulesForPort->count();
+            $namaKapalVal = "Semua Kapal" . ($pelabuhanVal ? " ({$pelabuhanVal} - {$totalKapal} Kapal)" : '');
+            $noVoyageVal = '-';
+            $closeVal = '-';
+            $etdVal = '-';
+            $etaVal = '-';
+        } else {
+            $namaKapalVal = ($jadwalKapal ? $jadwalKapal->nama_kapal : null) ?: ($namaKapal ?: 'Semua Master Shipper');
+            $noVoyageVal = ($jadwalKapal && $jadwalKapal->no_voyage ? $jadwalKapal->no_voyage : null) ?: ($noVoyage ?: '-');
+            $closeVal = ($jadwalKapal && $jadwalKapal->tanggal_closing) ? \Carbon\Carbon::parse($jadwalKapal->tanggal_closing)->format('d-M-Y') : ($request->input('tanggal_closing') ?: '');
+            $etdVal = ($jadwalKapal && $jadwalKapal->tanggal_etd) ? \Carbon\Carbon::parse($jadwalKapal->tanggal_etd)->format('d-M-Y') : ($request->input('tanggal_etd') ?: '');
+            $etaVal = ($jadwalKapal && $jadwalKapal->tanggal_eta) ? \Carbon\Carbon::parse($jadwalKapal->tanggal_eta)->format('d-M-Y') : ($request->input('tanggal_eta') ?: '');
+        }
+
+        if (!$kategoriMasalah && $pelabuhanVal) {
+            $kategoriMasalah = $isAllShips ? "Jadwal Kapal {$pelabuhanVal} (Semua Kapal)" : "Jadwal Kapal {$pelabuhanVal}";
+        }
+
+        $targetPenerima = $request->input('target_penerima');
+        if (!$targetPenerima) {
+            if (str_contains(strtolower($template->nama_template), 'jadwal') || $request->input('type') === 'jadwal') {
+                $targetPenerima = 'all_master_shippers';
+            } else {
+                $targetPenerima = 'manifest';
+            }
+        }
+
+        $customPhones = $request->input('custom_phones', []);
+        if (is_string($customPhones)) {
+            $customPhones = json_decode($customPhones, true) ?: [];
+        }
+        if ($request->filled('custom_phones_json')) {
+            $decoded = json_decode($request->input('custom_phones_json'), true);
+            if (is_array($decoded)) {
+                $customPhones = array_merge($customPhones, $decoded);
+            }
+        }
+
+        $selectedShippers = $request->input('selected_shippers', []);
+        if (is_string($selectedShippers)) {
+            $selectedShippers = json_decode($selectedShippers, true) ?: [];
+        }
+        if ($request->filled('selected_shippers_json')) {
+            $decoded = json_decode($request->input('selected_shippers_json'), true);
+            if (is_array($decoded)) {
+                $selectedShippers = array_merge($selectedShippers, $decoded);
+            }
+        }
+
+        $allRecipients = $recipientService->recipients((string) $namaKapal, (string) $noVoyage, (string) $targetPenerima);
+        if (!empty($selectedShippers)) {
+            $allRecipients = $allRecipients->filter(fn ($r) => in_array($r['shipper_name'], $selectedShippers));
+        }
+
+        // Jika mode semua kapal aktif, format multi-ship schedule blocks pada template
+        $baseTemplate = $template->isi_template;
+        if ($isAllShips && isset($schedulesForPort) && $schedulesForPort->isNotEmpty()) {
+            $lines = preg_split('/\r\n|\r|\n/', $baseTemplate);
+            $startLine = null;
+            $endLine = null;
+            $vars = ['{nama_kapal}', '{no_voyage}', '{tanggal_close}', '{tanggal_closing}', '{close}', '{tanggal_etd}', '{etd}', '{tanggal_eta}', '{eta}'];
+
+            foreach ($lines as $idx => $line) {
+                foreach ($vars as $v) {
+                    if (str_contains($line, $v)) {
+                        if ($startLine === null) {
+                            $startLine = $idx;
+                        }
+                        $endLine = $idx;
+                        break;
+                    }
+                }
+            }
+
+            if ($startLine !== null && $endLine !== null) {
+                $blockLines = array_slice($lines, $startLine, $endLine - $startLine + 1);
+                $blockPattern = implode("\n", $blockLines);
+
+                $repeatedBlocks = [];
+                foreach ($schedulesForPort as $s) {
+                    $cVal = $s->tanggal_closing ? \Carbon\Carbon::parse($s->tanggal_closing)->format('d-M-Y') : '-';
+                    $etVal = $s->tanggal_etd ? \Carbon\Carbon::parse($s->tanggal_etd)->format('d-M-Y') : '-';
+                    $eaVal = $s->tanggal_eta ? \Carbon\Carbon::parse($s->tanggal_eta)->format('d-M-Y') : '-';
+                    $vVal = $s->no_voyage ?: '-';
+
+                    $b = $blockPattern;
+                    $b = str_replace('{nama_kapal}', $s->nama_kapal, $b);
+                    $b = str_replace('{no_voyage}', $vVal, $b);
+                    $b = str_replace('{close}', $cVal, $b);
+                    $b = str_replace('{tanggal_close}', $cVal, $b);
+                    $b = str_replace('{tanggal_closing}', $cVal, $b);
+                    $b = str_replace('{etd}', $etVal, $b);
+                    $b = str_replace('{tanggal_etd}', $etVal, $b);
+                    $b = str_replace('{eta}', $eaVal, $b);
+                    $b = str_replace('{tanggal_eta}', $eaVal, $b);
+                    $repeatedBlocks[] = $b;
+                }
+
+                $allBlocksText = implode("\n\n", $repeatedBlocks);
+                $before = array_slice($lines, 0, $startLine);
+                $after = array_slice($lines, $endLine + 1);
+                $baseTemplate = implode("\n", array_merge($before, [$allBlocksText], $after));
+            }
+        }
+
         $broadcastData = [];
 
-        foreach ($recipientService->recipients($namaKapal, $noVoyage) as $recipient) {
+        foreach ($allRecipients as $recipient) {
+            $shipperName = $recipient['shipper_name'];
+            $telepon = $customPhones[$shipperName] ?? $recipient['telepon'];
+
             $daftarResi = collect($recipient['daftar_resi'])
                 ->map(fn (array $resi) => '- BL: '.$resi['nomor_bl'].' / Kontainer: '.$resi['nomor_kontainer'])
                 ->implode("\n");
 
-            $isiPesan = $template->isi_template;
-            $isiPesan = str_replace('{shipper_name}', $recipient['shipper_name'], $isiPesan);
-            $isiPesan = str_replace('{nama_kapal}', $namaKapal, $isiPesan);
-            $isiPesan = str_replace('{no_voyage}', $noVoyage, $isiPesan);
+            $isiPesan = $baseTemplate;
+            $isiPesan = str_replace('{shipper_name}', $shipperName, $isiPesan);
+            $isiPesan = str_replace('{pelabuhan}', $pelabuhanVal, $isiPesan);
             $isiPesan = str_replace('{kategori_masalah}', $kategoriMasalah, $isiPesan);
             $isiPesan = str_replace('{deskripsi_masalah}', $deskripsiMasalah, $isiPesan);
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
             $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
+
+            if (!$isAllShips) {
+                $isiPesan = str_replace('{nama_kapal}', $namaKapalVal, $isiPesan);
+                $isiPesan = str_replace('{no_voyage}', $noVoyageVal, $isiPesan);
+                $isiPesan = str_replace('{close}', $closeVal, $isiPesan);
+                $isiPesan = str_replace('{tanggal_close}', $closeVal, $isiPesan);
+                $isiPesan = str_replace('{tanggal_closing}', $closeVal, $isiPesan);
+                $isiPesan = str_replace('{etd}', $etdVal, $isiPesan);
+                $isiPesan = str_replace('{tanggal_etd}', $etdVal, $isiPesan);
+                $isiPesan = str_replace('{eta}', $etaVal, $isiPesan);
+                $isiPesan = str_replace('{tanggal_eta}', $etaVal, $isiPesan);
+            }
 
             // Konversi \n literal (dari database) menjadi newline asli
             $isiPesan = str_replace('\n', "\n", $isiPesan);
 
             // Konversi nomor ke format internasional (62xxx)
             $waPhone = null;
-            if ($recipient['telepon']) {
-                $waPhone = preg_replace('/[^0-9]/', '', $recipient['telepon']);
+            if ($telepon) {
+                $waPhone = preg_replace('/[^0-9]/', '', $telepon);
                 if (str_starts_with($waPhone, '0')) {
                     $waPhone = '62' . substr($waPhone, 1);
                 } elseif (!str_starts_with($waPhone, '62')) {
@@ -1460,8 +1623,8 @@ class ManifestController extends Controller
                 : null;
 
             $broadcastData[] = [
-                'shipper_name' => $recipient['shipper_name'],
-                'telepon' => $recipient['telepon'],
+                'shipper_name' => $shipperName,
+                'telepon' => $telepon,
                 'sumber_tabel' => $recipient['sumber_tabel'],
                 'jumlah_kontainer' => $recipient['jumlah_kontainer'],
                 'daftar_kontainer' => $recipient['daftar_kontainer'],
@@ -1469,6 +1632,9 @@ class ManifestController extends Controller
                 'wa_url' => $waUrl
             ];
         }
+
+        $namaKapal = $namaKapalVal;
+        $noVoyage = $noVoyageVal;
 
         return view('master.wa-broadcast.broadcast-preview', compact('namaKapal', 'noVoyage', 'broadcastData', 'kategoriMasalah'));
     }

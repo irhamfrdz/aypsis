@@ -14,21 +14,59 @@
             </div>
             <div>
                 <h1 class="text-lg font-bold text-slate-800 tracking-tight">Riwayat Broadcast WhatsApp</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Kelola dan kirim ulang broadcast pesan ke shipper</p>
+                <p class="text-xs text-slate-400 mt-0.5">Kelola riwayat pengiriman pesan jadwal kapal dan kendala operasional ke shipper</p>
             </div>
         </div>
-        <div class="flex items-center gap-2.5">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('master-jadwal-kapal-berlabuh.index') }}" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl transition-all shadow-sm">
+                <i class="fas fa-calendar-alt mr-1.5 text-sky-500"></i>
+                Master Jadwal Kapal
+            </a>
             <a href="{{ route('master.wa-gateway.index') }}" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all shadow-sm">
                 <i class="fas fa-wifi mr-1.5"></i>
-                Status Koneksi WA
+                Koneksi WA
             </a>
             @can('master-wa-broadcast-create')
-            <a href="{{ route('master.wa-broadcast.create') }}" class="inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow transition-all">
+            <a href="{{ route('master.wa-broadcast.create', ['type' => 'jadwal']) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow transition-all">
+                <i class="fas fa-ship mr-1.5"></i>
+                Broadcast Jadwal
+            </a>
+            <a href="{{ route('master.wa-broadcast.create', ['type' => 'kendala']) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow transition-all">
                 <i class="fas fa-plus mr-1.5"></i>
-                Buat Broadcast
+                Broadcast Kendala
             </a>
             @endcan
         </div>
+    </div>
+
+    {{-- Tabs Switcher: Jadwal Kapal vs Kendala vs Semua --}}
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
+        <a href="{{ route('master.wa-broadcast.index', ['type' => 'all']) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($type ?? 'all') === 'all' ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' }}">
+            <i class="fas fa-list"></i>
+            <span>Semua Riwayat</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {{ ($type ?? 'all') === 'all' ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-700' }}">
+                {{ $totalAll ?? $broadcasts->count() }}
+            </span>
+        </a>
+
+        <a href="{{ route('master.wa-broadcast.index', ['type' => 'jadwal']) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($type ?? '') === 'jadwal' ? 'bg-sky-600 text-white shadow-sm' : 'bg-white text-sky-700 hover:bg-sky-50 border border-sky-200' }}">
+            <i class="fas fa-ship"></i>
+            <span>Riwayat Broadcast Jadwal Kapal</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {{ ($type ?? '') === 'jadwal' ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800' }}">
+                {{ $totalJadwal ?? 0 }}
+            </span>
+        </a>
+
+        <a href="{{ route('master.wa-broadcast.index', ['type' => 'kendala']) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($type ?? '') === 'kendala' ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-amber-700 hover:bg-amber-50 border border-amber-200' }}">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Riwayat Broadcast Kendala / Delay</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {{ ($type ?? '') === 'kendala' ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-800' }}">
+                {{ $totalKendala ?? 0 }}
+            </span>
+        </a>
     </div>
 
     {{-- Alerts --}}
@@ -46,20 +84,22 @@
     @endif
 
     {{-- Stats Summary --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs text-slate-400 font-medium">Total Broadcast</p>
+            <p class="text-xs text-slate-400 font-medium">Total Broadcast Terfilter</p>
             <p class="text-2xl font-bold text-slate-800 mt-1">{{ $broadcasts->count() }}</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs text-slate-400 font-medium">Total Shipper Dikirim</p>
-            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ $broadcasts->sum('total_shipper') }}</p>
+            <p class="text-xs text-sky-600 font-medium">Broadcast Jadwal Kapal</p>
+            <p class="text-2xl font-bold text-sky-700 mt-1">{{ $totalJadwal ?? 0 }}</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm col-span-2 sm:col-span-1">
-            <p class="text-xs text-slate-400 font-medium">Broadcast Terbaru</p>
-            <p class="text-sm font-bold text-slate-800 mt-1 truncate">
-                {{ $broadcasts->first() ? \Carbon\Carbon::parse($broadcasts->first()->created_at)->diffForHumans() : '-' }}
-            </p>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-amber-600 font-medium">Broadcast Kendala</p>
+            <p class="text-2xl font-bold text-amber-700 mt-1">{{ $totalKendala ?? 0 }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+            <p class="text-xs text-emerald-600 font-medium">Total Shipper Terkirim</p>
+            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ $totalShipper ?? $broadcasts->sum('total_shipper') }}</p>
         </div>
     </div>
 
@@ -72,7 +112,7 @@
                         <th class="px-5 py-3.5 text-left w-10">#</th>
                         <th class="px-5 py-3.5 text-left">Tanggal</th>
                         <th class="px-5 py-3.5 text-left">Kapal & Voyage</th>
-                        <th class="px-5 py-3.5 text-left">Kendala</th>
+                        <th class="px-5 py-3.5 text-left">Kategori / Keterangan</th>
                         <th class="px-5 py-3.5 text-left">Template WA</th>
                         <th class="px-5 py-3.5 text-center">Shipper</th>
                         <th class="px-5 py-3.5 text-center">Aksi</th>
@@ -80,6 +120,9 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($broadcasts as $index => $broadcast)
+                    @php
+                        $isJadwal = ($broadcast->template && stripos($broadcast->template->nama_template, 'jadwal') !== false) || stripos($broadcast->kategori_masalah, 'jadwal') !== false || empty($broadcast->kategori_masalah);
+                    @endphp
                     <tr class="hover:bg-slate-50/70 transition-colors group">
 
                         {{-- No --}}
@@ -94,7 +137,7 @@
                         {{-- Kapal & Voyage --}}
                         <td class="px-5 py-3.5 whitespace-nowrap">
                             <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 flex-shrink-0">
+                                <div class="w-8 h-8 rounded-lg {{ $isJadwal ? 'bg-sky-50 border-sky-100 text-sky-600' : 'bg-blue-50 border-blue-100 text-blue-500' }} border flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-ship text-xs"></i>
                                 </div>
                                 <div>
@@ -104,18 +147,22 @@
                             </div>
                         </td>
 
-                        {{-- Kendala --}}
+                        {{-- Kategori / Informasi --}}
                         <td class="px-5 py-3.5 max-w-xs">
-                            @if($broadcast->kategori_masalah)
+                            @if($isJadwal)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                                    <i class="fas fa-calendar-alt mr-1 text-sky-500 text-[10px]"></i>
+                                    {{ $broadcast->kategori_masalah ?: 'Jadwal Kapal' }}
+                                </span>
+                            @else
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <i class="fas fa-exclamation-triangle mr-1 text-amber-500 text-[10px]"></i>
                                     {{ $broadcast->kategori_masalah }}
                                 </span>
                             @endif
+
                             @if($broadcast->deskripsi_masalah)
                                 <div class="text-[11px] text-slate-400 mt-1 line-clamp-1">{{ Str::limit($broadcast->deskripsi_masalah, 40) }}</div>
-                            @endif
-                            @if(!$broadcast->kategori_masalah && !$broadcast->deskripsi_masalah)
-                                <span class="text-slate-300 italic text-xs">—</span>
                             @endif
                         </td>
 

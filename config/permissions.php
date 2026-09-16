@@ -53,6 +53,7 @@ return [
                 'master-wa-templates' => 'Manajemen WA Templates',
                 'master-wa-broadcast' => 'Manajemen WA Broadcast',
                 'master-type-bon-amprahan' => 'Manajemen Type Bon Amprahan',
+                'master-jadwal-kapal-berlabuh' => 'Manajemen Jadwal Kapal Berlabuh',
             ],
         ],
         'user-approval' => [

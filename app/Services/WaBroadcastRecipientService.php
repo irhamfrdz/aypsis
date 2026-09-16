@@ -11,10 +11,18 @@ use Illuminate\Support\Collection;
 class WaBroadcastRecipientService
 {
     /**
-     * Resolve the broadcast recipients for a ship and voyage from its manifests.
+     * Resolve the broadcast recipients.
+     *
+     * @param string $namaKapal
+     * @param string $noVoyage
+     * @param string $source 'manifest' or 'all_master_shippers'
      */
-    public function recipients(string $namaKapal, string $noVoyage): Collection
+    public function recipients(string $namaKapal = '', string $noVoyage = '', string $source = 'manifest'): Collection
     {
+        if ($source === 'all_master_shippers' || $source === 'master') {
+            return $this->masterShippers();
+        }
+
         $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
         $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
 
@@ -24,6 +32,10 @@ class WaBroadcastRecipientService
             ->where('no_voyage', trim($noVoyage))
             ->orderBy('nomor_bl')
             ->get();
+
+        if ($manifests->isEmpty()) {
+            return collect();
+        }
 
         $groupedManifests = $manifests
             ->filter(fn (Manifest $manifest) => $manifest->shipper_id || filled($manifest->pengirim))
@@ -100,5 +112,91 @@ class WaBroadcastRecipientService
                 ])->all(),
             ];
         })->values();
+    }
+
+    /**
+     * Resolve all master shippers from:
+     * 1. master_pengirim_penerima
+     * 2. pengirims
+     * 3. shipper_consignees
+     */
+    public function masterShippers(): Collection
+    {
+        $all = collect();
+
+        // 1. Dari master_pengirim_penerima
+        try {
+            MasterPengirimPenerima::whereNotNull('nama')
+                ->where('nama', '!=', '')
+                ->get()
+                ->each(function ($item) use (&$all) {
+                    $phone = $item->contact_person ?: $item->telepon;
+                    $all->push([
+                        'shipper_name' => trim($item->nama),
+                        'telepon' => $phone ? trim($phone) : null,
+                        'sumber_tabel' => 'Master Pengirim Penerima',
+                        'jumlah_kontainer' => 0,
+                        'daftar_kontainer' => [],
+                        'daftar_resi' => [],
+                    ]);
+                });
+        } catch (\Throwable $e) {}
+
+        // 2. Dari pengirims
+        try {
+            Pengirim::whereNotNull('nama_pengirim')
+                ->where('nama_pengirim', '!=', '')
+                ->get()
+                ->each(function ($item) use (&$all) {
+                    $phone = $item->contact_person ?: $item->telepon;
+                    $all->push([
+                        'shipper_name' => trim($item->nama_pengirim),
+                        'telepon' => $phone ? trim($phone) : null,
+                        'sumber_tabel' => 'Pengirim',
+                        'jumlah_kontainer' => 0,
+                        'daftar_kontainer' => [],
+                        'daftar_resi' => [],
+                    ]);
+                });
+        } catch (\Throwable $e) {}
+
+        // 3. Dari shipper_consignees
+        try {
+            ShipperConsignee::whereNotNull('shipper')
+                ->where('shipper', '!=', '')
+                ->get()
+                ->each(function ($item) use (&$all) {
+                    $phone = $item->contact_person ?: $item->telepon;
+                    $all->push([
+                        'shipper_name' => trim($item->shipper),
+                        'telepon' => $phone ? trim($phone) : null,
+                        'sumber_tabel' => 'Shipper Consignee',
+                        'jumlah_kontainer' => 0,
+                        'daftar_kontainer' => [],
+                        'daftar_resi' => [],
+                    ]);
+                });
+        } catch (\Throwable $e) {}
+
+        // Deduplicate berdasarkan normalisasi nama shipper dan gabungkan nomor kontak & sumber tabel
+        $groupedByName = $all->groupBy(function ($item) {
+            return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $item['shipper_name']));
+        });
+
+        $deduplicated = $groupedByName->map(function ($items) {
+            $withPhone = $items->first(fn ($i) => !empty($i['telepon']));
+            $sources = $items->pluck('sumber_tabel')->unique()->implode(', ');
+            
+            if ($withPhone) {
+                $withPhone['sumber_tabel'] = $sources;
+                return $withPhone;
+            }
+
+            $first = $items->first();
+            $first['sumber_tabel'] = $sources;
+            return $first;
+        })->filter(fn ($i) => !empty($i['shipper_name']))->sortBy('shipper_name')->values();
+
+        return $deduplicated;
     }
 }

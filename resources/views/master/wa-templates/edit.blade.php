@@ -45,7 +45,7 @@
             <div>
                 <label for="isi_template" class="block text-sm font-semibold text-gray-700 mb-1">Isi Template</label>
                 <p class="text-xs text-gray-500 mb-2">Gunakan placeholder berikut yang akan diganti otomatis oleh sistem: <br>
-                    <code class="bg-gray-100 px-1 rounded">{shipper_name}</code>, <code class="bg-gray-100 px-1 rounded">{nama_kapal}</code>, <code class="bg-gray-100 px-1 rounded">{no_voyage}</code>, <code class="bg-gray-100 px-1 rounded">{kategori_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{deskripsi_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{estimasi_keterlambatan}</code>, <code class="bg-gray-100 px-1 rounded">{daftar_resi}</code>
+                    <code class="bg-gray-100 px-1 rounded">{shipper_name}</code>, <code class="bg-gray-100 px-1 rounded">{nama_kapal}</code>, <code class="bg-gray-100 px-1 rounded">{no_voyage}</code>, <code class="bg-gray-100 px-1 rounded">{pelabuhan}</code>, <code class="bg-gray-100 px-1 rounded">{close}</code>, <code class="bg-gray-100 px-1 rounded">{etd}</code>, <code class="bg-gray-100 px-1 rounded">{eta}</code>, <code class="bg-gray-100 px-1 rounded">{kategori_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{deskripsi_masalah}</code>, <code class="bg-gray-100 px-1 rounded">{estimasi_keterlambatan}</code>, <code class="bg-gray-100 px-1 rounded">{daftar_resi}</code>
                 </p>
                 <textarea name="isi_template" id="isi_template" rows="10" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono">{{ old('isi_template', $wa_template->isi_template) }}</textarea>
             </div>

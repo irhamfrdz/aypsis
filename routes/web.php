@@ -2720,6 +2720,7 @@ Route::middleware([
         Route::post('master/wa-gateway/reset', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayReset'])->name('master.wa-broadcast.gateway-reset');
         Route::post('master/wa-gateway/test-send', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayTestSend'])->name('master.wa-broadcast.gateway-test-send');
         Route::get('master/wa-broadcast/get-voyages', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getVoyages'])->name('master.wa-broadcast.get-voyages');
+        Route::get('master/wa-broadcast/get-schedules-by-port', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getSchedulesByPort'])->name('master.wa-broadcast.get-schedules-by-port');
         Route::get('master/wa-broadcast/get-recipients', [\App\Http\Controllers\Master\WaBroadcastController::class, 'getRecipients'])->name('master.wa-broadcast.get-recipients');
         Route::get('master/wa-broadcast/gateway-status', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewayStatus'])->name('master.wa-broadcast.gateway-status');
         Route::post('master/wa-broadcast/gateway-send-single', [\App\Http\Controllers\Master\WaBroadcastController::class, 'gatewaySendSingle'])->name('master.wa-broadcast.gateway-send-single');
@@ -7940,4 +7941,10 @@ Route::middleware(['auth',
 
     // Tanggal Gerak Voyage
     Route::resource('gerak-voyage', \App\Http\Controllers\GerakVoyageController::class)->middleware('can:gerak-voyage-view');
+
+    // Master Jadwal Kapal Berlabuh
+    Route::get('master-jadwal-kapal-berlabuh/export', [\App\Http\Controllers\MasterJadwalKapalBerlabuhController::class, 'export'])
+        ->name('master-jadwal-kapal-berlabuh.export')
+        ->middleware('can:master-jadwal-kapal-berlabuh-export');
+    Route::resource('master-jadwal-kapal-berlabuh', \App\Http\Controllers\MasterJadwalKapalBerlabuhController::class);
 });

@@ -12,45 +12,179 @@ use Illuminate\Http\Request;
 
 class WaBroadcastController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $broadcasts = WaBroadcast::with('template')->orderBy('id', 'desc')->get();
+        $type = $request->query('type', 'all');
 
-        return view('master.wa-broadcast.index', compact('broadcasts'));
+        $query = WaBroadcast::with('template')->orderBy('id', 'desc');
+
+        if ($type === 'jadwal') {
+            $query->where(function ($q) {
+                $q->whereHas('template', function ($t) {
+                    $t->where('nama_template', 'like', '%jadwal%');
+                })->orWhere('kategori_masalah', 'like', '%jadwal%')
+                  ->orWhereNull('kategori_masalah')
+                  ->orWhere('kategori_masalah', '');
+            });
+        } elseif ($type === 'kendala') {
+            $query->where(function ($q) {
+                $q->whereNotNull('kategori_masalah')
+                  ->where('kategori_masalah', '!=', '')
+                  ->where('kategori_masalah', 'not like', '%jadwal%');
+            });
+        }
+
+        $broadcasts = $query->get();
+
+        // Statistics
+        $totalAll = WaBroadcast::count();
+        $totalJadwal = WaBroadcast::where(function ($q) {
+            $q->whereHas('template', function ($t) {
+                $t->where('nama_template', 'like', '%jadwal%');
+            })->orWhere('kategori_masalah', 'like', '%jadwal%')
+              ->orWhereNull('kategori_masalah')
+              ->orWhere('kategori_masalah', '');
+        })->count();
+        $totalKendala = WaBroadcast::whereNotNull('kategori_masalah')
+            ->where('kategori_masalah', '!=', '')
+            ->where('kategori_masalah', 'not like', '%jadwal%')
+            ->count();
+        $totalShipper = $broadcasts->sum('total_shipper');
+
+        return view('master.wa-broadcast.index', compact('broadcasts', 'type', 'totalAll', 'totalJadwal', 'totalKendala', 'totalShipper'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $templates = WaTemplate::where('is_active', true)->orderBy('nama_template')->get();
 
-        // Get unique ships from Manifest
-        $kapals = Manifest::select('nama_kapal')
+        // Get unique ships from Manifest and MasterJadwalKapalBerlabuh
+        $kapalsFromManifest = Manifest::select('nama_kapal')
             ->distinct()
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '!=', '')
-            ->orderBy('nama_kapal')
-            ->pluck('nama_kapal')
+            ->pluck('nama_kapal');
+
+        $kapalsFromJadwal = \App\Models\MasterJadwalKapalBerlabuh::select('nama_kapal')
+            ->distinct()
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->pluck('nama_kapal');
+
+        $kapals = $kapalsFromManifest->merge($kapalsFromJadwal)
             ->map(fn ($k) => trim($k))
             ->unique()
             ->filter()
+            ->sort()
             ->values();
 
-        $selectedKapal = old('nama_kapal');
+        // Get unique ports from MasterJadwalKapalBerlabuh and MasterPelabuhan
+        $pelabuhansFromJadwal = \App\Models\MasterJadwalKapalBerlabuh::select('pelabuhan')
+            ->distinct()
+            ->whereNotNull('pelabuhan')
+            ->where('pelabuhan', '!=', '')
+            ->pluck('pelabuhan');
+
+        $pelabuhansFromMaster = \App\Models\MasterPelabuhan::where('status', 'aktif')
+            ->pluck('nama_pelabuhan');
+
+        $pelabuhans = $pelabuhansFromJadwal->merge($pelabuhansFromMaster)
+            ->map(fn ($p) => trim($p))
+            ->unique()
+            ->filter()
+            ->sort()
+            ->values();
+
+        $selectedKapal = $request->query('nama_kapal', old('nama_kapal'));
+        $selectedVoyage = $request->query('no_voyage', old('no_voyage'));
+        $selectedPelabuhan = $request->query('pelabuhan', old('pelabuhan'));
+        $defaultTemplateId = $request->query('template_id', old('template_id'));
+
+        // If type=jadwal or no template selected, auto-select JADWAL template if available
+        if (!$defaultTemplateId && ($request->query('type') === 'jadwal' || $request->has('nama_kapal') || $request->has('pelabuhan'))) {
+            $jadwalTemplate = WaTemplate::where('is_active', true)->where('nama_template', 'like', '%jadwal%')->first();
+            if ($jadwalTemplate) {
+                $defaultTemplateId = $jadwalTemplate->id;
+            }
+        }
+
         $voyages = collect();
         if ($selectedKapal) {
-            $voyages = Manifest::where('nama_kapal', $selectedKapal)
+            $voyagesFromManifest = Manifest::where('nama_kapal', $selectedKapal)
                 ->whereNotNull('no_voyage')
                 ->where('no_voyage', '!=', '')
-                ->distinct()
-                ->orderBy('no_voyage', 'desc')
-                ->pluck('no_voyage')
+                ->pluck('no_voyage');
+
+            $voyagesFromJadwal = \App\Models\MasterJadwalKapalBerlabuh::where('nama_kapal', $selectedKapal)
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->pluck('no_voyage');
+
+            $voyages = $voyagesFromManifest->merge($voyagesFromJadwal)
                 ->map(fn ($v) => trim($v))
                 ->unique()
                 ->filter()
                 ->values();
         }
 
-        return view('master.wa-broadcast.create', compact('templates', 'kapals', 'voyages'));
+        $templatesJson = $templates->map(fn ($t) => [
+            'id' => $t->id,
+            'nama' => $t->nama_template,
+            'type' => str_contains(strtolower($t->nama_template), 'jadwal') ? 'jadwal' : 'kendala',
+            'isi' => $t->isi_template,
+        ])->values();
+
+        return view('master.wa-broadcast.create', compact('templates', 'templatesJson', 'kapals', 'pelabuhans', 'voyages', 'selectedKapal', 'selectedVoyage', 'selectedPelabuhan', 'defaultTemplateId'));
+    }
+
+    public function getSchedulesByPort(Request $request)
+    {
+        $pelabuhan = $request->query('pelabuhan');
+
+        if (! $pelabuhan) {
+            return response()->json([
+                'success' => true,
+                'schedules' => [],
+            ]);
+        }
+
+        $schedules = \App\Models\MasterJadwalKapalBerlabuh::where('pelabuhan', $pelabuhan)
+            ->where('status', 'aktif')
+            ->orderBy('tanggal_closing', 'asc')
+            ->orderBy('tanggal_etd', 'asc')
+            ->get();
+
+        if ($schedules->isEmpty()) {
+            $normalizedPort = strtoupper(trim(str_replace('.', '', $pelabuhan)));
+            $normalizedPort = preg_replace('/\s+/', ' ', $normalizedPort);
+
+            $schedules = \App\Models\MasterJadwalKapalBerlabuh::whereRaw("UPPER(REPLACE(REPLACE(pelabuhan, '.', ''), '  ', ' ')) = ?", [$normalizedPort])
+                ->where('status', 'aktif')
+                ->orderBy('tanggal_closing', 'asc')
+                ->orderBy('tanggal_etd', 'asc')
+                ->get();
+        }
+
+        $schedulesData = $schedules->map(function ($s) {
+            return [
+                'id' => $s->id,
+                'nama_kapal' => $s->nama_kapal,
+                'no_voyage' => $s->no_voyage ?: '-',
+                'pelabuhan' => $s->pelabuhan,
+                'tanggal_closing' => $s->tanggal_closing ? \Carbon\Carbon::parse($s->tanggal_closing)->format('d-M-Y') : '-',
+                'tanggal_closing_raw' => $s->tanggal_closing ? \Carbon\Carbon::parse($s->tanggal_closing)->format('Y-m-d') : '',
+                'tanggal_etd' => $s->tanggal_etd ? \Carbon\Carbon::parse($s->tanggal_etd)->format('d-M-Y') : '-',
+                'tanggal_etd_raw' => $s->tanggal_etd ? \Carbon\Carbon::parse($s->tanggal_etd)->format('Y-m-d') : '',
+                'tanggal_eta' => $s->tanggal_eta ? \Carbon\Carbon::parse($s->tanggal_eta)->format('d-M-Y') : '-',
+                'tanggal_eta_raw' => $s->tanggal_eta ? \Carbon\Carbon::parse($s->tanggal_eta)->format('Y-m-d') : '',
+                'keterangan' => $s->keterangan ?: '',
+            ];
+        })->values();
+
+        return response()->json([
+            'success' => true,
+            'schedules' => $schedulesData,
+        ]);
     }
 
     public function getVoyages(Request $request)
@@ -64,23 +198,33 @@ class WaBroadcastController extends Controller
             ]);
         }
 
-        $voyages = Manifest::where('nama_kapal', $namaKapal)
+        $voyagesFromManifest = Manifest::where('nama_kapal', $namaKapal)
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
-            ->distinct()
-            ->orderBy('no_voyage', 'desc')
             ->pluck('no_voyage');
+
+        $voyagesFromJadwal = \App\Models\MasterJadwalKapalBerlabuh::where('nama_kapal', $namaKapal)
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->pluck('no_voyage');
+
+        $voyages = $voyagesFromManifest->merge($voyagesFromJadwal);
 
         if ($voyages->isEmpty()) {
             $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
             $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
 
-            $voyages = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            $voyagesFromManifest = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->whereNotNull('no_voyage')
                 ->where('no_voyage', '!=', '')
-                ->distinct()
-                ->orderBy('no_voyage', 'desc')
                 ->pluck('no_voyage');
+
+            $voyagesFromJadwal = \App\Models\MasterJadwalKapalBerlabuh::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->pluck('no_voyage');
+
+            $voyages = $voyagesFromManifest->merge($voyagesFromJadwal);
         }
 
         $voyages = $voyages->map(fn ($v) => trim($v))
@@ -96,12 +240,15 @@ class WaBroadcastController extends Controller
 
     public function getRecipients(Request $request, WaBroadcastRecipientService $recipientService)
     {
-        $validated = $request->validate([
-            'nama_kapal' => 'required|string',
-            'no_voyage' => 'required|string',
-        ]);
+        $namaKapal = $request->input('nama_kapal', '');
+        $noVoyage = $request->input('no_voyage', '');
+        $source = $request->input('source', 'all_master_shippers');
 
-        $recipients = $recipientService->recipients($validated['nama_kapal'], $validated['no_voyage'])
+        if (!$request->has('source') && $request->input('type') === 'jadwal') {
+            $source = 'all_master_shippers';
+        }
+
+        $recipients = $recipientService->recipients((string) $namaKapal, (string) $noVoyage, (string) $source)
             ->map(fn (array $recipient) => [
                 'shipper_name' => $recipient['shipper_name'],
                 'telepon' => $recipient['telepon'],
@@ -117,21 +264,62 @@ class WaBroadcastController extends Controller
 
     public function store(Request $request, WaBroadcastRecipientService $recipientService)
     {
+        $isAllShipper = $request->input('target_penerima', 'all_master_shippers') === 'all_master_shippers';
+
         $request->validate([
-            'nama_kapal' => 'required|string',
-            'no_voyage' => 'required|string',
+            'nama_kapal' => $isAllShipper ? 'nullable|string' : 'required|string',
+            'no_voyage' => $isAllShipper ? 'nullable|string' : 'required|string',
+            'pelabuhan' => 'nullable|string',
+            'jadwal_id' => 'nullable|string',
             'kategori_masalah' => 'nullable|string',
             'deskripsi_masalah' => 'nullable|string',
             'template_id' => 'required|exists:wa_templates,id',
+            'target_penerima' => 'nullable|string',
         ]);
 
-        $totalShipper = $recipientService->recipients($request->nama_kapal, $request->no_voyage)->count();
+        $targetPenerima = $request->input('target_penerima', 'all_master_shippers');
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage') ?: '-';
+        $pelabuhan = $request->input('pelabuhan');
+
+        if ($request->input('jadwal_id') === 'all') {
+            $namaKapal = "Semua Kapal" . ($pelabuhan ? " ({$pelabuhan})" : '');
+            $noVoyage = '-';
+        } elseif ($request->filled('jadwal_id') && is_numeric($request->input('jadwal_id'))) {
+            $jadwal = \App\Models\MasterJadwalKapalBerlabuh::find($request->input('jadwal_id'));
+            if ($jadwal) {
+                $namaKapal = $jadwal->nama_kapal;
+                $noVoyage = $jadwal->no_voyage ?: ($noVoyage ?: '-');
+                $pelabuhan = $jadwal->pelabuhan;
+            }
+        }
+
+        if (!$namaKapal) {
+            $namaKapal = $pelabuhan ? "Jadwal {$pelabuhan}" : 'Semua Master Shipper';
+        }
+
+        $selectedShippers = $request->input('selected_shippers', []);
+        if (is_string($selectedShippers)) {
+            $selectedShippers = json_decode($selectedShippers, true) ?: [];
+        }
+        if ($request->filled('selected_shippers_json')) {
+            $decoded = json_decode($request->input('selected_shippers_json'), true);
+            if (is_array($decoded)) {
+                $selectedShippers = array_merge($selectedShippers, $decoded);
+            }
+        }
+
+        $allRecipients = $recipientService->recipients((string) $namaKapal, (string) $noVoyage, $targetPenerima);
+        if (!empty($selectedShippers)) {
+            $allRecipients = $allRecipients->filter(fn ($r) => in_array($r['shipper_name'], $selectedShippers));
+        }
+        $totalShipper = $allRecipients->count();
 
         // Save broadcast history
         WaBroadcast::create([
-            'nama_kapal' => $request->nama_kapal,
-            'no_voyage' => $request->no_voyage,
-            'kategori_masalah' => $request->input('kategori_masalah', ''),
+            'nama_kapal' => $namaKapal,
+            'no_voyage' => $noVoyage,
+            'kategori_masalah' => $request->input('kategori_masalah', $isAllShipper ? ($pelabuhan ? "Jadwal Kapal {$pelabuhan}" : 'Jadwal Kapal Berlabuh') : ''),
             'deskripsi_masalah' => $request->deskripsi_masalah,
             'wa_template_id' => $request->template_id,
             'total_shipper' => $totalShipper,
