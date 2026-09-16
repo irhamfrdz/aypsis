@@ -353,6 +353,9 @@
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
                                 <div class="font-bold">{{ $manifest->pengirim }}</div>
+                                @can('manifest-edit')
+                                    @include('manifests.partials.shipper-button')
+                                @endcan
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
                                 @if($manifest->alamat_pengirim)
@@ -590,6 +593,9 @@ window.closeImportModal = function() {
 
 </script>
 
+@can('manifest-edit')
+    @include('manifests.partials.shipper-modal')
+@endcan
 @endsection
 
 @push('scripts')

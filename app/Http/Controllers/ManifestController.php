@@ -18,7 +18,7 @@ class ManifestController extends Controller
     {
         $this->middleware('permission:manifest-view')->only(['index', 'show', 'export', 'printDocument']);
         $this->middleware('permission:manifest-create')->only(['create', 'store']);
-        $this->middleware('permission:manifest-edit')->only(['edit', 'update']);
+        $this->middleware('permission:manifest-edit')->only(['edit', 'update', 'updateShipper']);
         $this->middleware('permission:manifest-delete')->only(['destroy']);
     }
 
@@ -360,6 +360,55 @@ class ManifestController extends Controller
             'nama_kapal' => $manifest->nama_kapal,
             'no_voyage' => $manifest->no_voyage,
         ])->with('success', 'Manifest berhasil diperbarui');
+    }
+
+    /** Update the shipper section from the manifest list without requiring unrelated fields. */
+    public function updateShipper(Request $request, string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+        $validated = $request->validate([
+            'shipper_id' => 'required|integer|exists:shipper_consignees,id',
+            'alamat_pengirim' => 'sometimes|nullable|string',
+            'penerima' => 'sometimes|nullable|string|max:255',
+            'notify_party' => 'sometimes|nullable|string|max:255',
+            'alamat_notify_party' => 'sometimes|nullable|string',
+        ]);
+        $shipper = \App\Models\ShipperConsignee::findOrFail($validated['shipper_id']);
+        if (! filled($shipper->shipper)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'shipper_id' => 'Data yang dipilih tidak memiliki nama shipper.',
+            ]);
+        }
+
+        $fields = ['shipper_id' => $shipper->id, 'pengirim' => $shipper->shipper];
+        // Match the edit form: fill populated master values, preserving existing values otherwise.
+        foreach ([
+            'alamat_pengirim' => 'alamat_shipper',
+            'penerima' => 'consignee',
+            'notify_party' => 'notify_party_consignee',
+            'alamat_notify_party' => 'alamat_notify_party_consignee',
+        ] as $field => $masterField) {
+            if (filled($shipper->{$masterField})) {
+                $fields[$field] = $shipper->{$masterField};
+            }
+        }
+        $fields = array_merge($fields, $validated);
+        $pengirim = \App\Models\Pengirim::where('nama_pengirim', $fields['pengirim'])
+            ->orWhere('nickname1', $fields['pengirim'])->first();
+        if ($pengirim && ! empty($pengirim->nickname1)) {
+            $fields['pengirim'] = $pengirim->nickname1;
+        }
+        $fields['updated_by'] = Auth::id();
+        $manifest->update($fields);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shipper dan data terkait berhasil diperbarui.',
+            'manifest' => $manifest->only([
+                'id', 'shipper_id', 'pengirim', 'alamat_pengirim', 'penerima',
+                'notify_party', 'alamat_notify_party',
+            ]),
+        ]);
     }
 
     /**
