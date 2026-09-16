@@ -12,6 +12,23 @@ use Illuminate\Support\Facades\Auth;
 
 class BiayaBensinController extends Controller
 {
+    private function supirOptions()
+    {
+        // A HOANG (AHWANG) also records fuel expenses as a vehicle supervisor.
+        return Karyawan::where('divisi', 'LIKE', '%supir%')
+            ->orWhere('pekerjaan', 'LIKE', '%supir%')
+            ->orWhereRaw("UPPER(REPLACE(nama_lengkap, ' ', '')) = ?", ['AHOANG'])
+            ->orWhereRaw("UPPER(REPLACE(nama_panggilan, ' ', '')) = ?", ['AHOANG'])
+            ->get()
+            ->each(function (Karyawan $supir) {
+                $namaLengkap = strtoupper(str_replace(' ', '', $supir->nama_lengkap ?? ''));
+                $namaPanggilan = strtoupper(str_replace(' ', '', $supir->nama_panggilan ?? ''));
+                if ($namaLengkap === 'AHOANG' || $namaPanggilan === 'AHOANG') {
+                    $supir->setAttribute('label_supir', 'AHOANG'.($namaPanggilan && $namaPanggilan !== 'AHOANG' ? ' ('.$supir->nama_panggilan.')' : ''));
+                }
+            });
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -32,7 +49,7 @@ class BiayaBensinController extends Controller
 
         $items = $query->orderBy('tanggal', 'desc')->paginate(20);
 
-        $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+        $supirs = $this->supirOptions();
 
         return view('biaya-bensin.index', compact('items', 'supirs'));
     }
@@ -62,7 +79,7 @@ class BiayaBensinController extends Controller
 
             return $alatBerat;
         });
-        $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+        $supirs = $this->supirOptions();
         $kartus = MasterKartuBensinBatam::all();
 
         $lastEntry = BiayaBensin::where('created_by', Auth::id())
@@ -205,7 +222,7 @@ class BiayaBensinController extends Controller
         $item = BiayaBensin::findOrFail($id);
         $mobils = Mobil::all();
         $alatBerats = \App\Models\AlatBerat::all();
-        $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+        $supirs = $this->supirOptions();
         $kartus = MasterKartuBensinBatam::all();
 
         return view('biaya-bensin.edit', compact('item', 'mobils', 'alatBerats', 'supirs', 'kartus'));

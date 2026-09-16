@@ -60,7 +60,7 @@
                     <option value="">-- Semua Supir --</option>
                     @foreach($supirs as $supir)
                         <option value="{{ $supir->nama_panggilan }}" {{ request('nama_supir') == $supir->nama_panggilan ? 'selected' : '' }}>
-                            {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
+                            {{ $supir->label_supir ?? ($supir->nama_panggilan.' - '.$supir->nama_lengkap) }}
                         </option>
                     @endforeach
                 </select>

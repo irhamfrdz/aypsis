@@ -56,7 +56,7 @@
                                 <option value="">Pilih Supir...</option>
                                 @foreach($supirs as $supir)
                                     <option value="{{ $supir->id }}" data-mobil-id="{{ $mobils->where('karyawan_id', $supir->id)->first()?->id ?? '' }}" {{ old('karyawan_id', $item->karyawan_id) == $supir->id ? 'selected' : '' }}>
-                                        {{ $supir->nama_panggilan ?: $supir->nama_lengkap }}
+                                        {{ $supir->label_supir ?? ($supir->nama_panggilan ?: $supir->nama_lengkap) }}
                                     </option>
                                 @endforeach
                             </select>
