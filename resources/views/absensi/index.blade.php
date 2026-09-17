@@ -292,6 +292,9 @@
                                 </td>
                                 <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
                                     {{ $absensi->waktu_lembur_pulang ? Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i:s') : '-' }}
+                                    @if($absensi->waktu_lembur_pulang && Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->toDateString() !== $absensi->tanggal)
+                                        <span class="block text-xs font-normal" title="Tanggal aktual pulang lembur">{{ Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('d/m/Y') }}</span>
+                                    @endif
                                     @if($absensi->waktu_lembur_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur pulang ini?')">
                                         @csrf

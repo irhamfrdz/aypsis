@@ -80,6 +80,21 @@ class Absensi extends Model
         return $this->belongsTo(Mesin::class, 'mesin_id');
     }
 
+    public static function workDateSql(): string
+    {
+        return \App\Helpers\AttendanceWorkDate::sql((new static)->getConnection()->getDriverName());
+    }
+
+    public function scopeWorkDates($query, $start, $end = null)
+    {
+        $start = \Carbon\Carbon::parse($start)->startOfDay();
+        $end = \Carbon\Carbon::parse($end ?? $start)->startOfDay();
+
+        return $query->where('absensis.waktu', '>=', $start)
+            ->where('absensis.waktu', '<', $end->copy()->addDays(2))
+            ->whereRaw('('.static::workDateSql().') BETWEEN ? AND ?', [$start->toDateString(), $end->toDateString()]);
+    }
+
     /**
      * Booted function to trigger notifications on created event.
      */

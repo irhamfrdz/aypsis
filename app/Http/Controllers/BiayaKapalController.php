@@ -4741,7 +4741,9 @@ class BiayaKapalController extends Controller
                         $cleanDokBongkar = str_replace(',', '.', str_replace('.', '', $section['biaya_dokumen_bongkar'] ?? '0'));
                         $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
                         $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
-                        $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
+                        // Total selalu dihitung ulang dari nominal - PPH agar nilai
+                        // tersimpan tidak bergantung pada angka dari browser.
+                        $cleanTotal = (float) $cleanNominal - (float) $cleanPph;
 
                         \App\Models\BiayaKapalThc::create([
                             'biaya_kapal_id' => $biayaKapal->id,

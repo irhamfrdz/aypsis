@@ -244,12 +244,17 @@ function addDokumenSection(existingData = null) {
             .then(data => {
                 let options = '';
                 if(data.success && data.bls) {
-                    const uniqueBls = new Set();
+                    const containersByBl = new Map();
                     Object.values(data.bls).forEach(bl => {
-                        if (bl.nomor_bl && !uniqueBls.has(bl.nomor_bl)) {
-                            uniqueBls.add(bl.nomor_bl);
-                            options += `<option value="${bl.nomor_bl}">BL: ${bl.nomor_bl}</option>`;
+                        if (!bl.nomor_bl) return;
+                        if (!containersByBl.has(bl.nomor_bl)) containersByBl.set(bl.nomor_bl, []);
+                        if (bl.kontainer && !containersByBl.get(bl.nomor_bl).includes(bl.kontainer)) {
+                            containersByBl.get(bl.nomor_bl).push(bl.kontainer);
                         }
+                    });
+                    containersByBl.forEach((containers, nomorBl) => {
+                        const containerLabel = containers.length ? ` | Kontainer: ${containers.join(', ')}` : '';
+                        options += `<option value="${nomorBl}">BL: ${nomorBl}${containerLabel}</option>`;
                     });
                 }
                 blSelect.innerHTML = options;

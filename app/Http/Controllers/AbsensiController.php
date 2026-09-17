@@ -114,10 +114,7 @@ class AbsensiController extends Controller
         $startDate = $startDateObj->toDateString();
         $endDate = $endDateObj->toDateString();
 
-        $query->whereBetween('waktu', [
-            $startDateObj->copy()->setTime(6, 0, 0),
-            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
-        ]);
+        $query->workDates($startDateObj, $endDateObj);
 
         // Filter by Search (Employee Name, NIK)
         if ($request->filled('search')) {
@@ -167,13 +164,13 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
+            ' . Absensi::workDateSql() . ' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_masuk", "istirahat masuk") THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
-            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
-            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
+            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur", "lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur", "lembur keluar") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN mesin_id ELSE NULL END) as mesin_id_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN mesin_id ELSE NULL END) as mesin_id_pulang,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN device ELSE NULL END) as device_masuk,
@@ -193,7 +190,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN verify_mode ELSE NULL END) as verify_mode_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN verify_mode ELSE NULL END) as verify_mode_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
+        ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen (Tidak Masuk/Tidak Pulang/Lengkap/Lembur) on aggregate having clause
         if ($request->filled('status_absen')) {
@@ -239,9 +236,9 @@ class AbsensiController extends Controller
         }
 
         // Ambil semua log absensi karyawan tersebut pada tanggal yang dipilih
-        // (Waktu di database dikurangi 6 jam untuk shift, persis seperti logic index)
+        // Gunakan tanggal sesi yang sama dengan daftar absensi.
         $absensis = Absensi::where('nik', $nik)
-            ->whereDate(\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'), $tanggal)
+            ->workDates($tanggal)
             ->orderBy('waktu', 'asc')
             ->get();
             
@@ -261,10 +258,7 @@ class AbsensiController extends Controller
         $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultStart);
         $endDateObj = $this->parseDateSafe($request->input('end_date'), $defaultEnd);
 
-        $query->whereBetween('waktu', [
-            $startDateObj->copy()->setTime(6, 0, 0),
-            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
-        ]);
+        $query->workDates($startDateObj, $endDateObj);
 
         // Filter by Search (Employee Name, NIK)
         if ($request->filled('search')) {
@@ -314,17 +308,17 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
+            ' . Absensi::workDateSql() . ' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_masuk", "istirahat masuk") THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
-            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
-            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
+            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur", "lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur", "lembur keluar") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
+        ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen
         if ($request->filled('status_absen')) {
@@ -374,10 +368,7 @@ class AbsensiController extends Controller
         $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultStart);
         $endDateObj = $this->parseDateSafe($request->input('end_date'), $defaultEnd);
 
-        $query->whereBetween('waktu', [
-            $startDateObj->copy()->setTime(6, 0, 0),
-            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
-        ]);
+        $query->workDates($startDateObj, $endDateObj);
 
         // Filter by Search (Employee Name, NIK)
         if ($request->filled('search')) {
@@ -427,17 +418,17 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
+            ' . Absensi::workDateSql() . ' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_masuk", "istirahat masuk") THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
-            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
-            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
+            MIN(CASE WHEN LOWER(tipe) IN ("lembur_masuk", "lembur masuk", "mulai lembur", "lembur") THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+            MAX(CASE WHEN LOWER(tipe) IN ("lembur_pulang", "lembur pulang", "selesai lembur", "lembur keluar") THEN waktu ELSE NULL END) as waktu_lembur_pulang,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
+        ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen
         if ($request->filled('status_absen')) {
@@ -547,12 +538,9 @@ class AbsensiController extends Controller
             foreach ($times as $tipe => $time) {
                 if (empty($time)) continue;
 
-                $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
-                $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
-
                 $existingLog = Absensi::where('nik', $nik)
                     ->where('tipe', $tipe)
-                    ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                    ->workDates($tanggal)
                     ->first();
 
                 // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
@@ -564,7 +552,7 @@ class AbsensiController extends Controller
                 if ($karyawan_id) {
                     $existingById = Absensi::where('karyawan_id', $karyawan_id)
                         ->where('tipe', $tipe)
-                        ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                        ->workDates($tanggal)
                         ->exists();
                     if ($existingById) {
                         continue;
@@ -572,7 +560,7 @@ class AbsensiController extends Controller
                 }
 
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
+                if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
                     $waktu->addDay(); 
                 }
 
@@ -627,9 +615,6 @@ class AbsensiController extends Controller
         foreach ($times as $tipe => $time) {
             // Find existing log for this date and type
             // Note: The index groups by DATE(waktu - 6 hours), so we search in that range
-            $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
-            $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
-
             $tipeLower = strtolower($tipe);
             
             $existingLogQuery = Absensi::where('nik', $nik)
@@ -638,13 +623,13 @@ class AbsensiController extends Controller
                     elseif (in_array($tipeLower, ['pulang', 'keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['pulang', 'keluar']);
                     elseif (in_array($tipeLower, ['istirahat_keluar', 'istirahat keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_keluar', 'istirahat keluar']);
                     elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_masuk', 'istirahat masuk']);
-                    elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur']);
-                    elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur']);
+                    elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur']);
+                    elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar']);
                     else $q->whereRaw('LOWER(tipe) = ?', [$tipeLower]);
                 })
-                ->whereBetween('waktu', [$startDateObj, $endDateObj]);
+                ->workDates($tanggal);
 
-            if (in_array($tipeLower, ['pulang', 'keluar', 'istirahat_masuk', 'istirahat masuk', 'lembur_pulang', 'lembur pulang', 'selesai lembur'])) {
+            if (in_array($tipeLower, ['pulang', 'keluar', 'istirahat_masuk', 'istirahat masuk', 'lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar'])) {
                 $existingLog = $existingLogQuery->orderBy('waktu', 'desc')->first();
             } else {
                 $existingLog = $existingLogQuery->orderBy('waktu', 'asc')->first();
@@ -654,7 +639,7 @@ class AbsensiController extends Controller
             if ($existingLog) {
                 if (!empty($time)) {
                     $waktu = Carbon::parse($tanggal . ' ' . $time);
-                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
+                    if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
                         $waktu->addDay(); 
                     }
                     
@@ -693,7 +678,7 @@ class AbsensiController extends Controller
             // Jika belum ada dan form diisi
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (in_array($tipe, ['Pulang', 'Lembur_Pulang', 'Lembur_Masuk', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
+                if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
                     $waktu->addDay(); 
                 }
 
@@ -738,12 +723,10 @@ class AbsensiController extends Controller
         $nik = $request->nik;
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
 
-        $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
-        $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
-
-        Absensi::where('nik', $nik)
-            ->whereBetween('waktu', [$startDateObj, $endDateObj])
-            ->delete();
+        $ids = Absensi::where('nik', $nik)
+            ->workDates($tanggal)
+            ->pluck('id');
+        Absensi::whereIn('id', $ids)->delete();
 
         return back()->with('success', 'Semua data absensi pada tanggal tersebut berhasil dihapus.');
     }
@@ -761,11 +744,8 @@ class AbsensiController extends Controller
         $nik = $request->nik;
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
 
-        $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
-        $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
-
         $absensis = Absensi::where('nik', $nik)
-            ->whereBetween('waktu', [$startDateObj, $endDateObj])
+            ->workDates($tanggal)
             ->get();
 
         $data = [
@@ -789,9 +769,9 @@ class AbsensiController extends Controller
                 $data['waktu_istirahat_keluar'] = $time;
             } elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) {
                 $data['waktu_istirahat_masuk'] = $time;
-            } elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur'])) {
+            } elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur'])) {
                 $data['waktu_lembur_masuk'] = $time;
-            } elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur'])) {
+            } elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar'])) {
                 $data['waktu_lembur_pulang'] = $time;
             }
         }
@@ -807,13 +787,21 @@ class AbsensiController extends Controller
         $request->validate([
             'nik' => 'required',
             'tanggal' => 'required|date',
-            'tipe' => 'required|in:Masuk,Pulang'
+            'tipe' => 'required|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang'
         ]);
 
-        Absensi::where('nik', $request->nik)
-               ->whereDate('waktu', $request->tanggal)
-               ->where('tipe', $request->tipe)
-               ->delete();
+        $types = match (strtolower($request->tipe)) {
+            'masuk' => ['masuk', 'check in'],
+            'pulang' => ['pulang', 'keluar'],
+            'lembur_masuk' => ['lembur masuk', 'mulai lembur', 'lembur'],
+            'lembur_pulang' => ['lembur pulang', 'selesai lembur', 'lembur keluar'],
+            default => [str_replace('_', ' ', $request->tipe)],
+        };
+        $ids = Absensi::where('nik', $request->nik)
+            ->workDates($request->tanggal)
+            ->whereIn(\DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), $types)
+            ->pluck('id');
+        Absensi::whereIn('id', $ids)->delete();
 
         return back()->with('success', "Data jam {$request->tipe} berhasil dihapus dari sistem.");
     }
@@ -1026,10 +1014,8 @@ class AbsensiController extends Controller
         }
 
         // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries)
-        $attendance = Absensi::whereBetween('waktu', [
-                $startDate->copy()->setTime(6, 0, 0),
-                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
-            ])
+        $attendance = Absensi::workDates($startDate, $endDate)
+            ->select('absensis.*')->selectRaw(Absensi::workDateSql() . ' as tanggal_kerja')
             ->get()
             ->groupBy('karyawan_id');
 
@@ -1073,7 +1059,7 @@ class AbsensiController extends Controller
 
             // Group logs by Date to get unique check-in dates
             $logsByDate = $logs->groupBy(function ($log) {
-                return Carbon::parse($log->waktu)->subHours(6)->toDateString();
+                return $log->tanggal_kerja;
             });
             $presentDates = $logsByDate->keys()->toArray();
 
@@ -1200,8 +1186,8 @@ class AbsensiController extends Controller
                     }
 
                     // Overtime (Lembur)
-                    $lemburMasuk = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_masuk'; });
-                    $lemburPulang = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_pulang'; });
+                    $lemburMasuk = $dayLogs->first(function($val) { return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur masuk', 'mulai lembur', 'lembur']); });
+                    $lemburPulang = $dayLogs->first(function($val) { return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur pulang', 'selesai lembur', 'lembur keluar']); });
                     if ($lemburMasuk || $lemburPulang) {
                         $lemburKali++;
                         $jam = 0;
@@ -1329,10 +1315,7 @@ class AbsensiController extends Controller
 
         $query = Absensi::with(['karyawan']);
 
-        $query->whereBetween('waktu', [
-            $startDateObj->copy()->setTime(6, 0, 0),
-            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
-        ]);
+        $query->workDates($startDateObj, $endDateObj);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -1442,10 +1425,8 @@ class AbsensiController extends Controller
 
         $karyawans = $karyawansQuery->get();
 
-        $attendance = Absensi::whereBetween('waktu', [
-                $startDate->copy()->setTime(6, 0, 0),
-                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
-            ])
+        $attendance = Absensi::workDates($startDate, $endDate)
+            ->select('absensis.*')->selectRaw(Absensi::workDateSql() . ' as tanggal_kerja')
             ->orderBy('waktu', 'asc')
             ->get()
             ->groupBy('karyawan_id');
@@ -1465,12 +1446,7 @@ class AbsensiController extends Controller
             $dayLogs = [];
             
             foreach ($periodDates as $date) {
-                $dateStart = $date->copy()->setTime(6, 0, 0);
-                $dateEnd = $date->copy()->addDays(1)->setTime(5, 59, 59);
-                
-                $todayLogs = $logs->filter(function($log) use ($dateStart, $dateEnd) {
-                    return Carbon::parse($log->waktu)->between($dateStart, $dateEnd);
-                });
+                $todayLogs = $logs->where('tanggal_kerja', $date->toDateString());
                 
                 $masuk = null;
                 $pulang = null;
