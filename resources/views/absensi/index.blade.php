@@ -204,6 +204,7 @@
                             <th class="px-2 py-2 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
                             <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
                             <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
+                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Durasi Lembur</th>
 
                             <th class="px-2 py-2 text-center">Aksi</th>
                         </tr>
@@ -310,6 +311,23 @@
                                 </td>
 
 
+                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20">
+                                    @php
+                                        $durasiLemburMenit = null;
+                                        if ($absensi->waktu_lembur_masuk && $absensi->waktu_lembur_pulang) {
+                                            $mulaiLembur = Carbon\Carbon::parse($absensi->waktu_lembur_masuk);
+                                            $selesaiLembur = Carbon\Carbon::parse($absensi->waktu_lembur_pulang);
+                                            if ($selesaiLembur->gte($mulaiLembur)) {
+                                                $durasiLemburMenit = (int) floor(($selesaiLembur->timestamp - $mulaiLembur->timestamp) / 60);
+                                            }
+                                        }
+                                    @endphp
+                                    @if($durasiLemburMenit !== null)
+                                        {{ intdiv($durasiLemburMenit, 60) }} jam {{ $durasiLemburMenit % 60 }} menit
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="px-2 py-2 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex justify-center space-x-2">
                                         <a href="{{ route('absensi.show', ['nik' => $absensi->nik, 'tanggal' => $absensi->tanggal]) }}" 
@@ -339,7 +357,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="px-6 py-10 text-center">
+                                <td colspan="14" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
