@@ -20,10 +20,22 @@
     <p id="manifest-shipper-message" class="text-sm text-red-700 mb-3" role="status" aria-live="polite" hidden></p>
     <form id="manifest-shipper-form">
         <fieldset id="manifest-shipper-fields">
-            <label for="manifest-shipper-search" class="block text-sm font-medium text-gray-700 mb-1">Shipper</label>
+            <div class="flex items-center justify-between gap-3 mb-2">
+                <label for="manifest-shipper-search" class="block text-sm font-medium text-gray-700">Shipper</label>
+                @can('master-shipper-consignee-create')
+                    <a href="{{ route('master.shipper-consignee.create') }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 text-white text-sm hover:bg-purple-700"
+                       title="Tambah master shipper di tab baru">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Tambah
+                    </a>
+                @endcan
+            </div>
             <input id="manifest-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper..."
                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" aria-controls="manifest-shipper-options" aria-expanded="false">
             <div id="manifest-shipper-options" class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg mt-1" aria-label="Hasil pencarian shipper" hidden></div>
+            @can('master-shipper-consignee-create')
+                <p class="text-xs text-gray-500 mt-2">Belum ada di master? Klik Tambah, simpan di tab baru, lalu kembali dan cari nama shipper di sini.</p>
+            @endcan
             <p id="manifest-shipper-selection" class="text-xs text-purple-700 mt-2" aria-live="polite"></p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div>
