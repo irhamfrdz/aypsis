@@ -114,7 +114,7 @@
                                     </a>
                                 </div>
                                 <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-bold uppercase hover:bg-gray-800 transition-colors"><i class="fas fa-filter mr-1"></i> Filter</button>
-                                @if(request()->anyFilled(['search', 'search_nama', 'search_nik', 'divisi', 'cabang', 'penempatan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'tunjangan']))
+                                @if(request()->anyFilled(['search', 'search_nama', 'search_nik', 'divisi', 'cabang', 'penempatan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'tunjangan', 'belum_punya_user']))
                                     <a href="{{ route('master.karyawan.index') }}" class="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase hover:bg-red-100 transition-colors" title="Reset Filter"><i class="fas fa-undo mr-1"></i> Reset</a>
                                 @endif
                             </div>
@@ -122,6 +122,12 @@
 
                         <!-- Row 2: Date Ranges & Tunjangan -->
                         <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                            <a href="{{ route('master.karyawan.index', array_merge(request()->except(['page', 'belum_punya_user']), request()->boolean('belum_punya_user') ? [] : ['belum_punya_user' => '1'])) }}"
+                               class="inline-flex items-center px-3 py-1.5 border rounded-lg text-[10px] font-bold uppercase transition-colors {{ request()->boolean('belum_punya_user') ? 'bg-amber-600 text-white border-amber-600' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' }}"
+                               title="{{ request()->boolean('belum_punya_user') ? 'Hapus filter karyawan belum punya akun user' : 'Tampilkan karyawan yang belum terhubung dengan akun user' }}">
+                                <i class="fas {{ request()->boolean('belum_punya_user') ? 'fa-check' : 'fa-user-slash' }} mr-1.5"></i>
+                                Belum Punya Akun User
+                            </a>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Tgl Masuk:</span>
                                 <div class="flex items-center gap-1">

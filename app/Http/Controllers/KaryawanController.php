@@ -77,6 +77,10 @@ class KaryawanController extends Controller
      */
     private function applyKaryawanFilters($query, Request $request)
     {
+        if ($request->boolean('belum_punya_user')) {
+            $query->whereDoesntHave('user');
+        }
+
         // Filter Status Logic
         if ($request->filled('show_all')) {
             // Tampilkan semua (tidak ada filter status)
