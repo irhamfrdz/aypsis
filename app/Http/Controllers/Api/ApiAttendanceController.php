@@ -77,11 +77,23 @@ class ApiAttendanceController extends Controller
             $fotoUrl = '/uploads/absensi/' . $fileName;
         }
 
+        // Tentukan waktu absensi
+        $waktuAbsensi = Carbon::now('Asia/Jakarta');
+
+        // Toleransi waktu masuk: jika absen antara 09:01 – 09:05, simpan sebagai 09:00
+        // (berlaku hanya untuk tipe Masuk yang dikirim via PWA)
+        if ($tipe === 'Masuk') {
+            $jamMenit = (int) $waktuAbsensi->format('Hi'); // contoh: 0901, 0905
+            if ($jamMenit >= 901 && $jamMenit <= 905) {
+                $waktuAbsensi = $waktuAbsensi->copy()->setTime(9, 0, 0);
+            }
+        }
+
         // Create absensi entry
         $absensi = Absensi::create([
             'karyawan_id' => $karyawan->id,
             'nik' => $karyawan->nik,
-            'waktu' => Carbon::now('Asia/Jakarta'),
+            'waktu' => $waktuAbsensi,
             'tipe' => $tipe,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
