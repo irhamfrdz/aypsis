@@ -327,7 +327,7 @@
 
         @if($pranota->keterangan)
         <div class="keterangan-section">
-            <strong>Catatan Tambahan:</strong> {{ $pranota->keterangan }}
+            <strong>Catatan Tambahan:</strong> <strong>{{ $pranota->keterangan }}</strong>
         </div>
         @endif
 
