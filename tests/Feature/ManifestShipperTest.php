@@ -198,9 +198,16 @@ class ManifestShipperTest extends TestCase
         $html = view('manifests.partials.shipper-button', ['manifest' => $this->manifest])->render();
         $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
         $this->assertStringContainsString(route('report.manifests.update-shipper', $this->manifest->id), $html);
-        $html = view('manifests.partials.shipper-modal')->render();
+        $scripts = '';
+        $html = view('manifests.partials.shipper-modal')->render(function ($view, $contents) use (&$scripts) {
+            $scripts = app('view')->yieldPushContent('scripts');
+
+            return $contents;
+        });
         foreach (['alamat_pengirim', 'penerima', 'notify_party', 'alamat_notify_party'] as $field) {
             $this->assertStringContainsString('name="'.$field.'"', $html);
         }
+        $version = substr(hash_file('sha256', public_path('js/manifest-shipper.js')), 0, 12);
+        $this->assertStringContainsString('manifest-shipper.js?v='.$version, $scripts);
     }
 }

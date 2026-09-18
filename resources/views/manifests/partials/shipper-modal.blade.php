@@ -82,5 +82,5 @@
     </form>
 </dialog>
 @push('scripts')
-<script src="{{ asset('js/manifest-shipper.js') }}" defer></script>
+<script src="{{ asset('js/manifest-shipper.js') }}?v={{ substr(hash_file('sha256', public_path('js/manifest-shipper.js')), 0, 12) }}" defer></script>
 @endpush
