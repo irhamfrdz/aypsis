@@ -174,10 +174,10 @@
 
         .keterangan-section {
             margin-top: 5px;
-            padding: 5px;
+            padding: 5px 8px;
             border: 1px dashed #ccc;
             background-color: #fdfdfd;
-            font-size: 8px;
+            font-size: 10px;
         }
 
         .footer-signatures {
