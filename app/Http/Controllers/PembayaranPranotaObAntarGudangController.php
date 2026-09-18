@@ -311,8 +311,10 @@ class PembayaranPranotaObAntarGudangController extends Controller
 
     public function print($id)
     {
-        $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
+        $pembayaran = PembayaranPranotaObAntarGudang::with(['creator', 'akunBank', 'akunCoa'])->findOrFail($id);
+        $pranotas = $pembayaran->pranota_ob_antar_gudangs
+            ->load(['items.tagihanOb.naikKapal', 'items.tagihanOb.bl']);
 
-        return view('pembayaran-pranota-ob-antar-gudang.print', compact('pembayaran'));
+        return view('pembayaran-pranota-ob-antar-gudang.print', compact('pembayaran', 'pranotas'));
     }
 }
