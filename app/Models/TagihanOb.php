@@ -113,6 +113,18 @@ class TagihanOb extends Model
     }
 
     /**
+     * Get the warehouse destination recorded by OB Antar Gudang.
+     */
+    public function getTujuanGudangAttribute(): ?string
+    {
+        if (! $this->keterangan || ! preg_match('/^Antar Gudang:\s*.+?\s*(?:\x{2192}|->)\s*(.+)$/u', $this->keterangan, $matches)) {
+            return null;
+        }
+
+        return trim($matches[1]) ?: null;
+    }
+
+    /**
      * Get status kontainer based on surat jalan kegiatan
      *
      * @param  string  $kegiatan

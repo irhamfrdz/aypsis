@@ -239,7 +239,7 @@
                             <td class="text-center">{{ $item->tagihanOb->created_at->format('d/m/Y H:i') }}</td>
                             <td class="font-bold text-center">{{ $item->tagihanOb->nomor_kontainer }}</td>
                             <td>{{ $item->tagihanOb->nama_supir }}</td>
-                            <td>{{ $item->tagihanOb->naikKapal?->ke ?? $item->tagihanOb->bl?->ke ?? '-' }}</td>
+                            <td>{{ $item->tagihanOb->tujuan_gudang ?? '-' }}</td>
                             <td class="text-right font-bold">Rp {{ number_format($item->tagihanOb->biaya, 0, ',', '.') }}</td>
                         </tr>
                     @else
