@@ -42,6 +42,21 @@ class ManifestShipperTest extends TestCase
                 $table->text($field)->nullable();
             }
         });
+        Schema::create('manifest_shipper_details', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('manifest_id');
+            $table->unsignedBigInteger('shipper_id')->nullable();
+            foreach (['nomor_tanda_terima', 'nama_barang', 'pengirim', 'alamat_pengirim', 'penerima', 'alamat_penerima', 'alamat_pengiriman', 'contact_person', 'notify_party', 'alamat_notify_party', 'satuan', 'term', 'hs_code', 'penerimaan'] as $field) {
+                $table->text($field)->nullable();
+            }
+            foreach (['tonnage', 'volume', 'tonnage_perincian', 'volume_perincian'] as $field) {
+                $table->decimal($field, 12, 3)->nullable();
+            }
+            $table->integer('kuantitas')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
         Schema::create('prospek', function (Blueprint $table) {
             $table->id();
             $table->string('tipe');
@@ -87,29 +102,25 @@ class ManifestShipperTest extends TestCase
     private function addShipper(array $fields = [])
     {
         return $this->postJson(route('report.manifests.add-shipper', $this->manifest->id), array_merge([
-            'shipper_id' => 10, 'nomor_bl' => 'BL-002', 'nama_barang' => 'Barang shipper baru',
+            'shipper_id' => 10, 'nama_barang' => 'Barang shipper baru',
             'tonnage' => 3.125, 'volume' => 4.5, 'kuantitas' => 25,
             'tonnage_perincian' => 3.125, 'volume_perincian' => 4.5,
         ], $fields));
     }
 
-    public function test_booking_adds_a_shipper_without_overwriting_the_original_or_duplicating_cargo(): void
+    public function test_booking_adds_a_shipper_detail_without_creating_another_manifest_or_changing_container_totals(): void
     {
         $this->prepareBooking();
         $this->addShipper()->assertOk()->assertJsonPath('manifest.pengirim', 'PT Pengirim');
-        $this->assertDatabaseCount('manifests', 2);
-        $this->assertDatabaseHas('manifests', ['id' => $this->manifest->id, 'pengirim' => 'Pengirim lama', 'nomor_bl' => 'BL-001', 'tonnage' => 6.875, 'volume' => 15.5, 'kuantitas' => 75]);
-        $this->assertDatabaseHas('manifests', ['nomor_bl' => 'BL-002', 'shipper_id' => 10, 'nomor_kontainer' => 'AYPU1234567', 'no_seal' => 'SEAL-01', 'no_voyage' => 'JB-001', 'tonnage' => 3.125, 'volume' => 4.5, 'kuantitas' => 25, 'penerima' => 'PT Penerima']);
-        foreach (['tonnage' => 10, 'volume' => 20, 'kuantitas' => 100, 'tonnage_perincian' => 10, 'volume_perincian' => 20] as $field => $total) {
-            $this->assertEquals($total, Manifest::sum($field));
-        }
-        $this->assertNull(Manifest::where('nomor_bl', 'BL-002')->first()->alamat_penerima);
+        $this->assertDatabaseCount('manifests', 1);
+        $this->assertDatabaseHas('manifests', ['id' => $this->manifest->id, 'pengirim' => 'Pengirim lama', 'nomor_bl' => 'BL-001', 'tonnage' => 10, 'volume' => 20, 'kuantitas' => 100]);
+        $this->assertDatabaseHas('manifest_shipper_details', ['manifest_id' => $this->manifest->id, 'shipper_id' => 10, 'nama_barang' => 'Barang shipper baru', 'tonnage' => 3.125, 'volume' => 4.5, 'kuantitas' => 25, 'penerima' => 'PT Penerima']);
     }
 
-    public function test_excess_allocation_and_non_booking_are_rejected_without_changes(): void
+    public function test_shipper_detail_does_not_require_cargo_and_non_booking_is_rejected(): void
     {
         $this->prepareBooking();
-        $this->addShipper(['volume' => 21])->assertUnprocessable()->assertJsonValidationErrors('volume');
+        $this->addShipper(['tonnage' => null, 'volume' => null, 'kuantitas' => null, 'tonnage_perincian' => null, 'volume_perincian' => null])->assertOk();
         $this->assertDatabaseHas('manifests', ['id' => $this->manifest->id, 'tonnage' => 10, 'volume' => 20]);
         $this->manifest->update(['tipe_kontainer' => 'FCL']);
         $this->addShipper()->assertUnprocessable();
@@ -122,9 +133,9 @@ class ManifestShipperTest extends TestCase
         DB::table('prospek')->insert(['id' => 50, 'tipe' => 'FCL Booking']);
         $this->manifest->update(['tipe_kontainer' => 'FCL', 'prospek_id' => 50]);
         $this->addShipper()->assertOk();
-        $this->addShipper(['nomor_bl' => 'BL-003'])->assertOk();
-        $this->assertDatabaseCount('manifests', 3);
-        $this->assertEquals(10, Manifest::sum('tonnage'));
+        $this->addShipper(['nama_barang' => 'Barang shipper kedua'])->assertOk();
+        $this->assertDatabaseCount('manifests', 1);
+        $this->assertDatabaseCount('manifest_shipper_details', 2);
     }
 
     public function test_adding_shipper_requires_both_create_and_edit_permissions(): void

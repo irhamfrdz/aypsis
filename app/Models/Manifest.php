@@ -86,6 +86,12 @@ class Manifest extends Model
         return $this->belongsTo(ShipperConsignee::class, 'shipper_id');
     }
 
+    /** Shippers sharing this FCL Booking container. */
+    public function shipperDetails()
+    {
+        return $this->hasMany(ManifestShipperDetail::class)->orderBy('id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

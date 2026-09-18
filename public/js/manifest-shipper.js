@@ -98,13 +98,6 @@
             cargoFields.disabled = !adding;
             document.getElementById('manifest-shipper-title').textContent = adding ? 'Tambah Shipper FCL Booking' : 'Pilih Shipper Manifest';
             save.textContent = adding ? 'Tambah Shipper' : 'Simpan Shipper';
-            if (adding) {
-                allocationFields.forEach(name => {
-                    const available = Number(manifest[name] || 0);
-                    form.elements.namedItem(name).max = available;
-                    document.getElementById(`manifest-available-${name}`).textContent = `(tersedia: ${available})`;
-                });
-            }
             fields.disabled = false;
             save.disabled = true;
             search.value = manifest.pengirim || '';
@@ -149,7 +142,7 @@
         if (!shipperId || saving) return;
         const payload = {shipper_id: shipperId};
         if (adding) {
-            [...allocationFields, 'nomor_bl', 'nama_barang', 'nomor_tanda_terima'].forEach(name => {
+            [...allocationFields, 'nama_barang', 'nomor_tanda_terima'].forEach(name => {
                 payload[name] = form.elements.namedItem(name).value;
             });
         }

@@ -352,30 +352,48 @@
                                 @endcan
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                <div class="font-bold">{{ $manifest->pengirim }}</div>
+                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                    @foreach($manifest->shipperDetails as $detail)
+                                        <div class="font-bold {{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}">{{ $detail->pengirim ?: '-' }}</div>
+                                    @endforeach
+                                @else
+                                    <div class="font-bold">{{ $manifest->pengirim }}</div>
+                                @endif
                                 @can('manifest-edit')
                                     @include('manifests.partials.shipper-button')
                                 @endcan
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->alamat_pengirim)
-                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-2" title="{{ $manifest->alamat_pengirim }}">
-                                        {{ $manifest->alamat_pengirim }}
-                                    </div>
+                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                    @foreach($manifest->shipperDetails as $detail)
+                                        <div class="text-[10px] text-gray-500 {{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}" title="{{ $detail->alamat_pengirim }}">{{ $detail->alamat_pengirim ?: '-' }}</div>
+                                    @endforeach
+                                @elseif($manifest->alamat_pengirim)
+                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-2" title="{{ $manifest->alamat_pengirim }}">{{ $manifest->alamat_pengirim }}</div>
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
+                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                    @foreach($manifest->shipperDetails as $detail)
+                                        <div class="{{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}"><div class="font-bold">{{ $detail->penerima ?: '-' }}</div>@if($detail->alamat_penerima)<div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $detail->alamat_penerima }}">{{ $detail->alamat_penerima }}</div>@endif</div>
+                                    @endforeach
+                                @else
                                 <div class="font-bold">{{ $manifest->penerima }}</div>
                                 @if($manifest->alamat_penerima)
                                     <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $manifest->alamat_penerima }}">
                                         {{ $manifest->alamat_penerima }}
                                     </div>
                                 @endif
+                                @endif
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->notify_party)
+                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                    @foreach($manifest->shipperDetails as $detail)
+                                        <div class="{{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}"><div class="font-bold">{{ $detail->notify_party ?: '-' }}</div>@if($detail->alamat_notify_party)<div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $detail->alamat_notify_party }}">{{ $detail->alamat_notify_party }}</div>@endif</div>
+                                    @endforeach
+                                @elseif($manifest->notify_party)
                                     <div class="font-bold">{{ $manifest->notify_party }}</div>
                                     @if($manifest->alamat_notify_party)
                                         <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $manifest->alamat_notify_party }}">
