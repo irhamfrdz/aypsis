@@ -100,8 +100,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($log->foto)
-                                <a href="{{ asset(ltrim($log->foto, '/')) }}" target="_blank" class="inline-block relative group">
-                                    <img src="{{ asset(ltrim($log->foto, '/')) }}" class="w-12 h-12 object-cover rounded-lg border border-gray-200 hover:border-indigo-400 hover:scale-110 transition-all shadow-sm">
+                                <a href="{{ asset(ltrim($log->foto, '/')) }}" target="_blank" class="inline-block relative group" title="Klik untuk melihat ukuran penuh">
+                                    <img src="{{ asset(ltrim($log->foto, '/')) }}" 
+                                         alt="Foto Absensi" 
+                                         class="w-12 h-12 object-cover rounded-lg border border-gray-200 hover:border-indigo-400 hover:scale-110 transition-all shadow-sm"
+                                         onerror="this.onerror=null; this.title='File foto tidak ditemukan di server'; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%239ca3af\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\' ry=\'2\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><line x1=\'3\' y1=\'3\' x2=\'21\' y2=\'21\' stroke=\'%23ef4444\' stroke-width=\'2\'/></svg>';">
                                 </a>
                             @else
                                 <span class="text-gray-400 text-sm">-</span>
