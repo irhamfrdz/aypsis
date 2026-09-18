@@ -512,7 +512,11 @@ class TagihanObController extends Controller
             abort(403);
         }
 
-        $pranota = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb'])->findOrFail($id);
+        $pranota = \App\Models\PranotaObAntarGudang::with([
+            'creator',
+            'items.tagihanOb.naikKapal',
+            'items.tagihanOb.bl',
+        ])->findOrFail($id);
 
         return view('tagihan-ob.pranota-show-antar-gudang', compact('pranota'));
     }

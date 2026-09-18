@@ -227,7 +227,7 @@
                     <th style="width: 15%;">TANGGAL TAGIHAN</th>
                     <th style="width: 20%;">NO. KONTAINER</th>
                     <th style="width: 20%;">NAMA SUPIR</th>
-                    <th style="width: 25%;">KETERANGAN RUTE</th>
+                    <th style="width: 25%;">KE</th>
                     <th style="width: 15%;">BIAYA</th>
                 </tr>
             </thead>
@@ -239,7 +239,7 @@
                             <td class="text-center">{{ $item->tagihanOb->created_at->format('d/m/Y H:i') }}</td>
                             <td class="font-bold text-center">{{ $item->tagihanOb->nomor_kontainer }}</td>
                             <td>{{ $item->tagihanOb->nama_supir }}</td>
-                            <td>{{ $item->tagihanOb->keterangan }}</td>
+                            <td>{{ $item->tagihanOb->naikKapal?->ke ?? $item->tagihanOb->bl?->ke ?? '-' }}</td>
                             <td class="text-right font-bold">Rp {{ number_format($item->tagihanOb->biaya, 0, ',', '.') }}</td>
                         </tr>
                     @else

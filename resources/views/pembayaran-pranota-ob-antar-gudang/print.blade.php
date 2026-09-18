@@ -223,16 +223,18 @@
         <div class="content-section">
             <div class="section-title">Daftar Pranota OB Antar Gudang yang Dibayar</div>
 
+            @php
+                $pranotas = $pembayaran->pranota_ob_antar_gudangs;
+            @endphp
             @if($pranotas->count() > 0)
                 <table class="ob-table">
                     <thead>
                         <tr>
                             <th style="width: 5%; text-align: center;">No</th>
-                            <th style="width: 25%;">Nomor Pranota</th>
-                            <th style="width: 15%;">Tanggal</th>
-                            <th style="width: 25%;">Ke</th>
-                            <th style="width: 15%; text-align: center;">Jumlah Item</th>
-                            <th style="width: 15%; text-align: right;">Total Tagihan</th>
+                            <th style="width: 30%;">Nomor Pranota</th>
+                            <th style="width: 25%;">Tanggal</th>
+                            <th style="width: 20%; text-align: center;">Jumlah Item</th>
+                            <th style="width: 20%; text-align: right;">Total Tagihan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -241,13 +243,6 @@
                                 <td style="text-align: center;">{{ $index + 1 }}</td>
                                 <td><strong>{{ $item->nomor_pranota }}</strong></td>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_pranota)->format('d/m/Y') }}</td>
-                                <td>
-                                    {{ $item->items
-                                        ->map(fn ($detail) => $detail->tagihanOb?->naikKapal?->ke ?? $detail->tagihanOb?->bl?->ke)
-                                        ->filter()
-                                        ->unique()
-                                        ->implode(', ') ?: '-' }}
-                                </td>
                                 <td style="text-align: center;">{{ $item->items->count() }} kontainer</td>
                                 <td style="text-align: right; font-weight: bold;">
                                     Rp {{ number_format($item->grand_total, 0, ',', '.') }}
