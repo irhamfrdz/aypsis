@@ -20,6 +20,7 @@ class ManifestController extends Controller
         $this->middleware('permission:manifest-create')->only(['create', 'store']);
         $this->middleware('permission:manifest-edit')->only(['edit', 'update', 'updateShipper']);
         $this->middleware('permission:manifest-delete')->only(['destroy']);
+        $this->middleware(['permission:manifest-create', 'permission:manifest-edit'])->only(['addShipper']);
     }
 
     /**
@@ -365,6 +366,16 @@ class ManifestController extends Controller
     /** Update the shipper section from the manifest list without requiring unrelated fields. */
     public function updateShipper(Request $request, string $id)
     {
+        return $this->saveManifestShipper($request, $id);
+    }
+
+    public function addShipper(Request $request, string $id)
+    {
+        return $this->saveManifestShipper($request, $id, true);
+    }
+
+    private function saveManifestShipper(Request $request, string $id, bool $add = false)
+    {
         $manifest = Manifest::findOrFail($id);
         $validated = $request->validate([
             'shipper_id' => 'required|integer|exists:shipper_consignees,id',
@@ -399,11 +410,54 @@ class ManifestController extends Controller
             $fields['pengirim'] = $pengirim->nickname1;
         }
         $fields['updated_by'] = Auth::id();
-        $manifest->update($fields);
+        if ($add) {
+            $cargo = $request->validate([
+                'nomor_bl' => 'required|string|max:255',
+                'nama_barang' => 'nullable|string',
+                'nomor_tanda_terima' => 'nullable|string|max:255',
+                'tonnage' => 'required|numeric|min:0|decimal:0,3',
+                'volume' => 'required|numeric|min:0|decimal:0,3',
+                'kuantitas' => 'required|integer|min:0',
+                'tonnage_perincian' => 'required|numeric|min:0|decimal:0,3',
+                'volume_perincian' => 'required|numeric|min:0|decimal:0,3',
+            ]);
+            $manifest = DB::transaction(function () use ($id, $fields, $cargo) {
+                $source = Manifest::lockForUpdate()->findOrFail($id);
+                if (! $source->isFclBooking()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'shipper_id' => 'Tambah shipper hanya tersedia untuk FCL Booking.',
+                    ]);
+                }
+                $remaining = [];
+                foreach (['tonnage', 'volume', 'kuantitas', 'tonnage_perincian', 'volume_perincian'] as $field) {
+                    $scale = $field === 'kuantitas' ? 1 : 1000;
+                    $available = (int) round((float) $source->{$field} * $scale);
+                    $allocated = (int) round((float) $cargo[$field] * $scale);
+                    if ($allocated > $available) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            $field => 'Alokasi tidak boleh melebihi sisa pada baris asal ('.($available / $scale).').',
+                        ]);
+                    }
+                    $remaining[$field] = ($available - $allocated) / $scale;
+                }
+                // Copy only shipment context; each shipper keeps its own cargo and contact details.
+                $context = $source->only([
+                    'prospek_id', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer',
+                    'nama_kapal', 'no_voyage', 'pelabuhan_asal', 'pelabuhan_tujuan',
+                    'pelabuhan_muat', 'pelabuhan_bongkar', 'tanggal_berangkat', 'tanggal_muat',
+                    'satuan', 'term',
+                ]);
+                $source->update(array_merge($remaining, ['updated_by' => Auth::id()]));
+
+                return Manifest::create(array_merge($context, $fields, $cargo, ['created_by' => Auth::id()]));
+            });
+        } else {
+            $manifest->update($fields);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Shipper dan data terkait berhasil diperbarui.',
+            'message' => $add ? 'Shipper baru berhasil ditambahkan pada kontainer yang sama.' : 'Shipper dan data terkait berhasil diperbarui.',
             'manifest' => $manifest->only([
                 'id', 'shipper_id', 'pengirim', 'alamat_pengirim', 'penerima',
                 'notify_party', 'alamat_notify_party',

@@ -3,11 +3,14 @@
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+Illuminate\Support\Facades\Gate::define('manifest-create', fn (?App\Models\User $user = null) => true);
 $manifest = new App\Models\Manifest;
 $manifest->setRawAttributes([
     'id' => 1, 'nomor_bl' => 'BL-001', 'nomor_kontainer' => 'AYPU1234567', 'shipper_id' => null,
     'pengirim' => 'Lama', 'alamat_pengirim' => 'Alamat lama', 'penerima' => 'Consignee lama',
     'notify_party' => 'Notify lama', 'alamat_notify_party' => 'Alamat notify lama',
+    'tipe_kontainer' => 'FCL Booking', 'tonnage' => 10, 'volume' => 20, 'kuantitas' => 100,
+    'tonnage_perincian' => 10, 'volume_perincian' => 20,
 ]);
 $html = view('manifests.partials.shipper-button', compact('manifest'))->render();
 $styles = '';

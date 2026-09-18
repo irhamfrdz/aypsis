@@ -55,6 +55,25 @@
                     <textarea id="manifest-shipper-notify-address" name="alamat_notify_party" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
                 </div>
             </div>
+            <fieldset id="manifest-shipper-cargo" class="mt-4" hidden disabled>
+                <p class="text-sm text-gray-600 mb-3">Shipper baru dibuat sebagai baris manifest tersendiri pada kontainer ini. Isi bagian muatan yang dipindahkan dari baris asal; sisa muatan baris asal akan berkurang sesuai alokasi ini.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="text-sm">Nomor BL shipper baru
+                        <input name="nomor_bl" required maxlength="255" class="block w-full border rounded px-3 py-2">
+                    </label>
+                    <label class="text-sm">Nomor Tanda Terima
+                        <input name="nomor_tanda_terima" maxlength="255" class="block w-full border rounded px-3 py-2">
+                    </label>
+                    <label class="text-sm sm:col-span-2">Nama Barang
+                        <textarea name="nama_barang" class="block w-full border rounded px-3 py-2"></textarea>
+                    </label>
+                    @foreach(['tonnage' => 'Tonase', 'volume' => 'Volume', 'kuantitas' => 'Jumlah Barang', 'tonnage_perincian' => 'Tonase Perincian', 'volume_perincian' => 'Volume Perincian'] as $field => $label)
+                        <label class="text-sm">{{ $label }} <span id="manifest-available-{{ $field }}" class="text-xs text-gray-500"></span>
+                            <input name="{{ $field }}" type="number" min="0" step="{{ $field === 'kuantitas' ? '1' : '0.001' }}" value="0" required class="block w-full border rounded px-3 py-2">
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
             <div class="flex justify-end gap-3 mt-5">
                 <button type="button" class="manifest-shipper-close px-4 py-2 rounded-lg border border-gray-300 text-sm">Batal</button>
                 <button id="manifest-shipper-save" type="submit" class="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm disabled:opacity-50" disabled>Simpan Shipper</button>

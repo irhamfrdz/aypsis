@@ -91,11 +91,30 @@ try {
     assert.equal(await evaluate('calls[0].body.shipper_id'), 11);
     assert.equal(await evaluate('calls[0].body.penerima'), 'Manual');
     assert.equal(await evaluate("document.getElementById('manifest-shipper-message').textContent"), 'Coba kembali');
+    await evaluate("document.getElementById('manifest-shipper-dialog').close(); document.querySelector('[data-mode=add]').click()");
+    await waitFor("document.querySelectorAll('.manifest-shipper-option').length === 2 && !document.getElementById('manifest-shipper-options').hidden");
+    assert.equal(await evaluate("document.getElementById('manifest-shipper-cargo').hidden"), false);
+    assert.equal(await evaluate("document.getElementById('manifest-shipper-form').elements.namedItem('tonnage').max"), '10');
+    assert.equal(await evaluate("document.getElementById('manifest-shipper-consignee').value"), '');
+    await evaluate(`
+        document.querySelectorAll('.manifest-shipper-option')[0].click();
+        const f = document.getElementById('manifest-shipper-form');
+        f.elements.namedItem('nomor_bl').value = 'BL-002';
+        f.elements.namedItem('tonnage').value = '3.125';
+        f.elements.namedItem('volume').value = '4.5';
+        f.elements.namedItem('kuantitas').value = '25';
+        f.requestSubmit();
+    `);
+    await waitFor("calls.length === 2 && !document.getElementById('manifest-shipper-fields').disabled");
+    assert.equal(await evaluate('calls[1].body.tonnage'), '3.125');
+    assert.equal(await evaluate('calls[1].body.kuantitas'), '25');
+    assert.equal(await evaluate('calls[1].body.shipper_id'), 10);
+    assert.ok((await evaluate('calls[1].url')).endsWith('/add-shipper'));
     await evaluate("mockStatus = 200; document.getElementById('manifest-shipper-form').requestSubmit()");
     await waitFor("Number(sessionStorage.getItem('loads')) === 2");
     assert.equal(await evaluate("document.getElementById('manifest-shipper-dialog').open"), false);
     assert.deepEqual(errors, []);
-    console.log('PASS: real modal, duplicate shipper names resolved by ID, all autofill fields, changed search invalidates selection, manual edits, failed save recovery, successful save reload.');
+    console.log('PASS: shipper edit and booking addition, cargo allocation payload, master autofill, validation recovery, successful save reload.');
     await call('Browser.close');
 } finally {
     socket?.close(); browser.kill();

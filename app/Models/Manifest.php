@@ -70,6 +70,12 @@ class Manifest extends Model
     ];
 
     // Relationships
+    public function isFclBooking(): bool
+    {
+        return strtoupper(trim($this->tipe_kontainer ?? '')) === 'FCL BOOKING'
+            || ($this->prospek_id && strtoupper(trim($this->prospek?->tipe ?? '')) === 'FCL BOOKING');
+    }
+
     public function prospek()
     {
         return $this->belongsTo(Prospek::class);

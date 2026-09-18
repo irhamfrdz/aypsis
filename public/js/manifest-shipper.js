@@ -9,6 +9,9 @@
     const fields = document.getElementById('manifest-shipper-fields');
     const selection = document.getElementById('manifest-shipper-selection');
     const message = document.getElementById('manifest-shipper-message');
+    const cargoFields = document.getElementById('manifest-shipper-cargo');
+    const allocationFields = ['tonnage', 'volume', 'kuantitas', 'tonnage_perincian', 'volume_perincian'];
+    let adding = false;
     const autofill = {alamat: 'alamat_pengirim', consignee: 'penerima', notify_party: 'notify_party', alamat_notify_party: 'alamat_notify_party'};
     let shipperId = null;
     let updateUrl = '';
@@ -87,9 +90,21 @@
             const manifest = JSON.parse(button.dataset.manifest);
             opener = button;
             updateUrl = button.dataset.updateUrl;
+            adding = button.dataset.mode === 'add';
             // Require a selection so a legacy name or nickname is never mistaken for a master ID.
             shipperId = null;
             form.reset();
+            cargoFields.hidden = !adding;
+            cargoFields.disabled = !adding;
+            document.getElementById('manifest-shipper-title').textContent = adding ? 'Tambah Shipper FCL Booking' : 'Pilih Shipper Manifest';
+            save.textContent = adding ? 'Tambah Shipper' : 'Simpan Shipper';
+            if (adding) {
+                allocationFields.forEach(name => {
+                    const available = Number(manifest[name] || 0);
+                    form.elements.namedItem(name).max = available;
+                    document.getElementById(`manifest-available-${name}`).textContent = `(tersedia: ${available})`;
+                });
+            }
             fields.disabled = false;
             save.disabled = true;
             search.value = manifest.pengirim || '';
@@ -133,6 +148,11 @@
         event.preventDefault();
         if (!shipperId || saving) return;
         const payload = {shipper_id: shipperId};
+        if (adding) {
+            [...allocationFields, 'nomor_bl', 'nama_barang', 'nomor_tanda_terima'].forEach(name => {
+                payload[name] = form.elements.namedItem(name).value;
+            });
+        }
         Object.values(autofill).forEach(name => {payload[name] = form.elements.namedItem(name).value;});
         saving = true;
         stopSearch();
@@ -157,7 +177,7 @@
             saving = false;
             fields.disabled = false;
             save.disabled = false;
-            save.textContent = 'Simpan Shipper';
+            save.textContent = adding ? 'Tambah Shipper' : 'Simpan Shipper';
         }
     });
 })();
