@@ -79,14 +79,31 @@
 
 @push('scripts')
 <script>
-function initResizableTable(tableId) {
+function initResizableTable(tableId, options = {}) {
     const table = document.getElementById(tableId);
     if (!table) return;
+
+    if (options.fixedLayout) {
+        const allHeaders = Array.from(table.tHead.rows[0].cells);
+        const widths = allHeaders.map(header => {
+            const initialWidth = Number(header.dataset.initialWidth) || header.offsetWidth;
+            return header.classList.contains('resizable-th')
+                ? Math.max(80, Math.min(600, initialWidth))
+                : initialWidth;
+        });
+        allHeaders.forEach((header, index) => {
+            header.style.width = widths[index] + 'px';
+        });
+        table.style.tableLayout = 'fixed';
+        table.style.minWidth = '0';
+        table.style.width = widths.reduce((total, width) => total + width, 0) + 'px';
+    }
     
     const headers = table.querySelectorAll('.resizable-th');
     let currentHeader = null;
     let startX = 0;
     let startWidth = 0;
+    let startTableWidth = 0;
     
     headers.forEach(header => {
         const handle = header.querySelector('.resize-handle');
@@ -96,6 +113,7 @@ function initResizableTable(tableId) {
             currentHeader = header;
             startX = e.pageX;
             startWidth = header.offsetWidth;
+            startTableWidth = table.offsetWidth;
             
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
@@ -112,6 +130,9 @@ function initResizableTable(tableId) {
         currentHeader.style.width = newWidth + 'px';
         currentHeader.style.minWidth = newWidth + 'px';
         currentHeader.style.maxWidth = newWidth + 'px';
+        if (options.fixedLayout) {
+            table.style.width = (startTableWidth + newWidth - startWidth) + 'px';
+        }
     }
     
     function onMouseUp() {

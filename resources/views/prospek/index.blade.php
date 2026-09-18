@@ -14,6 +14,11 @@
     .truncate-cell:hover {
         background-color: #f3f4f6;
     }
+
+    #prospekTable td:not(:last-child) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 @endpush
 
@@ -181,7 +186,7 @@
                             </div>
                         </th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th>
-                        <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Surat Jalan<div class="resize-handle"></div></th>
+                        <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;" data-initial-width="220">No. Surat Jalan<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Checkpoint<div class="resize-handle"></div></th>
                         <th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nama Supir<div class="resize-handle"></div></th>
@@ -214,12 +219,14 @@
                                 {{ $prospeks->firstItem() + $key }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                {{ $prospek->no_surat_jalan ?? '-' }}
+                                <div class="flex items-center min-w-0">
+                                <span class="block min-w-0 truncate" title="{{ $prospek->no_surat_jalan ?? '-' }}">{{ $prospek->no_surat_jalan ?? '-' }}</span>
                                 @if(isset($duplicateNos) && in_array($prospek->no_surat_jalan, $duplicateNos))
-                                    <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200" title="Ada Nomor Surat Jalan yang sama">
+                                    <span class="ml-1 inline-flex flex-shrink-0 items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200" title="Ada Nomor Surat Jalan yang sama">
                                         KEMBAR
                                     </span>
                                 @endif
+                                </div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->tanggal ? (is_string($prospek->tanggal) ? \Carbon\Carbon::parse($prospek->tanggal)->format('d/M/Y') : $prospek->tanggal->format('d/M/Y')) : '-' }}
@@ -1269,7 +1276,7 @@ function closeManifestModal() {
 @push('scripts')
 <script>
 $(document).ready(function() {
-    initResizableTable('prospekTable');
+    initResizableTable('prospekTable', { fixedLayout: true });
 });
 </script>
 @endpush
