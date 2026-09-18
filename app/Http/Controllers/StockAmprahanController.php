@@ -419,6 +419,9 @@ class StockAmprahanController extends Controller
         }
 
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $typeBonAmprahans = MasterTypeBonAmprahan::where('status', 'active')
+            ->orWhere('id', $item->type_bon_amprahan_id)
+            ->orderBy('kode')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $kendaraans = Mobil::orderBy('nomor_polisi')->get();
@@ -427,7 +430,7 @@ class StockAmprahanController extends Controller
         $vendorAmprahans = VendorAmprahan::orderBy('nama_toko')->get();
         $chasis = MasterChasisBatam::orderBy('kode')->get();
 
-        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
+        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'typeBonAmprahans', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
     }
 
     public function update(Request $request, $id)
@@ -438,6 +441,7 @@ class StockAmprahanController extends Controller
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
             'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
+            'type_bon_amprahan_id' => 'required|exists:master_type_bon_amprahans,id',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -490,6 +494,7 @@ class StockAmprahanController extends Controller
             'harga_satuan' => $data['harga_satuan'],
             'adjustment' => $data['adjustment'] ?? 0,
             'jumlah' => $finalJumlah,
+            'type_bon_amprahan_id' => $data['type_bon_amprahan_id'],
             'satuan' => $data['satuan'],
             'lokasi' => $data['lokasi'],
             'keterangan' => $data['keterangan'],

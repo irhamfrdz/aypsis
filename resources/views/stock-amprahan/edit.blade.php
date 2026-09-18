@@ -106,6 +106,21 @@
                             </div>
                         </div>
 
+                        {{-- Type Bon Amprahan --}}
+                        <div>
+                            <label for="type_bon_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Type Bon <span class="text-red-500">*</span></label>
+                            <select name="type_bon_amprahan_id" id="type_bon_amprahan_id" required
+                                    class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                <option value="">Pilih Type Bon</option>
+                                @foreach($typeBonAmprahans as $typeBon)
+                                    <option value="{{ $typeBon->id }}" {{ old('type_bon_amprahan_id', $item->type_bon_amprahan_id) == $typeBon->id ? 'selected' : '' }}>{{ $typeBon->kode }} - {{ $typeBon->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('type_bon_amprahan_id')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Nama Barang --}}
                         <div>
                             <label for="nama_barang" class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
