@@ -1375,15 +1375,8 @@ class BlController extends Controller
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
-                        // Update status prospek jika kontainer ada di prospek
-                        if (! empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
-                            Prospek::where('nomor_kontainer', $nomorKontainer)
-                                ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
-                                ->update([
-                                    'status' => Prospek::STATUS_SUDAH_MUAT,
-                                    'updated_by' => Auth::id(),
-                                ]);
-                        }
+                        // Imported BLs have no prospek_id. A reused container number
+                        // does not prove that any existing prospek has been loaded.
 
                         $importedCount++;
                     } catch (\Exception $e) {
@@ -1692,15 +1685,8 @@ class BlController extends Controller
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
-                        // Update status prospek jika kontainer ada di prospek
-                        if (! empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
-                            Prospek::where('nomor_kontainer', $nomorKontainer)
-                                ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
-                                ->update([
-                                    'status' => Prospek::STATUS_SUDAH_MUAT,
-                                    'updated_by' => Auth::id(),
-                                ]);
-                        }
+                        // Imported BLs have no prospek_id. A reused container number
+                        // does not prove that any existing prospek has been loaded.
 
                         $importedCount++;
                     } catch (\Exception $e) {
