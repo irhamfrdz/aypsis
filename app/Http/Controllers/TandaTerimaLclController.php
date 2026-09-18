@@ -1875,6 +1875,7 @@ class TandaTerimaLclController extends Controller
 
             // Insert ke tabel prospek
             $prospek = Prospek::create([
+                'no_surat_jalan' => \Illuminate\Support\Str::limit($pivotRecords->pluck('tandaTerima.nomor_tanda_terima')->filter()->unique()->implode(', '), 255, '') ?: null,
                 'tanggal' => $request->tanggal_seal,
                 'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
                 'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
@@ -2730,6 +2731,7 @@ class TandaTerimaLclController extends Controller
 
             // Create prospek
             $prospek = Prospek::create([
+                'no_surat_jalan' => \Illuminate\Support\Str::limit($pivotRecords->pluck('tandaTerima.nomor_tanda_terima')->filter()->unique()->implode(', '), 255, '') ?: null,
                 'tanggal' => $tanggal,
                 'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
                 'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
