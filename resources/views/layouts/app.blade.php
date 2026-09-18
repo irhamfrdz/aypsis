@@ -528,6 +528,19 @@
                 </div>
                 @endif
 
+                {{-- Berita & Pamflet --}}
+                @php
+                    $isBeritaRoute = Request::routeIs('berita.*');
+                @endphp
+                @if($isAdmin || ($user && $user->can('berita-view')))
+                <a href="{{ route('berita.index') }}" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isBeritaRoute ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+                    <svg class="w-4 h-4 mr-2 {{ $isBeritaRoute ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                    </svg>
+                    <span class="text-xs font-medium menu-text">Berita &amp; Pamflet (PWA)</span>
+                </a>
+                @endif
+
                 {{-- Data Karyawan (Cuti & Uang Makan) --}}
                 @php
                     $isDataKaryawanRoute = Request::is('cuti*') || Request::routeIs('cuti.*') || Request::is('uang-makan*') || Request::routeIs('uang-makan.*') || Request::routeIs('uang-lembur.*');

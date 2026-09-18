@@ -7951,4 +7951,12 @@ Route::middleware(['auth',
         ->name('master-jadwal-kapal-berlabuh.export')
         ->middleware('can:master-jadwal-kapal-berlabuh-export');
     Route::resource('master-jadwal-kapal-berlabuh', \App\Http\Controllers\MasterJadwalKapalBerlabuhController::class);
+
+    // =========================================================
+    // Berita & Pamflet (Konten PWA)
+    // =========================================================
+    Route::get('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive'])->name('berita.toggle-active');
+    Route::post('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive']);
+    Route::resource('berita', \App\Http\Controllers\BeritaController::class);
 });
+
