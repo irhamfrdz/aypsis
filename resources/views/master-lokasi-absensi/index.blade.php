@@ -131,8 +131,9 @@
         <!-- Map Container -->
         <div class="relative w-full">
             <div id="map"></div>
-            <div class="absolute bottom-2 left-2 z-[500] bg-white/95 border border-gray-200 rounded px-2.5 py-1.5 text-[10px] text-gray-500 font-medium shadow-sm">
-                * Klik di peta untuk memposisikan pin lokasi absensi
+            <div class="absolute bottom-2 left-2 z-[500] bg-white/95 border border-gray-200 rounded px-2.5 py-1.5 text-[10px] text-gray-600 font-medium shadow-sm flex items-center gap-1.5">
+                <span class="text-orange-500">✋</span>
+                <span>Geser pin (drag) atau klik pada peta untuk memindahkan titik lokasi</span>
             </div>
         </div>
         
@@ -235,6 +236,7 @@
                 // Draw markers and boundaries on map
                 locations.forEach(loc => {
                     const marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
+                    marker.locationId = loc.id;
                     marker.bindPopup(`
                         <div class="p-1">
                             <strong class="text-xs block font-bold text-gray-800">${loc.nama_lokasi}</strong>
@@ -249,8 +251,10 @@
                         color: circleColor,
                         fillColor: circleColor,
                         fillOpacity: isActive ? 0.1 : 0.05,
-                        radius: loc.radius
+                        radius: loc.radius,
+                        interactive: false // Clicks pass through to map
                     }).addTo(map);
+                    circle.locationId = loc.id;
 
                     mapMarkers.push(marker);
                     mapMarkers.push(circle);
@@ -277,16 +281,48 @@
             if (currentMarker) map.removeLayer(currentMarker);
             if (currentCircle) map.removeLayer(currentCircle);
 
-            currentMarker = L.marker([lat, lon]).addTo(map);
+            const r = parseInt(radius) || 100;
+
+            // Buat marker yang dapat digeser (draggable)
+            currentMarker = L.marker([lat, lon], {
+                draggable: true,
+                autoPan: true
+            }).addTo(map);
+
             currentCircle = L.circle([lat, lon], {
                 color: '#ea580c', // Orange 600
                 fillColor: '#ea580c',
                 fillOpacity: 0.15,
-                radius: parseInt(radius) || 100
+                radius: r,
+                interactive: false // Agar klik di dalam lingkaran tetap dapat mendeteksi peta
             }).addTo(map);
+
+            currentMarker.bindTooltip('Geser pin untuk memindahkan lokasi', {
+                direction: 'top',
+                offset: [0, -32]
+            });
+
+            // Event saat pin digeser (drag)
+            currentMarker.on('drag', function(e) {
+                const pos = e.target.getLatLng();
+                if (currentCircle) {
+                    currentCircle.setLatLng(pos);
+                }
+                latInput.value = pos.lat.toFixed(7);
+                lonInput.value = pos.lng.toFixed(7);
+            });
+
+            currentMarker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                latInput.value = pos.lat.toFixed(7);
+                lonInput.value = pos.lng.toFixed(7);
+                if (currentCircle) {
+                    currentCircle.setLatLng(pos);
+                }
+            });
         }
 
-        // Map Click Action
+        // Map Click Action (klik di peta memindahkan pin dan lingkaran)
         map.on('click', function(e) {
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
@@ -308,6 +344,20 @@
                 updateTempVisuals(lat, lon, radius);
             }
         });
+
+        // Manual Lat/Lon Input Dynamic Update
+        function handleManualCoordChange() {
+            const lat = parseFloat(latInput.value);
+            const lon = parseFloat(lonInput.value);
+            const radius = radiusInput.value || 100;
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                updateTempVisuals(lat, lon, radius);
+                map.panTo([lat, lon]);
+            }
+        }
+        latInput.addEventListener('change', handleManualCoordChange);
+        lonInput.addEventListener('change', handleManualCoordChange);
 
         // Save (POST / PUT) Location
         form.addEventListener('submit', async function(e) {
@@ -354,10 +404,27 @@
             radiusInput.value = loc.radius;
             ketInput.value = loc.keterangan || '';
             isActiveInput.checked = loc.is_active == 1;
+
+            // Sembunyikan marker lama milik lokasi ini saat sedang diedit agar tidak bertumpuk
+            mapMarkers.forEach(layer => {
+                if (layer.locationId === loc.id) {
+                    map.removeLayer(layer);
+                } else if (!map.hasLayer(layer)) {
+                    layer.addTo(map);
+                }
+            });
             
             cancelEditBtn.classList.remove('hidden');
             updateTempVisuals(loc.latitude, loc.longitude, loc.radius);
             map.setView([loc.latitude, loc.longitude], 17);
+
+            // Buka tooltip sejenak sebagai panduan visual bahwa pin dapat digeser
+            if (currentMarker) {
+                currentMarker.openTooltip();
+                setTimeout(() => {
+                    if (currentMarker) currentMarker.closeTooltip();
+                }, 3000);
+            }
         }
 
         cancelEditBtn.addEventListener('click', resetForm);
@@ -368,6 +435,13 @@
             locationIdInput.value = '';
             form.reset();
             isActiveInput.checked = true;
+
+            // Kembalikan marker yang sempat disembunyikan saat mode edit
+            mapMarkers.forEach(layer => {
+                if (!map.hasLayer(layer)) {
+                    layer.addTo(map);
+                }
+            });
             
             cancelEditBtn.classList.add('hidden');
             if (currentMarker) map.removeLayer(currentMarker);
