@@ -411,7 +411,10 @@
 
             {{-- 1. Variabel: Hadir Normal --}}
             <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                 data-color="green">
+                 id="card-diagram-hadir-normal"
+                 data-color="green"
+                 onclick="showDetailTable('hadir-normal')"
+                 title="Klik untuk melihat daftar karyawan yang hadir normal">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center gap-2.5">
@@ -889,6 +892,43 @@
                     </div>
                     @endif
                 </div>{{-- end table-belum-masuk --}}
+
+                <!-- Table: Hadir Normal -->
+                <div id="table-hadir-normal" class="hidden">
+                    @if($karyawanHadirNormal->count() > 0)
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-emerald-50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu Tapping Masuk</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            @foreach($karyawanHadirNormal as $i => $absen)
+                            <tr class="hover:bg-emerald-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '')) }}">
+                                <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
+                                <td class="px-6 py-3.5"><span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $absen->karyawan->nik ?? '-' }}</span></td>
+                                <td class="px-6 py-3.5 font-medium text-slate-800">
+                                    @if($absen->karyawan)
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center flex-shrink-0">{{ strtoupper(mb_substr($absen->karyawan->nama_lengkap ?? 'K', 0, 2)) }}</div>
+                                        <a href="{{ route('master.karyawan.show', $absen->karyawan->id) }}" target="_blank" class="hover:text-emerald-600 transition-colors inline-flex items-center gap-1.5 group font-bold"><span>{{ $absen->karyawan->nama_lengkap }}</span><i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-70 transition-opacity"></i></a>
+                                    </div>
+                                    @else <span class="text-slate-400 italic">Data karyawan tidak ditemukan</span> @endif
+                                </td>
+                                <td class="px-6 py-3.5"><span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">{{ $absen->karyawan->divisi ?? '-' }}</span></td>
+                                <td class="px-6 py-3.5"><span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs shadow-xs"><i class="fas fa-check text-[10px]"></i>{{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @else
+                    <div class="py-20 text-center text-slate-500"><i class="fas fa-user-check text-4xl text-slate-300 mb-3"></i><p class="font-bold text-slate-800 text-base">Belum ada karyawan hadir normal</p></div>
+                    @endif
+                </div>{{-- end table-hadir-normal --}}
 
                 <!-- Table: Belum Absen Pulang -->
                 <div id="table-belum-pulang" class="hidden">
@@ -1394,6 +1434,18 @@
             badgeColor: '#991b1b',
             count: {{ $karyawanBelumAbsen->count() }},
         },
+        'hadir-normal': {
+            title: 'Karyawan Hadir Normal',
+            subtitle: 'Daftar karyawan yang tapping masuk tepat waktu hari ini',
+            icon: 'fa-user-check',
+            iconBg: '#dcfce7',
+            iconColor: '#16a34a',
+            headerBg: '#f0fdf4',
+            headerBorder: '#86efac',
+            badgeBg: '#dcfce7',
+            badgeColor: '#166534',
+            count: {{ $karyawanHadirNormal->count() }},
+        },
         'belum-pulang': {
             title: 'Karyawan Belum Absen Pulang',
             subtitle: 'Daftar karyawan yang belum melakukan absensi pulang hari ini',
@@ -1450,7 +1502,7 @@
         });
 
         // Sembunyikan semua sub-tabel
-        ['belum-masuk', 'belum-pulang', 'terlambat', 'luar-radius'].forEach(function(t) {
+        ['belum-masuk', 'hadir-normal', 'belum-pulang', 'terlambat', 'luar-radius'].forEach(function(t) {
             var el = document.getElementById('table-' + t);
             if (el) el.classList.add('hidden');
         });

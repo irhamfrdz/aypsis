@@ -82,6 +82,14 @@ class HrdDashboardController extends Controller
             return $waktuAbsen->greaterThan($batasTerlambat);
         })->values();
 
+        // Karyawan yang hadir normal: tapping masuk sampai batas toleransi.
+        // Satu karyawan hanya ditampilkan satu kali pada daftar dashboard.
+        $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
+            return Carbon::parse($absen->waktu)->lessThanOrEqualTo($batasTerlambat);
+        })->unique('karyawan_id')->sortBy(function ($absen) {
+            return strtolower($absen->karyawan->nama_lengkap ?? '');
+        })->values();
+
         // 5. Karyawan Cuti / Izin
         $karyawanCutiQuery = Cuti::with('karyawan')
             ->whereDate('tanggal_mulai', '<=', $filterDate)
@@ -136,6 +144,7 @@ class HrdDashboardController extends Controller
             'totalKaryawanAktif',
             'karyawanBelumAbsen',
             'karyawanTerlambat',
+            'karyawanHadirNormal',
             'karyawanCuti',
             'karyawanBelumAbsenPulang',
             'absensiMasuk',
