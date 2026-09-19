@@ -487,38 +487,44 @@ class SuratJalanBongkaranBatamController extends Controller
 
         if ($mode === 'surat_jalan') {
             $query = SuratJalanBongkaranBatam::with('manifest')
-                ->where('lokasi', 'batam');
+                ->leftJoin('manifests', 'surat_jalan_bongkaran_batams.manifest_id', '=', 'manifests.id')
+                ->select('surat_jalan_bongkaran_batams.*')
+                ->where('surat_jalan_bongkaran_batams.lokasi', 'batam');
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
                 $query->where(function ($q) use ($selectedKapal, $kapalClean) {
-                    $q->where('nama_kapal', $selectedKapal)
-                        ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                    $q->where('surat_jalan_bongkaran_batams.nama_kapal', $selectedKapal)
+                        ->orWhereRaw("LOWER(REPLACE(surat_jalan_bongkaran_batams.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
-                $query->where('no_voyage', $selectedVoyage);
+                $query->where('surat_jalan_bongkaran_batams.no_voyage', $selectedVoyage);
             }
             if ($request->filled('types')) {
                 $types = (array) $request->types;
                 $query->where(function ($q) use ($types) {
-                    $q->whereIn('jenis_pengiriman', $types)
-                        ->orWhereIn('tipe_kontainer', $types);
+                        $q->whereIn('surat_jalan_bongkaran_batams.jenis_pengiriman', $types)
+                        ->orWhereIn('surat_jalan_bongkaran_batams.tipe_kontainer', $types);
                 });
             }
             if ($request->filled('search')) {
                 $search = $request->search;
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
                 $query->where(function ($q) use ($search) {
-                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                        ->orWhere('no_kontainer', 'like', "%{$search}%")
-                        ->orWhere('no_seal', 'like', "%{$search}%")
-                        ->orWhere('term', 'like', "%{$search}%")
-                        ->orWhere('jenis_barang', 'like', "%{$search}%")
-                        ->orWhere('supir', 'like', "%{$search}%")
-                        ->orWhere('no_plat', 'like', "%{$search}%");
+                        $q->where('surat_jalan_bongkaran_batams.nomor_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.no_seal', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.term', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.supir', 'like', "%{$search}%")
+                        ->orWhere('surat_jalan_bongkaran_batams.no_plat', 'like', "%{$search}%");
                 });
             }
-            $data = $query->orderBy('created_at', 'desc')->get();
+            // Keep the Excel order aligned with the BL order shown in the list.
+            $data = $query
+                ->orderByRaw("ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC")
+                ->orderBy('surat_jalan_bongkaran_batams.created_at', 'desc')
+                ->get();
             $filename = 'Surat_Jalan_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
         } else {
             $query = Manifest::query();
@@ -549,7 +555,12 @@ class SuratJalanBongkaranBatamController extends Controller
                         ->orWhere('penerima', 'like', "%{$search}%");
                 });
             }
-            $data = $query->orderBy('manifests.created_at', 'desc')->get();
+            // BL number is the primary ordering; null BL numbers are placed last.
+            $data = $query
+                ->orderByRaw("ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC")
+                ->orderBy('manifests.nomor_bl', 'asc')
+                ->orderBy('manifests.created_at', 'desc')
+                ->get();
             $filename = 'Manifest_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
         }
 
