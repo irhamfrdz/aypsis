@@ -8,6 +8,7 @@ use App\Models\Cuti;
 use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HrdDashboardController extends Controller
@@ -89,6 +90,44 @@ class HrdDashboardController extends Controller
         })->unique('karyawan_id')->sortBy(function ($absen) {
             return strtolower($absen->karyawan->nama_lengkap ?? '');
         })->values();
+
+        // Hitung jarak titik GPS absen ke lokasi absensi aktif terdekat.
+        $lokasiAbsensi = DB::table('lokasi_absensis')
+            ->where('is_active', 1)
+            ->get(['nama_lokasi', 'latitude', 'longitude', 'radius']);
+        foreach ($karyawanHadirNormal as $absen) {
+            $absen->jarak_absen_meter = null;
+            $absen->radius_absensi_meter = null;
+            $absen->nama_lokasi_absensi = null;
+
+            if (! is_numeric($absen->latitude) || ! is_numeric($absen->longitude) || $lokasiAbsensi->isEmpty()) {
+                continue;
+            }
+
+            $lat1 = deg2rad((float) $absen->latitude);
+            $lon1 = deg2rad((float) $absen->longitude);
+            $terdekat = $lokasiAbsensi->map(function ($lokasi) use ($lat1, $lon1) {
+                if (! is_numeric($lokasi->latitude) || ! is_numeric($lokasi->longitude)) {
+                    return null;
+                }
+
+                $lat2 = deg2rad((float) $lokasi->latitude);
+                $lon2 = deg2rad((float) $lokasi->longitude);
+                $dLat = $lat2 - $lat1;
+                $dLon = $lon2 - $lon1;
+                $a = sin($dLat / 2) ** 2 + cos($lat1) * cos($lat2) * sin($dLon / 2) ** 2;
+                $jarak = 6371000 * 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+                $lokasi->jarak_meter = $jarak;
+                return $lokasi;
+            })->filter()->sortBy('jarak_meter')->first();
+
+            if ($terdekat) {
+                $absen->jarak_absen_meter = round($terdekat->jarak_meter, 1);
+                $absen->radius_absensi_meter = (int) $terdekat->radius;
+                $absen->nama_lokasi_absensi = $terdekat->nama_lokasi;
+            }
+        }
 
         // 5. Karyawan Cuti / Izin
         $karyawanCutiQuery = Cuti::with('karyawan')

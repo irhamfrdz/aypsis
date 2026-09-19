@@ -904,6 +904,7 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu Tapping Masuk</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Jarak / Radius</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
@@ -921,6 +922,17 @@
                                 </td>
                                 <td class="px-6 py-3.5"><span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">{{ $absen->karyawan->divisi ?? '-' }}</span></td>
                                 <td class="px-6 py-3.5"><span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs shadow-xs"><i class="fas fa-check text-[10px]"></i>{{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB</span></td>
+                                <td class="px-6 py-3.5">
+                                    @if($absen->jarak_absen_meter !== null)
+                                        <span class="inline-flex items-center gap-1.5 font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md text-xs">
+                                            <i class="fas fa-location-arrow text-[10px]"></i>
+                                            {{ $absen->jarak_absen_meter < 1000 ? number_format($absen->jarak_absen_meter, 1, ',', '.') . ' m' : number_format($absen->jarak_absen_meter / 1000, 2, ',', '.') . ' km' }}
+                                        </span>
+                                        <span class="block text-[10px] text-slate-400 mt-1">Radius {{ number_format($absen->radius_absensi_meter) }} m{{ $absen->nama_lokasi_absensi ? ' · ' . $absen->nama_lokasi_absensi : '' }}</span>
+                                    @else
+                                        <span class="text-xs text-slate-400">GPS tidak tersedia</span>
+                                    @endif
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
