@@ -301,6 +301,12 @@ class BiayaKapalController extends Controller
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
+                if (isset($section['nominal_dibayar'])) {
+                    $section['nominal_dibayar'] = str_replace(',', '.', str_replace('.', '', $section['nominal_dibayar']));
+                }
+                if (isset($section['sisa_pembayaran'])) {
+                    $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+                }
 
                 if (isset($section['bank_id']) && !empty($section['bank_id'])) {
                     if (!is_numeric($section['bank_id'])) {
@@ -880,6 +886,10 @@ class BiayaKapalController extends Controller
             'storage_sections.*.pph' => 'nullable|numeric|min:0',
             'storage_sections.*.adjustment' => 'nullable|numeric',
             'storage_sections.*.notes_adjustment' => 'nullable|string',
+            'storage_sections.*.payment_mode' => 'nullable|in:lunas,dp,pelunasan_dp',
+            'storage_sections.*.dp_storage_id' => 'nullable|exists:biaya_kapal_storages,id',
+            'storage_sections.*.nominal_dibayar' => 'nullable|numeric|min:0',
+            'storage_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // DEMURRAGE sections validation
@@ -1455,6 +1465,34 @@ class BiayaKapalController extends Controller
                         return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                     };
 
+                    $nilaiTagihan = $cleanNum($section['total_biaya'] ?? 0);
+                    $paymentMode = $section['payment_mode'] ?? 'lunas';
+                    $dpStorageId = null;
+                    $nominalDibayar = $nilaiTagihan;
+                    $sisaPembayaran = 0;
+
+                    if ($paymentMode === 'dp') {
+                        $nominalDibayar = $cleanNum($section['nominal_dibayar'] ?? 0);
+                        if ($nominalDibayar <= 0 || $nominalDibayar > $nilaiTagihan) {
+                            throw new \InvalidArgumentException('Nominal DP storage harus lebih dari 0 dan tidak boleh melebihi nilai tagihan.');
+                        }
+                        $sisaPembayaran = $nilaiTagihan - $nominalDibayar;
+                    } elseif ($paymentMode === 'pelunasan_dp') {
+                        $dpStorageId = $section['dp_storage_id'] ?? null;
+                        $dpStorage = $dpStorageId ? \App\Models\BiayaKapalStorage::lockForUpdate()->find($dpStorageId) : null;
+                        if (! $dpStorage || $dpStorage->payment_mode !== 'dp' || $dpStorage->sisa_pembayaran <= 0) {
+                            throw new \InvalidArgumentException('Referensi DP storage tidak valid atau sudah lunas.');
+                        }
+                        foreach (['kapal', 'voyage', 'vendor'] as $field) {
+                            if (trim((string) ($dpStorage->{$field} ?? '')) !== trim((string) ($section[$field] ?? ''))) {
+                                throw new \InvalidArgumentException('DP yang dipilih harus memiliki kapal, voyage, dan vendor storage yang sama.');
+                            }
+                        }
+                        $nominalDibayar = (float) $dpStorage->sisa_pembayaran;
+                        $nilaiTagihan = (float) $dpStorage->nilai_tagihan;
+                        $dpStorage->update(['sisa_pembayaran' => 0]);
+                    }
+
                     \App\Models\BiayaKapalStorage::create([
                         'biaya_kapal_id' => $biayaKapal->id,
                         'kapal' => $section['kapal'] ?? null,
@@ -1468,7 +1506,13 @@ class BiayaKapalController extends Controller
                         'pph' => $cleanNum($section['pph'] ?? 0),
                         'adjustment' => $cleanNum($section['adjustment'] ?? 0),
                         'notes_adjustment' => $section['notes_adjustment'] ?? null,
-                        'total_biaya' => $cleanNum($section['total_biaya'] ?? 0),
+                        'payment_mode' => $paymentMode,
+                        'dp_storage_id' => $dpStorageId,
+                        'nilai_tagihan' => $nilaiTagihan,
+                        'nominal_dibayar' => $nominalDibayar,
+                        'sisa_pembayaran' => $sisaPembayaran,
+                        // Nilai yang direkap sebagai biaya adalah uang yang benar-benar dibayarkan.
+                        'total_biaya' => $nominalDibayar,
                     ]);
                 }
 
@@ -5780,6 +5824,34 @@ class BiayaKapalController extends Controller
     /**
      * Get voyages by ship name for AJAX request
      */
+    public function getOutstandingStorageDps(Request $request)
+    {
+        $query = \App\Models\BiayaKapalStorage::query()
+            ->with('biayaKapal:id,nomor_invoice,tanggal')
+            ->where('payment_mode', 'dp')
+            ->where('sisa_pembayaran', '>', 0);
+
+        foreach (['kapal', 'voyage', 'vendor'] as $field) {
+            if ($request->filled($field)) {
+                $query->where($field, $request->string($field)->trim()->toString());
+            }
+        }
+
+        $data = $query->latest('id')->get()->map(function ($storage) {
+            $invoice = $storage->biayaKapal?->nomor_invoice ?: 'Tanpa invoice';
+            $tanggal = $storage->biayaKapal?->tanggal?->format('d-m-Y') ?: '-';
+
+            return [
+                'id' => $storage->id,
+                'sisa_pembayaran' => (float) $storage->sisa_pembayaran,
+                'label' => sprintf('%s | %s / %s | sisa Rp %s', $invoice, $storage->kapal, $storage->voyage, number_format($storage->sisa_pembayaran, 0, ',', '.')),
+                'tanggal' => $tanggal,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
     public function getVoyagesByShip($namaKapal)
     {
         try {

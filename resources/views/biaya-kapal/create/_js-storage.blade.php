@@ -115,6 +115,23 @@
             </div>
             
             <div class="border-t pt-4 mt-2 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-white rounded-lg border border-sky-200">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mode Pembayaran Storage <span class="text-red-500">*</span></label>
+                        <select name="storage_sections[${sectionIndex}][payment_mode]" class="storage-payment-mode w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-sky-500">
+                            <option value="lunas">Lunas</option>
+                            <option value="dp">DP / Uang Muka</option>
+                            <option value="pelunasan_dp">Pelunasan DP</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500 storage-payment-help">Pembayaran dicatat lunas sebesar nilai tagihan.</p>
+                    </div>
+                    <div class="storage-dp-reference-wrap hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Referensi DP <span class="text-red-500">*</span></label>
+                        <select name="storage_sections[${sectionIndex}][dp_storage_id]" class="storage-dp-reference w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-sky-500" disabled>
+                            <option value="">-- Pilih DP yang akan dilunasi --</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (DPP) <span class="text-red-500">*</span></label>
@@ -165,6 +182,24 @@
                             <input type="text" name="storage_sections[${sectionIndex}][total_biaya]"
                                    class="storage-total-input w-full pl-10 pr-3 py-2 border border-sky-300 rounded-lg bg-sky-50 text-sky-800 font-bold focus:ring-0 cursor-not-allowed"
                                    value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="storage-paid-amount-wrap hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nominal DP Dibayar <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="storage_sections[${sectionIndex}][nominal_dibayar]"
+                                   class="storage-paid-amount w-full pl-10 pr-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                   placeholder="0" disabled>
+                        </div>
+                    </div>
+                    <div class="storage-remaining-wrap hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sisa yang Belum Dibayar</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="storage_sections[${sectionIndex}][sisa_pembayaran]"
+                                   class="storage-remaining-input w-full pl-10 pr-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-amber-800 font-bold cursor-not-allowed"
+                                   value="0" readonly disabled>
                         </div>
                     </div>
                 </div>
@@ -337,6 +372,69 @@
         const pphInput      = section.querySelector('.storage-pph-input');
         const adjustmentInput = section.querySelector('.storage-adjustment-input');
         const totalInput    = section.querySelector('.storage-total-input');
+        const paymentModeInput = section.querySelector('.storage-payment-mode');
+        const paymentHelp = section.querySelector('.storage-payment-help');
+        const dpReferenceWrap = section.querySelector('.storage-dp-reference-wrap');
+        const dpReferenceInput = section.querySelector('.storage-dp-reference');
+        const paidAmountWrap = section.querySelector('.storage-paid-amount-wrap');
+        const paidAmountInput = section.querySelector('.storage-paid-amount');
+        const remainingWrap = section.querySelector('.storage-remaining-wrap');
+        const remainingInput = section.querySelector('.storage-remaining-input');
+
+        const toNumber = (value) => parseFloat(String(value || '').replace(/\./g, '').replace(',', '.')) || 0;
+        const formatCurrency = (value) => new Intl.NumberFormat('id-ID').format(Math.max(0, Math.round(value || 0)));
+
+        function updateStoragePaymentFields() {
+            const mode = paymentModeInput.value;
+            const nilaiTagihan = toNumber(totalInput.value);
+            const isDp = mode === 'dp';
+            const isPelunasan = mode === 'pelunasan_dp';
+
+            paidAmountWrap.classList.toggle('hidden', !isDp);
+            remainingWrap.classList.toggle('hidden', !isDp && !isPelunasan);
+            dpReferenceWrap.classList.toggle('hidden', !isPelunasan);
+            paidAmountInput.disabled = !isDp;
+            remainingInput.disabled = !isDp && !isPelunasan;
+            dpReferenceInput.disabled = !isPelunasan;
+
+            if (isDp) {
+                const paid = toNumber(paidAmountInput.value);
+                remainingInput.value = formatCurrency(nilaiTagihan - paid);
+                paymentHelp.textContent = 'Masukkan nominal uang muka. Sisa akan tersedia untuk dilunasi kemudian.';
+            } else if (isPelunasan) {
+                paymentHelp.textContent = 'Pilih transaksi DP yang masih memiliki sisa pembayaran.';
+            } else {
+                paymentHelp.textContent = 'Pembayaran dicatat lunas sebesar nilai tagihan.';
+            }
+        }
+
+        function loadOutstandingStorageDps() {
+            dpReferenceInput.innerHTML = '<option value="">Memuat DP...</option>';
+            fetch(`{{ url('biaya-kapal/storage-dp-candidates') }}?kapal=${encodeURIComponent(kapalSelect.value)}&voyage=${encodeURIComponent(voyageSelect.value || voyageInput.value)}&vendor=${encodeURIComponent(vendorSelect.value)}`)
+                .then(res => res.json())
+                .then(data => {
+                    dpReferenceInput.innerHTML = '<option value="">-- Pilih DP yang akan dilunasi --</option>';
+                    (data.data || []).forEach(dp => {
+                        dpReferenceInput.innerHTML += `<option value="${dp.id}" data-sisa="${dp.sisa_pembayaran}">${dp.label}</option>`;
+                    });
+                })
+                .catch(() => {
+                    dpReferenceInput.innerHTML = '<option value="">Gagal memuat daftar DP</option>';
+                });
+        }
+
+        paymentModeInput.addEventListener('change', function() {
+            updateStoragePaymentFields();
+            if (this.value === 'pelunasan_dp') loadOutstandingStorageDps();
+        });
+        dpReferenceInput.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            remainingInput.value = formatCurrency(option ? toNumber(option.dataset.sisa) : 0);
+        });
+        paidAmountInput.addEventListener('input', function() {
+            this.value = formatCurrency(toNumber(this.value));
+            updateStoragePaymentFields();
+        });
 
         function calculateStorageSectionSubtotal(sec) {
             const vendor = sec.querySelector('.storage-vendor-select').value;
@@ -395,6 +493,7 @@
             if (materaiInput) materaiInput.value = fmt(materai);
             if (totalInput) totalInput.value = fmt(total);
 
+            updateStoragePaymentFields();
             calculateTotalFromAllStorageSections();
         }
 
@@ -415,6 +514,7 @@
         });
 
         section._loadContainers = loadContainersForStorageSection;
+        updateStoragePaymentFields();
     }
 
     window.removeStorageSection = function(sectionIndex) {

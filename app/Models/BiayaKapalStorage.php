@@ -24,6 +24,11 @@ class BiayaKapalStorage extends Model
         'pph',
         'adjustment',
         'notes_adjustment',
+        'payment_mode',
+        'dp_storage_id',
+        'nilai_tagihan',
+        'nominal_dibayar',
+        'sisa_pembayaran',
         'total_biaya',
     ];
 
@@ -34,11 +39,24 @@ class BiayaKapalStorage extends Model
         'ppn' => 'decimal:2',
         'pph' => 'decimal:2',
         'adjustment' => 'decimal:2',
+        'nilai_tagihan' => 'decimal:2',
+        'nominal_dibayar' => 'decimal:2',
+        'sisa_pembayaran' => 'decimal:2',
         'total_biaya' => 'decimal:2',
     ];
 
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+
+    public function dpStorage()
+    {
+        return $this->belongsTo(self::class, 'dp_storage_id');
+    }
+
+    public function pelunasanDetails()
+    {
+        return $this->hasMany(self::class, 'dp_storage_id');
     }
 }

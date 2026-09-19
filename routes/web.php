@@ -3024,6 +3024,9 @@ Route::middleware([
         Route::get('biaya-kapal/get-manifest-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getManifestContainersByVoyage']);
         Route::get('biaya-kapal/get-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
             ->name('biaya-kapal.get-containers-by-voyage');
+        Route::get('biaya-kapal/storage-dp-candidates', [\App\Http\Controllers\BiayaKapalController::class, 'getOutstandingStorageDps'])
+            ->name('biaya-kapal.storage-dp-candidates')
+            ->middleware('can:biaya-kapal-create');
         Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
             ->name('biaya-kapal.get-bls-by-voyages');
         Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])
@@ -7959,4 +7962,3 @@ Route::middleware(['auth',
     Route::post('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive']);
     Route::resource('berita', \App\Http\Controllers\BeritaController::class);
 });
-

@@ -1040,6 +1040,21 @@
                             <p class="text-lg font-black text-white">Rp {{ number_format($storage->total_biaya, 0, ',', '.') }}</p>
                         </div>
                     </div>
+                    <div class="mt-4 bg-white p-3 rounded-lg border border-sky-100 text-sm text-gray-700">
+                        <span class="font-semibold">Status pembayaran:</span>
+                        @if($storage->payment_mode === 'dp')
+                            <span class="ml-1 text-amber-700 font-bold">DP / Uang Muka</span>
+                        @elseif($storage->payment_mode === 'pelunasan_dp')
+                            <span class="ml-1 text-emerald-700 font-bold">Pelunasan DP</span>
+                        @else
+                            <span class="ml-1 text-emerald-700 font-bold">Lunas</span>
+                        @endif
+                        <span class="ml-4">Nilai tagihan: <strong>Rp {{ number_format($storage->nilai_tagihan ?: $storage->total_biaya, 0, ',', '.') }}</strong></span>
+                        <span class="ml-4">Dibayar: <strong>Rp {{ number_format($storage->nominal_dibayar ?: $storage->total_biaya, 0, ',', '.') }}</strong></span>
+                        @if($storage->sisa_pembayaran > 0)
+                            <span class="ml-4 text-amber-700">Sisa: <strong>Rp {{ number_format($storage->sisa_pembayaran, 0, ',', '.') }}</strong></span>
+                        @endif
+                    </div>
                 </div>
             @endforeach
         </div>
