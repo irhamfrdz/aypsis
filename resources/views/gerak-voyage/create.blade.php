@@ -64,8 +64,13 @@
                     <div>
                         <label for="tanggal_muat" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Muat</label>
                         <input type="date" id="tanggal_muat" name="tanggal_muat" 
-                               value="{{ old('tanggal_muat', $manifest ? ($manifest->tanggal_muat ? \Carbon\Carbon::parse($manifest->tanggal_muat)->format('Y-m-d') : '') : '') }}" 
+                               value="{{ old('tanggal_muat', $tanggalMuatOb ? \Carbon\Carbon::parse($tanggalMuatOb)->format('Y-m-d') : '') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
+                        @if($tanggalMuatOb)
+                            <p class="mt-1 text-xs text-blue-600"><i class="fas fa-link mr-1"></i>Otomatis dari tanggal OB Muat</p>
+                        @else
+                            <p class="mt-1 text-xs text-gray-500">Data tanggal OB Muat belum tersedia.</p>
+                        @endif
                     </div>
 
                     <div>

@@ -54,7 +54,16 @@ class GerakVoyageController extends Controller
             ->where('no_voyage', $cleanNoVoyage)
             ->first();
 
-        return view('gerak-voyage.create', compact('namaKapal', 'noVoyage', 'manifest'));
+        // Tanggal muat utama berasal dari data OB Muat (naik_kapal), bukan
+        // dari tanggal pembuatan manifest. Ambil tanggal terbaru pada voyage.
+        $obMuat = \App\Models\NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $cleanNoVoyage)
+            ->whereNotNull('tanggal_muat')
+            ->orderByDesc('tanggal_muat')
+            ->first();
+        $tanggalMuatOb = $obMuat?->tanggal_muat ?: $manifest?->tanggal_muat;
+
+        return view('gerak-voyage.create', compact('namaKapal', 'noVoyage', 'manifest', 'tanggalMuatOb'));
     }
 
     public function store(Request $request)
@@ -76,6 +85,16 @@ class GerakVoyageController extends Controller
         $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $cleanNoVoyage = trim($noVoyage);
+
+        // Fallback backend jika field tanggal tidak terkirim dari form.
+        if (empty($validated['tanggal_muat'])) {
+            $tanggalMuatOb = \App\Models\NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $cleanNoVoyage)
+                ->whereNotNull('tanggal_muat')
+                ->orderByDesc('tanggal_muat')
+                ->value('tanggal_muat');
+            $validated['tanggal_muat'] = $tanggalMuatOb;
+        }
 
         // Update all manifests with this ship and voyage
         $updatedCount = \App\Models\Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
