@@ -115,6 +115,13 @@
                     </span>
                     @if($filterDate->isToday())
                         <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Hari Ini</span>
+                    @elseif($filterDate->isYesterday())
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">Kemarin</span>
+                    @endif
+                    @if(request('grup'))
+                        <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1.5">
+                            <i class="fas fa-layer-group text-purple-500 text-[10px]"></i> Group: {{ request('grup') }}
+                        </span>
                     @endif
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
@@ -127,62 +134,64 @@
 
             {{-- Filter & Actions Bar --}}
             <div class="flex flex-wrap items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-xs">
-                <form action="{{ route('hrd.dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2">
-                    @foreach(request()->except(['tanggal_dashboard', 'page']) as $key => $value)
-                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                <form id="dashboard-filter-form" action="{{ route('hrd.dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2">
+                    @foreach(request()->except(['tanggal_dashboard', 'grup', 'page']) as $key => $value)
+                        @if(!is_array($value))
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endif
                     @endforeach
 
                     {{-- Quick Date Shortcuts --}}
                     <div class="inline-flex rounded-lg shadow-xs bg-white p-0.5 border border-slate-200">
-                        <a href="{{ route('hrd.dashboard', array_merge(request()->except(['tanggal_dashboard', 'page']), ['tanggal_dashboard' => \Carbon\Carbon::today()->format('Y-m-d')])) }}"
-                           class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {{ request('tanggal_dashboard', \Carbon\Carbon::today()->format('Y-m-d')) == \Carbon\Carbon::today()->format('Y-m-d') ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                        <button type="button" onclick="setDashboardDate('{{ \Carbon\Carbon::today()->format('Y-m-d') }}')"
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ $filterDate->isToday() ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                             Hari Ini
-                        </a>
-                        <a href="{{ route('hrd.dashboard', array_merge(request()->except(['tanggal_dashboard', 'page']), ['tanggal_dashboard' => \Carbon\Carbon::yesterday()->format('Y-m-d')])) }}"
-                           class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {{ request('tanggal_dashboard') == \Carbon\Carbon::yesterday()->format('Y-m-d') ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                        </button>
+                        <button type="button" onclick="setDashboardDate('{{ \Carbon\Carbon::yesterday()->format('Y-m-d') }}')"
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ $filterDate->isYesterday() ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                             Kemarin
-                        </a>
+                        </button>
                     </div>
 
                     {{-- Date Input --}}
                     <div class="relative">
                         <input type="date" id="tanggal_dashboard" name="tanggal_dashboard" 
-                               value="{{ request('tanggal_dashboard', $filterDate->format('Y-m-d')) }}" 
-                               class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs">
+                               value="{{ $filterDate->format('Y-m-d') }}" 
+                               onchange="this.form.submit()"
+                               class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
                     </div>
 
-                    <button type="submit" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-xs transition-all flex items-center gap-1.5">
+                    {{-- Group Filter --}}
+                    @if(count($allGroups) > 0)
+                    <div class="relative">
+                        <select name="grup" id="global_group_filter" onchange="this.form.submit()"
+                                class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-8 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                            <option value="">Semua Group</option>
+                            @foreach($allGroups as $grp)
+                                <option value="{{ $grp }}" {{ request('grup') == $grp ? 'selected' : '' }}>{{ $grp }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
+                    <button type="submit" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
                         <i class="fas fa-filter text-[10px]"></i>
                         <span>Filter</span>
                     </button>
-                    @if(request('tanggal_dashboard'))
-                        <a href="{{ route('hrd.dashboard', request()->except(['tanggal_dashboard', 'page'])) }}" 
-                           class="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-700 text-xs rounded-lg border border-slate-200 transition-colors" title="Reset Tanggal">
-                            <i class="fas fa-times"></i>
+
+                    @if(request('grup') || ($filterDate->format('Y-m-d') !== \Carbon\Carbon::today()->format('Y-m-d')))
+                        <a href="{{ route('hrd.dashboard') }}" 
+                           class="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-xs" 
+                           title="Reset filter ke Hari Ini & Semua Group">
+                            <i class="fas fa-undo-alt text-[10px]"></i>
+                            <span>Reset</span>
                         </a>
                     @endif
                 </form>
 
-                {{-- Group Filter --}}
-                @if(count($allGroups) > 0)
                 <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
-                <div class="flex items-center gap-1.5">
-                    <select id="global_group_filter" onchange="applyGroupFilter(this.value)"
-                            class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-7 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs">
-                        <option value="">Semua Group</option>
-                        @foreach($allGroups as $grp)
-                            <option value="{{ $grp }}">{{ $grp }}</option>
-                        @endforeach
-                    </select>
-                    <button type="button" onclick="resetGroupFilter()" id="reset_group_btn"
-                            class="hidden px-2 py-1.5 bg-white text-slate-500 hover:text-slate-700 text-xs rounded-lg border border-slate-200 transition-colors" title="Reset Filter Group">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                @endif
 
-                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
-                <button onclick="openExportModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all shadow-xs flex items-center gap-1.5">
+                <button type="button" onclick="openExportModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                     <i class="fas fa-file-excel"></i>
                     <span>Export Rekap</span>
                 </button>
@@ -818,11 +827,14 @@
             </div>
 
             <!-- Filter Group Info Bar -->
-            <div id="detail-filter-bar" class="hidden px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex items-center gap-2 text-xs text-indigo-800">
+            @if(request('grup'))
+            <div id="detail-filter-bar" class="px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex items-center gap-2 text-xs text-indigo-800">
                 <i class="fas fa-filter text-indigo-500"></i>
-                <span>Difilter berdasarkan group: <strong id="active-group-label" class="font-bold"></strong></span>
-                <button onclick="resetGroupFilter()" class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Reset Filter Group</button>
+                <span>Difilter berdasarkan group: <strong id="active-group-label" class="font-bold">{{ request('grup') }}</strong></span>
+                <a href="{{ route('hrd.dashboard', array_merge(request()->except(['grup', 'page']), ['tanggal_dashboard' => $filterDate->format('Y-m-d')])) }}" 
+                   class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Hapus Filter Group</a>
             </div>
+            @endif
 
             <!-- Tables Container -->
             <div style="max-height: 540px; overflow-y: auto;" class="divide-y divide-slate-100">
@@ -1482,19 +1494,32 @@
 
         // Tampilkan sub-tabel yang relevan
         var activeTableEl = document.getElementById('table-' + type);
-        if (activeTableEl) activeTableEl.classList.remove('hidden');
+        if (activeTableEl) {
+            activeTableEl.classList.remove('hidden');
+            activeTableEl.querySelectorAll('tbody tr').forEach(function(r) {
+                r.style.display = '';
+            });
+        }
 
         // Tampilkan panel
         panel.classList.remove('hidden');
-
-        // Re-apply filter jika grup aktif
-        var groupSelect = document.getElementById('global_group_filter');
-        applyCombinedFilter(groupSelect ? groupSelect.value : '', '');
 
         // Scroll ke panel dengan smooth
         setTimeout(function() {
             panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 80);
+    }
+
+    /** Set tanggal cepat lalu submit form secara otomatis */
+    function setDashboardDate(date) {
+        var input = document.getElementById('tanggal_dashboard');
+        if (input) {
+            input.value = date;
+        }
+        var form = document.getElementById('dashboard-filter-form');
+        if (form) {
+            form.submit();
+        }
     }
 
     /** Tutup panel detail dan reset semua state */
@@ -1506,6 +1531,14 @@
         });
         var searchInput = document.getElementById('detail_search_input');
         if (searchInput) searchInput.value = '';
+        if (_activeTable) {
+            var activeTableEl = document.getElementById('table-' + _activeTable);
+            if (activeTableEl) {
+                activeTableEl.querySelectorAll('tbody tr').forEach(function(r) {
+                    r.style.display = '';
+                });
+            }
+        }
         _activeTable = null;
     }
 
@@ -1517,97 +1550,30 @@
     }
 
     /**
-     * Filter gabungan untuk grup dan pencarian teks live.
-     */
-    function applyCombinedFilter(group, query) {
-        query = (query || '').toLowerCase().trim();
-        var rows = document.querySelectorAll('tr[data-grup]');
-
-        rows.forEach(function(row) {
-            var matchGroup = true;
-            if (group) {
-                var grupAttr = row.getAttribute('data-grup') || '';
-                var grups = grupAttr.split(',').map(function(g) {
-                    return g.trim().split(':')[0].trim();
-                }).filter(function(g) { return g; });
-                matchGroup = grups.includes(group);
-            }
-
-            var matchSearch = true;
-            if (query) {
-                var searchData = row.getAttribute('data-search') || '';
-                matchSearch = searchData.includes(query);
-            }
-
-            row.style.display = (matchGroup && matchSearch) ? '' : 'none';
-        });
-
-        // Update badge jumlah di panel
-        updatePanelBadge();
-    }
-
-    /**
-     * Live search pada panel detail (NIK / Nama / Divisi / Lokasi)
+     * Live search pada panel detail (NIK / Nama / Divisi)
      */
     function filterDetailTable(query) {
-        var groupSelect = document.getElementById('global_group_filter');
-        var group = groupSelect ? groupSelect.value : '';
-        applyCombinedFilter(group, query);
-    }
-
-    /**
-     * Filter semua tabel berdasarkan grup karyawan.
-     */
-    function applyGroupFilter(group) {
-        var resetBtn = document.getElementById('reset_group_btn');
-        var filterBar = document.getElementById('detail-filter-bar');
-        var searchInput = document.getElementById('detail_search_input');
-        var query = searchInput ? searchInput.value : '';
-
-        applyCombinedFilter(group, query);
-
-        // Tampilkan/sembunyikan tombol reset
-        if (resetBtn) {
-            resetBtn.classList.toggle('hidden', !group);
-        }
-
-        // Update info bar di panel detail
-        if (filterBar) {
-            if (group && _activeTable) {
-                filterBar.classList.remove('hidden');
-                var label = document.getElementById('active-group-label');
-                if (label) label.textContent = group;
-            } else {
-                filterBar.classList.add('hidden');
-            }
-        }
-    }
-
-    function resetGroupFilter() {
-        var select = document.getElementById('global_group_filter');
-        if (select) select.value = '';
-        applyGroupFilter('');
-    }
-
-    /**
-     * Perbarui badge jumlah orang di panel header berdasarkan baris yang tampil.
-     */
-    function updatePanelBadge() {
+        query = (query || '').toLowerCase().trim();
         if (!_activeTable) return;
         var activeTableEl = document.getElementById('table-' + _activeTable);
         if (!activeTableEl) return;
-        var allRows     = activeTableEl.querySelectorAll('tbody tr[data-grup]');
-        var visibleRows = activeTableEl.querySelectorAll('tbody tr[data-grup]:not([style*="display: none"])');
-        var badge = document.getElementById('detail-badge');
-        if (badge) {
-            var groupSelect = document.getElementById('global_group_filter');
-            var searchInput = document.getElementById('detail_search_input');
-            var hasFilter = (groupSelect && groupSelect.value) || (searchInput && searchInput.value.trim());
 
-            if (!hasFilter && visibleRows.length === allRows.length) {
+        var rows = activeTableEl.querySelectorAll('tbody tr[data-search]');
+        var visibleCount = 0;
+
+        rows.forEach(function(row) {
+            var searchData = row.getAttribute('data-search') || '';
+            var match = !query || searchData.includes(query);
+            row.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+
+        var badge = document.getElementById('detail-badge');
+        if (badge && DETAIL_CONFIG[_activeTable]) {
+            if (!query) {
                 badge.textContent = DETAIL_CONFIG[_activeTable].count + ' Orang';
             } else {
-                badge.textContent = visibleRows.length + ' / ' + DETAIL_CONFIG[_activeTable].count + ' Orang';
+                badge.textContent = visibleCount + ' / ' + DETAIL_CONFIG[_activeTable].count + ' Orang';
             }
         }
     }

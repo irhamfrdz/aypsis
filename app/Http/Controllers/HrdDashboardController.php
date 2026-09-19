@@ -19,11 +19,7 @@ class HrdDashboardController extends Controller
     {
         $date = $request->input('tanggal_dashboard', Carbon::today()->format('Y-m-d'));
         $filterDate = Carbon::parse($date)->startOfDay();
-
-        // 1. Total Karyawan Aktif
-        $totalKaryawanAktif = Karyawan::where('status', 'active')
-            ->whereNull('tanggal_berhenti')
-            ->count();
+        $selectedGroup = $request->input('grup');
 
         // Daftar grup unik dari semua karyawan aktif (untuk filter dropdown)
         // Nilai grup berformat "KATEGORI:SUBKATEGORI" — ambil hanya bagian sebelum ':'
@@ -41,18 +37,37 @@ class HrdDashboardController extends Controller
             ->values()
             ->toArray();
 
+        // Query dasar karyawan aktif (dengan filter grup jika dipilih)
+        $karyawanBaseQuery = Karyawan::where('status', 'active')
+            ->whereNull('tanggal_berhenti');
+
+        if (!empty($selectedGroup)) {
+            $karyawanBaseQuery->where(function ($q) use ($selectedGroup) {
+                $q->where('grup', 'LIKE', '%"' . $selectedGroup . ':%')
+                  ->orWhere('grup', 'LIKE', '%"' . $selectedGroup . '"%')
+                  ->orWhere('grup', 'LIKE', '%' . $selectedGroup . '%');
+            });
+        }
+
+        // 1. Total Karyawan Aktif
+        $totalKaryawanAktif = (clone $karyawanBaseQuery)->count();
+        $activeKaryawanIds = (clone $karyawanBaseQuery)->pluck('id')->toArray();
+
         // 2. Karyawan Absen Masuk Hari Ini
-        $absensiMasuk = Absensi::with('karyawan')
+        $absensiMasukQuery = Absensi::with('karyawan')
             ->whereDate('waktu', $filterDate)
-            ->where('tipe', 'Masuk')
-            ->get();
+            ->where('tipe', 'Masuk');
+
+        if (!empty($selectedGroup)) {
+            $absensiMasukQuery->whereIn('karyawan_id', $activeKaryawanIds);
+        }
+        $absensiMasuk = $absensiMasukQuery->get();
 
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
 
         // 3. Karyawan Belum Absen
         // Yaitu karyawan aktif yang id-nya belum ada di daftar absen masuk hari ini.
-        $karyawanBelumAbsen = Karyawan::where('status', 'active')
-            ->whereNull('tanggal_berhenti')
+        $karyawanBelumAbsen = (clone $karyawanBaseQuery)
             ->whereNotIn('id', $karyawanIdsAbsen)
             ->orderBy('nama_lengkap', 'asc')
             ->get();
@@ -68,35 +83,52 @@ class HrdDashboardController extends Controller
         })->values();
 
         // 5. Karyawan Cuti / Izin
-        $karyawanCuti = Cuti::with('karyawan')
+        $karyawanCutiQuery = Cuti::with('karyawan')
             ->whereDate('tanggal_mulai', '<=', $filterDate)
             ->whereDate('tanggal_selesai', '>=', $filterDate)
-            ->where('status', 'approved')
-            ->get();
+            ->where('status', 'approved');
+
+        if (!empty($selectedGroup)) {
+            $karyawanCutiQuery->whereIn('karyawan_id', $activeKaryawanIds);
+        }
+        $karyawanCuti = $karyawanCutiQuery->get();
 
         // 6. Karyawan Belum Absen Pulang
         // Yaitu karyawan yang SUDAH absen masuk hari ini, tapi BELUM absen pulang hari ini
-        $absensiPulang = Absensi::whereDate('waktu', $filterDate)
-            ->where('tipe', 'Pulang')
-            ->pluck('karyawan_id')
+        $absensiPulangQuery = Absensi::whereDate('waktu', $filterDate)
+            ->where('tipe', 'Pulang');
+
+        if (!empty($selectedGroup)) {
+            $absensiPulangQuery->whereIn('karyawan_id', $activeKaryawanIds);
+        }
+        $absensiPulang = $absensiPulangQuery->pluck('karyawan_id')
             ->filter()
             ->unique()
             ->toArray();
 
-        $karyawanBelumAbsenPulang = Karyawan::whereIn('id', $karyawanIdsAbsen)
+        $karyawanBelumAbsenPulang = (clone $karyawanBaseQuery)
+            ->whereIn('id', $karyawanIdsAbsen)
             ->whereNotIn('id', $absensiPulang)
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
         // 7. Absensi Luar Radius
-        $absensiLuarRadius = Absensi::with('karyawan')
+        $absensiLuarRadiusQuery = Absensi::with('karyawan')
             ->whereDate('waktu', $filterDate)
             ->where('detail_lokasi', 'like', '%Di luar radius%')
-            ->orderBy('waktu', 'asc')
-            ->get();
+            ->orderBy('waktu', 'asc');
+
+        if (!empty($selectedGroup)) {
+            $absensiLuarRadiusQuery->whereIn('karyawan_id', $activeKaryawanIds);
+        }
+        $absensiLuarRadius = $absensiLuarRadiusQuery->get();
 
         // 8. Total presensi (Masuk + Pulang) hari ini
-        $totalPresensiHariIni = Absensi::whereDate('waktu', $filterDate)->count();
+        $totalPresensiHariIniQuery = Absensi::whereDate('waktu', $filterDate);
+        if (!empty($selectedGroup)) {
+            $totalPresensiHariIniQuery->whereIn('karyawan_id', $activeKaryawanIds);
+        }
+        $totalPresensiHariIni = $totalPresensiHariIniQuery->count();
 
         return view('hrd-dashboard.index', compact(
             'filterDate',
@@ -109,7 +141,8 @@ class HrdDashboardController extends Controller
             'absensiMasuk',
             'absensiLuarRadius',
             'totalPresensiHariIni',
-            'allGroups'
+            'allGroups',
+            'selectedGroup'
         ));
     }
 
