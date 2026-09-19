@@ -28,12 +28,12 @@ class DashboardController extends Controller
             return redirect()->route('supir.dashboard');
         }
 
-        // Check if user is HRD - redirect to hrd dashboard
+        // Check if user is HRD - redirect to hrd dashboard if they have permission
         if ($user->karyawan) {
             $divisi = strtoupper(trim($user->karyawan->divisi ?? ''));
             $pekerjaan = strtoupper(trim($user->karyawan->pekerjaan ?? ''));
             
-            if (in_array('HRD', [$divisi, $pekerjaan])) {
+            if (in_array('HRD', [$divisi, $pekerjaan]) && $user->can('hrd-dashboard-view')) {
                 return redirect()->route('hrd.dashboard');
             }
         }

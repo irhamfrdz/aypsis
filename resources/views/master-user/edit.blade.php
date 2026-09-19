@@ -2453,6 +2453,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Dashboard HRD --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dashboard HRD</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[hrd-dashboard][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['hrd-dashboard']['view']) && $userMatrixPermissions['hrd-dashboard']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[hrd-dashboard][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['hrd-dashboard']['export']) && $userMatrixPermissions['hrd-dashboard']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Data Karyawan (Cuti & Uang Makan) --}}
                             <tr class="module-row" data-module="data-karyawan">
                                 <td class="module-header">

@@ -507,6 +507,22 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Dashboard HRD --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Dashboard HRD</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[hrd-dashboard][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[hrd-dashboard][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Persetujuan Absensi Lupa --}}
                             <tr class="submodule-row" data-parent="approval">
                                 <td class="submodule">

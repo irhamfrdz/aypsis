@@ -261,6 +261,15 @@ return [
                 'absensi-rekap' => 'Rekap Absensi',
             ],
         ],
+        'hrd-dashboard' => [
+            'name' => 'Dashboard HRD',
+            'description' => 'Menu Dashboard HRD',
+            'required' => true,
+            'sub_modules' => [
+                'hrd-dashboard-view' => 'View Dashboard HRD',
+                'hrd-dashboard-export' => 'Export Rekap HRD',
+            ],
+        ],
         'data-karyawan' => [
             'name' => 'Data Uang Makan & Cuti',
             'description' => 'Menu Uang Makan dan Cuti',
@@ -376,6 +385,7 @@ return [
         // Absensi
         'absensi' => ['absensi-view'],
         'absensi-rekap' => ['absensi-rekap'],
+        'hrd-dashboard' => ['hrd-dashboard-view', 'hrd-dashboard-export'],
 
         // Chatbox
         'chatbox' => ['chatbox-view', 'chatbox-create', 'chatbox-edit', 'chatbox-delete'],

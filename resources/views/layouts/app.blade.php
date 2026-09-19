@@ -380,6 +380,19 @@
                     <span class="text-xs font-medium menu-text">Dashboard Dokumen Kapal</span>
                 </a>
                 @endcan
+
+                <!-- Dashboard HRD -->
+                @can('hrd-dashboard-view')
+                @php
+                    $isHrdDashboard = Request::routeIs('hrd.dashboard*');
+                @endphp
+                <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isHrdDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+                    <svg class="w-4 h-4 mr-2 {{ $isHrdDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span class="text-xs font-medium menu-text">Dashboard HRD</span>
+                </a>
+                @endcan
                 
                 <!-- Asuransi Tanda Terima -->
                 @can('asuransi-tanda-terima-view')
@@ -480,8 +493,8 @@
 
                 {{-- Kelola Absensi Section --}}
                 @php
-                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
-                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
+                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('hrd.dashboard*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
+                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('hrd-dashboard-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
                 @endphp
 
                 @if($hasAbsensiPermissions)
@@ -493,6 +506,11 @@
                         </svg>
                     </button>
                     <div id="absensi-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAbsensiRoute) style="display: block;" @endif>
+                        @if($user && $user->can('hrd-dashboard-view'))
+                            <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('hrd.dashboard*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">👥 Dashboard HRD</span>
+                            </a>
+                        @endif
                         <a href="{{ Route::has('absensi.index') ? route('absensi.index') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Data Absensi</span>
                         </a>

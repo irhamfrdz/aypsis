@@ -769,6 +769,7 @@ class UserController extends Controller
                 'pembelian-bbm-batam' => 'pembelian-bbm-batam',
                 'kelola-absensi' => 'kelola-absensi',
                 'absensi' => 'absensi',
+                'hrd-dashboard' => 'hrd-dashboard',
                 'mesin' => 'mesin',
                 'gaji-supir-batam' => 'gaji-supir-batam',
                 'saldo-utang-supir' => 'saldo-utang-supir',
@@ -2394,6 +2395,25 @@ class UserController extends Controller
                                     $found = true;
 
                                     continue; // Skip to next action
+                                }
+                            }
+
+                            // DIRECT FIX: Handle hrd-dashboard permissions explicitly
+                            if ($module === 'hrd-dashboard' && in_array($action, ['view', 'export'])) {
+                                $actionMap = [
+                                    'view' => 'hrd-dashboard-view',
+                                    'export' => 'hrd-dashboard-export',
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+
+                                        continue; // Skip to next action
+                                    }
                                 }
                             }
 
@@ -5297,6 +5317,23 @@ class UserController extends Controller
                     if ($module === 'monitoring-cek-kendaraan-weekly' && in_array($action, ['view'])) {
                         $actionMap = [
                             'view' => 'monitoring-cek-kendaraan-weekly-view',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle hrd-dashboard permissions explicitly
+                    if ($module === 'hrd-dashboard' && in_array($action, ['view', 'export'])) {
+                        $actionMap = [
+                            'view' => 'hrd-dashboard-view',
+                            'export' => 'hrd-dashboard-export',
                         ];
 
                         if (isset($actionMap[$action])) {

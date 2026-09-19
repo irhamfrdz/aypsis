@@ -462,10 +462,12 @@ Route::middleware([
 
     // Dashboard khusus divisi HRD
     Route::get('/hrd-dashboard', [\App\Http\Controllers\HrdDashboardController::class, 'index'])
-        ->name('hrd.dashboard');
+        ->name('hrd.dashboard')
+        ->middleware('can:hrd-dashboard-view');
 
     Route::get('/hrd-dashboard/export', [\App\Http\Controllers\HrdDashboardController::class, 'exportExcel'])
-        ->name('hrd.dashboard.export');
+        ->name('hrd.dashboard.export')
+        ->middleware('can:hrd-dashboard-export');
 
     // Dashboard asuransi asset
     Route::get('/dashboard/asset-insurance', [AssetDashboardController::class, 'index'])
