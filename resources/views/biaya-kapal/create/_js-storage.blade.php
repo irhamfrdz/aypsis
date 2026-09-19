@@ -77,13 +77,13 @@
                         </button>
                     </div>
                 </div>
-                <div>
+                <div class="storage-vendor-wrap">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Vendor <span class="text-red-500">*</span></label>
                     <select name="storage_sections[${sectionIndex}][vendor]" class="storage-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-sky-500" required>
                         ${vendorOptions}
                     </select>
                 </div>
-                <div>
+                <div class="storage-lokasi-wrap">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Lokasi <span class="text-red-500">*</span></label>
                     <select name="storage_sections[${sectionIndex}][lokasi]" class="storage-lokasi-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-sky-500" required>
                         ${lokasiOptions}
@@ -91,7 +91,7 @@
                 </div>
             </div>
             
-            <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-sky-300">
+            <div class="storage-container-wrap mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-sky-300">
                 <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
                 <p class="text-xs text-gray-400 mb-3"><i class="fas fa-info-circle mr-1"></i>Kontainer akan muncul setelah memilih No. Voyage</p>
 
@@ -142,7 +142,7 @@
                                    placeholder="0" required>
                         </div>
                     </div>
-                    <div>
+                    <div class="storage-materai-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -151,7 +151,7 @@
                                    value="0" readonly>
                         </div>
                     </div>
-                    <div>
+                    <div class="storage-pph-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1">PPh 2%</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -380,6 +380,20 @@
         const paidAmountInput = section.querySelector('.storage-paid-amount');
         const remainingWrap = section.querySelector('.storage-remaining-wrap');
         const remainingInput = section.querySelector('.storage-remaining-input');
+        const detailControls = [
+            section.querySelector('.storage-vendor-select'),
+            section.querySelector('.storage-lokasi-select'),
+            section.querySelector('.storage-container-wrap'),
+            section.querySelector('.storage-materai-input'),
+            section.querySelector('.storage-pph-input')
+        ];
+        const detailWrappers = [
+            section.querySelector('.storage-vendor-wrap'),
+            section.querySelector('.storage-lokasi-wrap'),
+            section.querySelector('.storage-container-wrap'),
+            section.querySelector('.storage-materai-wrap'),
+            section.querySelector('.storage-pph-wrap')
+        ];
 
         const toNumber = (value) => parseFloat(String(value || '').replace(/\./g, '').replace(',', '.')) || 0;
         const formatCurrency = (value) => new Intl.NumberFormat('id-ID').format(Math.max(0, Math.round(value || 0)));
@@ -389,6 +403,17 @@
             const nilaiTagihan = toNumber(totalInput.value);
             const isDp = mode === 'dp';
             const isPelunasan = mode === 'pelunasan_dp';
+            const compactPaymentMode = isDp || isPelunasan;
+
+            detailWrappers.forEach(wrapper => wrapper && wrapper.classList.toggle('hidden', compactPaymentMode));
+            detailControls.forEach(control => {
+                if (!control) return;
+                if (control.matches('select, input')) control.disabled = compactPaymentMode;
+            });
+            if (compactPaymentMode) {
+                materaiInput.value = '0';
+                pphInput.value = '0';
+            }
 
             paidAmountWrap.classList.toggle('hidden', !isDp);
             remainingWrap.classList.toggle('hidden', !isDp && !isPelunasan);
@@ -488,7 +513,9 @@
             }
             
             const pph = parseFloat(pphInput.value.replace(/\./g, '')) || 0;
-            const total = subtotal + materai - pph + adjustment;
+            const total = paymentModeInput && ['dp', 'pelunasan_dp'].includes(paymentModeInput.value)
+                ? subtotal + adjustment
+                : subtotal + materai - pph + adjustment;
 
             if (materaiInput) materaiInput.value = fmt(materai);
             if (totalInput) totalInput.value = fmt(total);

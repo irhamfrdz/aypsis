@@ -1484,7 +1484,8 @@ class BiayaKapalController extends Controller
                             throw new \InvalidArgumentException('Referensi DP storage tidak valid atau sudah lunas.');
                         }
                         foreach (['kapal', 'voyage', 'vendor'] as $field) {
-                            if (trim((string) ($dpStorage->{$field} ?? '')) !== trim((string) ($section[$field] ?? ''))) {
+                            // Detail vendor/lokasi dapat dikosongkan pada mode ringkas DP/pelunasan.
+                            if (! empty($section[$field]) && trim((string) ($dpStorage->{$field} ?? '')) !== trim((string) $section[$field])) {
                                 throw new \InvalidArgumentException('DP yang dipilih harus memiliki kapal, voyage, dan vendor storage yang sama.');
                             }
                         }
