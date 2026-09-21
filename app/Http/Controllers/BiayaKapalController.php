@@ -3063,6 +3063,10 @@ class BiayaKapalController extends Controller
         // Check if it's Biaya Trucking and use specific print template
         if ($biayaKapal->klasifikasiBiaya &&
             stripos($biayaKapal->klasifikasiBiaya->nama, 'trucking') !== false) {
+            // Use the dedicated print method so the view receives the
+            // calculated quantity and pricelist breakdown per container size.
+            return $this->printTrucking($biayaKapal);
+
             $biayaKapal->load(['truckingDetails']);
 
             // Collect all BL IDs and Master IDs
