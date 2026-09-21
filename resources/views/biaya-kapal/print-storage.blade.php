@@ -372,6 +372,13 @@
                                         @elseif(!empty($k['hari']))
                                             <span style="color: #d9534f; font-size: 0.85em; font-weight: bold;">({{ $k['hari'] }} hr)</span>
                                         @endif
+                                        @if(array_key_exists('dpp', $k) || array_key_exists('nominal_dp', $k) || array_key_exists('sisa_pembayaran', $k))
+                                            <div style="font-size: 0.8em; color: #555; margin-left: 4px;">
+                                                DPP: Rp {{ number_format((float) ($k['dpp'] ?? 0), 0, ',', '.') }} |
+                                                DP: Rp {{ number_format((float) ($k['nominal_dp'] ?? 0), 0, ',', '.') }} |
+                                                Sisa: Rp {{ number_format((float) ($k['sisa_pembayaran'] ?? 0), 0, ',', '.') }}
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             @else
@@ -379,6 +386,24 @@
                             @endif
                         </td>
                         <td>
+                            @if($detail->payment_mode === 'dp' || $detail->payment_mode === 'pelunasan_dp')
+                            <div class="rincian-item">
+                                <span>Mode:</span>
+                                <span>{{ $detail->payment_mode === 'dp' ? 'DP' : 'Pelunasan DP' }}</span>
+                            </div>
+                            @if($detail->payment_mode === 'dp')
+                            <div class="rincian-item">
+                                <span>Sudah Dibayar:</span>
+                                <span>{{ number_format($detail->nominal_dibayar, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
+                            @if($detail->payment_mode === 'pelunasan_dp')
+                            <div class="rincian-item">
+                                <span>Pelunasan:</span>
+                                <span>{{ number_format($detail->nominal_dibayar, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
+                            @endif
                             <div class="rincian-item">
                                 <span>Subtotal Storage:</span>
                                 <span>{{ number_format($detail->subtotal, 0, ',', '.') }}</span>
@@ -431,13 +456,6 @@
                     </tr>
                 @endif
 
-                <!-- Keterangan row inside table -->
-                <tr>
-                    <td colspan="5" style="border-top: 2px solid #333; text-align: left; padding: 10px; font-size: calc({{ $currentPaper['fontSize'] }} - 1px);">
-                        <strong>Keterangan:</strong><br>
-                        {!! $biayaKapal->keterangan ? nl2br(e($biayaKapal->keterangan)) : '-' !!}
-                    </td>
-                </tr>
             </tbody>
         </table>
 
@@ -450,6 +468,13 @@
                 </tr>
             </table>
         </div>
+
+        @if($biayaKapal->keterangan)
+        <div class="notes">
+            <strong>Catatan:</strong><br>
+            {!! nl2br(e($biayaKapal->keterangan)) !!}
+        </div>
+        @endif
 
         <!-- Footer -->
         <div class="footer">

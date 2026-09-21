@@ -131,6 +131,13 @@
                             <option value="">-- Pilih DP yang akan dilunasi --</option>
                         </select>
                     </div>
+                    <div class="storage-dp-paid-wrap hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Sudah Dibayar</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" class="storage-dp-paid-input w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg bg-emerald-50 text-emerald-800 font-bold" value="0" readonly>
+                        </div>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="storage-subtotal-wrap">
@@ -179,7 +186,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                            <input type="text" name="storage_sections[${sectionIndex}][total_biaya]"
+                             <input type="text" name="storage_sections[${sectionIndex}][total_biaya]"
                                    class="storage-total-input w-full pl-10 pr-3 py-2 border border-sky-300 rounded-lg bg-sky-50 text-sky-800 font-bold focus:ring-0 cursor-not-allowed"
                                    value="0" readonly>
                         </div>
@@ -191,15 +198,6 @@
                             <input type="text" name="storage_sections[${sectionIndex}][nominal_dibayar]"
                                    class="storage-paid-amount w-full pl-10 pr-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                                    placeholder="0" disabled>
-                        </div>
-                    </div>
-                    <div class="storage-remaining-wrap hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Sisa yang Belum Dibayar</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                            <input type="text" name="storage_sections[${sectionIndex}][sisa_pembayaran]"
-                                   class="storage-remaining-input w-full pl-10 pr-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-amber-800 font-bold cursor-not-allowed"
-                                   value="0" readonly disabled>
                         </div>
                     </div>
                 </div>
@@ -299,6 +297,12 @@
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Nominal DP</label>
+                                    <input type="text"
+                                           class="storage-kontainer-nominal-dp w-24 px-2 py-1 border border-emerald-300 rounded text-sm focus:ring-1 focus:ring-emerald-500"
+                                           value="0" placeholder="0">
+                                </div>
+                                <div class="flex items-center gap-1">
                                     <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
                                     <input type="number" 
                                            class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
@@ -312,10 +316,25 @@
                                            value="0" min="0"
                                            data-bl-id="${kontainer.id}">
                                 </div>
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">DPP</label>
+                                    <input type="text"
+                                           class="storage-kontainer-dpp w-24 px-2 py-1 border border-sky-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                           value="0" placeholder="0">
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Sisa</label>
+                                    <input type="text"
+                                           class="storage-kontainer-sisa w-24 px-2 py-1 border border-amber-200 rounded text-sm bg-amber-50 text-amber-800 font-semibold"
+                                           value="0" readonly>
+                                </div>
                             </div>
                         `;
 
                         const checkbox = row.querySelector('.storage-kontainer-checkbox');
+                        const nominalDpInput = row.querySelector('.storage-kontainer-nominal-dp');
+                        const dppInput = row.querySelector('.storage-kontainer-dpp');
+                        const sisaInput = row.querySelector('.storage-kontainer-sisa');
                         const hariMassa1Input = row.querySelector('.storage-kontainer-hari-massa-1');
                         const hariMassa2Input = row.querySelector('.storage-kontainer-hari-massa-2');
 
@@ -329,8 +348,11 @@
                                     hiddenGroup.innerHTML = `
                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
-                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
-                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_1]" class="hari-massa-1-hidden" value="${hariMassa1Input.value}">
+                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
+                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nominal_dp]" class="nominal-dp-hidden" value="${nominalDpInput.value}">
+                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][dpp]" class="dpp-hidden" value="${dppInput.value}">
+                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][sisa_pembayaran]" class="sisa-hidden" value="${sisaInput.value}">
+                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_1]" class="hari-massa-1-hidden" value="${hariMassa1Input.value}">
                                     <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_2]" class="hari-massa-2-hidden" value="${hariMassa2Input.value}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
@@ -338,6 +360,22 @@
                                 if (existingInput) existingInput.remove();
                             }
                             calculateStorageSectionSubtotal(section);
+                        });
+
+                        nominalDpInput.addEventListener('input', function() {
+                            const raw = this.value.replace(/\D/g, '');
+                            this.value = raw ? new Intl.NumberFormat('id-ID').format(parseInt(raw, 10)) : '0';
+                            const hidden = hiddenInputsContainer.querySelector(`[data-bl-id="${checkbox.dataset.blId}"] .nominal-dp-hidden`);
+                            if (hidden) hidden.value = raw || '0';
+                            updateContainerBalance(row);
+                        });
+
+                        dppInput.addEventListener('input', function() {
+                            const raw = this.value.replace(/\D/g, '');
+                            this.value = raw ? new Intl.NumberFormat('id-ID').format(parseInt(raw, 10)) : '0';
+                            const hidden = hiddenInputsContainer.querySelector(`[data-bl-id="${checkbox.dataset.blId}"] .dpp-hidden`);
+                            if (hidden) hidden.value = raw || '0';
+                            updateContainerBalance(row);
                         });
 
                         hariMassa1Input.addEventListener('input', function() {
@@ -358,7 +396,12 @@
                             calculateStorageSectionSubtotal(section);
                         });
                         kontainerList.appendChild(row);
+                        if (paymentModeInput.value === 'pelunasan_dp') {
+                            checkbox.checked = true;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
                     });
+                    if (paymentModeInput.value === 'pelunasan_dp') allocateDpAcrossContainers();
                 })
                 .catch(e => {
                     kontainerLoading.classList.add('hidden');
@@ -379,8 +422,8 @@
         const dpReferenceInput = section.querySelector('.storage-dp-reference');
         const paidAmountWrap = section.querySelector('.storage-paid-amount-wrap');
         const paidAmountInput = section.querySelector('.storage-paid-amount');
-        const remainingWrap = section.querySelector('.storage-remaining-wrap');
-        const remainingInput = section.querySelector('.storage-remaining-input');
+        const dpPaidWrap = section.querySelector('.storage-dp-paid-wrap');
+        const dpPaidInput = section.querySelector('.storage-dp-paid-input');
         const detailControls = [
             section.querySelector('.storage-vendor-select'),
             section.querySelector('.storage-lokasi-select'),
@@ -413,13 +456,36 @@
             const isDp = mode === 'dp';
             const isPelunasan = mode === 'pelunasan_dp';
             const compactPaymentMode = isDp || isPelunasan;
+            const showPaymentContext = isDp || isPelunasan;
+            const paymentModeChanged = section._storagePaymentMode !== mode;
+            section._storagePaymentMode = mode;
 
             detailWrappers.forEach(wrapper => wrapper && wrapper.classList.toggle('hidden', compactPaymentMode));
+            const vendorWrap = section.querySelector('.storage-vendor-wrap');
+            const lokasiWrap = section.querySelector('.storage-lokasi-wrap');
+            if (vendorWrap) vendorWrap.classList.toggle('hidden', !showPaymentContext);
+            if (lokasiWrap) lokasiWrap.classList.toggle('hidden', !showPaymentContext);
+            vendorSelect.disabled = !showPaymentContext;
+            lokasiSelect.disabled = !showPaymentContext;
+            const containerWrap = section.querySelector('.storage-container-wrap');
+            if (containerWrap) containerWrap.classList.toggle('hidden', !isPelunasan);
+            // The final invoice amount is entered only when settling a DP.
+            const totalWrap = section.querySelector('.storage-total-wrap');
+            if (totalWrap) totalWrap.classList.toggle('hidden', !isPelunasan);
+            totalInput.readOnly = true;
+            totalInput.disabled = false;
+            totalInput.classList.toggle('cursor-not-allowed', !isPelunasan);
+            totalInput.classList.toggle('bg-sky-50', !isPelunasan);
+            totalInput.classList.toggle('bg-white', isPelunasan);
             detailControls.forEach(control => {
                 if (!control) return;
                 if (control.matches('select, input')) control.disabled = compactPaymentMode;
             });
-            if (compactPaymentMode) {
+            if (showPaymentContext) {
+                vendorSelect.disabled = false;
+                lokasiSelect.disabled = false;
+            }
+            if (isDp) {
                 materaiInput.value = '0';
                 pphInput.value = '0';
                 const hiddenContainerInputs = section.querySelector('.storage-kontainer-hidden-inputs');
@@ -428,33 +494,75 @@
                     checkbox.checked = false;
                 });
             }
+            if (isPelunasan && section._loadContainers && (paymentModeChanged || !kontainerList.children.length)) {
+                const voyageValue = voyageSelect.value || voyageInput.value.trim();
+                if (voyageValue) section._loadContainers(voyageValue);
+            }
 
             paidAmountWrap.classList.toggle('hidden', !isDp);
-            remainingWrap.classList.toggle('hidden', !isPelunasan);
             dpReferenceWrap.classList.toggle('hidden', !isPelunasan);
+            dpPaidWrap.classList.toggle('hidden', !isPelunasan);
+            if (!isPelunasan) dpPaidInput.value = '0';
             paidAmountInput.disabled = !isDp;
-            remainingInput.disabled = !isPelunasan;
             dpReferenceInput.disabled = !isPelunasan;
 
             if (isDp) {
-                const paid = toNumber(paidAmountInput.value);
-                remainingInput.value = '0';
-                paymentHelp.textContent = 'Masukkan nominal DP yang dibayar.';
+                paymentHelp.textContent = 'Masukkan nominal DP yang sudah dibayar. Nilai tagihan ditentukan saat pelunasan.';
             } else if (isPelunasan) {
-                paymentHelp.textContent = 'Pilih transaksi DP yang masih memiliki sisa pembayaran.';
+                paymentHelp.textContent = 'Pilih DP, lalu masukkan nilai tagihan akhir untuk menghitung pelunasan.';
             } else {
                 paymentHelp.textContent = 'Pembayaran dicatat lunas sebesar nilai tagihan.';
             }
         }
 
+        function allocateDpAcrossContainers() {
+            if (paymentModeInput.value !== 'pelunasan_dp') return;
+            const rows = Array.from(kontainerList.querySelectorAll('.storage-kontainer-checkbox'));
+            if (!rows.length) return;
+            const totalDp = toNumber(dpPaidInput.value);
+            const base = Math.floor(totalDp / rows.length);
+            let remainder = Math.round(totalDp - (base * rows.length));
+            rows.forEach(checkbox => {
+                const row = checkbox.closest('label');
+                const input = row.querySelector('.storage-kontainer-nominal-dp');
+                const hidden = hiddenInputsContainer.querySelector(`[data-bl-id="${checkbox.dataset.blId}"] .nominal-dp-hidden`);
+                const amount = base + (remainder-- > 0 ? 1 : 0);
+                input.value = formatCurrency(amount);
+                if (hidden) hidden.value = amount;
+                updateContainerBalance(row);
+            });
+        }
+
+        function updateContainerBalance(row) {
+            const dpp = toNumber(row.querySelector('.storage-kontainer-dpp')?.value);
+            const dp = toNumber(row.querySelector('.storage-kontainer-nominal-dp')?.value);
+            const sisa = Math.max(0, dpp - dp);
+            const sisaInput = row.querySelector('.storage-kontainer-sisa');
+            if (sisaInput) sisaInput.value = formatCurrency(sisa);
+            const checkbox = row.querySelector('.storage-kontainer-checkbox');
+            const hidden = hiddenInputsContainer.querySelector(`[data-bl-id="${checkbox?.dataset.blId}"] .sisa-hidden`);
+            if (hidden) hidden.value = sisa;
+            updateSettlementTotalsFromContainers();
+        }
+
+        function updateSettlementTotalsFromContainers() {
+            if (paymentModeInput.value !== 'pelunasan_dp') return;
+            let totalSisa = 0;
+            kontainerList.querySelectorAll('label').forEach(row => {
+                totalSisa += toNumber(row.querySelector('.storage-kontainer-sisa')?.value);
+            });
+            totalInput.value = formatCurrency(totalSisa);
+            calculateTotalFromAllStorageSections();
+        }
+
         function loadOutstandingStorageDps() {
             dpReferenceInput.innerHTML = '<option value="">Memuat DP...</option>';
-            fetch(`{{ url('biaya-kapal/storage-dp-candidates') }}?kapal=${encodeURIComponent(kapalSelect.value)}&voyage=${encodeURIComponent(voyageSelect.value || voyageInput.value)}&vendor=${encodeURIComponent(vendorSelect.value)}`)
+            fetch(`{{ url('biaya-kapal/storage-dp-candidates') }}`)
                 .then(res => res.json())
                 .then(data => {
                     dpReferenceInput.innerHTML = '<option value="">-- Pilih DP yang akan dilunasi --</option>';
                     (data.data || []).forEach(dp => {
-                        dpReferenceInput.innerHTML += `<option value="${dp.id}" data-sisa="${dp.sisa_pembayaran}">${dp.label}</option>`;
+                        dpReferenceInput.innerHTML += `<option value="${dp.id}" data-sisa="${dp.sisa_pembayaran}" data-dp="${dp.nominal_dibayar}" data-kapal="${dp.kapal || ''}" data-voyage="${dp.voyage || ''}" data-vendor="${dp.vendor || ''}">${dp.label}</option>`;
                     });
                 })
                 .catch(() => {
@@ -469,11 +577,30 @@
         });
         dpReferenceInput.addEventListener('change', function() {
             const option = this.options[this.selectedIndex];
-            remainingInput.value = formatCurrency(option ? toNumber(option.dataset.sisa) : 0);
+            const total = toNumber(totalInput.value);
+            const dpPaid = option ? toNumber(option.dataset.dp) : 0;
+            dpPaidInput.value = formatCurrency(dpPaid);
+            if (!option || !option.value) return;
+
+            const dpKapal = option.dataset.kapal || '';
+            const dpVoyage = option.dataset.voyage || '';
+            const dpVendor = option.dataset.vendor || '';
+            if (dpVendor) vendorSelect.value = dpVendor;
+            if (dpKapal) {
+                kapalSelect.value = dpKapal;
+                loadVoyagesForStorageSection(sectionIndex, dpKapal, dpVoyage);
+            }
         });
         paidAmountInput.addEventListener('input', function() {
             this.value = formatCurrency(toNumber(this.value));
             updateStoragePaymentFields();
+            calculateTotalFromAllStorageSections();
+        });
+        totalInput.addEventListener('input', function() {
+            if (paymentModeInput.value !== 'pelunasan_dp') return;
+            this.value = formatCurrency(toNumber(this.value));
+            const option = dpReferenceInput.options[dpReferenceInput.selectedIndex];
+            const dpPaid = option ? toNumber(option.dataset.dp) : 0;
             calculateTotalFromAllStorageSections();
         });
 
@@ -506,12 +633,25 @@
                     
                     const tarif1 = pricelist ? parseFloat(pricelist.tarif_massa_1) : 0;
                     const tarif2 = pricelist ? parseFloat(pricelist.tarif_massa_2 || 0) : 0;
-                    calculatedSubtotal += (tarif1 * hariMassa1) + (tarif2 * hariMassa2);
+                    const containerDpp = (tarif1 * hariMassa1) + (tarif2 * hariMassa2);
+                    calculatedSubtotal += containerDpp;
+
+                    const row = cb.closest('label');
+                    const dppInput = row?.querySelector('.storage-kontainer-dpp');
+                    const dppHidden = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .dpp-hidden`);
+                    if (dppInput) dppInput.value = new Intl.NumberFormat('id-ID').format(Math.round(containerDpp));
+                    if (dppHidden) dppHidden.value = Math.round(containerDpp);
+                    if (row) updateContainerBalance(row);
                 });
             }
             
             subsInput.value = calculatedSubtotal > 0 ? new Intl.NumberFormat('id-ID').format(calculatedSubtotal) : '0';
-            recalcStorageTotal(true);
+            if (sec.querySelector('.storage-payment-mode')?.value === 'pelunasan_dp') {
+                updateStoragePaymentFields();
+                calculateTotalFromAllStorageSections();
+            } else {
+                recalcStorageTotal(true);
+            }
         }
 
         function recalcStorageTotal(updatePph = false) {
@@ -568,7 +708,7 @@
         }
     };
 
-    function loadVoyagesForStorageSection(sectionIndex, kapalNama) {
+    function loadVoyagesForStorageSection(sectionIndex, kapalNama, preferredVoyage = '') {
         const section = document.querySelector(`[data-storage-section-index="${sectionIndex}"]`);
         const voyageSelect = section.querySelector('.storage-voyage-select');
         const voyageInput  = section.querySelector('.storage-voyage-input');
@@ -593,6 +733,10 @@
                     voyageSelect.onchange = function() {
                         if (section._loadContainers) section._loadContainers(this.value);
                     };
+                    if (preferredVoyage && data.voyages.includes(preferredVoyage)) {
+                        voyageSelect.value = preferredVoyage;
+                        if (section._loadContainers) section._loadContainers(preferredVoyage);
+                    }
                 } else {
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
@@ -616,10 +760,16 @@
         let totalSubtotal = 0;
         document.querySelectorAll('.storage-section').forEach(sec => {
             const mode = sec.querySelector('.storage-payment-mode')?.value;
-            const amountInput = mode === 'dp'
-                ? sec.querySelector('.storage-paid-amount')
-                : sec.querySelector('.storage-total-input');
-            const sub = parseFloat((amountInput?.value || '').replace(/\./g, '')) || 0;
+            let sub = 0;
+            if (mode === 'dp') {
+                sub = parseFloat((sec.querySelector('.storage-paid-amount')?.value || '').replace(/\./g, '')) || 0;
+            } else if (mode === 'pelunasan_dp') {
+                const total = parseFloat((sec.querySelector('.storage-total-input')?.value || '').replace(/\./g, '')) || 0;
+                const dp = parseFloat((sec.querySelector('.storage-dp-paid-input')?.value || '').replace(/\./g, '')) || 0;
+                sub = Math.max(0, total - dp);
+            } else {
+                sub = parseFloat((sec.querySelector('.storage-total-input')?.value || '').replace(/\./g, '')) || 0;
+            }
             totalSubtotal += sub;
         });
 

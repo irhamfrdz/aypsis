@@ -546,6 +546,12 @@ class BiayaKapalController extends Controller
                 if (isset($section['total_biaya'])) {
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
+                if (isset($section['nominal_dibayar'])) {
+                    $section['nominal_dibayar'] = str_replace(',', '.', str_replace('.', '', $section['nominal_dibayar']));
+                }
+                if (isset($section['sisa_pembayaran'])) {
+                    $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+                }
             }
             unset($section);
         }
@@ -882,6 +888,9 @@ class BiayaKapalController extends Controller
             'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'storage_sections.*.kontainer.*.hari_massa_1' => 'nullable|numeric|min:0',
             'storage_sections.*.kontainer.*.hari_massa_2' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.nominal_dp' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.dpp' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
             'storage_sections.*.pph' => 'nullable|numeric|min:0',
             'storage_sections.*.adjustment' => 'nullable|numeric',
@@ -1446,16 +1455,22 @@ class BiayaKapalController extends Controller
 
                     // Kumpulkan kontainer yang dipilih
                     $kontainerIds = [];
+                    $kontainerSisaTotal = 0;
                     if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                         foreach ($section['kontainer'] as $k) {
                             if (! empty($k['bl_id'])) {
-                                $kontainerIds[] = [
+                                $kontainerDetail = [
                                     'bl_id' => $k['bl_id'],
                                     'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                     'size' => $k['size'] ?? null,
+                                    'nominal_dp' => (float) str_replace(['.', ','], ['', '.'], $k['nominal_dp'] ?? '0'),
+                                    'dpp' => (float) str_replace(['.', ','], ['', '.'], $k['dpp'] ?? '0'),
+                                    'sisa_pembayaran' => (float) str_replace(['.', ','], ['', '.'], $k['sisa_pembayaran'] ?? '0'),
                                     'hari_massa_1' => $k['hari_massa_1'] ?? 0,
                                     'hari_massa_2' => $k['hari_massa_2'] ?? 0,
                                 ];
+                                $kontainerIds[] = $kontainerDetail;
+                                $kontainerSisaTotal += $kontainerDetail['sisa_pembayaran'];
                             }
                         }
                     }
@@ -1476,25 +1491,33 @@ class BiayaKapalController extends Controller
                         if ($nominalDibayar <= 0) {
                             throw new \InvalidArgumentException('Nominal DP storage harus lebih dari 0.');
                         }
-                        // Pada mode DP hanya nominal yang dibayar yang diinput. Nilai
-                        // tersebut menjadi nilai tagihan sekaligus saldo yang dapat
-                        // dilunasi pada transaksi pelunasan berikutnya.
-                        $nilaiTagihan = $nominalDibayar;
-                        $sisaPembayaran = $nominalDibayar;
+                        // Total tagihan belum diketahui pada saat DP dibuat.
+                        // Simpan hanya nominal yang sudah dibayar; nilai tagihan
+                        // dan sisa dihitung saat transaksi pelunasan dibuat.
+                        $nilaiTagihan = 0;
+                        $sisaPembayaran = 0;
                     } elseif ($paymentMode === 'pelunasan_dp') {
                         $dpStorageId = $section['dp_storage_id'] ?? null;
                         $dpStorage = $dpStorageId ? \App\Models\BiayaKapalStorage::lockForUpdate()->find($dpStorageId) : null;
-                        if (! $dpStorage || $dpStorage->payment_mode !== 'dp' || $dpStorage->sisa_pembayaran <= 0) {
+                        if (! $dpStorage || $dpStorage->payment_mode !== 'dp' || $dpStorage->nominal_dibayar <= 0 || $dpStorage->pelunasanDetails()->exists()) {
                             throw new \InvalidArgumentException('Referensi DP storage tidak valid atau sudah lunas.');
                         }
-                        foreach (['kapal', 'voyage', 'vendor'] as $field) {
-                            // Detail vendor/lokasi dapat dikosongkan pada mode ringkas DP/pelunasan.
-                            if (! empty($section[$field]) && trim((string) ($dpStorage->{$field} ?? '')) !== trim((string) $section[$field])) {
-                                throw new \InvalidArgumentException('DP yang dipilih harus memiliki kapal, voyage, dan vendor storage yang sama.');
-                            }
+                        // Referensi DP adalah sumber utama identitas transaksi pelunasan.
+                        // Nilai kapal/voyage/vendor dari form dapat berbeda format atau
+                        // masih kosong setelah pemilihan otomatis, sehingga gunakan nilai
+                        // yang tersimpan pada DP agar pelunasan tetap terhubung dengan benar.
+                        $section['kapal'] = $dpStorage->kapal;
+                        $section['voyage'] = $dpStorage->voyage;
+                        $section['vendor'] = $dpStorage->vendor;
+                        $nominalDibayar = $cleanNum($section['total_biaya'] ?? 0);
+                        if ($kontainerSisaTotal > 0) {
+                            $nominalDibayar = $kontainerSisaTotal;
                         }
-                        $nominalDibayar = (float) $dpStorage->sisa_pembayaran;
-                        $nilaiTagihan = (float) $dpStorage->nilai_tagihan;
+                        if ($nominalDibayar < 0) {
+                            throw new \InvalidArgumentException('Total pelunasan tidak boleh kurang dari 0.');
+                        }
+                        $nilaiTagihan = (float) $dpStorage->nominal_dibayar + $nominalDibayar;
+                        $sisaPembayaran = 0;
                         $dpStorage->update(['sisa_pembayaran' => 0]);
                     }
 
@@ -5834,7 +5857,8 @@ class BiayaKapalController extends Controller
         $query = \App\Models\BiayaKapalStorage::query()
             ->with('biayaKapal:id,nomor_invoice,tanggal')
             ->where('payment_mode', 'dp')
-            ->where('sisa_pembayaran', '>', 0);
+            ->where('nominal_dibayar', '>', 0)
+            ->whereDoesntHave('pelunasanDetails');
 
         foreach (['kapal', 'voyage', 'vendor'] as $field) {
             if ($request->filled($field)) {
@@ -5849,7 +5873,11 @@ class BiayaKapalController extends Controller
             return [
                 'id' => $storage->id,
                 'sisa_pembayaran' => (float) $storage->sisa_pembayaran,
-                'label' => sprintf('%s | %s / %s | sisa Rp %s', $invoice, $storage->kapal, $storage->voyage, number_format($storage->sisa_pembayaran, 0, ',', '.')),
+                'nominal_dibayar' => (float) $storage->nominal_dibayar,
+                'kapal' => $storage->kapal,
+                'voyage' => $storage->voyage,
+                'vendor' => $storage->vendor,
+                'label' => sprintf('%s | %s / %s | DP dibayar Rp %s', $invoice, $storage->kapal, $storage->voyage, number_format($storage->nominal_dibayar, 0, ',', '.')),
                 'tanggal' => $tanggal,
             ];
         });
