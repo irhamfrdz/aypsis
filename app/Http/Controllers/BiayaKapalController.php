@@ -6141,7 +6141,9 @@ class BiayaKapalController extends Controller
                     $query->where(function ($containerQuery) {
                         $containerQuery->whereNotNull('nomor_kontainer')
                             ->where('nomor_kontainer', '!=', '');
-                    })->orWhereRaw("UPPER(COALESCE(tipe_kontainer, '')) = 'CARGO'");
+                    })->orWhereRaw("UPPER(COALESCE(tipe_kontainer, '')) = 'CARGO'")
+                        ->orWhereNull('size_kontainer')
+                        ->orWhere('size_kontainer', '');
                 });
             } else {
                 $blsQuery->whereNotNull('nomor_kontainer')
