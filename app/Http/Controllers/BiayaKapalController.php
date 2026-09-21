@@ -6132,18 +6132,30 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data with kontainer and seal from manifests table for the selected voyages
-            $bls = DB::table('manifests')
-                ->select('id', 'nomor_kontainer', 'no_seal', 'size_kontainer', 'nama_barang', 'tipe_kontainer', 'nomor_bl', 'penerima')
-                ->whereIn('no_voyage', $voyages)
-                ->whereNotNull('nomor_kontainer')
-                ->where('nomor_kontainer', '!=', '')
-                ->get()
+            $blsQuery = DB::table('manifests')
+                ->select('id', 'nomor_kontainer', 'no_seal', 'size_kontainer', 'nama_barang', 'pengirim', 'tipe_kontainer', 'nomor_bl', 'penerima')
+                ->whereIn('no_voyage', $voyages);
+
+            if ($source === 'trucking') {
+                $blsQuery->where(function ($query) {
+                    $query->where(function ($containerQuery) {
+                        $containerQuery->whereNotNull('nomor_kontainer')
+                            ->where('nomor_kontainer', '!=', '');
+                    })->orWhereRaw("UPPER(COALESCE(tipe_kontainer, '')) = 'CARGO'");
+                });
+            } else {
+                $blsQuery->whereNotNull('nomor_kontainer')
+                    ->where('nomor_kontainer', '!=', '');
+            }
+
+            $bls = $blsQuery->get()
                 ->mapWithKeys(function ($bl) {
                     return [$bl->id => [
-                        'kontainer' => $bl->nomor_kontainer ?? 'N/A',
+                        'kontainer' => $bl->nomor_kontainer ?: ('CARGO-'.$bl->id),
                         'seal' => $bl->no_seal ?? 'N/A',
-                        'size' => $bl->size_kontainer ?? '20',
+                        'size' => $bl->size_kontainer ?? '',
                         'nama_barang' => $bl->nama_barang ?? '',
+                        'pengirim' => $bl->pengirim ?? '',
                         'tipe' => $bl->tipe_kontainer ?? '',
                         'nomor_bl' => $bl->nomor_bl ?? '',
                         'penerima' => $bl->penerima ?? '',
