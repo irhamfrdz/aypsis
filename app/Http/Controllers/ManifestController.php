@@ -1208,11 +1208,13 @@ class ManifestController extends Controller
             $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
             $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
 
-            // Get distinct normalized voyages for the ship using loose matching
+            // Get distinct voyages for the ship using the same ordering logic
+            // as the Rekap Biaya Kapal menu.
             $voyages = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->select('no_voyage')
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
                 ->distinct()
-                ->orderBy('no_voyage', 'asc')
                 ->pluck('no_voyage')
                 ->map(function ($voyage) {
                     // Normalize voyage: trim and uppercase
@@ -1221,6 +1223,29 @@ class ManifestController extends Controller
                 ->unique()
                 ->values()
                 ->toArray();
+
+            $dockItems = [];
+            $otherItems = [];
+            foreach ($voyages as $voyage) {
+                if (strtolower(trim($voyage)) === 'dock') {
+                    $dockItems[] = $voyage;
+                } else {
+                    $otherItems[] = $voyage;
+                }
+            }
+
+            usort($otherItems, function ($a, $b) {
+                $yearA = preg_match('/(\d{2})$/', trim($a), $matchesA) ? (int) $matchesA[1] : 0;
+                $yearB = preg_match('/(\d{2})$/', trim($b), $matchesB) ? (int) $matchesB[1] : 0;
+
+                if ($yearA !== $yearB) {
+                    return $yearB <=> $yearA;
+                }
+
+                return strcmp(strtolower(trim($b)), strtolower(trim($a)));
+            });
+
+            $voyages = array_merge($otherItems, $dockItems);
 
             return response()->json([
                 'success' => true,
