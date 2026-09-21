@@ -296,7 +296,7 @@
                         <div class="relative">
                             <input type="text" 
                                    class="trucking-kontainer-search w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                   placeholder="Cari nomor kontainer atau seal..."
+                                   placeholder="Cari kontainer, pengirim, atau nama barang..."
                                    autocomplete="off">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
                         </div>
@@ -306,14 +306,16 @@
                 
                 Object.keys(data.bls).forEach(id => {
                     const blData = data.bls[id];
+                    const isCargo = String(blData.tipe || '').toLowerCase() === 'cargo';
+                    const displayName = isCargo ? 'CARGO' : blData.kontainer;
                     html += `
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
-                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}">
-                            <div class="font-medium text-gray-900">${blData.kontainer} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${blData.size}'</span></div>
+                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}" data-pengirim="${blData.pengirim || ''}" data-nama-barang="${blData.nama_barang || ''}" data-tipe="${blData.tipe || ''}">
+                            <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
-                                <span><i class="fas fa-box text-gray-400 mr-1"></i> ${blData.nama_barang || 'Tidak ada kargo'}</span>
-                                <span><i class="fas fa-user text-gray-400 mr-1"></i> ${blData.penerima || 'Tidak ada penerima'}</span>
-                                <span><i class="fas fa-lock text-gray-400 mr-1"></i> Seal: ${blData.seal}</span>
+                                ${isCargo
+                                    ? `<span><i class="fas fa-user text-gray-400 mr-1"></i> Pengirim: ${blData.pengirim || '-'}</span><span><i class="fas fa-box text-gray-400 mr-1"></i> Barang: ${blData.nama_barang || '-'}</span>`
+                                    : `<span><i class="fas fa-lock text-gray-400 mr-1"></i> Seal: ${blData.seal}</span>`}
                             </div>
                         </div>
                     `;
@@ -333,9 +335,11 @@
                     allOptions.forEach(option => {
                         const kontainer = option.getAttribute('data-kontainer').toLowerCase();
                         const seal = option.getAttribute('data-seal').toLowerCase();
-                        const size = option.getAttribute('data-size');
+                        const size = option.getAttribute('data-size') || '';
+                        const pengirim = (option.getAttribute('data-pengirim') || '').toLowerCase();
+                        const namaBarang = (option.getAttribute('data-nama-barang') || '').toLowerCase();
                         
-                        if (kontainer.includes(searchTerm) || seal.includes(searchTerm) || size.includes(searchTerm)) {
+                        if (kontainer.includes(searchTerm) || seal.includes(searchTerm) || size.includes(searchTerm) || pengirim.includes(searchTerm) || namaBarang.includes(searchTerm)) {
                             option.style.display = 'block';
                             visibleCount++;
                         } else {
@@ -374,6 +378,9 @@
                         const id = this.getAttribute('data-id');
                         const kontainer = this.getAttribute('data-kontainer');
                         const seal = this.getAttribute('data-seal');
+                        const isCargo = (this.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
+                        const pengirim = this.getAttribute('data-pengirim') || '-';
+                        const namaBarang = this.getAttribute('data-nama-barang') || '-';
 
                         if (this.classList.contains('selected')) {
                             // Remove
@@ -388,7 +395,7 @@
                             const chip = document.createElement('span');
                             chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
                             chip.setAttribute('data-id', id);
-                            chip.innerHTML = `${kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
                             chip.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
                                 opt.click();
@@ -451,8 +458,14 @@
         if (vendor && selectedOptions.length > 0) {
             const vendorPrices = pricelistBiayaTruckingData.filter(item => item.nama_vendor === vendor);
             selectedOptions.forEach(opt => {
-                const size = String(opt.getAttribute('data-size')).replace(/\D/g, '');
-                const priceItem = vendorPrices.find(item => String(item.size).replace(/\D/g, '') === size);
+                const isCargo = (opt.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
+                const size = isCargo ? 'cargo' : String(opt.getAttribute('data-size')).replace(/\D/g, '');
+                const priceItem = vendorPrices.find(item => {
+                    const itemSize = isCargo
+                        ? String(item.size).toLowerCase().trim()
+                        : String(item.size).replace(/\D/g, '');
+                    return itemSize === size;
+                });
                 if (priceItem) {
                     const cost = parseFloat(priceItem.biaya) || 0;
                     if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
@@ -513,7 +526,12 @@
         const chip = document.createElement('span');
         chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
         chip.setAttribute('data-id', blId);
-        chip.innerHTML = `${blId} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+        const selectedOption = section.querySelector(`.trucking-bl-option[data-id="${blId}"]`);
+        const isCargo = selectedOption && (selectedOption.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
+        const chipLabel = isCargo
+            ? `CARGO - ${selectedOption.getAttribute('data-nama-barang') || '-'} (${selectedOption.getAttribute('data-pengirim') || '-'})`
+            : blId;
+        chip.innerHTML = `${chipLabel} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
         chip.querySelector('i').onclick = (e) => {
             e.stopPropagation();
             chip.remove();
