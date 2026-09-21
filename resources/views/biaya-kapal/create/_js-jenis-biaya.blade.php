@@ -17,8 +17,14 @@
         filterJenisBiayaOptions();
     });
     
-    // Container click to focus search
+    // Container click opens the list again, including after a value has been selected.
+    // The search input is hidden after selection, so focusing it alone would not fire
+    // its focus event and the user could no longer change the selected type.
     jenisBiayaContainer.addEventListener('click', function() {
+        jenisBiayaSearch.classList.remove('hidden');
+        selectedJenisBiayaDisplay.classList.add('hidden');
+        jenisBiayaDropdown.classList.remove('hidden');
+        filterJenisBiayaOptions();
         jenisBiayaSearch.focus();
     });
     

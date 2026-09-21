@@ -133,7 +133,7 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div class="storage-subtotal-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (DPP) <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -160,7 +160,7 @@
                                    value="0">
                         </div>
                     </div>
-                    <div>
+                    <div class="storage-adjustment-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -169,13 +169,13 @@
                                    placeholder="0">
                         </div>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="storage-notes-adjustment-wrap md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Notes Adjustment</label>
                         <input type="text" name="storage_sections[${sectionIndex}][notes_adjustment]"
                                class="storage-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
                                placeholder="Keterangan adjustment (contoh: Diskon khusus, Koreksi tarif, dll)">
                     </div>
-                    <div>
+                    <div class="storage-total-wrap">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -371,6 +371,7 @@
         const materaiInput  = section.querySelector('.storage-materai-input');
         const pphInput      = section.querySelector('.storage-pph-input');
         const adjustmentInput = section.querySelector('.storage-adjustment-input');
+        const notesAdjustmentInput = section.querySelector('.storage-notes-adjustment-input');
         const totalInput    = section.querySelector('.storage-total-input');
         const paymentModeInput = section.querySelector('.storage-payment-mode');
         const paymentHelp = section.querySelector('.storage-payment-help');
@@ -385,14 +386,22 @@
             section.querySelector('.storage-lokasi-select'),
             section.querySelector('.storage-container-wrap'),
             section.querySelector('.storage-materai-input'),
-            section.querySelector('.storage-pph-input')
+            section.querySelector('.storage-pph-input'),
+            subtotalInput,
+            adjustmentInput,
+            notesAdjustmentInput,
+            totalInput
         ];
         const detailWrappers = [
             section.querySelector('.storage-vendor-wrap'),
             section.querySelector('.storage-lokasi-wrap'),
             section.querySelector('.storage-container-wrap'),
             section.querySelector('.storage-materai-wrap'),
-            section.querySelector('.storage-pph-wrap')
+            section.querySelector('.storage-pph-wrap'),
+            section.querySelector('.storage-subtotal-wrap'),
+            section.querySelector('.storage-adjustment-wrap'),
+            section.querySelector('.storage-notes-adjustment-wrap'),
+            section.querySelector('.storage-total-wrap')
         ];
 
         const toNumber = (value) => parseFloat(String(value || '').replace(/\./g, '').replace(',', '.')) || 0;
@@ -413,19 +422,24 @@
             if (compactPaymentMode) {
                 materaiInput.value = '0';
                 pphInput.value = '0';
+                const hiddenContainerInputs = section.querySelector('.storage-kontainer-hidden-inputs');
+                if (hiddenContainerInputs) hiddenContainerInputs.innerHTML = '';
+                section.querySelectorAll('.storage-kontainer-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
             }
 
             paidAmountWrap.classList.toggle('hidden', !isDp);
-            remainingWrap.classList.toggle('hidden', !isDp && !isPelunasan);
+            remainingWrap.classList.toggle('hidden', !isPelunasan);
             dpReferenceWrap.classList.toggle('hidden', !isPelunasan);
             paidAmountInput.disabled = !isDp;
-            remainingInput.disabled = !isDp && !isPelunasan;
+            remainingInput.disabled = !isPelunasan;
             dpReferenceInput.disabled = !isPelunasan;
 
             if (isDp) {
                 const paid = toNumber(paidAmountInput.value);
-                remainingInput.value = formatCurrency(nilaiTagihan - paid);
-                paymentHelp.textContent = 'Masukkan nominal uang muka. Sisa akan tersedia untuk dilunasi kemudian.';
+                remainingInput.value = '0';
+                paymentHelp.textContent = 'Masukkan nominal DP yang dibayar.';
             } else if (isPelunasan) {
                 paymentHelp.textContent = 'Pilih transaksi DP yang masih memiliki sisa pembayaran.';
             } else {
@@ -451,6 +465,7 @@
         paymentModeInput.addEventListener('change', function() {
             updateStoragePaymentFields();
             if (this.value === 'pelunasan_dp') loadOutstandingStorageDps();
+            calculateTotalFromAllStorageSections();
         });
         dpReferenceInput.addEventListener('change', function() {
             const option = this.options[this.selectedIndex];
@@ -459,6 +474,7 @@
         paidAmountInput.addEventListener('input', function() {
             this.value = formatCurrency(toNumber(this.value));
             updateStoragePaymentFields();
+            calculateTotalFromAllStorageSections();
         });
 
         function calculateStorageSectionSubtotal(sec) {
@@ -599,7 +615,11 @@
     function calculateTotalFromAllStorageSections() {
         let totalSubtotal = 0;
         document.querySelectorAll('.storage-section').forEach(sec => {
-            const sub = parseFloat(sec.querySelector('.storage-total-input').value.replace(/\./g, '')) || 0;
+            const mode = sec.querySelector('.storage-payment-mode')?.value;
+            const amountInput = mode === 'dp'
+                ? sec.querySelector('.storage-paid-amount')
+                : sec.querySelector('.storage-total-input');
+            const sub = parseFloat((amountInput?.value || '').replace(/\./g, '')) || 0;
             totalSubtotal += sub;
         });
 

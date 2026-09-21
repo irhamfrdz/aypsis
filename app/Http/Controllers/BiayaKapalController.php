@@ -1473,10 +1473,14 @@ class BiayaKapalController extends Controller
 
                     if ($paymentMode === 'dp') {
                         $nominalDibayar = $cleanNum($section['nominal_dibayar'] ?? 0);
-                        if ($nominalDibayar <= 0 || $nominalDibayar > $nilaiTagihan) {
-                            throw new \InvalidArgumentException('Nominal DP storage harus lebih dari 0 dan tidak boleh melebihi nilai tagihan.');
+                        if ($nominalDibayar <= 0) {
+                            throw new \InvalidArgumentException('Nominal DP storage harus lebih dari 0.');
                         }
-                        $sisaPembayaran = $nilaiTagihan - $nominalDibayar;
+                        // Pada mode DP hanya nominal yang dibayar yang diinput. Nilai
+                        // tersebut menjadi nilai tagihan sekaligus saldo yang dapat
+                        // dilunasi pada transaksi pelunasan berikutnya.
+                        $nilaiTagihan = $nominalDibayar;
+                        $sisaPembayaran = $nominalDibayar;
                     } elseif ($paymentMode === 'pelunasan_dp') {
                         $dpStorageId = $section['dp_storage_id'] ?? null;
                         $dpStorage = $dpStorageId ? \App\Models\BiayaKapalStorage::lockForUpdate()->find($dpStorageId) : null;
