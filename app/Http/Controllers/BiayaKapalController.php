@@ -3280,15 +3280,31 @@ class BiayaKapalController extends Controller
 
         // Get from bls table
         if (! empty($blIds)) {
+            // Trucking entries created from the current form store manifest IDs.
+            // Load manifests first so their size is available for the print breakdown.
+            $fromManifests = DB::table('manifests')
+                ->whereIn('id', $blIds)
+                ->get();
+            foreach ($fromManifests as $manifest) {
+                $blDetails->put($manifest->id, (object) [
+                    'kontainer' => $manifest->nomor_kontainer,
+                    'seal' => $manifest->no_seal,
+                    'size' => $manifest->size_kontainer,
+                ]);
+            }
+
+            // Keep compatibility with older records that reference the bls table.
             $fromBls = DB::table('bls')
                 ->whereIn('id', $blIds)
                 ->get();
             foreach ($fromBls as $bl) {
-                $blDetails->put($bl->id, (object) [
-                    'kontainer' => $bl->nomor_kontainer,
-                    'seal' => $bl->no_seal,
-                    'size' => $bl->size_kontainer,
-                ]);
+                if (! $blDetails->has($bl->id)) {
+                    $blDetails->put($bl->id, (object) [
+                        'kontainer' => $bl->nomor_kontainer,
+                        'seal' => $bl->no_seal,
+                        'size' => $bl->size_kontainer,
+                    ]);
+                }
             }
         }
 
