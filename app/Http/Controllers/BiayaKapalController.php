@@ -6158,7 +6158,7 @@ class BiayaKapalController extends Controller
                         'size' => $bl->size_kontainer ?? '',
                         'nama_barang' => $bl->nama_barang ?? '',
                         'pengirim' => $bl->pengirim ?? '',
-                        'tipe' => $bl->tipe_kontainer ?? '',
+                        'tipe' => $bl->tipe_kontainer ?: (empty($bl->size_kontainer) ? 'CARGO' : ''),
                         'nomor_bl' => $bl->nomor_bl ?? '',
                         'penerima' => $bl->penerima ?? '',
                     ]];
