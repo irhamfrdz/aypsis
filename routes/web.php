@@ -7962,5 +7962,5 @@ Route::middleware(['auth',
     // =========================================================
     Route::get('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive'])->name('berita.toggle-active');
     Route::post('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive']);
-    Route::resource('berita', \App\Http\Controllers\BeritaController::class);
+    Route::resource('berita', \App\Http\Controllers\BeritaController::class)->parameters(['berita' => 'berita']);
 });
