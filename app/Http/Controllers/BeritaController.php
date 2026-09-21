@@ -108,7 +108,7 @@ class BeritaController extends Controller
         }
         $berita->delete();
 
-        if (request()->ajax()) {
+        if (request()->ajax() || request()->wantsJson()) {
             return response()->json(['success' => true, 'message' => 'Berita/Pamflet berhasil dihapus.']);
         }
         return redirect()->route('berita.index')->with('success', 'Berita/Pamflet berhasil dihapus.');

@@ -160,11 +160,21 @@
 
 @push('scripts')
 <script>
+const baseUrl = "{{ url('master/berita') }}";
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+
 // Toggle aktif
 document.querySelectorAll('.toggle-active').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.id;
-        fetch(`/berita/${id}/toggle-active`, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' } })
+        fetch(`${baseUrl}/${id}/toggle-active`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
@@ -182,33 +192,58 @@ document.querySelectorAll('.toggle-active').forEach(btn => {
                         label.textContent = 'Nonaktif';
                     }
                 }
-            });
+            })
+            .catch(err => console.error(err));
     });
 });
 
 // Hapus
 let deleteId = null;
+const deleteModal = document.getElementById('deleteModal');
+const confirmDeleteBtn = document.getElementById('confirmDelete');
+
 document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         deleteId = this.dataset.id;
-        document.getElementById('deleteModal').classList.remove('hidden');
+        deleteModal.classList.remove('hidden');
     });
 });
+
 document.getElementById('cancelDelete').addEventListener('click', () => {
-    document.getElementById('deleteModal').classList.add('hidden');
+    deleteModal.classList.add('hidden');
     deleteId = null;
 });
-document.getElementById('confirmDelete').addEventListener('click', () => {
+
+confirmDeleteBtn.addEventListener('click', () => {
     if (!deleteId) return;
-    fetch(`/berita/${deleteId}`, {
+    confirmDeleteBtn.disabled = true;
+    confirmDeleteBtn.textContent = 'Menghapus...';
+
+    fetch(`${baseUrl}/${deleteId}`, {
         method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
-    }).then(r => r.json()).then(data => {
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
         if (data.success) {
             document.getElementById(`row-${deleteId}`)?.remove();
-            document.getElementById('deleteModal').classList.add('hidden');
+            deleteModal.classList.add('hidden');
             deleteId = null;
+        } else {
+            alert(data.message || 'Gagal menghapus berita.');
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Terjadi kesalahan saat menghapus data.');
+    })
+    .finally(() => {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.textContent = 'Hapus';
     });
 });
 
