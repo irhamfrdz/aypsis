@@ -3122,17 +3122,24 @@ class BlController extends Controller
             // Determine nomor BL to display (using the first item's BL if grouped by pengirim)
             $nomorBl = trim($group->first()->nomor_bl ?? '-');
 
-            // Sum tonnage / volume
-            $totalVolume = $group->sum('volume_perincian');
-            $totalTonnage = $group->sum('tonnage_perincian');
+            // Untuk setiap manifest/barang, pilih nilai terbesar antara tonnage
+            // dan volume terlebih dahulu, kemudian jumlahkan hasil pilihannya.
+            $selectedAmounts = $group->map(function ($item) {
+                $tonnage = (float) ($item->tonnage_perincian ?? 0);
+                $volume = (float) ($item->volume_perincian ?? 0);
+
+                return [
+                    'amount' => max($tonnage, $volume),
+                    'unit' => $tonnage >= $volume ? 'ton' : 'm3',
+                ];
+            });
+            $tonCount = $selectedAmounts->where('unit', 'ton')->count();
+            $volumeCount = $selectedAmounts->where('unit', 'm3')->count();
             $amount = null;
             $unit = '';
-            if ($totalVolume > 0) {
-                $amount = $totalVolume;
-                $unit = 'm3';
-            } elseif ($totalTonnage > 0) {
-                $amount = $totalTonnage;
-                $unit = 'ton';
+            if ($selectedAmounts->sum('amount') > 0) {
+                $amount = $selectedAmounts->sum('amount');
+                $unit = $tonCount >= $volumeCount ? 'ton' : 'm3';
             }
 
             return [
