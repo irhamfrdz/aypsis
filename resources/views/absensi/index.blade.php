@@ -600,32 +600,32 @@
                                 
                                 <div class="mb-3">
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal</label>
-                                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" required onchange="fetchDataForEntry(this)">
+                                    <input type="text" name="tanggal[]" value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="dd/mm/yyyy" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" maxlength="10" required onchange="fetchDataForEntry(this)">
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Jam Masuk</label>
-                                        <input type="time" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Jam Pulang</label>
-                                        <input type="time" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Keluar</label>
-                                        <input type="time" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Masuk</label>
-                                        <input type="time" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Masuk</label>
-                                        <input type="time" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Pulang</label>
-                                        <input type="time" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                        <input type="text" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                                     </div>
                                 </div>
                             </div>
@@ -739,11 +739,33 @@
 
 @push('scripts')
 <script>
-    // Gunakan locale Indonesia agar kontrol waktu menampilkan format 24 jam.
+    // Gunakan input teks agar format tidak mengikuti regional setting browser/Windows.
+    function dateIdToIso(value) {
+        const match = String(value || '').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        return match ? `${match[3]}-${match[2]}-${match[1]}` : String(value || '').trim();
+    }
+
+    function dateIsoToId(value) {
+        const match = String(value || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value || '').trim();
+    }
+
+    function timeTo24Hour(value) {
+        const text = String(value || '').trim().toUpperCase();
+        const match = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/);
+        if (!match) return text;
+        let hour = parseInt(match[1], 10);
+        const minute = match[2];
+        if (match[3] === 'PM' && hour < 12) hour += 12;
+        if (match[3] === 'AM' && hour === 12) hour = 0;
+        return `${String(hour).padStart(2, '0')}:${minute}`;
+    }
+
     function apply24HourTimeFormat() {
-        document.querySelectorAll('input[type="time"]').forEach(input => {
-            input.setAttribute('lang', 'id-ID');
-            input.setAttribute('step', '60');
+        document.querySelectorAll('.waktu-masuk-input, .waktu-pulang-input, .waktu-istirahat-keluar-input, .waktu-istirahat-masuk-input, .waktu-lembur-masuk-input, .waktu-lembur-pulang-input').forEach(input => {
+            if (input.dataset.formatBound) return;
+            input.dataset.formatBound = '1';
+            input.addEventListener('blur', () => input.value = timeTo24Hour(input.value));
         });
     }
 
@@ -754,8 +776,17 @@
         subtree: true,
     });
 
+    document.querySelector('#createModal form')?.addEventListener('submit', function() {
+        this.querySelectorAll('.tanggal-input').forEach(input => {
+            input.value = dateIdToIso(input.value);
+        });
+        this.querySelectorAll('.waktu-masuk-input, .waktu-pulang-input, .waktu-istirahat-keluar-input, .waktu-istirahat-masuk-input, .waktu-lembur-masuk-input, .waktu-lembur-pulang-input').forEach(input => {
+            input.value = timeTo24Hour(input.value);
+        });
+    });
+
     function toggleEntryInputsState(entry, disabled) {
-        const inputs = entry.querySelectorAll('input[type="time"]');
+        const inputs = entry.querySelectorAll('.waktu-masuk-input, .waktu-pulang-input, .waktu-istirahat-keluar-input, .waktu-istirahat-masuk-input, .waktu-lembur-masuk-input, .waktu-lembur-pulang-input');
         inputs.forEach(input => {
             input.disabled = disabled;
         });
@@ -776,32 +807,32 @@
                 
                 <div class="mb-3">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal</label>
-                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" required onchange="fetchDataForEntry(this)">
+                    <input type="text" name="tanggal[]" value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="dd/mm/yyyy" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" maxlength="10" required onchange="fetchDataForEntry(this)">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Jam Masuk</label>
-                        <input type="time" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Jam Pulang</label>
-                        <input type="time" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Keluar</label>
-                        <input type="time" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Masuk</label>
-                        <input type="time" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Masuk</label>
-                        <input type="time" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Pulang</label>
-                        <input type="time" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                        <input type="text" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" inputmode="numeric" placeholder="HH:mm" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5">
                     </div>
                 </div>
             </div>
@@ -835,7 +866,7 @@
 
     function fetchDataForEntry(dateInput) {
         const nik = document.getElementById('create_nik').value;
-        const tanggal = dateInput.value;
+        const tanggal = dateIdToIso(dateInput.value);
         const entry = dateInput.closest('.absensi-entry');
 
         if (nik && tanggal) {
@@ -849,7 +880,7 @@
                     const setAndLock = (className, val) => {
                         const el = entry.querySelector('.' + className);
                         if(el) {
-                            el.value = val || '';
+                            el.value = timeTo24Hour(val || '');
                             if (val) {
                                 el.readOnly = true;
                                 el.classList.add('bg-gray-200', 'cursor-not-allowed');
@@ -915,7 +946,7 @@
         }
         
         const firstEntry = container.querySelector('.absensi-entry');
-        firstEntry.querySelector('.tanggal-input').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        firstEntry.querySelector('.tanggal-input').value = '{{ \Carbon\Carbon::now()->format('d/m/Y') }}';
         clearEntryInputs(firstEntry);
         updateEntryNumbers();
     }
