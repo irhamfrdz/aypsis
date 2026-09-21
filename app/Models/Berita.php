@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class Berita extends Model
 {
@@ -17,6 +17,7 @@ class Berita extends Model
         'konten',
         'tipe',
         'gambar',
+        'aspect_ratio',
         'is_active',
         'pinned',
         'published_at',
@@ -24,8 +25,8 @@ class Berita extends Model
     ];
 
     protected $casts = [
-        'is_active'    => 'boolean',
-        'pinned'       => 'boolean',
+        'is_active' => 'boolean',
+        'pinned' => 'boolean',
         'published_at' => 'datetime',
     ];
 
@@ -43,10 +44,10 @@ class Berita extends Model
     public function scopeAktif($query)
     {
         return $query->where('is_active', true)
-                     ->where(function ($q) {
-                         $q->whereNull('published_at')
-                           ->orWhere('published_at', '<=', Carbon::now());
-                     });
+            ->where(function ($q) {
+                $q->whereNull('published_at')
+                    ->orWhere('published_at', '<=', Carbon::now());
+            });
     }
 
     /**
@@ -54,7 +55,10 @@ class Berita extends Model
      */
     public function getGambarUrlAttribute(): ?string
     {
-        if (!$this->gambar) return null;
+        if (! $this->gambar) {
+            return null;
+        }
+
         return asset($this->gambar);
     }
 }

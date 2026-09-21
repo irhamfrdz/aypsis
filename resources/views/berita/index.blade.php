@@ -85,6 +85,13 @@
                         <td class="px-4 py-3 text-center">
                             @if($item->tipe === 'pamflet')
                                 <span class="inline-flex px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">Pamflet</span>
+                                @if($item->aspect_ratio)
+                                    <div class="mt-1">
+                                        <span class="inline-flex px-1.5 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-semibold rounded border border-purple-200" title="Rasio Banner">
+                                            {{ $item->aspect_ratio }}
+                                        </span>
+                                    </div>
+                                @endif
                             @else
                                 <span class="inline-flex px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Berita</span>
                             @endif
