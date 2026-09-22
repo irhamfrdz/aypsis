@@ -34,7 +34,7 @@
                     
                     <div>
                         <div class="text-xs text-gray-500 uppercase font-semibold">Tanggal Request</div>
-                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->created_at->format('d F Y, H:i') }} WIB</div>
+                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->tanggal_permohonan?->format('d F Y, H:i') ?? '-' }} WIB</div>
                     </div>
                     
                     <div>

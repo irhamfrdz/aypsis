@@ -13,10 +13,15 @@ class PermohonanAmprahan extends Model
 
     protected $fillable = [
         'user_id',
+        'tanggal_permohonan',
         'kapal_id',
         'nomor_voyage',
         'status',
         'keterangan_umum',
+    ];
+
+    protected $casts = [
+        'tanggal_permohonan' => 'datetime',
     ];
 
     public function user()

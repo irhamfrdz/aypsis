@@ -66,8 +66,8 @@
                                 {{ $permohonans->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $item->created_at->format('d M Y') }}</div>
-                                <div class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }} WIB</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $item->tanggal_permohonan?->format('d M Y') ?? '-' }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->tanggal_permohonan?->format('H:i') ? $item->tanggal_permohonan->format('H:i') . ' WIB' : '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm font-bold text-gray-900">{{ $item->kapal->nama_kapal ?? '-' }}</div>

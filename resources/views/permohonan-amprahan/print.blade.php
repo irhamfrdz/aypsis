@@ -205,7 +205,7 @@
                     <table class="info-table">
                         <tr>
                             <td style="width: 35%;">Tanggal</td>
-                            <td>: {{ \Carbon\Carbon::parse($permohonan->created_at)->format('d/M/Y') }}</td>
+                            <td>: {{ $permohonan->tanggal_permohonan?->format('d/M/Y') ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td>Nomor Dokumen</td>
