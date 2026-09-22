@@ -54,6 +54,7 @@
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kapal / Voyage</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemohon</th>
                         <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">Aksi</th>
@@ -72,6 +73,13 @@
                             <td class="px-6 py-4">
                                 <div class="text-sm font-bold text-gray-900">{{ $item->kapal->nama_kapal ?? '-' }}</div>
                                 <div class="text-sm text-gray-600">Voyage: <span class="font-medium">{{ $item->nomor_voyage }}</span></div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @forelse($item->items as $barang)
+                                    <div class="text-sm text-gray-900">{{ $barang->nama_barang ?: '-' }}</div>
+                                @empty
+                                    <span class="text-sm text-gray-400">-</span>
+                                @endforelse
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->status == 'pending')
@@ -104,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
                                     <p class="text-lg font-medium text-gray-900">Belum ada data permintaan amprahan</p>

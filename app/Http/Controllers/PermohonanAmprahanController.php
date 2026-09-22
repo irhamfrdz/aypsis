@@ -16,7 +16,7 @@ class PermohonanAmprahanController extends Controller
         $selectedKapal = $request->input('kapal_id');
         $selectedVoyage = $request->input('nomor_voyage');
 
-        $query = PermohonanAmprahan::with(['kapal', 'user'])->latest();
+        $query = PermohonanAmprahan::with(['kapal', 'user', 'items'])->latest();
 
         if ($selectedKapal) {
             $query->where('kapal_id', $selectedKapal);
