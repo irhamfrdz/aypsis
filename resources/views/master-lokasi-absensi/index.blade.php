@@ -166,6 +166,65 @@
                             class="w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-2xs placeholder-slate-400"></textarea>
                     </div>
 
+                    <!-- Penugasan Karyawan Wajib Absen -->
+                    <div class="space-y-2 pt-1 border-t border-slate-100">
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fas fa-users-cog text-slate-400 text-[10px]"></i>
+                                <span>Karyawan Wajib Absen di Titik Ini</span>
+                                <span class="text-rose-500">*</span>
+                            </span>
+                            <span id="selected-karyawan-count-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                0 Karyawan Dipilih
+                            </span>
+                        </label>
+
+                        <!-- Pilihan Penugasan: Semua vs Khusus -->
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition select-none has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50 has-[:checked]:ring-1 has-[:checked]:ring-blue-500/20">
+                                <input type="radio" name="tipe-penugasan" id="penugasan-semua" value="semua" checked onchange="togglePenugasanType('semua')"
+                                    class="w-3.5 h-3.5 text-blue-600 border-slate-300 focus:ring-blue-500">
+                                <div class="min-w-0 flex-1">
+                                    <span class="block text-xs font-bold text-slate-800">Semua Karyawan</span>
+                                    <span class="block text-[10px] text-slate-400 truncate">Berlaku untuk seluruh staf</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition select-none has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/50 has-[:checked]:ring-1 has-[:checked]:ring-purple-500/20">
+                                <input type="radio" name="tipe-penugasan" id="penugasan-khusus" value="khusus" onchange="togglePenugasanType('khusus')"
+                                    class="w-3.5 h-3.5 text-purple-600 border-slate-300 focus:ring-purple-500">
+                                <div class="min-w-0 flex-1">
+                                    <span class="block text-xs font-bold text-slate-800">Karyawan Tertentu</span>
+                                    <span class="block text-[10px] text-slate-400 truncate">Pilih daftar staf wajib</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Container Checklist Karyawan (muncul jika khusus dipilih) -->
+                        <div id="karyawan-picker-container" class="hidden space-y-2 p-3 rounded-xl border border-purple-200 bg-purple-50/30">
+                            <!-- Quick search & Select/Deselect All buttons -->
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-1">
+                                    <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+                                    <input type="text" id="karyawan-search-input" oninput="filterKaryawanChecklist(this.value)" placeholder="Cari nama, NIK, divisi..." 
+                                        class="w-full pl-7 pr-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 placeholder-slate-400">
+                                </div>
+                                <button type="button" onclick="selectAllKaryawan(true)" class="px-2 py-1.5 text-[10px] font-bold text-purple-700 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition shrink-0 shadow-2xs">
+                                    Pilih Semua
+                                </button>
+                                <button type="button" onclick="selectAllKaryawan(false)" class="px-2 py-1.5 text-[10px] font-bold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition shrink-0 shadow-2xs">
+                                    Reset
+                                </button>
+                            </div>
+
+                            <!-- Scrollable Employee Checklist -->
+                            <div id="karyawan-checklist-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-lg bg-white divide-y divide-slate-100">
+                                <div class="p-4 text-center text-slate-400 text-xs">
+                                    <i class="fas fa-circle-notch fa-spin text-purple-500 mr-1"></i> Memuat daftar karyawan...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Status Aktif Toggle Card -->
                     <label for="is-active" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer select-none">
                         <div class="flex items-center gap-2.5">
@@ -259,6 +318,40 @@
             
         </div>
 
+    <!-- Modal Detail Karyawan Wajib Absen -->
+    <div id="assigned-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-loc-name" class="text-sm font-bold text-slate-900 leading-tight">Daftar Karyawan Wajib</h3>
+                        <p id="modal-loc-subtitle" class="text-[11px] text-slate-400">Titik Lokasi: -</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAssignedModal()" class="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            <div class="p-3 border-b border-slate-100 bg-white">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="modal-search-input" oninput="filterModalKaryawan(this.value)" placeholder="Cari nama atau NIK..."
+                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-slate-800">
+                </div>
+            </div>
+            <div id="modal-karyawan-list" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1.5 divide-y divide-slate-100">
+                <!-- Dynamic list -->
+            </div>
+            <div class="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <span id="modal-count-info" class="text-[11px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">0 Karyawan</span>
+                <button type="button" onclick="closeAssignedModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200/70 bg-slate-100 rounded-xl transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -288,6 +381,10 @@
         let isEditing = false;
         let allLocationsData = [];
         let activeLocationId = null;
+        let allKaryawansData = [];
+        let selectedKaryawanIds = new Set();
+        let currentPenugasanType = 'semua';
+        let currentModalKaryawans = [];
 
         // Elements
         const form = document.getElementById('location-form');
@@ -311,7 +408,119 @@
         const searchInput = document.getElementById('map-search');
         const searchBtn = document.getElementById('search-btn');
 
-        // Fetch lokasi dari Node.js backend
+        // Elements Penugasan Karyawan
+        const penugasanSemuaRadio = document.getElementById('penugasan-semua');
+        const penugasanKhususRadio = document.getElementById('penugasan-khusus');
+        const karyawanPickerContainer = document.getElementById('karyawan-picker-container');
+        const karyawanChecklistList = document.getElementById('karyawan-checklist-list');
+        const selectedKaryawanBadge = document.getElementById('selected-karyawan-count-badge');
+        const karyawanSearchInput = document.getElementById('karyawan-search-input');
+
+        // Load Karyawan List dari Backend API
+        async function loadKaryawans() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/lokasi-absensi/karyawans`);
+                allKaryawansData = await response.json();
+                renderKaryawanChecklist(allKaryawansData);
+            } catch (err) {
+                console.error('Failed to load karyawans:', err);
+                karyawanChecklistList.innerHTML = `
+                    <div class="p-3 text-center text-rose-500 text-xs">
+                        Gagal memuat data karyawan.
+                    </div>
+                `;
+            }
+        }
+
+        // Render Karyawan Checklist
+        function renderKaryawanChecklist(karyawans) {
+            if (!karyawanChecklistList) return;
+            if (karyawans.length === 0) {
+                karyawanChecklistList.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">Tidak ada karyawan yang cocok.</div>`;
+                return;
+            }
+
+            karyawanChecklistList.innerHTML = karyawans.map(k => {
+                const isChecked = selectedKaryawanIds.has(k.id);
+                const initial = (k.nama_lengkap || 'K').charAt(0).toUpperCase();
+                return `
+                    <label class="flex items-center gap-2.5 p-2 hover:bg-purple-50/40 cursor-pointer select-none transition">
+                        <input type="checkbox" value="${k.id}" ${isChecked ? 'checked' : ''} onchange="toggleKaryawanSelected(${k.id}, this.checked)"
+                            class="karyawan-checkbox w-3.5 h-3.5 text-purple-600 rounded border-slate-300 focus:ring-purple-500">
+                        <div class="w-6 h-6 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                            ${initial}
+                        </div>
+                        <div class="min-w-0 flex-1 leading-tight">
+                            <span class="block text-xs font-semibold text-slate-800 truncate">${k.nama_lengkap}</span>
+                            <span class="block text-[10px] text-slate-400 truncate">NIK: ${k.nik || '-'} &bull; ${k.divisi || 'Umum'}</span>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        // Filter Karyawan Checklist saat mengetik pencarian
+        function filterKaryawanChecklist(query) {
+            query = (query || '').toLowerCase().trim();
+            if (!query) {
+                renderKaryawanChecklist(allKaryawansData);
+                return;
+            }
+            const filtered = allKaryawansData.filter(k => {
+                const nama = (k.nama_lengkap || '').toLowerCase();
+                const nik = (k.nik || '').toLowerCase();
+                const div = (k.divisi || '').toLowerCase();
+                return nama.includes(query) || nik.includes(query) || div.includes(query);
+            });
+            renderKaryawanChecklist(filtered);
+        }
+
+        function toggleKaryawanSelected(id, checked) {
+            if (checked) {
+                selectedKaryawanIds.add(id);
+            } else {
+                selectedKaryawanIds.delete(id);
+            }
+            updateSelectedKaryawanBadge();
+        }
+
+        function selectAllKaryawan(selectAll) {
+            const query = (karyawanSearchInput.value || '').toLowerCase().trim();
+            const targets = query 
+                ? allKaryawansData.filter(k => (k.nama_lengkap || '').toLowerCase().includes(query) || (k.nik || '').toLowerCase().includes(query))
+                : allKaryawansData;
+
+            targets.forEach(k => {
+                if (selectAll) selectedKaryawanIds.add(k.id);
+                else selectedKaryawanIds.delete(k.id);
+            });
+
+            filterKaryawanChecklist(karyawanSearchInput.value);
+            updateSelectedKaryawanBadge();
+        }
+
+        function updateSelectedKaryawanBadge() {
+            const count = selectedKaryawanIds.size;
+            if (currentPenugasanType === 'khusus') {
+                selectedKaryawanBadge.classList.remove('hidden');
+                selectedKaryawanBadge.innerText = `${count} Karyawan Dipilih`;
+            } else {
+                selectedKaryawanBadge.classList.add('hidden');
+            }
+        }
+
+        function togglePenugasanType(type) {
+            currentPenugasanType = type;
+            if (type === 'khusus') {
+                karyawanPickerContainer.classList.remove('hidden');
+                updateSelectedKaryawanBadge();
+            } else {
+                karyawanPickerContainer.classList.add('hidden');
+                selectedKaryawanBadge.classList.add('hidden');
+            }
+        }
+
+        // Fetch lokasi dari backend
         async function loadLocations() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/lokasi-absensi`);
@@ -329,6 +538,9 @@
                     const marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
                     marker.locationId = loc.id;
                     const isActive = loc.is_active == 1;
+                    const penugasanBadge = loc.tipe_penugasan === 'khusus'
+                        ? `<span class="font-medium text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">${(loc.assigned_karyawans?.length || 0)} Karyawan</span>`
+                        : `<span class="font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">Semua Karyawan</span>`;
 
                     marker.bindPopup(`
                         <div class="p-1 space-y-1">
@@ -339,6 +551,7 @@
                             <p class="text-[10px] text-slate-500 leading-tight">${loc.keterangan || 'Tidak ada catatan'}</p>
                             <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 gap-2">
                                 <span class="font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">R: ${loc.radius}m</span>
+                                ${penugasanBadge}
                                 <span class="font-mono text-slate-400">${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}</span>
                             </div>
                         </div>
@@ -391,6 +604,16 @@
                 const locJson = JSON.stringify(loc).replace(/"/g, '&quot;');
                 const isActive = loc.is_active == 1;
                 const isSelected = (activeLocationId === loc.id);
+                const assignedCount = (loc.assigned_karyawans || []).length;
+                const penugasanTag = loc.tipe_penugasan === 'khusus'
+                    ? `<button type="button" onclick="event.stopPropagation(); openAssignedModal(${loc.id})" 
+                            class="inline-flex items-center gap-1 text-[10px] font-semibold bg-purple-50 hover:bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md border border-purple-200 transition shadow-2xs" 
+                            title="Klik untuk melihat ${assignedCount} karyawan yang wajib absen">
+                            <i class="fas fa-user-check text-[8px]"></i> ${assignedCount} Karyawan Wajib
+                       </button>`
+                    : `<span class="inline-flex items-center gap-1 text-[10px] bg-sky-50 text-sky-700 font-semibold px-2 py-0.5 rounded-md border border-sky-200">
+                            <i class="fas fa-users text-[8px]"></i> Semua Karyawan
+                       </span>`;
 
                 return `
                     <div id="loc-card-${loc.id}" 
@@ -407,6 +630,7 @@
                                     <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
                                         <i class="fas fa-bullseye text-[8px] text-slate-400"></i> ${loc.radius} m
                                     </span>
+                                    ${penugasanTag}
                                     ${isActive ? 
                                         `<span class="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-md border border-emerald-200">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
@@ -547,6 +771,11 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            if (currentPenugasanType === 'khusus' && selectedKaryawanIds.size === 0) {
+                alert('Silakan pilih minimal 1 karyawan wajib absen untuk opsi "Karyawan Tertentu".');
+                return;
+            }
+
             const id = locationIdInput.value;
             const payload = {
                 nama_lokasi: namaInput.value,
@@ -554,7 +783,9 @@
                 longitude: parseFloat(lonInput.value),
                 radius: parseInt(radiusInput.value) || 100,
                 keterangan: ketInput.value,
-                is_active: isActiveInput.checked ? 1 : 0
+                is_active: isActiveInput.checked ? 1 : 0,
+                tipe_penugasan: currentPenugasanType,
+                karyawan_ids: currentPenugasanType === 'khusus' ? Array.from(selectedKaryawanIds) : []
             };
 
             const url = id ? `${API_BASE_URL}/api/lokasi-absensi/${id}` : `${API_BASE_URL}/api/lokasi-absensi`;
@@ -597,6 +828,24 @@
             radiusInput.value = loc.radius;
             ketInput.value = loc.keterangan || '';
             isActiveInput.checked = loc.is_active == 1;
+
+            // Set tipe penugasan & checklist karyawan
+            currentPenugasanType = loc.tipe_penugasan || 'semua';
+            if (currentPenugasanType === 'khusus') {
+                penugasanKhususRadio.checked = true;
+                penugasanSemuaRadio.checked = false;
+                karyawanPickerContainer.classList.remove('hidden');
+                selectedKaryawanIds = new Set(loc.assigned_karyawan_ids || []);
+            } else {
+                penugasanSemuaRadio.checked = true;
+                penugasanKhususRadio.checked = false;
+                karyawanPickerContainer.classList.add('hidden');
+                selectedKaryawanIds = new Set();
+            }
+
+            if (karyawanSearchInput) karyawanSearchInput.value = '';
+            filterKaryawanChecklist('');
+            updateSelectedKaryawanBadge();
 
             // Sembunyikan marker lama milik lokasi ini saat sedang diedit agar tidak bertumpuk
             mapMarkers.forEach(layer => {
@@ -646,6 +895,16 @@
             form.reset();
             isActiveInput.checked = true;
 
+            // Reset Penugasan
+            currentPenugasanType = 'semua';
+            penugasanSemuaRadio.checked = true;
+            penugasanKhususRadio.checked = false;
+            karyawanPickerContainer.classList.add('hidden');
+            selectedKaryawanIds.clear();
+            if (karyawanSearchInput) karyawanSearchInput.value = '';
+            filterKaryawanChecklist('');
+            updateSelectedKaryawanBadge();
+
             // Kembalikan marker yang sempat disembunyikan saat mode edit
             mapMarkers.forEach(layer => {
                 if (!map.hasLayer(layer)) {
@@ -680,6 +939,77 @@
                 alert('Gagal menghapus: ' + err.message);
             }
         }
+
+        // Modal Karyawan Wajib Absen
+        function openAssignedModal(locId) {
+            const loc = allLocationsData.find(l => l.id === locId);
+            if (!loc) return;
+
+            document.getElementById('modal-loc-name').innerText = `Karyawan Wajib: ${loc.nama_lokasi}`;
+            document.getElementById('modal-loc-subtitle').innerText = `Radius: ${loc.radius}m • Koordinat: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+            
+            currentModalKaryawans = loc.assigned_karyawans || [];
+            renderModalKaryawanList(currentModalKaryawans);
+            
+            const modal = document.getElementById('assigned-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAssignedModal() {
+            const modal = document.getElementById('assigned-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderModalKaryawanList(karyawans) {
+            const listEl = document.getElementById('modal-karyawan-list');
+            const countInfo = document.getElementById('modal-count-info');
+            countInfo.innerText = `${karyawans.length} Karyawan Wajib`;
+
+            if (karyawans.length === 0) {
+                listEl.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada karyawan yang ditugaskan pada titik ini.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = karyawans.map((k, idx) => `
+                <div class="p-2.5 flex items-center justify-between gap-3 hover:bg-slate-50 rounded-xl transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
+                            ${idx + 1}
+                        </div>
+                        <div class="min-w-0">
+                            <h6 class="text-xs font-bold text-slate-800 truncate">${k.nama_lengkap}</h6>
+                            <span class="text-[10px] text-slate-400 truncate block">NIK: ${k.nik || '-'} &bull; ${k.divisi || 'Umum'}</span>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 shrink-0">
+                        Wajib
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function filterModalKaryawan(query) {
+            query = (query || '').toLowerCase().trim();
+            if (!query) {
+                renderModalKaryawanList(currentModalKaryawans);
+                return;
+            }
+            const filtered = currentModalKaryawans.filter(k => 
+                (k.nama_lengkap || '').toLowerCase().includes(query) || 
+                (k.nik || '').toLowerCase().includes(query) ||
+                (k.divisi || '').toLowerCase().includes(query)
+            );
+            renderModalKaryawanList(filtered);
+        }
+
+        // Close modal on click outside backdrop
+        document.getElementById('assigned-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAssignedModal();
+            }
+        });
 
         // OSM Nominatim Search
         async function performSearch() {
@@ -738,6 +1068,7 @@
         });
 
         // Load data on startup
+        loadKaryawans();
         loadLocations();
     </script>
 @endpush
