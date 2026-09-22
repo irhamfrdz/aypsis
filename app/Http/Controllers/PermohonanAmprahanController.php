@@ -57,7 +57,7 @@ class PermohonanAmprahanController extends Controller
         $selectedVoyage = $request->input('nomor_voyage');
         $selectedStatus = $request->input('status', 'pending');
 
-        $query = PermohonanAmprahan::with(['kapal', 'user'])->latest();
+        $query = PermohonanAmprahan::with(['kapal', 'user', 'items'])->latest();
 
         if ($selectedKapal) {
             $query->where('kapal_id', $selectedKapal);
