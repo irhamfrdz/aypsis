@@ -1,234 +1,62 @@
-    // ============= TEMAS SECTIONS MANAGEMENT =============
-    // Note: temasSectionsContainer & addTemasSectionBtn are declared in _js-jenis-biaya.blade.php
+
+    // Container cards submit aligned arrays understood by the existing store action.
     let temasSectionCounter = 0;
-    
-    function initializeTemasSections() {
-        if (temasSectionsContainer) temasSectionsContainer.innerHTML = '';
-        temasSectionCounter = 0;
-        addTemasSection();
-    }
-    
+    const temasEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+    const temasMoney = value => 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+    const temasSize = value => {
+        const match = String(value || '').match(/20|40|45/);
+        return match ? match[0] + 'ft' : String(value || '');
+    };
+    const temasInputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500';
+
     function clearAllTemasSections() {
-        if (temasSectionsContainer) temasSectionsContainer.innerHTML = '';
-        temasSectionCounter = 0;
+        if (temasSectionsContainer) temasSectionsContainer.replaceChildren();
         if (nominalInput) nominalInput.value = '';
     }
-    
-    if (addTemasSectionBtn) {
-        addTemasSectionBtn.addEventListener('click', function() {
-            addTemasSection();
-        });
+    function initializeTemasSections() {
+        clearAllTemasSections();
+        addTemasSection();
     }
-    
-    window.updateTemasPriceFromSelect = function(select, sectionIndex) {
-        const container = select.closest('.temas-type-item');
-        const priceInput = container.querySelector('.price-input-temas');
-        const lokasiSelect = container.querySelector('.lokasi-select-temas');
-        const sizeSelect = container.querySelector('.size-select-temas');
-        const selectedOption = select.options[select.selectedIndex];
-        
-        if (selectedOption && selectedOption.value) {
-            const harga = selectedOption.getAttribute('data-harga');
-            const lokasi = selectedOption.getAttribute('data-lokasi');
-            const size = selectedOption.getAttribute('data-size');
-            
-            priceInput.value = harga || 0;
-            if (lokasi) lokasiSelect.value = lokasi;
-            if (size) sizeSelect.value = size;
-        } else {
-            priceInput.value = 0;
-        }
-        calculateTemasSectionTotal(sectionIndex);
-    };
-    
-    window.toggleTemasTypeInput = function(btn, sectionIndex) {
-        const container = btn.closest('.temas-type-item');
-        const select = container.querySelector('.type-select-temas');
-        const manualInput = container.querySelector('.type-manual-input-temas');
-        const hiddenManual = container.querySelector('.hidden-type-manual-temas');
-        const priceInput = container.querySelector('.price-input-temas');
-        
-        if (manualInput.classList.contains('hidden')) {
-            // Switch to Manual
-            select.classList.add('hidden');
-            select.disabled = true;
-            select.required = false;
-            
-            manualInput.classList.remove('hidden');
-            manualInput.required = true;
-            
-            hiddenManual.disabled = false;
-            
-            btn.classList.add('bg-blue-200', 'text-blue-700');
-            btn.classList.remove('bg-gray-200', 'text-gray-600');
-            btn.innerHTML = '<i class="fas fa-list"></i>';
-            btn.title = "Switch to List Selection";
-            
-            priceInput.readOnly = false;
-            priceInput.classList.remove('bg-gray-100');
-            priceInput.classList.add('bg-white');
-            priceInput.value = '';
-            priceInput.focus();
-        } else {
-            // Switch to Select
-            manualInput.classList.add('hidden');
-            manualInput.required = false;
-            
-            select.classList.remove('hidden');
-            select.disabled = false;
-            select.required = true;
-            
-            hiddenManual.disabled = true;
-            
-            btn.classList.remove('bg-blue-200', 'text-blue-700');
-            btn.classList.add('bg-gray-200', 'text-gray-600');
-            btn.innerHTML = '<i class="fas fa-keyboard"></i>';
-            btn.title = "Switch to Manual Input";
-            
-            updateTemasPriceFromSelect(select, sectionIndex);
-        }
-        
-        calculateTemasSectionTotal(sectionIndex);
-    };
- 
+    if (addTemasSectionBtn) addTemasSectionBtn.addEventListener('click', addTemasSection);
+
     function addTemasSection() {
-        temasSectionCounter++;
-        const sectionIndex = temasSectionCounter;
-        
+        const sectionIndex = ++temasSectionCounter;
         const section = document.createElement('div');
-        section.className = 'temas-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
-        section.setAttribute('data-section-index', sectionIndex);
-        
-        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
-        allKapalsData.forEach(kapal => {
-            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
-        });
- 
-        // Temas options from pricelistTemasData
-        let temasOptions = '<option value="">-- Pilih Jenis Biaya Temas --</option>';
-        pricelistTemasData.forEach(item => {
-            const locStr = item.lokasi ? ` (${item.lokasi})` : '';
-            const sizeStr = item.size ? ` - ${item.size}` : '';
-            temasOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
-        });
-        
+        section.className = 'temas-section mb-6 p-4 border border-blue-200 rounded-xl bg-white';
+        section.dataset.sectionIndex = sectionIndex;
+        section.temasContainers = [];
         section.innerHTML = `
-            <div class="flex items-center justify-between mb-4">
-                <h4 class="text-md font-semibold text-blue-800">
-                    <i class="fas fa-ship mr-2"></i>Kapal ${sectionIndex} (Temas)
-                </h4>
-                ${sectionIndex > 1 ? `<button type="button" onclick="removeTemasSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h4 class="font-semibold text-blue-900">Kapal / Voyage ${sectionIndex}</h4>
+                <button type="button" onclick="removeTemasSection(${sectionIndex})" class="text-sm text-red-600 hover:underline">Hapus kapal</button>
             </div>
-            
+            <h5 class="font-semibold text-gray-800 mb-3">1. Pilih perjalanan kapal</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label class="text-sm text-gray-700">Nama kapal
+                    <select name="temas[${sectionIndex}][kapal]" class="kapal-select-temas ${temasInputClass} mt-1" required>
+                        <option value="">Pilih kapal</option>
+                        ${allKapalsData.map(k => '<option value="' + temasEscape(k.nama_kapal) + '">' + temasEscape(k.nama_kapal) + '</option>').join('')}
+                    </select>
+                </label>
+                <div>
+                    <label class="text-sm text-gray-700">Nomor voyage
+                        <select name="temas[${sectionIndex}][voyage]" class="voyage-select-temas ${temasInputClass} mt-1" required disabled><option value="">Pilih kapal terlebih dahulu</option></select>
+                        <input name="temas[${sectionIndex}][voyage]" class="voyage-input-temas ${temasInputClass} mt-1 hidden" placeholder="Ketik nomor voyage" required disabled>
+                    </label>
+                    <button type="button" class="voyage-manual-btn-temas mt-2 text-sm text-blue-700">Ketik voyage manual</button>
+                </div>
+            </div>
+            <h5 class="font-semibold text-gray-800">2. Isi biaya per kontainer</h5>
+            <p class="text-sm text-gray-500 mt-1 mb-3">Tambahkan kontainer yang ditagihkan, lalu isi biayanya. Satu kontainer dapat memiliki beberapa jenis biaya.</p>
+            <p class="temas-status text-sm text-blue-800 bg-blue-50 rounded-lg p-3 mb-3" role="status" aria-live="polite">Pilih kapal dan voyage untuk memuat kontainer dari manifest.</p>
+            <div class="temas-container-cards space-y-4"></div>
+            <button type="button" class="add-container-temas mt-3 mb-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">+ Tambah kontainer</button>
+            <h5 class="font-semibold text-gray-800 border-t pt-4">3. Periksa total tagihan</h5>
+            <p class="text-sm text-gray-500 mt-1 mb-3">Pajak, materai, admin, dan penyesuaian berlaku untuk seluruh kontainer pada kapal / voyage ini.</p>
+            <p class="temas-count text-sm text-blue-700 mb-3"></p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
-                    <select name="temas[${sectionIndex}][kapal]" class="kapal-select-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                        ${kapalOptions}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
-                    <div class="flex gap-2">
-                        <select name="temas[${sectionIndex}][voyage]" class="voyage-select-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" disabled required>
-                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                        </select>
-                        <input type="text" name="temas[${sectionIndex}][voyage]" class="voyage-input-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
-                        <button type="button" class="voyage-manual-btn-temas px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
-                            <i class="fas fa-keyboard"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Container Info Panel -->
-                <div class="temas-container-info-wrapper md:col-span-2 hidden">
-                    <div class="temas-container-info-content text-xs font-semibold text-blue-800 bg-blue-100/70 border border-blue-200 p-3 rounded-lg flex flex-col gap-2">
-                        <div class="flex flex-wrap gap-x-4 gap-y-1 items-center">
-                            <i class="fas fa-info-circle text-blue-600"></i>
-                            <span>Info Kontainer (Manifest):</span>
-                            <span class="temas-info-20">20ft: 0</span>
-                            <span class="text-blue-300">|</span>
-                            <span class="temas-info-40">40ft: 0</span>
-                            <span class="text-blue-300">|</span>
-                            <span class="temas-info-pelabuhan">Rute: -</span>
-                        </div>
-                        <div class="temas-info-list-kontainer border-t border-blue-200/40 pt-2 mt-1">
-                            <span class="font-bold text-blue-900 block mb-1.5"><i class="fas fa-boxes mr-1"></i>Nomor Kontainer:</span>
-                            <div class="flex flex-wrap gap-1 temas-badges-container">
-                                <!-- Container Badges -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="temas-types-container md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Detail Biaya Tagihan Temas</label>
-                    <div class="temas-types-list space-y-2 mb-2">
-                        <div class="temas-type-item flex flex-col gap-1 border p-3 rounded bg-white relative">
-                            <div class="flex gap-2 w-full">
-                                <select name="temas[${sectionIndex}][types][]" class="type-select-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" required onchange="updateTemasPriceFromSelect(this, ${sectionIndex})">
-                                    ${temasOptions}
-                                </select>
-                                
-                                <input type="hidden" name="temas[${sectionIndex}][types][]" class="hidden-type-manual-temas" value="MANUAL" disabled>
-                                
-                                <input type="text" name="temas[${sectionIndex}][manual_names][]" class="type-manual-input-temas hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Biaya Manual">
-                                
-                                <button type="button" class="type-toggle-btn-temas px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTemasTypeInput(this, ${sectionIndex})">
-                                    <i class="fas fa-keyboard"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 mt-1">
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
-                                    <select name="temas[${sectionIndex}][lokasi_items][]" class="lokasi-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                                        <option value="">-- Lokasi --</option>
-                                        <option value="Jakarta">Jakarta</option>
-                                        <option value="Batam">Batam</option>
-                                        <option value="Pinang">Pinang</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Size</label>
-                                    <select name="temas[${sectionIndex}][size_items][]" class="size-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                                        <option value="">-- Size --</option>
-                                        <option value="20ft">20ft</option>
-                                        <option value="40ft">40ft</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                                    <input type="number" step="0.01" min="0" name="temas[${sectionIndex}][quantities][]" class="quantity-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                                </div>
-                                <div class="flex items-end pb-1">
-                                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                                        <input type="hidden" name="temas[${sectionIndex}][is_muat][]" value="0">
-                                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                                        Muat
-                                    </label>
-                                </div>
-                                <div class="flex items-end pb-1">
-                                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                                        <input type="hidden" name="temas[${sectionIndex}][is_bongkar][]" value="0">
-                                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                                        Bongkar
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="add-type-btn-temas text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" onclick="addTypeToTemasSection(${sectionIndex})">
-                        <i class="fas fa-plus"></i> Tambah Biaya
-                    </button>
-                </div>
- 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total biaya semua kontainer</label>
                     <input type="text" class="sub-total-display-temas w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="temas[${sectionIndex}][sub_total]" class="sub-total-value-temas" value="0">
                 </div>
@@ -260,7 +88,7 @@
                     <input type="hidden" name="temas[${sectionIndex}][biaya_materai]" class="materai-value-temas" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Penyesuaian (minus untuk potongan)</label>
                     <input type="text" class="adjustment-display-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
                     <input type="hidden" name="temas[${sectionIndex}][adjustment]" class="adjustment-value-temas" value="0">
                 </div>
@@ -270,9 +98,10 @@
                     <input type="hidden" name="temas[${sectionIndex}][biaya_admin]" class="admin-value-temas" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total tagihan kapal ini</label>
                     <input type="text" class="grand-total-display-temas w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="temas[${sectionIndex}][grand_total]" class="grand-total-value-temas" value="0">
+                    <p class="text-xs text-gray-500 mt-2">Biaya kontainer + PPN − PPH + materai + admin + penyesuaian.</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>
@@ -297,47 +126,25 @@
             </div>
         `;
         
+
         temasSectionsContainer.appendChild(section);
-        
-        // Setup kapal change listener
         const kapalSelect = section.querySelector('.kapal-select-temas');
-        kapalSelect.addEventListener('change', function() {
-            loadVoyagesForTemasSection(sectionIndex, this.value);
-        });
-        
-        // Setup voyage change listener
         const voyageSelect = section.querySelector('.voyage-select-temas');
-        voyageSelect.addEventListener('change', function() {
-            const kapalNama = kapalSelect.value;
-            const voyageValue = this.value;
-            if (kapalNama && voyageValue) {
-                autoFillTemasForSection(sectionIndex, kapalNama, voyageValue);
-            }
-        });
-        
-        // Manual voyage toggle
         const voyageInput = section.querySelector('.voyage-input-temas');
-        const voyageManualBtn = section.querySelector('.voyage-manual-btn-temas');
- 
-        voyageManualBtn.addEventListener('click', function() {
-            if (voyageInput.classList.contains('hidden')) {
-                voyageSelect.classList.add('hidden');
-                voyageSelect.disabled = true;
-                voyageInput.classList.remove('hidden');
-                voyageInput.disabled = false;
-                voyageInput.focus();
-                this.classList.add('bg-blue-200', 'text-blue-700');
-                this.innerHTML = '<i class="fas fa-list"></i>';
-            } else {
-                voyageInput.classList.add('hidden');
-                voyageInput.disabled = true;
-                voyageSelect.classList.remove('hidden');
-                if (kapalSelect.value) voyageSelect.disabled = false;
-                this.classList.remove('bg-blue-200', 'text-blue-700');
-                this.innerHTML = '<i class="fas fa-keyboard"></i>';
-            }
+        kapalSelect.addEventListener('change', () => loadVoyagesForTemasSection(section));
+        voyageSelect.addEventListener('change', () => loadTemasContainers(section));
+        voyageInput.addEventListener('change', () => loadTemasContainers(section));
+        section.querySelector('.voyage-manual-btn-temas').addEventListener('click', function() {
+            const manual = voyageInput.disabled;
+            voyageInput.disabled = !manual;
+            voyageInput.classList.toggle('hidden', !manual);
+            voyageSelect.disabled = manual || !kapalSelect.value;
+            voyageSelect.classList.toggle('hidden', manual);
+            this.textContent = manual ? 'Pilih voyage dari daftar' : 'Ketik voyage manual';
+            loadTemasContainers(section);
         });
- 
+        section.querySelector('.add-container-temas').addEventListener('click', () => addTemasContainer(section));
+        addTemasContainer(section);
         // PPH Manual edit listener
         const pphDisplay = section.querySelector('.pph-display-temas');
         const pphValue = section.querySelector('.pph-value-temas');
@@ -422,401 +229,202 @@
         calculateTemasSectionTotal(sectionIndex);
     }
     
-    // Auto-fill Temas based on container counts from manifest table
-    function autoFillTemasForSection(sectionIndex, kapalNama, voyage) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        const container = section.querySelector('.temas-types-list');
-        
-        // Show loading
-        container.innerHTML = '<div class="text-sm text-blue-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</div>';
-        
-        fetch('{{ url("biaya-kapal/get-container-counts") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                kapal: kapalNama,
-                voyage: voyage
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.counts) {
-                container.innerHTML = '';
-                
-                // Store containers list on the section element for dynamic addition
-                const containersList = data.containers_data || [];
-                section.setAttribute('data-containers', JSON.stringify(containersList));
-                
-                // Determine location from pelabuhan_tujuan / pelabuhan_asal / pelabuhan_muat / pelabuhan_bongkar
-                let location = 'Jakarta'; // default
-                const pAsal = (data.pelabuhan_asal || '').toLowerCase();
-                const pTujuan = (data.pelabuhan_tujuan || '').toLowerCase();
-                const pMuat = (data.pelabuhan_muat || '').toLowerCase();
-                const pBongkar = (data.pelabuhan_bongkar || '').toLowerCase();
-                
-                if (pTujuan.includes('batam') || pBongkar.includes('batam') || pAsal.includes('batam') || pMuat.includes('batam')) {
-                    location = 'Batam';
-                } else if (pTujuan.includes('pinang') || pTujuan.includes('kijang') || pBongkar.includes('pinang') || pAsal.includes('pinang') || pAsal.includes('kijang') || pMuat.includes('pinang')) {
-                    location = 'Pinang';
-                }
-                
-                // Calculate quantities
-                const qty20 = (data.counts['20'] ? ((data.counts['20'].full || 0) + (data.counts['20'].empty || 0)) : 0);
-                const qty40 = (data.counts['40'] ? ((data.counts['40'].full || 0) + (data.counts['40'].empty || 0)) : 0);
-                
-                // Update container info display
-                const infoWrapper = section.querySelector('.temas-container-info-wrapper');
-                const info20 = section.querySelector('.temas-info-20');
-                const info40 = section.querySelector('.temas-info-40');
-                const infoPelabuhan = section.querySelector('.temas-info-pelabuhan');
-                const badgesContainer = section.querySelector('.temas-badges-container');
-                
-                if (infoWrapper) {
-                    const c20 = data.counts['20'] || { full: 0, empty: 0 };
-                    const c40 = data.counts['40'] || { full: 0, empty: 0 };
-                    
-                    info20.innerHTML = `<span class="font-bold text-blue-900">20ft:</span> ${qty20} (Full: ${c20.full || 0}, Empty: ${c20.empty || 0})`;
-                    info40.innerHTML = `<span class="font-bold text-blue-900">40ft:</span> ${qty40} (Full: ${c40.full || 0}, Empty: ${c40.empty || 0})`;
-                    
-                    const pAsalName = data.pelabuhan_asal || '-';
-                    const pTujuanName = data.pelabuhan_tujuan || '-';
-                    infoPelabuhan.innerHTML = `<span class="font-bold text-blue-900">Rute:</span> ${pAsalName} &rarr; ${pTujuanName}`;
-                    
-                    if (badgesContainer) {
-                        badgesContainer.innerHTML = '';
-                        if (containersList.length > 0) {
-                            containersList.forEach(c => {
-                                const badge = document.createElement('span');
-                                badge.className = 'inline-block bg-blue-200 text-blue-800 px-2 py-0.5 rounded text-[10px] font-mono border border-blue-300';
-                                badge.textContent = `${c.nomor_kontainer} (${c.size})`;
-                                badgesContainer.appendChild(badge);
-                            });
-                        } else {
-                            badgesContainer.innerHTML = '<span class="text-gray-500 italic text-[11px]">Tidak ada nomor kontainer</span>';
-                        }
-                    }
-                    
-                    infoWrapper.classList.remove('hidden');
-                }
-                
-                let addedAny = false;
-                
-                // Filter pricelistTemasData by matching location
-                const matchedItems = pricelistTemasData.filter(item => {
-                    const itemLoc = item.lokasi || '';
-                    return itemLoc.toLowerCase() === location.toLowerCase();
-                });
-                
-                matchedItems.forEach(item => {
-                    if (item.size === '20ft') {
-                        const sizeContainers = containersList.filter(c => (c.size || '').includes('20'));
-                        sizeContainers.forEach(c => {
-                            addTypeToTemasSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, c.nomor_kontainer, c.id);
-                            addedAny = true;
-                        });
-                    } else if (item.size === '40ft') {
-                        const sizeContainers = containersList.filter(c => (c.size || '').includes('40'));
-                        sizeContainers.forEach(c => {
-                            addTypeToTemasSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, c.nomor_kontainer, c.id);
-                            addedAny = true;
-                        });
-                    } else {
-                        // flat fee / no size
-                        if (containersList.length > 0) {
-                            addTypeToTemasSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, null, null);
-                            addedAny = true;
-                        }
-                    }
-                });
-                
-                if (!addedAny) {
-                    addTypeToTemasSection(sectionIndex);
-                }
-                
-                calculateTemasSectionTotal(sectionIndex);
-            } else {
-                container.innerHTML = '';
-                addTypeToTemasSection(sectionIndex);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching container counts:', error);
-            container.innerHTML = '';
-            addTypeToTemasSection(sectionIndex);
-        });
+
+    function activeTemasVoyage(section) {
+        const input = section.querySelector('.voyage-input-temas');
+        return input.disabled ? section.querySelector('.voyage-select-temas').value : input.value.trim();
     }
-
-    // Add Temas type input with values
-    window.addTypeToTemasSectionWithValue = function(sectionIndex, pricelistId, quantity, lokasi, size, harga, selectedContainer = null, selectedBlId = null) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        const typesList = section.querySelector('.temas-types-list');
-        
-        let temasOptions = '<option value="">-- Pilih Jenis Biaya Temas --</option>';
-        pricelistTemasData.forEach(item => {
-            const selected = item.id == pricelistId ? 'selected' : '';
-            const locStr = item.lokasi ? ` (${item.lokasi})` : '';
-            const sizeStr = item.size ? ` - ${item.size}` : '';
-            temasOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}" ${selected}>${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
-        });
-        
-        const containerOptions = getContainerOptionsForTemasSection(sectionIndex, selectedContainer);
-        
-        const div = document.createElement('div');
-        div.className = 'temas-type-item flex flex-col gap-1 border p-3 rounded bg-white relative';
-        div.innerHTML = `
-            <div class="flex gap-2 w-full">
-                <select name="temas[${sectionIndex}][types][]" class="type-select-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" required onchange="updateTemasPriceFromSelect(this, ${sectionIndex})">
-                    ${temasOptions}
-                </select>
-                
-                <input type="hidden" name="temas[${sectionIndex}][types][]" class="hidden-type-manual-temas" value="MANUAL" disabled>
-                
-                <input type="text" name="temas[${sectionIndex}][manual_names][]" class="type-manual-input-temas hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Biaya Manual">
-                
-                <button type="button" class="type-toggle-btn-temas px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTemasTypeInput(this, ${sectionIndex})">
-                    <i class="fas fa-keyboard"></i>
-                </button>
-                    
-                <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.temas-type-item').remove(); calculateTemasSectionTotal(${sectionIndex})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 mt-1">
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">No. Kontainer</label>
-                    <select name="temas[${sectionIndex}][nomor_kontainers][]" class="container-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" onchange="updateTemasContainerSize(this)">
-                        ${containerOptions}
-                    </select>
-                    <input type="hidden" name="temas[${sectionIndex}][bl_ids][]" class="bl-id-input-temas" value="${selectedBlId || ''}">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
-                    <select name="temas[${sectionIndex}][lokasi_items][]" class="lokasi-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Lokasi --</option>
-                        <option value="Jakarta" ${lokasi === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
-                        <option value="Batam" ${lokasi === 'Batam' ? 'selected' : ''}>Batam</option>
-                        <option value="Pinang" ${lokasi === 'Pinang' ? 'selected' : ''}>Pinang</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Size</label>
-                    <select name="temas[${sectionIndex}][size_items][]" class="size-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Size --</option>
-                        <option value="20ft" ${size === '20ft' ? 'selected' : ''}>20ft</option>
-                        <option value="40ft" ${size === '40ft' ? 'selected' : ''}>40ft</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" value="${parseInt(harga) || 0}" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                    <input type="number" step="0.01" min="0" name="temas[${sectionIndex}][quantities][]" value="${quantity}" class="quantity-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                </div>
-                <div class="flex items-end pb-1 text-center justify-center">
-                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="temas[${sectionIndex}][is_muat][]" value="0">
-                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                        Muat
-                    </label>
-                </div>
-                <div class="flex items-end pb-1 text-center justify-center">
-                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="temas[${sectionIndex}][is_bongkar][]" value="0">
-                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                        Bongkar
-                    </label>
-                </div>
-            </div>
-        `;
-        
-        typesList.appendChild(div);
-    };
-
-    function getContainerOptionsForTemasSection(sectionIndex, selectedContainer = null) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        let containers = [];
-        if (section && section.hasAttribute('data-containers')) {
-            try {
-                containers = JSON.parse(section.getAttribute('data-containers') || '[]');
-            } catch (e) {
-                console.error(e);
-            }
-        }
-        
-        let options = '<option value="">-- Pilih Kontainer --</option>';
-        containers.forEach(c => {
-            let selected = selectedContainer === c.nomor_kontainer ? 'selected' : '';
-            options += `<option value="${c.nomor_kontainer}" data-bl-id="${c.id}" data-size="${c.size}" ${selected}>${c.nomor_kontainer} (${c.size})</option>`;
-        });
-        
-        if (selectedContainer && !containers.some(c => c.nomor_kontainer === selectedContainer)) {
-            options += `<option value="${selectedContainer}" selected>${selectedContainer}</option>`;
-        }
-        
-        return options;
+    function invalidateTemasManifest(section) {
+        section.manifestRequest = (section.manifestRequest || 0) + 1;
+        section.temasContainers = [];
+        section.querySelectorAll('.temas-container-card').forEach(card => refreshTemasOptions(section, card));
+        calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
     }
-
-    window.updateTemasContainerSize = function(select) {
-        const container = select.closest('.temas-type-item');
-        const selectedOption = select.options[select.selectedIndex];
-        const blIdInput = container.querySelector('.bl-id-input-temas');
-        const sizeSelect = container.querySelector('.size-select-temas');
-        
-        if (selectedOption && selectedOption.value) {
-            const blId = selectedOption.getAttribute('data-bl-id');
-            const size = selectedOption.getAttribute('data-size');
-            
-            blIdInput.value = blId || '';
-            if (size) {
-                let sizeVal = size;
-                if (size === '20') sizeVal = '20ft';
-                if (size === '40') sizeVal = '40ft';
-                sizeSelect.value = sizeVal;
-            }
-        } else {
-            blIdInput.value = '';
+    async function loadVoyagesForTemasSection(section) {
+        invalidateTemasManifest(section);
+        const kapal = section.querySelector('.kapal-select-temas').value;
+        const select = section.querySelector('.voyage-select-temas');
+        const request = section.voyageRequest = (section.voyageRequest || 0) + 1;
+        select.disabled = true;
+        select.innerHTML = '<option value="">Pilih kapal terlebih dahulu</option>';
+        section.querySelector('.temas-status').textContent = 'Pilih voyage untuk memuat manifest. Periksa kembali kontainer yang sudah diisi jika perjalanan berubah.';
+        if (!kapal) return;
+        select.innerHTML = '<option value="">Memuat voyage...</option>';
+        try {
+            const response = await fetch('{{ url("biaya-kapal/get-voyages") }}/' + encodeURIComponent(kapal));
+            if (!response.ok) throw new Error('voyages');
+            const data = await response.json();
+            if (!data.success) throw new Error('voyages');
+            if (!section.isConnected || section.voyageRequest !== request) return;
+            select.innerHTML = '<option value="">Pilih voyage</option><option value="DOCK">DOCK</option>' +
+                (data.voyages || []).filter(v => v !== 'DOCK').map(v => '<option value="' + temasEscape(v) + '">' + temasEscape(v) + '</option>').join('');
+        } catch (error) {
+            if (!section.isConnected || section.voyageRequest !== request) return;
+            select.innerHTML = '<option value="">Daftar gagal dimuat</option><option value="DOCK">DOCK</option>';
+            section.querySelector('.temas-status').textContent = 'Voyage gagal dimuat. Pilih ulang kapal untuk mencoba lagi, atau ketik voyage manual.';
         }
-    };
-
-    window.addTypeToTemasSection = function(sectionIndex, data = null) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        const typesList = section.querySelector('.temas-types-list');
-        
-        // Get temas options
-        let temasOptions = '<option value="">-- Pilih Jenis Biaya Temas --</option>';
-        pricelistTemasData.forEach(item => {
-            let selected = data && data.type_id == item.id ? 'selected' : '';
-            const locStr = item.lokasi ? ` (${item.lokasi})` : '';
-            const sizeStr = item.size ? ` - ${item.size}` : '';
-            temasOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}" ${selected}>${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
-        });
-        
-        const isManual = data && data.type_id === 'MANUAL';
-        const selectedContainer = data ? data.nomor_kontainer : null;
-        const selectedBlId = data ? data.bl_id : null;
-        const containerOptions = getContainerOptionsForTemasSection(sectionIndex, selectedContainer);
-        
-        const div = document.createElement('div');
-        div.className = 'temas-type-item flex flex-col gap-1 border p-3 rounded bg-white relative';
-        div.innerHTML = `
-            <div class="flex gap-2 w-full">
-                <select name="temas[${sectionIndex}][types][]" class="type-select-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? 'hidden' : ''}" ${isManual ? 'disabled' : ''} required onchange="updateTemasPriceFromSelect(this, ${sectionIndex})">
-                    ${temasOptions}
-                </select>
-                
-                <input type="hidden" name="temas[${sectionIndex}][types][]" class="hidden-type-manual-temas" value="MANUAL" ${isManual ? '' : 'disabled'}>
-                
-                <input type="text" name="temas[${sectionIndex}][manual_names][]" class="type-manual-input-temas w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? '' : 'hidden'}" value="${isManual ? (data.manual_name || '') : ''}" placeholder="Nama Biaya Manual">
-                
-                <button type="button" class="type-toggle-btn-temas px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTemasTypeInput(this, ${sectionIndex})">
-                    <i class="fas fa-keyboard"></i>
-                </button>
-                    
-                <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.temas-type-item').remove(); calculateTemasSectionTotal(${sectionIndex})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 mt-1">
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">No. Kontainer</label>
-                    <select name="temas[${sectionIndex}][nomor_kontainers][]" class="container-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" onchange="updateTemasContainerSize(this)">
-                        ${containerOptions}
-                    </select>
-                    <input type="hidden" name="temas[${sectionIndex}][bl_ids][]" class="bl-id-input-temas" value="${selectedBlId || ''}">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
-                    <select name="temas[${sectionIndex}][lokasi_items][]" class="lokasi-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Lokasi --</option>
-                        <option value="Jakarta" ${data && data.lokasi === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
-                        <option value="Batam" ${data && data.lokasi === 'Batam' ? 'selected' : ''}>Batam</option>
-                        <option value="Pinang" ${data && data.lokasi === 'Pinang' ? 'selected' : ''}>Pinang</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Size</label>
-                    <select name="temas[${sectionIndex}][size_items][]" class="size-select-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Size --</option>
-                        <option value="20ft" ${data && data.size === '20ft' ? 'selected' : ''}>20ft</option>
-                        <option value="40ft" ${data && data.size === '40ft' ? 'selected' : ''}>40ft</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white" value="${data ? (data.harga || 0) : 0}" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                    <input type="number" step="0.01" min="0" name="temas[${sectionIndex}][quantities][]" class="quantity-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" value="${data ? (data.kuantitas || 0) : 0}" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
-                </div>
-                <div class="flex items-end pb-1 text-center justify-center">
-                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="temas[${sectionIndex}][is_muat][]" value="0">
-                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                        Muat
-                    </label>
-                </div>
-                <div class="flex items-end pb-1 text-center justify-center">
-                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="temas[${sectionIndex}][is_bongkar][]" value="0">
-                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                        Bongkar
-                    </label>
-                </div>
-            </div>
-        `;
-        
-        typesList.appendChild(div);
-    };
-
-    window.removeTemasSection = function(sectionIndex) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        if (section) {
-            section.remove();
-            calculateTotalFromAllTemasSections();
-        }
-    };
-    
-    function loadVoyagesForTemasSection(sectionIndex, kapalNama) {
-        const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
-        const voyageSelect = section.querySelector('.voyage-select-temas');
-        
-        if (!kapalNama) {
-            voyageSelect.disabled = true;
-            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+        if (!section.isConnected || section.voyageRequest !== request) return;
+        select.disabled = !section.querySelector('.voyage-input-temas').disabled;
+        if (!section.querySelector('.voyage-input-temas').disabled) loadTemasContainers(section);
+    }
+    async function loadTemasContainers(section) {
+        invalidateTemasManifest(section);
+        const request = section.manifestRequest;
+        const kapal = section.querySelector('.kapal-select-temas').value;
+        const voyage = activeTemasVoyage(section);
+        const status = section.querySelector('.temas-status');
+        if (!kapal || !voyage) {
+            status.textContent = 'Pilih kapal dan voyage. Nomor kontainer juga dapat diketik manual.';
             return;
         }
-        
-        voyageSelect.disabled = true;
-        voyageSelect.innerHTML = '<option value="">Loading...</option>';
-        
-        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
-            .then(response => response.json())
-            .then(data => {
-                voyageSelect.disabled = false;
-                let options = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
-                if (data && data.success && data.voyages) {
-                    data.voyages.forEach(v => options += `<option value="${v}">${v}</option>`);
-                }
-                voyageSelect.innerHTML = options;
-            })
-            .catch(() => {
-                voyageSelect.disabled = false;
-                voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
+        status.textContent = 'Memuat daftar kontainer dari manifest...';
+        try {
+            const response = await fetch('{{ url("biaya-kapal/get-container-counts") }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                body: JSON.stringify({kapal, voyage})
             });
+            if (!response.ok) throw new Error('manifest');
+            const data = await response.json();
+            if (!data.success) throw new Error('manifest');
+            if (!section.isConnected || section.manifestRequest !== request) return;
+            section.temasContainers = data.containers_data || [];
+            status.textContent = section.temasContainers.length
+                ? section.temasContainers.length + ' kontainer tersedia · Rute: ' + (data.pelabuhan_asal || '-') + ' → ' + (data.pelabuhan_tujuan || '-') + '. Pilih kontainer yang ditagihkan.'
+                : 'Belum ada kontainer pada manifest ini. Ketik nomor kontainer manual.';
+            section.querySelectorAll('.temas-container-card').forEach(card => refreshTemasOptions(section, card));
+            calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
+        } catch (error) {
+            if (!section.isConnected || section.manifestRequest !== request) return;
+            status.textContent = 'Manifest gagal dimuat. Pilih ulang voyage untuk mencoba lagi, atau ketik nomor kontainer manual.';
+        }
     }
-    
+    function refreshTemasOptions(section, card) {
+        const select = card.querySelector('.temas-manifest-select');
+        select.innerHTML = '<option value="">Pilih dari manifest</option>' + section.temasContainers.map(c =>
+            '<option value="' + temasEscape(c.nomor_kontainer) + '">' + temasEscape(c.nomor_kontainer) + ' (' + temasEscape(temasSize(c.size)) + ')</option>').join('');
+        select.disabled = !section.temasContainers.length;
+        const number = card.querySelector('.temas-container-number').value.trim().toUpperCase();
+        const match = section.temasContainers.find(c => String(c.nomor_kontainer).trim().toUpperCase() === number);
+        select.value = match ? match.nomor_kontainer : '';
+        card.dataset.blId = match ? match.id : '';
+        if (match) card.querySelector('.temas-container-size').value = temasSize(match.size);
+    }
+    function addTemasContainer(section) {
+        const card = document.createElement('div');
+        card.className = 'temas-container-card border border-gray-200 rounded-lg p-4 bg-gray-50';
+        card.innerHTML = `
+            <div class="flex justify-between items-center gap-3 mb-3">
+                <strong class="temas-container-title text-gray-800">Kontainer</strong>
+                <button type="button" class="remove-container-temas text-sm text-red-600 hover:underline">Hapus kontainer</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <label class="text-sm text-gray-700">Kontainer dari manifest<select class="temas-manifest-select \${temasInputClass} mt-1"></select></label>
+                <label class="text-sm text-gray-700">Nomor kontainer<input class="temas-container-number \${temasInputClass} mt-1 uppercase" placeholder="Contoh: TEMU1234567" maxlength="100" required></label>
+                <label class="text-sm text-gray-700">Ukuran<select class="temas-container-size \${temasInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
+            </div>
+            <div class="temas-cost-list space-y-3"></div>
+            <div class="flex flex-wrap justify-between items-center gap-3 mt-3">
+                <button type="button" class="add-cost-temas text-sm text-blue-700 hover:underline">+ Tambah biaya untuk kontainer ini</button>
+                <span class="text-sm">Total kontainer: <strong class="temas-container-total">Rp 0</strong></span>
+            </div>
+        `;
+        section.querySelector('.temas-container-cards').appendChild(card);
+        refreshTemasOptions(section, card);
+        card.querySelector('.temas-manifest-select').addEventListener('change', event => {
+            if (!event.target.value) return;
+            card.querySelector('.temas-container-number').value = event.target.value;
+            refreshTemasOptions(section, card);
+        });
+        card.querySelector('.temas-container-number').addEventListener('input', () => refreshTemasOptions(section, card));
+        card.querySelector('.add-cost-temas').addEventListener('click', () => addTemasCost(section, card));
+        card.querySelector('.remove-container-temas').addEventListener('click', () => {
+            if (!confirm('Hapus kontainer ini beserta seluruh biayanya?')) return;
+            card.remove();
+            calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
+        });
+        ['input', 'change'].forEach(event => card.addEventListener(event, () => calculateTemasSectionTotal(Number(section.dataset.sectionIndex))));
+        addTemasCost(section, card);
+    }
+    function addTemasCost(section, card) {
+        const field = key => 'temas[' + section.dataset.sectionIndex + '][' + key + '][]';
+        const row = document.createElement('div');
+        row.className = 'temas-type-item border border-gray-200 rounded-lg p-3 bg-white';
+        row.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="text-sm text-gray-700">Jenis biaya
+                    <select name="\${field('types')}" class="type-select-temas \${temasInputClass} mt-1" required>
+                        <option value="">Pilih jenis biaya</option><option value="MANUAL">Tulis biaya manual</option>
+                        \${pricelistTemasData.map(item => '<option value="' + temasEscape(item.id) + '">' + temasEscape(item.jenis_biaya) + (item.size ? ' · ' + temasEscape(item.size) : '') + (item.lokasi ? ' · ' + temasEscape(item.lokasi) : '') + ' · ' + temasMoney(item.harga) + '</option>').join('')}
+                    </select>
+                </label>
+                <label class="temas-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="\${field('manual_names')}" class="type-manual-input-temas \${temasInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
+                <label class="text-sm text-gray-700">Biaya kontainer ini (Rp)<input type="number" name="\${field('custom_prices')}" class="price-input-temas \${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
+                <label class="text-sm text-gray-700">Lokasi<select name="\${field('lokasi_items')}" class="lokasi-select-temas \${temasInputClass} mt-1"><option value="">Pilih lokasi (opsional)</option><option>Jakarta</option><option>Batam</option><option>Pinang</option></select></label>
+            </div>
+            <input type="hidden" name="\${field('nomor_kontainers')}" class="temas-row-number">
+            <input type="hidden" name="\${field('bl_ids')}" class="temas-row-bl">
+            <input type="hidden" name="\${field('size_items')}" class="temas-row-size">
+            <input type="hidden" name="\${field('quantities')}" class="quantity-input-temas" value="1">
+            <div class="flex flex-wrap items-center gap-4 mt-3 text-sm">
+                <span class="text-gray-500">Kegiatan:</span>
+                \${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="temas-activity"> ' + label + '</label>').join('')}
+                <button type="button" class="remove-cost-temas text-red-600 hover:underline ml-auto">Hapus biaya</button>
+            </div>
+        `;
+        card.querySelector('.temas-cost-list').appendChild(row);
+        row.querySelector('.type-select-temas').addEventListener('change', event => {
+            const manual = event.target.value === 'MANUAL';
+            row.querySelector('.temas-manual-label').classList.toggle('hidden', !manual);
+            row.querySelector('.type-manual-input-temas').required = manual;
+            const item = pricelistTemasData.find(item => String(item.id) === event.target.value);
+            row.querySelector('.price-input-temas').value = item ? Number(item.harga) || 0 : '';
+            row.querySelector('.lokasi-select-temas').value = item ? item.lokasi || '' : '';
+        });
+        row.querySelector('.remove-cost-temas').addEventListener('click', () => {
+            if (card.querySelectorAll('.temas-type-item').length === 1) {
+                if (!confirm('Hapus kontainer ini beserta rincian biayanya?')) return;
+                card.remove();
+            } else row.remove();
+            calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
+        });
+        calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
+    }
+    window.removeTemasSection = function(index) {
+        const section = temasSectionsContainer.querySelector('[data-section-index="' + index + '"]');
+        if (!section || !confirm('Hapus kapal ini beserta seluruh kontainer dan biayanya?')) return;
+        section.remove();
+        if (!temasSectionsContainer.children.length) addTemasSection();
+        calculateTotalFromAllTemasSections();
+    };
     function calculateTemasSectionTotal(sectionIndex) {
         const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         
+
+        const cards = [...section.querySelectorAll('.temas-container-card')];
+        const numbers = cards.map(card => card.querySelector('.temas-container-number').value.trim().toUpperCase());
+        cards.forEach((card, index) => {
+            const number = numbers[index];
+            card.querySelector('.temas-container-number').setCustomValidity(number && numbers.filter(n => n === number).length > 1 ? 'Kontainer ini sudah ditambahkan. Tambahkan biaya pada kontainer yang sama.' : '');
+            const size = card.querySelector('.temas-container-size').value;
+            card.querySelector('.temas-container-title').textContent = 'Kontainer ' + (index + 1) + (number ? ' · ' + number : '');
+            let total = 0;
+            card.querySelectorAll('.temas-type-item').forEach(row => {
+                row.querySelector('.temas-row-number').value = number;
+                row.querySelector('.temas-row-bl').value = card.dataset.blId || '';
+                row.querySelector('.temas-row-size').value = size;
+                row.querySelectorAll('.temas-activity').forEach(box => box.previousElementSibling.value = box.checked ? '1' : '0');
+                const select = row.querySelector('.type-select-temas');
+                const tariff = pricelistTemasData.find(item => String(item.id) === select.value);
+                select.setCustomValidity(tariff && tariff.size && size && temasSize(tariff.size) !== size ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
+                total += Number(row.querySelector('.price-input-temas').value) || 0;
+            });
+            card.querySelector('.temas-container-total').textContent = temasMoney(total);
+        });
+        section.querySelector('.kapal-select-temas').setCustomValidity(cards.length ? '' : 'Tambahkan minimal satu kontainer beserta biayanya.');
+        section.querySelector('.temas-count').textContent = cards.length + ' kontainer · ' + section.querySelectorAll('.temas-type-item').length + ' rincian biaya';
+
         const typeItems = section.querySelectorAll('.temas-type-item');
         
         let subTotal = 0;
@@ -832,6 +440,7 @@
         const pphActive = section.querySelector('.pph-active-temas').checked;
         const pphDisplay = section.querySelector('.pph-display-temas');
         const pphValue = section.querySelector('.pph-value-temas');
+        pphDisplay.readOnly = !pphActive;
         
         let pph = 0;
         if (pphDisplay.hasAttribute('data-manual-pph')) {
@@ -846,6 +455,7 @@
         const ppnActive = section.querySelector('.ppn-active-temas').checked;
         const ppnDisplay = section.querySelector('.ppn-display-temas');
         const ppnValue = section.querySelector('.ppn-value-temas');
+        ppnDisplay.readOnly = !ppnActive;
         
         let ppn = 0;
         if (ppnDisplay.hasAttribute('data-manual-ppn')) {
@@ -881,7 +491,7 @@
         
         const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue;
         
-        section.querySelector('.grand-total-display-temas').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
+        section.querySelector('.grand-total-display-temas').value = temasMoney(grandTotal);
         section.querySelector('.grand-total-value-temas').value = grandTotal;
         
         calculateTotalFromAllTemasSections();
@@ -894,6 +504,6 @@
         });
         
         if (nominalInput) {
-            nominalInput.value = grandTotalAll > 0 ? grandTotalAll.toLocaleString('id-ID') : '';
+            nominalInput.value = grandTotalAll.toLocaleString('id-ID');
         }
     }
