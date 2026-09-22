@@ -1834,106 +1834,8 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalMeratus]);
             }
 
-            // BIAYA TEMAS SECTIONS: Store Temas details
             if ($request->has('temas') && ! empty($request->temas)) {
-                foreach ($request->temas as $sectionIndex => $section) {
-                    if (empty($section['kapal']) && empty($section['voyage'])) {
-                        continue;
-                    }
-
-                    if (isset($section['types']) && is_array($section['types'])) {
-                        foreach ($section['types'] as $typeIndex => $typeId) {
-                            $jenisBiaya = '';
-                            $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
-                            $qty = floatval($section['quantities'][$typeIndex] ?? 0);
-                            $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
-                            $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
-                            $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
-                            $sizeItem = $section['size_items'][$typeIndex] ?? null;
-                            $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
-                            $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
-
-                            $pricelistId = null;
-                            if ($typeId === 'MANUAL') {
-                                $jenisBiaya = $section['manual_names'][$typeIndex] ?? 'MANUAL';
-                            } else {
-                                $masterType = \App\Models\PricelistTemas::find($typeId);
-                                $jenisBiaya = $masterType ? $masterType->jenis_biaya : 'N/A';
-                                $pricelistId = $typeId;
-                            }
-
-                            $subTotal = $price * $qty;
-
-                            // Extract section-level values (only for the first item to avoid double counting)
-                            $pph = 0;
-                            $ppn = 0;
-                            $pphActive = false;
-                            $ppnActive = false;
-                            $biayaMaterai = 0;
-                            $adjustment = 0;
-
-                            if ($typeIndex == 0) {
-                                $pphRaw = $section['pph'] ?? 0;
-                                $pph = floatval($pphRaw);
-
-                                $ppnRaw = $section['ppn'] ?? 0;
-                                $ppn = floatval($ppnRaw);
-
-                                // Checkboxes in Laravel are only present if checked
-                                $pphActive = isset($section['pph_active']);
-                                $ppnActive = isset($section['ppn_active']);
-
-                                $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
-                                $biayaMaterai = floatval($biayaMateraiRaw);
-
-                                $adjustmentRaw = $section['adjustment'] ?? 0;
-                                $adjustment = floatval($adjustmentRaw);
-
-                                $biayaAdminRaw = $section['biaya_admin'] ?? 0;
-                                $biayaAdmin = floatval($biayaAdminRaw);
-                            }
-
-                            $pphForCalc = $pphActive ? $pph : 0;
-                            $ppnForCalc = $ppnActive ? $ppn : 0;
-
-                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
-
-                            \App\Models\BiayaKapalTemas::create([
-                                'biaya_kapal_id' => $biayaKapal->id,
-                                'kapal' => $section['kapal'] ?? null,
-                                'voyage' => $section['voyage'] ?? null,
-                                'nomor_kontainer' => $nomorKontainer,
-                                'bl_id' => $blId,
-                                'pricelist_temas_id' => $pricelistId,
-                                'jenis_biaya' => $jenisBiaya,
-                                'lokasi' => $lokasiItem,
-                                'size' => $sizeItem,
-                                'is_muat' => $isMuat,
-                                'is_bongkar' => $isBongkar,
-                                'harga' => $price,
-                                'kuantitas' => $qty,
-                                'sub_total' => $subTotal,
-                                'pph' => $pph,
-                                'ppn' => $ppn,
-                                'pph_active' => $pphActive,
-                                'ppn_active' => $ppnActive,
-                                'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
-                                'adjustment' => $typeIndex == 0 ? $adjustment : 0,
-                                'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
-                                'grand_total' => $grandTotal,
-                                'penerima' => $section['penerima'] ?? null,
-                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => ! empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
-                                'keterangan' => $section['keterangan'] ?? null,
-                            ]);
-                        }
-                    }
-                }
-
-                // Auto-calculate nominal for Temas from section totals
-                $totalTemas = \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
-                $biayaKapal->update(['nominal' => $totalTemas]);
+                app(\App\Services\TemasBillingService::class)->replace($biayaKapal, $request->temas);
             }
 
             // BIAYA TANTO SECTIONS: Store Tanto details
@@ -4389,6 +4291,8 @@ class BiayaKapalController extends Controller
             $biayaKapal = BiayaKapal::whereKey($biayaKapal->id)->lockForUpdate()->firstOrFail();
             app(\App\Services\TemasPaymentService::class)->assertInvoiceEditable($biayaKapal);
 
+            app(\App\Services\TemasBillingService::class)->assertCanReplace($biayaKapal);
+
             if ($request->hasFile('bukti')) {
                 if ($biayaKapal->bukti) {
                     foreach ($biayaKapal->bukti_array as $oldPath) {
@@ -5306,108 +5210,8 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalMeratus]);
             }
 
-            // TEMAS UPDATE
             if ($request->has('temas')) {
-                \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->delete();
-                if (! empty($request->temas)) {
-                    foreach ($request->temas as $sectionIndex => $section) {
-                        if (empty($section['kapal']) && empty($section['voyage'])) {
-                            continue;
-                        }
-
-                        if (isset($section['types']) && is_array($section['types'])) {
-                            foreach ($section['types'] as $typeIndex => $typeId) {
-                                $jenisBiaya = '';
-                                $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
-                                $qty = floatval($section['quantities'][$typeIndex] ?? 0);
-                                $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
-                                $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
-                                $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
-                                $sizeItem = $section['size_items'][$typeIndex] ?? null;
-                                $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
-                                $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
-
-                                $pricelistId = null;
-                                if ($typeId === 'MANUAL') {
-                                    $jenisBiaya = $section['manual_names'][$typeIndex] ?? 'MANUAL';
-                                } else {
-                                    $masterType = \App\Models\PricelistTemas::find($typeId);
-                                    $jenisBiaya = $masterType ? $masterType->jenis_biaya : 'N/A';
-                                    $pricelistId = $typeId;
-                                }
-
-                                $subTotal = $price * $qty;
-
-                                // Extract section-level values (only for the first item)
-                                $pph = 0;
-                                $ppn = 0;
-                                $pphActive = false;
-                                $ppnActive = false;
-                                $biayaMaterai = 0;
-                                $adjustment = 0;
-
-                                if ($typeIndex == 0) {
-                                    $pphRaw = $section['pph'] ?? 0;
-                                    $pph = floatval($pphRaw);
-
-                                    $ppnRaw = $section['ppn'] ?? 0;
-                                    $ppn = floatval($ppnRaw);
-
-                                    $pphActive = isset($section['pph_active']);
-                                    $ppnActive = isset($section['ppn_active']);
-
-                                    $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
-                                    $biayaMaterai = floatval($biayaMateraiRaw);
-
-                                    $adjustmentRaw = $section['adjustment'] ?? 0;
-                                    $adjustment = floatval($adjustmentRaw);
-
-                                    $biayaAdminRaw = $section['biaya_admin'] ?? 0;
-                                    $biayaAdmin = floatval($biayaAdminRaw);
-                                }
-
-                                $pphForCalc = $pphActive ? $pph : 0;
-                                $ppnForCalc = $ppnActive ? $ppn : 0;
-
-                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
-
-                                \App\Models\BiayaKapalTemas::create([
-                                    'biaya_kapal_id' => $biayaKapal->id,
-                                    'kapal' => $section['kapal'] ?? null,
-                                    'voyage' => $section['voyage'] ?? null,
-                                    'nomor_kontainer' => $nomorKontainer,
-                                    'bl_id' => $blId,
-                                    'pricelist_temas_id' => $pricelistId,
-                                    'jenis_biaya' => $jenisBiaya,
-                                    'lokasi' => $lokasiItem,
-                                    'size' => $sizeItem,
-                                    'is_muat' => $isMuat,
-                                    'is_bongkar' => $isBongkar,
-                                    'harga' => $price,
-                                    'kuantitas' => $qty,
-                                    'sub_total' => $subTotal,
-                                    'pph' => $pph,
-                                    'ppn' => $ppn,
-                                    'pph_active' => $pphActive,
-                                    'ppn_active' => $ppnActive,
-                                    'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
-                                    'adjustment' => $typeIndex == 0 ? $adjustment : 0,
-                                    'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
-                                    'grand_total' => $grandTotal,
-                                    'penerima' => $section['penerima'] ?? null,
-                                    'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                                    'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => ! empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
-                                    'keterangan' => $section['keterangan'] ?? null,
-                                ]);
-                            }
-                        }
-                    }
-                }
-
-                // Auto-calculate nominal for Temas from section totals
-                $totalTemas = \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
-                $biayaKapal->update(['nominal' => $totalTemas]);
+                app(\App\Services\TemasBillingService::class)->replace($biayaKapal, $request->temas);
             }
 
             // TANTO UPDATE
@@ -5870,6 +5674,7 @@ class BiayaKapalController extends Controller
         try {
             $biayaKapal = BiayaKapal::whereKey($biayaKapal->id)->lockForUpdate()->firstOrFail();
             app(\App\Services\TemasPaymentService::class)->assertInvoiceEditable($biayaKapal);
+            app(\App\Services\TemasBillingService::class)->assertCanReplace($biayaKapal);
             // Delete file if exists
             if ($biayaKapal->bukti) {
                 Storage::disk('public')->delete($biayaKapal->bukti);
@@ -5921,6 +5726,17 @@ class BiayaKapalController extends Controller
                 'tanggal' => $tanggal,
             ];
         });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function getOutstandingTemasDps(\App\Services\TemasBillingService $service)
+    {
+        $data = $service->candidates()->with('biayaKapal:id,nomor_invoice')->latest('id')->get()->map(fn ($dp) => [
+            'id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
+            'nominal_dibayar' => $dp->nominal_dibayar,
+            'label' => ($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | DP Rp '.number_format((float) $dp->nominal_dibayar, 0, ',', '.'),
+        ]);
 
         return response()->json(['data' => $data]);
     }

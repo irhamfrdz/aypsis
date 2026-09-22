@@ -389,13 +389,17 @@
         if($biayaKapal->temasDetails->count() > 0) {
             $groupedTemas = $biayaKapal->temasDetails->groupBy(function($item) {
                 $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
-                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '');
+                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '') . '|||' . ($item->temas_stage_id ?? '');
             });
             foreach($groupedTemas as $key => $items) {
                  $parts = explode('|||', $key);
                  if(count($parts) >= 2) {
                      $firstItem = $items->first();
                      $editTemasSections[] = [
+                         'payment_mode' => $firstItem->stage?->payment_mode ?? 'lunas',
+                         'nominal_dibayar' => $firstItem->stage?->nominal_dibayar ?? 0,
+                         'dp_stage_id' => $firstItem->stage?->dp_stage_id,
+                         'dp_diperhitungkan' => $firstItem->stage?->dp_diperhitungkan ?? 0,
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],
                          'penerima' => $parts[2],

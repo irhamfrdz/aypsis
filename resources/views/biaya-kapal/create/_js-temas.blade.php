@@ -17,9 +17,9 @@
         clearAllTemasSections();
         addTemasSection();
     }
-    if (addTemasSectionBtn) addTemasSectionBtn.addEventListener('click', addTemasSection);
+    if (addTemasSectionBtn) addTemasSectionBtn.addEventListener('click', () => addTemasSection());
 
-    function addTemasSection() {
+    function addTemasSection(data = null) {
         const sectionIndex = ++temasSectionCounter;
         const section = document.createElement('div');
         section.className = 'temas-section mb-6 p-4 border border-blue-200 rounded-xl bg-white';
@@ -29,6 +29,27 @@
             <div class="flex items-center justify-between gap-3 mb-4">
                 <h4 class="font-semibold text-blue-900">Kapal / Voyage ${sectionIndex}</h4>
                 <button type="button" onclick="removeTemasSection(${sectionIndex})" class="text-sm text-red-600 hover:underline">Hapus kapal</button>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 space-y-3">
+                <label class="block text-sm font-semibold text-gray-700">Mode pembayaran TEMAS
+                    <select name="temas[${sectionIndex}][payment_mode]" class="temas-payment-mode ${temasInputClass} mt-1">
+                        <option value="lunas">Bayar langsung / Lunas</option>
+                        <option value="dp">DP / Uang muka</option>
+                        <option value="pelunasan_dp">Pelunasan DP</option>
+                    </select>
+                </label>
+                <p class="temas-payment-help text-sm text-blue-800"></p>
+                <label class="temas-dp-input-wrap hidden block text-sm">Nominal DP dibayar (Rp)
+                    <input type="number" min="0.01" step="0.01" name="temas[${sectionIndex}][nominal_dibayar]" class="temas-dp-amount ${temasInputClass} mt-1" disabled>
+                </label>
+                <div class="temas-dp-reference-wrap hidden">
+                    <label class="block text-sm">Referensi DP
+                        <select name="temas[${sectionIndex}][dp_stage_id]" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
+                    </label>
+                    <button type="button" class="temas-reload-dp text-sm text-blue-700 mt-1">Muat ulang daftar DP</button>
+                    <p class="temas-dp-status text-sm text-gray-600" role="status"></p>
+                    <p class="text-sm mt-2">DP sudah dibayar: <strong class="temas-dp-paid">Rp 0</strong></p>
+                </div>
             </div>
             <h5 class="font-semibold text-gray-800 mb-3">1. Pilih perjalanan kapal</h5>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -46,13 +67,14 @@
                     <button type="button" class="voyage-manual-btn-temas mt-2 text-sm text-blue-700">Ketik voyage manual</button>
                 </div>
             </div>
+            <fieldset class="temas-billing-details">
             <h5 class="font-semibold text-gray-800">2. Isi biaya per kontainer</h5>
             <p class="text-sm text-gray-500 mt-1 mb-3">Tambahkan kontainer yang ditagihkan, lalu isi biayanya. Satu kontainer dapat memiliki beberapa jenis biaya.</p>
             <p class="temas-status text-sm text-blue-800 bg-blue-50 rounded-lg p-3 mb-3" role="status" aria-live="polite">Pilih kapal dan voyage untuk memuat kontainer dari manifest.</p>
             <div class="temas-container-cards space-y-4"></div>
             <button type="button" class="add-container-temas mt-3 mb-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">+ Tambah kontainer</button>
             <h5 class="font-semibold text-gray-800 border-t pt-4">3. Periksa total tagihan</h5>
-            <p class="text-sm text-gray-500 mt-1 mb-3">Pajak, materai, admin, dan penyesuaian berlaku untuk seluruh kontainer pada kapal / voyage ini.</p>
+            <p class="temas-tax-help text-sm text-gray-500 mt-1 mb-3">Pajak, materai, admin, dan penyesuaian berlaku untuk seluruh kontainer pada kapal / voyage ini.</p>
             <p class="temas-count text-sm text-blue-700 mb-3"></p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -103,6 +125,13 @@
                     <input type="hidden" name="temas[${sectionIndex}][grand_total]" class="grand-total-value-temas" value="0">
                     <p class="text-xs text-gray-500 mt-2">Biaya kontainer + PPN − PPH + materai + admin + penyesuaian.</p>
                 </div>
+            </div>
+            </fieldset>
+            <div class="bg-emerald-50 rounded-lg p-4 mb-4 flex justify-between gap-3">
+                <span>Nominal transaksi ini</span><strong class="temas-cash-display">Rp 0</strong>
+                <input type="hidden" class="temas-cash-value" value="0">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>
                     <input type="text" name="temas[${sectionIndex}][nomor_referensi]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan No. Referensi">
@@ -144,6 +173,24 @@
             loadTemasContainers(section);
         });
         section.querySelector('.add-container-temas').addEventListener('click', () => addTemasContainer(section));
+        section.querySelector('.temas-payment-mode').addEventListener('change', () => {
+            updateTemasPaymentMode(section);
+            if (section.querySelector('.temas-payment-mode').value === 'pelunasan_dp') loadTemasDps(section);
+        });
+        section.querySelector('.temas-dp-amount').addEventListener('input', () => calculateTemasSectionTotal(sectionIndex));
+        section.querySelector('.temas-reload-dp').addEventListener('click', () => loadTemasDps(section));
+        section.querySelector('.temas-dp-reference').addEventListener('change', () => {
+            const option = section.querySelector('.temas-dp-reference').selectedOptions[0];
+            section.dataset.dpAmount = option?.dataset.amount || '0';
+            if (option?.value) {
+                if (![...kapalSelect.options].some(o => o.value === option.dataset.kapal)) kapalSelect.add(new Option(option.dataset.kapal, option.dataset.kapal));
+                kapalSelect.value = option.dataset.kapal;
+                voyageInput.value = option.dataset.voyage;
+                voyageSelect.replaceChildren(new Option(option.dataset.voyage, option.dataset.voyage));
+                loadTemasContainers(section);
+            }
+            updateTemasPaymentMode(section);
+        });
         addTemasContainer(section);
         // PPH Manual edit listener
         const pphDisplay = section.querySelector('.pph-display-temas');
@@ -226,9 +273,12 @@
             calculateTemasSectionTotal(sectionIndex);
         });
         
-        calculateTemasSectionTotal(sectionIndex);
+        if (data) hydrateTemasSection(section, data);
+        updateTemasPaymentMode(section);
+        return section;
     }
-    
+
+    @include('biaya-kapal.create._js-temas-payments')
 
     function activeTemasVoyage(section) {
         const input = section.querySelector('.voyage-input-temas');
@@ -264,7 +314,7 @@
             section.querySelector('.temas-status').textContent = 'Voyage gagal dimuat. Pilih ulang kapal untuk mencoba lagi, atau ketik voyage manual.';
         }
         if (!section.isConnected || section.voyageRequest !== request) return;
-        select.disabled = !section.querySelector('.voyage-input-temas').disabled;
+        select.disabled = section.querySelector('.temas-payment-mode').value === 'pelunasan_dp' || !section.querySelector('.voyage-input-temas').disabled;
         if (!section.querySelector('.voyage-input-temas').disabled) loadTemasContainers(section);
     }
     async function loadTemasContainers(section) {
@@ -345,6 +395,7 @@
         });
         ['input', 'change'].forEach(event => card.addEventListener(event, () => calculateTemasSectionTotal(Number(section.dataset.sectionIndex))));
         addTemasCost(section, card);
+        return card;
     }
     function addTemasCost(section, card) {
         const field = key => 'temas[' + section.dataset.sectionIndex + '][' + key + '][]';
@@ -389,6 +440,7 @@
             calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
         });
         calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
+        return row;
     }
     window.removeTemasSection = function(index) {
         const section = temasSectionsContainer.querySelector('[data-section-index="' + index + '"]');
@@ -400,6 +452,15 @@
     function calculateTemasSectionTotal(sectionIndex) {
         const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
+        const mode = section.querySelector('.temas-payment-mode')?.value || 'lunas';
+        if (mode === 'dp') {
+            section.querySelector('.kapal-select-temas').setCustomValidity('');
+            const amount = Number(section.querySelector('.temas-dp-amount').value) || 0;
+            section.querySelector('.temas-cash-value').value = amount;
+            section.querySelector('.temas-cash-display').textContent = temasMoney(amount);
+            calculateTotalFromAllTemasSections();
+            return;
+        }
         
 
         const cards = [...section.querySelectorAll('.temas-container-card')];
@@ -489,10 +550,18 @@
         const adminValue = parseFloat(section.querySelector('.admin-value-temas').value) || 0;
         const adjustmentValue = parseFloat(section.querySelector('.adjustment-value-temas').value) || 0;
         
-        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue;
+        const grandTotal = mode === 'pelunasan_dp' ? subTotal : subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue;
         
         section.querySelector('.grand-total-display-temas').value = temasMoney(grandTotal);
         section.querySelector('.grand-total-value-temas').value = grandTotal;
+        const advance = mode === 'pelunasan_dp' ? Number(section.dataset.dpAmount || 0) : 0;
+        const dpSelect = section.querySelector('.temas-dp-reference');
+        if (dpSelect) dpSelect.setCustomValidity(mode === 'pelunasan_dp' && grandTotal < advance ? 'Tagihan akhir tidak boleh lebih kecil dari DP.' : '');
+        const cashInput = section.querySelector('.temas-cash-value');
+        if (cashInput) {
+            cashInput.value = Math.max(0, Math.round((grandTotal - advance) * 100) / 100);
+            section.querySelector('.temas-cash-display').textContent = temasMoney(cashInput.value);
+        }
         
         calculateTotalFromAllTemasSections();
     }
@@ -500,7 +569,7 @@
     function calculateTotalFromAllTemasSections() {
         let grandTotalAll = 0;
         document.querySelectorAll('.temas-section').forEach(section => {
-            grandTotalAll += parseFloat(section.querySelector('.grand-total-value-temas').value) || 0;
+            grandTotalAll += parseFloat((section.querySelector('.temas-cash-value') || section.querySelector('.grand-total-value-temas')).value) || 0;
         });
         
         if (nominalInput) {

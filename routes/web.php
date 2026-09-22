@@ -3029,6 +3029,9 @@ Route::middleware([
         Route::get('biaya-kapal/storage-dp-candidates', [\App\Http\Controllers\BiayaKapalController::class, 'getOutstandingStorageDps'])
             ->name('biaya-kapal.storage-dp-candidates')
             ->middleware('can:biaya-kapal-create');
+        Route::get('biaya-kapal/temas-dp-candidates', [\App\Http\Controllers\BiayaKapalController::class, 'getOutstandingTemasDps'])
+            ->name('biaya-kapal.temas-dp-candidates')
+            ->middleware('can:biaya-kapal-create');
         Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
             ->name('biaya-kapal.get-bls-by-voyages');
         Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])

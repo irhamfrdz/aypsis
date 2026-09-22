@@ -46,7 +46,9 @@ const context = {
     document: { querySelector: () => section, querySelectorAll: () => [section] },
 };
 vm.createContext(context);
-vm.runInContext(fs.readFileSync('resources/views/biaya-kapal/create/_js-temas.blade.php', 'utf8').replace(/\{\{[\s\S]*?\}\}/g, 'blade'), context);
+vm.runInContext(fs.readFileSync('resources/views/biaya-kapal/create/_js-temas.blade.php', 'utf8')
+    .replace("@include('biaya-kapal.create._js-temas-payments')", fs.readFileSync('resources/views/biaya-kapal/create/_js-temas-payments.blade.php', 'utf8'))
+    .replace(/\{\{[\s\S]*?\}\}/g, 'blade'), context);
 context.calculateTemasSectionTotal(1);
 assert.equal(fields['.sub-total-value-temas'].value, 350000);
 assert.equal(fields['.grand-total-value-temas'].value, 343000);

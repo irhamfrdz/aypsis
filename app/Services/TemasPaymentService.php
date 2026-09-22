@@ -61,6 +61,9 @@ class TemasPaymentService
     /** Caller must hold the invoice row lock until payment + item + status are committed. */
     public function prepare(BiayaKapal $invoice, string $mode, $amount, ?int $dpItemId, string $date): array
     {
+        if ($mode !== 'lunas' && \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->exists()) {
+            $this->reject('payment_mode', 'DP dan pelunasan TEMAS diatur pada form Biaya Kapal seperti Storage. Bayarkan nominal transaksi ini secara penuh.');
+        }
         if (! $this->isTemas($invoice) || ! in_array($mode, ['lunas', 'dp', 'pelunasan_dp'], true)) {
             $this->reject('payment_mode', 'DP dan pelunasan ini hanya berlaku untuk invoice TEMAS.');
         }

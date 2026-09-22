@@ -32,6 +32,9 @@ class TemasPaymentTest extends TestCase
         Schema::create('biaya_kapals', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_invoice')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->json('nama_kapal')->nullable();
+            $table->json('no_voyage')->nullable();
             $table->decimal('nominal', 15, 2)->default(0);
             $table->decimal('total_biaya', 15, 2)->nullable();
             $table->decimal('dp', 15, 2)->default(0);
@@ -40,12 +43,10 @@ class TemasPaymentTest extends TestCase
             $table->timestamps();
             $table->softDeletes();
         });
-        Schema::create('biaya_kapal_temas', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('biaya_kapal_id');
-            $table->string('nomor_kontainer');
-            $table->decimal('grand_total', 15, 2);
-        });
+        (require database_path('migrations/2026_04_27_142615_create_biaya_kapal_temas_table.php'))->up();
+        (require database_path('migrations/2026_06_12_100757_add_container_fields_to_biaya_kapal_temas_table.php'))->up();
+        Schema::table('biaya_kapal_temas', fn (Blueprint $table) => $table->decimal('biaya_admin', 15, 2)->default(0));
+        (require database_path('migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php'))->up();
         Schema::create('pembayaran_biaya_kapals', function (Blueprint $table) {
             $table->id();
             foreach (['nomor_pembayaran', 'nomor_accurate', 'tanggal_pembayaran', 'bank', 'jenis_transaksi', 'alasan_penyesuaian', 'keterangan', 'status_pembayaran'] as $field) {
@@ -315,5 +316,89 @@ class TemasPaymentTest extends TestCase
             $this->assertArrayHasKey('biaya_kapal_ids', $e->errors());
         }
         $this->assertSame(0, PembayaranBiayaKapal::count());
+    }
+
+    private function finalCosts(): array
+    {
+        return [
+            'kapal' => 'TEMAS 1', 'voyage' => 'V001', 'types' => ['MANUAL', 'MANUAL'],
+            'manual_names' => ['Handling', 'Handling'], 'custom_prices' => [600000, 400000],
+            'quantities' => [1, 1], 'nomor_kontainers' => ['TEMU001', 'TEMU002'],
+            'size_items' => ['20ft', '40ft'],
+        ];
+    }
+
+    public function test_storage_style_dp_has_no_final_invoice_and_settlement_deducts_it_once(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dpInvoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $billing->replace($dpInvoice, [['kapal' => 'TEMAS 1', 'voyage' => 'V001', 'payment_mode' => 'dp', 'nominal_dibayar' => 300000]]);
+        $dp = \App\Models\BiayaKapalTemasStage::firstOrFail();
+        $this->assertSame('0.00', $dp->nilai_tagihan);
+        $this->assertSame('300000.00', $dpInvoice->fresh()->nominal);
+        $this->assertSame(1, $billing->candidates()->count());
+        $settlement = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $section = $this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_id' => $dp->id];
+        $section['kapal'] = 'IGNORED';
+        $section['pph_active'] = 'on';
+        $section['pph'] = 20000; // Storage-style settlement excludes these extras.
+        $billing->replace($settlement, [$section]);
+        $stage = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $settlement->id)->firstOrFail();
+        $this->assertSame('TEMAS 1', $stage->kapal);
+        $this->assertSame('1000000.00', $stage->nilai_tagihan);
+        $this->assertSame('300000.00', $stage->dp_diperhitungkan);
+        $this->assertSame('700000.00', $settlement->fresh()->nominal);
+        $this->assertEquals(700000, $settlement->temasDetails()->sum('grand_total'));
+        $this->assertSame(0, $billing->candidates()->count());
+        $billing->replace($settlement, [$section]); // Re-editing settlement does not deduct DP again.
+        $this->assertSame('700000.00', $settlement->fresh()->nominal);
+        $settlement->delete();
+        $this->assertSame(1, $billing->candidates()->count());
+    }
+
+    public function test_storage_style_direct_payment_includes_tax_and_extras(): void
+    {
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [$this->finalCosts() + [
+            'payment_mode' => 'lunas', 'pph_active' => 'on', 'pph' => 20000, 'biaya_materai' => 10000,
+        ]]);
+        $this->assertSame('990000.00', $invoice->fresh()->nominal);
+        $this->assertEquals(990000, $invoice->temasDetails()->sum('grand_total'));
+        $this->assertSame(2, $invoice->temasDetails()->count());
+    }
+
+    public function test_storage_style_rejects_final_invoice_below_dp_and_rolls_back(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dpInvoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $billing->replace($dpInvoice, [['kapal' => 'TEMAS 1', 'voyage' => 'V001', 'payment_mode' => 'dp', 'nominal_dibayar' => 2000000]]);
+        $dp = \App\Models\BiayaKapalTemasStage::firstOrFail();
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        try {
+            $billing->replace($invoice, [$this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_id' => $dp->id]]);
+            $this->fail('Final invoice below DP must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertSame(0, $invoice->temasDetails()->count());
+            $this->assertSame(1, $billing->candidates()->count());
+        }
+    }
+
+    public function test_storage_style_rejects_second_settlement_and_dp_edit(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dpInvoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $billing->replace($dpInvoice, [['kapal' => 'TEMAS 1', 'voyage' => 'V001', 'payment_mode' => 'dp', 'nominal_dibayar' => 300000]]);
+        $dp = \App\Models\BiayaKapalTemasStage::firstOrFail();
+        $section = $this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_id' => $dp->id];
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $billing->replace($invoice, [$section]);
+        try {
+            $billing->replace(BiayaKapal::create(['status_pembayaran' => 'pending']), [$section]);
+            $this->fail('Second settlement must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertCount(1, $dp->settlements()->get());
+        }
+        $this->expectException(ValidationException::class);
+        $billing->assertCanReplace($dpInvoice);
     }
 }

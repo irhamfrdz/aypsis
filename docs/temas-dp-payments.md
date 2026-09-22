@@ -1,95 +1,78 @@
-# Backend pembayaran DP TEMAS
+# Pembayaran TEMAS mengikuti alur Storage
 
-DP berlaku per invoice biaya kapal TEMAS. Rincian biaya tetap per kontainer; dasar
-pembayaran adalah jumlah `biaya_kapal_temas.grand_total`, termasuk pajak dan biaya
-tambahan yang dicatat sekali per bagian kapal/voyage. Ini pembayaran terhadap
-invoice yang nilainya sudah diketahui, bukan uang muka sebelum invoice dibuat.
+Mode pembayaran dipilih pada **Biaya Kapal → TEMAS**, per bagian kapal/voyage,
+dengan rincian biaya akhir tetap per kontainer. Form tambah dan edit memakai
+implementasi yang sama.
 
-## Database
+| Mode | Input | Nominal transaksi |
+| --- | --- | --- |
+| Bayar langsung / lunas | Rincian biaya kontainer dan pajak/biaya tambahan | Seluruh tagihan |
+| DP / uang muka | Kapal, voyage, nominal DP positif | Nominal DP saja; tagihan akhir belum diketahui |
+| Pelunasan DP | Referensi DP dan rincian biaya akhir kontainer | Total biaya akhir dikurangi DP **satu kali** |
 
-Jalankan migrasi khusus ini pada setiap environment sebelum kode digunakan:
+Seperti mode pelunasan Storage, pajak, materai, admin, dan penyesuaian terpisah
+tidak diterapkan pada pelunasan: isikan biaya akhir pada rincian kontainer.
+Contoh: DP Rp300.000, tagihan akhir Rp1.000.000 → nominal pelunasan Rp700.000.
+Tidak ada pemotongan DP kedua kali atau posting ke COA Transaction.
 
-```sh
-php artisan migrate --path=database/migrations/2026_09_22_120000_add_temas_payment_stages_to_pembayaran_biaya_kapal_items.php
-```
+## Penyimpanan
 
-Tabel `pembayaran_biaya_kapal_items` menyimpan `payment_mode` (`lunas`, `dp`,
-`pelunasan_dp`), `dp_item_id` (foreign key ke baris DP), `nilai_tagihan`, dan
-`sisa_setelah_bayar`. Kolom `nominal` menyimpan uang yang dibayar pada transaksi
-tersebut. Pembayaran lama tetap bermode `lunas`; tidak ada backfill nominal.
+- Tabel `biaya_kapal_temas_stages` menyimpan satu mode per bagian kapal/voyage,
+  referensi `dp_stage_id`, `nilai_tagihan`, `dp_diperhitungkan`, dan `nominal_dibayar`.
+- Saat DP dibuat, `nilai_tagihan = 0` berarti belum diketahui; bukan tagihan lunas nol.
+  DP tidak memerlukan rincian kontainer. Satu rincian berlabel DP dicatat untuk rekap.
+- Baris biaya kontainer di `biaya_kapal_temas` terhubung melalui `temas_stage_id`.
+  Subtotal menyimpan biaya sebelum DP; `grand_total` menyimpan bagian nominal
+  transaksi setelah DP, dialokasikan proporsional dengan pembulatan sen.
+- Nominal header dan total biaya mengikuti jumlah nominal transaksi, sehingga
+  rekap DP + pelunasan tidak menggandakan biaya. Cetak menampilkan potongan DP.
+- Data TEMAS lama tetap memiliki `temas_stage_id = null`. Tidak ada konversi historis otomatis.
 
-Pada invoice, `dp` dan `sisa_pembayaran` disinkronkan setelah pembayaran atau
-pembatalan. Status invoice tetap `pending` setelah DP dan menjadi `paid` setelah
-lunas, agar cocok dengan enum dan daftar pembayaran yang sudah ada.
+## Endpoint dan request
 
-## Kontrak endpoint
+`GET /biaya-kapal/temas-dp-candidates` mengembalikan DP yang belum dilunasi dari
+invoice aktif. Memerlukan autentikasi dan permission `biaya-kapal-create`.
+Referensi DP menjadi sumber identitas kapal/voyage; server mengabaikan identitas
+kapal/voyage lain yang dikirim bersama pelunasan.
 
-Endpoint berada di middleware autentikasi dan permission pembayaran yang sudah ada.
-`GET /pembayaran-biaya-kapal/temas/{biayaKapal}/saldo` memerlukan permission
-`pembayaran-biaya-kapal-view`. Respons berisi `nilai_tagihan`, `total_dibayar`,
-`sisa_pembayaran`, `status`, `dp_item_id`, dan `riwayat` pembayaran aktif. Nilai uang
-dikembalikan sebagai string desimal tanpa pemisah ribuan. Gunakan ringkasan ini
-untuk menampilkan saldo, bukan `total_biaya` header yang mungkin berisi nilai lama.
+POST/PUT Biaya Kapal memakai struktur `temas[index]` yang sudah ada, ditambah:
 
-`POST /pembayaran-biaya-kapal` memerlukan permission
-`pembayaran-biaya-kapal-create` dan CSRF. Contoh DP invoice Rp1.000.000:
+- `payment_mode`: `lunas` (default), `dp`, atau `pelunasan_dp`.
+- `nominal_dibayar`: angka desimal tanpa pemisah ribuan, wajib positif untuk DP.
+- `dp_stage_id`: wajib pada pelunasan, merujuk DP di tabel stages.
+- Pada bayar langsung/pelunasan, array `types`, `custom_prices`, `quantities`,
+  `nomor_kontainers`, dan `size_items` tetap sejajar seperti sebelumnya.
+  Server menghitung total dari rincian, bukan mempercayai nominal dari browser.
 
-```json
-{
-  "biaya_kapal_ids": [123],
-  "tanggal_pembayaran": "2026-09-22",
-  "bank": "Nama bank pembayaran",
-  "jenis_transaksi": "kredit",
-  "payment_mode": "dp",
-  "nominal_dp": "300000.00",
-  "total_pembayaran": "300000.00"
-}
-```
+DP yang sudah dipakai tidak dapat diubah/dihapus, termasuk jika pelunasannya
+kemudian dihapus, agar referensi audit tetap utuh. Pelunasan yang dihapus secara
+soft delete membuka kembali DP untuk pelunasan baru. Edit pelunasan menghitung
+ulang selisih terhadap nominal DP asli. Tagihan akhir di bawah DP, referensi
+invoice sendiri, dan penggunaan DP aktif dua kali ditolak. Nilai akhir sama dengan
+DP diperbolehkan dengan nominal pelunasan nol. Row lock dan transaksi menjaga
+konsistensi saat penyimpanan bersamaan.
 
-Untuk pelunasan, gunakan invoice yang sama, `payment_mode: "pelunasan_dp"`,
-`dp_item_id` dari ringkasan saldo, serta `total_pembayaran: "700000.00"`.
-Hapus `nominal_dp`. Nominal pelunasan selalu dihitung ulang server; nominal request
-harus cocok dengan saldo terbaru. Untuk pembayaran penuh tanpa DP, gunakan
-`payment_mode: "lunas"` (default) dan total seluruh tagihan.
+## Modul pembayaran invoice sebelumnya
 
-DP dan pelunasan masing-masing hanya memilih satu invoice TEMAS. Satu invoice
-memiliki satu DP aktif dan satu pelunasan aktif. DP harus positif dan lebih kecil
-dari tagihan; cicilan tambahan tidak termasuk alur ini. Format uang request adalah
-angka desimal tanpa `Rp`/pemisah ribuan. Transaksi TEMAS menggunakan `kredit`
-(uang keluar); penyesuaian dicatat di invoice sebelum pembayaran. Parameter
-`total_tagihan_penyesuaian` pembayaran TEMAS harus nol.
+Dukungan pembayaran bertahap pada `Pembayaran Biaya Kapal` dari implementasi
+sebelumnya tetap kompatibel untuk invoice lama. Untuk invoice dengan stages baru,
+DP/pelunasan ditentukan di form Biaya Kapal; modul pembayaran hanya menerima
+bayar penuh sebesar **nominal transaksi** tersebut. Invoice yang sudah memiliki
+pembayaran aktif tetap tidak dapat diubah/dihapus sampai pembayaran dibatalkan.
+Pembayaran TEMAS tidak memanggil COA saat simpan, edit, pembatalan, atau sinkronisasi.
 
-Endpoint simpan mengikuti perilaku resource lama (redirect sukses); validation
-errors dikembalikan sebagai 422 jika request meminta JSON.
+## Migrasi dan pengujian
 
-## Koreksi dan pembatalan
-
-Invoice TEMAS dengan pembayaran aktif tidak dapat diedit/dihapus. Pembayaran
-TEMAS dapat diedit untuk informasi referensi/catatan, tetapi perubahan tanggal,
-bank, arah transaksi, atau nilai memerlukan pembatalan dan pembuatan ulang.
-Gunakan endpoint DELETE pembayaran yang sudah ada, dengan permission delete.
-Batalkan pelunasan sebelum DP. Saldo dihitung ulang setelah pembatalan. Item
-TEMAS dipertahankan bersama header pembayaran yang di-soft-delete sehingga jejak
-DP dan pelunasannya tidak hilang; pembayaran dibatalkan tidak dihitung ke saldo.
-
-Penulisan mengunci invoice di dalam transaksi DB untuk mencegah dua pembayaran
-memakai saldo yang sama. Pembayaran TEMAS tidak terhubung ke COA Transaction:
-simpan, edit, dan pembatalan tidak memposting atau menghapus jurnal. Sinkronisasi
-COA manual untuk TEMAS ditolak. Pembayaran TEMAS dan invoice jenis lainnya harus
-dibuat terpisah. Kolom bank hanya menjadi informasi pembayaran, tanpa validasi
-atau relasi ke akun COA.
-
-## Batas cakupan dan verifikasi
-
-Perubahan ini menyediakan backend/database. Form pembayaran belum memiliki
-pilihan DP/pelunasan atau pengambilan saldo otomatis; perlu dihubungkan ke kontrak
-di atas. Riwayat yang dibatalkan tersedia di database, belum di endpoint saldo.
+Jalankan migrasi tambahan ini sebelum memakai kode baru (migrasi pembayaran item
+sebelumnya tetap diperlukan dan tidak dihapus):
 
 ```sh
+php artisan migrate --path=database/migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php
 php artisan test --filter=TemasPaymentTest
+node tests/temas-container-calculation.cjs
+node tests/Browser/temas-storage-payment-smoke.mjs
 ```
 
-Test memakai SQLite in-memory yang terisolasi, meliputi saldo, asosiasi DP,
-pelunasan ganda, pembatalan, edit invoice, nominal request, serta memastikan alur
-TEMAS tidak memanggil COA Transaction. Penguncian MySQL menggunakan `lockForUpdate`; race antarproses belum diuji
-oleh test SQLite tersebut.
+Test backend menggunakan SQLite in-memory. Test browser memakai Chrome headless
+dan data manifest/DP simulasi; tidak membuat transaksi pada database aplikasi.
+Penguncian MySQL antarproses belum diuji oleh test SQLite.

@@ -10,6 +10,7 @@ class BiayaKapalTemas extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
+        'temas_stage_id',
         'kapal',
         'voyage',
         'nomor_kontainer',
@@ -62,6 +63,11 @@ class BiayaKapalTemas extends Model
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(BiayaKapalTemasStage::class, 'temas_stage_id');
     }
 
     /**

@@ -357,6 +357,29 @@
             </tbody>
         </table>
 
+        @php
+            $temasStages = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $biayaKapal->id)->get();
+            $dpDiperhitungkan = $temasStages->sum('dp_diperhitungkan');
+        @endphp
+        @if($temasStages->isNotEmpty())
+            <div class="keterangan-box">
+                @foreach($temasStages as $stage)
+                    <div>
+                        <strong>{{ $stage->kapal }} / {{ $stage->voyage }}:</strong>
+                        @if($stage->payment_mode === 'dp')
+                            DP / Uang muka Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}. Tagihan akhir belum ditentukan.
+                        @elseif($stage->payment_mode === 'pelunasan_dp')
+                            Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
+                            - DP Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
+                            = Pelunasan Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
+                        @else
+                            Bayar langsung Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <!-- TABLE 2: DETAIL BIAYA (GABUNGAN) -->
         <div class="section-header">Detail Biaya (Gabungan):</div>
         <table class="custom-table">
@@ -427,6 +450,12 @@
                 </tr>
                 @endif
                 
+                @if($dpDiperhitungkan > 0)
+                <tr>
+                    <td colspan="3" class="text-right">DIKURANGI DP YANG SUDAH DIBAYAR</td>
+                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                </tr>
+                @endif
                 <tr class="total-row">
                     <td colspan="3" class="text-right">TOTAL</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
