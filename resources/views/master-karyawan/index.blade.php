@@ -36,6 +36,7 @@
                                 <a href="{{ route('master.karyawan.import-update') }}" class="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="Import Update Data"><i class="fas fa-sync-alt border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP & Group BPJS"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <button type="button" onclick="openImportSupervisorModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal Supervisor"><i class="fas fa-user-tie border-r pr-2 border-gray-200 ml-1"></i></button>
+                                <button type="button" onclick="openImportGroupModal()" class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors" title="Update Massal Group & Sub Group (Informasi Perusahaan)"><i class="fas fa-layer-group border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <button type="button" onclick="openTarikDataModal()" class="p-1.5 text-gray-400 hover:text-cyan-600 transition-colors border-r pr-2 border-gray-200 ml-1" title="Tarik Data (NIK, Nama, Tgl Lahir, Tgl Masuk)"><i class="fas fa-table"></i></button>
                                 <div class="flex items-center ml-1 bg-gray-100/50 rounded-md px-1">
@@ -1145,6 +1146,72 @@
     </div>
 </div>
 
+<!-- Import Group & Sub Group Modal (Informasi Perusahaan) -->
+<div id="importGroupModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="import-group-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImportGroupModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-t-4 border-indigo-500">
+            <form action="{{ route('master.karyawan.import-group') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-layer-group text-indigo-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="import-group-modal-title">
+                                Update Massal Group & Sub Group
+                            </h3>
+                            <p class="text-xs text-indigo-700 font-medium">Tabel Informasi Perusahaan</p>
+
+                            <div class="mt-2 text-sm text-gray-500 space-y-2">
+                                <p>Silakan unggah file Excel/CSV untuk memperbarui data Group & Sub Group karyawan pada Informasi Perusahaan.</p>
+                                <div class="bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <p class="font-semibold text-indigo-900 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom File:</p>
+                                            <ul class="list-disc list-inside text-xs text-indigo-800 ml-1 space-y-0.5">
+                                                <li><strong>nik</strong> (Wajib, NIK Karyawan)</li>
+                                                <li><strong>nama_karyawan</strong> (Opsional)</li>
+                                                <li><strong>group</strong> (Wajib/Opsional, contoh: GAJI, UANG MAKAN)</li>
+                                                <li><strong>sub_group</strong> (Opsional, contoh: TUNAI, TRANSFER, KANTOR JAKARTA)</li>
+                                            </ul>
+                                            <p class="text-[11px] text-indigo-600 mt-1 italic leading-tight">
+                                                * Multi-group per karyawan bisa dibuat dengan beberapa baris untuk NIK yang sama, atau dipisah koma/titik koma (;).
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <a href="{{ route('master.karyawan.group-template') }}" class="inline-flex items-center px-3 py-2 border border-indigo-200 shadow-sm text-xs font-bold rounded-md text-indigo-700 bg-white hover:bg-indigo-100 hover:text-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap">
+                                                <i class="fas fa-download mr-1.5"></i> Download Template
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel / CSV</label>
+                                    <input type="file" name="excel_file_group" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-md" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-upload mr-2 mt-1"></i> Upload & Update
+                    </button>
+                    <button type="button" onclick="closeImportGroupModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Modal: Tarik Data Karyawan --}}
 <div id="tarikDataModal" class="fixed inset-0 z-50 hidden" aria-labelledby="tarikDataModalTitle" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -1265,6 +1332,21 @@ function closeImportSupervisorModal() {
     document.body.style.overflow = 'auto';
     // Reset file input when closing
     modal.querySelector('input[type="file"]').value = '';
+}
+
+function openImportGroupModal() {
+    const modal = document.getElementById('importGroupModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImportGroupModal() {
+    const modal = document.getElementById('importGroupModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    // Reset file input when closing
+    const fileInput = modal.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
 }
 
 // Enhanced Delete Modal Functions

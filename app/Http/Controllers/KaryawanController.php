@@ -898,6 +898,37 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Download template CSV untuk update massal Group & Sub Group karyawan (Informasi Perusahaan)
+     */
+    public function downloadGroupTemplate()
+    {
+        $columns = ['nik', 'nama_karyawan', 'group', 'sub_group'];
+        $fileName = 'template_group_subgroup_karyawan.csv';
+
+        $callback = function () use ($columns) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write header with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns)."\r\n");
+            
+            // Contoh baris: multiple group per karyawan bisa menggunakan multi-baris dengan NIK sama
+            fwrite($out, "1001;CONTOH NAMA KARYAWAN 1;GAJI;TUNAI\r\n");
+            fwrite($out, "1001;CONTOH NAMA KARYAWAN 1;UANG MAKAN;KANTOR JAKARTA\r\n");
+            fwrite($out, "1002;CONTOH NAMA KARYAWAN 2;GAJI;TRANSFER\r\n");
+            
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
      * Export karyawan dengan format Excel Indonesia (koma delimiter, quotes untuk koma dalam data)
      */
     public function exportExcelIndonesia()
@@ -2452,6 +2483,54 @@ class KaryawanController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memproses file Excel Supervisor: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process mass update of Group & Sub Group (Informasi Perusahaan) from Excel/CSV.
+     */
+    public function importGroup(Request $request)
+    {
+        $request->validate([
+            'excel_file_group' => 'required|file|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        try {
+            $import = new \App\Imports\KaryawanGroupImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file_group'));
+            
+            $messages = [];
+            $hasErrors = count($import->failedRows) > 0;
+            $hasSuccess = $import->successCount > 0;
+
+            if ($hasSuccess) {
+                $messages[] = "✅ {$import->successCount} data Group & Sub Group karyawan berhasil diperbarui.";
+            }
+
+            if ($hasErrors) {
+                $totalFailed = count($import->failedRows);
+                $messages[] = "⚠️ {$totalFailed} data gagal diproses:";
+                
+                $failedPreview = array_slice($import->failedRows, 0, 10);
+                foreach ($failedPreview as $fail) {
+                    $messages[] = "- Baris {$fail['row']} (NIK: {$fail['nik']}): {$fail['reason']}";
+                }
+                
+                if ($totalFailed > 10) {
+                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                }
+            }
+
+            if ($hasErrors && !$hasSuccess) {
+                return redirect()->back()->with('error', implode("\n", $messages));
+            } elseif ($hasErrors && $hasSuccess) {
+                return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
+            } else {
+                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data Group & Sub Group karyawan berhasil diperbarui secara massal.');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memproses file Excel Group & Sub Group: ' . $e->getMessage());
         }
     }
 

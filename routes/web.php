@@ -1413,6 +1413,9 @@ Route::middleware([
         Route::post('karyawan/import-supervisor', [KaryawanController::class, 'importSupervisor'])
             ->name('karyawan.import-supervisor')
             ->middleware(['auth', 'can:master-karyawan-update']);
+        Route::post('karyawan/import-group', [KaryawanController::class, 'importGroup'])
+            ->name('karyawan.import-group')
+            ->middleware(['auth', 'can:master-karyawan-update']);
 
         Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
             ->name('karyawan.import.store')
@@ -1480,6 +1483,8 @@ Route::middleware([
             ->name('karyawan.dpp-template');
         Route::get('karyawan/supervisor-template', [KaryawanController::class, 'downloadSupervisorTemplate'])
             ->name('karyawan.supervisor-template');
+        Route::get('karyawan/group-template', [KaryawanController::class, 'downloadGroupTemplate'])
+            ->name('karyawan.group-template');
 
         // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
