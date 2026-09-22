@@ -13,6 +13,7 @@ use App\Models\BiayaKapalPerlengkapan;
 use App\Models\BiayaKapalStuffing;
 use App\Models\BiayaKapalTanto;
 use App\Models\BiayaKapalTemas;
+use App\Models\BiayaKapalTemasStage;
 use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalTrucking;
 use App\Models\Karyawan;
@@ -3304,6 +3305,18 @@ class BiayaKapalController extends Controller
         $temasDetails = BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->get();
 
         return view('biaya-kapal.print-temas', compact('biayaKapal', 'temasDetails'));
+    }
+
+    /**
+     * Print a receipt for one TEMAS down-payment stage.
+     */
+    public function printTemasDp(BiayaKapalTemasStage $stage)
+    {
+        abort_unless($stage->payment_mode === 'dp', 404);
+
+        $stage->load(['biayaKapal', 'details']);
+
+        return view('biaya-kapal.print-temas-dp', compact('stage'));
     }
 
     public function printTanto(BiayaKapal $biayaKapal)

@@ -3136,6 +3136,9 @@ Route::middleware([
         Route::get('biaya-kapal/{biayaKapal}/print-temas', [\App\Http\Controllers\BiayaKapalController::class, 'printTemas'])
             ->name('biaya-kapal.print-temas')
             ->middleware('can:biaya-kapal-view');
+        Route::get('biaya-kapal/temas-dp/{stage}/print', [\App\Http\Controllers\BiayaKapalController::class, 'printTemasDp'])
+            ->name('biaya-kapal.print-temas-dp')
+            ->middleware('can:biaya-kapal-view');
         Route::get('biaya-kapal/{biayaKapal}/print-tanto', [\App\Http\Controllers\BiayaKapalController::class, 'printTanto'])
             ->name('biaya-kapal.print-tanto')
             ->middleware('can:biaya-kapal-view');

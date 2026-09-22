@@ -368,6 +368,7 @@
                         <strong>{{ $stage->kapal }} / {{ $stage->voyage }}:</strong>
                         @if($stage->payment_mode === 'dp')
                             DP / Uang muka Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}. Tagihan akhir belum ditentukan.
+                            <a class="no-print" href="{{ route('biaya-kapal.print-temas-dp', $stage->id) }}" target="_blank" style="margin-left: 8px; color: #1d4ed8; text-decoration: underline;">Cetak bukti DP</a>
                         @elseif($stage->payment_mode === 'pelunasan_dp')
                             Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
                             - DP Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
