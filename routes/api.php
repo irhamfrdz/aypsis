@@ -87,11 +87,12 @@ Route::middleware('auth:sanctum')->group(function () {
                 ->pluck('lokasi_absensi_id')
                 ->toArray();
                 
+            $hasSpecialAssignment = !empty($assignedLocIds);
             foreach ($locations as $loc) {
                 if (($loc->tipe_penugasan ?? 'semua') === 'khusus') {
                     $loc->is_assigned = in_array($loc->id, $assignedLocIds);
                 } else {
-                    $loc->is_assigned = true;
+                    $loc->is_assigned = !$hasSpecialAssignment;
                 }
             }
         }

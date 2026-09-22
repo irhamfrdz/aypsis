@@ -162,6 +162,12 @@ class ApiAttendanceController extends Controller
                     $detailLokasi = "Di luar radius {$nearestLoc->nama_lokasi} (Jarak: {$distRound}m, Radius: {$nearestLoc->radius}m)";
                 }
             }
+        } elseif (!$request->filled('latitude') || !$request->filled('longitude')) {
+            $hasSpecial = DB::table('lokasi_absensi_karyawan')->where('karyawan_id', $karyawan->id)->exists();
+            if ($hasSpecial) {
+                $statusAbsensi = 'PERSETUJUAN';
+                $detailLokasi = ($detailLokasi ? $detailLokasi . " | " : "") . "Koordinat GPS tidak terdeteksi pada lokasi wajib";
+            }
         }
 
         // Create absensi entry

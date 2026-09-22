@@ -441,7 +441,7 @@
             }
 
             karyawanChecklistList.innerHTML = karyawans.map(k => {
-                const isChecked = selectedKaryawanIds.has(k.id);
+                const isChecked = selectedKaryawanIds.has(Number(k.id));
                 const initial = (k.nama_lengkap || 'K').charAt(0).toUpperCase();
                 return `
                     <label class="flex items-center gap-2.5 p-2 hover:bg-purple-50/40 cursor-pointer select-none transition">
@@ -476,6 +476,7 @@
         }
 
         function toggleKaryawanSelected(id, checked) {
+            id = Number(id);
             if (checked) {
                 selectedKaryawanIds.add(id);
             } else {
@@ -491,8 +492,8 @@
                 : allKaryawansData;
 
             targets.forEach(k => {
-                if (selectAll) selectedKaryawanIds.add(k.id);
-                else selectedKaryawanIds.delete(k.id);
+                if (selectAll) selectedKaryawanIds.add(Number(k.id));
+                else selectedKaryawanIds.delete(Number(k.id));
             });
 
             filterKaryawanChecklist(karyawanSearchInput.value);
@@ -835,7 +836,7 @@
                 penugasanKhususRadio.checked = true;
                 penugasanSemuaRadio.checked = false;
                 karyawanPickerContainer.classList.remove('hidden');
-                selectedKaryawanIds = new Set(loc.assigned_karyawan_ids || []);
+                selectedKaryawanIds = new Set((loc.assigned_karyawan_ids || []).map(Number));
             } else {
                 penugasanSemuaRadio.checked = true;
                 penugasanKhususRadio.checked = false;
