@@ -4386,6 +4386,9 @@ class BiayaKapalController extends Controller
         try {
             DB::beginTransaction();
 
+            $biayaKapal = BiayaKapal::whereKey($biayaKapal->id)->lockForUpdate()->firstOrFail();
+            app(\App\Services\TemasPaymentService::class)->assertInvoiceEditable($biayaKapal);
+
             if ($request->hasFile('bukti')) {
                 if ($biayaKapal->bukti) {
                     foreach ($biayaKapal->bukti_array as $oldPath) {
@@ -5863,18 +5866,23 @@ class BiayaKapalController extends Controller
      */
     public function destroy(BiayaKapal $biayaKapal)
     {
+        DB::beginTransaction();
         try {
+            $biayaKapal = BiayaKapal::whereKey($biayaKapal->id)->lockForUpdate()->firstOrFail();
+            app(\App\Services\TemasPaymentService::class)->assertInvoiceEditable($biayaKapal);
             // Delete file if exists
             if ($biayaKapal->bukti) {
                 Storage::disk('public')->delete($biayaKapal->bukti);
             }
 
             $biayaKapal->delete();
+            DB::commit();
 
             return redirect()
                 ->route('biaya-kapal.index')
                 ->with('success', 'Data biaya kapal berhasil dihapus.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()
                 ->back()
                 ->with('error', 'Gagal menghapus data biaya kapal: '.$e->getMessage());

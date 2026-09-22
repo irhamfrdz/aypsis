@@ -1,0 +1,319 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Http\Controllers\PembayaranBiayaKapalController;
+use App\Models\BiayaKapal;
+use App\Models\PembayaranBiayaKapal;
+use App\Services\CoaTransactionService;
+use App\Services\TemasPaymentService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
+use Tests\TestCase;
+
+class TemasPaymentTest extends TestCase
+{
+    private TemasPaymentService $service;
+
+    private $dispatcher;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Isolated in-memory schema: never migrate or clear the configured application DB.
+        config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'database.connections.sqlite.foreign_key_constraints' => true]);
+        DB::purge('sqlite');
+        $this->dispatcher = Model::getEventDispatcher();
+        Model::unsetEventDispatcher();
+        Schema::create('biaya_kapals', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_invoice')->nullable();
+            $table->decimal('nominal', 15, 2)->default(0);
+            $table->decimal('total_biaya', 15, 2)->nullable();
+            $table->decimal('dp', 15, 2)->default(0);
+            $table->decimal('sisa_pembayaran', 15, 2)->default(0);
+            $table->string('status_pembayaran')->default('pending');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('biaya_kapal_temas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('biaya_kapal_id');
+            $table->string('nomor_kontainer');
+            $table->decimal('grand_total', 15, 2);
+        });
+        Schema::create('pembayaran_biaya_kapals', function (Blueprint $table) {
+            $table->id();
+            foreach (['nomor_pembayaran', 'nomor_accurate', 'tanggal_pembayaran', 'bank', 'jenis_transaksi', 'alasan_penyesuaian', 'keterangan', 'status_pembayaran'] as $field) {
+                $table->string($field)->nullable();
+            }
+            $table->decimal('total_pembayaran', 15, 2)->default(0);
+            $table->decimal('total_tagihan_penyesuaian', 15, 2)->default(0);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('pembayaran_biaya_kapal_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('pembayaran_biaya_kapal_id');
+            $table->unsignedBigInteger('biaya_kapal_id');
+            $table->decimal('nominal', 15, 2);
+            $table->timestamps();
+            $table->unique(['pembayaran_biaya_kapal_id', 'biaya_kapal_id']);
+        });
+        Schema::create('nomor_terakhir', function (Blueprint $table) {
+            $table->id();
+            $table->string('modul')->unique();
+            $table->integer('nomor_terakhir')->default(0);
+            $table->string('keterangan')->nullable();
+            $table->timestamps();
+        });
+        (require database_path('migrations/2026_09_22_120000_add_temas_payment_stages_to_pembayaran_biaya_kapal_items.php'))->up();
+        $this->service = app(TemasPaymentService::class);
+    }
+
+    protected function tearDown(): void
+    {
+        Model::setEventDispatcher($this->dispatcher);
+        parent::tearDown();
+    }
+
+    private function invoice(): BiayaKapal
+    {
+        // Stale header total must not override the actual container costs.
+        $invoice = BiayaKapal::create(['nominal' => 999, 'total_biaya' => 999, 'status_pembayaran' => 'pending']);
+        DB::table('biaya_kapal_temas')->insert([
+            ['biaya_kapal_id' => $invoice->id, 'nomor_kontainer' => 'TEMU1', 'grand_total' => 600000],
+            ['biaya_kapal_id' => $invoice->id, 'nomor_kontainer' => 'TEMU2', 'grand_total' => 400000],
+        ]);
+
+        return $invoice;
+    }
+
+    private function pay(BiayaKapal $invoice, string $mode, $amount = null, ?int $dpId = null): PembayaranBiayaKapal
+    {
+        return DB::transaction(function () use ($invoice, $mode, $amount, $dpId) {
+            $locked = BiayaKapal::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
+            $item = $this->service->prepare($locked, $mode, $amount, $dpId, '2026-09-22');
+            $payment = PembayaranBiayaKapal::create([
+                'nomor_pembayaran' => 'TEST', 'tanggal_pembayaran' => '2026-09-22',
+                'status_pembayaran' => 'paid', 'total_pembayaran' => $item['nominal'],
+            ]);
+            $payment->items()->create(array_merge($item, ['biaya_kapal_id' => $invoice->id]));
+            $this->service->syncInvoice($locked);
+
+            return $payment;
+        });
+    }
+
+    public function test_dp_settlement_and_cancellation_recompute_balance_and_keep_history(): void
+    {
+        $invoice = $this->invoice();
+        $dp = $this->pay($invoice, 'dp', '300000.25');
+        $this->assertSame('699999.75', $invoice->fresh()->sisa_pembayaran);
+        $this->assertSame('pending', $invoice->fresh()->status_pembayaran);
+        $dpId = $dp->items()->first()->id;
+        $settlement = $this->pay($invoice, 'pelunasan_dp', null, $dpId);
+        $this->assertSame('699999.75', $settlement->items()->first()->nominal);
+        $this->assertSame('paid', $invoice->fresh()->status_pembayaran);
+        $this->assertSame('0.00', $invoice->fresh()->sisa_pembayaran);
+        $this->assertCount(2, $this->service->summary($invoice->fresh())['riwayat']);
+
+        $settlement->delete();
+        $this->service->syncInvoice($invoice->fresh());
+        $this->assertSame('699999.75', $invoice->fresh()->sisa_pembayaran);
+        $this->service->assertPaymentCanBeCancelled($dp);
+        $replacement = $this->pay($invoice, 'pelunasan_dp', null, $dpId);
+        $replacement->delete();
+        $dp->delete();
+        $this->service->syncInvoice($invoice->fresh());
+        $this->assertSame('1000000.00', $invoice->fresh()->sisa_pembayaran);
+        $this->assertSame('0.00', $invoice->fresh()->dp);
+        $this->assertSame(3, DB::table('pembayaran_biaya_kapal_items')->count());
+    }
+
+    public function test_dp_must_be_positive_and_less_than_total(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->pay($this->invoice(), 'dp', '1000000');
+    }
+
+    public function test_second_dp_is_rejected(): void
+    {
+        $invoice = $this->invoice();
+        $this->pay($invoice, 'dp', 100000);
+        $this->expectException(ValidationException::class);
+        $this->pay($invoice, 'dp', 100000);
+    }
+
+    public function test_settlement_cannot_reference_another_invoice(): void
+    {
+        $dp = $this->pay($this->invoice(), 'dp', 100000);
+        $this->expectException(ValidationException::class);
+        $this->pay($this->invoice(), 'pelunasan_dp', null, $dp->items()->first()->id);
+    }
+
+    public function test_second_settlement_is_rejected(): void
+    {
+        $invoice = $this->invoice();
+        $dp = $this->pay($invoice, 'dp', 100000);
+        $dpId = $dp->items()->first()->id;
+        $this->pay($invoice, 'pelunasan_dp', null, $dpId);
+        $this->expectException(ValidationException::class);
+        $this->pay($invoice, 'pelunasan_dp', null, $dpId);
+    }
+
+    public function test_dp_with_active_settlement_cannot_be_cancelled(): void
+    {
+        $invoice = $this->invoice();
+        $dp = $this->pay($invoice, 'dp', 100000);
+        $this->pay($invoice, 'pelunasan_dp', null, $dp->items()->first()->id);
+        $this->expectException(ValidationException::class);
+        $this->service->assertPaymentCanBeCancelled($dp);
+    }
+
+    public function test_invoice_with_dp_cannot_be_edited_or_deleted(): void
+    {
+        $invoice = $this->invoice();
+        $this->pay($invoice, 'dp', 100000);
+        $this->expectException(ValidationException::class);
+        $this->service->assertInvoiceEditable($invoice);
+    }
+
+    public function test_existing_full_payments_are_included(): void
+    {
+        $invoice = $this->invoice();
+        $payment = PembayaranBiayaKapal::create(['nomor_pembayaran' => 'OLD', 'tanggal_pembayaran' => '2026-09-01', 'status_pembayaran' => 'paid']);
+        $payment->items()->create(['biaya_kapal_id' => $invoice->id, 'nominal' => 1000000]);
+        $this->assertSame('lunas', $this->service->summary($invoice)['status']);
+        $this->expectException(ValidationException::class);
+        $this->pay($invoice, 'dp', 100000);
+    }
+
+    public function test_controller_rejects_tampered_payment_total_without_writing(): void
+    {
+        $invoice = $this->invoice();
+        $controller = new PembayaranBiayaKapalController($this->mock(CoaTransactionService::class));
+        try {
+            $controller->store(Request::create('/', 'POST', [
+                'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22',
+                'jenis_transaksi' => 'kredit', 'payment_mode' => 'dp',
+                'nominal_dp' => 300000, 'total_pembayaran' => 1,
+            ]));
+            $this->fail('Expected a validation error.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('total_pembayaran', $e->errors());
+        }
+        $this->assertSame(0, PembayaranBiayaKapal::count());
+        $this->assertSame(0, DB::transactionLevel());
+    }
+
+    public function test_controller_stores_dp_without_posting_coa(): void
+    {
+        $invoice = $this->invoice();
+        $coa = $this->mock(CoaTransactionService::class);
+        $coa->shouldNotReceive('pembayaranBiayaKapal');
+        $coa->shouldNotReceive('deleteTransactionByReference');
+        $controller = new PembayaranBiayaKapalController($coa);
+        $controller->store(Request::create('/', 'POST', [
+            'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22', 'bank' => 'BANK TEST',
+            'jenis_transaksi' => 'kredit', 'payment_mode' => 'dp',
+            'nominal_dp' => 300000, 'total_pembayaran' => 300000,
+        ]));
+        $this->assertSame(1, PembayaranBiayaKapal::count());
+        $this->assertSame('300000.00', $invoice->fresh()->dp);
+        $this->assertSame(0, DB::transactionLevel());
+    }
+
+    public function test_controller_can_pay_dp_settle_and_cancel_in_order(): void
+    {
+        $invoice = $this->invoice();
+        $coa = $this->mock(CoaTransactionService::class);
+        $coa->shouldNotReceive('pembayaranBiayaKapal');
+        $coa->shouldNotReceive('deleteTransactionByReference');
+        $controller = new PembayaranBiayaKapalController($coa);
+        $common = [
+            'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22',
+            'bank' => 'BANK TEST', 'jenis_transaksi' => 'kredit',
+        ];
+        $controller->store(Request::create('/', 'POST', $common + [
+            'payment_mode' => 'dp', 'nominal_dp' => 300000, 'total_pembayaran' => 300000,
+        ]));
+        $dp = PembayaranBiayaKapal::firstOrFail();
+        $this->assertSame('300000.00', $dp->total_pembayaran);
+        $this->assertSame('pending', $invoice->fresh()->status_pembayaran);
+        $controller->update(Request::create('/', 'PUT', $common + ['keterangan' => 'DP dikonfirmasi']), $dp->id);
+        $this->assertSame('DP dikonfirmasi', $dp->fresh()->keterangan);
+        $this->assertSame('300000.00', $dp->fresh()->total_pembayaran);
+        $controller->store(Request::create('/', 'POST', $common + [
+            'payment_mode' => 'pelunasan_dp', 'dp_item_id' => $dp->items()->first()->id,
+            'total_pembayaran' => 700000,
+        ]));
+        $settlement = PembayaranBiayaKapal::orderByDesc('id')->firstOrFail();
+        $this->assertSame('700000.00', $settlement->total_pembayaran);
+        $this->assertSame('paid', $invoice->fresh()->status_pembayaran);
+        $controller->destroy($settlement->id);
+        $this->assertSame('700000.00', $invoice->fresh()->sisa_pembayaran);
+        $controller->destroy($dp->id);
+        $this->assertSame('1000000.00', $invoice->fresh()->sisa_pembayaran);
+        $this->assertSame(2, DB::table('pembayaran_biaya_kapal_items')->count());
+        $this->assertSame(0, PembayaranBiayaKapal::count());
+    }
+
+    public function test_full_payment_and_cancelled_dp_reference(): void
+    {
+        $invoice = $this->invoice();
+        $full = $this->pay($invoice, 'lunas');
+        $this->assertSame('1000000.00', $full->total_pembayaran);
+        $this->assertSame('paid', $invoice->fresh()->status_pembayaran);
+        $other = $this->invoice();
+        $dp = $this->pay($other, 'dp', 300000);
+        $dpId = $dp->items()->first()->id;
+        $dp->delete();
+        $this->service->syncInvoice($other->fresh());
+        $this->expectException(ValidationException::class);
+        $this->pay($other, 'pelunasan_dp', null, $dpId);
+    }
+
+    public function test_settlement_date_cannot_precede_dp(): void
+    {
+        $invoice = $this->invoice();
+        $dp = $this->pay($invoice, 'dp', 300000);
+        $this->expectException(ValidationException::class);
+        $this->service->prepare($invoice->fresh(), 'pelunasan_dp', null, $dp->items()->first()->id, '2026-09-21');
+    }
+
+    public function test_manual_coa_sync_is_rejected_for_temas(): void
+    {
+        $invoice = $this->invoice();
+        $dp = $this->pay($invoice, 'dp', 300000);
+        $coa = $this->mock(CoaTransactionService::class);
+        $coa->shouldNotReceive('pembayaranBiayaKapal');
+        $coa->shouldNotReceive('deleteTransactionByReference');
+        $this->expectException(ValidationException::class);
+        (new PembayaranBiayaKapalController($coa))->syncCoa($dp->id);
+    }
+
+    public function test_temas_and_other_invoices_cannot_share_one_payment(): void
+    {
+        $temas = $this->invoice();
+        $other = BiayaKapal::create(['nominal' => 100000, 'status_pembayaran' => 'pending']);
+        $coa = $this->mock(CoaTransactionService::class);
+        $coa->shouldNotReceive('pembayaranBiayaKapal');
+        try {
+            (new PembayaranBiayaKapalController($coa))->store(Request::create('/', 'POST', [
+                'biaya_kapal_ids' => [$temas->id, $other->id], 'tanggal_pembayaran' => '2026-09-22',
+                'bank' => 'BANK TEST', 'jenis_transaksi' => 'kredit', 'total_pembayaran' => 1100000,
+            ]));
+            $this->fail('Mixed invoices must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('biaya_kapal_ids', $e->errors());
+        }
+        $this->assertSame(0, PembayaranBiayaKapal::count());
+    }
+}

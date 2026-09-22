@@ -194,7 +194,7 @@ class BiayaKapal extends Model
     public function pembayarans()
     {
         return $this->belongsToMany(PembayaranBiayaKapal::class, 'pembayaran_biaya_kapal_items', 'biaya_kapal_id', 'pembayaran_biaya_kapal_id')
-            ->withPivot('nominal')
+            ->withPivot('nominal', 'payment_mode', 'dp_item_id', 'nilai_tagihan', 'sisa_setelah_bayar')
             ->withTimestamps();
     }
 

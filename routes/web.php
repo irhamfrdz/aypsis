@@ -3175,6 +3175,8 @@ Route::middleware([
             ->name('pembayaran-biaya-kapal.sync-coa')
             ->middleware('can:pembayaran-biaya-kapal-edit');
 
+        Route::get('pembayaran-biaya-kapal/temas/{biayaKapal}/saldo', [\App\Http\Controllers\PembayaranBiayaKapalController::class, 'temasSummary'])
+            ->name('pembayaran-biaya-kapal.temas-saldo');
         Route::resource('pembayaran-biaya-kapal', \App\Http\Controllers\PembayaranBiayaKapalController::class);
 
         // Rekap Biaya Kapal Routes

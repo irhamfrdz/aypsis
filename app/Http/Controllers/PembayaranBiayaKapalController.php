@@ -7,11 +7,13 @@ use App\Models\Coa;
 use App\Models\NomorTerakhir;
 use App\Models\PembayaranBiayaKapal;
 use App\Services\CoaTransactionService;
+use App\Services\TemasPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranBiayaKapalController extends Controller
 {
@@ -21,7 +23,7 @@ class PembayaranBiayaKapalController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
         $this->middleware('auth');
-        $this->middleware('can:pembayaran-biaya-kapal-view')->only(['index', 'show']);
+        $this->middleware('can:pembayaran-biaya-kapal-view')->only(['index', 'show', 'temasSummary']);
         $this->middleware('can:pembayaran-biaya-kapal-create')->only(['create', 'store']);
         $this->middleware('can:pembayaran-biaya-kapal-edit')->only(['edit', 'update', 'syncCoa']);
         $this->middleware('can:pembayaran-biaya-kapal-delete')->only(['destroy']);
@@ -110,8 +112,11 @@ class PembayaranBiayaKapalController extends Controller
     {
         $validated = $request->validate([
             'biaya_kapal_ids' => ['required', 'array', 'min:1'],
-            'biaya_kapal_ids.*' => ['exists:biaya_kapals,id'],
-            'tanggal_pembayaran' => 'required|date',
+            'biaya_kapal_ids.*' => ['integer', 'distinct', 'exists:biaya_kapals,id'],
+            'tanggal_pembayaran' => 'required|date_format:Y-m-d',
+            'payment_mode' => 'nullable|in:lunas,dp,pelunasan_dp',
+            'nominal_dp' => 'required_if:payment_mode,dp|nullable|numeric|decimal:0,2|gt:0',
+            'dp_item_id' => 'required_if:payment_mode,pelunasan_dp|nullable|integer|exists:pembayaran_biaya_kapal_items,id',
             'jenis_transaksi' => ['required', Rule::in(['debit', 'kredit'])],
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
@@ -123,11 +128,49 @@ class PembayaranBiayaKapalController extends Controller
         DB::beginTransaction();
 
         try {
+            $temasPayments = app(TemasPaymentService::class);
+            $mode = $validated['payment_mode'] ?? 'lunas';
+            $invoices = BiayaKapal::whereIn('id', $validated['biaya_kapal_ids'])
+                ->orderBy('id')->lockForUpdate()->get();
+            if ($invoices->count() !== count($validated['biaya_kapal_ids'])) {
+                throw ValidationException::withMessages(['biaya_kapal_ids' => 'Invoice tidak tersedia atau sudah dihapus.']);
+            }
+            if ($mode !== 'lunas' && ($invoices->count() !== 1 || ! $temasPayments->isTemas($invoices->first()))) {
+                throw ValidationException::withMessages(['payment_mode' => 'Pilih tepat satu invoice TEMAS untuk DP atau pelunasan DP.']);
+            }
+            $allocations = [];
+            $hasTemas = false;
+            foreach ($invoices as $invoice) {
+                if ($temasPayments->isTemas($invoice)) {
+                    $hasTemas = true;
+                    if ($request->jenis_transaksi !== 'kredit' || (float) $request->total_tagihan_penyesuaian != 0) {
+                        throw ValidationException::withMessages(['jenis_transaksi' => 'Pembayaran TEMAS menggunakan kredit (uang keluar). Penyesuaian biaya harus dicatat pada invoice sebelum pembayaran.']);
+                    }
+                    $allocations[$invoice->id] = $temasPayments->prepare(
+                        $invoice, $mode, $validated['nominal_dp'] ?? null,
+                        isset($validated['dp_item_id']) ? (int) $validated['dp_item_id'] : null,
+                        $validated['tanggal_pembayaran']
+                    );
+                } else {
+                    $allocations[$invoice->id] = ['nominal' => $invoice->total_biaya ?? $invoice->nominal];
+                }
+            }
+            $paymentTotal = array_sum(array_map(fn ($item) => $temasPayments->cents($item['nominal']), $allocations));
+            if ($hasTemas && $temasPayments->cents($validated['total_pembayaran']) !== $paymentTotal) {
+                throw ValidationException::withMessages(['total_pembayaran' => 'Total pembayaran tidak sesuai DP atau sisa tagihan terbaru. Muat ulang ringkasan pembayaran.']);
+            }
+            if ($hasTemas) {
+                if ($invoices->contains(fn ($invoice) => ! $temasPayments->isTemas($invoice))) {
+                    throw ValidationException::withMessages(['biaya_kapal_ids' => 'Pisahkan pembayaran invoice TEMAS dari jenis biaya lainnya.']);
+                }
+                $request->validate(['bank' => 'required|string|max:255']);
+            }
             // Get or create PBK modul
             $modulNomor = NomorTerakhir::firstOrCreate(
                 ['modul' => 'PBK'],
                 ['nomor_terakhir' => 0, 'keterangan' => 'pembayaran biaya kapal']
             );
+            $modulNomor = NomorTerakhir::whereKey($modulNomor->id)->lockForUpdate()->firstOrFail();
 
             // Generate number
             $nomorPembayaran = $this->generateNomorPembayaran();
@@ -139,7 +182,7 @@ class PembayaranBiayaKapalController extends Controller
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'total_pembayaran' => $request->total_pembayaran,
+                'total_pembayaran' => $hasTemas ? $paymentTotal / 100 : $request->total_pembayaran,
                 'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
@@ -148,25 +191,17 @@ class PembayaranBiayaKapalController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            foreach ($validated['biaya_kapal_ids'] as $id) {
-                $biayaKapal = BiayaKapal::findOrFail($id);
-
-                // Use total_biaya if available, else use nominal
-                $subtotal = $biayaKapal->total_biaya ?? $biayaKapal->nominal;
-
-                $pembayaran->biayaKapals()->attach($id, [
-                    'nominal' => $subtotal,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                $biayaKapal->update([
-                    'status_pembayaran' => 'paid',
-                ]);
+            foreach ($invoices as $biayaKapal) {
+                $pembayaran->items()->create(array_merge($allocations[$biayaKapal->id], ['biaya_kapal_id' => $biayaKapal->id]));
+                if ($temasPayments->isTemas($biayaKapal)) {
+                    $temasPayments->syncInvoice($biayaKapal);
+                } else {
+                    $biayaKapal->update(['status_pembayaran' => 'paid']);
+                }
             }
 
-            // Accounting integration if service supports it
-            if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
+            // TEMAS payments track invoice balances without posting COA transactions.
+            if (! $hasTemas && method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
                 $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
             }
 
@@ -175,6 +210,9 @@ class PembayaranBiayaKapalController extends Controller
             return redirect()->route('pembayaran-biaya-kapal.index')
                 ->with('success', 'Pembayaran biaya kapal berhasil disimpan.');
 
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error storing pembayaran biaya kapal: '.$e->getMessage());
@@ -191,6 +229,13 @@ class PembayaranBiayaKapalController extends Controller
         $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya', 'creator'])->findOrFail($id);
 
         return view('pembayaran-biaya-kapal.show', compact('pembayaran'));
+    }
+
+    public function temasSummary(BiayaKapal $biayaKapal, TemasPaymentService $payments)
+    {
+        abort_unless($payments->isTemas($biayaKapal), 404);
+
+        return response()->json($payments->summary($biayaKapal));
     }
 
     /**
@@ -229,12 +274,24 @@ class PembayaranBiayaKapalController extends Controller
         DB::beginTransaction();
 
         try {
+            $invoices = BiayaKapal::whereIn('id', $pembayaran->items()->pluck('biaya_kapal_id'))
+                ->orderBy('id')->lockForUpdate()->get();
+            $pembayaran = PembayaranBiayaKapal::whereKey($id)->lockForUpdate()->firstOrFail();
+            $hasTemas = $invoices->contains(fn ($invoice) => app(TemasPaymentService::class)->isTemas($invoice));
+            if ($hasTemas && (
+                $request->date('tanggal_pembayaran')->format('Y-m-d') !== $pembayaran->tanggal_pembayaran->format('Y-m-d')
+                || $request->bank !== $pembayaran->bank
+                || $request->jenis_transaksi !== $pembayaran->jenis_transaksi
+                || (float) $request->total_tagihan_penyesuaian !== (float) $pembayaran->total_tagihan_penyesuaian
+            )) {
+                throw ValidationException::withMessages(['payment_mode' => 'Tanggal, bank, dan nilai pembayaran TEMAS tidak dapat diubah. Batalkan pembayaran lalu buat kembali untuk koreksi keuangan.']);
+            }
             $pembayaran->update([
                 'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'total_pembayaran' => $pembayaran->biayaKapals()->sum(DB::raw('nominal')), // preserve original total of items
+                'total_pembayaran' => $hasTemas ? $pembayaran->total_pembayaran : $pembayaran->items()->sum('nominal'),
                 'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
@@ -242,7 +299,7 @@ class PembayaranBiayaKapalController extends Controller
             ]);
 
             // Re-run accounting if exists
-            if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
+            if (! $hasTemas && method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
                 $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
             }
 
@@ -251,6 +308,9 @@ class PembayaranBiayaKapalController extends Controller
             return redirect()->route('pembayaran-biaya-kapal.index')
                 ->with('success', 'Pembayaran biaya kapal berhasil diperbarui.');
 
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating pembayaran biaya kapal: '.$e->getMessage());
@@ -268,26 +328,45 @@ class PembayaranBiayaKapalController extends Controller
 
         DB::beginTransaction();
         try {
+            $invoices = BiayaKapal::whereIn('id', $pembayaran->items()->pluck('biaya_kapal_id'))
+                ->orderBy('id')->lockForUpdate()->get();
+            $pembayaran = PembayaranBiayaKapal::whereKey($id)->lockForUpdate()->firstOrFail();
+            $temasPayments = app(TemasPaymentService::class);
+            $temasPayments->assertPaymentCanBeCancelled($pembayaran);
             // Restore status of associated biaya kapals
-            foreach ($pembayaran->biayaKapals as $biayaKapal) {
+            foreach ($invoices as $biayaKapal) {
+                if ($temasPayments->isTemas($biayaKapal)) {
+                    continue;
+                }
                 $biayaKapal->update([
                     'status_pembayaran' => 'pending',
                 ]);
             }
 
-            // Remove items
-            $pembayaran->biayaKapals()->detach();
+            // Preserve TEMAS items and their DP references for cancelled-payment history.
+            $otherIds = $invoices->reject(fn ($invoice) => $temasPayments->isTemas($invoice))->pluck('id');
+            $pembayaran->biayaKapals()->detach($otherIds);
 
             // Delete associated COA transactions
-            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            if (! $invoices->contains(fn ($invoice) => $temasPayments->isTemas($invoice))) {
+                $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            }
 
             // Delete payment record
             $pembayaran->delete();
+            foreach ($invoices as $biayaKapal) {
+                if ($temasPayments->isTemas($biayaKapal)) {
+                    $temasPayments->syncInvoice($biayaKapal);
+                }
+            }
 
             DB::commit();
 
             return redirect()->route('pembayaran-biaya-kapal.index')
                 ->with('success', 'Pembayaran berhasil dibatalkan dan dihapus.');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -300,12 +379,19 @@ class PembayaranBiayaKapalController extends Controller
      */
     public function syncCoa($id)
     {
-        $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya'])->findOrFail($id);
+        $pembayaran = PembayaranBiayaKapal::findOrFail($id);
 
         DB::beginTransaction();
 
         try {
             // 1. Delete existing COA transactions for this reference number
+            $invoices = BiayaKapal::whereIn('id', $pembayaran->items()->pluck('biaya_kapal_id'))
+                ->orderBy('id')->lockForUpdate()->get();
+            $pembayaran = PembayaranBiayaKapal::whereKey($id)->lockForUpdate()->firstOrFail();
+            $hasTemas = $invoices->contains(fn ($invoice) => app(TemasPaymentService::class)->isTemas($invoice));
+            if ($hasTemas) {
+                throw ValidationException::withMessages(['payment_mode' => 'Pembayaran TEMAS tidak dihubungkan ke COA Transaction.']);
+            }
             $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
 
             // 2. Re-run integration
@@ -318,6 +404,9 @@ class PembayaranBiayaKapalController extends Controller
             return redirect()->route('pembayaran-biaya-kapal.show', $pembayaran->id)
                 ->with('success', 'Sinkronisasi COA berhasil.');
 
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error sync COA pembayaran biaya kapal: '.$e->getMessage());
