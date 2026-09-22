@@ -52,20 +52,9 @@ class PermohonanAmprahanController extends Controller
 
     public function approvalIndex(Request $request)
     {
-        $kapals = MasterKapal::orderBy('nama_kapal')->get();
-        $selectedKapal = $request->input('kapal_id');
-        $selectedVoyage = $request->input('nomor_voyage');
         $selectedStatus = $request->input('status', 'pending');
 
-        $query = PermohonanAmprahan::with(['kapal', 'user', 'items'])->latest();
-
-        if ($selectedKapal) {
-            $query->where('kapal_id', $selectedKapal);
-        }
-
-        if ($selectedVoyage) {
-            $query->where('nomor_voyage', 'like', "%{$selectedVoyage}%");
-        }
+        $query = PermohonanAmprahan::with(['user', 'items'])->latest();
         
         if ($selectedStatus && $selectedStatus != 'all') {
             $query->where('status', $selectedStatus);
@@ -73,7 +62,7 @@ class PermohonanAmprahanController extends Controller
 
         $permohonans = $query->paginate(15)->withQueryString();
 
-        return view('permohonan-amprahan.approval-index', compact('kapals', 'permohonans', 'selectedKapal', 'selectedVoyage', 'selectedStatus'));
+        return view('permohonan-amprahan.approval-index', compact('permohonans', 'selectedStatus'));
     }
 
     public function approvalProcessForm($id)

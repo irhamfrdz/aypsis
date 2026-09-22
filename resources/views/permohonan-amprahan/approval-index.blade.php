@@ -25,24 +25,6 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
         <form action="{{ route('approval-permohonan-amprahan.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
             <div class="w-full md:w-1/4">
-                <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-1">Pilih Kapal</label>
-                <select name="kapal_id" id="kapal_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition-colors">
-                    <option value="">-- Semua Kapal --</option>
-                    @foreach($kapals as $kapal)
-                        <option value="{{ $kapal->id }}" {{ $selectedKapal == $kapal->id ? 'selected' : '' }}>
-                            {{ $kapal->nama_kapal }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            
-            <div class="w-full md:w-1/4">
-                <label for="nomor_voyage" class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
-                <input type="text" name="nomor_voyage" id="nomor_voyage" value="{{ $selectedVoyage }}" placeholder="Masukkan Nomor Voyage" 
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition-colors">
-            </div>
-
-            <div class="w-full md:w-1/4">
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select name="status" id="status" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition-colors">
                     <option value="all" {{ $selectedStatus == 'all' ? 'selected' : '' }}>-- Semua Status --</option>
@@ -71,7 +53,6 @@
                     <tr>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kapal / Voyage</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemohon</th>
@@ -87,10 +68,6 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $item->tanggal_permohonan?->format('d M Y') ?? '-' }}</div>
                                 <div class="text-xs text-gray-500">{{ $item->tanggal_permohonan?->format('H:i') ?? '-' }} WIB</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-bold text-gray-900">{{ $item->kapal->nama_kapal ?? '-' }}</div>
-                                <div class="text-sm text-gray-600">Voyage: <span class="font-medium">{{ $item->nomor_voyage }}</span></div>
                             </td>
                             <td class="px-6 py-4">
                                 @forelse($item->items as $barang)
@@ -137,7 +114,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
                                     <p class="text-lg font-medium text-gray-900">Belum ada data permintaan amprahan</p>
