@@ -319,9 +319,9 @@
                 <button type="button" class="remove-container-temas text-sm text-red-600 hover:underline">Hapus kontainer</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <label class="text-sm text-gray-700">Kontainer dari manifest<select class="temas-manifest-select \${temasInputClass} mt-1"></select></label>
-                <label class="text-sm text-gray-700">Nomor kontainer<input class="temas-container-number \${temasInputClass} mt-1 uppercase" placeholder="Contoh: TEMU1234567" maxlength="100" required></label>
-                <label class="text-sm text-gray-700">Ukuran<select class="temas-container-size \${temasInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
+                <label class="text-sm text-gray-700">Kontainer dari manifest<select class="temas-manifest-select ${temasInputClass} mt-1"></select></label>
+                <label class="text-sm text-gray-700">Nomor kontainer<input class="temas-container-number ${temasInputClass} mt-1 uppercase" placeholder="Contoh: TEMU1234567" maxlength="100" required></label>
+                <label class="text-sm text-gray-700">Ukuran<select class="temas-container-size ${temasInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
             </div>
             <div class="temas-cost-list space-y-3"></div>
             <div class="flex flex-wrap justify-between items-center gap-3 mt-3">
@@ -353,22 +353,22 @@
         row.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <label class="text-sm text-gray-700">Jenis biaya
-                    <select name="\${field('types')}" class="type-select-temas \${temasInputClass} mt-1" required>
+                    <select name="${field('types')}" class="type-select-temas ${temasInputClass} mt-1" required>
                         <option value="">Pilih jenis biaya</option><option value="MANUAL">Tulis biaya manual</option>
-                        \${pricelistTemasData.map(item => '<option value="' + temasEscape(item.id) + '">' + temasEscape(item.jenis_biaya) + (item.size ? ' · ' + temasEscape(item.size) : '') + (item.lokasi ? ' · ' + temasEscape(item.lokasi) : '') + ' · ' + temasMoney(item.harga) + '</option>').join('')}
+                        ${pricelistTemasData.map(item => '<option value="' + temasEscape(item.id) + '">' + temasEscape(item.jenis_biaya) + (item.size ? ' · ' + temasEscape(item.size) : '') + (item.lokasi ? ' · ' + temasEscape(item.lokasi) : '') + ' · ' + temasMoney(item.harga) + '</option>').join('')}
                     </select>
                 </label>
-                <label class="temas-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="\${field('manual_names')}" class="type-manual-input-temas \${temasInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
-                <label class="text-sm text-gray-700">Biaya kontainer ini (Rp)<input type="number" name="\${field('custom_prices')}" class="price-input-temas \${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
-                <label class="text-sm text-gray-700">Lokasi<select name="\${field('lokasi_items')}" class="lokasi-select-temas \${temasInputClass} mt-1"><option value="">Pilih lokasi (opsional)</option><option>Jakarta</option><option>Batam</option><option>Pinang</option></select></label>
+                <label class="temas-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="${field('manual_names')}" class="type-manual-input-temas ${temasInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
+                <label class="text-sm text-gray-700">Biaya kontainer ini (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-temas ${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
+                <label class="text-sm text-gray-700">Lokasi<select name="${field('lokasi_items')}" class="lokasi-select-temas ${temasInputClass} mt-1"><option value="">Pilih lokasi (opsional)</option><option>Jakarta</option><option>Batam</option><option>Pinang</option></select></label>
             </div>
-            <input type="hidden" name="\${field('nomor_kontainers')}" class="temas-row-number">
-            <input type="hidden" name="\${field('bl_ids')}" class="temas-row-bl">
-            <input type="hidden" name="\${field('size_items')}" class="temas-row-size">
-            <input type="hidden" name="\${field('quantities')}" class="quantity-input-temas" value="1">
+            <input type="hidden" name="${field('nomor_kontainers')}" class="temas-row-number">
+            <input type="hidden" name="${field('bl_ids')}" class="temas-row-bl">
+            <input type="hidden" name="${field('size_items')}" class="temas-row-size">
+            <input type="hidden" name="${field('quantities')}" class="quantity-input-temas" value="1">
             <div class="flex flex-wrap items-center gap-4 mt-3 text-sm">
                 <span class="text-gray-500">Kegiatan:</span>
-                \${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="temas-activity"> ' + label + '</label>').join('')}
+                ${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="temas-activity"> ' + label + '</label>').join('')}
                 <button type="button" class="remove-cost-temas text-red-600 hover:underline ml-auto">Hapus biaya</button>
             </div>
         `;
