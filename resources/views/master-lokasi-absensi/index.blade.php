@@ -150,15 +150,19 @@
 
                         <!-- Input angka + satuan -->
                         <div class="relative flex items-center mb-2.5">
-                            <div class="absolute left-3 w-6 h-6 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center pointer-events-none shadow-2xs">
-                                <i class="fas fa-circle-dot text-[10px]"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <div class="w-6 h-6 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center shadow-2xs">
+                                    <i class="fas fa-circle-dot text-[10px]"></i>
+                                </div>
                             </div>
                             <input type="number" id="radius" min="10" max="5000" placeholder="100" value="100" required
                                 oninput="syncRadiusSlider(this.value)"
-                                class="w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-20 text-sm font-bold text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition shadow-2xs placeholder-slate-400">
-                            <span class="absolute right-2.5 px-2.5 py-1 text-[10px] font-bold bg-orange-100 text-orange-600 rounded-lg select-none tracking-wider">
-                                METER
-                            </span>
+                                class="w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl py-2.5 pl-11 pr-24 text-sm font-bold text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition shadow-2xs placeholder-slate-400">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="px-2.5 py-1 text-[10px] font-bold bg-orange-100 text-orange-600 rounded-lg select-none tracking-wider">
+                                    METER
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Slider range -->
