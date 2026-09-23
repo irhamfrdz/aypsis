@@ -121,6 +121,11 @@
                 row.querySelector('.temas-manual-label').classList.toggle('hidden', type !== 'MANUAL');
                 row.querySelector('.type-manual-input-temas').value = item.manual_name || '';
                 row.querySelector('.type-manual-input-temas').required = type === 'MANUAL';
+                const savedPerContainer = item.is_per_container;
+                row.querySelector('.temas-per-container').checked = savedPerContainer === null || savedPerContainer === undefined
+                    ? !temasIsSingleCharge(item.manual_name)
+                    : Boolean(savedPerContainer);
+                row.dataset.perContainerTouched = 'true';
                 row.querySelector('.price-input-temas').value = item.harga;
                 row.querySelector('.quantity-input-temas').value = item.kuantitas || 1;
                 row.querySelectorAll('.temas-activity').forEach((box, i) => box.checked = Boolean(i ? item.is_bongkar : item.is_muat));

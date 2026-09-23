@@ -477,22 +477,40 @@
             <input type="hidden" name="${field('bl_ids')}" class="temas-row-bl">
             <input type="hidden" name="${field('size_items')}" class="temas-row-size">
             <input type="hidden" name="${field('quantities')}" class="quantity-input-temas" value="1">
+            <input type="hidden" name="${field('per_containers')}" class="temas-row-per-container" value="1">
             <div class="flex flex-wrap items-center gap-4 mt-3 text-sm">
                 <span class="temas-cost-calculation text-blue-700 font-medium">Dihitung setelah nomor BL dipilih</span>
+                <label class="flex items-center gap-2 font-medium text-gray-700">
+                    <input type="checkbox" class="temas-per-container w-4 h-4 rounded text-blue-600 focus:ring-blue-500" checked>
+                    Kalikan per kontainer
+                </label>
                 <span class="text-gray-500">Kegiatan:</span>
                 ${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="temas-activity"> ' + label + '</label>').join('')}
                 <button type="button" class="remove-cost-temas text-red-600 hover:underline ml-auto">Hapus biaya</button>
             </div>
         `;
         card.querySelector('.temas-cost-list').appendChild(row);
+        const perContainerCheckbox = row.querySelector('.temas-per-container');
+        perContainerCheckbox.addEventListener('change', () => { row.dataset.perContainerTouched = 'true'; });
         refreshTemasCostTypes(row);
-        row.querySelector('.lokasi-select-temas').addEventListener('change', () => refreshTemasCostTypes(row));
+        row.querySelector('.lokasi-select-temas').addEventListener('change', () => {
+            refreshTemasCostTypes(row);
+            if (!row.querySelector('.type-select-temas').value) {
+                row.dataset.perContainerTouched = '';
+                perContainerCheckbox.checked = true;
+            }
+        });
         row.querySelector('.type-select-temas').addEventListener('change', event => {
             const manual = event.target.value === 'MANUAL';
             row.querySelector('.temas-manual-label').classList.toggle('hidden', !manual);
             row.querySelector('.type-manual-input-temas').required = manual;
             const item = pricelistTemasData.find(item => String(item.id) === event.target.value);
             row.querySelector('.price-input-temas').value = item ? Number(item.harga) || 0 : '';
+            row.dataset.perContainerTouched = '';
+            perContainerCheckbox.checked = !temasIsSingleCharge(item?.jenis_biaya || row.querySelector('.type-manual-input-temas').value);
+        });
+        row.querySelector('.type-manual-input-temas').addEventListener('input', event => {
+            if (!row.dataset.perContainerTouched) perContainerCheckbox.checked = !temasIsSingleCharge(event.target.value);
         });
         row.querySelector('.remove-cost-temas').addEventListener('click', () => {
             if (card.querySelectorAll('.temas-type-item').length === 1) {
@@ -544,12 +562,13 @@
                 const select = row.querySelector('.type-select-temas');
                 const tariff = pricelistTemasData.find(item => String(item.id) === select.value);
                 select.setCustomValidity(tariff && tariff.size && size && temasSize(tariff.size) !== size ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
-                const costName = tariff?.jenis_biaya || row.querySelector('.type-manual-input-temas').value;
-                const quantity = temasIsSingleCharge(costName) ? 1 : containerCount;
+                const isPerContainer = row.querySelector('.temas-per-container').checked;
+                const quantity = isPerContainer ? containerCount : 1;
                 row.querySelector('.quantity-input-temas').value = quantity;
-                row.querySelector('.temas-cost-calculation').textContent = quantity === 1
-                    ? 'Dihitung 1× per BL'
-                    : 'Tarif × ' + quantity + ' kontainer';
+                row.querySelector('.temas-row-per-container').value = isPerContainer ? '1' : '0';
+                row.querySelector('.temas-cost-calculation').textContent = isPerContainer
+                    ? 'Tarif × ' + containerCount + ' kontainer'
+                    : 'Dihitung 1× per BL';
                 total += (Number(row.querySelector('.price-input-temas').value) || 0) * quantity;
             });
             card.querySelector('.temas-container-total').textContent = temasMoney(total);

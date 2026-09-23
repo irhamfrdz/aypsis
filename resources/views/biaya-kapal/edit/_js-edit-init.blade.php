@@ -417,6 +417,7 @@
                                  'kuantitas' => $i->kuantitas,
                                  'is_muat' => $i->is_muat,
                                  'is_bongkar' => $i->is_bongkar,
+                                  'is_per_container' => $i->is_per_container,
                                   'nomor_kontainer' => $i->nomor_kontainer,
                                   'nomor_bl' => $i->nomor_bl,
                                   'bl_id' => $i->bl_id

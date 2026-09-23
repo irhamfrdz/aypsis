@@ -17,7 +17,7 @@ class TemasBillingService
         return (int) round((float) $value * 100);
     }
 
-    private function temasQuantity(string $costName, string $containerNumbers): int
+    private function defaultsToPerContainer(string $costName): bool
     {
         $normalized = strtoupper(trim(preg_replace('/[^A-Z0-9]+/i', ' ', $costName)));
         $normalized = preg_replace('/\s+/', ' ', $normalized);
@@ -25,9 +25,17 @@ class TemasBillingService
             $normalized = trim(substr($normalized, 6));
         }
         if (in_array($normalized, ['ADM DO', 'DO KONTAINER', 'MATERAI'], true)) {
-            return 1;
+            return false;
         }
 
+        return true;
+    }
+
+    private function temasQuantity(string $containerNumbers, bool $isPerContainer): int
+    {
+        if (! $isPerContainer) {
+            return 1;
+        }
         $containers = array_filter(array_unique(array_map(
             fn ($number) => strtoupper(trim($number)),
             explode(',', $containerNumbers)
@@ -132,6 +140,7 @@ class TemasBillingService
                 'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string|max:255',
                 'nomor_bls' => 'required|array', 'nomor_bls.*' => 'required|string|max:255',
                 'size_items' => 'required|array', 'size_items.*' => 'required|in:20ft,40ft,45ft',
+                'per_containers' => 'sometimes|array', 'per_containers.*' => 'boolean',
             ])->validate();
             foreach ($section['types'] as $i => $type) {
                 foreach (['custom_prices', 'quantities', 'nomor_kontainers', 'nomor_bls', 'size_items'] as $field) {
@@ -148,7 +157,10 @@ class TemasBillingService
                 if ($number === '') {
                     throw ValidationException::withMessages(["temas.$index.nomor_kontainers" => 'Nomor kontainer wajib diisi.']);
                 }
-                $quantity = $this->temasQuantity($label, $number);
+                $isPerContainer = array_key_exists($i, $section['per_containers'] ?? [])
+                    ? (bool) $section['per_containers'][$i]
+                    : $this->defaultsToPerContainer($label);
+                $quantity = $this->temasQuantity($number, $isPerContainer);
                 $sub = $this->cents((float) $section['custom_prices'][$i] * $quantity);
                 $nomorBl = trim($section['nomor_bls'][$i]);
                 $nomorBl = preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
@@ -161,6 +173,7 @@ class TemasBillingService
                     'sub_total' => $sub / 100, 'grand_total' => $sub / 100,
                     'is_muat' => ($section['is_muat'][$i] ?? 0) == 1,
                     'is_bongkar' => ($section['is_bongkar'][$i] ?? 0) == 1,
+                    'is_per_container' => $isPerContainer,
                     'pph_active' => false, 'ppn_active' => false,
                 ]);
             }

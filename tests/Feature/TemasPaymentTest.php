@@ -47,6 +47,7 @@ class TemasPaymentTest extends TestCase
         (require database_path('migrations/2026_04_27_142615_create_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_06_12_100757_add_container_fields_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_09_23_000001_add_nomor_bl_to_biaya_kapal_temas_table.php'))->up();
+        (require database_path('migrations/2026_09_23_000002_add_is_per_container_to_biaya_kapal_temas_table.php'))->up();
         Schema::table('biaya_kapal_temas', fn (Blueprint $table) => $table->decimal('biaya_admin', 15, 2)->default(0));
         (require database_path('migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php'))->up();
         Schema::create('manifests', function (Blueprint $table) {
@@ -410,6 +411,30 @@ class TemasPaymentTest extends TestCase
             $this->assertSame('1.00', $details[$singleCharge]->kuantitas);
         }
         $this->assertSame('360000.00', $invoice->fresh()->nominal);
+    }
+
+    public function test_per_container_checkbox_overrides_the_default_cost_rule(): void
+    {
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [[
+            'kapal' => 'TEMAS 1',
+            'voyage' => 'V001',
+            'types' => ['MANUAL', 'MANUAL'],
+            'manual_names' => ['THC', 'ADM DO'],
+            'custom_prices' => [100000, 10000],
+            'quantities' => [1, 1],
+            'per_containers' => [0, 1],
+            'nomor_kontainers' => array_fill(0, 2, 'TEMU001, TEMU002, TEMU003'),
+            'nomor_bls' => array_fill(0, 2, '01'),
+            'size_items' => array_fill(0, 2, '20ft'),
+        ]]);
+
+        $details = $invoice->temasDetails()->get()->keyBy('jenis_biaya');
+        $this->assertFalse($details['THC']->is_per_container);
+        $this->assertSame('1.00', $details['THC']->kuantitas);
+        $this->assertTrue($details['ADM DO']->is_per_container);
+        $this->assertSame('3.00', $details['ADM DO']->kuantitas);
+        $this->assertSame('130000.00', $invoice->fresh()->nominal);
     }
 
     public function test_temas_print_groups_child_bl_numbers_and_lists_all_containers(): void

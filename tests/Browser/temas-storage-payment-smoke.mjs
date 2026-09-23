@@ -70,7 +70,8 @@ try {
         const allKapalsData = [{nama_kapal: 'TEMAS 1'}];
         const pricelistTemasData = [
             {id: 1, jenis_biaya: 'Handling Jakarta', harga: 1000000, size: '20ft', lokasi: 'Jakarta'},
-            {id: 2, jenis_biaya: 'Handling Batam', harga: 900000, size: '20ft', lokasi: 'Batam'}
+            {id: 2, jenis_biaya: 'Handling Batam', harga: 900000, size: '20ft', lokasi: 'Batam'},
+            {id: 3, jenis_biaya: 'ADM DO', harga: 50000, size: '20ft', lokasi: 'Jakarta'}
         ];
         ${source}
         initializeTemasSections();
@@ -93,13 +94,21 @@ try {
     assert.equal(await evaluate("new FormData(document.getElementById('form')).has('temas[1][types][]')"), false);
     await evaluate("set('.temas-payment-mode', 'pelunasan_dp')");
     await evaluate("set('.temas-dp-reference', '7')");
+    await evaluate("set('.temas-bl-select', '01'); set('.type-select-temas', '3')");
+    assert.equal(await evaluate("section.querySelector('.temas-per-container').checked"), false);
     await evaluate("set('.temas-bl-select', '01'); set('.type-select-temas', '1')");
+    assert.equal(await evaluate("section.querySelector('.temas-per-container').checked"), true);
     assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '1700000');
     assert.equal(await evaluate("section.querySelector('.grand-total-value-temas').value"), '2000000');
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), true);
     assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_kontainers][]')"), 'TEMU001, TEMU002');
     assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_bls][]')"), '01');
     assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][quantities][]')"), '2');
+    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][per_containers][]')"), '1');
+    await evaluate("section.querySelector('.temas-per-container').checked = false; section.querySelector('.temas-per-container').dispatchEvent(new Event('change', {bubbles: true}))");
+    assert.equal(await evaluate("section.querySelector('.grand-total-value-temas').value"), '1000000');
+    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
+    await evaluate("section.querySelector('.temas-per-container').checked = true; section.querySelector('.temas-per-container').dispatchEvent(new Event('change', {bubbles: true}))");
     assert.equal(await evaluate("new FormData(document.getElementById('form')).has('temas[1][pph_active]')"), false);
     await evaluate("set('.price-input-temas', '100000')");
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), false);

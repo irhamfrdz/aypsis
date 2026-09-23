@@ -16,7 +16,7 @@ const group = (fields, lists = {}) => ({
 });
 function cost(price, type) {
     const fields = {};
-    for (const key of ['price-input-temas', 'quantity-input-temas', 'temas-row-number', 'temas-row-nomor-bl', 'temas-row-bl', 'temas-row-size', 'type-select-temas', 'type-manual-input-temas', 'temas-cost-calculation']) {
+    for (const key of ['price-input-temas', 'quantity-input-temas', 'temas-row-number', 'temas-row-nomor-bl', 'temas-row-bl', 'temas-row-size', 'type-select-temas', 'type-manual-input-temas', 'temas-cost-calculation', 'temas-row-per-container', 'temas-per-container']) {
         fields['.' + key] = input();
     }
     fields['.price-input-temas'].value = price;
@@ -28,6 +28,9 @@ const first = cost(100000, '1');
 const manual = cost(50000, 'MANUAL');
 manual.querySelector('.type-manual-input-temas').value = 'Materai';
 const second = cost(200000, '1');
+first.querySelector('.temas-per-container').checked = true;
+manual.querySelector('.temas-per-container').checked = false;
+second.querySelector('.temas-per-container').checked = true;
 const card = (number, rows, blId) => Object.assign(group({
     '.temas-bl-select': input(number),
     '.temas-container-size': input('20ft'),
@@ -55,6 +58,8 @@ assert.equal(fields['.sub-total-value-temas'].value, 450000);
 assert.equal(fields['.grand-total-value-temas'].value, 441000);
 assert.equal(first.querySelector('.quantity-input-temas').value, 2);
 assert.equal(manual.querySelector('.quantity-input-temas').value, 1);
+assert.equal(first.querySelector('.temas-row-per-container').value, '1');
+assert.equal(manual.querySelector('.temas-row-per-container').value, '0');
 assert.equal(first.querySelector('.temas-cost-calculation').textContent, 'Tarif × 2 kontainer');
 assert.equal(manual.querySelector('.temas-cost-calculation').textContent, 'Dihitung 1× per BL');
 assert.equal(manual.querySelector('.temas-row-number').value, 'TEMU1, TEMU2');

@@ -38,6 +38,7 @@ class BiayaKapalTemas extends Model
         'keterangan',
         'is_muat',
         'is_bongkar',
+        'is_per_container',
     ];
 
     protected $casts = [
@@ -56,6 +57,7 @@ class BiayaKapalTemas extends Model
         'tanggal_invoice_vendor' => 'date',
         'is_muat' => 'boolean',
         'is_bongkar' => 'boolean',
+        'is_per_container' => 'boolean',
     ];
 
     /**
