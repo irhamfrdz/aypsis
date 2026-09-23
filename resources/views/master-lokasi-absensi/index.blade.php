@@ -147,14 +147,52 @@
                             <span>Radius Jangkauan</span>
                             <span class="text-rose-500">*</span>
                         </label>
-                        <div class="relative flex items-center">
-                            <input type="number" id="radius" min="10" placeholder="100" value="100" required
-                                class="w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl py-2.5 pl-3.5 pr-20 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-2xs placeholder-slate-400">
-                            <span class="absolute right-2.5 px-2.5 py-1 text-[10px] font-bold bg-slate-200/80 text-slate-600 rounded-lg select-none">
-                                METER
-                            </span>
+
+                        <!-- Input angka + satuan -->
+                        <div class="relative flex items-center mb-2.5">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <div class="w-6 h-6 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center shadow-2xs">
+                                    <i class="fas fa-circle-dot text-[10px]"></i>
+                                </div>
+                            </div>
+                            <input type="number" id="radius" min="10" max="5000" placeholder="100" value="100" required
+                                oninput="syncRadiusSlider(this.value)"
+                                class="w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl py-2.5 pl-11 pr-24 text-sm font-bold text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition shadow-2xs placeholder-slate-400">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="px-2.5 py-1 text-[10px] font-bold bg-orange-100 text-orange-600 rounded-lg select-none tracking-wider">
+                                    METER
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Slider range -->
+                        <div class="mb-2.5 px-0.5">
+                            <input type="range" id="radius-slider" min="10" max="1000" step="10" value="100"
+                                oninput="syncRadiusInput(this.value)"
+                                class="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-orange-500 bg-slate-200">
+                            <div class="flex justify-between text-[9px] text-slate-400 font-medium mt-1 px-0.5 select-none">
+                                <span>10 m</span>
+                                <span>500 m</span>
+                                <span>1.000 m</span>
+                            </div>
+                        </div>
+
+                        <!-- Preset cepat -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="text-[10px] font-bold text-slate-400 shrink-0">Preset:</span>
+                            <button type="button" onclick="setRadiusPreset(25)" data-value="25"
+                                class="radius-preset-btn px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 text-slate-600 transition shadow-2xs">25 m</button>
+                            <button type="button" onclick="setRadiusPreset(50)" data-value="50"
+                                class="radius-preset-btn px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 text-slate-600 transition shadow-2xs">50 m</button>
+                            <button type="button" onclick="setRadiusPreset(100)" data-value="100"
+                                class="radius-preset-btn px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 text-slate-600 transition shadow-2xs">100 m</button>
+                            <button type="button" onclick="setRadiusPreset(200)" data-value="200"
+                                class="radius-preset-btn px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 text-slate-600 transition shadow-2xs">200 m</button>
+                            <button type="button" onclick="setRadiusPreset(500)" data-value="500"
+                                class="radius-preset-btn px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 text-slate-600 transition shadow-2xs">500 m</button>
                         </div>
                     </div>
+
                     
                     <!-- Keterangan / Catatan -->
                     <div>
@@ -743,16 +781,53 @@
             updateTempVisuals(lat, lon, radius);
         });
 
-        // Radius Input Dynamic Update
-        radiusInput.addEventListener('input', function() {
+        // ---- Radius helpers (slider, preset, sync) ----
+        const radiusSlider = document.getElementById('radius-slider');
+
+        function syncRadiusSlider(val) {
+            const v = Math.min(Math.max(parseInt(val) || 10, 10), 5000);
+            if (radiusSlider) radiusSlider.value = Math.min(v, 1000);
+            updateActivePresetBtn(v);
             const lat = parseFloat(latInput.value);
             const lon = parseFloat(lonInput.value);
-            const radius = this.value;
+            if (!isNaN(lat) && !isNaN(lon)) updateTempVisuals(lat, lon, v);
+        }
 
-            if (!isNaN(lat) && !isNaN(lon)) {
-                updateTempVisuals(lat, lon, radius);
-            }
-        });
+        function syncRadiusInput(val) {
+            const v = parseInt(val) || 10;
+            radiusInput.value = v;
+            updateActivePresetBtn(v);
+            const lat = parseFloat(latInput.value);
+            const lon = parseFloat(lonInput.value);
+            if (!isNaN(lat) && !isNaN(lon)) updateTempVisuals(lat, lon, v);
+        }
+
+        function setRadiusPreset(val) {
+            radiusInput.value = val;
+            if (radiusSlider) radiusSlider.value = Math.min(val, 1000);
+            updateActivePresetBtn(val);
+            const lat = parseFloat(latInput.value);
+            const lon = parseFloat(lonInput.value);
+            if (!isNaN(lat) && !isNaN(lon)) updateTempVisuals(lat, lon, val);
+        }
+
+        function updateActivePresetBtn(val) {
+            document.querySelectorAll('.radius-preset-btn').forEach(btn => {
+                const bv = parseInt(btn.dataset.value);
+                if (bv === val) {
+                    btn.classList.add('bg-orange-100', 'border-orange-400', 'text-orange-700');
+                    btn.classList.remove('bg-slate-50', 'border-slate-200', 'text-slate-600');
+                } else {
+                    btn.classList.remove('bg-orange-100', 'border-orange-400', 'text-orange-700');
+                    btn.classList.add('bg-slate-50', 'border-slate-200', 'text-slate-600');
+                }
+            });
+        }
+
+        // Init preset state
+        updateActivePresetBtn(parseInt(radiusInput.value) || 100);
+
+
 
         // Manual Lat/Lon Input Dynamic Update
         function handleManualCoordChange() {
@@ -827,6 +902,8 @@
             latInput.value = loc.latitude;
             lonInput.value = loc.longitude;
             radiusInput.value = loc.radius;
+            if (radiusSlider) radiusSlider.value = Math.min(parseInt(loc.radius) || 100, 1000);
+            updateActivePresetBtn(parseInt(loc.radius) || 100);
             ketInput.value = loc.keterangan || '';
             isActiveInput.checked = loc.is_active == 1;
 
