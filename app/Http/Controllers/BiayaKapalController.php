@@ -3304,8 +3304,38 @@ class BiayaKapalController extends Controller
     public function printTemas(BiayaKapal $biayaKapal)
     {
         $temasDetails = BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->get();
+        $containerNumbers = $temasDetails->pluck('nomor_kontainer')
+            ->flatMap(fn ($numbers) => array_map('trim', explode(',', (string) $numbers)))
+            ->filter()
+            ->unique()
+            ->values();
+        $voyages = $temasDetails->pluck('voyage')->filter()->unique()->values();
+        $normalizeNomorBl = static function ($nomorBl) {
+            $nomorBl = trim((string) $nomorBl);
 
-        return view('biaya-kapal.print-temas', compact('biayaKapal', 'temasDetails'));
+            return preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
+        };
+
+        $temasManifestGroups = collect();
+        if ($containerNumbers->isNotEmpty()) {
+            $manifestQuery = Manifest::query()
+                ->whereIn('nomor_kontainer', $containerNumbers)
+                ->whereNotNull('nomor_bl')
+                ->select('id', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'size_kontainer');
+            if ($voyages->isNotEmpty()) {
+                $manifestQuery->whereIn('no_voyage', $voyages);
+            }
+
+            $temasManifestGroups = $manifestQuery->get()
+                ->groupBy(fn ($manifest) => ($manifest->no_voyage ?? '').'|'.$normalizeNomorBl($manifest->nomor_bl))
+                ->map(fn ($items) => [
+                    'nomor_bl' => $normalizeNomorBl($items->first()->nomor_bl),
+                    'variants' => $items->pluck('nomor_bl')->filter()->unique()->sort()->values(),
+                    'containers' => $items->pluck('nomor_kontainer')->filter()->unique()->sort()->values(),
+                ]);
+        }
+
+        return view('biaya-kapal.print-temas', compact('biayaKapal', 'temasDetails', 'temasManifestGroups'));
     }
 
     /**
@@ -6283,16 +6313,23 @@ class BiayaKapalController extends Controller
                 ->values()
                 ->toArray();
 
+            $normalizeNomorBl = static function ($nomorBl) {
+                $nomorBl = trim((string) $nomorBl);
+
+                return preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
+            };
+
             $containersData = $bls->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
                 ->where('nomor_kontainer', '!=', '-')
-                ->groupBy(fn ($item) => ($item->nomor_bl ?? '').'|'.$item->nomor_kontainer)
-                ->map(function ($group) {
+                ->groupBy(fn ($item) => $normalizeNomorBl($item->nomor_bl).'|'.$item->nomor_kontainer)
+                ->map(function ($group) use ($normalizeNomorBl) {
                     $first = $group->first();
 
                     return [
                         'id' => $first->id,
-                        'nomor_bl' => $first->nomor_bl,
+                        'nomor_bl' => $normalizeNomorBl($first->nomor_bl),
+                        'nomor_bl_asli' => $first->nomor_bl,
                         'nomor_kontainer' => $first->nomor_kontainer,
                         'size' => $first->size_kontainer,
                     ];

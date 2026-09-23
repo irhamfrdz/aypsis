@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\PembayaranBiayaKapalController;
+use App\Http\Controllers\BiayaKapalController;
 use App\Models\BiayaKapal;
 use App\Models\PembayaranBiayaKapal;
 use App\Services\CoaTransactionService;
@@ -48,6 +49,13 @@ class TemasPaymentTest extends TestCase
         (require database_path('migrations/2026_09_23_000001_add_nomor_bl_to_biaya_kapal_temas_table.php'))->up();
         Schema::table('biaya_kapal_temas', fn (Blueprint $table) => $table->decimal('biaya_admin', 15, 2)->default(0));
         (require database_path('migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php'))->up();
+        Schema::create('manifests', function (Blueprint $table) {
+            $table->id();
+            $table->string('no_voyage')->nullable();
+            $table->string('nomor_bl')->nullable();
+            $table->string('nomor_kontainer')->nullable();
+            $table->string('size_kontainer')->nullable();
+        });
         Schema::create('pembayaran_biaya_kapals', function (Blueprint $table) {
             $table->id();
             foreach (['nomor_pembayaran', 'nomor_accurate', 'tanggal_pembayaran', 'bank', 'jenis_transaksi', 'alasan_penyesuaian', 'keterangan', 'status_pembayaran'] as $field) {
@@ -367,6 +375,49 @@ class TemasPaymentTest extends TestCase
         $this->assertSame('990000.00', $invoice->fresh()->nominal);
         $this->assertEquals(990000, $invoice->temasDetails()->sum('grand_total'));
         $this->assertSame(2, $invoice->temasDetails()->count());
+    }
+
+    public function test_child_bl_suffixes_are_stored_as_one_parent_bl(): void
+    {
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $section = $this->finalCosts();
+        $section['nomor_bls'] = ['01-1', '01-2'];
+
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [$section]);
+
+        $this->assertSame(['01'], $invoice->temasDetails()->pluck('nomor_bl')->unique()->values()->all());
+    }
+
+    public function test_temas_print_groups_child_bl_numbers_and_lists_all_containers(): void
+    {
+        $invoice = BiayaKapal::create([
+            'nomor_invoice' => 'INV-TEMAS-01',
+            'tanggal' => '2026-09-23',
+            'status_pembayaran' => 'pending',
+        ]);
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [[
+            'kapal' => 'TEMAS 1',
+            'voyage' => 'V001',
+            'types' => ['MANUAL'],
+            'manual_names' => ['Handling BL'],
+            'custom_prices' => [1000000],
+            'quantities' => [1],
+            'nomor_kontainers' => ['TEMU001, TEMU002'],
+            'nomor_bls' => ['01'],
+            'size_items' => ['20ft'],
+        ]]);
+        DB::table('manifests')->insert([
+            ['no_voyage' => 'V001', 'nomor_bl' => '01-1', 'nomor_kontainer' => 'TEMU001', 'size_kontainer' => '20'],
+            ['no_voyage' => 'V001', 'nomor_bl' => '01-2', 'nomor_kontainer' => 'TEMU002', 'size_kontainer' => '20'],
+        ]);
+
+        $html = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
+
+        $this->assertStringContainsString('Detail Biaya per Nomor BL', $html);
+        $this->assertStringContainsString('01-1, 01-2', $html);
+        $this->assertStringContainsString('TEMU001', $html);
+        $this->assertStringContainsString('TEMU002', $html);
+        $this->assertStringContainsString('HANDLING BL', $html);
     }
 
     public function test_storage_style_rejects_final_invoice_below_dp_and_rolls_back(): void

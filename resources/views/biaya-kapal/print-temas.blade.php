@@ -225,9 +225,18 @@
         @php
             $penerimaDisplay = $biayaKapal->penerima ?? ($temasDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
             $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($temasDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+            $temasManifestGroups = $temasManifestGroups ?? collect();
             
-            // Calculate Totals and Group by Type
-            $temasByType = [];
+            // Nomor seperti 01-1, 01-2, dan seterusnya merupakan satu BL induk 01.
+            $normalizeNomorBl = static function ($nomorBl) {
+                $nomorBl = trim((string) $nomorBl);
+                return preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
+            };
+            $temasByBl = $temasDetails->groupBy(function ($detail) use ($normalizeNomorBl) {
+                return ($detail->kapal ?? '-').'|'.($detail->voyage ?? '-').'|'.$normalizeNomorBl($detail->nomor_bl);
+            });
+
+            // Calculate Totals
             $totalSubtotal = 0;
             $totalPPH = 0; // Total PPH yang benar-benar memotong (untuk kalkulasi)
             $totalPPN = 0; // Total PPN yang benar-benar menambah (untuk kalkulasi)
@@ -239,24 +248,6 @@
             $totalGrandTotal = 0;
             
             foreach($temasDetails as $detail) {
-                // Group by Type (Jenis Biaya) and include Muat/Bongkar status
-                $status = '';
-                if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
-                elseif ($detail->is_muat) $status = ' (MUAT)';
-                elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
-
-                $typeKey = ($detail->jenis_biaya ?? 'BIAYA TEMAS') . $status;
-                
-                if (!isset($temasByType[$typeKey])) {
-                    $temasByType[$typeKey] = [
-                        'qty' => 0, 
-                        'cost' => 0
-                    ];
-                }
-                
-                $temasByType[$typeKey]['qty'] += $detail->kuantitas;
-                $temasByType[$typeKey]['cost'] += $detail->sub_total;
-                
                 $totalSubtotal += $detail->sub_total;
                 
                 $isPphActive = ($detail->pph_active ?? true);
@@ -305,16 +296,17 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 18%;">Tanggal Ref.</th>
-                    <th style="width: 37%;">Referensi</th>
-                    <th style="width: 20%;">Nomor Voyage</th>
+                    <th style="width: 15%;">Tanggal Ref.</th>
+                    <th style="width: 20%;">Referensi</th>
+                    <th style="width: 15%;">Nomor Voyage</th>
+                    <th style="width: 25%;">Nomor BL</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @php
-                    $perSection = $temasDetails->groupBy(function($item) {
-                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-');
+                    $perSection = $temasDetails->groupBy(function($item) use ($normalizeNomorBl) {
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-') . '|' . $normalizeNomorBl($item->nomor_bl);
                     });
                 @endphp
                 
@@ -330,6 +322,12 @@
                     
                     $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
                     $sectionGrandTotal = $details->sum('grand_total');
+                    $firstDetail = $details->first();
+                    $blInduk = $normalizeNomorBl($firstDetail->nomor_bl) ?: '-';
+                    $manifestInfo = $temasManifestGroups->get(($firstDetail->voyage ?? '').'|'.$blInduk);
+                    $blVariants = collect($manifestInfo['variants'] ?? [])
+                        ->whenEmpty(fn ($items) => $items->push($firstDetail->nomor_bl))
+                        ->filter()->unique()->values();
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
@@ -342,16 +340,21 @@
                         @if($references->isEmpty()) - @endif
                     </td>
                     <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
-
+                    <td class="text-center">
+                        {{ $blInduk }}
+                        @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
+                            <br><small>({{ $blVariants->implode(', ') }})</small>
+                        @endif
+                    </td>
                     <td class="text-right">Rp {{ number_format($sectionGrandTotal, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="6" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">TOTAL PEMBAYARAN</td>
+                    <td colspan="5" class="text-right">TOTAL PEMBAYARAN</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
@@ -381,35 +384,67 @@
             </div>
         @endif
 
-        <!-- TABLE 2: DETAIL BIAYA (GABUNGAN) -->
-        <div class="section-header">Detail Biaya (Gabungan):</div>
+        <!-- TABLE 2: DETAIL BIAYA PER BL -->
+        <div class="section-header">Detail Biaya per Nomor BL:</div>
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">No</th>
-                    <th style="width: 57%;">Jenis Biaya</th>
-                    <th style="width: 15%;">Jumlah</th>
-                    <th style="width: 20%;">Subtotal</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 15%;">Nomor BL</th>
+                    <th style="width: 25%;">Kontainer</th>
+                    <th style="width: 27%;">Jenis Biaya</th>
+                    <th style="width: 10%;">Jumlah</th>
+                    <th style="width: 18%;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 @php $no = 1; @endphp
-                
-                @foreach($temasByType as $typeName => $data)
-                    @if($data['cost'] > 0 || $data['qty'] > 0)
-                    <tr>
-                        <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ strtoupper($typeName) }}</td>
-                        <td class="text-center">{{ rtrim(rtrim(number_format($data['qty'], 2, ',', '.'), '0'), ',') }}</td>
-                        <td class="text-right">Rp {{ number_format($data['cost'], 0, ',', '.') }}</td>
-                    </tr>
-                    @endif
+
+                @foreach($temasByBl as $blDetails)
+                    @php
+                        $firstBlDetail = $blDetails->first();
+                        $blInduk = $normalizeNomorBl($firstBlDetail->nomor_bl) ?: '-';
+                        $manifestInfo = $temasManifestGroups->get(($firstBlDetail->voyage ?? '').'|'.$blInduk);
+                        $blVariants = collect($manifestInfo['variants'] ?? [])
+                            ->whenEmpty(fn ($items) => $items->push($firstBlDetail->nomor_bl))
+                            ->filter()->unique()->values();
+                        $containers = collect($manifestInfo['containers'] ?? []);
+                        if ($containers->isEmpty()) {
+                            $containers = $blDetails->pluck('nomor_kontainer')
+                                ->flatMap(fn ($numbers) => array_map('trim', explode(',', (string) $numbers)))
+                                ->filter()->unique()->values();
+                        }
+                        $rowspan = $blDetails->count();
+                    @endphp
+                    @foreach($blDetails as $detail)
+                        @php
+                            $status = '';
+                            if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
+                            elseif ($detail->is_muat) $status = ' (MUAT)';
+                            elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
+                        @endphp
+                        <tr>
+                            @if($loop->first)
+                                <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
+                                <td class="text-center" rowspan="{{ $rowspan }}">
+                                    {{ $blInduk }}
+                                    @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
+                                        <br><small>({{ $blVariants->implode(', ') }})</small>
+                                    @endif
+                                </td>
+                                <td rowspan="{{ $rowspan }}">{!! $containers->isNotEmpty() ? $containers->map(fn ($container) => e($container))->implode('<br>') : '-' !!}</td>
+                            @endif
+                            <td>{{ strtoupper(($detail->jenis_biaya ?? 'BIAYA TEMAS').$status) }}</td>
+                            <td class="text-center">{{ rtrim(rtrim(number_format($detail->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
                 @endforeach
                 
                 @if($displayPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>PPH (2%) {{ $totalPPH <= 0 ? '(Reimburse)' : '' }}</td>
+                    <td colspan="3">PPH (2%) {{ $totalPPH <= 0 ? '(Reimburse)' : '' }}</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($displayPPH, 0, ',', '.') }}</td>
                 </tr>
@@ -418,7 +453,7 @@
                 @if($totalPPN > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>PPN (11%)</td>
+                    <td colspan="3">PPN (11%)</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
                 </tr>
@@ -427,7 +462,7 @@
                 @if($totalMaterai > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>BIAYA MATERAI</td>
+                    <td colspan="3">BIAYA MATERAI</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
                 </tr>
@@ -436,7 +471,7 @@
                 @if($totalAdmin > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>BIAYA ADMIN</td>
+                    <td colspan="3">BIAYA ADMIN</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdmin, 0, ',', '.') }}</td>
                 </tr>
@@ -445,7 +480,7 @@
                 @if($totalAdjustment != 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>ADJUSTMENT</td>
+                    <td colspan="3">ADJUSTMENT</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
                 </tr>
@@ -453,12 +488,12 @@
                 
                 @if($dpDiperhitungkan > 0)
                 <tr>
-                    <td colspan="3" class="text-right">DIKURANGI DP YANG SUDAH DIBAYAR</td>
+                    <td colspan="5" class="text-right">DIKURANGI DP YANG SUDAH DIBAYAR</td>
                     <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 <tr class="total-row">
-                    <td colspan="3" class="text-right">TOTAL</td>
+                    <td colspan="5" class="text-right">TOTAL</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>

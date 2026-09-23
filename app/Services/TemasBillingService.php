@@ -130,8 +130,10 @@ class TemasBillingService
                     throw ValidationException::withMessages(["temas.$index.nomor_kontainers" => 'Nomor kontainer wajib diisi.']);
                 }
                 $sub = $this->cents((float) $section['custom_prices'][$i] * (float) $section['quantities'][$i]);
+                $nomorBl = trim($section['nomor_bls'][$i]);
+                $nomorBl = preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
                 $rows[] = array_merge($common, [
-                    'nomor_kontainer' => $number, 'nomor_bl' => trim($section['nomor_bls'][$i]),
+                    'nomor_kontainer' => $number, 'nomor_bl' => $nomorBl,
                     'bl_id' => ($section['bl_ids'][$i] ?? null) ?: null,
                     'pricelist_temas_id' => $master?->id, 'jenis_biaya' => $label,
                     'lokasi' => $section['lokasi_items'][$i] ?? null, 'size' => $section['size_items'][$i],

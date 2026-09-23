@@ -60,7 +60,10 @@ try {
         window.fetch = async url => ({ok: true, json: async () => url.includes('temas-dp-candidates')
             ? {data: [{id: 7, kapal: 'TEMAS 1', voyage: 'V001', nominal_dibayar: '300000', label: 'DP TEST'}]}
             : url.includes('get-voyages') ? {success: true, voyages: ['V001']}
-            : {success: true, containers_data: [{id: 9, nomor_bl: 'BL001', nomor_kontainer: 'TEMU001', size: '20'}]}});
+            : {success: true, containers_data: [
+                {id: 9, nomor_bl: '01', nomor_bl_asli: '01-1', nomor_kontainer: 'TEMU001', size: '20'},
+                {id: 10, nomor_bl: '01', nomor_bl_asli: '01-2', nomor_kontainer: 'TEMU002', size: '20'}
+            ]}});
         const temasSectionsContainer = document.getElementById('temas_sections_container');
         const addTemasSectionBtn = document.getElementById('add_temas_section_btn');
         const nominalInput = document.getElementById('nominal');
@@ -80,12 +83,12 @@ try {
     assert.equal(await evaluate("new FormData(document.getElementById('form')).has('temas[1][types][]')"), false);
     await evaluate("set('.temas-payment-mode', 'pelunasan_dp')");
     await evaluate("set('.temas-dp-reference', '7')");
-    await evaluate("set('.temas-bl-select', 'BL001'); set('.type-select-temas', '1')");
+    await evaluate("set('.temas-bl-select', '01'); set('.type-select-temas', '1')");
     assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
     assert.equal(await evaluate("section.querySelector('.grand-total-value-temas').value"), '1000000');
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), true);
-    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_kontainers][]')"), 'TEMU001');
-    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_bls][]')"), 'BL001');
+    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_kontainers][]')"), 'TEMU001, TEMU002');
+    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_bls][]')"), '01');
     assert.equal(await evaluate("new FormData(document.getElementById('form')).has('temas[1][pph_active]')"), false);
     await evaluate("set('.price-input-temas', '200000')");
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), false);
@@ -94,7 +97,7 @@ try {
     await evaluate(`
         clearAllTemasSections();
         window.section = addTemasSection({kapal: 'TEMAS 1', voyage: 'V001', payment_mode: 'pelunasan_dp', dp_stage_id: 7, dp_diperhitungkan: 300000,
-            types: [{type_id: 1, nomor_bl: 'BL001', nomor_kontainer: 'TEMU001', bl_id: 9, size: '20ft', harga: 1000000, kuantitas: 1, is_muat: true}]});
+            types: [{type_id: 1, nomor_bl: '01', nomor_kontainer: 'TEMU001, TEMU002', bl_id: 9, size: '20ft', harga: 1000000, kuantitas: 1, is_muat: true}]});
     `);
     assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
     assert.equal(await evaluate("section.querySelector('.temas-activity').checked"), true);

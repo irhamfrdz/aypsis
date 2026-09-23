@@ -359,8 +359,16 @@
             if (legacyMatch?.nomor_bl) currentBl = legacyMatch.nomor_bl;
         }
         const bls = [...new Set(section.temasContainers.map(c => c.nomor_bl).filter(Boolean))];
-        blSelect.innerHTML = '<option value="">Pilih nomor BL</option>' + bls.map(bl =>
-            '<option value="' + temasEscape(bl) + '">' + temasEscape(bl) + '</option>').join('');
+        blSelect.innerHTML = '<option value="">Pilih nomor BL</option>' + bls.map(bl => {
+            const variants = [...new Set(section.temasContainers
+                .filter(c => String(c.nomor_bl) === bl)
+                .map(c => c.nomor_bl_asli)
+                .filter(Boolean))];
+            const label = variants.length && (variants.length > 1 || variants[0] !== bl)
+                ? bl + ' (' + variants.join(', ') + ')'
+                : bl;
+            return '<option value="' + temasEscape(bl) + '">' + temasEscape(label) + '</option>';
+        }).join('');
         if (currentBl && !bls.includes(currentBl)) blSelect.add(new Option(currentBl + ' (data tersimpan)', currentBl));
         blSelect.value = currentBl;
         blSelect.disabled = !section.temasContainers.length && !currentBl;
