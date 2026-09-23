@@ -110,6 +110,12 @@
                 } else row = addTemasCost(section, card);
                 const select = row.querySelector('.type-select-temas');
                 const type = String(item.type_id || 'MANUAL');
+                const locationSelect = row.querySelector('.lokasi-select-temas');
+                if (item.lokasi && ![...locationSelect.options].some(option => option.value === item.lokasi)) {
+                    locationSelect.add(new Option(item.lokasi, item.lokasi));
+                }
+                locationSelect.value = item.lokasi || '';
+                refreshTemasCostTypes(row, type);
                 if (![...select.options].some(o => o.value === type)) select.add(new Option(item.manual_name, type));
                 select.value = type;
                 row.querySelector('.temas-manual-label').classList.toggle('hidden', type !== 'MANUAL');
@@ -117,7 +123,6 @@
                 row.querySelector('.type-manual-input-temas').required = type === 'MANUAL';
                 row.querySelector('.price-input-temas').value = item.harga;
                 row.querySelector('.quantity-input-temas').value = item.kuantitas || 1;
-                row.querySelector('.lokasi-select-temas').value = item.lokasi || '';
                 row.querySelectorAll('.temas-activity').forEach((box, i) => box.checked = Boolean(i ? item.is_bongkar : item.is_muat));
             });
         }

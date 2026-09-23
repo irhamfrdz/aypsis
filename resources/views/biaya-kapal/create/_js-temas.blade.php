@@ -425,21 +425,47 @@
         addTemasCost(section, card);
         return card;
     }
+    function refreshTemasCostTypes(row, preferredValue = null) {
+        const typeSelect = row.querySelector('.type-select-temas');
+        const location = row.querySelector('.lokasi-select-temas').value.trim();
+        const selectedValue = preferredValue ?? typeSelect.value;
+        const normalizedLocation = location.toLocaleLowerCase('id-ID');
+        const availableItems = location
+            ? pricelistTemasData.filter(item => !String(item.lokasi || '').trim() || String(item.lokasi).trim().toLocaleLowerCase('id-ID') === normalizedLocation)
+            : [];
+
+        typeSelect.innerHTML = '<option value="">' + (location ? 'Pilih jenis biaya' : 'Pilih lokasi terlebih dahulu') + '</option>' +
+            '<option value="MANUAL">Tulis biaya manual</option>' +
+            availableItems.map(item => '<option value="' + temasEscape(item.id) + '">' + temasEscape(item.jenis_biaya) +
+                (item.size ? ' · ' + temasEscape(item.size) : '') + (item.lokasi ? ' · ' + temasEscape(item.lokasi) : '') +
+                ' · ' + temasMoney(item.harga) + '</option>').join('');
+
+        const selectionAvailable = [...typeSelect.options].some(option => option.value === selectedValue);
+        typeSelect.value = selectionAvailable ? selectedValue : '';
+        const manual = typeSelect.value === 'MANUAL';
+        row.querySelector('.temas-manual-label').classList.toggle('hidden', !manual);
+        row.querySelector('.type-manual-input-temas').required = manual;
+        if (selectedValue && !selectionAvailable) row.querySelector('.price-input-temas').value = '';
+    }
     function addTemasCost(section, card) {
         const field = key => 'temas[' + section.dataset.sectionIndex + '][' + key + '][]';
         const row = document.createElement('div');
         row.className = 'temas-type-item border border-gray-200 rounded-lg p-3 bg-white';
         row.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="text-sm text-gray-700">Lokasi
+                    <select name="${field('lokasi_items')}" class="lokasi-select-temas ${temasInputClass} mt-1" required>
+                        <option value="">Pilih lokasi terlebih dahulu</option>
+                        ${[...new Set(['Jakarta', 'Batam', 'Pinang', ...pricelistTemasData.map(item => String(item.lokasi || '').trim()).filter(Boolean)])].map(location => '<option value="' + temasEscape(location) + '">' + temasEscape(location) + '</option>').join('')}
+                    </select>
+                </label>
                 <label class="text-sm text-gray-700">Jenis biaya
                     <select name="${field('types')}" class="type-select-temas ${temasInputClass} mt-1" required>
-                        <option value="">Pilih jenis biaya</option><option value="MANUAL">Tulis biaya manual</option>
-                        ${pricelistTemasData.map(item => '<option value="' + temasEscape(item.id) + '">' + temasEscape(item.jenis_biaya) + (item.size ? ' · ' + temasEscape(item.size) : '') + (item.lokasi ? ' · ' + temasEscape(item.lokasi) : '') + ' · ' + temasMoney(item.harga) + '</option>').join('')}
+                        <option value="">Pilih lokasi terlebih dahulu</option><option value="MANUAL">Tulis biaya manual</option>
                     </select>
                 </label>
                 <label class="temas-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="${field('manual_names')}" class="type-manual-input-temas ${temasInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
                 <label class="text-sm text-gray-700">Biaya BL ini (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-temas ${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
-                <label class="text-sm text-gray-700">Lokasi<select name="${field('lokasi_items')}" class="lokasi-select-temas ${temasInputClass} mt-1"><option value="">Pilih lokasi (opsional)</option><option>Jakarta</option><option>Batam</option><option>Pinang</option></select></label>
             </div>
             <input type="hidden" name="${field('nomor_kontainers')}" class="temas-row-number">
             <input type="hidden" name="${field('nomor_bls')}" class="temas-row-nomor-bl">
@@ -453,13 +479,14 @@
             </div>
         `;
         card.querySelector('.temas-cost-list').appendChild(row);
+        refreshTemasCostTypes(row);
+        row.querySelector('.lokasi-select-temas').addEventListener('change', () => refreshTemasCostTypes(row));
         row.querySelector('.type-select-temas').addEventListener('change', event => {
             const manual = event.target.value === 'MANUAL';
             row.querySelector('.temas-manual-label').classList.toggle('hidden', !manual);
             row.querySelector('.type-manual-input-temas').required = manual;
             const item = pricelistTemasData.find(item => String(item.id) === event.target.value);
             row.querySelector('.price-input-temas').value = item ? Number(item.harga) || 0 : '';
-            row.querySelector('.lokasi-select-temas').value = item ? item.lokasi || '' : '';
         });
         row.querySelector('.remove-cost-temas').addEventListener('click', () => {
             if (card.querySelectorAll('.temas-type-item').length === 1) {

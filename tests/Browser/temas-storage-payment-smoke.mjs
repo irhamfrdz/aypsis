@@ -68,7 +68,10 @@ try {
         const addTemasSectionBtn = document.getElementById('add_temas_section_btn');
         const nominalInput = document.getElementById('nominal');
         const allKapalsData = [{nama_kapal: 'TEMAS 1'}];
-        const pricelistTemasData = [{id: 1, jenis_biaya: 'Handling', harga: 1000000, size: '20ft', lokasi: 'Jakarta'}];
+        const pricelistTemasData = [
+            {id: 1, jenis_biaya: 'Handling Jakarta', harga: 1000000, size: '20ft', lokasi: 'Jakarta'},
+            {id: 2, jenis_biaya: 'Handling Batam', harga: 900000, size: '20ft', lokasi: 'Batam'}
+        ];
         ${source}
         initializeTemasSections();
         window.section = temasSectionsContainer.firstElementChild;
@@ -76,6 +79,13 @@ try {
     `);
     assert.equal(await evaluate("section.querySelectorAll('.temas-activity').length"), 2);
     assert.equal(await evaluate("section.textContent.includes('${')"), false);
+    await evaluate("set('.lokasi-select-temas', 'Jakarta')");
+    assert.equal(await evaluate("[...section.querySelector('.type-select-temas').options].some(option => option.value === '1')"), true);
+    assert.equal(await evaluate("[...section.querySelector('.type-select-temas').options].some(option => option.value === '2')"), false);
+    await evaluate("set('.lokasi-select-temas', 'Batam')");
+    assert.equal(await evaluate("[...section.querySelector('.type-select-temas').options].some(option => option.value === '1')"), false);
+    assert.equal(await evaluate("[...section.querySelector('.type-select-temas').options].some(option => option.value === '2')"), true);
+    await evaluate("set('.lokasi-select-temas', 'Jakarta')");
     await evaluate("set('.kapal-select-temas', 'TEMAS 1')");
     await evaluate("set('.voyage-select-temas', 'V001'); set('.temas-payment-mode', 'dp'); set('.temas-dp-amount', '300000'); section.querySelector('.temas-dp-amount').dispatchEvent(new Event('input'))");
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), true);
@@ -97,7 +107,7 @@ try {
     await evaluate(`
         clearAllTemasSections();
         window.section = addTemasSection({kapal: 'TEMAS 1', voyage: 'V001', payment_mode: 'pelunasan_dp', dp_stage_id: 7, dp_diperhitungkan: 300000,
-            types: [{type_id: 1, nomor_bl: '01', nomor_kontainer: 'TEMU001, TEMU002', bl_id: 9, size: '20ft', harga: 1000000, kuantitas: 1, is_muat: true}]});
+            types: [{type_id: 1, nomor_bl: '01', nomor_kontainer: 'TEMU001, TEMU002', bl_id: 9, size: '20ft', harga: 1000000, kuantitas: 1, lokasi: 'Jakarta', is_muat: true}]});
     `);
     assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
     assert.equal(await evaluate("section.querySelector('.temas-activity').checked"), true);
