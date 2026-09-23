@@ -137,7 +137,7 @@ class TemasBillingService
                 'types' => 'required|array|min:1', 'types.*' => 'required',
                 'custom_prices' => 'required|array', 'custom_prices.*' => 'required|numeric|min:0',
                 'quantities' => 'required|array', 'quantities.*' => 'required|numeric|gt:0',
-                'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string|max:255',
+                'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string',
                 'nomor_bls' => 'required|array', 'nomor_bls.*' => 'required|string|max:255',
                 'size_items' => 'required|array', 'size_items.*' => 'required|in:20ft,40ft,45ft',
                 'per_containers' => 'sometimes|array', 'per_containers.*' => 'boolean',

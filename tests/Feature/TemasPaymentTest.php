@@ -48,6 +48,7 @@ class TemasPaymentTest extends TestCase
         (require database_path('migrations/2026_06_12_100757_add_container_fields_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_09_23_000001_add_nomor_bl_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_09_23_000002_add_is_per_container_to_biaya_kapal_temas_table.php'))->up();
+        (require database_path('migrations/2026_09_23_000003_expand_nomor_kontainer_on_biaya_kapal_temas_table.php'))->up();
         Schema::table('biaya_kapal_temas', fn (Blueprint $table) => $table->decimal('biaya_admin', 15, 2)->default(0));
         (require database_path('migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php'))->up();
         Schema::create('manifests', function (Blueprint $table) {
@@ -435,6 +436,33 @@ class TemasPaymentTest extends TestCase
         $this->assertTrue($details['ADM DO']->is_per_container);
         $this->assertSame('3.00', $details['ADM DO']->kuantitas);
         $this->assertSame('130000.00', $invoice->fresh()->nominal);
+    }
+
+    public function test_one_bl_can_store_a_container_list_longer_than_255_characters(): void
+    {
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $containers = collect(range(1, 25))
+            ->map(fn ($number) => 'TEMU'.str_pad((string) $number, 7, '0', STR_PAD_LEFT))
+            ->implode(', ');
+        $this->assertGreaterThan(255, strlen($containers));
+
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [[
+            'kapal' => 'TEMAS 1',
+            'voyage' => 'V001',
+            'types' => ['MANUAL'],
+            'manual_names' => ['THC'],
+            'custom_prices' => [100000],
+            'quantities' => [25],
+            'per_containers' => [1],
+            'nomor_kontainers' => [$containers],
+            'nomor_bls' => ['01'],
+            'size_items' => ['20ft'],
+        ]]);
+
+        $detail = $invoice->temasDetails()->firstOrFail();
+        $this->assertSame($containers, $detail->nomor_kontainer);
+        $this->assertSame('25.00', $detail->kuantitas);
+        $this->assertSame('2500000.00', $detail->sub_total);
     }
 
     public function test_temas_print_groups_child_bl_numbers_and_lists_all_containers(): void
