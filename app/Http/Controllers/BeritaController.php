@@ -41,10 +41,7 @@ class BeritaController extends Controller
 
         $gambarPath = null;
         if ($request->hasFile('gambar')) {
-            $file     = $request->file('gambar');
-            $fileName = 'berita_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $fileName);
-            $gambarPath = 'uploads/berita/' . $fileName;
+            $gambarPath = $this->storeGambar($request->file('gambar'), $request->tipe);
         }
 
         Berita::create([
@@ -78,14 +75,12 @@ class BeritaController extends Controller
 
         $gambarPath = $berita->gambar;
         if ($request->hasFile('gambar')) {
-            // Hapus gambar lama
-            if ($berita->gambar && file_exists(public_path($berita->gambar))) {
-                unlink(public_path($berita->gambar));
-            }
-            $file     = $request->file('gambar');
-            $fileName = 'berita_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $fileName);
-            $gambarPath = 'uploads/berita/' . $fileName;
+            // Hapus gambar lama jika ada
+            $this->deleteGambar($berita->gambar);
+            $gambarPath = $this->storeGambar($request->file('gambar'), $request->tipe);
+        } elseif ($berita->gambar && $berita->tipe !== $request->tipe) {
+            // Tipe berubah tapi tidak ada gambar baru — pindahkan gambar ke folder tipe baru
+            $gambarPath = $this->moveGambar($berita->gambar, $request->tipe);
         }
 
         $berita->update([
@@ -103,9 +98,7 @@ class BeritaController extends Controller
 
     public function destroy(Berita $berita)
     {
-        if ($berita->gambar && file_exists(public_path($berita->gambar))) {
-            unlink(public_path($berita->gambar));
-        }
+        $this->deleteGambar($berita->gambar);
         $berita->delete();
 
         if (request()->ajax() || request()->wantsJson()) {
@@ -125,5 +118,76 @@ class BeritaController extends Controller
             'is_active' => $berita->is_active,
             'message'   => $berita->is_active ? 'Berita diaktifkan.' : 'Berita dinonaktifkan.',
         ]);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Helper: Manajemen File Gambar                                      */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Simpan file gambar ke folder sesuai tipe (berita / pamflet).
+     * Folder dibuat otomatis jika belum ada.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $tipe  'berita' | 'pamflet'
+     * @return string  Path relatif dari public/ (misal: uploads/pamflet/xxx.jpg)
+     */
+    private function storeGambar($file, string $tipe): string
+    {
+        $folder  = 'uploads/' . $tipe;          // uploads/berita  atau  uploads/pamflet
+        $destDir = public_path($folder);
+
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+
+        $fileName = $tipe . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($destDir, $fileName);
+
+        return $folder . '/' . $fileName;
+    }
+
+    /**
+     * Hapus file gambar dari disk (public/).
+     *
+     * @param  string|null  $path  Path relatif dari public/
+     */
+    private function deleteGambar(?string $path): void
+    {
+        if ($path && file_exists(public_path($path))) {
+            unlink(public_path($path));
+        }
+    }
+
+    /**
+     * Pindahkan gambar ke folder tipe yang berbeda.
+     * Dipanggil saat tipe konten diubah (misal dari berita ke pamflet)
+     * tanpa mengganti file gambar.
+     *
+     * @param  string  $oldPath  Path relatif lama (misal: uploads/berita/xxx.jpg)
+     * @param  string  $newTipe  Tipe baru ('berita' | 'pamflet')
+     * @return string  Path relatif baru, atau path lama jika file tidak ditemukan
+     */
+    private function moveGambar(string $oldPath, string $newTipe): string
+    {
+        $oldAbsolute = public_path($oldPath);
+
+        if (!file_exists($oldAbsolute)) {
+            return $oldPath; // file tidak ada, kembalikan path lama
+        }
+
+        $newFolder  = 'uploads/' . $newTipe;
+        $newDestDir = public_path($newFolder);
+
+        if (!is_dir($newDestDir)) {
+            mkdir($newDestDir, 0755, true);
+        }
+
+        $fileName    = basename($oldAbsolute);
+        $newAbsolute = $newDestDir . DIRECTORY_SEPARATOR . $fileName;
+
+        rename($oldAbsolute, $newAbsolute);
+
+        return $newFolder . '/' . $fileName;
     }
 }
