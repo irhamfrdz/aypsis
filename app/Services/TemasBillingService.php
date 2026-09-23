@@ -17,6 +17,25 @@ class TemasBillingService
         return (int) round((float) $value * 100);
     }
 
+    private function temasQuantity(string $costName, string $containerNumbers): int
+    {
+        $normalized = strtoupper(trim(preg_replace('/[^A-Z0-9]+/i', ' ', $costName)));
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+        if (str_starts_with($normalized, 'BIAYA ')) {
+            $normalized = trim(substr($normalized, 6));
+        }
+        if (in_array($normalized, ['ADM DO', 'DO KONTAINER', 'MATERAI'], true)) {
+            return 1;
+        }
+
+        $containers = array_filter(array_unique(array_map(
+            fn ($number) => strtoupper(trim($number)),
+            explode(',', $containerNumbers)
+        )));
+
+        return max(1, count($containers));
+    }
+
     public function candidates()
     {
         return BiayaKapalTemasStage::where('payment_mode', 'dp')
@@ -129,7 +148,8 @@ class TemasBillingService
                 if ($number === '') {
                     throw ValidationException::withMessages(["temas.$index.nomor_kontainers" => 'Nomor kontainer wajib diisi.']);
                 }
-                $sub = $this->cents((float) $section['custom_prices'][$i] * (float) $section['quantities'][$i]);
+                $quantity = $this->temasQuantity($label, $number);
+                $sub = $this->cents((float) $section['custom_prices'][$i] * $quantity);
                 $nomorBl = trim($section['nomor_bls'][$i]);
                 $nomorBl = preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
                 $rows[] = array_merge($common, [
@@ -137,7 +157,7 @@ class TemasBillingService
                     'bl_id' => ($section['bl_ids'][$i] ?? null) ?: null,
                     'pricelist_temas_id' => $master?->id, 'jenis_biaya' => $label,
                     'lokasi' => $section['lokasi_items'][$i] ?? null, 'size' => $section['size_items'][$i],
-                    'harga' => $section['custom_prices'][$i], 'kuantitas' => $section['quantities'][$i],
+                    'harga' => $section['custom_prices'][$i], 'kuantitas' => $quantity,
                     'sub_total' => $sub / 100, 'grand_total' => $sub / 100,
                     'is_muat' => ($section['is_muat'][$i] ?? 0) == 1,
                     'is_bongkar' => ($section['is_bongkar'][$i] ?? 0) == 1,

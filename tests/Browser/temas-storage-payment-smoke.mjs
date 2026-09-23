@@ -94,22 +94,23 @@ try {
     await evaluate("set('.temas-payment-mode', 'pelunasan_dp')");
     await evaluate("set('.temas-dp-reference', '7')");
     await evaluate("set('.temas-bl-select', '01'); set('.type-select-temas', '1')");
-    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
-    assert.equal(await evaluate("section.querySelector('.grand-total-value-temas').value"), '1000000');
+    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '1700000');
+    assert.equal(await evaluate("section.querySelector('.grand-total-value-temas').value"), '2000000');
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), true);
     assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_kontainers][]')"), 'TEMU001, TEMU002');
     assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][nomor_bls][]')"), '01');
+    assert.equal(await evaluate("new FormData(document.getElementById('form')).get('temas[1][quantities][]')"), '2');
     assert.equal(await evaluate("new FormData(document.getElementById('form')).has('temas[1][pph_active]')"), false);
-    await evaluate("set('.price-input-temas', '200000')");
+    await evaluate("set('.price-input-temas', '100000')");
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), false);
     await evaluate("set('.price-input-temas', '1000000'); set('.temas-payment-mode', 'lunas')");
-    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '980000');
+    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '1960000');
     await evaluate(`
         clearAllTemasSections();
         window.section = addTemasSection({kapal: 'TEMAS 1', voyage: 'V001', payment_mode: 'pelunasan_dp', dp_stage_id: 7, dp_diperhitungkan: 300000,
             types: [{type_id: 1, nomor_bl: '01', nomor_kontainer: 'TEMU001, TEMU002', bl_id: 9, size: '20ft', harga: 1000000, kuantitas: 1, lokasi: 'Jakarta', is_muat: true}]});
     `);
-    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '700000');
+    assert.equal(await evaluate("section.querySelector('.temas-cash-value').value"), '1700000');
     assert.equal(await evaluate("section.querySelector('.temas-activity').checked"), true);
     assert.equal(await evaluate("document.getElementById('form').checkValidity()"), true);
     assert.deepEqual(errors, []);

@@ -388,6 +388,30 @@ class TemasPaymentTest extends TestCase
         $this->assertSame(['01'], $invoice->temasDetails()->pluck('nomor_bl')->unique()->values()->all());
     }
 
+    public function test_temas_costs_multiply_by_container_count_except_bl_only_charges(): void
+    {
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [[
+            'kapal' => 'TEMAS 1',
+            'voyage' => 'V001',
+            'types' => ['MANUAL', 'MANUAL', 'MANUAL', 'MANUAL'],
+            'manual_names' => ['THC', 'ADM DO', 'DO Kontainer', 'Materai'],
+            'custom_prices' => [100000, 10000, 20000, 30000],
+            'quantities' => [99, 99, 99, 99],
+            'nomor_kontainers' => array_fill(0, 4, 'TEMU001, TEMU002, TEMU003'),
+            'nomor_bls' => array_fill(0, 4, '01'),
+            'size_items' => array_fill(0, 4, '20ft'),
+        ]]);
+
+        $details = $invoice->temasDetails()->get()->keyBy('jenis_biaya');
+        $this->assertSame('3.00', $details['THC']->kuantitas);
+        $this->assertSame('300000.00', $details['THC']->sub_total);
+        foreach (['ADM DO', 'DO Kontainer', 'Materai'] as $singleCharge) {
+            $this->assertSame('1.00', $details[$singleCharge]->kuantitas);
+        }
+        $this->assertSame('360000.00', $invoice->fresh()->nominal);
+    }
+
     public function test_temas_print_groups_child_bl_numbers_and_lists_all_containers(): void
     {
         $invoice = BiayaKapal::create([

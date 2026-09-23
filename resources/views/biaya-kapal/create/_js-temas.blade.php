@@ -447,6 +447,11 @@
         row.querySelector('.type-manual-input-temas').required = manual;
         if (selectedValue && !selectionAvailable) row.querySelector('.price-input-temas').value = '';
     }
+    function temasIsSingleCharge(costName) {
+        let normalized = String(costName || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+        if (normalized.startsWith('BIAYA ')) normalized = normalized.slice(6).trim();
+        return ['ADM DO', 'DO KONTAINER', 'MATERAI'].includes(normalized);
+    }
     function addTemasCost(section, card) {
         const field = key => 'temas[' + section.dataset.sectionIndex + '][' + key + '][]';
         const row = document.createElement('div');
@@ -473,6 +478,7 @@
             <input type="hidden" name="${field('size_items')}" class="temas-row-size">
             <input type="hidden" name="${field('quantities')}" class="quantity-input-temas" value="1">
             <div class="flex flex-wrap items-center gap-4 mt-3 text-sm">
+                <span class="temas-cost-calculation text-blue-700 font-medium">Dihitung setelah nomor BL dipilih</span>
                 <span class="text-gray-500">Kegiatan:</span>
                 ${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="temas-activity"> ' + label + '</label>').join('')}
                 <button type="button" class="remove-cost-temas text-red-600 hover:underline ml-auto">Hapus biaya</button>
@@ -524,6 +530,7 @@
         cards.forEach((card, index) => {
             const nomorBl = numbers[index];
             const number = card.dataset.containerNumbers || '';
+            const containerCount = Math.max(1, [...new Set(number.split(',').map(value => value.trim().toUpperCase()).filter(Boolean))].length);
             card.querySelector('.temas-bl-select').setCustomValidity(nomorBl && numbers.filter(n => n === nomorBl).length > 1 ? 'Nomor BL ini sudah ditambahkan. Tambahkan biaya pada kartu BL yang sama.' : '');
             const size = card.querySelector('.temas-container-size').value;
             card.querySelector('.temas-container-title').textContent = 'BL ' + (index + 1) + (nomorBl ? ' · ' + nomorBl : '');
@@ -537,7 +544,13 @@
                 const select = row.querySelector('.type-select-temas');
                 const tariff = pricelistTemasData.find(item => String(item.id) === select.value);
                 select.setCustomValidity(tariff && tariff.size && size && temasSize(tariff.size) !== size ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
-                total += Number(row.querySelector('.price-input-temas').value) || 0;
+                const costName = tariff?.jenis_biaya || row.querySelector('.type-manual-input-temas').value;
+                const quantity = temasIsSingleCharge(costName) ? 1 : containerCount;
+                row.querySelector('.quantity-input-temas').value = quantity;
+                row.querySelector('.temas-cost-calculation').textContent = quantity === 1
+                    ? 'Dihitung 1× per BL'
+                    : 'Tarif × ' + quantity + ' kontainer';
+                total += (Number(row.querySelector('.price-input-temas').value) || 0) * quantity;
             });
             card.querySelector('.temas-container-total').textContent = temasMoney(total);
         });
