@@ -95,14 +95,17 @@
             const cards = new Map();
             (data.types || []).forEach(item => {
                 const number = item.nomor_kontainer || '';
-                let card = cards.get(number);
+                const nomorBl = item.nomor_bl || ('legacy-' + (item.bl_id || number));
+                let card = cards.get(nomorBl);
                 let row;
                 if (!card) {
                     card = addTemasContainer(section);
-                    cards.set(number, card);
-                    card.querySelector('.temas-container-number').value = number;
+                    cards.set(nomorBl, card);
+                    card.dataset.nomorBl = item.nomor_bl || '';
+                    card.dataset.containerNumbers = number;
                     card.querySelector('.temas-container-size').value = temasSize(item.size);
                     card.dataset.blId = item.bl_id || '';
+                    refreshTemasOptions(section, card);
                     row = card.querySelector('.temas-type-item');
                 } else row = addTemasCost(section, card);
                 const select = row.querySelector('.type-select-temas');

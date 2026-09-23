@@ -110,13 +110,14 @@ class TemasBillingService
                 'types' => 'required|array|min:1', 'types.*' => 'required',
                 'custom_prices' => 'required|array', 'custom_prices.*' => 'required|numeric|min:0',
                 'quantities' => 'required|array', 'quantities.*' => 'required|numeric|gt:0',
-                'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string|max:100',
+                'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string|max:255',
+                'nomor_bls' => 'required|array', 'nomor_bls.*' => 'required|string|max:255',
                 'size_items' => 'required|array', 'size_items.*' => 'required|in:20ft,40ft,45ft',
             ])->validate();
             foreach ($section['types'] as $i => $type) {
-                foreach (['custom_prices', 'quantities', 'nomor_kontainers', 'size_items'] as $field) {
+                foreach (['custom_prices', 'quantities', 'nomor_kontainers', 'nomor_bls', 'size_items'] as $field) {
                     if (! array_key_exists($i, $section[$field])) {
-                        throw ValidationException::withMessages(["temas.$index.$field" => 'Rincian kontainer dan biaya tidak lengkap.']);
+                        throw ValidationException::withMessages(["temas.$index.$field" => 'Rincian nomor BL, kontainer, dan biaya tidak lengkap.']);
                     }
                 }
                 $master = $type === 'MANUAL' ? null : PricelistTemas::find($type);
@@ -130,7 +131,8 @@ class TemasBillingService
                 }
                 $sub = $this->cents((float) $section['custom_prices'][$i] * (float) $section['quantities'][$i]);
                 $rows[] = array_merge($common, [
-                    'nomor_kontainer' => $number, 'bl_id' => ($section['bl_ids'][$i] ?? null) ?: null,
+                    'nomor_kontainer' => $number, 'nomor_bl' => trim($section['nomor_bls'][$i]),
+                    'bl_id' => ($section['bl_ids'][$i] ?? null) ?: null,
                     'pricelist_temas_id' => $master?->id, 'jenis_biaya' => $label,
                     'lokasi' => $section['lokasi_items'][$i] ?? null, 'size' => $section['size_items'][$i],
                     'harga' => $section['custom_prices'][$i], 'kuantitas' => $section['quantities'][$i],
@@ -160,7 +162,7 @@ class TemasBillingService
             $total = $subTotal + $extras;
             $advance = $dp ? $this->cents($dp->nominal_dibayar) : 0;
             if ($total < $advance || $total < 0) {
-                throw ValidationException::withMessages(["temas.$index.types" => 'Tagihan akhir tidak boleh lebih kecil dari DP. Periksa biaya kontainer.']);
+                throw ValidationException::withMessages(["temas.$index.types" => 'Tagihan akhir tidak boleh lebih kecil dari DP. Periksa biaya per nomor BL.']);
             }
             $cash = $total - $advance;
             // Allocate the cash amount once across cost rows, including cent rounding remainder.

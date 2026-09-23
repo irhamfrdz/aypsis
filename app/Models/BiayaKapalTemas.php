@@ -14,6 +14,7 @@ class BiayaKapalTemas extends Model
         'kapal',
         'voyage',
         'nomor_kontainer',
+        'nomor_bl',
         'bl_id',
         'nomor_referensi',
         'pricelist_temas_id',

@@ -418,6 +418,7 @@
                                  'is_muat' => $i->is_muat,
                                  'is_bongkar' => $i->is_bongkar,
                                   'nomor_kontainer' => $i->nomor_kontainer,
+                                  'nomor_bl' => $i->nomor_bl,
                                   'bl_id' => $i->bl_id
                              ];
                          })->toArray(),

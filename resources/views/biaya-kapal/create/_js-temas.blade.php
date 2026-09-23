@@ -68,17 +68,17 @@
                 </div>
             </div>
             <fieldset class="temas-billing-details">
-            <h5 class="font-semibold text-gray-800">2. Isi biaya per kontainer</h5>
-            <p class="text-sm text-gray-500 mt-1 mb-3">Tambahkan kontainer yang ditagihkan, lalu isi biayanya. Satu kontainer dapat memiliki beberapa jenis biaya.</p>
-            <p class="temas-status text-sm text-blue-800 bg-blue-50 rounded-lg p-3 mb-3" role="status" aria-live="polite">Pilih kapal dan voyage untuk memuat kontainer dari manifest.</p>
+            <h5 class="font-semibold text-gray-800">2. Isi biaya per nomor BL</h5>
+            <p class="text-sm text-gray-500 mt-1 mb-3">Pilih nomor BL. Seluruh kontainer pada BL tersebut akan otomatis terpilih dan biaya hanya dihitung satu kali untuk BL.</p>
+            <p class="temas-status text-sm text-blue-800 bg-blue-50 rounded-lg p-3 mb-3" role="status" aria-live="polite">Pilih kapal dan voyage untuk memuat nomor BL dan kontainer dari manifest.</p>
             <div class="temas-container-cards space-y-4"></div>
-            <button type="button" class="add-container-temas mt-3 mb-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">+ Tambah kontainer</button>
+            <button type="button" class="add-container-temas mt-3 mb-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">+ Tambah nomor BL</button>
             <h5 class="font-semibold text-gray-800 border-t pt-4">3. Periksa total tagihan</h5>
-            <p class="temas-tax-help text-sm text-gray-500 mt-1 mb-3">Pajak, materai, admin, dan penyesuaian berlaku untuk seluruh kontainer pada kapal / voyage ini.</p>
+            <p class="temas-tax-help text-sm text-gray-500 mt-1 mb-3">Pajak, materai, admin, dan penyesuaian berlaku untuk seluruh BL pada kapal / voyage ini.</p>
             <p class="temas-count text-sm text-blue-700 mb-3"></p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total biaya semua kontainer</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total biaya semua BL</label>
                     <input type="text" class="sub-total-display-temas w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="temas[${sectionIndex}][sub_total]" class="sub-total-value-temas" value="0">
                 </div>
@@ -123,7 +123,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Total tagihan kapal ini</label>
                     <input type="text" class="grand-total-display-temas w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="temas[${sectionIndex}][grand_total]" class="grand-total-value-temas" value="0">
-                    <p class="text-xs text-gray-500 mt-2">Biaya kontainer + PPN − PPH + materai + admin + penyesuaian.</p>
+                    <p class="text-xs text-gray-500 mt-2">Biaya BL + PPN − PPH + materai + admin + penyesuaian.</p>
                 </div>
             </div>
             </fieldset>
@@ -339,9 +339,10 @@
             if (!data.success) throw new Error('manifest');
             if (!section.isConnected || section.manifestRequest !== request) return;
             section.temasContainers = data.containers_data || [];
+            const blCount = new Set(section.temasContainers.map(c => c.nomor_bl).filter(Boolean)).size;
             status.textContent = section.temasContainers.length
-                ? section.temasContainers.length + ' kontainer tersedia · Rute: ' + (data.pelabuhan_asal || '-') + ' → ' + (data.pelabuhan_tujuan || '-') + '. Pilih kontainer yang ditagihkan.'
-                : 'Belum ada kontainer pada manifest ini. Ketik nomor kontainer manual.';
+                ? blCount + ' nomor BL / ' + section.temasContainers.length + ' kontainer tersedia · Rute: ' + (data.pelabuhan_asal || '-') + ' → ' + (data.pelabuhan_tujuan || '-') + '.'
+                : 'Belum ada nomor BL dan kontainer pada manifest ini.';
             section.querySelectorAll('.temas-container-card').forEach(card => refreshTemasOptions(section, card));
             calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
         } catch (error) {
@@ -350,46 +351,65 @@
         }
     }
     function refreshTemasOptions(section, card) {
-        const select = card.querySelector('.temas-manifest-select');
-        select.innerHTML = '<option value="">Pilih dari manifest</option>' + section.temasContainers.map(c =>
-            '<option value="' + temasEscape(c.nomor_kontainer) + '">' + temasEscape(c.nomor_kontainer) + ' (' + temasEscape(temasSize(c.size)) + ')</option>').join('');
-        select.disabled = !section.temasContainers.length;
-        const number = card.querySelector('.temas-container-number').value.trim().toUpperCase();
-        const match = section.temasContainers.find(c => String(c.nomor_kontainer).trim().toUpperCase() === number);
-        select.value = match ? match.nomor_kontainer : '';
-        card.dataset.blId = match ? match.id : '';
-        if (match) card.querySelector('.temas-container-size').value = temasSize(match.size);
+        const blSelect = card.querySelector('.temas-bl-select');
+        const containerSelect = card.querySelector('.temas-manifest-select');
+        let currentBl = blSelect.value || card.dataset.nomorBl || '';
+        if (!currentBl && card.dataset.blId) {
+            const legacyMatch = section.temasContainers.find(c => String(c.id) === String(card.dataset.blId));
+            if (legacyMatch?.nomor_bl) currentBl = legacyMatch.nomor_bl;
+        }
+        const bls = [...new Set(section.temasContainers.map(c => c.nomor_bl).filter(Boolean))];
+        blSelect.innerHTML = '<option value="">Pilih nomor BL</option>' + bls.map(bl =>
+            '<option value="' + temasEscape(bl) + '">' + temasEscape(bl) + '</option>').join('');
+        if (currentBl && !bls.includes(currentBl)) blSelect.add(new Option(currentBl + ' (data tersimpan)', currentBl));
+        blSelect.value = currentBl;
+        blSelect.disabled = !section.temasContainers.length && !currentBl;
+
+        const matches = currentBl ? section.temasContainers.filter(c => String(c.nomor_bl) === currentBl) : [];
+        containerSelect.innerHTML = matches.map(c => '<option selected value="' + temasEscape(c.nomor_kontainer) + '">' +
+            temasEscape(c.nomor_kontainer) + ' (' + temasEscape(temasSize(c.size)) + ')</option>').join('');
+        containerSelect.disabled = !matches.length;
+        card.dataset.nomorBl = currentBl;
+        card.dataset.blId = matches[0]?.id || card.dataset.blId || '';
+        card.dataset.containerNumbers = matches.length
+            ? matches.map(c => c.nomor_kontainer).join(', ')
+            : (card.dataset.containerNumbers || '');
+        if (matches[0]) card.querySelector('.temas-container-size').value = temasSize(matches[0].size);
+        card.querySelector('.temas-container-summary').textContent = matches.length
+            ? matches.length + ' kontainer otomatis terpilih untuk BL ini.'
+            : (currentBl ? 'Kontainer dari data tersimpan: ' + (card.dataset.containerNumbers || '-') : 'Pilih nomor BL terlebih dahulu.');
     }
     function addTemasContainer(section) {
         const card = document.createElement('div');
         card.className = 'temas-container-card border border-gray-200 rounded-lg p-4 bg-gray-50';
         card.innerHTML = `
             <div class="flex justify-between items-center gap-3 mb-3">
-                <strong class="temas-container-title text-gray-800">Kontainer</strong>
-                <button type="button" class="remove-container-temas text-sm text-red-600 hover:underline">Hapus kontainer</button>
+                <strong class="temas-container-title text-gray-800">Nomor BL</strong>
+                <button type="button" class="remove-container-temas text-sm text-red-600 hover:underline">Hapus BL</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <label class="text-sm text-gray-700">Kontainer dari manifest<select class="temas-manifest-select ${temasInputClass} mt-1"></select></label>
-                <label class="text-sm text-gray-700">Nomor kontainer<input class="temas-container-number ${temasInputClass} mt-1 uppercase" placeholder="Contoh: TEMU1234567" maxlength="100" required></label>
-                <label class="text-sm text-gray-700">Ukuran<select class="temas-container-size ${temasInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
+                <label class="text-sm text-gray-700">Nomor BL<select class="temas-bl-select ${temasInputClass} mt-1" required></select></label>
+                <label class="text-sm text-gray-700">Kontainer pada BL<select class="temas-manifest-select ${temasInputClass} mt-1 h-24" multiple disabled></select></label>
+                <label class="text-sm text-gray-700">Ukuran tarif<select class="temas-container-size ${temasInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
             </div>
+            <p class="temas-container-summary text-xs text-blue-700 mb-3"></p>
             <div class="temas-cost-list space-y-3"></div>
             <div class="flex flex-wrap justify-between items-center gap-3 mt-3">
-                <button type="button" class="add-cost-temas text-sm text-blue-700 hover:underline">+ Tambah biaya untuk kontainer ini</button>
-                <span class="text-sm">Total kontainer: <strong class="temas-container-total">Rp 0</strong></span>
+                <button type="button" class="add-cost-temas text-sm text-blue-700 hover:underline">+ Tambah biaya untuk BL ini</button>
+                <span class="text-sm">Total BL: <strong class="temas-container-total">Rp 0</strong></span>
             </div>
         `;
         section.querySelector('.temas-container-cards').appendChild(card);
         refreshTemasOptions(section, card);
-        card.querySelector('.temas-manifest-select').addEventListener('change', event => {
-            if (!event.target.value) return;
-            card.querySelector('.temas-container-number').value = event.target.value;
+        card.querySelector('.temas-bl-select').addEventListener('change', event => {
+            card.dataset.nomorBl = event.target.value;
+            card.dataset.blId = '';
+            card.dataset.containerNumbers = '';
             refreshTemasOptions(section, card);
         });
-        card.querySelector('.temas-container-number').addEventListener('input', () => refreshTemasOptions(section, card));
         card.querySelector('.add-cost-temas').addEventListener('click', () => addTemasCost(section, card));
         card.querySelector('.remove-container-temas').addEventListener('click', () => {
-            if (!confirm('Hapus kontainer ini beserta seluruh biayanya?')) return;
+            if (!confirm('Hapus nomor BL ini beserta seluruh biayanya?')) return;
             card.remove();
             calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
         });
@@ -410,10 +430,11 @@
                     </select>
                 </label>
                 <label class="temas-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="${field('manual_names')}" class="type-manual-input-temas ${temasInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
-                <label class="text-sm text-gray-700">Biaya kontainer ini (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-temas ${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
+                <label class="text-sm text-gray-700">Biaya BL ini (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-temas ${temasInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
                 <label class="text-sm text-gray-700">Lokasi<select name="${field('lokasi_items')}" class="lokasi-select-temas ${temasInputClass} mt-1"><option value="">Pilih lokasi (opsional)</option><option>Jakarta</option><option>Batam</option><option>Pinang</option></select></label>
             </div>
             <input type="hidden" name="${field('nomor_kontainers')}" class="temas-row-number">
+            <input type="hidden" name="${field('nomor_bls')}" class="temas-row-nomor-bl">
             <input type="hidden" name="${field('bl_ids')}" class="temas-row-bl">
             <input type="hidden" name="${field('size_items')}" class="temas-row-size">
             <input type="hidden" name="${field('quantities')}" class="quantity-input-temas" value="1">
@@ -434,7 +455,7 @@
         });
         row.querySelector('.remove-cost-temas').addEventListener('click', () => {
             if (card.querySelectorAll('.temas-type-item').length === 1) {
-                if (!confirm('Hapus kontainer ini beserta rincian biayanya?')) return;
+                if (!confirm('Hapus nomor BL ini beserta rincian biayanya?')) return;
                 card.remove();
             } else row.remove();
             calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
@@ -444,7 +465,7 @@
     }
     window.removeTemasSection = function(index) {
         const section = temasSectionsContainer.querySelector('[data-section-index="' + index + '"]');
-        if (!section || !confirm('Hapus kapal ini beserta seluruh kontainer dan biayanya?')) return;
+        if (!section || !confirm('Hapus kapal ini beserta seluruh BL dan biayanya?')) return;
         section.remove();
         if (!temasSectionsContainer.children.length) addTemasSection();
         calculateTotalFromAllTemasSections();
@@ -464,15 +485,17 @@
         
 
         const cards = [...section.querySelectorAll('.temas-container-card')];
-        const numbers = cards.map(card => card.querySelector('.temas-container-number').value.trim().toUpperCase());
+        const numbers = cards.map(card => (card.dataset.nomorBl || '').trim().toUpperCase());
         cards.forEach((card, index) => {
-            const number = numbers[index];
-            card.querySelector('.temas-container-number').setCustomValidity(number && numbers.filter(n => n === number).length > 1 ? 'Kontainer ini sudah ditambahkan. Tambahkan biaya pada kontainer yang sama.' : '');
+            const nomorBl = numbers[index];
+            const number = card.dataset.containerNumbers || '';
+            card.querySelector('.temas-bl-select').setCustomValidity(nomorBl && numbers.filter(n => n === nomorBl).length > 1 ? 'Nomor BL ini sudah ditambahkan. Tambahkan biaya pada kartu BL yang sama.' : '');
             const size = card.querySelector('.temas-container-size').value;
-            card.querySelector('.temas-container-title').textContent = 'Kontainer ' + (index + 1) + (number ? ' · ' + number : '');
+            card.querySelector('.temas-container-title').textContent = 'BL ' + (index + 1) + (nomorBl ? ' · ' + nomorBl : '');
             let total = 0;
             card.querySelectorAll('.temas-type-item').forEach(row => {
                 row.querySelector('.temas-row-number').value = number;
+                row.querySelector('.temas-row-nomor-bl').value = nomorBl;
                 row.querySelector('.temas-row-bl').value = card.dataset.blId || '';
                 row.querySelector('.temas-row-size').value = size;
                 row.querySelectorAll('.temas-activity').forEach(box => box.previousElementSibling.value = box.checked ? '1' : '0');
@@ -483,8 +506,8 @@
             });
             card.querySelector('.temas-container-total').textContent = temasMoney(total);
         });
-        section.querySelector('.kapal-select-temas').setCustomValidity(cards.length ? '' : 'Tambahkan minimal satu kontainer beserta biayanya.');
-        section.querySelector('.temas-count').textContent = cards.length + ' kontainer · ' + section.querySelectorAll('.temas-type-item').length + ' rincian biaya';
+        section.querySelector('.kapal-select-temas').setCustomValidity(cards.length ? '' : 'Tambahkan minimal satu nomor BL beserta biayanya.');
+        section.querySelector('.temas-count').textContent = cards.length + ' nomor BL · ' + section.querySelectorAll('.temas-type-item').length + ' rincian biaya';
 
         const typeItems = section.querySelectorAll('.temas-type-item');
         

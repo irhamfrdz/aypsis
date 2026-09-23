@@ -45,6 +45,7 @@ class TemasPaymentTest extends TestCase
         });
         (require database_path('migrations/2026_04_27_142615_create_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_06_12_100757_add_container_fields_to_biaya_kapal_temas_table.php'))->up();
+        (require database_path('migrations/2026_09_23_000001_add_nomor_bl_to_biaya_kapal_temas_table.php'))->up();
         Schema::table('biaya_kapal_temas', fn (Blueprint $table) => $table->decimal('biaya_admin', 15, 2)->default(0));
         (require database_path('migrations/2026_09_22_130000_create_biaya_kapal_temas_stages.php'))->up();
         Schema::create('pembayaran_biaya_kapals', function (Blueprint $table) {
@@ -324,6 +325,7 @@ class TemasPaymentTest extends TestCase
             'kapal' => 'TEMAS 1', 'voyage' => 'V001', 'types' => ['MANUAL', 'MANUAL'],
             'manual_names' => ['Handling', 'Handling'], 'custom_prices' => [600000, 400000],
             'quantities' => [1, 1], 'nomor_kontainers' => ['TEMU001', 'TEMU002'],
+            'nomor_bls' => ['BL001', 'BL002'],
             'size_items' => ['20ft', '40ft'],
         ];
     }

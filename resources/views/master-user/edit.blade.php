@@ -322,6 +322,11 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Password (kosongkan jika tidak ingin mengubah)</label>
+                <div class="mt-1 mb-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                    <strong>Password saat ini:</strong>
+                    {{ filled($user->password) ? 'sudah tersimpan (terenkripsi)' : 'belum diatur' }}.
+                    Password asli tidak dapat ditampilkan. Isi kolom di bawah hanya jika ingin menggantinya.
+                </div>
                 <input type="password" name="password" autocomplete="new-password" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
             </div>
             <div>

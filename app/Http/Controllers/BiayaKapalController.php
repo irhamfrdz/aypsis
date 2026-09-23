@@ -1041,6 +1041,7 @@ class BiayaKapalController extends Controller
             'temas.*.custom_prices' => 'nullable|array',
             'temas.*.quantities' => 'nullable|array',
             'temas.*.nomor_kontainers' => 'nullable|array',
+            'temas.*.nomor_bls' => 'nullable|array',
             'temas.*.bl_ids' => 'nullable|array',
             'temas.*.lokasi_items' => 'nullable|array',
             'temas.*.size_items' => 'nullable|array',
@@ -4231,6 +4232,8 @@ class BiayaKapalController extends Controller
             'temas.*.manual_names' => 'nullable|array',
             'temas.*.custom_prices' => 'nullable|array',
             'temas.*.quantities' => 'nullable|array',
+            'temas.*.nomor_kontainers' => 'nullable|array',
+            'temas.*.nomor_bls' => 'nullable|array',
             'temas.*.lokasi_items' => 'nullable|array',
             'temas.*.size_items' => 'nullable|array',
             'temas.*.is_muat' => 'nullable|array',
@@ -6125,7 +6128,7 @@ class BiayaKapalController extends Controller
 
             // Fetch from manifests table instead of bls table
             $blsQuery = DB::table('manifests')
-                ->select('id', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar', 'kuantitas')
+                ->select('id', 'nomor_bl', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar', 'kuantitas')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -6283,12 +6286,13 @@ class BiayaKapalController extends Controller
             $containersData = $bls->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
                 ->where('nomor_kontainer', '!=', '-')
-                ->groupBy('nomor_kontainer')
+                ->groupBy(fn ($item) => ($item->nomor_bl ?? '').'|'.$item->nomor_kontainer)
                 ->map(function ($group) {
                     $first = $group->first();
 
                     return [
                         'id' => $first->id,
+                        'nomor_bl' => $first->nomor_bl,
                         'nomor_kontainer' => $first->nomor_kontainer,
                         'size' => $first->size_kontainer,
                     ];
