@@ -7953,6 +7953,8 @@ Route::middleware(['auth',
 
     // Permintaan Amprahan
     Route::get('permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'index'])->name('permohonan-amprahan.index')->middleware('can:permohonan-amprahan-view');
+    Route::get('permohonan-amprahan/create', [\App\Http\Controllers\PermohonanAmprahanController::class, 'create'])->name('permohonan-amprahan.create')->middleware('can:permohonan-amprahan-create');
+    Route::post('permohonan-amprahan', [\App\Http\Controllers\PermohonanAmprahanController::class, 'store'])->name('permohonan-amprahan.store')->middleware('can:permohonan-amprahan-create');
     Route::get('permohonan-amprahan/{id}', [\App\Http\Controllers\PermohonanAmprahanController::class, 'show'])->name('permohonan-amprahan.show')->middleware('can:permohonan-amprahan-view');
     Route::get('permohonan-amprahan/{id}/print', [\App\Http\Controllers\PermohonanAmprahanController::class, 'print'])->name('permohonan-amprahan.print')->middleware('can:permohonan-amprahan-view');
 

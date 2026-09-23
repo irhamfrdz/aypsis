@@ -194,7 +194,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PERMINTAAN AMPRAHAN KAPAL</h1>
+            <h1>PERMINTAAN AMPRAHAN</h1>
             <h2>PT. ALEXINDO YAKINPRIMA</h2>
         </div>
 
@@ -212,8 +212,8 @@
                             <td>: PA-{{ str_pad($permohonan->id, 6, '0', STR_PAD_LEFT) }}</td>
                         </tr>
                         <tr>
-                            <td>Kapal</td>
-                            <td>: {{ $permohonan->kapal->nama_kapal ?? '-' }}</td>
+                            <td>{{ ucfirst($permohonan->jenis_amprahan ?? 'kapal') }}</td>
+                            <td>: {{ $permohonan->mobil->nomor_polisi ?? ($permohonan->kapal->nama_kapal ?? '-') }}</td>
                         </tr>
                     </table>
                 </div>

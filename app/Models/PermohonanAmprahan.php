@@ -14,7 +14,9 @@ class PermohonanAmprahan extends Model
     protected $fillable = [
         'user_id',
         'tanggal_permohonan',
+        'jenis_amprahan',
         'kapal_id',
+        'mobil_id',
         'nomor_voyage',
         'status',
         'keterangan_umum',
@@ -32,6 +34,11 @@ class PermohonanAmprahan extends Model
     public function kapal()
     {
         return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
+
+    public function mobil()
+    {
+        return $this->belongsTo(Mobil::class, 'mobil_id');
     }
 
     public function items()

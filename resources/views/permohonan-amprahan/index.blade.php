@@ -38,9 +38,14 @@
                 <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200 flex items-center">
                     <i class="fas fa-search mr-2"></i> Cari
                 </button>
-                <a href="{{ route('permohonan-amprahan.index') }}" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200 flex items-center">
+            <a href="{{ route('permohonan-amprahan.index') }}" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200 flex items-center">
                     <i class="fas fa-undo mr-2"></i> Reset
+            </a>
+            @can('permohonan-amprahan-create')
+                <a href="{{ route('permohonan-amprahan.create') }}" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200 flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Buat Permintaan
                 </a>
+            @endcan
             </div>
         </form>
     </div>
@@ -53,7 +58,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kapal / Voyage</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tujuan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemohon</th>
@@ -71,7 +76,8 @@
                                 <div class="text-xs text-gray-500">{{ $item->tanggal_permohonan?->format('H:i') ? $item->tanggal_permohonan->format('H:i') . ' WIB' : '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-bold text-gray-900">{{ $item->kapal->nama_kapal ?? '-' }}</div>
+                                <div class="text-xs text-gray-500 uppercase">{{ ucfirst($item->jenis_amprahan ?? 'kapal') }}</div>
+                                <div class="text-sm font-bold text-gray-900">{{ $item->mobil->nomor_polisi ?? ($item->kapal->nama_kapal ?? '-') }}</div>
                                 <div class="text-sm text-gray-600">Voyage: <span class="font-medium">{{ $item->nomor_voyage }}</span></div>
                             </td>
                             <td class="px-6 py-4">

@@ -28,8 +28,12 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs text-gray-500 uppercase font-semibold">Kapal</div>
-                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->kapal->nama_kapal ?? '-' }}</div>
+                        <div class="text-xs text-gray-500 uppercase font-semibold">Jenis Amprahan</div>
+                        <div class="font-medium text-gray-900 mt-1">{{ ucfirst($permohonan->jenis_amprahan ?? 'kapal') }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 uppercase font-semibold">Kapal / Kendaraan</div>
+                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->mobil->nomor_polisi ?? ($permohonan->kapal->nama_kapal ?? '-') }}</div>
                     </div>
                     
                     <div>
