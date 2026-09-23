@@ -482,6 +482,7 @@ class TemasPaymentTest extends TestCase
             'nomor_kontainers' => ['TEMU001, TEMU002'],
             'nomor_bls' => ['01'],
             'size_items' => ['20ft'],
+            'pph' => 20000,
         ]]);
         DB::table('manifests')->insert([
             ['no_voyage' => 'V001', 'nomor_bl' => '01-1', 'nomor_kontainer' => 'TEMU001', 'size_kontainer' => '20'],
@@ -495,6 +496,12 @@ class TemasPaymentTest extends TestCase
         $this->assertStringContainsString('TEMU001', $html);
         $this->assertStringContainsString('TEMU002', $html);
         $this->assertStringContainsString('HANDLING BL', $html);
+        $this->assertStringNotContainsString('PPH (2%)', $html);
+
+        $invoice->temasDetails()->update(['pph_active' => true]);
+        $activePphHtml = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
+        $this->assertStringContainsString('PPH (2%)', $activePphHtml);
+        $this->assertStringContainsString('Rp 20.000', $activePphHtml);
     }
 
     public function test_storage_style_rejects_final_invoice_below_dp_and_rolls_back(): void

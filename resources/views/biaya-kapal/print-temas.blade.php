@@ -240,8 +240,6 @@
             $totalSubtotal = 0;
             $totalPPH = 0; // Total PPH yang benar-benar memotong (untuk kalkulasi)
             $totalPPN = 0; // Total PPN yang benar-benar menambah (untuk kalkulasi)
-            $displayPPH = 0; // Untuk tampilan baris di tabel
-            $displayPPN = 0; // Untuk tampilan baris di tabel
             $totalAdjustment = 0;
             $totalMaterai = 0;
             $totalAdmin = 0;
@@ -255,10 +253,6 @@
                 
                 $totalPPH += ($isPphActive ? $detail->pph : 0);
                 $totalPPN += ($isPpnActive ? $detail->ppn : 0);
-                
-                // Selalu jumlahkan untuk tampilan
-                $displayPPH += $detail->pph;
-                $displayPPN += $detail->ppn;
                 
                 $totalAdjustment += $detail->adjustment;
                 $totalMaterai += $detail->biaya_materai;
@@ -441,12 +435,12 @@
                     @endforeach
                 @endforeach
                 
-                @if($displayPPH > 0)
+                @if($totalPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">PPH (2%) {{ $totalPPH <= 0 ? '(Reimburse)' : '' }}</td>
+                    <td colspan="3">PPH (2%)</td>
                     <td class="text-center">1</td>
-                    <td class="text-right">Rp {{ number_format($displayPPH, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
