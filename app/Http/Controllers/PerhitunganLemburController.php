@@ -112,20 +112,38 @@ class PerhitunganLemburController extends Controller
 
         $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
 
-        $workDateExpr = Absensi::workDateSql();
-        $lemburStarts = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
-        $lemburEnds   = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+        // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
+        // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
+        // Outer: GROUP BY karyawan_id dan tanggal (kolom sederhana, bukan ekspresi kompleks)
+        $driver = \DB::connection()->getDriverName();
+        $workDateExprAlias = \App\Helpers\AttendanceWorkDate::sql($driver, 'a');
 
-        // Ambil data lembur yang dikelompokkan berdasarkan tanggal kerja (work date) selaras dengan halaman Absensi
-        $attendance = Absensi::workDates($startDate, $endDate)
-            ->whereRaw("($lemburStarts OR $lemburEnds)")
+        $lemburStartsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEndsSub   = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+        $lemburStartsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEndsOut   = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+
+        $workStart = $startDate->copy()->startOfDay();
+        $workEnd   = $endDate->copy()->addDays(2)->startOfDay();
+
+        // Inner subquery: satu baris per log absensi, dilabeli dengan tanggal kerja
+        $inner = \DB::table(\DB::raw('absensis a'))
+            ->selectRaw("a.karyawan_id, a.tipe, a.waktu, ($workDateExprAlias) as tanggal")
+            ->where('a.waktu', '>=', $workStart)
+            ->where('a.waktu', '<', $workEnd)
+            ->whereRaw("($lemburStartsSub OR $lemburEndsSub)");
+
+        // Outer query: GROUP BY karyawan_id dan tanggal — kolom sederhana, tidak ada masalah only_full_group_by
+        $attendance = \DB::table(\DB::raw("({$inner->toSql()}) as sub"))
+            ->mergeBindings($inner)
             ->selectRaw("
-                absensis.karyawan_id,
-                $workDateExpr as tanggal,
-                MIN(CASE WHEN $lemburStarts THEN absensis.waktu ELSE NULL END) as waktu_lembur_masuk,
-                MAX(CASE WHEN $lemburEnds THEN absensis.waktu ELSE NULL END) as waktu_lembur_pulang
+                sub.karyawan_id,
+                sub.tanggal,
+                MIN(CASE WHEN $lemburStartsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_masuk,
+                MAX(CASE WHEN $lemburEndsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_pulang
             ")
-            ->groupBy('absensis.karyawan_id', \Illuminate\Support\Facades\DB::raw($workDateExpr))
+            ->whereBetween('sub.tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->groupBy('sub.karyawan_id', 'sub.tanggal')
             ->get()
             ->groupBy('karyawan_id');
 
