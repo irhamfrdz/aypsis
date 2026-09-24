@@ -120,6 +120,15 @@
                                     <a href="{{ route('permohonan-amprahan.print', $item->id) }}" target="_blank" class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors" title="Print Permintaan">
                                         <i class="fas fa-print"></i> Print
                                     </a>
+                                    @can('permohonan-amprahan-delete')
+                                        <form action="{{ route('permohonan-amprahan.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus permohonan ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors" title="Hapus Permohonan">
+                                                <i class="fas fa-trash"></i> Hapus
+                                            </button>
+                                        </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

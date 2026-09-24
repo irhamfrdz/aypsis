@@ -109,6 +109,15 @@ class PermohonanAmprahanController extends Controller
         return view('permohonan-amprahan.print', compact('permohonan'));
     }
 
+    public function destroy($id)
+    {
+        $permohonan = PermohonanAmprahan::findOrFail($id);
+        $permohonan->delete();
+
+        return redirect()->route('permohonan-amprahan.index')
+            ->with('success', 'Permohonan amprahan berhasil dihapus.');
+    }
+
     public function approvalIndex(Request $request)
     {
         $selectedStatus = $request->input('status', 'pending');
