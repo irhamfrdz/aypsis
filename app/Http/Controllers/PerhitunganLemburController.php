@@ -110,7 +110,20 @@ class PerhitunganLemburController extends Controller
             }
         }
 
-        $karyawans = $karyawanQuery->with(['uangMakanTerbaru'])->orderBy('nama_lengkap')->get();
+        $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
+
+        // Ambil nominal uang makan terbaru langsung dari tabel uang_makans per karyawan_id
+        $karyawanIds = $karyawans->pluck('id')->filter()->unique()->values();
+        $uangMakanMap = \App\Models\UangMakan::whereIn('karyawan_id', $karyawanIds)
+            ->where(function($q) {
+                $q->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
+                  ->orWhereNull('tipe_karyawan');
+            })
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('karyawan_id')
+            ->map(fn($items) => (float) $items->first()->nominal);
 
         // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
         // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
@@ -321,13 +334,8 @@ class PerhitunganLemburController extends Controller
             }
 
             if ($totalJamHariBiasa > 0 || $totalJamHariLibur > 0 || $totalNominal > 0) {
-                // Tentukan multiplier berdasarkan penempatan (contoh: Pelabuhan 1 = 2x)
-                $multiplier = 1;
-                if (strcasecmp(trim($karyawan->penempatan ?? ''), 'Pelabuhan 1') === 0 || ($karyawan->penempatan ?? '') == '1') {
-                    $multiplier = 2;
-                }
-                $karyawanNominalDasar = $karyawan->uangMakanTerbaru ? $karyawan->uangMakanTerbaru->nominal : ($karyawan->nominal_uang_makan ?? 0);
-                $nominalUangMakan = (float) $karyawanNominalDasar * $multiplier;
+                // Tentukan uang makan dari tabel uang_makans, fallback ke nominal_uang_makan karyawan
+                $nominalUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
 
                 $rekapData[$karyawan->id] = [
                     'karyawan' => $karyawan,

@@ -971,8 +971,11 @@
         rowCheckboxes.forEach(cb => {
             if (pranotaCart[cb.value]) {
                 cb.checked = true;
+                // Selalu sinkronkan ulang uangMakan dari tabel (sumber: tabel uang_makans) agar tidak tertahan sessionStorage lama
+                pranotaCart[cb.value].uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
             }
         });
+        saveCart();
 
         // Update check-all state initially
         if (checkAll && rowCheckboxes.length > 0) {
@@ -1055,7 +1058,8 @@
             const nominalAwal = (item.nominalAwal !== undefined) ? item.nominalAwal : (item.basePayoutVal || 0);
             const adjustment = item.adjustment || 0;
             const totalAkhir = nominalAwal + adjustment;
-            const uangMakan = item.uangMakan || 0;
+            const cbDom = document.querySelector(`.row-checkbox[value="${karyawanId}"]`);
+            const uangMakan = cbDom ? (parseInt(cbDom.getAttribute('data-uang-makan')) || 0) : (item.uangMakan || 0);
             
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
