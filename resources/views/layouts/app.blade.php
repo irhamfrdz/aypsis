@@ -1676,6 +1676,7 @@
         $user->can('gate-in-delete') ||
         $user->can('aktivitas-kapal-view') ||
         $user->can('pergerakan-kapal-view') ||
+        $user->can('gerak-voyage-view') ||
         $user->can('voyage-view') ||
         $user->can('jadwal-kapal-view') ||
         $user->can('status-kapal-view') ||

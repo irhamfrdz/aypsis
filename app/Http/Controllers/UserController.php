@@ -663,6 +663,18 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Permintaan Amprahan uses a single permission prefix for both
+            // the request screen and its approval screen.
+            if (strpos($permissionName, 'permohonan-amprahan-') === 0) {
+                $module = 'permohonan-amprahan';
+                $action = str_replace('permohonan-amprahan-', '', $permissionName);
+                if (! isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+                $matrixPermissions[$module][$action] = true;
+                continue;
+            }
+
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             // IMPORTANT: More specific (longer) prefixes MUST come before shorter ones.
             // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
@@ -1946,6 +1958,15 @@ class UserController extends Controller
             foreach ($actions as $action => $value) {
                 // Only process checked permissions (value = true or 1)
                 if ($value == '1' || $value === true) {
+
+                    // Permintaan Amprahan permissions have a direct dash name.
+                    if ($module === 'permohonan-amprahan') {
+                        $permission = Permission::where('name', 'permohonan-amprahan-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                        }
+                        continue;
+                    }
 
                     // If the matrix action is 'access' or 'main', prefer a single module-level permission
                     // (dash form like 'master-karyawan' or dot form like 'master.karyawan')
