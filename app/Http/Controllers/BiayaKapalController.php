@@ -6219,6 +6219,28 @@ class BiayaKapalController extends Controller
                 ->map(fn ($bookings) => $bookings->pluck('nomor_kontainer')->unique()->count())
                 ->all();
 
+            // Some LCL Prospek records can already be synced to manifests with
+            // an incorrect/non-LCL container type. Keep those LCL containers
+            // in the Opslag count without double-counting manifest containers.
+            $lclProspekContainersBySize = DB::table('prospek')
+                ->whereRaw("UPPER(TRIM(COALESCE(tipe, ''))) = 'LCL'")
+                ->whereRaw('TRIM(COALESCE(no_voyage, \'\')) = ?', [trim($voyage)])
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->where('nomor_kontainer', '!=', '-')
+                ->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        $q->where('nama_kapal', 'like', "%{$keyword}%");
+                    }
+                })
+                ->select('nomor_kontainer', 'ukuran')
+                ->get()
+                ->groupBy(function ($lcl) {
+                    return str_contains(strtolower((string) $lcl->ukuran), '40') ? '40' : '20';
+                })
+                ->map(fn ($lcls) => $lcls->pluck('nomor_kontainer')->unique())
+                ->all();
+
             // Count containers by size and type
             $counts = [
                 '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
@@ -6351,6 +6373,26 @@ class BiayaKapalController extends Controller
 
                     $counts[$size]['lcl'] = $lclUnique + $lclEmptyOrDash;
                 }
+            }
+
+            // Merge LCL containers from Prospek that are missing from the
+            // manifest's LCL classification (for example, one imported as FCL).
+            foreach (['20', '40'] as $size) {
+                $manifestLclContainers = $containerItems
+                    ->filter(function ($item) use ($size) {
+                        return str_contains(strtolower($item->tipe_kontainer ?? ''), 'lcl')
+                            && str_contains((string) $item->size_kontainer, $size)
+                            && ! empty($item->nomor_kontainer)
+                            && $item->nomor_kontainer !== '-';
+                    })
+                    ->pluck('nomor_kontainer')
+                    ->unique();
+
+                $missingLclContainers = collect($lclProspekContainersBySize[$size] ?? [])
+                    ->diff($manifestLclContainers)
+                    ->count();
+
+                $counts[$size]['lcl'] += $missingLclContainers;
             }
 
             $firstBl = $bls->first();
