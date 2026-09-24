@@ -331,11 +331,18 @@ class PerhitunganLemburController extends Controller
             }
         }
 
-        // Master Dropdowns matching AbsensiController
-        $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
-        $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
-        $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
-        $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+        // Master Dropdowns — diekstrak dari $karyawans yang sudah ada di memory
+        // (menghindari 6 query DB tambahan yang tidak perlu)
+        // Untuk dropdown, kita perlu semua karyawan aktif, bukan hanya yang terfilter.
+        // Gunakan query ringan hanya kolom yang dibutuhkan.
+        $allActiveKaryawans = Karyawan::whereNull('tanggal_berhenti')
+            ->select(['pekerjaan', 'divisi', 'cabang', 'penempatan', 'grup', 'grup_bpjs'])
+            ->get();
+
+        $pekerjaans = $allActiveKaryawans->pluck('pekerjaan')->filter()->unique()->sort()->values();
+        $divisis    = $allActiveKaryawans->pluck('divisi')->filter()->unique()->sort()->values();
+        $cabangs    = $allActiveKaryawans->pluck('cabang')->filter()->unique()->sort()->values();
+        $penempatans = $allActiveKaryawans->pluck('penempatan')->filter()->unique()->sort()->values();
 
         $grupMap = [
             'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
@@ -344,11 +351,7 @@ class PerhitunganLemburController extends Controller
             'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
             'CUTI' => []
         ];
-        $karyawansGrups = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->pluck('grup');
-        foreach ($karyawansGrups as $grupArray) {
-            if (is_string($grupArray)) {
-                $grupArray = json_decode($grupArray, true);
-            }
+        foreach ($allActiveKaryawans->pluck('grup') as $grupArray) {
             if (is_array($grupArray)) {
                 foreach ($grupArray as $g) {
                     $parts = explode(':', $g, 2);
@@ -375,11 +378,7 @@ class PerhitunganLemburController extends Controller
             'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
             'BPJS-JKN' => ['BPU REIMBURSMENT']
         ];
-        $karyawansGrupsBpjs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup_bpjs')->pluck('grup_bpjs');
-        foreach ($karyawansGrupsBpjs as $grupBpjsArray) {
-            if (is_string($grupBpjsArray)) {
-                $grupBpjsArray = json_decode($grupBpjsArray, true);
-            }
+        foreach ($allActiveKaryawans->pluck('grup_bpjs') as $grupBpjsArray) {
             if (is_array($grupBpjsArray)) {
                 foreach ($grupBpjsArray as $g) {
                     $parts = explode(':', $g, 2);
@@ -402,12 +401,16 @@ class PerhitunganLemburController extends Controller
         }
         $grupsBpjsList = array_keys($grupBpjsMap);
 
+        unset($allActiveKaryawans); // bebaskan memory setelah digunakan
+
         // Riwayat Pranota Lembur Karyawan yang dibuat oleh user yang sedang login
+        // Dibatasi 50 terbaru untuk menghindari eager load berlebihan
         $userId = auth()->id();
         $riwayatPranotaUser = \App\Models\PranotaLemburKaryawanHeader::where('created_by', $userId)
             ->with(['karyawans.karyawan:id,nama_lengkap,nama_panggilan,nik'])
             ->withCount('karyawans')
             ->orderBy('created_at', 'desc')
+            ->limit(50)
             ->get();
 
         return view('payroll.perhitungan-lembur.index', compact(
