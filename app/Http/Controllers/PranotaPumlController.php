@@ -18,14 +18,29 @@ class PranotaPumlController extends Controller
         // Get all draft Uang Makan
         $draftUangMakan = \App\Models\PranotaUangMakan::where('status', 'draft')
                             ->whereNull('pranota_puml_id')
+                            ->orderBy('tanggal_pranota', 'desc')
                             ->get();
                             
         // Get all draft Lembur
         $draftLembur = \App\Models\PranotaLemburKaryawanHeader::where('status', 'draft')
                             ->whereNull('pranota_puml_id')
+                            ->orderBy('tanggal_pranota', 'desc')
                             ->get();
 
-        return view('pranota-puml.create', compact('draftUangMakan', 'draftLembur'));
+        // Riwayat: submitted/completed Uang Makan (already in a PUML)
+        $riwayatUangMakan = \App\Models\PranotaUangMakan::where('status', '!=', 'draft')
+                            ->with('details')
+                            ->orderBy('tanggal_pranota', 'desc')
+                            ->take(20)
+                            ->get();
+
+        // Riwayat: submitted/completed Lembur (already in a PUML)
+        $riwayatLembur = \App\Models\PranotaLemburKaryawanHeader::where('status', '!=', 'draft')
+                            ->orderBy('tanggal_pranota', 'desc')
+                            ->take(20)
+                            ->get();
+
+        return view('pranota-puml.create', compact('draftUangMakan', 'draftLembur', 'riwayatUangMakan', 'riwayatLembur'));
     }
 
     public function store(Request $request)

@@ -138,5 +138,150 @@
             </button>
         </div>
     </form>
+
+    {{-- ================================================================= --}}
+    {{-- RIWAYAT PRANOTA --}}
+    {{-- ================================================================= --}}
+    <div class="mt-10">
+        <div class="mb-5 pb-3 border-b border-gray-100 flex items-center space-x-3">
+            <div class="bg-indigo-100 p-2 rounded-lg">
+                <i class="fas fa-history text-indigo-600"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">Riwayat Pranota</h2>
+                <p class="text-xs text-gray-500">Pranota Uang Makan dan Lembur yang sudah diproses / digabungkan ke dalam PUML.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- Riwayat Uang Makan --}}
+            <div class="bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-xl border border-gray-100 overflow-hidden">
+                <header class="px-6 py-4 bg-gradient-to-r from-emerald-50 to-white border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center text-emerald-800 font-bold text-sm">
+                        <div class="bg-emerald-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-utensils text-emerald-600 text-xs"></i>
+                        </div>
+                        Riwayat Uang Makan
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        {{ $riwayatUangMakan->count() }} Dokumen
+                    </span>
+                </header>
+                <div class="overflow-x-auto">
+                    @if($riwayatUangMakan->isEmpty())
+                        <div class="text-center py-10 px-4">
+                            <div class="text-gray-300 mb-2"><i class="fas fa-inbox text-4xl"></i></div>
+                            <p class="text-sm text-gray-400">Belum ada riwayat uang makan.</p>
+                        </div>
+                    @else
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Pranota</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @foreach($riwayatUangMakan as $um)
+                                    <tr class="hover:bg-emerald-50/40 transition-colors">
+                                        <td class="px-4 py-3">
+                                            <a href="{{ route('pranota-uang-makan.show', $um->id) }}" target="_blank"
+                                               class="font-semibold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1">
+                                                {{ $um->nomor_pranota }}
+                                                <i class="fas fa-external-link-alt text-[9px] opacity-60"></i>
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-500 text-xs">{{ $um->tanggal_pranota->format('d M Y') }}</td>
+                                        <td class="px-4 py-3 text-right font-semibold text-gray-700">Rp {{ number_format($um->total_nominal, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($um->status === 'submitted')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                    <i class="fas fa-paper-plane mr-1 text-[9px]"></i> Submitted
+                                                </span>
+                                            @elseif($um->status === 'approved')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                    <i class="fas fa-check mr-1 text-[9px]"></i> Approved
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                    {{ ucfirst($um->status) }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Riwayat Lembur --}}
+            <div class="bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-xl border border-gray-100 overflow-hidden">
+                <header class="px-6 py-4 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center text-orange-800 font-bold text-sm">
+                        <div class="bg-orange-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-clock text-orange-600 text-xs"></i>
+                        </div>
+                        Riwayat Lembur
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        {{ $riwayatLembur->count() }} Dokumen
+                    </span>
+                </header>
+                <div class="overflow-x-auto">
+                    @if($riwayatLembur->isEmpty())
+                        <div class="text-center py-10 px-4">
+                            <div class="text-gray-300 mb-2"><i class="fas fa-inbox text-4xl"></i></div>
+                            <p class="text-sm text-gray-400">Belum ada riwayat lembur.</p>
+                        </div>
+                    @else
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Pranota</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @foreach($riwayatLembur as $lm)
+                                    <tr class="hover:bg-orange-50/40 transition-colors">
+                                        <td class="px-4 py-3">
+                                            <a href="{{ route('pranota-lembur-karyawan.show', $lm->id) }}" target="_blank"
+                                               class="font-semibold text-orange-700 hover:text-orange-900 hover:underline flex items-center gap-1">
+                                                {{ $lm->nomor_pranota }}
+                                                <i class="fas fa-external-link-alt text-[9px] opacity-60"></i>
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-500 text-xs">{{ $lm->tanggal_pranota->format('d M Y') }}</td>
+                                        <td class="px-4 py-3 text-right font-semibold text-gray-700">Rp {{ number_format($lm->total_setelah_adjustment, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($lm->status === 'submitted')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                    <i class="fas fa-paper-plane mr-1 text-[9px]"></i> Submitted
+                                                </span>
+                                            @elseif($lm->status === 'approved')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                    <i class="fas fa-check mr-1 text-[9px]"></i> Approved
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                    {{ ucfirst($lm->status) }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
