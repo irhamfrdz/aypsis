@@ -6194,6 +6194,26 @@ class BiayaKapalController extends Controller
 
             $bls = $blsQuery->get();
 
+            // Count FCL Booking containers created from LCL stuffing/sealing.
+            // The booking checkbox in tanda-terima-lcl/stuffing creates a Prospek
+            // record with tipe "FCL Booking".
+            $fclBookingQuery = DB::table('prospek')
+                ->whereRaw("UPPER(TRIM(COALESCE(tipe, ''))) = 'FCL BOOKING'")
+                ->whereRaw('TRIM(COALESCE(no_voyage, \'\')) = ?', [trim($voyage)])
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->where('nomor_kontainer', '!=', '-');
+
+            $fclBookingQuery->where(function ($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+
+            $fclBookingCount = $fclBookingQuery
+                ->distinct()
+                ->count('nomor_kontainer');
+
             // Count containers by size and type
             $counts = [
                 '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
@@ -6364,6 +6384,7 @@ class BiayaKapalController extends Controller
             return response()->json([
                 'success' => true,
                 'counts' => $counts,
+                'fcl_booking' => $fclBookingCount,
                 'pelabuhan_asal' => $firstBl ? $firstBl->pelabuhan_asal : null,
                 'pelabuhan_tujuan' => $firstBl ? $firstBl->pelabuhan_tujuan : null,
                 'pelabuhan_muat' => $firstBl ? $firstBl->pelabuhan_muat : null,

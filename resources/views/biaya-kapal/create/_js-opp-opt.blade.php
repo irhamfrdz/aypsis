@@ -400,7 +400,8 @@
                     { key: '40ft Full', value: data.counts['40'] ? (data.counts['40']['full'] - data.counts['40']['lcl']) : 0 },
                     { key: '40ft Empty', value: data.counts['40'] ? data.counts['40']['empty'] : 0 },
                     { key: 'LCL 20ft', value: data.counts['20'] ? data.counts['20']['lcl'] : 0 },
-                    { key: 'LCL 40ft', value: data.counts['40'] ? data.counts['40']['lcl'] : 0 }
+                    { key: 'LCL 40ft', value: data.counts['40'] ? data.counts['40']['lcl'] : 0 },
+                    { key: 'FCL Booking -Ahwat', value: data.fcl_booking || 0 }
                 ];
                 
                 let hasData = false;
@@ -528,6 +529,7 @@
                         <option value="40ft Empty">40ft Empty</option>
                         <option value="LCL 20ft">LCL 20ft</option>
                         <option value="LCL 40ft">LCL 40ft</option>
+                        <option value="FCL Booking -Ahwat">FCL Booking -Ahwat</option>
                         <option value="Motor">Motor</option>
                         <option value="Mobil">Mobil</option>
                         <option value="Truck">Truck</option>
@@ -685,6 +687,7 @@
                         <option value="40ft Empty" ${jenisUkuran === '40ft Empty' ? 'selected' : ''}>40ft Empty</option>
                         <option value="LCL 20ft" ${jenisUkuran === 'LCL 20ft' ? 'selected' : ''}>LCL 20ft</option>
                         <option value="LCL 40ft" ${jenisUkuran === 'LCL 40ft' ? 'selected' : ''}>LCL 40ft</option>
+                        <option value="FCL Booking -Ahwat" ${jenisUkuran === 'FCL Booking -Ahwat' ? 'selected' : ''}>FCL Booking -Ahwat</option>
                         <option value="Motor" ${jenisUkuran === 'Motor' ? 'selected' : ''}>Motor</option>
                         <option value="Mobil" ${jenisUkuran === 'Mobil' ? 'selected' : ''}>Mobil</option>
                         <option value="Truck" ${jenisUkuran === 'Truck' ? 'selected' : ''}>Truck</option>
