@@ -112,12 +112,20 @@ class PerhitunganLemburController extends Controller
 
         $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
 
-        // Fetch all attendance records for this month
-        $attendance = Absensi::whereBetween('waktu', [
-                $startDate->copy()->setTime(6, 0, 0),
-                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
-            ])
-            ->whereIn('tipe', ['Lembur_Masuk', 'Lembur_Pulang'])
+        $workDateExpr = Absensi::workDateSql();
+        $lemburStarts = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEnds   = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+
+        // Ambil data lembur yang dikelompokkan berdasarkan tanggal kerja (work date) selaras dengan halaman Absensi
+        $attendance = Absensi::workDates($startDate, $endDate)
+            ->whereRaw("($lemburStarts OR $lemburEnds)")
+            ->selectRaw("
+                absensis.karyawan_id,
+                $workDateExpr as tanggal,
+                MIN(CASE WHEN $lemburStarts THEN absensis.waktu ELSE NULL END) as waktu_lembur_masuk,
+                MAX(CASE WHEN $lemburEnds THEN absensis.waktu ELSE NULL END) as waktu_lembur_pulang
+            ")
+            ->groupBy('absensis.karyawan_id', \Illuminate\Support\Facades\DB::raw($workDateExpr))
             ->get()
             ->groupBy('karyawan_id');
 
@@ -160,41 +168,8 @@ class PerhitunganLemburController extends Controller
                 }
             }
 
-            // Pisahkan semua record Lembur_Masuk dan Lembur_Pulang
-            $allLemburMasuk = $logs->filter(fn($l) => strtolower($l->tipe) === 'lembur_masuk')
-                ->sortBy('waktu')->values();
-            $allLemburPulang = $logs->filter(fn($l) => strtolower($l->tipe) === 'lembur_pulang')
-                ->sortBy('waktu')->values();
-
-            // Pasangkan setiap Lembur_Masuk dengan Lembur_Pulang terdekat sesudahnya (dalam 24 jam)
-            // lalu kelompokkan berdasarkan tanggal Lembur_Masuk (subHours(6))
-            $pairedByDate = [];
-            $usedPulangIndices = [];
-            foreach ($allLemburMasuk as $masuk) {
-                $lmTime = Carbon::parse($masuk->waktu);
-                $dateKey = $lmTime->copy()->subHours(6)->toDateString();
-
-                // Cari Lembur_Pulang pertama yang terjadi SETELAH Lembur_Masuk ini
-                // dan belum dipakai, serta dalam window 24 jam
-                $pairedPulang = null;
-                foreach ($allLemburPulang as $idx => $pulang) {
-                    if (in_array($idx, $usedPulangIndices)) continue;
-                    $lpTime = Carbon::parse($pulang->waktu);
-                    if ($lpTime > $lmTime && $lpTime->diffInHours($lmTime) <= 24) {
-                        $pairedPulang = $pulang;
-                        $usedPulangIndices[] = $idx;
-                        break;
-                    }
-                }
-
-                if (!isset($pairedByDate[$dateKey])) {
-                    $pairedByDate[$dateKey] = [];
-                }
-                $pairedByDate[$dateKey][] = [
-                    'masuk'  => $masuk,
-                    'pulang' => $pairedPulang,
-                ];
-            }
+            // Key by Tanggal Kerja
+            $logsByDate = $logs->keyBy('tanggal');
 
             $totalJamHariBiasa = 0;
             $totalJamHariLibur = 0;
@@ -208,25 +183,25 @@ class PerhitunganLemburController extends Controller
                 $isHoliday = $tempDate->isSunday() || in_array($dateStr, $hariLiburDates);
                 $tipeHari = $isHoliday ? 'Hari Libur' : 'Hari Biasa';
 
-                $dayPairs = $pairedByDate[$dateStr] ?? [];
+                $dayLog = $logsByDate->get($dateStr);
+                
+                if ($dayLog && $dayLog->waktu_lembur_masuk && $dayLog->waktu_lembur_pulang) {
+                    $lm = Carbon::parse($dayLog->waktu_lembur_masuk);
+                    $lp = Carbon::parse($dayLog->waktu_lembur_pulang);
+                    
+                    // Jika jam pulang terekam lebih awal dari jam masuk (melewati tengah malam)
+                    // asumsikan jam pulang adalah di keesokan harinya
+                    if ($lp < $lm) {
+                        $lp->addDay();
+                    }
+                    
+                    $durationMinutes = $lm->diffInMinutes($lp);
+                    $durasiJam = ceil($durationMinutes / 60);
 
-                foreach ($dayPairs as $pair) {
-                    $lemburMasukRec  = $pair['masuk'];
-                    $lemburPulangRec = $pair['pulang'];
-
-                    // Buat variabel sementara agar blok perhitungan di bawah tetap berjalan
-                    $lemburMasuk  = $lemburMasukRec;
-                    $lemburPulang = $lemburPulangRec;
-
-                    if ($lemburMasuk && $lemburPulang) {
-                        $lm = Carbon::parse($lemburMasuk->waktu);
-                        $lp = Carbon::parse($lemburPulang->waktu);
-
-                        // $lp dijamin sudah setelah $lm (karena dipasangkan di atas)
-                        // Tidak perlu addDay() manual — sudah ditangani oleh logika pairing
-
-                        $durationMinutes = $lm->diffInMinutes($lp);
-                        $durasiJam = ceil($durationMinutes / 60);
+                    // Pengaman batas maksimal jam lembur normal dalam 1 sesi
+                    if ($durasiJam > 24) {
+                        $durasiJam = 24;
+                    }
 
                         // Aturan Hari Sabtu: jika lembur selesai nanggung 17:00-17:59, bulatkan ke 18:00
                         // Aturan ini TIDAK berlaku jika Sabtu tersebut terdaftar sebagai Hari Libur di hari_liburs
@@ -323,7 +298,6 @@ class PerhitunganLemburController extends Controller
                             'rule' => $ruleApplied ? $ruleApplied->satuan . ' x ' . number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
                         ];
                     }
-                } // end foreach $dayPairs
 
                 $tempDate->addDay();
             }
