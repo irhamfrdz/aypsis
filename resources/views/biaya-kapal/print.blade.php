@@ -327,7 +327,7 @@
                     <tr>
                         <th style="width: 8%;">No</th>
                         <th style="width: 32%;">Nama Kapal</th>
-                        <th style="width: 20%;">Tanggal</th>
+                        <th style="width: 20%;">{{ $biayaKapal->jenis_biaya === 'KB024' ? 'Tanggal Bayar' : 'Tanggal' }}</th>
                         <th style="width: 20%;">No. Voyage</th>
                         <th style="width: 20%;">Biaya</th>
                     </tr>
@@ -363,12 +363,14 @@
                                 // total_nominal already includes adjustment from our controller logic
                                 $firstDetail = $details->first();
                                 $groupSubtotal = ($firstDetail && $firstDetail->total_nominal > 0) ? $firstDetail->total_nominal : $details->sum('subtotal');
+                                $tanggalBayar = $biayaKapal->tanggalBayarDetails
+                                    ->first(fn ($item) => $item->kapal === $groupKapal && $item->voyage === $groupVoyage)?->tanggal_bayar;
                             @endphp
                             <!-- DEBUG: Group {{ $rowNumber }} - Key: {{ $groupKey }}, Items: {{ $details->count() }}, Subtotal: {{ $groupSubtotal }} -->
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td>{{ $groupKapal }}</td>
-                                <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                                <td class="text-center">{{ $tanggalBayar ? $tanggalBayar->format('d/M/Y') : '-' }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                             </tr>
@@ -665,6 +667,11 @@
         @endphp
 
         @foreach($tenagaKerjaGroups as $groupName => $details)
+            @php
+                [$groupKapal, $groupVoyage] = array_pad(explode(' - ', $groupName, 2), 2, '-');
+                $tanggalBayar = $biayaKapal->tanggalBayarDetails
+                    ->first(fn ($item) => $item->kapal === $groupKapal && $item->voyage === $groupVoyage)?->tanggal_bayar;
+            @endphp
             <div style="page-break-before: always;" class="container">
                 <div class="header" style="border-bottom: none; margin-bottom: 20px; text-align: center;">
                     <h1 style="text-decoration: underline; font-size: 16px; text-transform: uppercase;">BONGKAR/MUAT {{ $groupName }}</h1>
@@ -705,7 +712,7 @@
                 </table>
 
                 <div style="margin-top: 40px; text-align: left; font-size: 12px; font-weight: bold;">
-                    Jakarta, {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->translatedFormat('d F Y') }}
+                    Jakarta, {{ $tanggalBayar ? $tanggalBayar->translatedFormat('d F Y') : '-' }}
                 </div>
             </div>
         @endforeach

@@ -14,6 +14,7 @@ use App\Models\BiayaKapalStuffing;
 use App\Models\BiayaKapalTanto;
 use App\Models\BiayaKapalTemas;
 use App\Models\BiayaKapalTemasStage;
+use App\Models\BiayaKapalTanggalBayar;
 use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalTrucking;
 use App\Models\Karyawan;
@@ -746,6 +747,7 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'kapal_sections.*.adjustment' => 'nullable|numeric',
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
+            'kapal_sections.*.tanggal_bayar' => 'nullable|date',
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'nullable|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'nullable|numeric|min:0',
@@ -2128,6 +2130,15 @@ class BiayaKapalController extends Controller
                         $sectionAdjustment = $section['adjustment'] ?? 0;
                         $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
 
+                        BiayaKapalTanggalBayar::updateOrCreate(
+                            [
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                            ],
+                            ['tanggal_bayar' => $section['tanggal_bayar'] ?? null]
+                        );
+
                         Log::info("Processing kapal section $sectionIndex", [
                             'kapal' => $kapalName,
                             'voyage' => $voyageName,
@@ -2919,7 +2930,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank', 'buruhBatamDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank', 'buruhBatamDetails', 'tanggalBayarDetails']);
 
         // Check if it's Biaya Buruh Batam
         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->buruhBatamDetails && $biayaKapal->buruhBatamDetails->count() > 0) {
@@ -3489,6 +3500,7 @@ class BiayaKapalController extends Controller
         $biayaKapal->load([
             'barangDetails.pricelistBuruh',
             'buruhBatamDetails',
+            'tanggalBayarDetails',
             'airDetails',
             'tkbmDetails.pricelistTkbm',
             'operasionalDetails',
@@ -4044,6 +4056,7 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'kapal_sections.*.adjustment' => 'nullable|numeric',
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
+            'kapal_sections.*.tanggal_bayar' => 'nullable|date',
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
@@ -5493,6 +5506,7 @@ class BiayaKapalController extends Controller
                 
                 BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalTenagaKerja::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                BiayaKapalTanggalBayar::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 
@@ -5502,6 +5516,7 @@ class BiayaKapalController extends Controller
                         foreach ($request->kapal_sections as $sectionIndex => $section) {
                             $kapalName = $section['kapal'] ?? null;
                             $voyageName = $section['voyage'] ?? null;
+
                             
                             $kontainerIds = [];
                             if (isset($section['kontainer']) && is_array($section['kontainer'])) {
@@ -5620,6 +5635,13 @@ class BiayaKapalController extends Controller
                             $sectionSisa = $section['sisa_pembayaran'] ?? 0;
                             $sectionAdjustment = $section['adjustment'] ?? 0;
                             $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
+
+                            BiayaKapalTanggalBayar::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'tanggal_bayar' => $section['tanggal_bayar'] ?? null,
+                            ]);
 
                             $sectionHasData = false;
                             if (isset($section['barang']) && is_array($section['barang'])) {

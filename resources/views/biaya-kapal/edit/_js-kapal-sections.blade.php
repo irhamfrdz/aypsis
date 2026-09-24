@@ -205,7 +205,7 @@
                 <input type="hidden" name="kapal_sections[${sectionIndex}][dp]" class="section-dp-hidden" value="0">
                 <input type="hidden" name="kapal_sections[${sectionIndex}][sisa_pembayaran]" class="section-sisa-hidden" value="0">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                         <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
@@ -223,6 +223,10 @@
                                 <i class="fas fa-keyboard"></i>
                             </button>
                         </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Bayar</label>
+                        <input type="date" name="kapal_sections[${sectionIndex}][tanggal_bayar]" class="tanggal-bayar-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
                 

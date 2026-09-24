@@ -43,6 +43,9 @@
                         'kapal' => $kapal,
                         'voyage' => $voyage,
                         'is_batam' => $isBatam,
+                        'tanggal_bayar' => optional($biayaKapal->tanggalBayarDetails->first(function ($item) use ($kapal, $voyage) {
+                            return $item->kapal === $kapal && $item->voyage === $voyage;
+                        }))->tanggal_bayar?->format('Y-m-d'),
                         'adjustment' => $batamItem ? $batamItem->adjustment : ($barangItems->first()->adjustment ?? 0),
                         'notes_adjustment' => $batamItem ? $batamItem->notes_adjustment : ($barangItems->first()->notes_adjustment ?? ''),
                         'total_nominal' => $batamItem ? $batamItem->total_nominal : 0,
@@ -626,6 +629,9 @@
                         if (kapalSel && myData.kapal) {
                             kapalSel.value = myData.kapal;
                         }
+
+                        const tanggalBayarInput = section.querySelector('.tanggal-bayar-input');
+                        if (tanggalBayarInput) tanggalBayarInput.value = myData.tanggal_bayar || '';
                         
                         const voySel = section.querySelector('.voyage-select');
                         if (myData.kapal) {

@@ -203,6 +203,11 @@ class BiayaKapal extends Model
         return $this->hasMany(BiayaKapalBarang::class, 'biaya_kapal_id');
     }
 
+    public function tanggalBayarDetails()
+    {
+        return $this->hasMany(BiayaKapalTanggalBayar::class, 'biaya_kapal_id');
+    }
+
     public function klasifikasiBiaya()
     {
         return $this->belongsTo(KlasifikasiBiaya::class, 'jenis_biaya', 'kode');
