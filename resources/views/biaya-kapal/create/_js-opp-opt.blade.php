@@ -395,9 +395,9 @@
             tbody.innerHTML = '';
             if (data.success && data.counts) {
                 const types = [
-                    { key: '20ft Full', value: data.counts['20'] ? (data.counts['20']['full'] - data.counts['20']['lcl']) : 0 },
+                    { key: '20ft Full', value: data.counts['20'] ? Math.max(0, data.counts['20']['full'] - data.counts['20']['lcl'] - (data.fcl_booking?.['20'] || 0)) : 0 },
                     { key: '20ft Empty', value: data.counts['20'] ? data.counts['20']['empty'] : 0 },
-                    { key: '40ft Full', value: data.counts['40'] ? (data.counts['40']['full'] - data.counts['40']['lcl']) : 0 },
+                    { key: '40ft Full', value: data.counts['40'] ? Math.max(0, data.counts['40']['full'] - data.counts['40']['lcl'] - (data.fcl_booking?.['40'] || 0)) : 0 },
                     { key: '40ft Empty', value: data.counts['40'] ? data.counts['40']['empty'] : 0 },
                     { key: 'LCL 20ft', value: data.counts['20'] ? data.counts['20']['lcl'] : 0 },
                     { key: 'LCL 40ft', value: data.counts['40'] ? data.counts['40']['lcl'] : 0 },
