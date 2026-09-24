@@ -6210,9 +6210,14 @@ class BiayaKapalController extends Controller
                 }
             });
 
-            $fclBookingCount = $fclBookingQuery
-                ->distinct()
-                ->count('nomor_kontainer');
+            $fclBookingCounts = $fclBookingQuery
+                ->select('nomor_kontainer', 'ukuran')
+                ->get()
+                ->groupBy(function ($booking) {
+                    return str_contains(strtolower((string) $booking->ukuran), '40') ? '40' : '20';
+                })
+                ->map(fn ($bookings) => $bookings->pluck('nomor_kontainer')->unique()->count())
+                ->all();
 
             // Count containers by size and type
             $counts = [
@@ -6384,7 +6389,10 @@ class BiayaKapalController extends Controller
             return response()->json([
                 'success' => true,
                 'counts' => $counts,
-                'fcl_booking' => $fclBookingCount,
+                'fcl_booking' => [
+                    '20' => $fclBookingCounts['20'] ?? 0,
+                    '40' => $fclBookingCounts['40'] ?? 0,
+                ],
                 'pelabuhan_asal' => $firstBl ? $firstBl->pelabuhan_asal : null,
                 'pelabuhan_tujuan' => $firstBl ? $firstBl->pelabuhan_tujuan : null,
                 'pelabuhan_muat' => $firstBl ? $firstBl->pelabuhan_muat : null,
