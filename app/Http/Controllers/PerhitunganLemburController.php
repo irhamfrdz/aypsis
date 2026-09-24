@@ -160,10 +160,41 @@ class PerhitunganLemburController extends Controller
                 }
             }
 
-            // Group logs by Date
-            $logsByDate = $logs->groupBy(function ($log) {
-                return Carbon::parse($log->waktu)->subHours(6)->toDateString();
-            });
+            // Pisahkan semua record Lembur_Masuk dan Lembur_Pulang
+            $allLemburMasuk = $logs->filter(fn($l) => strtolower($l->tipe) === 'lembur_masuk')
+                ->sortBy('waktu')->values();
+            $allLemburPulang = $logs->filter(fn($l) => strtolower($l->tipe) === 'lembur_pulang')
+                ->sortBy('waktu')->values();
+
+            // Pasangkan setiap Lembur_Masuk dengan Lembur_Pulang terdekat sesudahnya (dalam 24 jam)
+            // lalu kelompokkan berdasarkan tanggal Lembur_Masuk (subHours(6))
+            $pairedByDate = [];
+            $usedPulangIndices = [];
+            foreach ($allLemburMasuk as $masuk) {
+                $lmTime = Carbon::parse($masuk->waktu);
+                $dateKey = $lmTime->copy()->subHours(6)->toDateString();
+
+                // Cari Lembur_Pulang pertama yang terjadi SETELAH Lembur_Masuk ini
+                // dan belum dipakai, serta dalam window 24 jam
+                $pairedPulang = null;
+                foreach ($allLemburPulang as $idx => $pulang) {
+                    if (in_array($idx, $usedPulangIndices)) continue;
+                    $lpTime = Carbon::parse($pulang->waktu);
+                    if ($lpTime > $lmTime && $lpTime->diffInHours($lmTime) <= 24) {
+                        $pairedPulang = $pulang;
+                        $usedPulangIndices[] = $idx;
+                        break;
+                    }
+                }
+
+                if (!isset($pairedByDate[$dateKey])) {
+                    $pairedByDate[$dateKey] = [];
+                }
+                $pairedByDate[$dateKey][] = [
+                    'masuk'  => $masuk,
+                    'pulang' => $pairedPulang,
+                ];
+            }
 
             $totalJamHariBiasa = 0;
             $totalJamHariLibur = 0;
@@ -177,22 +208,23 @@ class PerhitunganLemburController extends Controller
                 $isHoliday = $tempDate->isSunday() || in_array($dateStr, $hariLiburDates);
                 $tipeHari = $isHoliday ? 'Hari Libur' : 'Hari Biasa';
 
-                $dayLogs = $logsByDate->get($dateStr);
-                
-                if ($dayLogs) {
-                    $lemburMasuk = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_masuk'; });
-                    $lemburPulang = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_pulang'; });
+                $dayPairs = $pairedByDate[$dateStr] ?? [];
+
+                foreach ($dayPairs as $pair) {
+                    $lemburMasukRec  = $pair['masuk'];
+                    $lemburPulangRec = $pair['pulang'];
+
+                    // Buat variabel sementara agar blok perhitungan di bawah tetap berjalan
+                    $lemburMasuk  = $lemburMasukRec;
+                    $lemburPulang = $lemburPulangRec;
 
                     if ($lemburMasuk && $lemburPulang) {
                         $lm = Carbon::parse($lemburMasuk->waktu);
                         $lp = Carbon::parse($lemburPulang->waktu);
-                        
-                        // Jika jam pulang terekam lebih awal dari jam masuk (melewati tengah malam)
-                        // asumsikan jam pulang adalah di keesokan harinya
-                        if ($lp < $lm) {
-                            $lp->addDay();
-                        }
-                        
+
+                        // $lp dijamin sudah setelah $lm (karena dipasangkan di atas)
+                        // Tidak perlu addDay() manual — sudah ditangani oleh logika pairing
+
                         $durationMinutes = $lm->diffInMinutes($lp);
                         $durasiJam = ceil($durationMinutes / 60);
 
@@ -291,7 +323,7 @@ class PerhitunganLemburController extends Controller
                             'rule' => $ruleApplied ? $ruleApplied->satuan . ' x ' . number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
                         ];
                     }
-                }
+                } // end foreach $dayPairs
 
                 $tempDate->addDay();
             }
