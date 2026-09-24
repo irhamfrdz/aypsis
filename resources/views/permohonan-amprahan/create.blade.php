@@ -34,6 +34,7 @@
                         <option value="">-- Pilih Jenis --</option>
                         <option value="kapal" {{ old('jenis_amprahan') === 'kapal' ? 'selected' : '' }}>Kapal</option>
                         <option value="kendaraan" {{ old('jenis_amprahan') === 'kendaraan' ? 'selected' : '' }}>Kendaraan</option>
+                        <option value="alat_berat" {{ old('jenis_amprahan') === 'alat_berat' ? 'selected' : '' }}>Alat Berat</option>
                     </select>
                 </div>
 
@@ -58,6 +59,18 @@
                         @endforeach
                     </select>
                     <p class="text-xs text-gray-500 mt-1">Data kendaraan diambil dari master kendaraan.</p>
+                </div>
+
+                <div id="alat-berat-wrapper" class="hidden">
+                    <label for="alat_berat_id" class="block text-sm font-medium text-gray-700 mb-1">Alat Berat <span class="text-red-500">*</span></label>
+                    <select name="alat_berat_id" id="alat_berat_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-200">
+                        <option value="">-- Pilih Alat Berat --</option>
+                        @foreach($alatBerats as $alatBerat)
+                            <option value="{{ $alatBerat->id }}" {{ old('alat_berat_id') == $alatBerat->id ? 'selected' : '' }}>
+                                {{ $alatBerat->nama ?: $alatBerat->kode_alat }}{{ $alatBerat->jenis ? ' ('.$alatBerat->jenis.')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
@@ -119,20 +132,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const typeSelect = document.getElementById('jenis_amprahan');
     const kapalWrapper = document.getElementById('kapal-wrapper');
     const mobilWrapper = document.getElementById('mobil-wrapper');
+    const alatBeratWrapper = document.getElementById('alat-berat-wrapper');
     const kapalSelect = document.getElementById('kapal_id');
     const mobilSelect = document.getElementById('mobil_id');
+    const alatBeratSelect = document.getElementById('alat_berat_id');
     const container = document.getElementById('items-container');
     const template = document.getElementById('item-template');
 
     function updateTargetFields() {
         const isKapal = typeSelect.value === 'kapal';
         const isKendaraan = typeSelect.value === 'kendaraan';
+        const isAlatBerat = typeSelect.value === 'alat_berat';
         kapalWrapper.classList.toggle('hidden', !isKapal);
         mobilWrapper.classList.toggle('hidden', !isKendaraan);
+        alatBeratWrapper.classList.toggle('hidden', !isAlatBerat);
         kapalSelect.required = isKapal;
         mobilSelect.required = isKendaraan;
+        alatBeratSelect.required = isAlatBerat;
         if (!isKapal) kapalSelect.value = '';
         if (!isKendaraan) mobilSelect.value = '';
+        if (!isAlatBerat) alatBeratSelect.value = '';
     }
 
     function addItem() {

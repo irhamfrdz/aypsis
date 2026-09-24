@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterKapal;
 use App\Models\Mobil;
+use App\Models\AlatBerat;
 use App\Models\PermohonanAmprahan;
 use App\Models\PermohonanAmprahanItem;
 use Illuminate\Support\Facades\Auth;
@@ -17,16 +18,18 @@ class PermohonanAmprahanController extends Controller
     {
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $alatBerats = AlatBerat::orderBy('nama')->get();
 
-        return view('permohonan-amprahan.create', compact('kapals', 'mobils'));
+        return view('permohonan-amprahan.create', compact('kapals', 'mobils', 'alatBerats'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'jenis_amprahan' => 'required|in:kapal,kendaraan',
+            'jenis_amprahan' => 'required|in:kapal,kendaraan,alat_berat',
             'kapal_id' => 'nullable|required_if:jenis_amprahan,kapal|exists:master_kapals,id',
             'mobil_id' => 'nullable|required_if:jenis_amprahan,kendaraan|exists:mobils,id',
+            'alat_berat_id' => 'nullable|required_if:jenis_amprahan,alat_berat|exists:alat_berats,id',
             'nomor_voyage' => 'nullable|string|max:255',
             'keterangan_umum' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -38,6 +41,7 @@ class PermohonanAmprahanController extends Controller
         ], [
             'kapal_id.required_if' => 'Kapal wajib dipilih untuk jenis amprahan kapal.',
             'mobil_id.required_if' => 'Kendaraan wajib dipilih untuk jenis amprahan kendaraan.',
+            'alat_berat_id.required_if' => 'Alat berat wajib dipilih untuk jenis amprahan alat berat.',
             'items.required' => 'Minimal satu barang harus ditambahkan.',
         ]);
 
@@ -48,6 +52,7 @@ class PermohonanAmprahanController extends Controller
                 'jenis_amprahan' => $validated['jenis_amprahan'],
                 'kapal_id' => $validated['jenis_amprahan'] === 'kapal' ? ($validated['kapal_id'] ?? null) : null,
                 'mobil_id' => $validated['jenis_amprahan'] === 'kendaraan' ? ($validated['mobil_id'] ?? null) : null,
+                'alat_berat_id' => $validated['jenis_amprahan'] === 'alat_berat' ? ($validated['alat_berat_id'] ?? null) : null,
                 'nomor_voyage' => $validated['nomor_voyage'] ?? null,
                 'status' => 'pending',
                 'keterangan_umum' => $validated['keterangan_umum'] ?? null,
@@ -68,7 +73,7 @@ class PermohonanAmprahanController extends Controller
         $selectedKapal = $request->input('kapal_id');
         $selectedVoyage = $request->input('nomor_voyage');
 
-        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'user', 'items'])->latest();
+        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->latest();
 
         if ($selectedKapal) {
             $query->where('kapal_id', $selectedKapal);
@@ -88,14 +93,14 @@ class PermohonanAmprahanController extends Controller
 
     public function show($id)
     {
-        $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'user', 'items'])->findOrFail($id);
+        $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->findOrFail($id);
         
         return view('permohonan-amprahan.show', compact('permohonan'));
     }
 
     public function print($id)
     {
-        $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'user', 'items'])->findOrFail($id);
+        $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->findOrFail($id);
         
         // Since AYPSIS usually uses DOMPDF for printing, or just a printable view.
         // I will just return a view with window.print()
@@ -106,7 +111,7 @@ class PermohonanAmprahanController extends Controller
     {
         $selectedStatus = $request->input('status', 'pending');
 
-        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'user', 'items'])->latest();
+        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->latest();
         
         if ($selectedStatus && $selectedStatus != 'all') {
             $query->where('status', $selectedStatus);
@@ -119,7 +124,7 @@ class PermohonanAmprahanController extends Controller
 
     public function approvalProcessForm($id)
     {
-        $permohonan = PermohonanAmprahan::with(['items', 'kapal', 'mobil', 'user'])->findOrFail($id);
+        $permohonan = PermohonanAmprahan::with(['items', 'kapal', 'mobil', 'alatBerat', 'user'])->findOrFail($id);
         
         return view('permohonan-amprahan.approval-process', compact('permohonan'));
     }

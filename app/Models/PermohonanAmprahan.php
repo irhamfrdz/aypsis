@@ -17,6 +17,7 @@ class PermohonanAmprahan extends Model
         'jenis_amprahan',
         'kapal_id',
         'mobil_id',
+        'alat_berat_id',
         'nomor_voyage',
         'status',
         'keterangan_umum',
@@ -39,6 +40,11 @@ class PermohonanAmprahan extends Model
     public function mobil()
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');
+    }
+
+    public function alatBerat()
+    {
+        return $this->belongsTo(AlatBerat::class, 'alat_berat_id');
     }
 
     public function items()

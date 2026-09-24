@@ -76,10 +76,12 @@
                                 <div class="text-xs text-gray-500">{{ $item->tanggal_permohonan?->format('H:i') ? $item->tanggal_permohonan->format('H:i') . ' WIB' : '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-xs text-gray-500 uppercase">{{ ucfirst($item->jenis_amprahan ?? 'kapal') }}</div>
-                                <div class="text-sm font-bold text-gray-900">{{ $item->mobil->nomor_polisi ?? ($item->kapal->nama_kapal ?? '-') }}</div>
+                                <div class="text-xs text-gray-500 uppercase">{{ ucfirst(str_replace('_', ' ', $item->jenis_amprahan ?? 'kapal')) }}</div>
+                                <div class="text-sm font-bold text-gray-900">{{ $item->mobil->nomor_polisi ?? ($item->alatBerat->nama ?? $item->alatBerat->kode_alat ?? ($item->kapal->nama_kapal ?? '-')) }}</div>
                                 @if($item->mobil)
                                     <div class="text-sm text-gray-600">Jenis: <span class="font-medium">{{ $item->mobil->jenis ?? '-' }}</span></div>
+                                @elseif($item->alatBerat)
+                                    <div class="text-sm text-gray-600">Jenis: <span class="font-medium">{{ $item->alatBerat->jenis ?? '-' }}</span></div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

@@ -212,8 +212,8 @@
                             <td>: PA-{{ str_pad($permohonan->id, 6, '0', STR_PAD_LEFT) }}</td>
                         </tr>
                         <tr>
-                            <td>{{ ucfirst($permohonan->jenis_amprahan ?? 'kapal') }}</td>
-                            <td>: {{ $permohonan->mobil->nomor_polisi ?? ($permohonan->kapal->nama_kapal ?? '-') }}</td>
+                            <td>{{ ucfirst(str_replace('_', ' ', $permohonan->jenis_amprahan ?? 'kapal')) }}</td>
+                            <td>: {{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? '-')) }}</td>
                         </tr>
                     </table>
                 </div>
