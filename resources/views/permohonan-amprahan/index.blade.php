@@ -78,7 +78,6 @@
                             <td class="px-6 py-4">
                                 <div class="text-xs text-gray-500 uppercase">{{ ucfirst($item->jenis_amprahan ?? 'kapal') }}</div>
                                 <div class="text-sm font-bold text-gray-900">{{ $item->mobil->nomor_polisi ?? ($item->kapal->nama_kapal ?? '-') }}</div>
-                                <div class="text-sm text-gray-600">Voyage: <span class="font-medium">{{ $item->nomor_voyage }}</span></div>
                             </td>
                             <td class="px-6 py-4">
                                 @forelse($item->items as $barang)
