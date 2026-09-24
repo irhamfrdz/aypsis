@@ -39,4 +39,9 @@ class PranotaPuml extends Model
     {
         return $this->hasMany(PranotaPumlPotongan::class, 'pranota_puml_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
