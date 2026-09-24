@@ -12,6 +12,15 @@
     function getOppOptTarif(namaBarang, isBongkaran) {
         if (!namaBarang) return null;
         namaBarang = namaBarang.toLowerCase();
+
+        const fixedOpslagTarifs = {
+            'fcl booking 20ft -ahwat': 15000,
+            'fcl booking 40ft -ahwat': 30000,
+        };
+        if (Object.prototype.hasOwnProperty.call(fixedOpslagTarifs, namaBarang)) {
+            return fixedOpslagTarifs[namaBarang];
+        }
+
         const requiredStatus = isBongkaran ? 'bongkar' : 'muat';
         
         let matched = oppOptTarifsFull.find(t => 
