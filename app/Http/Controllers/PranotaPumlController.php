@@ -117,6 +117,13 @@ class PranotaPumlController extends Controller
         }
     }
     
+    public function exportExcel($id)
+    {
+        $puml = \App\Models\PranotaPuml::findOrFail($id);
+        $filename = 'PUML_' . $puml->nomor_pranota . '_' . now()->format('Ymd_His') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaPumlExport($puml), $filename);
+    }
+
     public function show($id)
     {
         $puml = \App\Models\PranotaPuml::with(['uangMakans.details.karyawan', 'lemburs.karyawans.karyawan', 'potongans'])->findOrFail($id);

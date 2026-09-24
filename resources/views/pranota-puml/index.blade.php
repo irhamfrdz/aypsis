@@ -84,6 +84,12 @@
                                     <a href="{{ route('pranota-puml.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors duration-200" title="Detail">
                                         <i class="fas fa-arrow-right text-sm"></i>
                                     </a>
+
+                                    <a href="{{ route('pranota-puml.export-excel', $pranota->id) }}"
+                                       class="inline-flex items-center justify-center p-2 text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-full transition-colors duration-200"
+                                       title="Export Excel">
+                                        <i class="fas fa-file-excel text-sm"></i>
+                                    </a>
                                     
                                     @can('payroll-delete')
                                     <form action="{{ route('pranota-puml.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus PUML ini? Data pranota anak (Uang Makan & Lembur) akan dikembalikan ke status draft.');">
