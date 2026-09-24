@@ -56,34 +56,8 @@ class HistoryKontainerController extends Controller
         $history = HistoryKontainer::findOrFail($id);
         $nomorKontainer = $history->nomor_kontainer;
 
-        // Cari record terakhir untuk kontainer ini
-        $latest = HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        // Jika rute ini menghapus history terakhir, kembalikan posisi kontainer
-        if ($latest && $latest->id == $history->id) {
-            // Cari record sebelumnya
-            $previous = HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
-                ->where('id', '<', $history->id)
-                ->orderBy('id', 'desc')
-                ->first();
-
-            // Update posisi kontainer ke gudang sebelumnya
-            // Coba update di tabel kontainers
-            $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-            if ($kontainer) {
-                $kontainer->update(['gudangs_id' => $previous ? $previous->gudang_id : null]);
-            }
-
-            // Juga coba update di tabel stock_kontainers jika ini adalah tipe stock
-            $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-            if ($stockKontainer) {
-                $stockKontainer->update(['gudangs_id' => $previous ? $previous->gudang_id : null]);
-            }
-        }
-
         $history->delete();
+        HistoryKontainer::syncCurrentLocation($nomorKontainer);
 
         return redirect()->back()->with('success', 'History pergerakan berhasil dihapus.');
     }

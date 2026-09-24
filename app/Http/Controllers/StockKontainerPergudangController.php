@@ -13,18 +13,21 @@ class StockKontainerPergudangController extends Controller
 {
     public function index()
     {
+        // History pergerakan adalah sumber kebenaran lokasi terakhir kontainer.
+        // Sinkronkan FK master terlebih dahulu agar rekap tidak memakai lokasi lama.
+        $this->syncLocationsFromLatestHistory();
+
         $gudangs = Gudang::where('status', 'aktif')->get();
         if ($gudangs->isEmpty()) {
             $gudangs = Gudang::all(); // Fallback if status is different
         }
 
-        // Count for Kontainer (Sewa)
-        $kontainerCounts = Kontainer::select('gudangs_id', DB::raw('count(*) as total'))
+        // Count for Stock Kontainer
+        $stockCounts = StockKontainer::select('gudangs_id', DB::raw('count(*) as total'))
             ->groupBy('gudangs_id')
             ->pluck('total', 'gudangs_id');
 
-        // Count for Stock Kontainer
-        $stockCounts = StockKontainer::select('gudangs_id', DB::raw('count(*) as total'))
+        $kontainerCounts = Kontainer::select('gudangs_id', DB::raw('count(*) as total'))
             ->groupBy('gudangs_id')
             ->pluck('total', 'gudangs_id');
 
@@ -61,8 +64,18 @@ class StockKontainerPergudangController extends Controller
         return view('master-kontainer.stock-pergudang', compact('data'));
     }
 
+    public function syncManual()
+    {
+        $count = $this->syncLocationsFromLatestHistory();
+
+        return redirect()->route('master.kontainer.stock-pergudang')
+            ->with('success', "Sinkronisasi selesai. {$count} kontainer diperiksa berdasarkan history terakhir.");
+    }
+
     public function show(Request $request, $id)
     {
+        $this->syncLocationsFromLatestHistory();
+
         $type = $request->get('type', 'all');
         $gudang = null;
         if ($id !== 'none' && $id != '') {
@@ -77,7 +90,7 @@ class StockKontainerPergudangController extends Controller
         $sewas = collect([]);
         if ($type === 'all' || $type === 'sewa') {
             // 1. Ambil dari Kontainer (Sewa)
-            $querySewa = \App\Models\Kontainer::where('status', '!=', 'inactive');
+            $querySewa = \App\Models\Kontainer::query();
             if ($id === 'none' || $id == '') {
                 $querySewa->whereNull('gudangs_id');
             } else {
@@ -93,7 +106,7 @@ class StockKontainerPergudangController extends Controller
         $stocks = collect([]);
         if ($type === 'all' || $type === 'stock') {
             // 2. Ambil dari StockKontainer (Milik Sendiri)
-            $queryStock = \App\Models\StockKontainer::where('status', '!=', 'inactive');
+            $queryStock = \App\Models\StockKontainer::query();
             if ($id === 'none' || $id == '') {
                 $queryStock->whereNull('gudangs_id');
             } else {
@@ -111,10 +124,7 @@ class StockKontainerPergudangController extends Controller
 
         // Fetch entry dates and details from HistoryKontainer
         $containerNumbers = $allContainers->pluck('nomor_seri_gabungan')->toArray();
-        $gudangIdForHistory = ($id === 'none' || $id == '') ? null : $id;
-
         $latestHistories = \App\Models\HistoryKontainer::whereIn('nomor_kontainer', $containerNumbers)
-            ->where('gudang_id', $gudangIdForHistory)
             ->orderBy('tanggal_kegiatan', 'desc')
             ->orderBy('id', 'desc')
             ->get()
@@ -134,6 +144,30 @@ class StockKontainerPergudangController extends Controller
         })->values();
 
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));
+    }
+
+    /**
+     * Keep the denormalized gudangs_id columns aligned with the latest movement.
+     * The history table stores the resulting warehouse in gudang_id; null means
+     * the container is not currently assigned to a warehouse.
+     */
+    private function syncLocationsFromLatestHistory(): int
+    {
+        $latestHistories = \App\Models\HistoryKontainer::query()
+            ->orderByDesc('tanggal_kegiatan')
+            ->orderByDesc('id')
+            ->get(['nomor_kontainer', 'gudang_id'])
+            ->unique('nomor_kontainer');
+
+        foreach ($latestHistories as $history) {
+            Kontainer::where('nomor_seri_gabungan', $history->nomor_kontainer)
+                ->update(['gudangs_id' => $history->gudang_id]);
+
+            StockKontainer::where('nomor_seri_gabungan', $history->nomor_kontainer)
+                ->update(['gudangs_id' => $history->gudang_id]);
+        }
+
+        return $latestHistories->count();
     }
 
     public function exportDetail(Request $request, $id)

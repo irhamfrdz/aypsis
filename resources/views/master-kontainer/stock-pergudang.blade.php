@@ -6,6 +6,12 @@
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6 sm:py-12 px-3 sm:px-4 lg:px-8">
     <div class="max-w-6xl mx-auto">
+
+        @if(session('success'))
+        <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            {{ session('success') }}
+        </div>
+        @endif
         
         <!-- Header Section -->
         <div class="text-center mb-8 sm:mb-12">
@@ -17,6 +23,13 @@
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-3 px-4">Stock Kontainer per Gudang</h1>
             <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">Ringkasan ketersediaan kontainer dan stock di masing-masing gudang</p>
             <div class="mt-5 flex justify-center gap-4">
+                <form action="{{ route('master.kontainer.stock-pergudang.sync') }}" method="POST" class="inline-flex">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 duration-200">
+                        <i class="fas fa-sync-alt"></i>
+                        Sync Sekarang
+                    </button>
+                </form>
                 <a href="{{ route('master.kontainer.stock-pergudang.export-all') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 duration-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
