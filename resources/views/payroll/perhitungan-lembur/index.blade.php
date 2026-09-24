@@ -214,7 +214,7 @@
                         @forelse($rekapData as $id => $data)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" data-uang-makan="{{ $data['karyawan']->nominal_uang_makan ?? 0 }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" data-uang-makan="{{ $data['nominal_uang_makan'] ?? ($data['karyawan']->nominal_uang_makan ?? 0) }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $loop->iteration }}
@@ -229,7 +229,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     @if($data['total_jam_biasa'] > 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ $data['total_jam_biasa'] }} Jam
+                                             {{ $data['total_jam_biasa'] }} Jam
                                         </span>
                                     @else
                                         <span class="text-gray-400">-</span>
@@ -244,7 +244,7 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}" data-nominal-awal="{{ $data['total_nominal'] }}" data-adjustment="0">
                                     Rp {{ number_format($data['total_nominal'], 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -728,6 +728,8 @@
                 html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
                 html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
                 
+                let totalNominalAwal = 0;
+                let totalAdjustment = 0;
                 let total = 0;
                 let totalJam = 0;
                 let totalBiasa = 0;
@@ -742,16 +744,18 @@
                         if (!isChecked) allChecked = false;
                         
                         if (isChecked) {
-                            total += Number(row.nominal) + Number(row.adjustment || 0);
-                            totalJam += Number(row.durasi_jam);
+                            totalNominalAwal += Number(row.nominal) || 0;
+                            totalAdjustment += Number(row.adjustment || 0);
+                            totalJam += Number(row.durasi_jam) || 0;
                             if (row.tipe_hari === 'Hari Biasa') {
-                                totalBiasa += Number(row.durasi_jam);
+                                totalBiasa += Number(row.durasi_jam) || 0;
                             } else {
-                                totalLibur += Number(row.durasi_jam);
+                                totalLibur += Number(row.durasi_jam) || 0;
                             }
                         }
                     });
                 }
+                total = totalNominalAwal + totalAdjustment;
                 
                 if (details.length > 0) {
                     details.forEach((row, i) => {
@@ -835,7 +839,7 @@
                     });
                 });
                 
-                updateMainTable(totalJam, totalBiasa, totalLibur, total);
+                updateMainTable(totalJam, totalBiasa, totalLibur, total, totalNominalAwal, totalAdjustment);
                 
                 const cb = tr.querySelector('.row-checkbox');
                 if (cb && cb.checked && typeof updateCartFromRow === 'function') {
@@ -843,10 +847,12 @@
                 }
             }
             
-            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal) {
+            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal, totalNominalAwal, totalAdjustment) {
                 const payoutTd = tr.querySelector('.total-payout-text');
                 if (payoutTd) {
                     payoutTd.setAttribute('data-jam-lembur', totalJam);
+                    payoutTd.setAttribute('data-nominal-awal', totalNominalAwal !== undefined ? totalNominalAwal : totalNominal);
+                    payoutTd.setAttribute('data-adjustment', totalAdjustment !== undefined ? totalAdjustment : 0);
                     payoutTd.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
                 }
                 
@@ -896,6 +902,33 @@
             const totalJam = payoutTd.getAttribute('data-jam-lembur');
             const payoutText = payoutTd.innerText;
             const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+            
+            // Ambil nominal awal dan adjustment dari atribut jika sudah ada
+            let nominalAwal = parseInt(payoutTd.getAttribute('data-nominal-awal'));
+            let adjustment = parseInt(payoutTd.getAttribute('data-adjustment'));
+            
+            // Jika belum diset di payoutTd, hitung dari data-detail pada btn-detail
+            if (isNaN(nominalAwal) || isNaN(adjustment)) {
+                const btnDetail = tr.querySelector('.btn-detail');
+                let details = [];
+                try {
+                    details = JSON.parse(btnDetail ? btnDetail.getAttribute('data-detail') : '[]');
+                } catch(e) {}
+                
+                let sumAwal = 0;
+                let sumAdj = 0;
+                if (Array.isArray(details) && details.length > 0) {
+                    details.forEach(d => {
+                        if (d.selected !== false) {
+                            sumAwal += Number(d.nominal) || 0;
+                            sumAdj += Number(d.adjustment) || 0;
+                        }
+                    });
+                }
+                nominalAwal = sumAwal > 0 ? sumAwal : basePayoutVal;
+                adjustment = sumAdj;
+            }
+
             const uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
 
             pranotaCart[karyawanId] = {
@@ -904,7 +937,9 @@
                 name: karyawanName,
                 penempatan: penempatan,
                 totalJam: totalJam,
-                basePayoutVal: basePayoutVal,
+                nominalAwal: nominalAwal,
+                adjustment: adjustment,
+                basePayoutVal: nominalAwal + adjustment,
                 uangMakan: uangMakan
             };
         } else {
@@ -1017,7 +1052,9 @@
             const karyawanName = item.name;
             const penempatan = item.penempatan;
             const totalJam = item.totalJam + ' Jam';
-            const basePayoutVal = item.basePayoutVal;
+            const nominalAwal = (item.nominalAwal !== undefined) ? item.nominalAwal : (item.basePayoutVal || 0);
+            const adjustment = item.adjustment || 0;
+            const totalAkhir = nominalAwal + adjustment;
             const uangMakan = item.uangMakan || 0;
             
             const trModal = document.createElement('tr');
@@ -1032,17 +1069,16 @@
                     <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${totalJam}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right">
-                    <input type="text" value="Rp ${new Intl.NumberFormat('id-ID').format(uangMakan)}" class="w-24 px-2 py-1 text-xs border border-gray-200 rounded bg-gray-50 text-gray-500 text-right font-medium" readonly title="Uang Makan Per Hari">
-                    <input type="hidden" name="karyawans[${karyawanId}][nominal_per_hari]" value="${uangMakan}">
+                    <input type="number" name="karyawans[${karyawanId}][nominal_per_hari]" value="${uangMakan}" class="modal-uang-makan-input w-28 px-2 py-1 text-xs border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right font-medium" placeholder="0" title="Uang Makan Per Hari">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
-                    Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}
-                    <input type="hidden" name="karyawans[${karyawanId}][nominal_awal]" value="${basePayoutVal}">
+                    Rp ${new Intl.NumberFormat('id-ID').format(nominalAwal)}
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_awal]" value="${nominalAwal}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right">
-                    <input type="number" name="karyawans[${karyawanId}][adjustment]" class="modal-adjustment-input w-24 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right" value="0" data-base-payout="${basePayoutVal}">
+                    <input type="number" name="karyawans[${karyawanId}][adjustment]" class="modal-adjustment-input w-28 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right font-semibold ${adjustment > 0 ? 'text-blue-600' : (adjustment < 0 ? 'text-red-600' : '')}" value="${adjustment}" data-base-payout="${nominalAwal}">
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${basePayoutVal}">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${totalAkhir}">Rp ${new Intl.NumberFormat('id-ID').format(totalAkhir)}</td>
                 <td class="px-3 py-2 whitespace-nowrap">
                     <input type="text" name="karyawans[${karyawanId}][catatan]" class="w-full min-w-[120px] px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Catatan...">
                 </td>
@@ -1066,7 +1102,32 @@
                 payoutTd.setAttribute('data-current-payout', newPayout);
                 payoutTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(newPayout);
                 
+                this.classList.remove('text-blue-600', 'text-red-600');
+                if (adj > 0) this.classList.add('text-blue-600');
+                else if (adj < 0) this.classList.add('text-red-600');
+
+                // Sync back to cart
+                const kId = this.name.match(/\[(\d+)\]/)?.[1];
+                if (kId && pranotaCart[kId]) {
+                    pranotaCart[kId].adjustment = adj;
+                    pranotaCart[kId].basePayoutVal = newPayout;
+                    saveCart();
+                }
+
                 updateModalTotal();
+            });
+        });
+
+        // Add listener for uang makan inputs in modal
+        const umInputs = document.querySelectorAll('.modal-uang-makan-input');
+        umInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const val = parseInt(this.value) || 0;
+                const kId = this.name.match(/\[(\d+)\]/)?.[1];
+                if (kId && pranotaCart[kId]) {
+                    pranotaCart[kId].uangMakan = val;
+                    saveCart();
+                }
             });
         });
 

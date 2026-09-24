@@ -110,7 +110,7 @@ class PerhitunganLemburController extends Controller
             }
         }
 
-        $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
+        $karyawans = $karyawanQuery->with(['uangMakanTerbaru'])->orderBy('nama_lengkap')->get();
 
         // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
         // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
@@ -321,8 +321,17 @@ class PerhitunganLemburController extends Controller
             }
 
             if ($totalJamHariBiasa > 0 || $totalJamHariLibur > 0 || $totalNominal > 0) {
+                // Tentukan multiplier berdasarkan penempatan (contoh: Pelabuhan 1 = 2x)
+                $multiplier = 1;
+                if (strcasecmp(trim($karyawan->penempatan ?? ''), 'Pelabuhan 1') === 0 || ($karyawan->penempatan ?? '') == '1') {
+                    $multiplier = 2;
+                }
+                $karyawanNominalDasar = $karyawan->uangMakanTerbaru ? $karyawan->uangMakanTerbaru->nominal : ($karyawan->nominal_uang_makan ?? 0);
+                $nominalUangMakan = (float) $karyawanNominalDasar * $multiplier;
+
                 $rekapData[$karyawan->id] = [
                     'karyawan' => $karyawan,
+                    'nominal_uang_makan' => $nominalUangMakan,
                     'total_jam_biasa' => $totalJamHariBiasa,
                     'total_jam_libur' => $totalJamHariLibur,
                     'total_nominal' => $totalNominal,
