@@ -7908,6 +7908,8 @@ Route::middleware(['auth',
 
     // Tambah controller baru untuk Pranota Gabungan PUML
     Route::post('pranota-puml/{id}/potongan', [\App\Http\Controllers\PranotaPumlController::class, 'storePotongan'])->name('pranota-puml.store-potongan')->middleware('can:pranota-puml-view');
+    Route::post('pranota-puml/detach-uang-makan/{id}', [\App\Http\Controllers\PranotaPumlController::class, 'detachUangMakan'])->name('pranota-puml.detach-uang-makan')->middleware('can:pranota-puml-view');
+    Route::post('pranota-puml/detach-lembur/{id}', [\App\Http\Controllers\PranotaPumlController::class, 'detachLembur'])->name('pranota-puml.detach-lembur')->middleware('can:pranota-puml-view');
     Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:pranota-puml-view');
 
     // Perhitungan Lembur

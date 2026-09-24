@@ -219,6 +219,60 @@ class PranotaPumlController extends Controller
         return back()->with('success', 'Data potongan berhasil disimpan!');
     }
 
+    public function detachUangMakan($id)
+    {
+        $um = \App\Models\PranotaUangMakan::findOrFail($id);
+
+        // Hanya boleh di-detach jika PUML induknya belum approved/selesai
+        if ($um->pranota_puml_id) {
+            $puml = \App\Models\PranotaPuml::find($um->pranota_puml_id);
+            if ($puml && in_array($puml->status, ['approved', 'paid'])) {
+                return back()->with('error', 'Pranota tidak dapat dilepaskan karena PUML induk sudah ' . $puml->status . '.');
+            }
+
+            // Recalculate PUML grand total jika ada
+            if ($puml) {
+                $puml->update([
+                    'total_uang_makan' => max(0, $puml->total_uang_makan - $um->total_nominal),
+                    'grand_total'      => max(0, $puml->grand_total - $um->total_nominal),
+                ]);
+            }
+        }
+
+        $um->update([
+            'pranota_puml_id' => null,
+            'status'          => 'draft',
+        ]);
+
+        return back()->with('success', "Pranota Uang Makan {$um->nomor_pranota} berhasil dilepaskan dan dikembalikan ke status draft.");
+    }
+
+    public function detachLembur($id)
+    {
+        $lm = \App\Models\PranotaLemburKaryawanHeader::findOrFail($id);
+
+        if ($lm->pranota_puml_id) {
+            $puml = \App\Models\PranotaPuml::find($lm->pranota_puml_id);
+            if ($puml && in_array($puml->status, ['approved', 'paid'])) {
+                return back()->with('error', 'Pranota tidak dapat dilepaskan karena PUML induk sudah ' . $puml->status . '.');
+            }
+
+            if ($puml) {
+                $puml->update([
+                    'total_lembur' => max(0, $puml->total_lembur - $lm->total_setelah_adjustment),
+                    'grand_total'  => max(0, $puml->grand_total - $lm->total_setelah_adjustment),
+                ]);
+            }
+        }
+
+        $lm->update([
+            'pranota_puml_id' => null,
+            'status'          => 'draft',
+        ]);
+
+        return back()->with('success', "Pranota Lembur {$lm->nomor_pranota} berhasil dilepaskan dan dikembalikan ke status draft.");
+    }
+
     public function destroy($id)
     {
         try {

@@ -21,6 +21,19 @@
         </div>
     @endif
 
+    @if(session('success'))
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-r-lg p-4 mb-6 shadow-sm flex items-start" role="alert">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-emerald-700 font-medium">{{ session('success') }}</p>
+            </div>
+        </div>
+    @endif
+
     <form action="{{ route('pranota-puml.store') }}" method="POST">
         @csrf
         
@@ -181,6 +194,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -208,6 +222,20 @@
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                                                     {{ ucfirst($um->status) }}
                                                 </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if(!in_array($um->status, ['approved', 'paid']))
+                                                <form method="POST" action="{{ route('pranota-puml.detach-uang-makan', $um->id) }}"
+                                                      onsubmit="return confirm('Lepaskan pranota ini dari PUML? Pranota akan kembali ke status draft dan bisa dipilih untuk PUML baru.')">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:border-amber-400 transition-colors">
+                                                        <i class="fas fa-unlink text-[9px]"></i> Lepaskan
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-xs text-gray-300 italic">—</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -245,6 +273,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -272,6 +301,20 @@
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                                                     {{ ucfirst($lm->status) }}
                                                 </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if(!in_array($lm->status, ['approved', 'paid']))
+                                                <form method="POST" action="{{ route('pranota-puml.detach-lembur', $lm->id) }}"
+                                                      onsubmit="return confirm('Lepaskan pranota ini dari PUML? Pranota akan kembali ke status draft dan bisa dipilih untuk PUML baru.')">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:border-amber-400 transition-colors">
+                                                        <i class="fas fa-unlink text-[9px]"></i> Lepaskan
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-xs text-gray-300 italic">—</span>
                                             @endif
                                         </td>
                                     </tr>
