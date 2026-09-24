@@ -35,7 +35,16 @@
                         <div class="text-xs text-gray-500 uppercase font-semibold">Kapal / Kendaraan</div>
                         <div class="font-medium text-gray-900 mt-1">{{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? '-')) }}</div>
                         @if($permohonan->mobil || $permohonan->alatBerat)
-                            <div class="text-sm text-gray-600 mt-1">Jenis: {{ $permohonan->mobil->jenis ?? ($permohonan->alatBerat->jenis ?? '-') }}</div>
+                            @if($permohonan->mobil)
+                                <div class="text-sm text-gray-600 mt-1">Jenis: {{ $permohonan->mobil->jenis ?? '-' }}</div>
+                            @else
+                                <div class="text-sm text-gray-600 mt-2 space-y-1">
+                                    <div>Kode: {{ $permohonan->alatBerat->kode_alat ?? '-' }}</div>
+                                    <div>Jenis: {{ $permohonan->alatBerat->jenis ?? '-' }}</div>
+                                    <div>Lokasi: {{ $permohonan->alatBerat->lokasi ?? '-' }}</div>
+                                    <div>Warna: {{ $permohonan->alatBerat->warna ?? '-' }}</div>
+                                </div>
+                            @endif
                         @endif
                     </div>
                     

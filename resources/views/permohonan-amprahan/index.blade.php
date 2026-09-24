@@ -81,7 +81,10 @@
                                 @if($item->mobil)
                                     <div class="text-sm text-gray-600">Jenis: <span class="font-medium">{{ $item->mobil->jenis ?? '-' }}</span></div>
                                 @elseif($item->alatBerat)
-                                    <div class="text-sm text-gray-600">Jenis: <span class="font-medium">{{ $item->alatBerat->jenis ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600 mt-1">Kode: <span class="font-medium">{{ $item->alatBerat->kode_alat ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Jenis: <span class="font-medium">{{ $item->alatBerat->jenis ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Lokasi: <span class="font-medium">{{ $item->alatBerat->lokasi ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Warna: <span class="font-medium">{{ $item->alatBerat->warna ?? '-' }}</span></div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

@@ -53,6 +53,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tujuan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemohon</th>
@@ -68,6 +69,18 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $item->tanggal_permohonan?->format('d M Y') ?? '-' }}</div>
                                 <div class="text-xs text-gray-500">{{ $item->tanggal_permohonan?->format('H:i') ?? '-' }} WIB</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-xs text-gray-500 uppercase">{{ ucfirst(str_replace('_', ' ', $item->jenis_amprahan ?? 'kapal')) }}</div>
+                                <div class="text-sm font-bold text-gray-900">{{ $item->mobil->nomor_polisi ?? ($item->alatBerat->nama ?? $item->alatBerat->kode_alat ?? ($item->kapal->nama_kapal ?? '-')) }}</div>
+                                @if($item->mobil)
+                                    <div class="text-xs text-gray-600">Jenis: <span class="font-medium">{{ $item->mobil->jenis ?? '-' }}</span></div>
+                                @elseif($item->alatBerat)
+                                    <div class="text-xs text-gray-600">Kode: <span class="font-medium">{{ $item->alatBerat->kode_alat ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Jenis: <span class="font-medium">{{ $item->alatBerat->jenis ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Lokasi: <span class="font-medium">{{ $item->alatBerat->lokasi ?? '-' }}</span></div>
+                                    <div class="text-xs text-gray-600">Warna: <span class="font-medium">{{ $item->alatBerat->warna ?? '-' }}</span></div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 @forelse($item->items as $barang)
@@ -114,7 +127,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
                                     <p class="text-lg font-medium text-gray-900">Belum ada data permintaan amprahan</p>
