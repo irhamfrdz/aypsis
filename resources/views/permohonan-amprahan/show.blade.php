@@ -33,7 +33,7 @@
                     </div>
                     <div>
                         <div class="text-xs text-gray-500 uppercase font-semibold">Kapal / Kendaraan</div>
-                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? '-')) }}</div>
+                        <div class="font-medium text-gray-900 mt-1">{{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? ($permohonan->tujuan_permintaan ?? '-'))) }}</div>
                         @if($permohonan->mobil || $permohonan->alatBerat)
                             @if($permohonan->mobil)
                                 <div class="text-sm text-gray-600 mt-1">Jenis: {{ $permohonan->mobil->jenis ?? '-' }}</div>

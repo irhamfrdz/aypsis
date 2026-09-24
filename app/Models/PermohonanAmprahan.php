@@ -19,6 +19,7 @@ class PermohonanAmprahan extends Model
         'mobil_id',
         'alat_berat_id',
         'nomor_voyage',
+        'tujuan_permintaan',
         'status',
         'keterangan_umum',
     ];

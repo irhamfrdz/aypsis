@@ -78,6 +78,11 @@
                     <input type="text" name="nomor_voyage" id="nomor_voyage" value="{{ old('nomor_voyage') }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-200" placeholder="Masukkan nomor voyage">
                 </div>
 
+                <div>
+                    <label for="tujuan_permintaan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Permintaan Lainnya <span class="text-gray-400">(opsional)</span></label>
+                    <input type="text" name="tujuan_permintaan" id="tujuan_permintaan" value="{{ old('tujuan_permintaan') }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-200" placeholder="Masukkan tujuan permintaan lainnya">
+                </div>
+
                 <div class="md:col-span-2">
                     <label for="keterangan_umum" class="block text-sm font-medium text-gray-700 mb-1">Keterangan Umum</label>
                     <textarea name="keterangan_umum" id="keterangan_umum" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-200" placeholder="Keterangan tambahan...">{{ old('keterangan_umum') }}</textarea>

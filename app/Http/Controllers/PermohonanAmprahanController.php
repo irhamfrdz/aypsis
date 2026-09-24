@@ -31,6 +31,7 @@ class PermohonanAmprahanController extends Controller
             'mobil_id' => 'nullable|required_if:jenis_amprahan,kendaraan|exists:mobils,id',
             'alat_berat_id' => 'nullable|required_if:jenis_amprahan,alat_berat|exists:alat_berats,id',
             'nomor_voyage' => 'nullable|string|max:255',
+            'tujuan_permintaan' => 'nullable|string|max:255',
             'keterangan_umum' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.nama_barang' => 'required|string|max:255',
@@ -54,6 +55,7 @@ class PermohonanAmprahanController extends Controller
                 'mobil_id' => $validated['jenis_amprahan'] === 'kendaraan' ? ($validated['mobil_id'] ?? null) : null,
                 'alat_berat_id' => $validated['jenis_amprahan'] === 'alat_berat' ? ($validated['alat_berat_id'] ?? null) : null,
                 'nomor_voyage' => $validated['nomor_voyage'] ?? null,
+                'tujuan_permintaan' => $validated['tujuan_permintaan'] ?? null,
                 'status' => 'pending',
                 'keterangan_umum' => $validated['keterangan_umum'] ?? null,
             ]);

@@ -214,7 +214,7 @@
                         <tr>
                             <td>{{ ucfirst(str_replace('_', ' ', $permohonan->jenis_amprahan ?? 'kapal')) }}</td>
                             <td>
-                                : {{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? '-')) }}
+                                : {{ $permohonan->mobil->nomor_polisi ?? ($permohonan->alatBerat->nama ?? $permohonan->alatBerat->kode_alat ?? ($permohonan->kapal->nama_kapal ?? ($permohonan->tujuan_permintaan ?? '-'))) }}
                                 @if($permohonan->alatBerat)
                                     <br>Kode: {{ $permohonan->alatBerat->kode_alat ?? '-' }}
                                     <br>Jenis: {{ $permohonan->alatBerat->jenis ?? '-' }}
