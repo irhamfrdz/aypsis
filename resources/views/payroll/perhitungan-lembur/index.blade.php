@@ -1,4 +1,4 @@
-@extends('layouts.app')
+    @extends('layouts.app')
 
 @section('title', 'Perhitungan Lembur Karyawan')
 @section('page_title', 'Perhitungan Lembur Karyawan')
@@ -202,6 +202,9 @@
                             <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 Lembur (H. Libur)
                             </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-orange-500 uppercase tracking-wider">
+                                U. Makan Libur
+                            </th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 Total Bayar
                             </th>
@@ -244,8 +247,21 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}" data-nominal-awal="{{ $data['total_nominal'] }}" data-adjustment="0">
-                                    Rp {{ number_format($data['total_nominal'], 0, ',', '.') }}
+                                @php
+                                    $umlTotal = $data['total_uang_makan_lembur'] ?? 0;
+                                    $grandTotal = $data['total_nominal'] + $umlTotal;
+                                @endphp
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    @if($umlTotal > 0)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                            Rp {{ number_format($umlTotal, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}" data-nominal-awal="{{ $grandTotal }}" data-adjustment="0">
+                                    Rp {{ number_format($grandTotal, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     <button type="button" data-nama="{{ $data['karyawan']->nama_lengkap }}" data-detail="{{ json_encode($data['detail']) }}" class="btn-detail text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors font-medium">
@@ -255,7 +271,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
+                                <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                             <i class="fas fa-file-invoice-dollar text-2xl text-gray-400"></i>
@@ -726,7 +742,7 @@
                 
                 let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
                 html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
-                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Masuk</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
+                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Masuk</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-right text-xs font-bold text-orange-500 uppercase">U. Makan Libur</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
                 
                 let totalNominalAwal = 0;
                 let totalAdjustment = 0;
@@ -745,6 +761,7 @@
                         
                         if (isChecked) {
                             totalNominalAwal += Number(row.nominal) || 0;
+                            totalNominalAwal += Number(row.uang_makan_lembur) || 0;
                             totalAdjustment += Number(row.adjustment || 0);
                             totalJam += Number(row.durasi_jam) || 0;
                             if (row.tipe_hari === 'Hari Biasa') {
@@ -769,6 +786,7 @@
                         
                         let adjVal = Number(row.adjustment) || 0;
                         let adjColor = adjVal > 0 ? 'text-blue-600' : (adjVal < 0 ? 'text-red-600' : 'text-gray-400');
+                        let umlVal = Number(row.uang_makan_lembur) || 0;
                         html += `<tr>
                             <td class="px-4 py-2 text-center">
                                 <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''}>
@@ -780,6 +798,7 @@
                             <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
                             <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
+                            <td class="px-4 py-2 text-sm text-right ${umlVal > 0 ? 'font-bold text-orange-600' : 'text-gray-400'}">${umlVal > 0 ? 'Rp ' + umlVal.toLocaleString('id-ID') : '-'}</td>
                             <td class="px-4 py-2 text-sm text-center">
                                 <input type="number" class="detail-adj-input w-28 px-2 py-1 border border-gray-300 rounded-md text-xs text-right font-mono focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 ${adjColor}" data-idx="${i}" value="${adjVal}" placeholder="0" step="1000">
                                 ${adjVal !== 0 ? `<div class="text-xs mt-0.5 font-semibold ${adjColor}">${adjVal > 0 ? '+' : ''}${adjVal.toLocaleString('id-ID')}</div>` : ''}
@@ -789,14 +808,14 @@
                     
                     if (rowCount > 0) {
                         html += `<tr class="bg-gray-50">
-                            <td colspan="8" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
+                            <td colspan="9" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
                             <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
                         </tr>`;
                     } else {
-                        html += '<tr><td colspan="9" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
+                        html += '<tr><td colspan="10" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
                     }
                 } else {
-                    html += '<tr><td colspan="9" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                    html += '<tr><td colspan="10" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
                 }
                 html += '</tbody></table>';
                 
@@ -922,6 +941,7 @@
                     details.forEach(d => {
                         if (d.selected !== false) {
                             sumAwal += Number(d.nominal) || 0;
+                            sumAwal += Number(d.uang_makan_lembur) || 0;
                             sumAdj += Number(d.adjustment) || 0;
                         }
                     });

@@ -205,6 +205,7 @@ class PerhitunganLemburController extends Controller
             $totalJamHariBiasa = 0;
             $totalJamHariLibur = 0;
             $totalNominal = 0;
+            $totalUangMakanLembur = 0;
             $detailPerhitungan = [];
 
             $tempDate = $startDate->copy();
@@ -315,8 +316,17 @@ class PerhitunganLemburController extends Controller
 
                         if ($isHoliday) {
                             $totalJamHariLibur += $durasiJam;
+                            // Hitung uang makan lembur hari libur (flat per hari, tidak bergantung jam)
+                            $baseUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
+                            $pengaliUangMakan = 1.0;
+                            if (!empty($matchingUangLemburs)) {
+                                $pengaliUangMakan = (float) ($matchingUangLemburs[0]->pengali_uang_makan_hari_libur ?? 1);
+                            }
+                            $nominalUangMakanLembur = $baseUangMakan * $pengaliUangMakan;
+                            $totalUangMakanLembur += $nominalUangMakanLembur;
                         } else {
                             $totalJamHariBiasa += $durasiJam;
+                            $nominalUangMakanLembur = 0;
                         }
                         
                         $totalNominal += $nominalHariIni;
@@ -328,6 +338,7 @@ class PerhitunganLemburController extends Controller
                             'jam_masuk' => $jamMasukTime,
                             'jam_pulang' => $jamPulangTime,
                             'nominal' => $nominalHariIni,
+                            'uang_makan_lembur' => $nominalUangMakanLembur ?? 0,
                             'rule' => $ruleApplied ? $ruleApplied->satuan . ' x ' . number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
                         ];
                     }
@@ -345,6 +356,7 @@ class PerhitunganLemburController extends Controller
                     'total_jam_biasa' => $totalJamHariBiasa,
                     'total_jam_libur' => $totalJamHariLibur,
                     'total_nominal' => $totalNominal,
+                    'total_uang_makan_lembur' => $totalUangMakanLembur,
                     'detail' => $detailPerhitungan,
                 ];
             }
