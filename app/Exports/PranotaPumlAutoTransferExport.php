@@ -263,6 +263,17 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
             ],
         ]);
         
+        // Styling untuk kolom Beneficiary Email (Kolom R) agar teks berwarna biru & bergaris bawah
+        $dataEnd = $lastRow - 1;
+        if ($dataEnd >= 2) {
+            $sheet->getStyle('R2:R' . $dataEnd)->applyFromArray([
+                'font' => [
+                    'color' => ['argb' => 'FF0000FF'],
+                    'underline' => true,
+                ],
+            ]);
+        }
+
         // Membekukan (Freeze) baris pertama agar header tetap terlihat saat di-scroll
         $sheet->freezePane('A2');
 
