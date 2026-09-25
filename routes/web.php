@@ -7980,6 +7980,7 @@ Route::middleware(['auth',
     Route::post('approval-permohonan-amprahan/{id}/reset', [\App\Http\Controllers\PermohonanAmprahanController::class, 'resetApproval'])->name('approval-permohonan-amprahan.reset')->middleware('can:permohonan-amprahan-approve');
 
     // Tanggal Gerak Voyage
+    Route::get('gerak-voyage/dashboard', [\App\Http\Controllers\GerakVoyageController::class, 'dashboard'])->name('gerak-voyage.dashboard')->middleware('can:gerak-voyage-view');
     Route::resource('gerak-voyage', \App\Http\Controllers\GerakVoyageController::class)->middleware('can:gerak-voyage-view');
 
     // Master Jadwal Kapal Berlabuh

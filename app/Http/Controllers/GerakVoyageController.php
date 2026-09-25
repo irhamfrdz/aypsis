@@ -3,10 +3,96 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Manifest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GerakVoyageController extends Controller
 {
+    public function dashboard(Request $request)
+    {
+        $filters = $request->validate([
+            'nama_kapal' => 'nullable|string|max:255',
+            'no_voyage' => 'nullable|string|max:255',
+            'status' => 'nullable|in:terisi,belum_terisi',
+        ]);
+
+        $tanggalFields = [
+            'tanggal_muat',
+            'tanggal_mulai_berlayar',
+            'tanggal_berlabuh',
+            'tanggal_sandar',
+            'tanggal_mulai_bongkar',
+            'tanggal_selesai_bongkar',
+        ];
+
+        $grouped = Manifest::query()
+            ->select('nama_kapal', 'no_voyage')
+            ->selectRaw('COUNT(*) as jumlah_manifest')
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '<>', '')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '<>', '')
+            ->groupBy('nama_kapal', 'no_voyage');
+
+        foreach ($tanggalFields as $field) {
+            $grouped->selectRaw("MAX({$field}) as {$field}");
+        }
+
+        $query = DB::query()->fromSub($grouped->toBase(), 'voyages');
+
+        if (! empty($filters['nama_kapal'])) {
+            $query->where('nama_kapal', $filters['nama_kapal']);
+        }
+
+        if (! empty($filters['no_voyage'])) {
+            $query->where('no_voyage', 'like', '%'.$filters['no_voyage'].'%');
+        }
+
+        $withDates = function ($query) use ($tanggalFields) {
+            $query->where(function ($query) use ($tanggalFields) {
+                foreach ($tanggalFields as $field) {
+                    $query->orWhereNotNull($field);
+                }
+            });
+        };
+
+        $totalVoyages = (clone $query)->count();
+        $filledQuery = clone $query;
+        $withDates($filledQuery);
+        $voyagesWithDates = $filledQuery->count();
+        $voyagesWithoutDates = $totalVoyages - $voyagesWithDates;
+
+        if (($filters['status'] ?? null) === 'terisi') {
+            $withDates($query);
+        } elseif (($filters['status'] ?? null) === 'belum_terisi') {
+            $query->where(function ($query) use ($tanggalFields) {
+                foreach ($tanggalFields as $field) {
+                    $query->whereNull($field);
+                }
+            });
+        }
+
+        $voyages = $query
+            ->orderByRaw('COALESCE(tanggal_muat, tanggal_mulai_berlayar, tanggal_berlabuh, tanggal_sandar, tanggal_mulai_bongkar, tanggal_selesai_bongkar) DESC')
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->paginate(15)
+            ->withQueryString();
+
+        $ships = Manifest::query()
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '<>', '')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->pluck('nama_kapal');
+
+        return view('gerak-voyage.dashboard', compact(
+            'voyages', 'ships', 'filters', 'tanggalFields',
+            'totalVoyages', 'voyagesWithDates', 'voyagesWithoutDates'
+        ));
+    }
+
     public function index()
     {
         // Get list of ships from manifests table
