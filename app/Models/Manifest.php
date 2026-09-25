@@ -51,6 +51,12 @@ class Manifest extends Model
         'tanggal_mulai_bongkar',
         'tanggal_selesai_bongkar',
         'tanggal_muat',
+        'jam_muat',
+        'jam_mulai_berlayar',
+        'jam_berlabuh',
+        'jam_sandar',
+        'jam_mulai_bongkar',
+        'jam_selesai_bongkar',
     ];
 
     protected $casts = [

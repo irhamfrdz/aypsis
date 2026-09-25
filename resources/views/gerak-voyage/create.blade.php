@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Input Tanggal - Gerak Voyage')
-@section('page_title', 'Input Tanggal - Gerak Voyage')
+@section('title', 'Input Tanggal dan Jam - Gerak Voyage')
+@section('page_title', 'Input Tanggal dan Jam - Gerak Voyage')
 
 @section('content')
 <div class="py-6">
@@ -18,7 +18,7 @@
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <h1 class="text-2xl font-bold" style="color: white;">Input Tanggal Gerak Voyage</h1>
+                            <h1 class="text-2xl font-bold" style="color: white;">Input Tanggal dan Jam Gerak Voyage</h1>
                             <p style="color: #c7d2fe;" class="text-sm mt-1">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
                         </div>
                     </div>
@@ -60,53 +60,46 @@
                 <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
                 <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
                 
+                @php
+                    $jadwalFields = [
+                        'tanggal_muat' => 'Muat',
+                        'tanggal_mulai_berlayar' => 'Mulai Berlayar',
+                        'tanggal_berlabuh' => 'Berlabuh',
+                        'tanggal_sandar' => 'Sandar',
+                        'tanggal_mulai_bongkar' => 'Mulai Bongkar',
+                        'tanggal_selesai_bongkar' => 'Selesai Bongkar',
+                    ];
+                @endphp
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div>
-                        <label for="tanggal_muat" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Muat</label>
-                        <input type="date" id="tanggal_muat" name="tanggal_muat" 
-                               value="{{ old('tanggal_muat', $tanggalMuatOb ? \Carbon\Carbon::parse($tanggalMuatOb)->format('Y-m-d') : '') }}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                        @if($tanggalMuatOb)
-                            <p class="mt-1 text-xs text-blue-600"><i class="fas fa-link mr-1"></i>Otomatis dari tanggal OB Muat</p>
-                        @else
-                            <p class="mt-1 text-xs text-gray-500">Data tanggal OB Muat belum tersedia.</p>
-                        @endif
-                    </div>
-
-                    <div>
-                        <label for="tanggal_mulai_berlayar" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai Berlayar</label>
-                        <input type="date" id="tanggal_mulai_berlayar" name="tanggal_mulai_berlayar" 
-                               value="{{ old('tanggal_mulai_berlayar', $manifest ? ($manifest->tanggal_mulai_berlayar ? \Carbon\Carbon::parse($manifest->tanggal_mulai_berlayar)->format('Y-m-d') : '') : '') }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                    </div>
-
-                    <div>
-                        <label for="tanggal_berlabuh" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Berlabuh</label>
-                        <input type="date" id="tanggal_berlabuh" name="tanggal_berlabuh" 
-                               value="{{ old('tanggal_berlabuh', $manifest ? ($manifest->tanggal_berlabuh ? \Carbon\Carbon::parse($manifest->tanggal_berlabuh)->format('Y-m-d') : '') : '') }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                    </div>
-
-                    <div>
-                        <label for="tanggal_sandar" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Sandar</label>
-                        <input type="date" id="tanggal_sandar" name="tanggal_sandar" 
-                               value="{{ old('tanggal_sandar', $manifest ? ($manifest->tanggal_sandar ? \Carbon\Carbon::parse($manifest->tanggal_sandar)->format('Y-m-d') : '') : '') }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                    </div>
-
-                    <div>
-                        <label for="tanggal_mulai_bongkar" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai Bongkar</label>
-                        <input type="date" id="tanggal_mulai_bongkar" name="tanggal_mulai_bongkar" 
-                               value="{{ old('tanggal_mulai_bongkar', $manifest ? ($manifest->tanggal_mulai_bongkar ? \Carbon\Carbon::parse($manifest->tanggal_mulai_bongkar)->format('Y-m-d') : '') : '') }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                    </div>
-
-                    <div>
-                        <label for="tanggal_selesai_bongkar" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Selesai Bongkar</label>
-                        <input type="date" id="tanggal_selesai_bongkar" name="tanggal_selesai_bongkar" 
-                               value="{{ old('tanggal_selesai_bongkar', $manifest ? ($manifest->tanggal_selesai_bongkar ? \Carbon\Carbon::parse($manifest->tanggal_selesai_bongkar)->format('Y-m-d') : '') : '') }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white">
-                    </div>
+                    @foreach($jadwalFields as $tanggalField => $label)
+                        @php
+                            $jamField = str_replace('tanggal_', 'jam_', $tanggalField);
+                            $tanggalValue = $tanggalField === 'tanggal_muat' ? $tanggalMuatDefault : $manifest?->{$tanggalField};
+                            $jamValue = $manifest?->{$jamField};
+                        @endphp
+                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                            <h2 class="mb-3 text-sm font-bold text-gray-800">{{ $label }}</h2>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="{{ $tanggalField }}" class="mb-1 block text-xs font-semibold text-gray-600">Tanggal</label>
+                                    <input type="date" id="{{ $tanggalField }}" name="{{ $tanggalField }}"
+                                        value="{{ old($tanggalField, $tanggalValue ? \Carbon\Carbon::parse($tanggalValue)->format('Y-m-d') : '') }}"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="{{ $jamField }}" class="mb-1 block text-xs font-semibold text-gray-600">Jam</label>
+                                    <input type="time" id="{{ $jamField }}" name="{{ $jamField }}"
+                                        value="{{ old($jamField, $jamValue ? substr($jamValue, 0, 5) : '') }}"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            @if($tanggalField === 'tanggal_muat')
+                                <p class="mt-2 text-xs {{ $tanggalMuatOb ? 'text-blue-600' : 'text-gray-500' }}">
+                                    {{ $tanggalMuatOb ? 'Tanggal OB Muat tersedia sebagai acuan; jam diisi manual.' : 'Tanggal OB Muat belum tersedia; isi tanggal dan jam secara manual.' }}
+                                </p>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
 
                 <div class="flex justify-end pt-6 border-t border-gray-100">
@@ -115,7 +108,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Simpan Tanggal
+                        Simpan Tanggal dan Jam
                     </button>
                 </div>
             </form>

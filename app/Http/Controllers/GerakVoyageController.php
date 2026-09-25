@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Manifest;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class GerakVoyageController extends Controller
 {
@@ -14,7 +13,7 @@ class GerakVoyageController extends Controller
         $filters = $request->validate([
             'nama_kapal' => 'nullable|string|max:255',
             'no_voyage' => 'nullable|string|max:255',
-            'status' => 'nullable|in:terisi,belum_terisi',
+            'status' => 'nullable|in:terisi,belum_terisi,jam_belum_lengkap',
         ]);
 
         $tanggalFields = [
@@ -39,11 +38,24 @@ class GerakVoyageController extends Controller
 
         foreach ($tanggalFields as $field) {
             $grouped->selectRaw("MAX({$field}) as {$field}");
+            $jamField = str_replace('tanggal_', 'jam_', $field);
+            $grouped->selectRaw("MAX({$jamField}) as {$jamField}");
         }
 
         $hasDate = function ($voyage) use ($tanggalFields): bool {
             foreach ($tanggalFields as $field) {
                 if ($voyage->{$field}) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        $hasMissingTime = function ($voyage) use ($tanggalFields): bool {
+            foreach ($tanggalFields as $field) {
+                $jamField = str_replace('tanggal_', 'jam_', $field);
+                if ($voyage->{$field} && ! $voyage->{$jamField}) {
                     return true;
                 }
             }
@@ -76,17 +88,12 @@ class GerakVoyageController extends Controller
             $filtered = $filtered->filter($hasDate);
         } elseif (($filters['status'] ?? null) === 'belum_terisi') {
             $filtered = $filtered->reject($hasDate);
+        } elseif (($filters['status'] ?? null) === 'jam_belum_lengkap') {
+            $filtered = $filtered->filter($hasMissingTime);
         }
 
         $filtered = $filtered->sortBy('nama_kapal')->values();
-        $page = LengthAwarePaginator::resolveCurrentPage();
-        $voyages = new LengthAwarePaginator(
-            $filtered->forPage($page, 9)->values(),
-            $filtered->count(),
-            9,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+        $voyages = $filtered;
 
         return view('gerak-voyage.dashboard', compact(
             'voyages', 'ships', 'filters', 'tanggalFields',
@@ -148,9 +155,10 @@ class GerakVoyageController extends Controller
             ->whereNotNull('tanggal_muat')
             ->orderByDesc('tanggal_muat')
             ->first();
-        $tanggalMuatOb = $obMuat?->tanggal_muat ?: $manifest?->tanggal_muat;
+        $tanggalMuatOb = $obMuat?->tanggal_muat;
+        $tanggalMuatDefault = $manifest?->tanggal_muat ?: $tanggalMuatOb;
 
-        return view('gerak-voyage.create', compact('namaKapal', 'noVoyage', 'manifest', 'tanggalMuatOb'));
+        return view('gerak-voyage.create', compact('namaKapal', 'noVoyage', 'manifest', 'tanggalMuatOb', 'tanggalMuatDefault'));
     }
 
     public function store(Request $request)
@@ -158,12 +166,18 @@ class GerakVoyageController extends Controller
         $validated = $request->validate([
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
-            'tanggal_mulai_berlayar' => 'nullable|date',
-            'tanggal_berlabuh' => 'nullable|date',
-            'tanggal_sandar' => 'nullable|date',
-            'tanggal_mulai_bongkar' => 'nullable|date',
-            'tanggal_selesai_bongkar' => 'nullable|date',
-            'tanggal_muat' => 'nullable|date',
+            'tanggal_mulai_berlayar' => 'nullable|date|required_with:jam_mulai_berlayar',
+            'jam_mulai_berlayar' => 'nullable|date_format:H:i',
+            'tanggal_berlabuh' => 'nullable|date|required_with:jam_berlabuh',
+            'jam_berlabuh' => 'nullable|date_format:H:i',
+            'tanggal_sandar' => 'nullable|date|required_with:jam_sandar',
+            'jam_sandar' => 'nullable|date_format:H:i',
+            'tanggal_mulai_bongkar' => 'nullable|date|required_with:jam_mulai_bongkar',
+            'jam_mulai_bongkar' => 'nullable|date_format:H:i',
+            'tanggal_selesai_bongkar' => 'nullable|date|required_with:jam_selesai_bongkar',
+            'jam_selesai_bongkar' => 'nullable|date_format:H:i',
+            'tanggal_muat' => 'nullable|date|required_with:jam_muat',
+            'jam_muat' => 'nullable|date_format:H:i',
         ]);
 
         $namaKapal = $validated['nama_kapal'];
@@ -187,14 +201,20 @@ class GerakVoyageController extends Controller
         $updatedCount = \App\Models\Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $cleanNoVoyage)
             ->update([
-                'tanggal_mulai_berlayar' => $validated['tanggal_mulai_berlayar'],
-                'tanggal_berlabuh' => $validated['tanggal_berlabuh'],
-                'tanggal_sandar' => $validated['tanggal_sandar'],
-                'tanggal_mulai_bongkar' => $validated['tanggal_mulai_bongkar'],
-                'tanggal_selesai_bongkar' => $validated['tanggal_selesai_bongkar'],
+                'tanggal_mulai_berlayar' => $validated['tanggal_mulai_berlayar'] ?? null,
+                'jam_mulai_berlayar' => $validated['jam_mulai_berlayar'] ?? null,
+                'tanggal_berlabuh' => $validated['tanggal_berlabuh'] ?? null,
+                'jam_berlabuh' => $validated['jam_berlabuh'] ?? null,
+                'tanggal_sandar' => $validated['tanggal_sandar'] ?? null,
+                'jam_sandar' => $validated['jam_sandar'] ?? null,
+                'tanggal_mulai_bongkar' => $validated['tanggal_mulai_bongkar'] ?? null,
+                'jam_mulai_bongkar' => $validated['jam_mulai_bongkar'] ?? null,
+                'tanggal_selesai_bongkar' => $validated['tanggal_selesai_bongkar'] ?? null,
+                'jam_selesai_bongkar' => $validated['jam_selesai_bongkar'] ?? null,
                 'tanggal_muat' => $validated['tanggal_muat'],
+                'jam_muat' => $validated['jam_muat'] ?? null,
             ]);
 
-        return redirect()->route('gerak-voyage.index')->with('success', "Data Gerak Voyage berhasil disimpan untuk {$updatedCount} manifest.");
+        return redirect()->route('gerak-voyage.index')->with('success', "Tanggal dan jam Gerak Voyage berhasil disimpan untuk {$updatedCount} manifest.");
     }
 }
