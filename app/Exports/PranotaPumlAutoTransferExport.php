@@ -102,6 +102,24 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
 
         $items = collect();
         foreach ($karyawanRekap as $data) {
+            $hasUangMakan = (float)($data['total_uang_makan'] ?? 0) > 0;
+            $hasLembur = (float)($data['total_lembur'] ?? 0) > 0;
+            $hasPotTerlambat = (float)($data['pot_terlambat'] ?? 0) > 0;
+
+            if ($hasUangMakan && $hasLembur && $hasPotTerlambat) {
+                $remark = 'UANG MAKAN & LEMBUR POT TERLAMBAT';
+            } elseif ($hasUangMakan && $hasLembur) {
+                $remark = 'UANG MAKAN & LEMBUR';
+            } elseif ($hasUangMakan && $hasPotTerlambat) {
+                $remark = 'UANG MAKAN POT TERLAMBAT';
+            } elseif ($hasLembur && $hasPotTerlambat) {
+                $remark = 'LEMBUR POT TERLAMBAT';
+            } elseif ($hasLembur) {
+                $remark = 'LEMBUR';
+            } else {
+                $remark = 'UANG MAKAN';
+            }
+
             $terima = max(0, (float) (
                 $data['total_uang_makan']
                 + $data['total_lembur']
@@ -114,6 +132,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
             $items->push((object)[
                 'karyawan' => $data['karyawan'],
                 'amount'   => $terima,
+                'remark'   => $remark,
             ]);
         }
 
@@ -203,7 +222,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
             '', // Currency
             '', // Charges Type
             '1682889955', // Charges Acc.
-            'UANG MAKAN', // Remark 1
+            $detail->remark ?? 'UANG MAKAN', // Remark 1
             $karyawan ? ($karyawan->atas_nama ?: $karyawan->nama_lengkap) : '', // Receiver Name
             '', // Receiver Cust. Type
             '', // Receiver Cust. Residen
