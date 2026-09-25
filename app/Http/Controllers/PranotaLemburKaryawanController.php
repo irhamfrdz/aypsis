@@ -59,6 +59,7 @@ class PranotaLemburKaryawanController extends Controller
             'karyawans.*.kehadiran' => 'required|string',
             'karyawans.*.nominal_awal' => 'required|numeric',
             'karyawans.*.adjustment' => 'nullable|numeric',
+            'karyawans.*.nominal_lembur' => 'nullable|numeric',
             'karyawans.*.uang_makan_lembur' => 'nullable|numeric',
             'karyawans.*.nominal_per_hari' => 'nullable|numeric',
             'karyawans.*.catatan' => 'nullable|string',

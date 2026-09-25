@@ -223,10 +223,10 @@
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <input type="checkbox" value="{{ $data['karyawan']->id }}" 
-                                        data-uang-makan="{{ $data['nominal_uang_makan'] ?? ($data['karyawan']->nominal_uang_makan ?? 0) }}" 
                                         data-jam-lembur="{{ $totalJamKaryawan }}" 
-                                        data-nominal-awal="{{ $grandTotal }}" 
+                                        data-nominal-lembur="{{ $data['total_nominal'] }}" 
                                         data-uang-makan-lembur="{{ $umlTotal }}" 
+                                        data-nominal-awal="{{ $grandTotal }}" 
                                         class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -266,7 +266,7 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $totalJamKaryawan }}" data-nominal-awal="{{ $grandTotal }}" data-uang-makan-lembur="{{ $umlTotal }}" data-adjustment="0">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $totalJamKaryawan }}" data-nominal-lembur="{{ $data['total_nominal'] }}" data-nominal-awal="{{ $grandTotal }}" data-uang-makan-lembur="{{ $umlTotal }}" data-adjustment="0">
                                     Rp {{ number_format($grandTotal, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -352,9 +352,9 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
                                         <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Jam</th>
-                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Uang Makan/Hari</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-emerald-600 uppercase tracking-wider">Total Uang Lembur</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-orange-600 uppercase tracking-wider">U. Makan Lembur</th>
-                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Nominal Awal</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Catatan</th>
@@ -768,6 +768,7 @@
                 let totalJam = 0;
                 let totalBiasa = 0;
                 let totalLibur = 0;
+                let totalNominalLembur = 0;
                 let totalUangMakanLembur = 0;
                 let allChecked = true;
                 let rowCount = 0;
@@ -779,10 +780,11 @@
                         if (!isChecked) allChecked = false;
                         
                         if (isChecked) {
-                            totalNominalAwal += Number(row.nominal) || 0;
+                            let rowNominal = Number(row.nominal) || 0;
                             let rowUml = Number(row.uang_makan_lembur) || 0;
-                            totalNominalAwal += rowUml;
+                            totalNominalLembur += rowNominal;
                             totalUangMakanLembur += rowUml;
+                            totalNominalAwal += rowNominal + rowUml;
                             totalAdjustment += Number(row.adjustment || 0);
                             totalJam += Number(row.durasi_jam) || 0;
                             if (row.tipe_hari === 'Hari Biasa') {
@@ -882,7 +884,7 @@
                     });
                 });
                 
-                updateMainTable(totalJam, totalBiasa, totalLibur, total, totalNominalAwal, totalAdjustment, totalUangMakanLembur);
+                updateMainTable(totalJam, totalBiasa, totalLibur, total, totalNominalAwal, totalAdjustment, totalUangMakanLembur, totalNominalLembur);
                 
                 const cb = tr.querySelector('.row-checkbox');
                 if (cb && cb.checked && typeof updateCartFromRow === 'function') {
@@ -890,10 +892,11 @@
                 }
             }
             
-            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal, totalNominalAwal, totalAdjustment, totalUml) {
+            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal, totalNominalAwal, totalAdjustment, totalUml, totalLembur) {
                 const payoutTd = tr.querySelector('.total-payout-text');
                 if (payoutTd) {
                     payoutTd.setAttribute('data-jam-lembur', totalJam);
+                    payoutTd.setAttribute('data-nominal-lembur', totalLembur !== undefined ? totalLembur : 0);
                     payoutTd.setAttribute('data-nominal-awal', totalNominalAwal !== undefined ? totalNominalAwal : totalNominal);
                     payoutTd.setAttribute('data-uang-makan-lembur', totalUml !== undefined ? totalUml : 0);
                     payoutTd.setAttribute('data-adjustment', totalAdjustment !== undefined ? totalAdjustment : 0);
@@ -959,6 +962,14 @@
             let nominalAwal = parseInt(payoutTd ? payoutTd.getAttribute('data-nominal-awal') : cb.getAttribute('data-nominal-awal'));
             let uangMakanLembur = parseInt(payoutTd ? payoutTd.getAttribute('data-uang-makan-lembur') : cb.getAttribute('data-uang-makan-lembur'));
             if (isNaN(uangMakanLembur)) uangMakanLembur = parseInt(cb.getAttribute('data-uang-makan-lembur')) || 0;
+            
+            let nominalLembur = parseInt(payoutTd ? payoutTd.getAttribute('data-nominal-lembur') : cb.getAttribute('data-nominal-lembur'));
+            if (isNaN(nominalLembur)) {
+                nominalLembur = parseInt(cb.getAttribute('data-nominal-lembur'));
+                if (isNaN(nominalLembur)) nominalLembur = nominalAwal - uangMakanLembur;
+            }
+            if (nominalLembur < 0) nominalLembur = 0;
+
             let adjustment = parseInt(payoutTd ? payoutTd.getAttribute('data-adjustment') : 0) || 0;
             
             // Periksa dari data-detail pada btn-detail jika ada penyesuaian dari modal rincian
@@ -972,17 +983,22 @@
                 let hasInitialized = details.some(d => d.hasOwnProperty('selected'));
                 if (hasInitialized) {
                     let sumAwal = 0;
+                    let sumLembur = 0;
                     let sumUml = 0;
                     let sumAdj = 0;
                     let sumJam = 0;
                     details.forEach(d => {
                         if (d.selected !== false) {
-                            sumAwal += (Number(d.nominal) || 0) + (Number(d.uang_makan_lembur) || 0);
-                            sumUml += Number(d.uang_makan_lembur) || 0;
+                            let n = Number(d.nominal) || 0;
+                            let u = Number(d.uang_makan_lembur) || 0;
+                            sumLembur += n;
+                            sumUml += u;
+                            sumAwal += n + u;
                             sumAdj += Number(d.adjustment) || 0;
                             sumJam += Number(d.durasi_jam) || 0;
                         }
                     });
+                    nominalLembur = sumLembur;
                     nominalAwal = sumAwal;
                     uangMakanLembur = sumUml;
                     adjustment = sumAdj;
@@ -995,19 +1011,17 @@
                 nominalAwal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             }
 
-            const uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
-
             pranotaCart[karyawanId] = {
                 id: karyawanId,
                 nik: karyawanNik,
                 name: karyawanName,
                 penempatan: penempatan,
                 totalJam: totalJam,
+                nominalLembur: nominalLembur,
                 uangMakanLembur: uangMakanLembur,
                 nominalAwal: nominalAwal,
                 adjustment: adjustment,
-                basePayoutVal: nominalAwal + adjustment,
-                uangMakan: uangMakan
+                basePayoutVal: nominalAwal + adjustment
             };
         } else {
             delete pranotaCart[karyawanId];
@@ -1124,10 +1138,8 @@
             const nominalAwal = (item.nominalAwal !== undefined) ? item.nominalAwal : (item.basePayoutVal || 0);
             const adjustment = item.adjustment || 0;
             const totalAkhir = nominalAwal + adjustment;
-            const cbDom = document.querySelector(`.row-checkbox[value="${karyawanId}"]`);
-            const uangMakan = cbDom ? (parseInt(cbDom.getAttribute('data-uang-makan')) || 0) : (item.uangMakan || 0);
-            
             const umlVal = Number(item.uangMakanLembur) || 0;
+            const lemburVal = Number(item.nominalLembur !== undefined ? item.nominalLembur : (nominalAwal - umlVal)) || 0;
             
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
@@ -1140,14 +1152,15 @@
                     ${totalJam}
                     <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${totalJam}">
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap text-right">
-                    <input type="number" name="karyawans[${karyawanId}][nominal_per_hari]" value="${uangMakan}" class="modal-uang-makan-input w-28 px-2 py-1 text-xs border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right font-medium" placeholder="0" title="Uang Makan Per Hari">
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Rp ${new Intl.NumberFormat('id-ID').format(lemburVal)}</span>
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_lembur]" value="${lemburVal}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium">
                     ${umlVal > 0 ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">Rp ${new Intl.NumberFormat('id-ID').format(umlVal)}</span>` : `<span class="text-gray-400">-</span>`}
                     <input type="hidden" name="karyawans[${karyawanId}][uang_makan_lembur]" value="${umlVal}">
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
+                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-gray-900">
                     Rp ${new Intl.NumberFormat('id-ID').format(nominalAwal)}
                     <input type="hidden" name="karyawans[${karyawanId}][nominal_awal]" value="${nominalAwal}">
                 </td>
