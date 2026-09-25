@@ -126,6 +126,13 @@ class PranotaPumlController extends Controller
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaPumlExport($puml), $filename);
     }
 
+    public function exportAutoTransfer($id)
+    {
+        $puml = \App\Models\PranotaPuml::findOrFail($id);
+        $filename = 'Auto_Transfer_PUML_' . str_replace('/', '_', $puml->nomor_pranota) . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaPumlAutoTransferExport($puml), $filename);
+    }
+
     public function show($id)
     {
         $puml = \App\Models\PranotaPuml::with(['uangMakans.details.karyawan', 'lemburs.karyawans.karyawan', 'potongans'])->findOrFail($id);
