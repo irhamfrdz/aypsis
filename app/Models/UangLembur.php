@@ -11,6 +11,7 @@ class UangLembur extends Model
     protected $fillable = [
         'group',
         'sub_group',
+        'pengali_uang_makan_hari_libur',
     ];
 
     public function rules()

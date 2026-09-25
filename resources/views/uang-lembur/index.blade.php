@@ -59,8 +59,20 @@
             @forelse ($lemburs as $lembur)
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <div>
+                    <div class="flex flex-wrap items-center gap-3">
                         <h3 class="text-lg font-bold text-gray-900">{{ $lembur->group }} <span class="text-gray-500 text-sm font-normal">/ {{ $lembur->sub_group }}</span></h3>
+                        @php
+                            $pengali = (float)($lembur->pengali_uang_makan_hari_libur ?? 1);
+                        @endphp
+                        @if($pengali > 0)
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <i class="fas fa-utensils mr-1.5 text-emerald-500"></i> Uang Makan Hari Libur: {{ $pengali == intval($pengali) ? intval($pengali) : $pengali }}x
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                                <i class="fas fa-ban mr-1.5 text-gray-400"></i> Uang Makan Hari Libur: 0x (Tidak Dapat)
+                            </span>
+                        @endif
                     </div>
                     <div class="flex gap-3">
                         @can('payroll-uang-karyawan-edit')

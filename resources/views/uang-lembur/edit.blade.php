@@ -34,15 +34,26 @@
                     @csrf
                     @method('PUT')
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div>
                             <label for="group" class="block text-sm font-medium text-gray-700">Group <span class="text-red-500">*</span></label>
-                            <input type="text" name="group" id="group" value="{{ $uangLembur->group }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <input type="text" name="group" id="group" value="{{ old('group', $uangLembur->group) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                         </div>
 
                         <div>
                             <label for="sub_group" class="block text-sm font-medium text-gray-700">Sub Group <span class="text-red-500">*</span></label>
-                            <input type="text" name="sub_group" id="sub_group" value="{{ $uangLembur->sub_group }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <input type="text" name="sub_group" id="sub_group" value="{{ old('sub_group', $uangLembur->sub_group) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                        </div>
+
+                        <div>
+                            <label for="pengali_uang_makan_hari_libur" class="block text-sm font-medium text-gray-700">Pengali Uang Makan Hari Libur <span class="text-xs text-gray-500 font-normal">(x Uang Makan)</span></label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="number" step="0.5" min="0" name="pengali_uang_makan_hari_libur" id="pengali_uang_makan_hari_libur" value="{{ old('pengali_uang_makan_hari_libur', $uangLembur->pengali_uang_makan_hari_libur ?? 1) }}" class="block w-full pr-8 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="1">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm font-bold">x</span>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Contoh: 1 (dapat 1x uang makan), 2 (2x), 0 (tidak dapat).</p>
                         </div>
                     </div>
 

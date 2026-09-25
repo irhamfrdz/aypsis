@@ -35,6 +35,7 @@ class UangLemburController extends Controller
         $request->validate([
             'group' => 'required|string|max:255',
             'sub_group' => 'required|string|max:255',
+            'pengali_uang_makan_hari_libur' => 'nullable|numeric|min:0',
             'rules' => 'required|array|min:1',
             'rules.*.tipe_hari' => 'required|in:Hari Biasa,Hari Libur',
             'rules.*.jam_mulai' => 'nullable|date_format:H:i',
@@ -49,6 +50,7 @@ class UangLemburController extends Controller
             $lembur = UangLembur::create([
                 'group' => $request->group,
                 'sub_group' => $request->sub_group,
+                'pengali_uang_makan_hari_libur' => $request->filled('pengali_uang_makan_hari_libur') ? $request->pengali_uang_makan_hari_libur : 1,
             ]);
 
             foreach ($request->rules as $rule) {
@@ -84,6 +86,7 @@ class UangLemburController extends Controller
         $request->validate([
             'group' => 'required|string|max:255',
             'sub_group' => 'required|string|max:255',
+            'pengali_uang_makan_hari_libur' => 'nullable|numeric|min:0',
             'rules' => 'required|array|min:1',
             'rules.*.tipe_hari' => 'required|in:Hari Biasa,Hari Libur',
             'rules.*.jam_mulai' => 'nullable|date_format:H:i',
@@ -98,6 +101,7 @@ class UangLemburController extends Controller
             $uangLembur->update([
                 'group' => $request->group,
                 'sub_group' => $request->sub_group,
+                'pengali_uang_makan_hari_libur' => $request->filled('pengali_uang_makan_hari_libur') ? $request->pengali_uang_makan_hari_libur : 1,
             ]);
 
             // Delete old rules
