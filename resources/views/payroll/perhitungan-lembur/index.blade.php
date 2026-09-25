@@ -393,33 +393,35 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl xl:max-w-5xl sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fas fa-list text-indigo-600"></i>
+        <div class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+            <div class="bg-white px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-list"></i>
                     </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2 sm:mb-0" id="detailTitle">
-                                Rincian Lembur
-                            </h3>
-                            <div class="flex items-center space-x-2">
-                                <label for="filterDetailTanggal" class="text-xs font-medium text-gray-700">Filter:</label>
-                                <input type="text" id="filterDetailTanggal" placeholder="Cari tanggal..." class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 w-32 sm:w-48">
-                                <button type="button" id="btnRefreshDetail" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-2 py-1.5 rounded-md transition-colors flex items-center font-medium" title="Refresh & Reset Centang">
-                                    <i class="fas fa-sync-alt mr-1"></i> Refresh
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailContent">
-                            <!-- Content will be injected here -->
-                        </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900" id="detailTitle">
+                            Rincian Lembur
+                        </h3>
+                        <p class="text-xs text-gray-500">Rincian jam, tarif, uang makan libur, dan adjustment per tanggal lembur</p>
                     </div>
                 </div>
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                    <label for="filterDetailTanggal" class="text-xs font-medium text-gray-700 whitespace-nowrap">Filter:</label>
+                    <input type="text" id="filterDetailTanggal" placeholder="Cari tanggal..." class="px-2.5 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-36 sm:w-48 shadow-sm">
+                    <button type="button" id="btnRefreshDetail" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-lg transition-colors flex items-center font-medium shadow-sm" title="Refresh & Reset Centang">
+                        <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+                    </button>
+                    <button type="button" onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-lg hover:bg-gray-100 ml-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" onclick="closeDetailModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
+            <div class="bg-white p-4 sm:p-6 flex-1 overflow-x-auto overflow-y-auto" id="detailContent">
+                <!-- Content will be injected here -->
+            </div>
+            <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex justify-end shrink-0">
+                <button type="button" onclick="closeDetailModal()" class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors">
                     Tutup
                 </button>
             </div>
@@ -740,9 +742,18 @@
             function renderDetail() {
                 const filterVal = newFilterInput.value.toLowerCase().trim();
                 
-                let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
-                html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
-                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Masuk</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-right text-xs font-bold text-orange-500 uppercase">U. Makan Libur</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
+                let html = '<div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm"><table class="min-w-full divide-y divide-gray-200 text-left"><thead class="bg-gray-50"><tr>';
+                html += '<th class="px-3 py-3 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
+                html += '<th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Tanggal</th>';
+                html += '<th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Tipe Hari</th>';
+                html += '<th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Jam Masuk</th>';
+                html += '<th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Jam Pulang</th>';
+                html += '<th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Durasi</th>';
+                html += '<th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Tarif/Rule</th>';
+                html += '<th class="px-3 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Nominal</th>';
+                html += '<th class="px-3 py-3 text-right text-xs font-bold text-orange-600 uppercase tracking-wider whitespace-nowrap">U. Makan Libur</th>';
+                html += '<th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Adjustment</th>';
+                html += '</tr></thead><tbody class="divide-y divide-gray-200 bg-white">';
                 
                 let totalNominalAwal = 0;
                 let totalAdjustment = 0;
@@ -787,19 +798,21 @@
                         let adjVal = Number(row.adjustment) || 0;
                         let adjColor = adjVal > 0 ? 'text-blue-600' : (adjVal < 0 ? 'text-red-600' : 'text-gray-400');
                         let umlVal = Number(row.uang_makan_lembur) || 0;
-                        html += `<tr>
-                            <td class="px-4 py-2 text-center">
+                        html += `<tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="px-3 py-2.5 text-center whitespace-nowrap">
                                 <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''}>
                             </td>
-                            <td class="px-4 py-2 text-sm text-gray-900">${row.tanggal}</td>
-                            <td class="px-4 py-2 text-sm text-gray-500">${row.tipe_hari}</td>
-                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_masuk || '-'}</td>
-                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_pulang || '-'}</td>
-                            <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
-                            <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
-                            <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
-                            <td class="px-4 py-2 text-sm text-right ${umlVal > 0 ? 'font-bold text-orange-600' : 'text-gray-400'}">${umlVal > 0 ? 'Rp ' + umlVal.toLocaleString('id-ID') : '-'}</td>
-                            <td class="px-4 py-2 text-sm text-center">
+                            <td class="px-3 py-2.5 text-sm text-gray-900 font-medium whitespace-nowrap">${row.tanggal}</td>
+                            <td class="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${row.tipe_hari === 'Hari Libur' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-700'}">${row.tipe_hari}</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-sm text-center text-gray-800 font-mono whitespace-nowrap">${row.jam_masuk || '-'}</td>
+                            <td class="px-3 py-2.5 text-sm text-center text-gray-800 font-mono whitespace-nowrap">${row.jam_pulang || '-'}</td>
+                            <td class="px-3 py-2.5 text-sm text-center font-bold text-indigo-600 whitespace-nowrap">${row.durasi_jam} Jam</td>
+                            <td class="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">${row.rule}</td>
+                            <td class="px-3 py-2.5 text-sm text-right font-bold text-emerald-600 whitespace-nowrap">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
+                            <td class="px-3 py-2.5 text-sm text-right whitespace-nowrap ${umlVal > 0 ? 'font-bold text-orange-600' : 'text-gray-400'}">${umlVal > 0 ? 'Rp ' + umlVal.toLocaleString('id-ID') : '-'}</td>
+                            <td class="px-3 py-2.5 text-sm text-center whitespace-nowrap">
                                 <input type="number" class="detail-adj-input w-28 px-2 py-1 border border-gray-300 rounded-md text-xs text-right font-mono focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 ${adjColor}" data-idx="${i}" value="${adjVal}" placeholder="0" step="1000">
                                 ${adjVal !== 0 ? `<div class="text-xs mt-0.5 font-semibold ${adjColor}">${adjVal > 0 ? '+' : ''}${adjVal.toLocaleString('id-ID')}</div>` : ''}
                             </td>
@@ -807,17 +820,17 @@
                     });
                     
                     if (rowCount > 0) {
-                        html += `<tr class="bg-gray-50">
-                            <td colspan="9" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
-                            <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
+                        html += `<tr class="bg-gray-50 border-t-2 border-gray-200 font-semibold">
+                            <td colspan="9" class="px-4 py-3 text-right text-sm font-bold text-gray-900 tracking-wide">TOTAL TERPILIH KESELURUHAN</td>
+                            <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700 whitespace-nowrap">Rp ${total.toLocaleString('id-ID')}</td>
                         </tr>`;
                     } else {
-                        html += '<tr><td colspan="10" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
+                        html += '<tr><td colspan="10" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
                     }
                 } else {
-                    html += '<tr><td colspan="10" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                    html += '<tr><td colspan="10" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
                 }
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 
                 document.getElementById('detailContent').innerHTML = html;
                 
