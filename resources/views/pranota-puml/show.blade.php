@@ -26,6 +26,11 @@
                     <i class="fas fa-calendar text-gray-400 mr-2"></i> Tanggal Pranota
                 </div>
                 <p class="text-lg font-bold text-gray-900">{{ $puml->tanggal_pranota->format('d F Y') }}</p>
+                @if($puml->periode_start && $puml->periode_end)
+                    <p class="text-xs text-indigo-600 font-medium mt-1">
+                        <i class="fas fa-clock mr-1"></i> Periode: {{ $puml->periode_start->format('d/m/Y') }} - {{ $puml->periode_end->format('d/m/Y') }}
+                    </p>
+                @endif
             </div>
             <div class="pl-6">
                 <div class="flex items-center text-sm font-semibold text-gray-500 mb-2">

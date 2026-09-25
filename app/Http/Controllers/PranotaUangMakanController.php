@@ -93,7 +93,7 @@ class PranotaUangMakanController extends Controller
         try {
             $pranota = PranotaUangMakan::findOrFail($id);
             $pranota->delete(); // Details will cascade
-            return redirect()->route('pranota-uang-makan.index')->with('success', 'Pranota Uang Makan berhasil dihapus!');
+            return redirect()->back()->with('success', 'Pranota Uang Makan berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus Pranota: ' . $e->getMessage());
         }

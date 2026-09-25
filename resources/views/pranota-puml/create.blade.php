@@ -39,7 +39,7 @@
         
         <!-- Input Group -->
         <div class="bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-xl border border-gray-100 p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal PUML <span class="text-rose-500">*</span></label>
                     <div class="relative">
@@ -47,6 +47,24 @@
                             <i class="fas fa-calendar text-gray-400"></i>
                         </div>
                         <input type="date" name="tanggal_pranota" required value="{{ date('Y-m-d') }}" class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors duration-200">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Periode Awal</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-alt text-gray-400"></i>
+                        </div>
+                        <input type="date" name="periode_start" value="{{ old('periode_start') }}" class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors duration-200">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Periode Akhir</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-alt text-gray-400"></i>
+                        </div>
+                        <input type="date" name="periode_end" value="{{ old('periode_end') }}" class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors duration-200">
                     </div>
                 </div>
             </div>
@@ -80,7 +98,15 @@
                                             <i class="fas fa-external-link-alt text-[10px]"></i>
                                         </a>
                                     </div>
-                                    <span class="text-xs font-medium text-gray-500">{{ $um->tanggal_pranota->format('d M Y') }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-medium text-gray-500">{{ $um->tanggal_pranota->format('d M Y') }}</span>
+                                        <button type="button" 
+                                                onclick="event.stopPropagation(); deleteItem('{{ route('pranota-uang-makan.destroy', $um->id) }}', 'Apakah Anda yakin ingin menghapus draf Pranota Uang Makan {{ $um->nomor_pranota }}? Data detail yang terkait juga akan ikut terhapus.')" 
+                                                class="text-gray-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 transition-colors" 
+                                                title="Hapus Pranota Uang Makan">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <p class="text-sm font-semibold text-emerald-600">Rp {{ number_format($um->total_nominal, 0, ',', '.') }}</p>
                             </div>
@@ -124,7 +150,15 @@
                                             <i class="fas fa-external-link-alt text-[10px]"></i>
                                         </a>
                                     </div>
-                                    <span class="text-xs font-medium text-gray-500">{{ $lm->tanggal_pranota->format('d M Y') }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-medium text-gray-500">{{ $lm->tanggal_pranota->format('d M Y') }}</span>
+                                        <button type="button" 
+                                                onclick="event.stopPropagation(); deleteItem('{{ route('pranota-lembur-karyawan.destroy', $lm->id) }}', 'Apakah Anda yakin ingin menghapus draf Pranota Lembur {{ $lm->nomor_pranota }}? Data detail yang terkait juga akan ikut terhapus.')" 
+                                                class="text-gray-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 transition-colors" 
+                                                title="Hapus Pranota Lembur">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <p class="text-sm font-semibold text-orange-600">Rp {{ number_format($lm->total_setelah_adjustment, 0, ',', '.') }}</p>
                             </div>
@@ -325,6 +359,25 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
+
+    {{-- Global delete form for draft deletion --}}
+    <form id="global-delete-form" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+</div>
+
+@push('scripts')
+<script>
+    function deleteItem(url, message) {
+        if (confirm(message)) {
+            const form = document.getElementById('global-delete-form');
+            form.action = url;
+            form.submit();
+        }
+    }
+</script>
+@endpush
 @endsection
+

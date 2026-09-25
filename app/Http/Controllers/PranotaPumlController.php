@@ -47,6 +47,8 @@ class PranotaPumlController extends Controller
     {
         $request->validate([
             'tanggal_pranota' => 'required|date',
+            'periode_start' => 'nullable|date',
+            'periode_end' => 'nullable|date',
             'uang_makan_ids' => 'nullable|array',
             'lembur_ids' => 'nullable|array',
         ]);
@@ -70,13 +72,13 @@ class PranotaPumlController extends Controller
 
             $totalUangMakan = 0;
             $totalLembur = 0;
-            $periodeStart = null;
-            $periodeEnd = null; // Bisa dihitung dari data tanggal_pranota anak jika diperlukan
 
             // Create header PUML
             $puml = \App\Models\PranotaPuml::create([
                 'nomor_pranota' => $nomorPranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
+                'periode_start' => $request->periode_start,
+                'periode_end' => $request->periode_end,
                 'status' => 'submitted',
                 'created_by' => auth()->id(),
             ]);
