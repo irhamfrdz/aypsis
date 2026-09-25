@@ -168,7 +168,8 @@
                 </h4>
                 <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.<br>
                 Untuk <strong>Tujuan Pengambilan</strong>, tambahkan ekspedisi <strong>(PB)</strong> atau <strong>(AYP)</strong> di belakang nama daerah agar tarif sesuai.<br>
-                Untuk <strong>F/E</strong>, isi dengan <strong>Full</strong> atau <strong>Empty</strong> (mempengaruhi tarif uang jalan).</p>
+                Untuk <strong>F/E</strong>, isi dengan <strong>Full</strong> atau <strong>Empty</strong> (mempengaruhi tarif uang jalan).<br>
+                <strong>No Kontainer wajib diisi.</strong> Jika No SJ sudah ada dan nomor kontainernya kosong, impor ulang akan mengisinya. Nomor kontainer yang sudah terisi tidak akan ditimpa.</p>
                 <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
                     No SJ ; Tanggal (YYYY-MM-DD) ; No Kontainer ; Size ; F/E (Full/Empty) ; Supir ; No Plat ; Tujuan Pengambilan ; Tujuan Pengiriman (Gudang Tujuan) ; Catatan
                 </div>

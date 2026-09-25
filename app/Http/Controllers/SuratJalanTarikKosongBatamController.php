@@ -422,6 +422,9 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
 
         $successCount = 0;
+        $createdCount = 0;
+        $updatedCount = 0;
+        $unchangedCount = 0;
         $errors = [];
         $failedRows = [];
 
@@ -450,6 +453,32 @@ class SuratJalanTarikKosongBatamController extends Controller
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+
+                $noKontainer = trim($row['no_kontainer'] ?? '');
+                if ($noKontainer === '') {
+                    $errors[] = "Baris {$rowNumber}: Nomor kontainer wajib diisi.";
+                    $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+
+                $existing = SuratJalanTarikKosongBatam::where('no_surat_jalan', $nomorSuratJalan)
+                    ->lockForUpdate()
+                    ->first();
+                if ($existing) {
+                    $existingKontainer = trim((string) $existing->no_kontainer);
+                    if ($existingKontainer === '') {
+                        $existing->update(['no_kontainer' => $noKontainer]);
+                        $updatedCount++;
+                        $successCount++;
+                    } elseif ($existingKontainer === $noKontainer) {
+                        $unchangedCount++;
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Surat Jalan '{$nomorSuratJalan}' sudah memiliki kontainer '{$existingKontainer}', berbeda dari '{$noKontainer}'.";
+                        $failedRows[] = $row['_original_line'] ?? '';
+                    }
+
                     continue;
                 }
 
@@ -502,16 +531,6 @@ class SuratJalanTarikKosongBatamController extends Controller
                     }
                 }
 
-                // Cek duplikasi no SJ
-                $exists = SuratJalanTarikKosongBatam::where('no_surat_jalan', $nomorSuratJalan)->exists();
-                if ($exists) {
-                    $errors[] = "Baris {$rowNumber}: Surat Jalan '{$nomorSuratJalan}' sudah ada (duplikat).";
-                    $failedRows[] = $row['_original_line'] ?? '';
-                    continue;
-                }
-                
-                $noKontainer = trim($row['no_kontainer'] ?? '');
-
                 SuratJalanTarikKosongBatam::create([
                     'no_surat_jalan' => $nomorSuratJalan,
                     'tanggal_surat_jalan' => $tanggalSuratJalan,
@@ -553,6 +572,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                 }
 
                 $successCount++;
+                $createdCount++;
             }
 
             if ($successCount > 0) {
@@ -563,10 +583,13 @@ class SuratJalanTarikKosongBatamController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil memproses {$successCount} surat jalan.",
+                'message' => "Surat jalan baru: {$createdCount}, kontainer kosong terisi: {$updatedCount}, sudah sesuai: {$unchangedCount}, gagal: ".count($errors).'.',
                 'errors' => $errors,
                 'failedRows' => $failedRows,
                 'successCount' => $successCount,
+                'createdCount' => $createdCount,
+                'updatedCount' => $updatedCount,
+                'unchangedCount' => $unchangedCount,
                 'hasErrors' => count($errors) > 0
             ]);
 
