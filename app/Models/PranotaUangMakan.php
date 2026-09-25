@@ -24,4 +24,9 @@ class PranotaUangMakan extends Model
     {
         return $this->hasMany(PranotaUangMakanDetail::class, 'pranota_uang_makan_id');
     }
+
+    public function pranotaPuml()
+    {
+        return $this->belongsTo(PranotaPuml::class, 'pranota_puml_id');
+    }
 }

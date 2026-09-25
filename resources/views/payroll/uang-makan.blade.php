@@ -6,6 +6,48 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Header Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-4 sm:mb-0">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Payroll Uang Makan Mingguan</h1>
+                <p class="mt-1 text-sm text-gray-600">Perhitungan akumulasi kehadiran dan pencairan uang makan per karyawan</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="button" onclick="openRiwayatPranotaModal()" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm cursor-pointer">
+                    <i class="fas fa-history text-blue-600 mr-2"></i>
+                    Riwayat Pranota Uang Makan
+                    @if(isset($riwayatPranota) && $riwayatPranota->count() > 0)
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                            {{ $riwayatPranota->count() }}
+                        </span>
+                    @endif
+                </button>
+                <a href="{{ route('pranota-uang-makan.index') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg transition-all duration-200 shadow-sm" title="Lihat Halaman Lengkap Riwayat Pranota Uang Makan">
+                    <i class="fas fa-list mr-2 text-gray-500"></i>
+                    Semua Pranota
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded-md shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700 font-medium">
+                        {{ session('success') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Filter Card -->
     @if(session('error'))
         <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md shadow-sm">
@@ -294,7 +336,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
                         <div class="flex rounded-md shadow-sm">
-                            <input type="text" id="nomor_pranota" name="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="PML-{{ date('y') }}-{{ date('m') }}-001">
+                            <input type="text" id="nomor_pranota" name="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="{{ $suggestedNomorPranota ?? ('PUM-' . date('y') . '-' . date('m') . '-001') }}">
                             <button type="button" onclick="generateNewPranotaNumber()" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Generate Ulang">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             </button>
@@ -366,6 +408,239 @@
         </form>
     </div>
 </div>
+
+{{-- Modal Riwayat Pranota Uang Makan --}}
+<div id="riwayat-pranota-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <div class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+            <!-- Header -->
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-50 p-2.5 rounded-xl text-blue-600">
+                        <i class="fas fa-history text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Uang Makan</h3>
+                        <p class="text-xs text-gray-500">Daftar pranota uang makan yang telah dibuat dari sistem payroll</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('pranota-uang-makan.index') }}" class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                        <i class="fas fa-external-link-alt mr-1.5"></i>
+                        Halaman Lengkap
+                    </a>
+                    <button type="button" onclick="closeRiwayatPranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+                <!-- Summary Stats Bar -->
+                @php
+                    $totalPranotaCount = isset($riwayatPranota) ? $riwayatPranota->count() : 0;
+                    $totalNominalAccum = isset($riwayatPranota) ? $riwayatPranota->sum('total_nominal') : 0;
+                    $totalKaryawanCount = isset($riwayatPranota) ? $riwayatPranota->sum('details_count') : 0;
+                @endphp
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 font-medium">Total Pranota Dibuat</div>
+                            <div class="text-lg font-bold text-gray-900">{{ $totalPranotaCount }} Pranota</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 font-medium">Total Akumulasi Nominal</div>
+                            <div class="text-lg font-bold text-emerald-600">Rp {{ number_format($totalNominalAccum, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 font-medium">Total Karyawan Terekam</div>
+                            <div class="text-lg font-bold text-gray-900">{{ $totalKaryawanCount }} Data Karyawan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Filter & Actions inside modal -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                    <div class="relative flex-1 max-w-sm">
+                        <input type="text" id="riwayat-search-input" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota / tanggal..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500" id="riwayat-count-info">
+                        Menampilkan {{ $totalPranotaCount }} data
+                    </span>
+                </div>
+
+                <!-- Table -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto max-h-[50vh]">
+                        <table class="min-w-full divide-y divide-gray-200" id="table-riwayat-pranota">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">No</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Pranota</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total Nominal</th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-36">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200 text-xs">
+                                @forelse($riwayatPranota ?? [] as $index => $item)
+                                    <tr class="hover:bg-blue-50/50 transition-colors riwayat-row" data-nomor="{{ strtolower($item->nomor_pranota) }}" data-tanggal="{{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '' }}">
+                                        <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $index + 1 }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <a href="{{ route('pranota-uang-makan.show', $item->id) }}" target="_blank" class="font-mono font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5" title="Buka Detail">
+                                                <span>{{ $item->nomor_pranota }}</span>
+                                                <i class="fas fa-external-link-alt text-[10px] text-gray-400"></i>
+                                            </a>
+                                            <div class="text-[10px] text-gray-400 mt-0.5">{{ $item->created_at ? $item->created_at->diffForHumans() : '-' }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">
+                                            {{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <button type="button" onclick="toggleKaryawanRow({{ $item->id }})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer" title="Klik untuk lihat daftar karyawan">
+                                                <i class="fas fa-users text-[10px]"></i>
+                                                <span>{{ $item->details_count ?? $item->details->count() }} Orang</span>
+                                                <i class="fas fa-chevron-down text-[9px] transition-transform duration-200" id="icon-chevron-{{ $item->id }}"></i>
+                                            </button>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-emerald-600">
+                                            Rp {{ number_format($item->total_nominal, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            @if($item->pranota_puml_id)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-800">
+                                                    Masuk PUML
+                                                </span>
+                                            @elseif($item->status === 'draft')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-800">
+                                                    Draft
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800">
+                                                    {{ ucfirst($item->status) }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <div class="inline-flex items-center gap-1.5">
+                                                <a href="{{ route('pranota-uang-makan.show', $item->id) }}" target="_blank" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors" title="Lihat Rincian">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('pranota-uang-makan.show', $item->id) }}?print=true" target="_blank" class="p-1.5 rounded-md text-indigo-600 hover:bg-indigo-100 transition-colors" title="Cetak Pranota">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                                <a href="{{ route('pranota-uang-makan.export-auto-transfer', $item->id) }}" class="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-100 transition-colors" title="Export Excel Auto Transfer">
+                                                    <i class="fas fa-file-excel"></i>
+                                                </a>
+                                                @if(!$item->pranota_puml_id)
+                                                    <form action="{{ route('pranota-uang-makan.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota uang makan {{ $item->nomor_pranota }}? Data detail di dalamnya akan ikut terhapus.')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="p-1.5 rounded-md text-red-600 hover:bg-red-100 transition-colors cursor-pointer" title="Hapus Pranota">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Collapsible Sub-Row: Employee List -->
+                                    <tr id="karyawan-row-{{ $item->id }}" class="hidden bg-slate-50/90 border-b border-gray-200">
+                                        <td colspan="7" class="px-6 py-3">
+                                            <div class="text-xs">
+                                                <div class="font-bold text-gray-700 mb-2 flex items-center justify-between">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <i class="fas fa-id-card text-blue-500"></i>
+                                                        <span>Daftar Karyawan di Pranota {{ $item->nomor_pranota }}:</span>
+                                                    </div>
+                                                    <a href="{{ route('pranota-uang-makan.export-auto-transfer', $item->id) }}" class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded transition-colors">
+                                                        <i class="fas fa-file-excel text-emerald-600"></i>
+                                                        <span>Export Excel Auto Transfer</span>
+                                                    </a>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                    @foreach($item->details as $d)
+                                                        <div class="bg-white p-2.5 rounded-lg border border-gray-200 flex items-center justify-between gap-2 shadow-xs">
+                                                            <div class="min-w-0">
+                                                                <p class="font-semibold text-gray-900 truncate">{{ $d->karyawan->nama_lengkap ?? 'Karyawan' }}</p>
+                                                                <p class="text-[10px] text-gray-500 font-mono">{{ $d->karyawan->nik ?? '-' }} &bull; {{ $d->kehadiran ?? '-' }}</p>
+                                                                @if($d->catatan)
+                                                                    <p class="text-[10px] text-gray-400 italic truncate" title="{{ $d->catatan }}">{{ $d->catatan }}</p>
+                                                                @endif
+                                                            </div>
+                                                            <div class="text-right whitespace-nowrap">
+                                                                <span class="text-xs font-bold text-emerald-600 block">
+                                                                    Rp {{ number_format($d->total_akhir, 0, ',', '.') }}
+                                                                </span>
+                                                                @if($d->adjustment != 0)
+                                                                    <span class="text-[10px] {{ $d->adjustment > 0 ? 'text-blue-500' : 'text-red-500' }}">
+                                                                        {{ $d->adjustment > 0 ? '+' : '' }}{{ number_format($d->adjustment, 0, ',', '.') }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr id="empty-riwayat-row">
+                                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400">
+                                                    <i class="fas fa-file-invoice text-xl"></i>
+                                                </div>
+                                                <p class="font-semibold text-gray-700 text-sm">Belum Ada Riwayat Pranota Uang Makan</p>
+                                                <p class="text-xs text-gray-500 mt-1 max-w-sm">Pilih karyawan dari hasil kalkulasi absensi di bawah, lalu klik tombol "Masukkan Pranota" untuk membuat pranota uang makan pertama.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                <a href="{{ route('pranota-uang-makan.index') }}" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium">
+                    <i class="fas fa-list-ul"></i>
+                    <span>Buka Semua Data Pranota Uang Makan</span>
+                </a>
+                <button type="button" onclick="closeRiwayatPranotaModal()" class="w-full sm:w-auto px-5 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @push('scripts')
 <script>
@@ -672,6 +947,73 @@
             input.value = parts.join('-');
         }
     }
+
+    // --- LOGIKA RIWAYAT PRANOTA MODAL ---
+    function openRiwayatPranotaModal() {
+        document.getElementById('riwayat-pranota-modal').classList.remove('hidden');
+    }
+
+    function closeRiwayatPranotaModal() {
+        document.getElementById('riwayat-pranota-modal').classList.add('hidden');
+    }
+
+    function filterRiwayatPranota() {
+        const input = (document.getElementById('riwayat-search-input').value || '').toLowerCase().trim();
+        const rows = document.querySelectorAll('.riwayat-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const nomor = (row.getAttribute('data-nomor') || '').toLowerCase();
+            const tanggal = (row.getAttribute('data-tanggal') || '').toLowerCase();
+            const isMatch = nomor.includes(input) || tanggal.includes(input);
+            
+            row.style.display = isMatch ? '' : 'none';
+            if (isMatch) visibleCount++;
+
+            // Jika row disembunyikan, sembunyikan juga sub-row karyawannya jika sedang terbuka
+            if (!isMatch) {
+                const subRow = row.nextElementSibling;
+                if (subRow && subRow.id && subRow.id.startsWith('karyawan-row-')) {
+                    subRow.classList.add('hidden');
+                }
+            }
+        });
+
+        const countInfo = document.getElementById('riwayat-count-info');
+        if (countInfo) {
+            countInfo.innerText = `Menampilkan ${visibleCount} data`;
+        }
+    }
+
+    function toggleKaryawanRow(id) {
+        const row = document.getElementById('karyawan-row-' + id);
+        const icon = document.getElementById('icon-chevron-' + id);
+        if (row) {
+            row.classList.toggle('hidden');
+            if (icon) {
+                if (row.classList.contains('hidden')) {
+                    icon.classList.remove('rotate-180');
+                } else {
+                    icon.classList.add('rotate-180');
+                }
+            }
+        }
+    }
+
+    // Escape key listener to close modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const riwayatModal = document.getElementById('riwayat-pranota-modal');
+            if (riwayatModal && !riwayatModal.classList.contains('hidden')) {
+                closeRiwayatPranotaModal();
+            }
+            const pranotaModal = document.getElementById('pranota-modal');
+            if (pranotaModal && !pranotaModal.classList.contains('hidden')) {
+                closePranotaModal();
+            }
+        }
+    });
 </script>
 @endpush
 @endsection
+

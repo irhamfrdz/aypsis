@@ -151,7 +151,42 @@ class PayrollController extends Controller
 
         $allCabang = \App\Models\Karyawan::where('status', 'active')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang')->sort()->values();
 
-        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'group', 'subGroup', 'cabang', 'allGroups', 'allSubGroups', 'allCabang', 'payrolls', 'isGenerated'));
+        // Riwayat Pranota Uang Makan (50 data terbaru)
+        $riwayatPranota = \App\Models\PranotaUangMakan::with(['details.karyawan'])
+            ->withCount('details')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Suggested nomor pranota berikutnya
+        $prefix = 'PUM-' . now()->format('y') . '-' . now()->format('m') . '-';
+        $lastPranota = \App\Models\PranotaUangMakan::where('nomor_pranota', 'like', $prefix . '%')
+            ->orderBy('nomor_pranota', 'desc')
+            ->first();
+        if ($lastPranota) {
+            $parts = explode('-', $lastPranota->nomor_pranota);
+            $lastNum = isset($parts[3]) ? (int) $parts[3] : 0;
+            $nextNum = str_pad($lastNum + 1, 3, '0', STR_PAD_LEFT);
+            $suggestedNomorPranota = $prefix . $nextNum;
+        } else {
+            $suggestedNomorPranota = $prefix . '001';
+        }
+
+        return view('payroll.uang-makan', compact(
+            'startDate', 
+            'endDate', 
+            'penempatan', 
+            'group', 
+            'subGroup', 
+            'cabang', 
+            'allGroups', 
+            'allSubGroups', 
+            'allCabang', 
+            'payrolls', 
+            'isGenerated',
+            'riwayatPranota',
+            'suggestedNomorPranota'
+        ));
     }
 
     public function storeUangMakan(Request $request)
