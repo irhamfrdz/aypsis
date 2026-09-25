@@ -377,7 +377,7 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl xl:max-w-5xl sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
                 <div class="sm:flex sm:items-start">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -726,7 +726,7 @@
                 
                 let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
                 html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
-                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
+                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Masuk</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Adjustment</th></tr></thead><tbody class="divide-y divide-gray-200">';
                 
                 let totalNominalAwal = 0;
                 let totalAdjustment = 0;
@@ -775,7 +775,8 @@
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900">${row.tanggal}</td>
                             <td class="px-4 py-2 text-sm text-gray-500">${row.tipe_hari}</td>
-                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_pulang}</td>
+                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_masuk || '-'}</td>
+                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_pulang || '-'}</td>
                             <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
                             <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
@@ -788,14 +789,14 @@
                     
                     if (rowCount > 0) {
                         html += `<tr class="bg-gray-50">
-                            <td colspan="7" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
+                            <td colspan="8" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH KESELURUHAN</td>
                             <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
                         </tr>`;
                     } else {
-                        html += '<tr><td colspan="8" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
+                        html += '<tr><td colspan="9" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian yang cocok dengan pencarian</td></tr>';
                     }
                 } else {
-                    html += '<tr><td colspan="8" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                    html += '<tr><td colspan="9" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
                 }
                 html += '</tbody></table>';
                 

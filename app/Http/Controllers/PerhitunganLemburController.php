@@ -241,6 +241,7 @@ class PerhitunganLemburController extends Controller
                             $lpEvaluation->setTime(18, 0, 0);
                         }
 
+                        $jamMasukTime = $lm->format('H:i:s');
                         $jamPulangTime = $lp->format('H:i:s');
                         
                         // Calculate nominal based on matched rules
@@ -324,6 +325,7 @@ class PerhitunganLemburController extends Controller
                             'tanggal' => $dateStr,
                             'tipe_hari' => $tipeHari,
                             'durasi_jam' => $durasiJam,
+                            'jam_masuk' => $jamMasukTime,
                             'jam_pulang' => $jamPulangTime,
                             'nominal' => $nominalHariIni,
                             'rule' => $ruleApplied ? $ruleApplied->satuan . ' x ' . number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
