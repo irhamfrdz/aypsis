@@ -34,10 +34,18 @@ class GerakVoyageDashboardTest extends TestCase
             $table->time('jam_selesai_bongkar')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('master_kapals', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_kapal');
+            $table->string('pelayaran')->nullable();
+            $table->softDeletes();
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('master_kapals');
         Schema::dropIfExists('manifests');
 
         parent::tearDown();
@@ -45,6 +53,11 @@ class GerakVoyageDashboardTest extends TestCase
 
     public function test_dashboard_shows_only_latest_voyage_for_each_ship(): void
     {
+        DB::table('master_kapals')->insert([
+            ['nama_kapal' => 'Kapal A', 'pelayaran' => 'PT. ALEXINDO YAKIN PRIMA'],
+            ['nama_kapal' => 'Kapal B', 'pelayaran' => 'PT. ALEXINDO YAKIN PRIMA'],
+        ]);
+
         DB::table('manifests')->insert([
             ['nama_kapal' => 'Kapal A', 'no_voyage' => 'V-02', 'tanggal_berangkat' => '2026-09-24', 'tanggal_muat' => null, 'created_at' => '2026-09-23 10:00:00'],
             ['nama_kapal' => 'Kapal A', 'no_voyage' => 'V-02', 'tanggal_berangkat' => '2026-09-24', 'tanggal_muat' => null, 'created_at' => '2026-09-23 11:00:00'],
@@ -85,6 +98,11 @@ class GerakVoyageDashboardTest extends TestCase
 
     public function test_latest_voyage_uses_manifest_creation_date_when_schedule_is_empty(): void
     {
+        DB::table('master_kapals')->insert([
+            'nama_kapal' => 'Kapal C',
+            'pelayaran' => 'PT. ALEXINDO YAKIN PRIMA',
+        ]);
+
         DB::table('manifests')->insert([
             ['nama_kapal' => 'Kapal C', 'no_voyage' => 'V-07', 'created_at' => '2026-09-20 10:00:00'],
             ['nama_kapal' => 'Kapal C', 'no_voyage' => 'V-08', 'created_at' => '2026-09-25 10:00:00'],
@@ -99,8 +117,13 @@ class GerakVoyageDashboardTest extends TestCase
     public function test_dashboard_shows_all_ships_on_one_page(): void
     {
         $manifests = [];
+        $ships = [];
 
         for ($number = 1; $number <= 12; $number++) {
+            $ships[] = [
+                'nama_kapal' => sprintf('Kapal %02d', $number),
+                'pelayaran' => 'PT. ALEXINDO YAKIN PRIMA',
+            ];
             $manifests[] = [
                 'nama_kapal' => sprintf('Kapal %02d', $number),
                 'no_voyage' => 'V-01',
@@ -108,12 +131,32 @@ class GerakVoyageDashboardTest extends TestCase
             ];
         }
 
+        DB::table('master_kapals')->insert($ships);
         DB::table('manifests')->insert($manifests);
 
         $data = (new GerakVoyageController)->dashboard(Request::create('/gerak-voyage/dashboard'))->getData();
 
         $this->assertSame(12, $data['voyages']->count());
         $this->assertSame('Kapal 12', $data['voyages']->last()->nama_kapal);
+    }
+
+    public function test_dashboard_excludes_other_shipping_companies_and_unregistered_ships(): void
+    {
+        DB::table('master_kapals')->insert([
+            ['nama_kapal' => 'MV. Kapal A', 'pelayaran' => 'PT. ALEXINDO YAKIN PRIMA'],
+            ['nama_kapal' => 'Kapal B', 'pelayaran' => 'PT. Pelayaran Lain'],
+        ]);
+        DB::table('manifests')->insert([
+            ['nama_kapal' => 'MV Kapal A', 'no_voyage' => 'V-01', 'created_at' => '2026-09-25 10:00:00'],
+            ['nama_kapal' => 'Kapal B', 'no_voyage' => 'V-02', 'created_at' => '2026-09-25 10:00:00'],
+            ['nama_kapal' => 'Kapal C', 'no_voyage' => 'V-03', 'created_at' => '2026-09-25 10:00:00'],
+        ]);
+
+        $data = (new GerakVoyageController)->dashboard(Request::create('/gerak-voyage/dashboard'))->getData();
+
+        $this->assertSame(1, $data['totalShips']);
+        $this->assertSame('MV Kapal A', $data['voyages']->first()->nama_kapal);
+        $this->assertSame(['MV Kapal A'], $data['ships']->all());
     }
 
     public function test_saving_voyage_dates_also_saves_each_time_to_all_matching_manifests(): void

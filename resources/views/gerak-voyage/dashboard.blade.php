@@ -21,7 +21,7 @@
                 <div>
                     <p class="text-xs font-bold uppercase tracking-widest text-blue-200">Jadwal Kapal</p>
                     <h1 class="mt-2 text-2xl font-bold sm:text-3xl">Voyage Terbaru Setiap Kapal</h1>
-                    <p class="mt-2 max-w-2xl text-sm text-blue-100">Pantau tanggal dan jam gerak dari voyage terbaru masing-masing kapal berdasarkan data manifest.</p>
+                    <p class="mt-2 max-w-2xl text-sm text-blue-100">Pantau tanggal dan jam gerak voyage terbaru kapal pelayaran PT. ALEXINDO YAKIN PRIMA berdasarkan data manifest.</p>
                 </div>
                 <a href="{{ route('gerak-voyage.index') }}" class="inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-50">
                     <i class="fas fa-calendar-plus mr-2"></i> Atur Tanggal dan Jam

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manifest;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GerakVoyageController extends Controller
 {
@@ -25,6 +27,16 @@ class GerakVoyageController extends Controller
             'tanggal_selesai_bongkar',
         ];
 
+        $alexindoShips = MasterKapal::query()
+            ->whereRaw('UPPER(TRIM(pelayaran)) = ?', ['PT. ALEXINDO YAKIN PRIMA'])
+            ->whereNotNull('nama_kapal')
+            ->pluck('nama_kapal')
+            ->map(fn ($name) => strtoupper(str_replace('  ', ' ', str_replace('.', '', trim($name)))))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         $grouped = Manifest::query()
             ->select('nama_kapal', 'no_voyage')
             ->selectRaw('COUNT(*) as jumlah_manifest')
@@ -32,6 +44,7 @@ class GerakVoyageController extends Controller
             ->selectRaw('MAX(id) as manifest_terakhir_id')
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '<>', '')
+            ->whereIn(DB::raw("UPPER(REPLACE(REPLACE(TRIM(nama_kapal), '.', ''), '  ', ' '))"), $alexindoShips)
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '<>', '')
             ->groupBy('nama_kapal', 'no_voyage');
