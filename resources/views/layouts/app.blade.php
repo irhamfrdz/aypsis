@@ -400,6 +400,17 @@
                 </a>
                 @endcan
                 
+                <!-- Dashboard Gerak Voyage -->
+                @if($user && ($user->can('gerak-voyage-view') || $user->is_admin))
+                @php
+                    $isGerakVoyageDashboard = Request::routeIs('gerak-voyage.dashboard');
+                @endphp
+                <a href="{{ route('gerak-voyage.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGerakVoyageDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                    <i class="fas fa-chart-line w-4 mr-2 {{ $isGerakVoyageDashboard ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}"></i>
+                    <span class="text-xs font-medium menu-text">Dashboard Gerak Voyage</span>
+                </a>
+                @endif
+
                 <!-- Asuransi Tanda Terima -->
                 @can('asuransi-tanda-terima-view')
                 @php
@@ -2049,10 +2060,6 @@
                 @if($user && ($user->can('gerak-voyage-view') || $user->is_admin))
                 {{-- Tanggal Gerak Voyage --}}
                 <div class="mx-1 mb-2">
-                    <a href="{{ route('gerak-voyage.dashboard') }}" class="flex items-center py-2 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('gerak-voyage.dashboard') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <i class="fas fa-chart-line w-4 text-center mr-2 {{ Request::routeIs('gerak-voyage.dashboard') ? 'text-blue-600' : 'text-gray-400' }}"></i>
-                        <span class="text-xs font-semibold">Dashboard Gerak Voyage</span>
-                    </a>
                     <a href="{{ route('gerak-voyage.index') }}" class="flex items-center py-2 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('gerak-voyage.index', 'gerak-voyage.create') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <i class="fas fa-ship w-4 text-center mr-2 {{ Request::routeIs('gerak-voyage.index', 'gerak-voyage.create') ? 'text-blue-600' : 'text-gray-400' }}"></i>
                         <span class="text-xs font-semibold">Tanggal Gerak Voyage</span>
