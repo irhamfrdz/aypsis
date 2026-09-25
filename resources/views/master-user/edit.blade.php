@@ -446,6 +446,31 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Container Billing Control (Project 03) --}}
+                            <tr class="module-row" data-module="container-billing">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2" style="display: none;"></span>
+                                        <div>
+                                            <div class="font-semibold">Container Billing Control</div>
+                                            <div class="text-xs text-gray-500">Akses dan kelola seluruh modul Project 03, termasuk pembayaran, restore, dan reset data</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="permissions[container-billing][view]" value="1" class="permission-checkbox"
+                                        aria-label="Akses dan kelola Container Billing Control"
+                                        title="Memberikan akses penuh Container Billing Control"
+                                        @checked(session()->hasOldInput() ? old('permissions.container-billing.view', false) : ($userMatrixPermissions['container-billing']['view'] ?? false))>
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">

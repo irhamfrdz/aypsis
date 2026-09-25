@@ -280,6 +280,13 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
+    Route::prefix('container-billing')->name('container-billing.')->middleware('can:container-billing-manage')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ContainerBillingController::class, 'index'])->name('index');
+        Route::get('/assets/{file}', [\App\Http\Controllers\ContainerBillingController::class, 'asset'])->name('asset');
+        Route::get('/state', [\App\Http\Controllers\ContainerBillingController::class, 'state'])->name('state');
+        Route::post('/state', [\App\Http\Controllers\ContainerBillingController::class, 'update'])->name('update');
+    });
+
     Route::get('/open-penyewaan-kontainer', function () {
         return redirect('/penyewaan-app/index.html');
     })->name('open-penyewaan-kontainer');

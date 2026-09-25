@@ -10,6 +10,11 @@
  */
 
 return [
+    'container-billing' => [
+        'label' => 'Container Billing Control',
+        'prefixes' => ['container-billing-'],
+    ],
+
     'master' => [
         'label' => 'Master Data',
         'prefixes' => ['master-'],

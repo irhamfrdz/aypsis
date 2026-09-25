@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
+        // Preserve the original JSON backup values (including empty strings and raw evidence).
+        $billingPayload = fn (\Illuminate\Http\Request $request) => $request->is('container-billing/state');
+        $middleware->trimStrings(except: [$billingPayload]);
+        $middleware->convertEmptyStringsToNull(except: [$billingPayload]);
         $middleware->validateCsrfTokens(except: [
             'api/sewa-kontainer/sync',
             'iclock/*',

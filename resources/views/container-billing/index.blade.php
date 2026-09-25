@@ -1,0 +1,315 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Container Billing Control</title>
+<style>
+:root{font-family:Segoe UI,Arial,sans-serif;color:#172033;background:#f4f6f8}*{box-sizing:border-box}body{margin:0}.top{background:#172033;color:#fff;padding:15px 20px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.top h1{margin:0;font-size:20px}.sub{font-size:12px;opacity:.8;margin-top:3px}nav{display:flex;gap:7px;flex-wrap:wrap;padding:10px 18px;background:#fff;border-bottom:1px solid #dfe3e8;position:sticky;top:0;z-index:10}button{border:1px solid #cbd2da;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}button.primary,nav button.active,.tabs button.active{background:#172033;color:#fff;border-color:#172033}.danger{color:#9b1c1c;border-color:#e7aaaa;background:#fff8f8}main{padding:18px;max-width:1600px;margin:auto}.view{display:none}.view.active{display:block}.card{background:#fff;border:1px solid #e0e4e9;border-radius:12px;padding:15px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.kpi .label{font-size:12px;color:#6a7482}.kpi .value{font-size:28px;font-weight:800;margin-top:5px}.small{font-size:12px}.muted{color:#6b7280}.note{padding:9px 11px;background:#eff5ff;border:1px solid #cadbf6;border-radius:8px;font-size:12px;margin:9px 0}.warn{background:#fff7df;border-color:#efd38a}label{display:block;font-size:12px;font-weight:700;color:#4b5563;margin-bottom:5px}input,select,textarea{width:100%;padding:9px 10px;border:1px solid #cbd2da;border-radius:8px;font:inherit}textarea{min-height:240px;font-family:Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.formgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.importgrid{display:grid;grid-template-columns:1.3fr .7fr;gap:14px}.rejectbox{max-height:360px;overflow:auto;border:1px solid #e0e4e9;border-radius:8px}.rejectitem{padding:9px 10px;border-bottom:1px solid #edf0f3}.rejectitem:last-child{border-bottom:0}.rejectitem b{color:#971c1c}.tabs{display:flex;gap:6px;margin-bottom:12px}.tabpane{display:none}.tabpane.active{display:block}.tablewrap{overflow:auto;background:#fff;border:1px solid #e0e4e9;border-radius:12px;margin-top:12px;max-height:620px}table{border-collapse:collapse;width:100%;min-width:1050px}th,td{padding:8px 9px;border-bottom:1px solid #edf0f3;text-align:left;font-size:12px;white-space:nowrap;vertical-align:top}th{background:#f7f9fb;position:sticky;top:0}.wrap{white-space:normal;min-width:260px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}.ok{background:#e7f6ee;color:#126c3c}.pending{background:#fff1cf;color:#845400}.bad{background:#fde7e7;color:#941b1b}.info{background:#e8f0ff;color:#22509a}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.toolbar>div{min-width:160px;flex:1}.status{font-size:12px;background:#eef1f4;color:#172033;padding:7px 10px;border-radius:8px}dialog{border:0;border-radius:12px;padding:0;max-width:560px;width:calc(100% - 28px);box-shadow:0 18px 55px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(18,27,43,.48)}
+.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.timeline-group{border-left:3px solid #d8dee7;padding-left:12px;margin:10px 0 18px}.timeline-head{font-weight:800;margin-bottom:7px}.timeline-row{display:grid;grid-template-columns:95px 170px 1fr 130px 120px;gap:8px;align-items:start;padding:7px 8px;border-bottom:1px solid #eef1f4;font-size:12px}.timeline-row:last-child{border-bottom:0}.invoice-summary{display:grid;grid-template-columns:1fr repeat(4,minmax(120px,.55fr));gap:8px;align-items:center;padding:10px;border-bottom:1px solid #edf0f3}.invoice-summary:last-child{border-bottom:0}.readonly{background:#f5f7f9}.mini{padding:5px 8px;font-size:11px}.goodtext{color:#126c3c;font-weight:700}.badtext{color:#941b1b;font-weight:700}
+.finance-grid{display:grid;grid-template-columns:repeat(7,minmax(115px,1fr));gap:7px;margin-top:8px}.finance-cell{background:#f7f9fb;border:1px solid #e7ebef;border-radius:8px;padding:7px 8px}.finance-cell .small{display:block}.payment-summary{padding:10px;border:1px solid #dfe5eb;border-radius:8px;background:#f8fafb;margin-top:10px}.autocomplete-wrap{position:relative}.autocomplete-menu{position:absolute;left:0;right:0;top:100%;z-index:40;background:#fff;border:1px solid #cbd2da;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:240px;overflow:auto;display:none}.autocomplete-item{padding:9px 10px;cursor:pointer;border-bottom:1px solid #edf0f3}.autocomplete-item:last-child{border-bottom:0}.autocomplete-item:hover,.autocomplete-item.active{background:#eff5ff}.pranota-list-wide{max-height:720px;overflow:auto}.pranota-list-wide table thead th{position:sticky;top:0;z-index:2}
+@media(max-width:1000px){.grid4{grid-template-columns:1fr 1fr}.grid2,.importgrid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.grid4,.formgrid{grid-template-columns:1fr}main{padding:11px}}
+</style></head><body>
+<div class="top"><div><h1>Container Billing Control</h1><div class="sub">Data awal audit sudah tertanam • operasional ketat • vendor claim ≠ hak tagih sistem</div> <span id="appVersion" class="badge info">V7.1.38</span></div><div id="dbStatus" class="status">Membuka database...</div></div>
+<nav id="nav"><button class="active" data-view="dashboard">Ringkasan</button><button data-view="master">Master</button><button data-view="operasional">Impor Operasional</button><button data-view="rentals">Rental</button><button data-view="expected">Tagihan Seharusnya</button><button data-view="invoiceentry">Entri Tagihan</button><button data-view="invoiceimport">Impor Tagihan</button><button data-view="invoices">Tinjau Tagihan</button><button data-view="reviewcenter">Review &amp; Koreksi</button><button data-view="pranotas">Pranota</button><button data-view="payments">Pembayaran</button><button data-view="audit">Log Audit</button><button data-view="reports">Laporan</button><button data-view="backup">Cadangkan / Pulihkan</button></nav>
+<main>
+<section id="dashboard" class="view active"><div class="grid4"><div class="card kpi"><div class="label">Rental Aktif</div><div id="kActive" class="value">0</div></div><div class="card kpi"><div class="label">Siap Approval</div><div id="kPayable" class="value">0</div></div><div class="card kpi"><div class="label">Tagihan Bermasalah</div><div id="kPending" class="value">0</div></div><div class="card kpi"><div class="label">Sudah Dibayar</div><div id="kPaid" class="value">0</div></div></div><div class="card" style="margin-top:12px"><h3>Kontrol utama</h3><div class="note">Tagihan vendor selalu masuk histori. Pengambilan/pengembalian yang tidak logis tidak mengubah rental dan tetap berada di textarea untuk langsung dikoreksi.</div><div id="dashSummary" class="small muted"></div></div></section>
+<section id="master" class="view">
+<div class="card" style="margin-bottom:12px"><h3>Master Vendor <span class="badge info">V7.1.38</span></h3><div class="note"><b>Sumber vendor resmi.</b> Dipakai oleh Master Container, Master Tarif, dan Entri Tagihan baru. Vendor lama pada transaksi historis tidak diubah. Master Vendor tidak dihapus; gunakan <b>Nonaktifkan</b>.</div><div class="grid2"><div><div class="small muted">Import: KODE VENDOR|NAMA VENDOR</div><textarea id="vendorMasterText" style="min-height:100px" placeholder="ZONA|ZONA"></textarea><div class="actions"><button type="button" class="primary" id="processVendorMaster">Proses Master Vendor</button><button type="button" id="buildVendorMasterExisting">Bangun dari Data Existing</button></div><div id="vendorMasterMsg" class="small muted">Belum diproses.</div></div><div><div class="formgrid"><div><label>Kode Vendor</label><input id="vmCode" placeholder="ZONA"></div><div><label>Nama Vendor</label><input id="vmName" placeholder="ZONA"></div></div><div class="actions"><button type="button" id="saveVendorMaster">Simpan Vendor</button></div><div id="vendorMasterRows" class="rejectbox"></div></div></div></div>
+<div class="grid2">
+  <div class="card">
+    <h3>Impor / Update Master Container Massal</h3>
+    <div class="small muted">Separator wajib: <b>|</b> &nbsp; Format: KONTAINER | UKURAN | JENIS | VENDOR | BERLAKU MULAI | BERLAKU SAMPAI | CATATAN<br><b>Validasi duplikat hanya berdasarkan NO. CONTAINER.</b> Vendor/ukuran/jenis tidak dipakai untuk menentukan duplikat.</div>
+    <textarea id="masterText" placeholder="OOLU1340682|20 FT|DRY|ZONA|&#10;WHLU0343593|40 FT|DRY|ZONA|"></textarea>
+    <div class="actions"><button class="primary" id="processMaster">Proses Master</button><button id="clearMasterText">Kosongkan</button></div>
+    <div id="masterImportMsg" class="note" style="display:none"></div>
+    <div class="note warn"><b>Aturan:</b> Ini khusus Master Container, bukan saldo awal. No. Container yang belum ada langsung disimpan. Jika No. Container sudah ada, baris menjadi <b>SUSPECT</b> tanpa melihat Vendor/Ukuran/Jenis dan tetap di textarea. Klik Proses Master sekali lagi untuk konfirmasi massal update. Jika ada beberapa versi master untuk No. Container yang sama, wajib diperbaiki manual agar histori tidak salah.</div>
+  </div>
+  <div class="card">
+    <h3>Input / Edit Satu Kontainer</h3>
+    <form id="masterForm"><input type="hidden" id="mMasterId"><div class="formgrid">
+      <div><label>Kontainer</label><input id="mContainer" required list="daftarKontainer"></div>
+      <div><label>Ukuran</label><input id="mSize"></div>
+      <div><label>Jenis</label><input id="mType"></div>
+      <div><label>Vendor</label><input id="mVendor" required list="daftarVendor"></div>
+      <div><label>Berlaku Mulai</label><input id="mValidFrom" placeholder="15/9/26 atau 15 Sep 26"></div>
+      <div><label>Berlaku Sampai</label><input id="mValidTo" placeholder="15/9/26 atau 15 Sep 26"></div>
+      <div style="grid-column:span 2"><label>Catatan</label><input id="mNote"></div>
+    </div><div class="actions"><button class="primary" id="masterSaveBtn">Simpan Versi Master</button><button type="button" id="masterNewBtn">Versi Baru</button></div></form>
+    <div id="masterCount" class="small muted" style="margin-top:10px"></div>
+  </div>
+</div>
+<div class="card" style="margin-top:12px"><div class="toolbar">
+<div><label>Cari Master</label><input id="masterSearch" placeholder="No. Container / Vendor / Ukuran / Jenis"></div>
+<div><label>Filter</label><select id="masterFilter"><option value="">Semua</option><option value="DUPLIKAT">Duplikat No. Container</option><option value="AKTIF">Aktif</option><option value="NONAKTIF">Nonaktif</option></select></div>
+<div><label>Per Halaman</label><select id="masterPageSize"><option>25</option><option selected>50</option><option>100</option></select></div>
+</div></div>
+<div class="tablewrap"><table><thead><tr><th>Kontainer</th><th>Ukuran</th><th>Jenis</th><th>Vendor</th><th>Berlaku Mulai</th><th>Berlaku Sampai</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="masterRows"></tbody></table></div>
+<div class="card" style="margin-top:8px;padding:10px"><div class="actions" style="margin:0;align-items:center"><button id="masterPrev">‹ Sebelumnya</button><span id="masterPageInfo" class="small muted">Halaman 1</span><button id="masterNext">Berikutnya ›</button></div></div>
+<dialog id="identityCorrectionDlg" style="max-width:1100px;width:96%">
+<form method="dialog"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Koreksi Identitas Container</h3><button value="cancel">Tutup</button></div></form>
+<div class="note warn"><b>Simulasi dulu.</b> Aplikasi mencari konflik yang baru terlihat setelah dua identitas dianggap sebagai container yang sama. Tidak ada transaksi finansial yang dibatalkan otomatis.</div>
+<div class="formgrid" style="grid-template-columns:1fr 1fr auto;margin-top:10px">
+<div><label>Identitas Salah / Sumber</label><input id="identitySource" readonly></div>
+<div><label>Identitas Benar / Tujuan</label><input id="identityTarget" list="daftarKontainer" placeholder="mis. ZONA2100025"></div>
+<div><label>&nbsp;</label><button type="button" class="primary" id="identitySimulate">Simulasi Dampak</button></div>
+</div>
+<div id="identityImpact" class="rejectbox" style="margin-top:10px"><div class="rejectitem muted">Masukkan identitas tujuan lalu jalankan simulasi.</div></div>
+<div class="actions"><button type="button" id="identityApply" class="primary" disabled>Koreksi Identitas</button><button type="button" id="identityRecheck">Cek Ulang</button></div>
+</dialog>
+<div class="card" style="margin-top:12px"><h3>Master Tarif Vendor <span class="badge info">V7.1.38</span></h3><div class="note"><b>Sumber harga sistem.</b> Vendor + Ukuran + Jenis otomatis berasal dari Master Container. Satu versi tarif boleh berisi <b>Bulanan saja, Harian saja, atau keduanya</b>. Jika hanya satu tarif tersedia, TAKE otomatis memakai tarif itu; jika keduanya tersedia, user wajib memilih B/Bulanan atau H/Harian. Tarif terpilih di-snapshot dan terkunci selama cycle.</div><div class="importgrid"><div><div class="small muted">VENDOR|UKURAN|JENIS|TARIF BULANAN|TARIF HARIAN|BERLAKU DARI|BERLAKU SAMPAI</div><div class="note"><b>Contoh:</b><br><code>ZONA|20 FT|DRY|675676||01 Jan 26|</code><br><code>ZONA|40 FT|DRY||50000|01 Jan 26|</code><br><code>ZONA|40 FT|HIGH CUBE|1261261|50000|01 Jan 26|</code></div><textarea id="rateText" style="min-height:150px" placeholder="ZONA|20 FT|DRY|675676||01 Jan 26|"></textarea><div class="actions"><button class="primary" id="processRates">Proses Master Tarif</button><button id="clearRates">Kosongkan</button></div><div id="rateSummary" class="small muted">Belum diproses.</div></div><div><h3>Versi Tarif</h3><div class="small muted" style="margin-bottom:6px">Master tidak dihapus. Gunakan <b>Nonaktifkan</b> untuk versi salah/lama, lalu impor versi yang benar. <b>Versi Baru / Koreksi</b> menyalin data ke textarea agar mudah diperbaiki.</div><div id="rateRows" class="rejectbox"></div><h3 style="margin-top:10px">Reject</h3><div id="rateRejects" class="rejectbox"></div></div></div></div>
+</section>
+<section id="operasional" class="view"><div class="card" style="margin-bottom:10px"><div id="historyImportStatus" class="small muted">Memeriksa mode impor histori...</div><div class="actions" style="margin-top:8px"><button id="lockHistoricalImport" class="danger">Selesaikan Impor Histori &amp; Kunci Operasional</button></div><div class="small muted">Selama Clean Rebuild, cycle histori boleh diimpor tidak berurutan dan pada waktu berbeda. Double rental yang sudah terbukti oleh tanggal RETURN tetap ditolak. Kunci hanya setelah seluruh RETURN histori lama selesai.</div></div><div class="tabs"><button class="active" data-op="ambil">Pengambilan</button><button data-op="kembali">Pengembalian</button></div><div id="op-ambil" class="tabpane active"><div class="importgrid"><div class="card"><h3>Textarea Pengambilan</h3><div class="small muted">KONTAINER|TGL AMBIL|METODE (B/BULANAN atau H/HARIAN)<br><span class="muted">Tanggal fleksibel: 15/9/26, 15-09-2026, 15 Sep 26, 15 September 2026, 2026-09-15, atau serial Excel.</span></div><div class="note"><b>Contoh:</b><br><code>DFSU2296934|12 Feb 26|B</code><br><code>OOLU1340682|15 Feb 26|H</code></div><textarea id="takeText" placeholder="DFSU2296934|12 Feb 26|B"></textarea><div class="actions"><button class="primary" id="processTake">Proses Impor</button><button id="clearTake">Kosongkan</button></div><div class="note warn">Vendor/Ukuran/Jenis dan nominal tarif diambil otomatis dari Master Container + Master Tarif yang berlaku pada Tgl Ambil. Metode dipilih saat TAKE dan terkunci sampai RETURN. Valid masuk lalu hilang dari textarea; Reject tetap di textarea.</div></div><div class="card"><h3>Alasan Ditolak</h3><div id="takeSummary" class="small muted">Belum diproses.</div><div id="takeRejects" class="rejectbox" style="margin-top:10px"></div></div></div></div><div id="op-kembali" class="tabpane"><div class="importgrid"><div class="card"><h3>Textarea Pengembalian</h3><div class="small muted">KONTAINER|TGL KEMBALI<br><span class="muted">Tanggal fleksibel; tampilan aplikasi selalu DD MMM YY.</span></div><div class="note"><b>Contoh:</b><br><code>DFSU2296934|19 Jun 26</code></div><textarea id="returnText" placeholder="DFSU2296934|19 Jun 26"></textarea><div class="actions"><button class="primary" id="processReturn">Proses Impor</button><button id="clearReturn">Kosongkan</button></div><div class="note warn">Reject bila tidak ada rental sesuai, kembali &lt; ambil, duplikat, atau melewati pengambilan berikutnya.</div></div><div class="card"><h3>Alasan Ditolak</h3><div id="returnSummary" class="small muted">Belum diproses.</div><div id="returnRejects" class="rejectbox" style="margin-top:10px"></div></div></div></div></section>
+<section id="rentals" class="view">
+<div class="card">
+  <h3>Rental / Siklus Kontainer</h3>
+  <div class="note"><b>Aturan siklus:</b> siklus hanya dibuat saat PENGAMBILAN. Ulang tahun bulanan hanya membuat Expected Period di dalam siklus yang sama. PENGEMBALIAN menutup siklus; setelah CLOSED kontainer boleh diambil lagi walaupun tagihan lama belum ditagih atau belum dibayar. Histori lama dinormalisasi ke aturan yang sama tanpa menghapus ID estimasi asli dari audit.</div>
+  <div class="toolbar">
+    <div><label>Cari Kontainer</label><input id="rentalSearch"></div>
+    <div><label>Status</label><select id="rentalStatus"><option value="">Semua</option><option value="AKTIF">Aktif</option><option value="SELESAI">Selesai</option><option value="PERLU KONFIRMASI">Perlu Konfirmasi</option><option value="CLOSED (HISTORI)">Closed Histori</option></select></div>
+    <div><label>Per Halaman</label><select id="rentalPageSize"><option>25</option><option selected>50</option><option>100</option></select></div>
+    <div><button id="exportRentals">Export CSV |</button></div>
+  </div>
+</div>
+<div class="tablewrap"><table><thead><tr><th>ID Transaksi</th><th>Kontainer</th><th>Flag</th><th>Ambil</th><th>Kembali</th><th>Tarif</th><th>Basis</th><th>Ukuran</th><th>Jenis</th><th>Vendor</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="rentalRows"></tbody></table></div>
+<div class="card" style="margin-top:8px;padding:10px"><div class="actions" style="margin:0;align-items:center">
+  <button id="rentalPrev">‹ Sebelumnya</button><span id="rentalPageInfo" class="small muted">Halaman 1</span><button id="rentalNext">Berikutnya ›</button>
+</div></div>
+</section>
+<section id="expected" class="view">
+<div class="grid4">
+  <div class="card kpi"><div class="label">Total Periode</div><div id="eTotal" class="value">0</div></div>
+  <div class="card kpi"><div class="label">Outstanding Diketahui</div><div id="eOutstanding" class="value">0</div></div>
+  <div class="card kpi"><div class="label">Periode Belum Ditemukan</div><div id="eMissing" class="value">0</div></div>
+  <div class="card kpi"><div class="label">Sudah Dibayar</div><div id="ePaid" class="value">0</div></div>
+</div>
+<div class="card" style="margin-top:12px">
+  <h3>Tagihan Seharusnya</h3>
+  <div class="note">Histori lama dan transaksi baru ditampilkan sebagai satu Expected Billing. Sistem menghitung otomatis maksimal <b>1× per hari saat aplikasi dibuka</b>, langsung setelah pengambilan/pengembalian/koreksi rental, atau saat tombol Kalkulasi Ulang ditekan.</div>
+  <div class="toolbar">
+    <div><label>Status</label><select id="expectedFilter"><option value="">Semua</option><option value="OUTSTANDING">Outstanding</option><option value="BELUM DITEMUKAN">Belum Ditemukan</option><option value="SUDAH DIBAYAR">Sudah Dibayar</option><option value="SUDAH DITAGIH">Sudah Ditagih</option><option value="BELUM DITAGIH">Belum Ditagih</option></select></div>
+    <div><label>Cari Kontainer</label><input id="expectedSearch"></div>
+    <div><label>Per Halaman</label><select id="expectedPageSize"><option>25</option><option selected>50</option><option>100</option></select></div>
+    <div><button class="primary" id="rebuildExpected">Kalkulasi + Review Ulang</button></div>
+    <div><button id="exportExpected">Export CSV |</button></div>
+  </div>
+</div>
+<div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h3 style="margin-bottom:3px">Perlu Koreksi Siklus</h3><div class="small muted">PR seluruh tagihan lama dan baru: siklus tidak ada, belum terkonfirmasi, salah, atau ambigu. Tagihan APPROVED ikut diperiksa. PAID tetap terlihat tetapi terkunci.</div></div><div><b id="cyclePrCount">0 PR</b></div></div><div id="cyclePrList" class="rejectbox" style="margin-top:10px"><div class="rejectitem muted">Klik Kalkulasi + Review Ulang untuk memeriksa seluruh data.</div></div></div>
+<div class="tablewrap"><table><thead><tr><th>ID Detail</th><th>Kontainer</th><th>Periode</th><th>Mulai</th><th>Akhir</th><th>Expected Sistem</th><th>Status</th><th>Invoice</th><th>Alasan</th></tr></thead><tbody id="expectedRows"></tbody></table></div>
+<div class="card" style="margin-top:8px;padding:10px"><div class="actions" style="margin:0;align-items:center">
+  <button id="expectedPrev">‹ Sebelumnya</button>
+  <span id="expectedPageInfo" class="small muted">Halaman 1</span>
+  <button id="expectedNext">Berikutnya ›</button>
+</div></div>
+</section>
+<section id="invoiceentry" class="view">
+<div class="card"><h3>Entri / Perbaikan Tagihan Vendor</h3>
+<div class="note">Gunakan <b>Tagihan Baru</b> untuk entry biasa. Untuk salah kontainer, gunakan <b>Muat Tagihan Lama</b> → Lepas detail yang salah → perbaiki Master/Rental → kembali ke sini → Tambah dari Expected Billing. Review hanya untuk review/adjustment, bukan mengganti identitas kontainer.</div>
+<div class="actions"><button type="button" id="newEntryInvoice" class="primary">Tagihan Baru</button><button type="button" id="loadExistingInvoice">Muat Tagihan Lama</button><span id="entryModeLabel" class="small muted">Mode: TAGIHAN BARU</span></div>
+<div class="formgrid"><div class="autocomplete-wrap"><label>Vendor</label><input id="eVendor" autocomplete="off" placeholder="ketik kode / nama vendor"><div id="eVendorSuggest" class="autocomplete-menu"></div></div><div><label>No. Tagihan</label><input id="eInvoiceNo"></div><div><label>Tgl Tagihan</label><input id="eInvoiceDate" placeholder="15/9/26 atau 15 Sep 26"></div><div><label>PPN</label><select id="ePpn"><option value="1">Ya - 11%</option><option value="0">Tidak</option></select></div><div><label>PPh 23</label><select id="ePph"><option value="1">Ya - 2%</option><option value="0">Tidak</option></select></div></div>
+<div id="existingInvoiceDetails" class="rejectbox" style="margin-top:12px"><div class="rejectitem muted">Belum memuat tagihan lama.</div></div>
+<div class="note" style="margin-top:12px"><b>Alur perbaikan salah kontainer:</b> Lepas detail → <button type="button" class="mini" id="goMasterRepair">Ke Master</button> <button type="button" class="mini" id="goTakeRepair">Ke Pengambilan</button> → setelah Rental/Expected benar, kembali dan cari Expected kontainer yang benar.</div>
+<div class="formgrid" style="margin-top:12px;grid-template-columns:1.2fr .5fr .9fr .9fr 1fr .6fr auto"><div><label>Container</label><input id="eContainer" list="daftarKontainer" placeholder="pilih dari Master"></div><div><label>P Vendor</label><input id="ePeriod" type="number" min="1"></div><div><label>Periode Vendor Dari</label><input id="eVendorStart" placeholder="14 Feb 26"></div><div><label>Periode Vendor Sampai</label><input id="eVendorEnd" placeholder="13 Mar 26"></div><div><label>Nominal Vendor</label><input id="eAmount" inputmode="decimal"></div><div><label>No Kandidat</label><input id="eCycleChoice" type="number" min="1" placeholder="jika ambigu"></div><div><label>&nbsp;</label><button type="button" id="addEntryDetail">+ Tambah Detail</button></div></div><div class="note" style="margin-top:8px"><b>Input Vendor boleh diedit.</b> Saat Expected dipilih, P Vendor, tanggal Dari–Sampai dan Nominal otomatis diisi dari Sistem sebagai draft. Perubahan di sini hanya menjadi bukti Tagihan Vendor dan <b>tidak mengubah Cycle / Expected / Tarif Sistem</b>.</div><div id="entrySystemPreview" class="rejectbox" style="margin-top:8px"><div class="rejectitem muted">Pilih Container / Expected untuk melihat pembanding Sistem.</div></div><div id="entryCycleCandidates" class="rejectbox" style="margin-top:8px"><div class="rejectitem muted">Jika siklus ambigu, daftar kandidat akan tampil di sini.</div></div>
+<div class="formgrid" style="margin-top:10px;grid-template-columns:1.4fr auto"><div><label>Cari Expected Billing</label><input id="entryExpectedSearch" placeholder="No. kontainer yang benar" list="daftarKontainer"></div><div><label>&nbsp;</label><button type="button" id="searchEntryExpected">Cari Expected</button></div></div>
+<div id="entryExpectedResults" class="rejectbox" style="margin-top:8px"><div class="rejectitem muted">Cari kontainer setelah Master dan Rental sudah diperbaiki.</div></div>
+<h4 style="margin-bottom:6px">Detail yang akan ditambahkan</h4><div id="entryDraft" class="rejectbox"></div>
+<div class="actions"><button class="primary" id="saveEntryInvoice">Simpan Tagihan</button><button id="clearEntryInvoice">Kosongkan</button></div><div id="entryInvoiceMsg" class="note" style="display:none"></div></div>
+<dialog id="entryInvoicePickerDlg" style="max-width:900px;width:94%">
+  <form method="dialog"><div class="actions" style="justify-content:space-between"><h3 style="margin:0">Pilih Tagihan Lama</h3><button value="cancel">Tutup</button></div></form>
+  <div class="formgrid" style="grid-template-columns:1fr 1fr auto;margin-top:10px">
+    <div><label>Cari No. Tagihan</label><input id="entryPickInvoiceNo" placeholder="boleh dikosongkan"></div>
+    <div><label>Cari Vendor / Kontainer</label><input id="entryPickQuery" placeholder="mis. SEGU1415452"></div>
+    <div><label>&nbsp;</label><button type="button" id="entryPickSearch">Cari</button></div>
+  </div>
+  <div id="entryPickResults" class="rejectbox" style="margin-top:10px;max-height:55vh;overflow:auto"></div>
+</dialog></section>
+<section id="invoiceimport" class="view"><div class="importgrid"><div class="card"><h3>Impor Tagihan Vendor</h3><div class="small muted"><b>Format transaksi berjalan:</b> VENDOR|NO TAGIHAN|TGL TAGIHAN|NOMINAL|KONTAINER|PERIODE VENDOR|NO KANDIDAT<br><b>Format impor awal dengan referensi siklus:</b> VENDOR|NO TAGIHAN|TGL TAGIHAN|NOMINAL|KONTAINER|PERIODE VENDOR|TGL DARI REFERENSI|TGL SAMPAI REFERENSI</div><div class="note"><b>Tidak ada Mode Saldo Awal.</b> Aplikasi mengenali format per baris secara otomatis. Baris 8 kolom memakai Tgl Dari/Sampai sebagai referensi untuk menemukan Cycle: prioritas TAKE exact; bila bukan tanggal TAKE, sistem men-trace P Vendor ke Expected aktual. Rollover Februari tidak ditebak dengan minus bulan dan tetap menjadi ambigu bila lebih dari satu Cycle cocok. Baris transaksi berjalan tetap memakai format lama. P Vendor dan nominal vendor selalu disimpan persis sebagai bukti vendor.</div><textarea id="invoiceText" placeholder="ZONA|ZONA240122360|22 Jan 24|1261261|AMFU8640522|1|15 Jan 24|24 Apr 24"></textarea><div class="actions"><button class="primary" id="processInvoices">Impor Tagihan</button><button id="previewInvoices">Pratinjau</button></div><div id="invoiceImportMsg" class="note" style="display:none"></div></div><div class="card"><h3>Aturan Validasi</h3><div class="note">Semua baris yang struktur dokumennya valid langsung tersimpan dan masuk <b>Tinjau Tagihan</b>. Jika Cycle/hak tagih/Master bermasalah, detail tetap tersimpan sebagai <b>PENDING/PR</b> di No. Tagihan yang sama. Hanya HARD INVALID yang tetap di textarea. Tidak ada lagi pekerjaan wajib di Antrean Warning atau Excel Ambigu.</div><div id="invoicePreview" class="rejectbox"></div></div></div></section>
+<section id="invoices" class="view">
+<div class="card">
+  <h3>Tinjau Tagihan <span class="badge info">V7.1.38</span></h3>
+  <div class="note"><b>Kontrol dokumen tagihan.</b> Tampilkan seluruh container per No. Tagihan, nilai, pajak dan Approval. Untuk detail PENDING/ambigu, gunakan <b>Pilih / Ganti Cycle</b> langsung per kontainer; tidak perlu melepas relasi lebih dulu. P Vendor dan nominal vendor tidak diubah. Approval tetap menjadi gerbang menuju Pranota.</div>
+</div>
+<div class="card" style="margin-top:12px">
+  <div class="tabs" id="reviewTabs"><button data-review="container">Per Kontainer Tagihan</button><button class="active" data-review="invoice">Per No. Tagihan</button><button data-review="cycle">Siklus &amp; Periode</button></div>
+  <div class="toolbar">
+    <div><label>Status</label><select id="invoiceFilter"><option value="">Semua</option><option>READY TO PAY</option><option>PENDING</option><option>SUDAH DIBAYAR</option></select></div>
+    <div><label>Cari</label><input id="invoiceSearch" placeholder="kontainer / invoice / vendor"></div>
+    <div><label>Per Halaman</label><select id="invoicePageSize"><option>25</option><option selected>50</option><option>100</option></select></div>
+    <div><button id="exportInvoices">Export Hasil Filter |</button></div>
+  </div>
+  <div class="note">Satu detail bermasalah membuat <b>seluruh No. Tagihan PENDING</b>. Adjustment dibuat singkat: isi nilai (+/-) dan keterangan, lalu Selesaikan. Tagihan yang sudah bersih harus <b>di-approval per No. Tagihan</b>. Hanya tagihan APPROVED yang dapat dipilih untuk membuat Pranota. Approval/ pembatalannya tercatat di Log Audit.</div>
+</div>
+<div id="review-container" class="reviewpane" style="display:none">
+  <div id="containerTimeline" class="card" style="margin-top:12px"></div>
+  <div id="reviewFilterFooter" class="card" style="margin-top:8px"></div>
+  <div class="card" style="margin-top:8px;padding:10px"><div class="actions" style="margin:0;align-items:center">
+    <button id="reviewPrev">‹ Sebelumnya</button>
+    <span id="reviewPageInfo" class="small muted">Halaman 1</span>
+    <button id="reviewNext">Berikutnya ›</button>
+  </div></div>
+</div>
+<div id="review-cycle" class="reviewpane" style="display:none"><div class="card" style="margin-top:12px"><h3>Tinjau Siklus &amp; Periode</h3><div class="note"><b>Sumber kebenaran operasional.</b> Menampilkan Cycle dari Pengambilan/Pengembalian dan seluruh Expected otomatis. Koreksi Cycle di sini mengubah sumber operasional; sedangkan tombol Pilih/Ganti Cycle pada detail Tagihan hanya mengubah relasi Tagihan → Cycle.</div><div class="toolbar"><div><label>Container</label><input id="cycleReviewSearch" list="daftarKontainer" placeholder="No Container"></div><div><button class="primary" id="cycleReviewRun">Tampilkan</button></div></div></div><div id="cycleReviewBody" class="card" style="margin-top:8px"><div class="muted">Pilih container untuk melihat seluruh siklus dan periode otomatis.</div></div></div>
+<div id="review-invoice" class="reviewpane">
+  <div id="invoiceHeaderList" class="card" style="margin-top:12px"></div>
+  <div class="card" style="margin-top:8px;padding:10px"><div class="actions" style="margin:0;align-items:center">
+    <button id="invoicePrev">‹ Sebelumnya</button>
+    <span id="invoicePageInfo" class="small muted">Halaman 1</span>
+    <button id="invoiceNext">Berikutnya ›</button>
+  </div></div>
+</div>
+</section>
+
+<section id="reviewcenter" class="view">
+<div class="card">
+  <h3>Review &amp; Koreksi <span class="badge info">V7.1.38</span></h3>
+  <div class="note"><b>Pusat kerja supervisor.</b> Audit lama tetap sebagai backlog kontrol. Jika masuk dari Tinjau Tagihan, halaman ini otomatis di-scope hanya ke No. Tagihan / container tersebut agar tidak tercampur dengan seluruh temuan.</div>
+  <div id="reviewScopeBanner" class="note" style="margin-top:10px;display:none"></div>
+  <div id="reviewCenterCount" class="note" style="margin-top:10px"><b>0 No Tagihan bermasalah aktif</b> • 0 detail perlu review • 0 container • Audit data lama read-only: 0 No Tagihan</div><div class="small muted" style="margin-top:4px">Matching Cycle kanonik: P1/Pn ditelusuri ke Expected aktual; tepat 1 Cycle = otomatis, lebih dari 1 = ambigu. Benturan akhir Feb/awal Mar tetap meminta keputusan user.</div>
+  <div class="toolbar">
+    <div><label>Cari No. Tagihan / Container</label><input id="reviewCenterSearch" placeholder="mis. ZONA260131526 / DFSU2296934"></div>
+    <div><label>Prioritas</label><select id="reviewCenterFilter"><option value="">Semua temuan</option><option value="KRITIS">KRITIS</option><option value="SUSPECT">SUSPECT</option><option value="PAID">PAID terkunci</option><option value="ARSIP">Arsip detach</option></select></div>
+    <div><button class="primary" id="reviewCenterRun">Review Scope</button></div>
+    <div><button id="globalLinkAuditBtn">Audit Data Lama (Read-only)</button></div>
+    <div><button id="reviewClearScope">Lihat Semua PR</button></div>
+  </div>
+  <div class="note warn" style="margin-top:10px"><b>Audit Data Lama</b> hanya memeriksa relasi Tagihan ↔ Cycle. Tidak menghitung ulang Expected dan tidak mengubah transaksi. Snapshot disimpan lokal agar hasil audit tidak hilang hanya karena refresh halaman.</div>
+</div>
+<div id="globalLinkAuditResult" class="card" style="margin-top:12px;display:none"></div>
+<div id="reviewCenterDetail" style="margin-top:12px"></div>
+<div id="reviewCenterList" class="card" style="margin-top:12px"></div>
+</section>
+
+<section id="pranotas" class="view">
+<div class="card"><h3>Pranota</h3><div class="note">Kandidat di bawah hanya No. Tagihan yang sudah <b>APPROVED</b> dan belum masuk pranota. Satu pranota hanya boleh berisi <b>satu vendor</b>.</div>
+<div class="toolbar"><div class="autocomplete-wrap"><label>Vendor</label><input id="pranotaVendor" autocomplete="off" placeholder="ketik kode / nama vendor"><div id="pranotaVendorSuggest" class="autocomplete-menu"></div></div><div><label>Cari No. Tagihan</label><input id="pranotaSearch" placeholder="no tagihan"></div><div><label>No. Pranota</label><input id="newPranotaNo" placeholder="PRN-202609-00001"></div><div><label>Tanggal</label><input id="newPranotaDate" placeholder="15/9/26 atau 15 Sep 26"></div><div><label>Keterangan</label><input id="newPranotaNote" placeholder="opsional"></div><div><button class="primary" id="createPranota">Buat Pranota</button></div></div></div>
+<div class="card" style="margin-top:12px"><h3>Impor Pranota Historis</h3><div class="small muted">NO PRANOTA|TGL PRANOTA|VENDOR|NO TAGIHAN|KETERANGAN</div><div class="note">Untuk clean rebuild histori. Tagihan harus sudah ada dan tidak PENDING. Import ini merekonstruksi Approval historis + relasi Pranota; tidak mengubah bukti tagihan vendor.</div><div class="note"><b>Contoh:</b><br><code>PRN-0001|31 Jan 26|ZONA|ZONA260131527|Pranota histori</code></div><textarea id="pranotaImportText" style="min-height:120px" placeholder="PRN-0001|31 Jan 26|ZONA|ZONA260131527|Pranota histori"></textarea><div class="actions"><button class="primary" id="processPranotaImport">Impor Pranota Historis</button></div><div id="pranotaImportSummary" class="small muted">Belum diproses.</div><div id="pranotaImportRejects" class="rejectbox"></div></div>
+<div class="card" style="margin-top:12px"><h3>Kandidat Approved</h3><div class="small muted" style="margin-bottom:6px">Pilih Vendor Master lalu cari No. Tagihan bila perlu. Gunakan <b>Pilih Semua Hasil Filter</b> untuk memilih massal satu vendor.</div><div id="pranotaCandidates" class="rejectbox"></div></div><div class="card" style="margin-top:12px"><h3>Daftar Pranota</h3><div class="small muted" style="margin-bottom:6px">Detail tetap mengikuti urutan Entry/Import Tagihan. Tidak di-sort ulang.</div><div id="pranotaList" class="rejectbox pranota-list-wide"></div></div></section>
+<section id="payments" class="view">
+<div class="card">
+  <h3>Pembayaran Pranota</h3>
+  <div class="toolbar">
+    <div><label>Cari Pranota / Vendor / No. Tagihan</label><input id="paymentPranotaSearch" placeholder="contoh: PRN0326001 / ZONA / ZONA260232068"></div>
+    <div><label>&nbsp;</label><button type="button" id="paymentSelectAll">Pilih Semua Hasil Filter</button></div>
+    <div><label>&nbsp;</label><button type="button" id="paymentClearSelection">Kosongkan Pilihan</button></div>
+  </div>
+  <div id="paymentPranotaCandidates" class="rejectbox" style="margin-top:10px;max-height:330px"></div>
+  <textarea id="pPranota" style="display:none"></textarea>
+  <div id="paymentLoadInfo" class="payment-summary small muted" style="margin-top:8px">Belum ada pranota dipilih.</div>
+  <form id="paymentForm"><div class="formgrid" style="margin-top:12px">
+    <div><label>Tanggal Bayar</label><input id="pDate" placeholder="15/9/26 atau 15 Sep 26" required></div>
+    <div><label>Total NETT</label><input id="pAmount" class="readonly" type="number" readonly required></div>
+    <div><label>Total Bayar Aktual</label><input id="pActualAmount" type="number" step="0.01" required></div>
+    <div><label>Selisih</label><input id="pDifference" class="readonly" type="number" readonly></div>
+    <div><label>No. Bukti Bayar</label><input id="pRef" required></div>
+    <div><label>Keterangan</label><input id="pNote" placeholder="pembulatan / admin bank / materai / lainnya"></div>
+    <div><label>Jumlah Pranota</label><input id="pPranotaCount" class="readonly" readonly></div>
+  </div><div class="actions"><button class="primary">Simpan Pembayaran</button><button type="button" id="exportPayments">Export CSV |</button></div></form>
+  <div class="note">Satu pembayaran boleh mencakup banyak pranota. <b>Total NETT</b> tetap nilai sistem; <b>Total Bayar Aktual</b> adalah uang yang benar-benar dibayar. Selisih hanya untuk rekonsiliasi (mis. pembulatan, admin bank, materai) dan tidak mengubah DPP/PPN/PPh/NETT Pranota.</div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Impor Paid / Pembayaran Historis</h3><div class="small muted">TGL BAYAR|NO BUKTI BAYAR|NO PRANOTA (boleh beberapa dipisah koma)|NOMINAL NETT|CATATAN</div><div class="note">Paid hanya diterima jika Pranota ditemukan dan nominal sama dengan NETT sistem. Tidak ada pembayaran parsial per container.</div><div class="note"><b>Contoh satu pranota:</b><br><code>05 Feb 26|BB-0001|PRN-0001|750000|Lunas</code><br><b>Contoh beberapa pranota:</b><br><code>05 Feb 26|BB-0002|PRN-0002,PRN-0003|1500000|Lunas gabungan</code></div><textarea id="paymentImportText" style="min-height:120px" placeholder="05 Feb 26|BB-0001|PRN-0001|750000|Lunas"></textarea><div class="actions"><button class="primary" id="processPaymentImport">Impor Paid Historis</button></div><div id="paymentImportSummary" class="small muted">Belum diproses.</div><div id="paymentImportRejects" class="rejectbox"></div></div>
+<div class="card" style="margin-top:10px;padding:10px">
+  <div class="toolbar">
+    <div><label>Cari Bukti / Invoice / Pranota</label><input id="paymentSearch" placeholder="No. bukti bayar / invoice vendor / pranota"></div>
+    <div><label>Hasil</label><div id="paymentSearchInfo" class="statusline">Semua pembayaran</div></div>
+  </div>
+</div>
+<div class="tablewrap"><table><thead><tr><th>Tanggal Bayar</th><th>No. Bukti Bayar</th><th>Pranota</th><th>Invoice Vendor</th><th>Total NETT</th><th>Total Bayar</th><th>Selisih</th><th>Keterangan</th><th>Sumber</th><th>Aksi</th></tr></thead><tbody id="paymentRows"></tbody></table></div>
+</section>
+
+<dialog id="paymentEditDialog">
+<form method="dialog" class="dialogbox" style="min-width:min(560px,92vw)">
+  <h3>Edit Pembayaran</h3>
+  <div id="paymentEditInfo" class="note"></div>
+  <div class="formgrid" style="margin-top:10px">
+    <div><label>Tanggal Bayar</label><input id="peDate" placeholder="15/9/26 atau 15 Sep 26"></div>
+    <div><label>No. Bukti Bayar</label><input id="peRef"></div>
+    <div><label>Total NETT</label><input id="peNett" class="readonly" type="number" readonly></div>
+    <div><label>Total Bayar Aktual</label><input id="peActualAmount" type="number" step="0.01"></div>
+    <div><label>Selisih</label><input id="peDifference" class="readonly" type="number" readonly></div>
+    <div><label>Keterangan</label><input id="peNote"></div>
+  </div>
+  <div class="actions">
+    <button type="button" class="primary" id="paymentEditSave">Simpan Perubahan</button>
+    <button type="button" id="paymentEditCancel">Tutup</button>
+  </div>
+</form>
+</dialog>
+
+<section id="audit" class="view">
+<div class="card">
+  <h3>Log Audit</h3>
+  <div class="note">Log Audit adalah bukti <b>apa yang dimasukkan, kapan, diterima/reject, dan alasannya</b>. Data awal juga ditampilkan sebagai jejak sumber Excel, jadi tab ini tidak kosong walaupun belum ada import operasional baru.</div>
+  <div class="toolbar">
+    <div><label>Jenis</label><select id="auditType"><option value="">Semua</option><option value="DATA AWAL">Data Awal</option><option value="AMBIL">Ambil</option><option value="KEMBALI">Kembali</option><option value="MASTER">Master</option><option value="MASTER NONAKTIF">Master Nonaktif</option><option value="MASTER VERSION">Master Version</option><option value="KOREKSI RENTAL">Koreksi Rental</option><option value="ADJUSTMENT">Adjustment</option><option value="PAYMENT">Payment</option><option value="EDIT PAYMENT">Edit Payment</option><option value="BATAL PAYMENT">Batal Payment</option><option value="IMPORT TAGIHAN">Impor Tagihan</option><option value="KEPUTUSAN TAGIHAN">Keputusan Tagihan</option><option value="ENTRY TAGIHAN">Entri Tagihan</option><option value="LEPAS DETAIL TAGIHAN">Lepas Detail Tagihan</option><option value="TAMBAH DETAIL TAGIHAN">Tambah Detail Tagihan</option><option value="APPROVAL TAGIHAN">Approval Tagihan</option><option value="BATAL APPROVAL">Batal Approval</option><option value="BUAT PRANOTA">Buat Pranota</option><option value="BATAL PRANOTA">Batal Pranota</option></select></div>
+    <div><label>Status</label><select id="auditStatus"><option value="">Semua</option><option value="DITERIMA">Diterima</option><option value="REJECT">Reject</option><option value="TERCATAT">Tercatat</option></select></div>
+    <div><button id="exportAudit">Export CSV |</button></div>
+  </div>
+</div>
+<div class="tablewrap"><table><thead><tr><th>Waktu / Sumber</th><th>Jenis</th><th>Referensi</th><th>Tanggal</th><th>Status</th><th>Alasan / Keterangan</th><th>Data Asli</th></tr></thead><tbody id="auditRows"></tbody></table></div>
+</section>
+
+<section id="reports" class="view">
+<div class="card"><h3>Laporan Kontrol Billing</h3><div class="note">Laporan menggunakan status efektif yang sama dengan Tinjau Tagihan dan Approval. Export mengikuti jenis laporan yang sedang dipilih.</div><div class="toolbar"><div><label>Jenis Laporan</label><select id="reportType"><option value="OUT_EXPECTED">Outstanding Expected Billing</option><option value="PENDING">Invoice Pending / PR</option><option value="ACTIVE">Rental Aktif</option><option value="CREDIT">Kredit Vendor</option><option value="APPROVAL">Approval / Pranota Outstanding</option><option value="PAYMENT">Payment History</option></select></div><div><label>Cari</label><input id="reportSearch" placeholder="Vendor / Container / No Tagihan"></div><div><button id="exportReport">Export CSV |</button></div></div></div>
+<div class="card" style="margin-top:10px"><div id="reportSummary" class="small muted"></div></div><div class="tablewrap"><table><thead id="reportHead"></thead><tbody id="reportRows"></tbody></table></div>
+</section>
+<section id="backup" class="view">
+<div class="grid2">
+  <div class="card">
+    <h3>Backup Database</h3>
+    <label>Nama File Backup</label><input id="backupName" value="backup_container.json">
+    <div class="actions"><button class="primary" id="backupLocationBtn">Pilih Lokasi & Simpan Backup</button><button id="backupBtn">Download Biasa</button></div>
+    <div class="note"><b>Pilih Lokasi & Simpan Backup</b> membuka dialog Windows/Edge/Chrome sehingga Anda bisa menentukan folder dan nama file. Jika browser tidak mendukung, gunakan Download Biasa.</div>
+  </div>
+  <div class="card">
+    <h3>Restore Backup</h3>
+    <div class="actions"><button class="primary" id="restorePickerBtn">Pilih File Backup & Restore</button></div>
+    <label style="margin-top:12px">Alternatif pilih file</label><input id="restoreFile" type="file" accept=".json,application/json">
+    <div class="actions"><button id="restoreBtn">Restore File Terpilih</button><button class="danger" id="restoreBaseline">Kembalikan Data Awal</button></div>
+    <div class="note warn">Restore mengganti database aktif. Sebelum restore, buat backup kondisi terakhir.</div>
+  </div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Isi Database</h3><div id="backupInfo" class="small muted"></div></div><div class="card" style="margin-top:12px"><h3>Reset Khusus Tagihan <span class="badge info">V7.1.38</span></h3><div class="note warn"><b>Untuk mengulang seluruh impor Tagihan tanpa menyentuh data operasional.</b> Menghapus seluruh Tagihan Vendor, hasil matching Cycle/Expected, warning/PR Tagihan, dan turunannya. <b>Master, Tarif, TAKE, RETURN, Rental/Siklus, Expected dan koreksi Rental tetap dipertahankan.</b> Buat Backup JSON terlebih dahulu.</div><div class="actions"><button id="invoiceOnlyResetPreviewBtn">Simulasi Reset Khusus Tagihan</button><button class="danger" id="executeInvoiceOnlyReset">Hapus Semua Tagihan untuk Impor Ulang</button></div><div id="invoiceOnlyResetPreview" class="small muted" style="margin-top:8px">Belum disimulasikan.</div></div>
+<div class="card" style="margin-top:12px"><h3>Clean Rebuild Data</h3><div class="note warn"><b>Reset DATA saja, bukan aturan aplikasi.</b> Master, Tarif, TAKE/RETURN, Rental/Siklus, Expected, Tagihan, Pranota, Payment dan Audit dibersihkan agar dapat diimpor ulang dari sumber. Buat Backup JSON terlebih dahulu.</div><div class="actions"><button id="cleanResetPreviewBtn">Simulasi Data yang Akan Dibersihkan</button><button class="danger" id="executeCleanReset">Reset Data untuk Impor Ulang</button></div><div id="cleanResetPreview" class="small muted" style="margin-top:8px">Belum disimulasikan.</div></div>
+</section>
+
+<dialog id="adjustDialog"><div class="dialogbody">
+  <h3>Koreksi Detail Tagihan</h3><div id="adjustInfo" class="note"></div>
+  <div class="grid2">
+    <div><label>Tanggal Awal <span class="small muted">(terkunci)</span></label><input id="adjustStart" class="readonly" readonly></div>
+    <div><label>Tanggal Akhir</label><input id="adjustEnd"></div>
+  </div>
+  <div id="adjustPreview" class="note" style="margin-top:10px"></div>
+  <label style="margin-top:10px">Koreksi Manual (+ menambah / - mengurangi)</label><input id="adjustAmount" type="number" step="0.01" value="0">
+  <label style="margin-top:10px">Keterangan Koreksi Manual</label><input id="adjustNote">
+  <div id="adjustImpact" class="note warn" style="display:none"></div>
+  <div class="dialogactions"><button id="adjustCancel">Batal</button><button class="primary" id="adjustSave">Simpan Koreksi</button></div>
+</div></dialog>
+
+<dialog id="rentalDialog"><div class="dialogbody">
+  <h3>Koreksi Rental</h3>
+  <div id="rentalEditInfo" class="note"></div><div id="rentalImpact" class="note warn" style="display:none"></div>
+  <div class="grid2">
+    <div><label>Tanggal Ambil</label><input id="editStart" placeholder="09 Mei 23"></div>
+    <div><label>Tanggal Kembali</label><input id="editReturn" placeholder="kosong = belum kembali"></div>
+  </div>
+  <label style="margin-top:10px">Alasan Koreksi</label><input id="editReason" placeholder="contoh: salah input DO">
+  <div class="dialogactions"><button id="rentalCancel">Batal</button><button class="primary" id="rentalSave">Simpan Koreksi</button></div>
+</div></dialog>
+
+
+<dialog id="rentalDetailDialog"><div class="dialogbody" style="max-width:900px">
+  <h3>Detail Siklus Rental</h3>
+  <div id="rentalDetailHead" class="note"></div>
+  <div class="grid2">
+    <div><h4 style="margin:6px 0">Periode Siklus Ini</h4><div id="rentalDetailPeriods" class="rejectbox" style="max-height:330px"></div></div>
+    <div><h4 style="margin:6px 0">History Siklus Kontainer</h4><div id="rentalDetailHistory" class="rejectbox" style="max-height:330px"></div></div>
+  </div>
+  <div class="dialogactions"><button id="rentalDetailClose">Tutup</button></div>
+</div></dialog>
+
+<dialog id="taxDialog"><div class="dialogbody">
+  <h3>Pajak Invoice</h3><div id="taxInfo" class="note"></div>
+  <div class="grid2"><div><label>PPN</label><select id="taxPpnEnabled"><option value="YA">Ya</option><option value="TIDAK">Tidak</option></select></div><div><label>Tarif PPN %</label><input id="taxPpnRate" type="number" step="0.01" value="11"></div></div>
+  <div class="grid2" style="margin-top:10px"><div><label>PPh 23</label><select id="taxPphEnabled"><option value="YA">Ya</option><option value="TIDAK">Tidak</option></select></div><div><label>Tarif PPh %</label><input id="taxPphRate" type="number" step="0.01" value="2"></div></div>
+  <div class="dialogactions"><button id="taxCancel">Batal</button><button class="primary" id="taxSave">Simpan Pajak</button></div>
+</div></dialog>
+<dialog id="creditDialog"><div class="dialogbody"><h3>Catat Kredit Vendor</h3><div class="note">Kredit dicatat sebagai nilai DPP. Keterangan dibuat otomatis dari bukti tagihan dan siklus, tetapi tetap dapat diedit user. Menyimpan kredit <b>tidak otomatis Approval</b>.</div><div class="formgrid" style="grid-template-columns:1fr 1fr"><div><label>Vendor</label><input id="creditVendorName" class="readonly" readonly></div><div><label>No. Tagihan</label><input id="creditInvoiceNo" class="readonly" readonly></div><div><label>Nilai Kredit DPP</label><input id="creditAmount" inputmode="decimal"></div><div style="grid-column:1/-1"><label>Keterangan</label><textarea id="creditNote" style="min-height:110px"></textarea></div></div><div class="dialogactions"><button id="creditCancel">Batal</button><button class="primary" id="creditSave">Simpan Kredit</button></div></div></dialog>
+</main><script>window.CBC_SERVER = @json(['stateUrl' => route('container-billing.state'), 'csrf' => csrf_token()]);</script><script src="{{ route('container-billing.asset', ['file' => 'baseline_data.js']) }}"></script><script src="{{ route('container-billing.asset', ['file' => 'siklus_reference.js']) }}"></script><script src="{{ route('container-billing.asset', ['file' => 'examples.js']) }}"></script><script src="{{ route('container-billing.asset', ['file' => 'app.js']) }}"></script><script>setTimeout(()=>{const expected="V7.1.38";const runtime=String(window.CBC_RUNTIME_VERSION||"");if(!runtime.includes(expected)){const el=document.getElementById("dbStatus");if(el){el.textContent=`BUILD MISMATCH: HTML ${expected} tetapi runtime ${runtime||"tidak terbaca"}. Hard reload diperlukan.`;el.style.background="#fee2e2";el.style.color="#991b1b";}}},300);</script><datalist id="daftarKontainer"></datalist><datalist id="daftarVendor"></datalist>
+</body></html>

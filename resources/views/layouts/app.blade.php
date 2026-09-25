@@ -330,6 +330,12 @@
                     $showMasterSection = $isAdmin || $hasMasterPermissions;
                 @endphp
 
+                @can('container-billing-manage')
+                    <a href="{{ route('container-billing.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 text-xs text-gray-700 hover:bg-blue-100 hover:text-blue-700">
+                        <span class="text-xs font-medium menu-text">Container Billing Control</span>
+                    </a>
+                @endcan
+
                 <!-- Dashboard -->
                 <a href="{{ route('dashboard') }}" target="_blank" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
                     <span class="text-xs font-medium menu-text">Dashboard</span>
@@ -1898,8 +1904,8 @@
 
                 {{-- Surat Jalan Sub-Dropdown --}}
                 @php
-                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('orders-batam.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-batam.*') || Request::routeIs('surat-jalan-tarik-kosong-batam.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-batam.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan-batam.*');
-                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('order-batam-view') || $user->can('order-batam-create') || $user->can('order-batam-update') || $user->can('order-batam-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || ($user->can('surat-jalan-batam-view') || $user->can('surat-jalan-batam-create') || $user->can('surat-jalan-batam-update') || $user->can('surat-jalan-batam-delete')) || ($user->can('surat-jalan-tarik-kosong-batam-view') || $user->can('surat-jalan-tarik-kosong-batam-create') || $user->can('surat-jalan-tarik-kosong-batam-update') || $user->can('surat-jalan-tarik-kosong-batam-delete')) || $user->can('approval-order-view') || $user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete') || ($user->can('uang-jalan-batam-view') || $user->can('uang-jalan-batam-create') || $user->can('uang-jalan-batam-update') || $user->can('uang-jalan-batam-delete')) || $user->can('pranota-uang-jalan-view') || $user->can('pranota-uang-jalan-batam-view') || $user->can('pembayaran-pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-batam-view'));
+                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('orders-batam.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-batam.*') || Request::routeIs('surat-jalan-tarik-kosong-batam.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-batam.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan-batam.*') || Request::routeIs('permohonan-amprahan.*') || Request::routeIs('approval-permohonan-amprahan.*');
+                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('order-batam-view') || $user->can('order-batam-create') || $user->can('order-batam-update') || $user->can('order-batam-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || ($user->can('surat-jalan-batam-view') || $user->can('surat-jalan-batam-create') || $user->can('surat-jalan-batam-update') || $user->can('surat-jalan-batam-delete')) || ($user->can('surat-jalan-tarik-kosong-batam-view') || $user->can('surat-jalan-tarik-kosong-batam-create') || $user->can('surat-jalan-tarik-kosong-batam-update') || $user->can('surat-jalan-tarik-kosong-batam-delete')) || $user->can('approval-order-view') || $user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete') || ($user->can('uang-jalan-batam-view') || $user->can('uang-jalan-batam-create') || $user->can('uang-jalan-batam-update') || $user->can('uang-jalan-batam-delete')) || $user->can('pranota-uang-jalan-view') || $user->can('pranota-uang-jalan-batam-view') || $user->can('pembayaran-pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-batam-view') || $user->can('permohonan-amprahan-view') || $user->can('permohonan-amprahan-approve') || $isAdmin);
                 @endphp
 
                 @if($hasSuratJalanPermissions)
@@ -1997,14 +2003,6 @@
                             <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 
                                 <span class="text-xs">Bayar Pranota Uang Jalan</span>
-                            </a>
-                        @endif
-
-                        {{-- Permintaan Amprahan --}}
-                        @if(Route::has('permohonan-amprahan.index') && $user && ($user->can('permohonan-amprahan-view') || $user->is_admin))
-                            <a href="{{ route('permohonan-amprahan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('permohonan-amprahan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                                <div class="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2 flex-shrink-0"></div>
-                                <span>Permintaan Amprahan (PWA)</span>
                             </a>
                         @endif
 
