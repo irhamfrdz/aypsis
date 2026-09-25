@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Manifest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class GerakVoyageController extends Controller
 {
@@ -29,6 +29,8 @@ class GerakVoyageController extends Controller
         $grouped = Manifest::query()
             ->select('nama_kapal', 'no_voyage')
             ->selectRaw('COUNT(*) as jumlah_manifest')
+            ->selectRaw('MAX(COALESCE(tanggal_berangkat, tanggal_muat, DATE(created_at))) as tanggal_voyage')
+            ->selectRaw('MAX(id) as manifest_terakhir_id')
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '<>', '')
             ->whereNotNull('no_voyage')
@@ -39,57 +41,56 @@ class GerakVoyageController extends Controller
             $grouped->selectRaw("MAX({$field}) as {$field}");
         }
 
-        $query = DB::query()->fromSub($grouped->toBase(), 'voyages');
-
-        if (! empty($filters['nama_kapal'])) {
-            $query->where('nama_kapal', $filters['nama_kapal']);
-        }
-
-        if (! empty($filters['no_voyage'])) {
-            $query->where('no_voyage', 'like', '%'.$filters['no_voyage'].'%');
-        }
-
-        $withDates = function ($query) use ($tanggalFields) {
-            $query->where(function ($query) use ($tanggalFields) {
-                foreach ($tanggalFields as $field) {
-                    $query->orWhereNotNull($field);
+        $hasDate = function ($voyage) use ($tanggalFields): bool {
+            foreach ($tanggalFields as $field) {
+                if ($voyage->{$field}) {
+                    return true;
                 }
-            });
+            }
+
+            return false;
         };
 
-        $totalVoyages = (clone $query)->count();
-        $filledQuery = clone $query;
-        $withDates($filledQuery);
-        $voyagesWithDates = $filledQuery->count();
-        $voyagesWithoutDates = $totalVoyages - $voyagesWithDates;
+        // Pilih satu voyage paling baru untuk tiap kapal sebelum filter status diterapkan.
+        $latestByShip = $grouped->toBase()->get()
+            ->sort(function ($a, $b) {
+                $dateOrder = strcmp((string) $b->tanggal_voyage, (string) $a->tanggal_voyage);
+
+                return $dateOrder ?: ((int) $b->manifest_terakhir_id <=> (int) $a->manifest_terakhir_id);
+            })
+            ->unique('nama_kapal')
+            ->values();
+
+        $ships = $latestByShip->pluck('nama_kapal')->sort()->values();
+
+        $filtered = $latestByShip->filter(function ($voyage) use ($filters) {
+            return (empty($filters['nama_kapal']) || $voyage->nama_kapal === $filters['nama_kapal'])
+                && (empty($filters['no_voyage']) || stripos($voyage->no_voyage, $filters['no_voyage']) !== false);
+        });
+
+        $totalShips = $filtered->count();
+        $shipsWithDates = $filtered->filter($hasDate)->count();
+        $shipsWithoutDates = $totalShips - $shipsWithDates;
 
         if (($filters['status'] ?? null) === 'terisi') {
-            $withDates($query);
+            $filtered = $filtered->filter($hasDate);
         } elseif (($filters['status'] ?? null) === 'belum_terisi') {
-            $query->where(function ($query) use ($tanggalFields) {
-                foreach ($tanggalFields as $field) {
-                    $query->whereNull($field);
-                }
-            });
+            $filtered = $filtered->reject($hasDate);
         }
 
-        $voyages = $query
-            ->orderByRaw('COALESCE(tanggal_muat, tanggal_mulai_berlayar, tanggal_berlabuh, tanggal_sandar, tanggal_mulai_bongkar, tanggal_selesai_bongkar) DESC')
-            ->orderBy('nama_kapal')
-            ->orderBy('no_voyage')
-            ->paginate(15)
-            ->withQueryString();
-
-        $ships = Manifest::query()
-            ->whereNotNull('nama_kapal')
-            ->where('nama_kapal', '<>', '')
-            ->distinct()
-            ->orderBy('nama_kapal')
-            ->pluck('nama_kapal');
+        $filtered = $filtered->sortBy('nama_kapal')->values();
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $voyages = new LengthAwarePaginator(
+            $filtered->forPage($page, 9)->values(),
+            $filtered->count(),
+            9,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('gerak-voyage.dashboard', compact(
             'voyages', 'ships', 'filters', 'tanggalFields',
-            'totalVoyages', 'voyagesWithDates', 'voyagesWithoutDates'
+            'totalShips', 'shipsWithDates', 'shipsWithoutDates'
         ));
     }
 
