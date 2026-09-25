@@ -215,9 +215,19 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($rekapData as $id => $data)
+                            @php
+                                $umlTotal = $data['total_uang_makan_lembur'] ?? 0;
+                                $grandTotal = $data['total_nominal'] + $umlTotal;
+                                $totalJamKaryawan = $data['total_jam_biasa'] + $data['total_jam_libur'];
+                            @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" data-uang-makan="{{ $data['nominal_uang_makan'] ?? ($data['karyawan']->nominal_uang_makan ?? 0) }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" 
+                                        data-uang-makan="{{ $data['nominal_uang_makan'] ?? ($data['karyawan']->nominal_uang_makan ?? 0) }}" 
+                                        data-jam-lembur="{{ $totalJamKaryawan }}" 
+                                        data-nominal-awal="{{ $grandTotal }}" 
+                                        data-uang-makan-lembur="{{ $umlTotal }}" 
+                                        class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $loop->iteration }}
@@ -247,10 +257,6 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                @php
-                                    $umlTotal = $data['total_uang_makan_lembur'] ?? 0;
-                                    $grandTotal = $data['total_nominal'] + $umlTotal;
-                                @endphp
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     @if($umlTotal > 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
@@ -260,7 +266,7 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}" data-nominal-awal="{{ $grandTotal }}" data-adjustment="0">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $totalJamKaryawan }}" data-nominal-awal="{{ $grandTotal }}" data-uang-makan-lembur="{{ $umlTotal }}" data-adjustment="0">
                                     Rp {{ number_format($grandTotal, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -271,7 +277,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
+                                <td colspan="9" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                             <i class="fas fa-file-invoice-dollar text-2xl text-gray-400"></i>
@@ -347,6 +353,7 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
                                         <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Jam</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Uang Makan/Hari</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-orange-600 uppercase tracking-wider">U. Makan Lembur</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                         <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
@@ -668,7 +675,7 @@
                 // Cek apakah data sudah pernah diinisialisasi (sudah ada properti selected)
                 let hasInitialized = details.some(r => r.hasOwnProperty('selected'));
                 if (!hasInitialized) {
-                    details.forEach(r => r.selected = false); // Default tidak terceklis
+                    details.forEach(r => r.selected = true); // Default terceklis semua
                     this.setAttribute('data-detail', JSON.stringify(details));
                 }
             } catch (e) {
@@ -721,8 +728,8 @@
                         if (newBtn) {
                             let newDetails = JSON.parse(newBtn.getAttribute('data-detail'));
                             
-                            // Kembalikan ke default (tidak terceklis)
-                            newDetails.forEach(r => r.selected = false);
+                            // Kembalikan ke default (terceklis semua)
+                            newDetails.forEach(r => r.selected = true);
                             
                             // Update current button's attribute and details array
                             btnEl.setAttribute('data-detail', JSON.stringify(newDetails));
@@ -761,6 +768,7 @@
                 let totalJam = 0;
                 let totalBiasa = 0;
                 let totalLibur = 0;
+                let totalUangMakanLembur = 0;
                 let allChecked = true;
                 let rowCount = 0;
                 
@@ -772,7 +780,9 @@
                         
                         if (isChecked) {
                             totalNominalAwal += Number(row.nominal) || 0;
-                            totalNominalAwal += Number(row.uang_makan_lembur) || 0;
+                            let rowUml = Number(row.uang_makan_lembur) || 0;
+                            totalNominalAwal += rowUml;
+                            totalUangMakanLembur += rowUml;
                             totalAdjustment += Number(row.adjustment || 0);
                             totalJam += Number(row.durasi_jam) || 0;
                             if (row.tipe_hari === 'Hari Biasa') {
@@ -872,7 +882,7 @@
                     });
                 });
                 
-                updateMainTable(totalJam, totalBiasa, totalLibur, total, totalNominalAwal, totalAdjustment);
+                updateMainTable(totalJam, totalBiasa, totalLibur, total, totalNominalAwal, totalAdjustment, totalUangMakanLembur);
                 
                 const cb = tr.querySelector('.row-checkbox');
                 if (cb && cb.checked && typeof updateCartFromRow === 'function') {
@@ -880,11 +890,12 @@
                 }
             }
             
-            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal, totalNominalAwal, totalAdjustment) {
+            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal, totalNominalAwal, totalAdjustment, totalUml) {
                 const payoutTd = tr.querySelector('.total-payout-text');
                 if (payoutTd) {
                     payoutTd.setAttribute('data-jam-lembur', totalJam);
                     payoutTd.setAttribute('data-nominal-awal', totalNominalAwal !== undefined ? totalNominalAwal : totalNominal);
+                    payoutTd.setAttribute('data-uang-makan-lembur', totalUml !== undefined ? totalUml : 0);
                     payoutTd.setAttribute('data-adjustment', totalAdjustment !== undefined ? totalAdjustment : 0);
                     payoutTd.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
                 }
@@ -900,6 +911,13 @@
                 if (liburTd) {
                     liburTd.innerHTML = totalLibur > 0 
                         ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">${totalLibur} Jam</span>`
+                        : `<span class="text-gray-400">-</span>`;
+                }
+
+                const umlTd = tr.querySelector('td:nth-child(7)');
+                if (umlTd) {
+                    umlTd.innerHTML = totalUml > 0 
+                        ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Rp ${totalUml.toLocaleString('id-ID')}</span>`
                         : `<span class="text-gray-400">-</span>`;
                 }
             }
@@ -932,35 +950,49 @@
             const penempatanNode = nameTd.querySelector('div.text-xs');
             const penempatan = penempatanNode ? penempatanNode.innerText.trim() : '-';
             const payoutTd = tr.querySelector('.total-payout-text');
-            const totalJam = payoutTd.getAttribute('data-jam-lembur');
-            const payoutText = payoutTd.innerText;
-            const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             
-            // Ambil nominal awal dan adjustment dari atribut jika sudah ada
-            let nominalAwal = parseInt(payoutTd.getAttribute('data-nominal-awal'));
-            let adjustment = parseInt(payoutTd.getAttribute('data-adjustment'));
+            let totalJam = payoutTd ? payoutTd.getAttribute('data-jam-lembur') : null;
+            if (totalJam === null || totalJam === undefined || totalJam === '') {
+                totalJam = cb.getAttribute('data-jam-lembur') || 0;
+            }
             
-            // Jika belum diset di payoutTd, hitung dari data-detail pada btn-detail
-            if (isNaN(nominalAwal) || isNaN(adjustment)) {
-                const btnDetail = tr.querySelector('.btn-detail');
-                let details = [];
-                try {
-                    details = JSON.parse(btnDetail ? btnDetail.getAttribute('data-detail') : '[]');
-                } catch(e) {}
-                
-                let sumAwal = 0;
-                let sumAdj = 0;
-                if (Array.isArray(details) && details.length > 0) {
+            let nominalAwal = parseInt(payoutTd ? payoutTd.getAttribute('data-nominal-awal') : cb.getAttribute('data-nominal-awal'));
+            let uangMakanLembur = parseInt(payoutTd ? payoutTd.getAttribute('data-uang-makan-lembur') : cb.getAttribute('data-uang-makan-lembur'));
+            if (isNaN(uangMakanLembur)) uangMakanLembur = parseInt(cb.getAttribute('data-uang-makan-lembur')) || 0;
+            let adjustment = parseInt(payoutTd ? payoutTd.getAttribute('data-adjustment') : 0) || 0;
+            
+            // Periksa dari data-detail pada btn-detail jika ada penyesuaian dari modal rincian
+            const btnDetail = tr.querySelector('.btn-detail');
+            let details = [];
+            try {
+                details = JSON.parse(btnDetail ? btnDetail.getAttribute('data-detail') : '[]');
+            } catch(e) {}
+            
+            if (Array.isArray(details) && details.length > 0) {
+                let hasInitialized = details.some(d => d.hasOwnProperty('selected'));
+                if (hasInitialized) {
+                    let sumAwal = 0;
+                    let sumUml = 0;
+                    let sumAdj = 0;
+                    let sumJam = 0;
                     details.forEach(d => {
                         if (d.selected !== false) {
-                            sumAwal += Number(d.nominal) || 0;
-                            sumAwal += Number(d.uang_makan_lembur) || 0;
+                            sumAwal += (Number(d.nominal) || 0) + (Number(d.uang_makan_lembur) || 0);
+                            sumUml += Number(d.uang_makan_lembur) || 0;
                             sumAdj += Number(d.adjustment) || 0;
+                            sumJam += Number(d.durasi_jam) || 0;
                         }
                     });
+                    nominalAwal = sumAwal;
+                    uangMakanLembur = sumUml;
+                    adjustment = sumAdj;
+                    totalJam = sumJam;
                 }
-                nominalAwal = sumAwal > 0 ? sumAwal : basePayoutVal;
-                adjustment = sumAdj;
+            }
+
+            if (isNaN(nominalAwal)) {
+                const payoutText = payoutTd ? payoutTd.innerText : '';
+                nominalAwal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             }
 
             const uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
@@ -971,6 +1003,7 @@
                 name: karyawanName,
                 penempatan: penempatan,
                 totalJam: totalJam,
+                uangMakanLembur: uangMakanLembur,
                 nominalAwal: nominalAwal,
                 adjustment: adjustment,
                 basePayoutVal: nominalAwal + adjustment,
@@ -1001,12 +1034,11 @@
 
         document.addEventListener('cartUpdated', togglePranotaButton);
 
-        // Restore checkboxes state on load
+        // Restore checkboxes state on load dan sinkronkan ulang isi data
         rowCheckboxes.forEach(cb => {
             if (pranotaCart[cb.value]) {
                 cb.checked = true;
-                // Selalu sinkronkan ulang uangMakan dari tabel (sumber: tabel uang_makans) agar tidak tertahan sessionStorage lama
-                pranotaCart[cb.value].uangMakan = parseInt(cb.getAttribute('data-uang-makan')) || 0;
+                updateCartFromRow(cb);
             }
         });
         saveCart();
@@ -1095,6 +1127,8 @@
             const cbDom = document.querySelector(`.row-checkbox[value="${karyawanId}"]`);
             const uangMakan = cbDom ? (parseInt(cbDom.getAttribute('data-uang-makan')) || 0) : (item.uangMakan || 0);
             
+            const umlVal = Number(item.uangMakanLembur) || 0;
+            
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap">
@@ -1108,6 +1142,10 @@
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right">
                     <input type="number" name="karyawans[${karyawanId}][nominal_per_hari]" value="${uangMakan}" class="modal-uang-makan-input w-28 px-2 py-1 text-xs border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right font-medium" placeholder="0" title="Uang Makan Per Hari">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium">
+                    ${umlVal > 0 ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">Rp ${new Intl.NumberFormat('id-ID').format(umlVal)}</span>` : `<span class="text-gray-400">-</span>`}
+                    <input type="hidden" name="karyawans[${karyawanId}][uang_makan_lembur]" value="${umlVal}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
                     Rp ${new Intl.NumberFormat('id-ID').format(nominalAwal)}
