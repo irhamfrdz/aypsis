@@ -9,9 +9,9 @@
                 <a href="{{ route('approval-permohonan-amprahan.index') }}" class="text-gray-400 hover:text-blue-600 transition-colors mr-3" title="Kembali">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                Proses Persetujuan Amprahan
+                {{ $permohonan->status == 'pending' ? 'Proses' : 'Koreksi' }} Persetujuan Amprahan
             </h1>
-            <p class="text-gray-600 mt-1 ml-10">Pilih item barang yang akan disetujui atau ditolak</p>
+            <p class="text-gray-600 mt-1 ml-10">Isi jumlah yang disetujui untuk setiap barang. Isi 0 jika ditolak. Gunakan tombol Kembalikan ke Pending untuk mengulang persetujuan.</p>
         </div>
     </div>
 
@@ -53,6 +53,8 @@
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     Disetujui
                                 </span>
+                            @elseif($permohonan->status == 'partially_approved')
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui Sebagian</span>
                             @else
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     {{ ucfirst($permohonan->status) }}
@@ -77,6 +79,15 @@
         <div class="lg:col-span-2">
             <form action="{{ route('approval-permohonan-amprahan.process', $permohonan->id) }}" method="POST">
                 @csrf
+                @if($errors->any())
+                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                        <ul class="list-disc pl-5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
                     <div class="p-6 border-b flex justify-between items-center bg-gray-50">
                         <h3 class="text-lg font-bold text-gray-900">Daftar Barang ({{ $permohonan->items->count() }} Item)</h3>
@@ -91,7 +102,7 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Link Barang</th>
                                     <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Satuan</th>
-                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Persetujuan</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah Disetujui</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -122,16 +133,14 @@
                                             {{ $item->satuan }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <div class="flex items-center justify-center space-x-4">
-                                                <label class="inline-flex items-center cursor-pointer">
-                                                    <input type="radio" name="items[{{ $item->id }}]" value="approved" class="form-radio h-4 w-4 text-green-600" {{ $item->status == 'approved' || $item->status == 'pending' ? 'checked' : '' }}>
-                                                    <span class="ml-2 text-sm text-green-700 font-medium"><i class="fas fa-check mr-1"></i> Approve</span>
-                                                </label>
-                                                <label class="inline-flex items-center cursor-pointer">
-                                                    <input type="radio" name="items[{{ $item->id }}]" value="rejected" class="form-radio h-4 w-4 text-red-600" {{ $item->status == 'rejected' ? 'checked' : '' }}>
-                                                    <span class="ml-2 text-sm text-red-700 font-medium"><i class="fas fa-times mr-1"></i> Reject</span>
-                                                </label>
-                                            </div>
+                                            @php
+                                                $jumlahAwal = $item->jumlah_disetujui ?? ($item->status == 'rejected' ? 0 : $item->jumlah);
+                                            @endphp
+                                            <input type="number" name="items[{{ $item->id }}]" value="{{ old('items.'.$item->id, $jumlahAwal) }}"
+                                                min="0" max="{{ $item->jumlah }}" step="0.01" required
+                                                aria-label="Jumlah disetujui untuk {{ $item->nama_barang }}"
+                                                class="w-28 rounded-lg border-gray-300 text-right shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <div class="mt-1 text-xs text-gray-500">Maks. {{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }} {{ $item->satuan }}</div>
                                         </td>
                                     </tr>
                                 @empty
@@ -153,6 +162,14 @@
                     </button>
                 </div>
             </form>
+            @if($permohonan->status != 'pending')
+                <form action="{{ route('approval-permohonan-amprahan.reset', $permohonan->id) }}" method="POST" class="mt-4 text-right" onsubmit="return confirm('Kembalikan seluruh barang dalam permohonan ini ke pending?')">
+                    @csrf
+                    <button type="submit" class="px-6 py-2.5 border border-yellow-400 rounded-lg text-yellow-800 hover:bg-yellow-50 font-medium transition-colors">
+                        <i class="fas fa-undo mr-2"></i> Kembalikan ke Pending
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 </div>

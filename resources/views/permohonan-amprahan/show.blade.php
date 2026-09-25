@@ -74,6 +74,8 @@
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     Disetujui
                                 </span>
+                            @elseif($permohonan->status == 'partially_approved')
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui Sebagian</span>
                             @else
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     {{ ucfirst($permohonan->status) }}
@@ -109,6 +111,7 @@
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Link Barang</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
+                                <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Disetujui</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Satuan</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Keterangan</th>
@@ -135,6 +138,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
                                         {{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }}
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                        @if($item->status == 'pending')
+                                            -
+                                        @else
+                                            {{ rtrim(rtrim(number_format($item->jumlah_disetujui ?? ($item->status == 'approved' ? $item->jumlah : 0), 2, ',', '.'), '0'), ',') }}
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
                                         {{ $item->satuan }}
                                     </td>
@@ -143,6 +153,8 @@
                                             <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                                         @elseif($item->status == 'approved')
                                             <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
+                                        @elseif($item->status == 'partially_approved')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui Sebagian</span>
                                         @else
                                             <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
                                         @endif
@@ -153,7 +165,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
+                                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 font-medium text-sm">
                                         Tidak ada item barang dalam permintaan ini.
                                     </td>
                                 </tr>

@@ -19,8 +19,14 @@ class PermohonanAmprahanItem extends Model
         'nama_barang',
         'link_barang',
         'jumlah',
+        'jumlah_disetujui',
         'satuan',
         'keterangan',
+    ];
+
+    protected $casts = [
+        'jumlah' => 'decimal:2',
+        'jumlah_disetujui' => 'decimal:2',
     ];
 
     public function permohonan()

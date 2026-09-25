@@ -30,6 +30,7 @@
                     <option value="all" {{ $selectedStatus == 'all' ? 'selected' : '' }}>-- Semua Status --</option>
                     <option value="pending" {{ $selectedStatus == 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="approved" {{ $selectedStatus == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="partially_approved" {{ $selectedStatus == 'partially_approved' ? 'selected' : '' }}>Disetujui Sebagian</option>
                     <option value="rejected" {{ $selectedStatus == 'rejected' ? 'selected' : '' }}>Rejected</option>
                 </select>
             </div>
@@ -117,11 +118,9 @@
                                         <i class="fas fa-eye"></i> Detail
                                     </a>
                                     
-                                    @if($item->status == 'pending')
-                                        <a href="{{ route('approval-permohonan-amprahan.process-form', $item->id) }}" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center" title="Proses Persetujuan">
-                                            <i class="fas fa-clipboard-check mr-1.5"></i> Proses
-                                        </a>
-                                    @endif
+                                    <a href="{{ route('approval-permohonan-amprahan.process-form', $item->id) }}" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center" title="{{ $item->status == 'pending' ? 'Proses Persetujuan' : 'Koreksi Persetujuan' }}">
+                                        <i class="fas fa-clipboard-check mr-1.5"></i> {{ $item->status == 'pending' ? 'Proses' : 'Koreksi' }}
+                                    </a>
                                 </div>
                             </td>
                         </tr>

@@ -10,6 +10,7 @@ use App\Models\PermohonanAmprahanItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PermohonanAmprahanController extends Controller
@@ -142,41 +143,76 @@ class PermohonanAmprahanController extends Controller
 
     public function process(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'items' => 'required|array',
-            'items.*' => 'required|in:approved,rejected,pending',
+            'items.*' => 'required|numeric|min:0|decimal:0,2',
         ]);
 
-        $permohonan = PermohonanAmprahan::findOrFail($id);
-        
-        // Update item statuses
-        $approvedCount = 0;
-        $rejectedCount = 0;
-        $totalItems = count($request->items);
-        
-        foreach ($request->items as $itemId => $status) {
-            $item = PermohonanAmprahanItem::where('permohonan_id', $id)->where('id', $itemId)->first();
-            if ($item) {
-                $item->status = $status;
-                $item->save();
-                
-                if ($status == 'approved') $approvedCount++;
-                if ($status == 'rejected') $rejectedCount++;
+        $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+        $items = $permohonan->items->keyBy('id');
+
+        if (count($validated['items']) !== $items->count()
+            || array_diff(array_keys($validated['items']), $items->keys()->all())) {
+            throw ValidationException::withMessages([
+                'items' => 'Jumlah persetujuan harus diisi untuk semua barang dalam permohonan ini.',
+            ]);
+        }
+
+        foreach ($validated['items'] as $itemId => $jumlahDisetujui) {
+            if ((float) $jumlahDisetujui > (float) $items[$itemId]->jumlah) {
+                throw ValidationException::withMessages([
+                    "items.$itemId" => 'Jumlah disetujui tidak boleh melebihi jumlah diminta.',
+                ]);
             }
         }
 
-        // Determine parent status
-        if ($approvedCount == $totalItems) {
-            $permohonan->status = 'approved';
-        } elseif ($rejectedCount == $totalItems) {
-            $permohonan->status = 'rejected';
-        } else {
-            $permohonan->status = 'partially_approved';
-        }
-        
-        $permohonan->save();
+        DB::transaction(function () use ($permohonan, $items, $validated) {
+            $approvedCount = 0;
+            $rejectedCount = 0;
+
+            foreach ($validated['items'] as $itemId => $jumlahDisetujui) {
+                $item = $items[$itemId];
+                $item->jumlah_disetujui = $jumlahDisetujui;
+
+                if ((float) $jumlahDisetujui === 0.0) {
+                    $item->status = 'rejected';
+                    $rejectedCount++;
+                } elseif ((float) $jumlahDisetujui === (float) $item->jumlah) {
+                    $item->status = 'approved';
+                    $approvedCount++;
+                } else {
+                    $item->status = 'partially_approved';
+                }
+
+                $item->save();
+            }
+
+            $permohonan->status = $approvedCount === $items->count()
+                ? 'approved'
+                : ($rejectedCount === $items->count() ? 'rejected' : 'partially_approved');
+            $permohonan->save();
+        });
+
+        return redirect()->route('approval-permohonan-amprahan.index', ['status' => 'all'])
+                         ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
+    }
+
+    public function resetApproval($id)
+    {
+        DB::transaction(function () use ($id) {
+            $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+
+            foreach ($permohonan->items as $item) {
+                $item->status = 'pending';
+                $item->jumlah_disetujui = null;
+                $item->save();
+            }
+
+            $permohonan->status = 'pending';
+            $permohonan->save();
+        });
 
         return redirect()->route('approval-permohonan-amprahan.index')
-                         ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
+            ->with('success', 'Persetujuan dikembalikan ke pending untuk dikoreksi.');
     }
 }

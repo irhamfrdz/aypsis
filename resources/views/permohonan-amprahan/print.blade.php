@@ -237,7 +237,12 @@
                         </tr>
                         <tr>
                             <td>Status</td>
-                            <td>: {{ ucfirst($permohonan->status) }}</td>
+                            <td>: {{ match($permohonan->status) {
+                                'approved' => 'Disetujui',
+                                'partially_approved' => 'Disetujui Sebagian',
+                                'rejected' => 'Ditolak',
+                                default => 'Pending',
+                            } }}</td>
                         </tr>
                     </table>
                 </div>
@@ -250,18 +255,19 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 30%;">Nama Barang</th>
-                    <th style="width: 15%;">Link Barang</th>
-                    <th style="width: 15%;">Jumlah</th>
-                    <th style="width: 15%;">Satuan</th>
-                    <th style="width: 30%;">Keterangan</th>
+                    <th style="width: 25%;">Nama Barang</th>
+                    <th style="width: 12%;">Link Barang</th>
+                    <th style="width: 12%;">Jumlah Diminta</th>
+                    <th style="width: 12%;">Disetujui</th>
+                    <th style="width: 12%;">Satuan</th>
+                    <th style="width: 22%;">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
                 @php
-                    $itemsToPrint = $permohonan->status == 'pending' 
-                        ? $permohonan->items 
-                        : $permohonan->items->where('status', 'approved');
+                    $itemsToPrint = $permohonan->status == 'pending'
+                        ? $permohonan->items
+                        : $permohonan->items->whereIn('status', ['approved', 'partially_approved']);
                     $printIndex = 1;
                 @endphp
                 @foreach($itemsToPrint as $item)
@@ -276,6 +282,7 @@
                         @endif
                     </td>
                     <td class="text-center font-bold">{{ rtrim(rtrim(number_format($item->jumlah, 2, ',', '.'), '0'), ',') }}</td>
+                    <td class="text-center font-bold">{{ $permohonan->status == 'pending' ? '-' : rtrim(rtrim(number_format($item->jumlah_disetujui ?? $item->jumlah, 2, ',', '.'), '0'), ',') }}</td>
                     <td class="text-center">{{ $item->satuan }}</td>
                     <td>{{ $item->keterangan }}</td>
                 </tr>
