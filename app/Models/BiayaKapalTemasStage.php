@@ -9,6 +9,7 @@ class BiayaKapalTemasStage extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
+        'tanggal_dp' => 'date',
         'nilai_tagihan' => 'decimal:2',
         'dp_diperhitungkan' => 'decimal:2',
         'nominal_dibayar' => 'decimal:2',

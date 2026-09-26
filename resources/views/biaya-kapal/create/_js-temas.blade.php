@@ -42,6 +42,14 @@
                 <label class="temas-dp-input-wrap hidden block text-sm">Nominal DP dibayar (Rp)
                     <input type="number" min="0.01" step="0.01" name="temas[${sectionIndex}][nominal_dibayar]" class="temas-dp-amount ${temasInputClass} mt-1" disabled>
                 </label>
+                <div class="temas-dp-metadata hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="block text-sm">Tanggal DP
+                        <input type="date" name="temas[${sectionIndex}][tanggal_dp]" class="temas-dp-date ${temasInputClass} mt-1" disabled>
+                    </label>
+                    <label class="block text-sm md:col-span-2">Keterangan DP
+                        <textarea name="temas[${sectionIndex}][keterangan_dp]" class="temas-dp-description ${temasInputClass} mt-1" rows="2" placeholder="Keterangan pembayaran DP (opsional)" disabled></textarea>
+                    </label>
+                </div>
                 <div class="temas-dp-reference-wrap hidden">
                     <label class="block text-sm">Referensi DP
                         <select name="temas[${sectionIndex}][dp_stage_id]" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
