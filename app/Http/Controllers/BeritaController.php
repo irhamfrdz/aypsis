@@ -39,6 +39,11 @@ class BeritaController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
+        if ($request->hasFile('gambar') === false && $request->file('gambar')) {
+            $err = $request->file('gambar')->getErrorMessage();
+            return back()->withInput()->withErrors(['gambar' => "Gagal upload gambar: {$err}. Pastikan ukuran file tidak melebihi batas upload server."]);
+        }
+
         $gambarPath = null;
         if ($request->hasFile('gambar')) {
             $gambarPath = $this->storeGambar($request->file('gambar'), $request->tipe);
@@ -72,6 +77,11 @@ class BeritaController extends Controller
             'gambar'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
+
+        if ($request->hasFile('gambar') === false && $request->file('gambar')) {
+            $err = $request->file('gambar')->getErrorMessage();
+            return back()->withInput()->withErrors(['gambar' => "Gagal upload gambar: {$err}. Pastikan ukuran file tidak melebihi batas upload server."]);
+        }
 
         $gambarPath = $berita->gambar;
         if ($request->hasFile('gambar')) {
@@ -138,11 +148,13 @@ class BeritaController extends Controller
         $destDir = public_path($folder);
 
         if (!is_dir($destDir)) {
-            mkdir($destDir, 0755, true);
+            mkdir($destDir, 0775, true);
         }
 
-        $fileName = $tipe . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
+        $fileName  = $tipe . '_' . time() . '_' . uniqid() . '.' . $extension;
         $file->move($destDir, $fileName);
+        @chmod($destDir . DIRECTORY_SEPARATOR . $fileName, 0664);
 
         return $folder . '/' . $fileName;
     }

@@ -70,6 +70,9 @@
                                     <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Detail">
                                         <i class="fas fa-eye text-sm"></i>
                                     </a>
+                                    <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-amber-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="Edit">
+                                        <i class="fas fa-pencil-alt text-sm"></i>
+                                    </a>
                                     <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}?print=true" target="_blank" class="inline-flex items-center justify-center p-2 text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title="Cetak">
                                         <i class="fas fa-print text-sm"></i>
                                     </a>

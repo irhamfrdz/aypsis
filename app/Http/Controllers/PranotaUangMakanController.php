@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PranotaUangMakan;
 use App\Models\PranotaUangMakanDetail;
 use App\Models\Karyawan;
+use App\Models\KaryawanTidakTetap;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Exports\PranotaUangMakanAutoTransferExport;
@@ -31,6 +32,99 @@ class PranotaUangMakanController extends Controller
         }
         
         return view('pranota-uang-makan.show', compact('pranota'));
+    }
+
+    public function edit($id)
+    {
+        $pranota = PranotaUangMakan::with(['details.karyawan'])->findOrFail($id);
+
+        $karyawanTetap = Karyawan::where('status', 'active')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nik', 'nama_lengkap', 'penempatan', 'cabang', 'posisi', 'nominal_uang_makan'])
+            ->map(function ($k) {
+                $k->unique_id = 'Karyawan_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\Karyawan';
+                $k->tipe_label = 'Tetap';
+                return $k;
+            });
+
+        $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
+            ->get(['id', 'nik', 'nama_lengkap', 'penempatan', 'cabang', 'pekerjaan'])
+            ->map(function ($k) {
+                $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
+                $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
+                $k->tipe_label = 'Tidak Tetap';
+                $k->posisi = $k->pekerjaan ?? '-';
+                $k->nominal_uang_makan = 0;
+                return $k;
+            });
+
+        $allKaryawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
+
+        return view('pranota-uang-makan.edit', compact('pranota', 'allKaryawans'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pranota = PranotaUangMakan::findOrFail($id);
+
+        $request->validate([
+            'nomor_pranota' => 'required|string|unique:pranota_uang_makans,nomor_pranota,' . $pranota->id,
+            'tanggal_pranota' => 'required|date',
+            'status' => 'nullable|string',
+            'karyawans' => 'required|array|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pranota->update([
+                'nomor_pranota' => $request->nomor_pranota,
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'status' => $request->status ?? $pranota->status ?? 'draft',
+            ]);
+
+            // Re-sync details
+            $pranota->details()->delete();
+
+            $totalNominal = 0;
+
+            foreach ($request->karyawans as $karyawanKey => $data) {
+                $tipeKaryawan = $data['tipe_karyawan'] ?? null;
+                $karyawanId = $data['karyawan_id'] ?? null;
+
+                if (!$tipeKaryawan || !$karyawanId) {
+                    $parts = explode('_', $karyawanKey);
+                    $tipeKaryawan = count($parts) > 1 ? 'App\\Models\\' . $parts[0] : 'App\\Models\\Karyawan';
+                    $karyawanId = count($parts) > 1 ? $parts[1] : $karyawanKey;
+                }
+
+                $nominalAwal = isset($data['nominal_awal']) ? (int) str_replace(['.', ',', ' '], '', $data['nominal_awal']) : 0;
+                $adjustment = isset($data['adjustment']) ? (int) str_replace(['.', ',', ' '], '', $data['adjustment']) : 0;
+                $totalAkhir = $nominalAwal + $adjustment;
+
+                $pranota->details()->create([
+                    'tipe_karyawan' => $tipeKaryawan,
+                    'karyawan_id' => $karyawanId,
+                    'kehadiran' => $data['kehadiran'] ?? null,
+                    'nominal_awal' => $nominalAwal,
+                    'adjustment' => $adjustment,
+                    'total_akhir' => $totalAkhir,
+                    'catatan' => $data['catatan'] ?? null,
+                ]);
+
+                $totalNominal += $totalAkhir;
+            }
+
+            $pranota->update(['total_nominal' => $totalNominal]);
+
+            DB::commit();
+
+            return redirect()->route('pranota-uang-makan.index')->with('success', 'Pranota Uang Makan ' . $pranota->nomor_pranota . ' berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memperbarui Pranota: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function store(Request $request)
@@ -60,8 +154,8 @@ class PranotaUangMakanController extends Controller
                 $karyawanId = count($parts) > 1 ? $parts[1] : $karyawanKey;
 
                 // Determine the total akhir based on inputs
-                $nominalAwal = isset($data['nominal_awal']) ? (int) $data['nominal_awal'] : 0;
-                $adjustment = isset($data['adjustment']) ? (int) $data['adjustment'] : 0;
+                $nominalAwal = isset($data['nominal_awal']) ? (int) str_replace(['.', ',', ' '], '', $data['nominal_awal']) : 0;
+                $adjustment = isset($data['adjustment']) ? (int) str_replace(['.', ',', ' '], '', $data['adjustment']) : 0;
                 $totalAkhir = $nominalAwal + $adjustment;
                 
                 $pranota->details()->create([

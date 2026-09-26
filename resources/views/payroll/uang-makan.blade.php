@@ -550,6 +550,9 @@
                                                 <a href="{{ route('pranota-uang-makan.show', $item->id) }}" target="_blank" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors" title="Lihat Rincian">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
+                                                <a href="{{ route('pranota-uang-makan.edit', $item->id) }}" class="p-1.5 rounded-md text-amber-600 hover:bg-amber-100 transition-colors" title="Edit Pranota">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
                                                 <a href="{{ route('pranota-uang-makan.show', $item->id) }}?print=true" target="_blank" class="p-1.5 rounded-md text-indigo-600 hover:bg-indigo-100 transition-colors" title="Cetak Pranota">
                                                     <i class="fas fa-print"></i>
                                                 </a>
