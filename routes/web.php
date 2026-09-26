@@ -7909,6 +7909,7 @@ Route::middleware(['auth',
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
     Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
+    Route::post('pranota-uang-makan/{id}/refresh-absensi', [\App\Http\Controllers\PranotaUangMakanController::class, 'refreshAbsensi'])->name('pranota-uang-makan.refresh-absensi')->middleware('can:payroll-view');
 
     // Restore PranotaUangMakan untuk menyimpan draft Kalkulasi Uang Makan
     Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');

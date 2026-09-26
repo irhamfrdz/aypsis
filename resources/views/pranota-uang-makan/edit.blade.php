@@ -126,6 +126,14 @@
                         </div>
                     </div>
 
+                    <!-- REFRESH DATA ABSENSI BUTTON -->
+                    <button type="button" id="btn-refresh-absensi" onclick="refreshAbsensiData()" 
+                            class="inline-flex items-center px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition-all gap-1.5 cursor-pointer"
+                            title="Tarik perubahan data kehadiran terbaru dari tabel absensi">
+                        <i class="fas fa-sync-alt text-xs" id="refresh-icon"></i>
+                        <span id="refresh-text">Refresh Data Absensi</span>
+                    </button>
+
                     <!-- Add Employee Button -->
                     <button type="button" onclick="openAddKaryawanModal()" 
                             class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors gap-1.5">
@@ -134,6 +142,9 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Dynamic Alert Container for Refresh results -->
+            <div id="refresh-alert-container" class="px-6 pt-4 empty:hidden"></div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse" id="details-table">
@@ -439,6 +450,170 @@
         if (row) {
             row.remove();
             recalculateTotals();
+        }
+    }
+
+    /**
+     * REFRESH DATA ABSENSI DARI DATABASE ABSENSI TERKINI
+     */
+    async function refreshAbsensiData() {
+        const btn = document.getElementById('btn-refresh-absensi');
+        const icon = document.getElementById('refresh-icon');
+        const text = document.getElementById('refresh-text');
+        const alertContainer = document.getElementById('refresh-alert-container');
+        const tanggalPranotaInput = document.getElementById('tanggal_pranota');
+        const tanggalPranota = tanggalPranotaInput ? tanggalPranotaInput.value : '';
+
+        const rows = document.querySelectorAll('#details-body tr.item-row');
+        if (rows.length === 0) {
+            alert('Tidak ada karyawan di dalam tabel untuk disinkronkan.');
+            return;
+        }
+
+        const rowItems = Array.from(rows).map(row => {
+            const key = row.dataset.key;
+            const kehadiranInput = row.querySelector(`input[name="karyawans[${key}][kehadiran]"]`) || row.querySelector('td:nth-child(3) input');
+            const nominalAwalInput = row.querySelector('.nominal-awal-input');
+            return {
+                key: key,
+                kehadiran: kehadiranInput ? kehadiranInput.value : '',
+                nominal_awal: nominalAwalInput ? nominalAwalInput.value : 0,
+            };
+        });
+
+        // Set loading state
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        if (icon) icon.classList.add('fa-spin');
+        if (text) text.innerText = 'Menyinkronkan Absensi...';
+        if (alertContainer) alertContainer.innerHTML = '';
+
+        try {
+            const response = await fetch("{{ route('pranota-uang-makan.refresh-absensi', $pranota->id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    tanggal_pranota: tanggalPranota,
+                    row_items: rowItems
+                })
+            });
+
+            const resData = await response.json();
+
+            if (!response.ok || !resData.success) {
+                throw new Error(resData.message || 'Gagal menyinkronkan data absensi.');
+            }
+
+            let updatedEmployees = [];
+
+            // Apply data to rows
+            rows.forEach(row => {
+                const key = row.dataset.key;
+                if (resData.data && resData.data[key]) {
+                    const item = resData.data[key];
+                    const kehadiranInput = row.querySelector(`input[name="karyawans[${key}][kehadiran]"]`) || row.querySelector('td:nth-child(3) input');
+                    const nominalAwalInput = row.querySelector('.nominal-awal-input');
+                    const empName = row.querySelector('td:nth-child(2) .font-semibold')?.innerText?.trim() || key;
+
+                    if (kehadiranInput && nominalAwalInput) {
+                        const oldKehadiran = kehadiranInput.value;
+
+                        // Update inputs
+                        kehadiranInput.value = item.kehadiran;
+                        nominalAwalInput.value = item.nominal_awal;
+
+                        // Trigger input event for row total calculation
+                        nominalAwalInput.dispatchEvent(new Event('input'));
+
+                        // Clear any existing sync badges
+                        const prevBadge = row.querySelector('.badge-sync-update');
+                        if (prevBadge) prevBadge.remove();
+
+                        if (item.is_changed) {
+                            updatedEmployees.push({
+                                name: empName,
+                                old: oldKehadiran,
+                                new: item.kehadiran
+                            });
+
+                            // Highlight row
+                            row.classList.remove('bg-white');
+                            row.classList.add('bg-emerald-50/90', 'border-l-4', 'border-emerald-500');
+
+                            // Add badge indicator next to name
+                            const nameContainer = row.querySelector('td:nth-child(2) .font-semibold');
+                            if (nameContainer) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge-sync-update inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 ml-2 border border-emerald-300 animate-pulse';
+                                badge.innerHTML = `<i class="fas fa-arrows-rotate mr-1 text-[9px]"></i> ${oldKehadiran || '0 Hari'} &rarr; ${item.kehadiran}`;
+                                nameContainer.appendChild(badge);
+                            }
+                        }
+                    }
+                }
+            });
+
+            recalculateTotals();
+
+            // Display alert summary
+            if (alertContainer) {
+                const periodStr = `${resData.periode.start_formatted} s/d ${resData.periode.end_formatted}`;
+                if (updatedEmployees.length > 0) {
+                    const listHtml = updatedEmployees.slice(0, 6).map(e => `<li><strong>${e.name}</strong>: ${e.old || '0 Hari'} &rarr; <span class="text-emerald-700 font-bold">${e.new}</span></li>`).join('');
+                    const moreCount = updatedEmployees.length > 6 ? `<li class="italic text-slate-500">... dan ${updatedEmployees.length - 6} karyawan lainnya.</li>` : '';
+
+                    alertContainer.innerHTML = `
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg shadow-sm text-xs text-emerald-900 transition-all mb-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-emerald-600 text-base mr-3 mt-0.5"></i>
+                                <div class="flex-1">
+                                    <p class="font-bold text-sm text-emerald-800">Refresh Data Absensi Berhasil!</p>
+                                    <p class="mt-0.5">Terdapat perubahan kehadiran pada <strong>${updatedEmployees.length} karyawan</strong> untuk periode absensi <strong>${periodStr}</strong>. Nominal kehadiran dan kalkulasi total akhir telah diperbarui secara otomatis.</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-0.5 text-[11px] text-emerald-800 bg-white/70 p-2.5 rounded border border-emerald-200/80 max-h-36 overflow-y-auto">
+                                        ${listHtml}
+                                        ${moreCount}
+                                    </ul>
+                                    <p class="mt-2 text-[11px] text-amber-800 font-medium flex items-center gap-1.5 bg-amber-50/80 p-2 rounded border border-amber-200">
+                                        <i class="fas fa-info-circle text-amber-600"></i>
+                                        <span>Perubahan sudah diterapkan ke tabel. Silakan periksa kembali, lalu klik <strong>Simpan Perubahan</strong> di bawah untuk menyimpan ke database.</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-3.5 rounded-r-lg shadow-sm text-xs text-blue-900 transition-all mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-blue-600 text-base mr-3"></i>
+                                <p><strong>Data Absensi Sinkron:</strong> Semua data kehadiran karyawan pada pranota ini sudah sesuai dengan rekaman absensi terkini untuk periode <strong>${periodStr}</strong> (tidak ada perubahan).</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+        } catch (err) {
+            console.error('Error refresh absensi:', err);
+            if (alertContainer) {
+                alertContainer.innerHTML = `
+                    <div class="bg-rose-50 border-l-4 border-rose-500 p-3.5 rounded-r-lg shadow-sm text-xs text-rose-800 transition-all mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-rose-600 text-base mr-3"></i>
+                            <p><strong>Gagal Merefresh Absensi:</strong> ${err.message || 'Terjadi kesalahan sistem saat mengambil data absensi.'}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            if (icon) icon.classList.remove('fa-spin');
+            if (text) text.innerText = 'Refresh Data Absensi';
         }
     }
 
