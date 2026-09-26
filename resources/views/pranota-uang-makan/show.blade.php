@@ -20,6 +20,13 @@
 
         <!-- Right: Actions -->
         <div class="flex items-center space-x-3">
+            <!-- Edit Button -->
+            <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" 
+               class="btn bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
+                <i class="fa-solid fa-pencil mr-2 text-white/80"></i>
+                <span class="font-medium">Edit Pranota</span>
+            </a>
+
             <!-- Print Button -->
             <button onclick="window.print()" 
                     class="btn bg-white border-slate-200 hover:border-slate-300 text-slate-600 shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">

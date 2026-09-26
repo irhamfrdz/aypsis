@@ -47,10 +47,11 @@
 
         {{-- Gambar --}}
         <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="gambar">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
                 Gambar / Banner
-                <span class="text-gray-400 font-normal">(Kosongkan jika tidak diganti)</span>
+                <span class="text-gray-400 font-normal">(Kosongkan jika tidak diganti · Maks 5MB)</span>
             </label>
+
             @if($berita->gambar)
             <div class="mb-3 flex items-start gap-4 p-3 bg-gray-50 rounded-xl border border-gray-200">
                 <img src="{{ asset($berita->gambar) }}" alt="Gambar saat ini" class="w-28 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0">
@@ -60,17 +61,25 @@
                 </div>
             </div>
             @endif
-            <div id="drop-zone" class="relative border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-indigo-400 transition-colors cursor-pointer"
-                 onclick="document.getElementById('gambar').click()">
+
+            <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden">
+
+            <label for="gambar" id="drop-zone" class="relative block border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-indigo-400 hover:bg-gray-50/50 transition-colors cursor-pointer">
                 <div id="preview-wrap" class="hidden mb-3">
-                    <img id="preview-img" src="#" alt="Preview" class="max-h-40 mx-auto rounded-lg object-contain">
+                    <img id="preview-img" src="#" alt="Preview" class="max-h-48 mx-auto rounded-lg object-contain shadow-sm border border-gray-100">
+                    <div class="mt-2.5 flex items-center justify-center gap-2">
+                        <span id="file-info" class="text-xs text-gray-600 font-medium bg-gray-100 px-2.5 py-1 rounded-md"></span>
+                        <button type="button" id="btn-remove-gambar" class="text-xs text-red-600 hover:text-red-700 font-semibold px-2.5 py-1 rounded-md bg-red-50 hover:bg-red-100 transition-colors">Batal Ganti</button>
+                    </div>
                 </div>
                 <div id="upload-icon">
                     <svg class="w-8 h-8 mx-auto text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                    <p class="text-sm text-gray-400">Klik untuk ganti gambar</p>
+                    <p class="text-sm text-gray-600 font-medium">Klik untuk ganti gambar atau seret file ke sini</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Format: JPG, PNG, WebP (Maks. 5MB)</p>
                 </div>
-                <input type="file" id="gambar" name="gambar" accept="image/*" class="hidden">
-            </div>
+            </label>
+            <div id="client-error" class="hidden text-red-500 text-xs mt-1.5 font-medium"></div>
+            @error('gambar') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
         {{-- Konten --}}
@@ -119,16 +128,90 @@
 
 @push('scripts')
 <script>
-document.getElementById('gambar').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('preview-img').src = ev.target.result;
-            document.getElementById('preview-wrap').classList.remove('hidden');
-            document.getElementById('upload-icon').classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
+const gambarInput = document.getElementById('gambar');
+const dropZone = document.getElementById('drop-zone');
+const previewWrap = document.getElementById('preview-wrap');
+const previewImg = document.getElementById('preview-img');
+const uploadIcon = document.getElementById('upload-icon');
+const fileInfo = document.getElementById('file-info');
+const btnRemove = document.getElementById('btn-remove-gambar');
+const clientError = document.getElementById('client-error');
+
+function showFile(file) {
+    clientError.classList.add('hidden');
+    clientError.textContent = '';
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        clientError.textContent = 'File yang dipilih bukan gambar valid (JPG, PNG, WebP).';
+        clientError.classList.remove('hidden');
+        resetInput();
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        clientError.textContent = 'Ukuran file (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB) melebihi batas maksimal 5 MB.';
+        clientError.classList.remove('hidden');
+        resetInput();
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        previewImg.src = ev.target.result;
+        previewWrap.classList.remove('hidden');
+        uploadIcon.classList.add('hidden');
+        const sizeFormatted = file.size > 1024 * 1024 
+            ? (file.size / (1024 * 1024)).toFixed(2) + ' MB'
+            : (file.size / 1024).toFixed(1) + ' KB';
+        fileInfo.textContent = file.name + ' (' + sizeFormatted + ')';
+    };
+    reader.readAsDataURL(file);
+}
+
+function resetInput() {
+    gambarInput.value = '';
+    previewImg.src = '#';
+    previewWrap.classList.add('hidden');
+    uploadIcon.classList.remove('hidden');
+    fileInfo.textContent = '';
+}
+
+gambarInput.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        showFile(e.target.files[0]);
+    }
+});
+
+btnRemove.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetInput();
+});
+
+// Drag & drop handlers
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50/40');
+    });
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/40');
+    });
+});
+
+dropZone.addEventListener('drop', function(e) {
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length > 0) {
+        gambarInput.files = dt.files;
+        showFile(dt.files[0]);
     }
 });
 </script>
