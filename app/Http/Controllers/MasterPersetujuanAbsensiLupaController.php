@@ -20,6 +20,15 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                 ->get();
             
             $formattedData = $data->map(function ($row, $index) {
+                // Foto selfie PWA disimpan pada log absensi, bukan pada tabel pengajuan lupa absen.
+                // Cocokkan berdasarkan karyawan dan tanggal pengajuan.
+                $fotoAbsensi = Absensi::where('karyawan_id', $row->karyawan_id)
+                    ->whereDate('waktu', $row->tanggal)
+                    ->whereNotNull('foto')
+                    ->where('foto', '!=', '')
+                    ->orderBy('waktu')
+                    ->value('foto');
+
                 $status_badge = '';
                 if ($row->status == 'approved') {
                     $status_badge = '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Disetujui</span>';
@@ -37,6 +46,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                     'waktu_format' => Carbon::parse($row->waktu)->format('H:i'),
                     'tipe_absen' => $row->tipe_absen,
                     'alasan' => $row->alasan,
+                    'foto' => $fotoAbsensi ? asset(ltrim($fotoAbsensi, '/')) : null,
                     'status_badge' => $status_badge,
                     'action' => view('master-persetujuan-absensi-lupa.action', compact('row'))->render(),
                 ];
@@ -197,6 +207,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                         'keterangan' => 'Lupa Absen: ' . $persetujuanAbsensiLupa->alasan,
                         'status' => 'Valid',
                         'device' => 'Manual Approval',
+                        'foto' => $existingLog->foto ?: $this->fotoPengajuan($persetujuanAbsensiLupa),
                     ]);
                 } else {
                     Absensi::create([
@@ -207,6 +218,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                         'keterangan' => 'Lupa Absen: ' . $persetujuanAbsensiLupa->alasan,
                         'status' => 'Valid',
                         'device' => 'Manual Approval',
+                        'foto' => $this->fotoPengajuan($persetujuanAbsensiLupa),
                     ]);
                 }
             }
@@ -237,5 +249,15 @@ class MasterPersetujuanAbsensiLupaController extends Controller
         ]);
 
         return redirect()->route('master.persetujuan-absensi-lupa.index')->with('success', 'Pengajuan absensi lupa telah ditolak.');
+    }
+
+    private function fotoPengajuan(PersetujuanAbsensiLupa $pengajuan): ?string
+    {
+        return Absensi::where('karyawan_id', $pengajuan->karyawan_id)
+            ->whereDate('waktu', $pengajuan->tanggal)
+            ->whereNotNull('foto')
+            ->where('foto', '!=', '')
+            ->orderBy('waktu')
+            ->value('foto');
     }
 }

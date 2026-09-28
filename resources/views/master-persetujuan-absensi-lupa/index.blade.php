@@ -109,6 +109,7 @@
                         <th class="px-4">Waktu</th>
                         <th class="px-4">Tipe Absen</th>
                         <th class="px-4">Alasan</th>
+                        <th class="px-4 text-center">Foto</th>
                         <th class="px-4">Status</th>
                         <th class="px-4 text-right">Aksi</th>
                     </tr>
@@ -182,6 +183,10 @@
                     }},
                     {data: 'alasan', name: 'alasan', render: function(data) {
                         return data ? '<span class="truncate block max-w-[200px]" title="'+data+'">'+data+'</span>' : '-';
+                    }},
+                    {data: 'foto', name: 'foto', orderable: false, searchable: false, className: 'text-center', render: function(data) {
+                        if (!data) return '<span class="text-gray-400">-</span>';
+                        return '<a href="'+data+'" target="_blank" rel="noopener noreferrer" title="Lihat foto penuh"><img src="'+data+'" alt="Foto absensi" class="w-12 h-12 rounded-md object-cover border border-gray-200 mx-auto" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode(\'-\'))"></a>';
                     }},
                     {data: 'status_badge', name: 'status', className: 'text-center'},
                     {data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-right'},
