@@ -26,6 +26,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'type' => 'nullable|in:fcl,lcl,ttsj',
             'search' => 'nullable|string|max:100',
             'status' => 'nullable|in:belum,sudah',
+            'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
         ]);
         $type = $filters['type'] ?? 'fcl';
         $query = self::SOURCES[$type]::query()->with('shipperJb');
@@ -50,6 +51,27 @@ class ApprovalTandaTerimaDuaController extends Controller
             $query->whereNull('shipper_jb_id');
         } elseif ($request->input('status') === 'sudah') {
             $query->whereNotNull('shipper_jb_id');
+        }
+
+        if (! empty($filters['destination'])) {
+            $destination = $filters['destination'];
+            $destinationFilter = function ($query) use ($destination, $type) {
+                $column = $type === 'lcl' ? 'nama_tujuan' : 'tujuan_pengiriman';
+                if ($destination === 'tanjung-pinang') {
+                    $query->where(function ($query) use ($column) {
+                        $query->where($column, 'like', '%Tanjung Pinang%')
+                            ->orWhere($column, 'like', '%Tanjungpinang%');
+                    });
+                } else {
+                    $query->where($column, 'like', '%'.ucfirst($destination).'%');
+                }
+            };
+
+            if ($type === 'lcl') {
+                $query->whereHas('tujuanPengiriman', $destinationFilter);
+            } else {
+                $destinationFilter($query);
+            }
         }
 
         return view('approval-tanda-terima-2.index', [

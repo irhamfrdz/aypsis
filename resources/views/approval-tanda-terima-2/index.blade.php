@@ -47,9 +47,18 @@
                     <option value="ttsj" @selected($type === 'ttsj')>Tanpa Surat Jalan</option>
                 </select>
             </div>
-            <div class="md:col-span-5">
+            <div class="md:col-span-4">
                 <label for="search" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima atau pengirim</label>
                 <input id="search" name="search" type="search" value="{{ request('search') }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Cari nomor atau nama pengirim...">
+            </div>
+            <div class="md:col-span-3">
+                <label for="destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman</label>
+                <select id="destination" name="destination" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Semua tujuan</option>
+                    <option value="jakarta" @selected(request('destination') === 'jakarta')>Jakarta</option>
+                    <option value="batam" @selected(request('destination') === 'batam')>Batam</option>
+                    <option value="tanjung-pinang" @selected(request('destination') === 'tanjung-pinang')>Tanjung Pinang</option>
+                </select>
             </div>
             <div class="md:col-span-2">
                 <label for="status" class="mb-1 block text-sm font-medium text-gray-700">Status shipper</label>
@@ -59,8 +68,8 @@
                     <option value="sudah" @selected(request('status') === 'sudah')>Sudah dipilih</option>
                 </select>
             </div>
-            <div class="flex gap-2 md:col-span-2">
-                <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Cari</button>
+            <div class="flex gap-2 md:col-span-12 md:justify-end">
+                <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 md:flex-none">Cari</button>
                 <a href="{{ route('approval-tanda-terima-2.index') }}" class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" title="Reset filter" aria-label="Reset filter"><i class="fas fa-rotate-left" aria-hidden="true"></i></a>
             </div>
         </div>
