@@ -1098,6 +1098,23 @@
                     const sectionIndex = section.getAttribute('data-trucking-section-index');
                     
                     if (section) {
+                        // Preserve persisted amounts while the voyage and BL options load asynchronously.
+                        section.dataset.truckingUseSavedTotals = 'true';
+                        const formatTruckingAmount = amount => new Intl.NumberFormat('id-ID').format(amount || 0);
+                        section.querySelector('.trucking-total-20ft-input').value = formatTruckingAmount(myData.total_biaya_20ft);
+                        section.querySelector('.trucking-total-40ft-input').value = formatTruckingAmount(myData.total_biaya_40ft);
+                        section.querySelector('.trucking-subtotal-input').value = formatTruckingAmount(myData.subtotal);
+
+                        const truckingVendor = section.querySelector('.trucking-vendor-select');
+                        truckingVendor.value = String(myData.nama_vendor || '').trim().toUpperCase() === 'CARGO'
+                            ? 'CARGO'
+                            : myData.nama_vendor;
+                        toggleTruckingCargoCost(sectionIndex);
+                        if (truckingVendor.value === 'CARGO') {
+                            section.querySelector('.trucking-cargo-cost-input').value = formatTruckingAmount(myData.subtotal);
+                        }
+                        applyTruckingShipSettings(section.closest('.trucking-ship-group'));
+
                         const kapalSel = section.querySelector('.trucking-kapal-select');
                         if (kapalSel && myData.kapal) {
                             kapalSel.value = myData.kapal;
@@ -1122,15 +1139,6 @@
                             }
                         }
                         
-                        const truckingVendor = section.querySelector('.trucking-vendor-select');
-                        truckingVendor.value = String(myData.nama_vendor || '').trim().toUpperCase() === 'CARGO'
-                            ? 'CARGO'
-                            : myData.nama_vendor;
-                        toggleTruckingCargoCost(sectionIndex);
-                        if (truckingVendor.value === 'CARGO') {
-                            section.querySelector('.trucking-cargo-cost-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal || 0);
-                        }
-                        
                         if (myData.voyage) {
                             try {
                                 await loadBlsForTruckingSection(sectionIndex, myData.voyage);
@@ -1138,6 +1146,8 @@
                                 console.error('Gagal memuat kontainer trucking', e);
                             }
                         }
+
+                        if (section.dataset.truckingUseSavedTotals !== 'true') return;
                         
                         if (myData.no_bl_ids && myData.no_bl_ids.length > 0) {
                             const blDropdown = section.querySelector('.trucking-bl-dropdown');
@@ -1153,7 +1163,6 @@
                             });
                         }
                         
-                        section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
                         applyTruckingShipSettings(section.closest('.trucking-ship-group'));
                     }
                 })();

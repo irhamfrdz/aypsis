@@ -173,19 +173,23 @@
         
         if (kapalSelect) {
             kapalSelect.addEventListener('change', function() {
+                delete section.dataset.truckingUseSavedTotals;
                 loadVoyagesForTruckingSection(sectionIndex, this.value);
             });
         }
         
         voyageSelect.addEventListener('change', function() {
+            delete section.dataset.truckingUseSavedTotals;
             loadBlsForTruckingSection(sectionIndex, this.value);
         });
 
         vendorSelect.addEventListener('change', function() {
+            delete section.dataset.truckingUseSavedTotals;
             toggleTruckingCargoCost(sectionIndex);
             calculateTruckingTotals(sectionIndex);
         });
         section.querySelector('.trucking-cargo-cost-input').addEventListener('input', function() {
+            delete section.dataset.truckingUseSavedTotals;
             const amount = parseFloat(this.value.replace(/[^0-9]/g, '')) || 0;
             this.value = amount ? amount.toLocaleString('id-ID') : '';
             calculateTruckingTotals(sectionIndex);
@@ -401,13 +405,14 @@
                     e.stopPropagation();
                 });
 
-                // Clear previous totals when new bls loaded
+                // Refresh the summary after BL options load; saved amounts stay intact in edit mode.
                 calculateTruckingTotals(sectionIndex);
 
                 // Bind clicks to BL options
                 blDropdown.querySelectorAll('.trucking-bl-option').forEach(opt => {
                     opt.addEventListener('click', function(e) {
                         e.stopPropagation();
+                        delete section.dataset.truckingUseSavedTotals;
                         const id = this.getAttribute('data-id');
                         const kontainer = this.getAttribute('data-kontainer');
                         const seal = this.getAttribute('data-seal');
@@ -466,6 +471,10 @@
     function calculateTruckingTotals(sectionIndex) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         if (!section) return;
+        if (section.dataset.truckingUseSavedTotals === 'true') {
+            calculateTotalFromAllTruckingSections();
+            return;
+        }
 
         const vendor = section.querySelector('.trucking-vendor-select').value;
         const selectedOptions = section.querySelectorAll('.trucking-bl-option.selected');
@@ -562,6 +571,7 @@
         chip.innerHTML = `${chipLabel} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
         chip.querySelector('i').onclick = (e) => {
             e.stopPropagation();
+            delete section.dataset.truckingUseSavedTotals;
             chip.remove();
             const input = hiddenInputsContainer.querySelector(`input[value="${blId}"]`);
             if (input) input.remove();

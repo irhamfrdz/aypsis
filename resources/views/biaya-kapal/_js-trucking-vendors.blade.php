@@ -160,6 +160,7 @@
 
         group.querySelectorAll('.trucking-section').forEach(vendorSection => {
             const vendorIndex = vendorSection.getAttribute('data-trucking-section-index');
+            delete vendorSection.dataset.truckingUseSavedTotals;
             vendorSection.querySelector('.trucking-subtotal-input').value = '0';
             if (event.target.matches('.trucking-kapal-select')) {
                 if (vendorSection !== section) {
