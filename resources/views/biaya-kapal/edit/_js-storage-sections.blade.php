@@ -563,11 +563,3 @@
         initializeLoloSections();
         initializeStorageSections();
     });
-
-    function calculateTotalFromAllTruckingSections() {
-        let t = 0;
-        document.querySelectorAll('.trucking-section .grand-total-value').forEach(v => t += parseFloat(v.value) || 0);
-        if (selectedJenisBiaya.nama.toLowerCase().includes('trucking')) {
-            nominalInput.value = t > 0 ? t.toLocaleString('id-ID') : '';
-        }
-    }

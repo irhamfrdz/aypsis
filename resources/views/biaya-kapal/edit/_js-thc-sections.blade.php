@@ -471,6 +471,5 @@
     function clearAllAirSections() { document.getElementById('air_sections_container').innerHTML = ''; }
     function clearAllKapalSections() { document.getElementById('kapal_sections_container').innerHTML = ''; }
     function clearAllOperasionalSections() { document.getElementById('operasional_sections_container').innerHTML = ''; }
-    function clearAllTruckingSections() { document.getElementById('trucking_sections_container').innerHTML = ''; }
     function clearAllStuffingSections() { document.getElementById('stuffing_sections_container').innerHTML = ''; }
 
