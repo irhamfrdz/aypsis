@@ -52,8 +52,6 @@ class ApprovalTandaTerimaDuaController extends Controller
         return view('approval-tanda-terima-2.index', [
             'type' => $type,
             'items' => $query->latest('id')->paginate(20)->withQueryString(),
-            'shippers' => ShipperConsignee::whereNotNull('shipper')->where('shipper', '!=', '')
-                ->orderBy('shipper')->get(['id', 'shipper', 'consignee']),
         ]);
     }
 
