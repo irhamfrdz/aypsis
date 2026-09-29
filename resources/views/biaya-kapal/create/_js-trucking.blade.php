@@ -205,6 +205,7 @@
 
         vendorSelect.addEventListener('change', function() {
             toggleTruckingCargoCost(sectionIndex);
+            updateTruckingDropdownPrices(sectionIndex);
             calculateTruckingTotals(sectionIndex);
         });
         section.querySelector('.trucking-cargo-cost-input').addEventListener('input', function() {
@@ -380,7 +381,10 @@
                     html += `
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                              data-id="${blData.id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}" data-pengirim="${blData.pengirim || ''}" data-nama-barang="${blData.nama_barang || ''}" data-tipe="${blData.tipe || ''}">
-                            <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
+                            <div class="flex flex-wrap items-center justify-between gap-1">
+                                <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
+                                <span class="trucking-bl-price text-xs font-semibold text-blue-700"></span>
+                            </div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
                                 ${isCargo
                                     ? `<span><i class="fas fa-user text-gray-400 mr-1"></i> Pengirim: ${blData.pengirim || '-'}</span><span><i class="fas fa-box text-gray-400 mr-1"></i> Barang: ${blData.nama_barang || '-'}</span>`
@@ -391,6 +395,7 @@
                 });
                 html += '</div>';
                 blDropdown.innerHTML = html;
+                updateTruckingDropdownPrices(sectionIndex);
 
                 // Setup search functionality
                 const searchInput = blDropdown.querySelector('.trucking-kontainer-search');
@@ -493,6 +498,36 @@
         });
     }
 
+    function getTruckingContainerPrice(vendor, rawSize, isCargo) {
+        const size = isCargo ? 'cargo' : String(rawSize || '').replace(/\D/g, '');
+        const priceItem = pricelistBiayaTruckingData.find(item => {
+            if (item.nama_vendor !== vendor) return false;
+            const itemSize = isCargo
+                ? String(item.size).toLowerCase().trim()
+                : String(item.size).replace(/\D/g, '');
+            return itemSize === size;
+        });
+        return priceItem ? parseFloat(priceItem.biaya) || 0 : null;
+    }
+
+    function updateTruckingDropdownPrices(sectionIndex) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const vendor = section.querySelector('.trucking-vendor-select').value;
+        section.querySelectorAll('.trucking-bl-option').forEach(option => {
+            const priceLabel = option.querySelector('.trucking-bl-price');
+            const isCargo = (option.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
+            const cost = getTruckingContainerPrice(vendor, option.getAttribute('data-size'), isCargo);
+            priceLabel.textContent = !vendor
+                ? 'Pilih vendor untuk melihat biaya'
+                : vendor === 'CARGO'
+                    ? 'Biaya cargo diisi manual'
+                    : cost === null
+                        ? 'Tarif belum tersedia'
+                        : `Rp ${Math.round(cost).toLocaleString('id-ID')} / kontainer`;
+        });
+    }
+
     function calculateTruckingTotals(sectionIndex) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         if (!section) return;
@@ -522,31 +557,12 @@
         if (vendor === 'CARGO') {
             subtotal = parseFloat(section.querySelector('.trucking-cargo-cost-input').value.replace(/\D/g, '')) || 0;
         } else if (vendor && selectedOptions.length > 0) {
-            // Get all price items for this vendor once to optimize
-            const vendorPrices = pricelistBiayaTruckingData.filter(item => item.nama_vendor === vendor);
-
             selectedOptions.forEach(opt => {
                 const rawSize = opt.getAttribute('data-size');
-                // Normalize size: remove non-digits to compare "20" with "20'"
                 const isCargo = (opt.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
                 const size = isCargo ? 'cargo' : String(rawSize).replace(/\D/g, '');
-
-                // Find price in pricelist
-                const priceItem = vendorPrices.find(item => {
-                    const itemSize = isCargo
-                        ? String(item.size).toLowerCase().trim()
-                        : String(item.size).replace(/\D/g, '');
-                    return itemSize === size;
-                });
-                
-                if (priceItem) {
-                    // Handle potential string format "1.500.000" or number
-                    let cost = 0;
-                    if (typeof priceItem.biaya === 'number') {
-                        cost = priceItem.biaya;
-                    } else if (typeof priceItem.biaya === 'string') {
-                        cost = parseFloat(priceItem.biaya);
-                    }
+                const cost = getTruckingContainerPrice(vendor, rawSize, isCargo);
+                if (cost !== null) {
                     if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
                     if (size === '40') { total40 += cost; count40++; unitPrice40 = cost; }
                     subtotal += cost;
