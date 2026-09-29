@@ -186,6 +186,7 @@
         vendorSelect.addEventListener('change', function() {
             delete section.dataset.truckingUseSavedTotals;
             toggleTruckingCargoCost(sectionIndex);
+            updateTruckingDropdownPrices(sectionIndex);
             calculateTruckingTotals(sectionIndex);
         });
         section.querySelector('.trucking-cargo-cost-input').addEventListener('input', function() {
@@ -327,6 +328,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.bls && Object.keys(data.bls).length > 0) {
+                const selectedVendor = section.querySelector('.trucking-vendor-select').value;
                 // Create search input and options container
                 let html = `
                     <div class="sticky top-0 bg-white border-b border-gray-200 p-2 z-10">
@@ -349,6 +351,7 @@
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                              data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}" data-pengirim="${blData.pengirim || ''}" data-nama-barang="${blData.nama_barang || ''}" data-tipe="${blData.tipe || ''}">
                             <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
+                            <div class="trucking-bl-price mt-1 text-sm font-semibold text-emerald-700">${getTruckingContainerPriceLabel(selectedVendor, blData.size, isCargo)}</div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
                                 ${isCargo
                                     ? `<span><i class="fas fa-user text-gray-400 mr-1"></i> Pengirim: ${blData.pengirim || '-'}</span><span><i class="fas fa-box text-gray-400 mr-1"></i> Barang: ${blData.nama_barang || '-'}</span>`
@@ -359,6 +362,7 @@
                 });
                 html += '</div>';
                 blDropdown.innerHTML = html;
+                updateTruckingDropdownPrices(sectionIndex);
 
                 // Setup search functionality
                 const searchInput = blDropdown.querySelector('.trucking-kontainer-search');
@@ -433,7 +437,7 @@
                             const chip = document.createElement('span');
                             chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
                             chip.setAttribute('data-id', id);
-                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <span class="trucking-chip-price">(${getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, this.getAttribute('data-size'), isCargo)})</span> <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
                             chip.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
                                 opt.click();
@@ -468,6 +472,41 @@
         if (count === 0) placeholder.classList.remove('hidden');
     }
 
+    function getTruckingContainerPrice(vendor, rawSize, isCargo) {
+        const size = isCargo ? 'cargo' : String(rawSize || '').replace(/\D/g, '');
+        const priceItem = pricelistBiayaTruckingData.find(item => {
+            if (item.nama_vendor !== vendor) return false;
+            const itemSize = isCargo
+                ? String(item.size).toLowerCase().trim()
+                : String(item.size).replace(/\D/g, '');
+            return itemSize === size;
+        });
+        return priceItem ? parseFloat(priceItem.biaya) || 0 : null;
+    }
+
+    function getTruckingContainerPriceLabel(vendor, rawSize, isCargo) {
+        if (!vendor) return 'Pilih vendor untuk melihat biaya';
+        if (vendor === 'CARGO') return 'Biaya cargo diisi manual';
+        const cost = getTruckingContainerPrice(vendor, rawSize, isCargo);
+        return cost === null
+            ? 'Tarif belum tersedia'
+            : `Biaya per kontainer: Rp ${Math.round(cost).toLocaleString('id-ID')}`;
+    }
+
+    function updateTruckingDropdownPrices(sectionIndex) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const vendor = section.querySelector('.trucking-vendor-select').value;
+        section.querySelectorAll('.trucking-bl-option').forEach(option => {
+            const priceLabel = option.querySelector('.trucking-bl-price');
+            const isCargo = (option.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
+            const priceText = getTruckingContainerPriceLabel(vendor, option.getAttribute('data-size'), isCargo);
+            priceLabel.textContent = priceText;
+            const chipPrice = section.querySelector(`.trucking-chip[data-id="${option.getAttribute('data-id')}"] .trucking-chip-price`);
+            if (chipPrice) chipPrice.textContent = `(${priceText})`;
+        });
+    }
+
     function calculateTruckingTotals(sectionIndex) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         if (!section) return;
@@ -500,18 +539,11 @@
         if (vendor === 'CARGO') {
             subtotal = parseFloat(section.querySelector('.trucking-cargo-cost-input').value.replace(/\D/g, '')) || 0;
         } else if (vendor && selectedOptions.length > 0) {
-            const vendorPrices = pricelistBiayaTruckingData.filter(item => item.nama_vendor === vendor);
             selectedOptions.forEach(opt => {
                 const isCargo = (opt.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
                 const size = isCargo ? 'cargo' : String(opt.getAttribute('data-size')).replace(/\D/g, '');
-                const priceItem = vendorPrices.find(item => {
-                    const itemSize = isCargo
-                        ? String(item.size).toLowerCase().trim()
-                        : String(item.size).replace(/\D/g, '');
-                    return itemSize === size;
-                });
-                if (priceItem) {
-                    const cost = parseFloat(priceItem.biaya) || 0;
+                const cost = getTruckingContainerPrice(vendor, opt.getAttribute('data-size'), isCargo);
+                if (cost !== null) {
                     if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
                     if (size === '40') { total40 += cost; count40++; unitPrice40 = cost; }
                     subtotal += cost;
@@ -568,7 +600,10 @@
         const chipLabel = isCargo
             ? `CARGO - ${selectedOption.getAttribute('data-nama-barang') || '-'} (${selectedOption.getAttribute('data-pengirim') || '-'})`
             : blId;
-        chip.innerHTML = `${chipLabel} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+        const priceText = selectedOption
+            ? getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, selectedOption.getAttribute('data-size'), isCargo)
+            : 'Tarif belum tersedia';
+        chip.innerHTML = `${chipLabel} <span class="trucking-chip-price">(${priceText})</span> <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
         chip.querySelector('i').onclick = (e) => {
             e.stopPropagation();
             delete section.dataset.truckingUseSavedTotals;
