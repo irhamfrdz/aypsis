@@ -21,6 +21,7 @@ class SuratJalanTarikKosongBatam extends Model
         'no_kontainer',
         'size',
         'f_e',
+        'menggunakan_lolo',
         'uang_jalan',
         'status_pembayaran_uang_jalan',
         'input_by',
@@ -36,6 +37,7 @@ class SuratJalanTarikKosongBatam extends Model
         'tanggal_surat_jalan' => 'date',
         'input_date' => 'datetime',
         'uang_jalan' => 'decimal:2',
+        'menggunakan_lolo' => 'boolean',
     ];
 
     public function creator()

@@ -246,6 +246,16 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Lain-lain</h3>
                 </div>
 
+                <div class="md:col-span-2">
+                    <input type="hidden" name="menggunakan_lolo" value="0">
+                    <label for="menggunakan_lolo" class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                        <input type="checkbox" name="menggunakan_lolo" id="menggunakan_lolo" value="1"
+                               {{ old('menggunakan_lolo', $item->menggunakan_lolo) ? 'checked' : '' }}
+                               class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        Menggunakan LOLO
+                    </label>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
                     <div class="flex">

@@ -180,6 +180,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
+            'menggunakan_lolo' => 'required|boolean',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -328,6 +329,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
+            'menggunakan_lolo' => 'required|boolean',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);

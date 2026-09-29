@@ -18,7 +18,11 @@
                     <h1 class="text-3xl font-bold text-gray-900">Bill of Lading (BL)</h1>
                     <p class="mt-1 text-sm text-gray-600">Kelola data Bill of Lading</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ request()->fullUrlWithQuery(['duplikat' => request('duplikat') == '1' ? null : '1', 'page' => null]) }}"
+                       class="inline-flex items-center justify-center px-4 py-2 {{ request('duplikat') == '1' ? 'bg-amber-700 hover:bg-amber-800' : 'bg-amber-600 hover:bg-amber-700' }} text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200 shadow-sm">
+                        <i class="fas fa-copy mr-2"></i> {{ request('duplikat') == '1' ? 'Tampilkan Semua BL' : 'Cek Nomor BL Double' }}
+                    </a>
                     <button onclick="openImportModal()" 
                             class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
                         <i class="fas fa-upload mr-2"></i> Import Excel
@@ -123,6 +127,12 @@
             @endif
         </div>
 
+        @if(request('duplikat') == '1')
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-4 py-3 mb-6 text-sm">
+                Menampilkan BL dengan nomor yang tercatat lebih dari sekali. Nomor kosong dan tanda "-" tidak dihitung.
+            </div>
+        @endif
+
         {{-- Alert Messages --}}
         @if(session('success'))
             <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -168,6 +178,9 @@
                 @endif
                 @if(request('tanpa_size'))
                     <input type="hidden" name="tanpa_size" value="{{ request('tanpa_size') }}">
+                @endif
+                @if(request('duplikat') == '1')
+                    <input type="hidden" name="duplikat" value="1">
                 @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">

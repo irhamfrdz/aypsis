@@ -96,9 +96,20 @@ class BlController extends Controller
             \Log::info('Filter by tanpa_size: active');
         }
 
+        if ($request->get('duplikat') == '1') {
+            $query->whereIn(DB::raw('TRIM(nomor_bl)'), function ($subquery) {
+                $subquery->selectRaw('TRIM(nomor_bl)')
+                    ->from('bls')
+                    ->whereNotNull('nomor_bl')
+                    ->whereRaw("TRIM(nomor_bl) NOT IN ('', '-')")
+                    ->groupByRaw('TRIM(nomor_bl)')
+                    ->havingRaw('COUNT(*) > 1');
+            });
+        }
+
         // Sort berdasarkan parameter
-        $sortBy = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
+        $sortBy = $request->get('sort', $request->get('duplikat') == '1' ? 'nomor_bl' : 'created_at');
+        $sortDirection = $request->get('direction', $request->get('duplikat') == '1' ? 'asc' : 'desc');
 
         $allowedSorts = ['created_at', 'nomor_bl', 'nomor_kontainer', 'nama_kapal', 'no_voyage', 'nama_barang', 'tonnage', 'volume', 'max_tv'];
         if (in_array($sortBy, $allowedSorts)) {

@@ -141,6 +141,10 @@
             <span class="label">Status:</span>
             <span class="value">{{ strtoupper($item->f_e ?? 'Empty') }}</span>
         </div>
+        <div>
+            <span class="label">Menggunakan LOLO:</span>
+            <span class="value">{{ $item->menggunakan_lolo ? 'Ya' : 'Tidak' }}</span>
+        </div>
     </div>
 
     <div class="info-group">

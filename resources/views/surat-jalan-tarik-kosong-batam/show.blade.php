@@ -110,6 +110,7 @@
                             <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Uang Jalan</span>
                             <span class="text-2xl font-bold">Rp {{ number_format($item->uang_jalan, 0, ',', '.') }}</span>
                         </div>
+                        <div class="mt-3 text-sm text-gray-700">Menggunakan LOLO: <span class="font-semibold">{{ $item->menggunakan_lolo ? 'Ya' : 'Tidak' }}</span></div>
                     </section>
 
                     @if($item->catatan)
