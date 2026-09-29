@@ -40,6 +40,15 @@
         });
     }
 
+    function toggleTruckingCargoCost(sectionIndex) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        if (!section) return;
+
+        const isCargo = section.querySelector('.trucking-vendor-select').value === 'CARGO';
+        section.querySelector('.trucking-cargo-cost-wrapper').classList.toggle('hidden', !isCargo);
+        section.querySelector('.trucking-cargo-cost-input').required = isCargo;
+    }
+
     function createTruckingShipSummary(group) {
         const summary = document.createElement('div');
         summary.className = 'trucking-ship-summary mt-4 rounded-lg border border-blue-300 bg-white p-4';
@@ -48,6 +57,7 @@
             <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div>Total kontainer 20ft <strong class="trucking-ship-total-20ft block text-gray-900">Rp 0</strong></div>
                 <div>Total kontainer 40ft <strong class="trucking-ship-total-40ft block text-gray-900">Rp 0</strong></div>
+                <div>Total Cargo <strong class="trucking-ship-total-cargo block text-gray-900">Rp 0</strong></div>
                 <div>Subtotal <strong class="trucking-ship-subtotal block text-gray-900">Rp 0</strong></div>
                 <div>Adjustment <strong class="trucking-ship-adjustment block text-gray-900">Rp 0</strong></div>
                 <div>PPh <strong class="trucking-ship-pph block text-gray-900">Rp 0</strong></div>
@@ -101,12 +111,16 @@
         let grandTotal = 0;
 
         document.querySelectorAll('#trucking_sections_container .trucking-ship-group').forEach(group => {
-            const totals = { ft20: 0, ft40: 0, subtotal: 0, adjustment: 0, pph: 0, total: 0 };
+            const totals = { ft20: 0, ft40: 0, cargo: 0, subtotal: 0, adjustment: 0, pph: 0, total: 0 };
             const sections = [...group.querySelectorAll('.trucking-section')];
             sections.forEach(section => {
                 totals.ft20 += parseAmount(section.querySelector('.trucking-total-20ft-input').value);
                 totals.ft40 += parseAmount(section.querySelector('.trucking-total-40ft-input').value);
-                totals.subtotal += parseAmount(section.querySelector('.trucking-subtotal-input').value);
+                const sectionSubtotal = parseAmount(section.querySelector('.trucking-subtotal-input').value);
+                totals.subtotal += sectionSubtotal;
+                if (section.querySelector('.trucking-vendor-select').value === 'CARGO') {
+                    totals.cargo += sectionSubtotal;
+                }
                 totals.adjustment += parseAmount(section.querySelector('.trucking-adjustment-input').value);
             });
 
@@ -126,6 +140,7 @@
 
             summary.querySelector('.trucking-ship-total-20ft').textContent = formatAmount(totals.ft20);
             summary.querySelector('.trucking-ship-total-40ft').textContent = formatAmount(totals.ft40);
+            summary.querySelector('.trucking-ship-total-cargo').textContent = formatAmount(totals.cargo);
             summary.querySelector('.trucking-ship-subtotal').textContent = formatAmount(totals.subtotal);
             summary.querySelector('.trucking-ship-adjustment').textContent = formatAmount(totals.adjustment);
             summary.querySelector('.trucking-ship-pph').textContent = formatAmount(totals.pph);

@@ -44,10 +44,12 @@
         
         let vendorOptionsHtml = '<option value="">-- Pilih Vendor Trucking --</option>';
         // Group by vendor name since there might be multiple sizes per vendor
-        const uniqueVendors = [...new Set(pricelistBiayaTruckingData.map(item => item.nama_vendor))];
+        const uniqueVendors = [...new Set(pricelistBiayaTruckingData.map(item => item.nama_vendor))]
+            .filter(vendor => String(vendor).trim().toUpperCase() !== 'CARGO');
         uniqueVendors.forEach(vendor => {
             vendorOptionsHtml += `<option value="${vendor}">${vendor}</option>`;
         });
+        vendorOptionsHtml += '<option value="CARGO">Cargo (biaya manual)</option>';
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -77,10 +79,14 @@
                     ${vendorOptionsHtml}
                 </select>
             </div>
+            <div class="trucking-cargo-cost-wrapper mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Cargo <span class="text-red-500">*</span></label>
+                <input type="text" class="trucking-cargo-cost-input w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" inputmode="numeric" placeholder="Masukkan total biaya cargo">
+            </div>
             
             <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
-                <p class="mb-2 text-xs text-gray-500">Pilih satu atau lebih kontainer untuk vendor ini.</p>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kontainer / Cargo</label>
+                <p class="mb-2 text-xs text-gray-500">Pilih satu atau lebih item manifest untuk vendor ini bila tersedia.</p>
                 <div class="relative">
                     <div class="trucking-bl-container min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer focus-within:ring-2 focus-within:ring-blue-500" 
                          onclick="this.nextElementSibling.classList.toggle('hidden')">
@@ -198,6 +204,12 @@
         });
 
         vendorSelect.addEventListener('change', function() {
+            toggleTruckingCargoCost(sectionIndex);
+            calculateTruckingTotals(sectionIndex);
+        });
+        section.querySelector('.trucking-cargo-cost-input').addEventListener('input', function() {
+            const amount = parseFloat(this.value.replace(/[^0-9]/g, '')) || 0;
+            this.value = amount ? amount.toLocaleString('id-ID') : '';
             calculateTruckingTotals(sectionIndex);
         });
 
@@ -507,7 +519,9 @@
         let unitPrice20 = 0;
         let unitPrice40 = 0;
 
-        if (vendor && selectedOptions.length > 0) {
+        if (vendor === 'CARGO') {
+            subtotal = parseFloat(section.querySelector('.trucking-cargo-cost-input').value.replace(/\D/g, '')) || 0;
+        } else if (vendor && selectedOptions.length > 0) {
             // Get all price items for this vendor once to optimize
             const vendorPrices = pricelistBiayaTruckingData.filter(item => item.nama_vendor === vendor);
 
@@ -538,9 +552,6 @@
                     subtotal += cost;
                 }
             });
-        } else {
-            // Fallback: use current subtotal input value
-            subtotal = parseFloat(subtotalInput.value.replace(/\D/g, '')) || 0;
         }
 
         const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '').replace(',', '.')) || 0;

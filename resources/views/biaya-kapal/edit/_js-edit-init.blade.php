@@ -1122,7 +1122,14 @@
                             }
                         }
                         
-                        section.querySelector('.trucking-vendor-select').value = myData.nama_vendor;
+                        const truckingVendor = section.querySelector('.trucking-vendor-select');
+                        truckingVendor.value = String(myData.nama_vendor || '').trim().toUpperCase() === 'CARGO'
+                            ? 'CARGO'
+                            : myData.nama_vendor;
+                        toggleTruckingCargoCost(sectionIndex);
+                        if (truckingVendor.value === 'CARGO') {
+                            section.querySelector('.trucking-cargo-cost-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal || 0);
+                        }
                         
                         if (myData.voyage) {
                             try {

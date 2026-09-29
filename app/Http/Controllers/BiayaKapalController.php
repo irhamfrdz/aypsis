@@ -7171,6 +7171,10 @@ class BiayaKapalController extends Controller
      */
     private function calculateTruckingContainerTotals(array $section): array
     {
+        if (strtoupper(trim((string) ($section['nama_vendor'] ?? ''))) === 'CARGO') {
+            return ['20ft' => 0, '40ft' => 0];
+        }
+
         $containerIds = collect($section['no_bl'] ?? [])
             ->filter(fn ($id) => is_numeric($id))
             ->map(fn ($id) => (int) $id)
