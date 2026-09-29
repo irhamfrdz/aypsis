@@ -50,7 +50,7 @@
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
                 <h4 class="text-md font-semibold text-blue-800">
-                    <i class="fas fa-truck mr-2"></i>Kapal ${sectionIndex} (Trucking)
+                    <i class="fas fa-truck mr-2"></i>Vendor Trucking ${sectionIndex}
                 </h4>
                 ${sectionIndex > 1 ? `<button type="button" onclick="removeTruckingSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
             </div>
@@ -78,6 +78,7 @@
             
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
+                <p class="mb-2 text-xs text-gray-500">Pilih satu atau lebih kontainer untuk vendor ini.</p>
                 <div class="relative">
                     <div class="trucking-bl-container min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer focus-within:ring-2 focus-within:ring-blue-500" 
                          onclick="this.nextElementSibling.classList.toggle('hidden')">
@@ -94,6 +95,10 @@
                     <div class="text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
                 </div>
             </div>
+
+            <button type="button" onclick="addTruckingVendorForSection(${sectionIndex})" class="mb-4 inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                <i class="fas fa-plus"></i>Tambah vendor untuk kapal ini
+            </button>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-4 mt-2">
                 <div>
@@ -232,6 +237,8 @@
                 blDropdown.classList.add('hidden');
             }
         });
+
+        return section;
     }
 
     window.removeTruckingSection = function(index) {

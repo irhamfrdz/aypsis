@@ -105,6 +105,7 @@
 @include('biaya-kapal.create._js-bl-multi')
 @include('biaya-kapal.create._js-operasional')
 @include('biaya-kapal.create._js-trucking')
+@include('biaya-kapal._js-trucking-vendors')
 @include('biaya-kapal.create._js-stuffing')
 @include('biaya-kapal.create._js-storage')
 @include('biaya-kapal.create._js-demurrage')

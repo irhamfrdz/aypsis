@@ -94,6 +94,7 @@
 @include('biaya-kapal.edit._js-operasional-sections')
 @include('biaya-kapal.edit._js-stuffing-sections')
 @include('biaya-kapal.edit._js-trucking-sections')
+@include('biaya-kapal._js-trucking-vendors')
 @include('biaya-kapal.edit._js-labuh-tambat-sections')
 @include('biaya-kapal.edit._js-thc-sections')
 @include('biaya-kapal.edit._js-lolo-sections')
