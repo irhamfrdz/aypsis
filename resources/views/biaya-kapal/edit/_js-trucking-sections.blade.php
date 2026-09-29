@@ -599,7 +599,7 @@
         const isCargo = selectedOption && (selectedOption.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
         const chipLabel = isCargo
             ? `CARGO - ${selectedOption.getAttribute('data-nama-barang') || '-'} (${selectedOption.getAttribute('data-pengirim') || '-'})`
-            : blId;
+            : (selectedOption?.getAttribute('data-kontainer') || blId);
         const priceText = selectedOption
             ? getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, selectedOption.getAttribute('data-size'), isCargo)
             : 'Tarif belum tersedia';
@@ -610,6 +610,9 @@
             chip.remove();
             const input = hiddenInputsContainer.querySelector(`input[value="${blId}"]`);
             if (input) input.remove();
+            if (selectedOption) {
+                selectedOption.classList.remove('selected', 'bg-blue-100');
+            }
             updateTruckingCount(sectionIndex);
             calculateTruckingTotals(sectionIndex);
         };
