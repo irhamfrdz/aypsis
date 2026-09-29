@@ -72,11 +72,12 @@
             <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-[850px] w-full divide-y divide-gray-200 text-sm">
+            <table class="min-w-[1000px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
+                        <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
                         <th scope="col" class="px-5 py-3">Pengirim pada Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Shipper Manifest JB</th>
                         @can('approval-tanda-terima-approve')<th scope="col" class="px-5 py-3 text-right">Aksi</th>@endcan
@@ -88,10 +89,12 @@
                             $number = $type === 'fcl' ? $item->no_surat_jalan : ($type === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
                             $sender = $type === 'lcl' ? $item->nama_pengirim : $item->pengirim;
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
+                            $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
                         @endphp
                         <tr class="hover:bg-gray-50/70">
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
+                            <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
                             <td class="max-w-xs px-5 py-4 text-gray-700">{{ $sender ?: '-' }}</td>
                             <td class="px-5 py-4">
                                 @if($item->shipperJb)
@@ -118,7 +121,7 @@
                             @endcan
                         </tr>
                     @empty
-                        <tr><td colspan="{{ auth()->user()->can('approval-tanda-terima-approve') ? 5 : 4 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->can('approval-tanda-terima-approve') ? 6 : 5 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>
