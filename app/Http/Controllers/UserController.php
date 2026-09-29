@@ -625,6 +625,14 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Keep Approval Tanda Terima 2 separate from the original module.
+            if (strpos($permissionName, 'approval-tanda-terima-2-') === 0) {
+                $action = substr($permissionName, strlen('approval-tanda-terima-2-'));
+                $matrixPermissions['approval-tanda-terima-2'][$action] = true;
+
+                continue;
+            }
+
             // Special handling for approval-tanda-terima permissions (dash notation)
             if (strpos($permissionName, 'approval-tanda-terima-') === 0) {
                 $module = 'approval-tanda-terima';
@@ -5057,6 +5065,15 @@ class UserController extends Controller
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
                             }
+                        }
+                    }
+
+                    // Handle Approval Tanda Terima 2 independently.
+                    if ($module === 'approval-tanda-terima-2' && in_array($action, ['view', 'approve'])) {
+                        $directPermission = Permission::where('name', "approval-tanda-terima-2-{$action}")->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
                         }
                     }
 

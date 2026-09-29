@@ -106,7 +106,7 @@
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
                         <th scope="col" class="px-5 py-3">Pengirim pada Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Shipper Manifest JB</th>
-                        @can('approval-tanda-terima-approve')<th scope="col" class="px-5 py-3 text-right">Aksi</th>@endcan
+                        @can('approval-tanda-terima-2-approve')<th scope="col" class="px-5 py-3 text-right">Aksi</th>@endcan
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -130,7 +130,7 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                             </td>
-                            @can('approval-tanda-terima-approve')
+                            @can('approval-tanda-terima-2-approve')
                                 <td class="whitespace-nowrap px-5 py-4 text-right">
                                     <button type="button" class="approval-shipper-open inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
@@ -147,7 +147,7 @@
                             @endcan
                         </tr>
                     @empty
-                        <tr><td colspan="{{ auth()->user()->can('approval-tanda-terima-approve') ? 6 : 5 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->can('approval-tanda-terima-2-approve') ? 6 : 5 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -156,7 +156,7 @@
     <div class="mt-5">{{ $items->links() }}</div>
 </div>
 
-@can('approval-tanda-terima-approve')
+@can('approval-tanda-terima-2-approve')
 <dialog id="approval-shipper-dialog" aria-labelledby="approval-shipper-title" data-search-url="{{ url('/api/manifests/search-shippers') }}">
     <div class="border-b border-gray-200 px-5 py-4 sm:px-6">
         <div class="flex items-start justify-between gap-3">

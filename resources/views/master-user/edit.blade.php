@@ -4913,6 +4913,18 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Approval Tanda Terima 2 --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">Approval Tanda Terima 2 (Shipper Manifest JB)</td>
+                                <td><input type="checkbox" name="permissions[approval-tanda-terima-2][view]" value="1" class="permission-checkbox" @checked(session()->hasOldInput() ? old('permissions.approval-tanda-terima-2.view', false) : ($userMatrixPermissions['approval-tanda-terima-2']['view'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[approval-tanda-terima-2][approve]" value="1" class="permission-checkbox" @checked(session()->hasOldInput() ? old('permissions.approval-tanda-terima-2.approve', false) : ($userMatrixPermissions['approval-tanda-terima-2']['approve'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Approval Absensi --}}
                             <tr class="submodule-row" data-parent="approval">
                                 <td class="submodule">

@@ -7723,10 +7723,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
 
     Route::get('approval-tanda-terima-2', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'index'])
         ->name('approval-tanda-terima-2.index')
-        ->middleware('can:approval-tanda-terima-view');
+        ->middleware('can:approval-tanda-terima-2-view');
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
-        ->middleware('can:approval-tanda-terima-approve');
+        ->middleware('can:approval-tanda-terima-2-approve');
 
     // 🚚 TANDA TERIMA SURAT JALAN TARIK KOSONG BATAM
     Route::get('tanda-terima-surat-jalan-tarik-kosong-batam/print/{id}', [App\Http\Controllers\TandaTerimaSuratJalanTarikKosongBatamController::class, 'print'])->name('tanda-terima-surat-jalan-tarik-kosong-batam.print');
