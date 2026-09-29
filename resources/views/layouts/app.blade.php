@@ -320,6 +320,7 @@
                         $user->can('master-pricelist-labuh-tambat-view') ||
                         $user->can('master-pricelist-freight-view') ||
                         $user->can('master-pricelist-pelindo-view') ||
+                        $user->can('master-shipper-consignee-view') ||
                         $user->can('master-wa-templates-view') ||
                         $user->can('master-wa-broadcast-view') ||
                         $user->can('master-customer-buruh-view')
@@ -674,7 +675,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.wa-templates.*');
+                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
