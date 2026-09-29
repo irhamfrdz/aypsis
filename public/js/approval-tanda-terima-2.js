@@ -10,12 +10,7 @@
     const selectedId = document.getElementById('approval-shipper-id');
     const selection = document.getElementById('approval-shipper-selection');
     const save = document.getElementById('approval-shipper-save');
-    const preview = {
-        alamat: document.getElementById('approval-shipper-alamat'),
-        consignee: document.getElementById('approval-shipper-consignee'),
-        notify: document.getElementById('approval-shipper-notify'),
-        notifyAddress: document.getElementById('approval-shipper-notify-address'),
-    };
+    const previewFields = dialog.querySelectorAll('[data-shipper-field]');
     let timer;
     let pendingSearch;
     let generation = 0;
@@ -33,10 +28,13 @@
     }
 
     function showPreview(data) {
-        preview.alamat.textContent = data.alamat || '-';
-        preview.consignee.textContent = data.consignee || '-';
-        preview.notify.textContent = data.notify || '-';
-        preview.notifyAddress.textContent = data.notifyAddress || '-';
+        previewFields.forEach(field => {
+            const name = field.dataset.shipperField;
+            const value = data?.[name];
+            field.textContent = name === 'status' && value !== null && value !== undefined
+                ? (String(value) === '1' || value === true ? 'Aktif' : 'Tidak aktif')
+                : (value === null || value === undefined || value === '' ? '-' : String(value));
+        });
     }
 
     function choose(option) {
@@ -45,12 +43,7 @@
         search.value = option.text;
         selection.textContent = 'Dipilih: ' + (option.display_text || option.text);
         selection.className = 'mt-2 text-xs font-medium text-indigo-700';
-        showPreview({
-            alamat: option.alamat,
-            consignee: option.consignee,
-            notify: option.notify_party,
-            notifyAddress: option.alamat_notify_party,
-        });
+        showPreview(option);
         save.disabled = false;
         hideOptions();
         save.focus();
@@ -111,12 +104,7 @@
                 ? 'Shipper saat ini: ' + button.dataset.shipper + '. Pilih dari hasil pencarian untuk mengubahnya.'
                 : 'Pilih shipper dari hasil pencarian.';
             selection.className = 'mt-2 text-xs text-gray-500';
-            showPreview({
-                alamat: button.dataset.alamat,
-                consignee: button.dataset.consignee,
-                notify: button.dataset.notify,
-                notifyAddress: button.dataset.notifyAddress,
-            });
+            showPreview(JSON.parse(button.dataset.shipperDetails || 'null'));
             hideOptions();
             dialog.showModal();
             search.focus();

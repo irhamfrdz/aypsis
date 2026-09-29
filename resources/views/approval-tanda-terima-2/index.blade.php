@@ -5,7 +5,7 @@
 
 @push('styles')
 <style>
-    #approval-shipper-dialog { width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
+    #approval-shipper-dialog { width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-option { display: block; width: 100%; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
@@ -137,10 +137,7 @@
                                         data-number="{{ $number }}" data-sender="{{ $sender }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
                                         data-shipper="{{ $item->shipperJb?->shipper }}"
-                                        data-alamat="{{ $item->shipperJb?->alamat_shipper }}"
-                                        data-consignee="{{ $item->shipperJb?->consignee }}"
-                                        data-notify="{{ $item->shipperJb?->notify_party_consignee }}"
-                                        data-notify-address="{{ $item->shipperJb?->alamat_notify_party_consignee }}">
+                                        data-shipper-details="{{ $item->shipperJb?->toJson() }}">
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i>{{ $item->shipper_jb_id ? 'Ubah Shipper' : 'Pilih Shipper' }}
                                     </button>
                                 </td>
@@ -157,7 +154,7 @@
 </div>
 
 @can('approval-tanda-terima-2-approve')
-<dialog id="approval-shipper-dialog" aria-labelledby="approval-shipper-title" data-search-url="{{ url('/api/manifests/search-shippers') }}">
+<dialog id="approval-shipper-dialog" aria-labelledby="approval-shipper-title" data-search-url="{{ route('approval-tanda-terima-2.shippers') }}">
     <div class="border-b border-gray-200 px-5 py-4 sm:px-6">
         <div class="flex items-start justify-between gap-3">
             <div>
@@ -183,14 +180,44 @@
                 <div id="approval-shipper-options" class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 text-sm" aria-label="Hasil pencarian shipper" hidden></div>
                 <p id="approval-shipper-selection" class="mt-2 text-xs text-gray-500" aria-live="polite">Pilih shipper dari hasil pencarian.</p>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <h3 class="mb-3 text-sm font-semibold text-gray-800">Data dari master</h3>
-                <dl class="grid gap-3 text-sm sm:grid-cols-2">
-                    <div><dt class="text-xs font-medium text-gray-500">Alamat pengirim</dt><dd id="approval-shipper-alamat" class="mt-0.5 whitespace-pre-line text-gray-800">-</dd></div>
-                    <div><dt class="text-xs font-medium text-gray-500">Consignee</dt><dd id="approval-shipper-consignee" class="mt-0.5 text-gray-800">-</dd></div>
-                    <div><dt class="text-xs font-medium text-gray-500">Notify party</dt><dd id="approval-shipper-notify" class="mt-0.5 text-gray-800">-</dd></div>
-                    <div><dt class="text-xs font-medium text-gray-500">Alamat notify party</dt><dd id="approval-shipper-notify-address" class="mt-0.5 whitespace-pre-line text-gray-800">-</dd></div>
-                </dl>
+            @php
+                $shipperPreviewGroups = [
+                    'Informasi Umum' => [
+                        'telepon' => 'Telepon', 'alamat_email' => 'Alamat Email',
+                        'hs_code' => 'HS Code', 'commodity' => 'Commodity',
+                        'document_ppftz_03' => 'Document PPFTZ-03', 'condition' => 'Condition',
+                        'ip_bp_kawasan' => 'IP BP Kawasan', 'delivery_address' => 'Delivery Address',
+                        'status' => 'Status',
+                    ],
+                    'Informasi Shipper' => [
+                        'shipper' => 'Shipper', 'alamat_shipper' => 'Alamat Shipper',
+                        'npwp_shipper' => 'NPWP Shipper', 'nitku_shipper' => 'NITKU Shipper',
+                        'contact_person' => 'Contact Person',
+                    ],
+                    'Informasi Consignee' => [
+                        'consignee' => 'Consignee', 'alamat_consignee' => 'Alamat Consignee',
+                        'npwp_consignee' => 'NPWP Consignee',
+                        'npwp_consignee_16_digit' => 'NPWP Consignee (16 Digit)',
+                        'nitku_consignee' => 'NITKU Consignee',
+                    ],
+                    'Informasi Notify Party' => [
+                        'notify_party_consignee' => 'Notify Party',
+                        'alamat_notify_party_consignee' => 'Alamat Notify Party',
+                        'npwp_notify_party_consignee' => 'NPWP Notify Party',
+                    ],
+                ];
+            @endphp
+            <div class="space-y-3" aria-label="Data dari master Shipper / Consignee">
+                @foreach($shipperPreviewGroups as $groupTitle => $fields)
+                    <section class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                        <h3 class="mb-3 text-sm font-semibold text-gray-800">{{ $groupTitle }}</h3>
+                        <dl class="grid gap-3 text-sm sm:grid-cols-2">
+                            @foreach($fields as $field => $label)
+                                <div><dt class="text-xs font-medium text-gray-500">{{ $label }}</dt><dd data-shipper-field="{{ $field }}" class="mt-0.5 whitespace-pre-line break-words text-gray-800">-</dd></div>
+                            @endforeach
+                        </dl>
+                    </section>
+                @endforeach
             </div>
             <p class="text-xs text-gray-500">Periksa data master sebelum menyimpan. Data ini akan mengisi manifest voyage JB yang terkait.</p>
         </div>

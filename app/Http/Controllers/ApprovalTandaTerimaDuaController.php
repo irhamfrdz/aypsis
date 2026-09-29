@@ -7,6 +7,7 @@ use App\Models\ShipperConsignee;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,32 @@ class ApprovalTandaTerimaDuaController extends Controller
         'lcl' => TandaTerimaLcl::class,
         'ttsj' => TandaTerimaTanpaSuratJalan::class,
     ];
+
+    public function searchShippers(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        $items = ShipperConsignee::query()
+            ->whereNotNull('shipper')
+            ->where('shipper', '!=', '')
+            ->when($search !== '', fn ($query) => $query->where('shipper', 'like', '%'.$search.'%'))
+            ->orderBy('shipper')
+            ->limit(50)
+            ->get();
+
+        return response()->json($items->map(fn (ShipperConsignee $item) => [
+            ...$item->only([
+                'shipper', 'alamat_shipper', 'npwp_shipper', 'nitku_shipper', 'contact_person',
+                'consignee', 'alamat_consignee', 'npwp_consignee', 'npwp_consignee_16_digit', 'nitku_consignee',
+                'notify_party_consignee', 'alamat_notify_party_consignee', 'npwp_notify_party_consignee',
+                'telepon', 'alamat_email', 'hs_code', 'commodity', 'document_ppftz_03',
+                'condition', 'ip_bp_kawasan', 'delivery_address', 'status',
+            ]),
+            'real_id' => $item->id,
+            'text' => $item->shipper,
+            'display_text' => $item->shipper.($item->consignee ? ' - '.$item->consignee : ''),
+        ])->values());
+    }
 
     public function index(Request $request): View
     {

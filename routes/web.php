@@ -7724,6 +7724,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('approval-tanda-terima-2', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'index'])
         ->name('approval-tanda-terima-2.index')
         ->middleware('can:approval-tanda-terima-2-view');
+    Route::get('approval-tanda-terima-2/shippers', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'searchShippers'])
+        ->name('approval-tanda-terima-2.shippers')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
         ->middleware('can:approval-tanda-terima-2-approve');

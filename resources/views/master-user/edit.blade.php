@@ -4797,7 +4797,7 @@
                                 <td class="module-header">
                                     <span class="expand-icon">▶</span>
                                     <span class="module-icon">✅</span>
-                                    Sistem Persetujuan
+                                    <span class="font-semibold">Sistem Persetujuan</span>
                                 </td>
                                 <td class="text-center text-gray-500 text-sm py-3">
                                     <input type="checkbox" class="approval-header-checkbox" data-permission="view">
@@ -4915,7 +4915,7 @@
 
                             {{-- Approval Tanda Terima 2 --}}
                             <tr class="submodule-row" data-parent="approval">
-                                <td class="submodule">Approval Tanda Terima 2 (Shipper Manifest JB)</td>
+                                <td class="submodule"><span>Approval Tanda Terima 2 (Shipper Manifest JB)</span></td>
                                 <td><input type="checkbox" name="permissions[approval-tanda-terima-2][view]" value="1" class="permission-checkbox" @checked(session()->hasOldInput() ? old('permissions.approval-tanda-terima-2.view', false) : ($userMatrixPermissions['approval-tanda-terima-2']['view'] ?? false))></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
@@ -5349,6 +5349,9 @@
                         });
                     }
                 });
+
+                // Show approval permissions on page load, including Approval Tanda Terima 2.
+                expandModule('approval');
             }
 
             function initializePermissionSearch() {
