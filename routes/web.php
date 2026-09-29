@@ -2747,6 +2747,9 @@ Route::middleware([
         Route::resource('master/wa-broadcast', \App\Http\Controllers\Master\WaBroadcastController::class)->names('master.wa-broadcast');
 
         // 🏢 Shipper Consignee Management with permissions
+        Route::get('master/shipper-consignee/export', [\App\Http\Controllers\ShipperConsigneeController::class, 'export'])
+            ->name('master.shipper-consignee.export')
+            ->middleware('can:master-shipper-consignee-view');
         Route::get('master/shipper-consignee/template', [\App\Http\Controllers\ShipperConsigneeController::class, 'template'])->name('master.shipper-consignee.template');
         Route::post('master/shipper-consignee/import', [\App\Http\Controllers\ShipperConsigneeController::class, 'import'])->name('master.shipper-consignee.import');
         Route::get('master/shipper-consignee/template-contact', [\App\Http\Controllers\ShipperConsigneeController::class, 'templateContact'])->name('master.shipper-consignee.template-contact');

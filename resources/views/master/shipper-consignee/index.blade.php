@@ -5,9 +5,9 @@
 
 @section('content')
 <div class="bg-white shadow-md rounded-lg p-6" style="font-family: Arial, sans-serif; font-size: 10px;">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Daftar Shipper / Consignee</h2>
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-wrap items-center gap-3">
             <form action="{{ route('master.shipper-consignee.index') }}" method="GET" class="flex items-center">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari..." class="border border-gray-300 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-48">
                 <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-r-lg border border-l-0 border-gray-300 transition duration-300">
@@ -19,6 +19,10 @@
                     </a>
                 @endif
             </form>
+            <a href="{{ route('master.shipper-consignee.export', request()->only('search')) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center text-[11px] sm:text-sm" title="Unduh seluruh data sesuai pencarian">
+                <i class="fas fa-file-excel mr-2" aria-hidden="true"></i>
+                Export Excel
+            </a>
             @can('master-shipper-consignee-create')
             <button type="button" onclick="document.getElementById('importContactModal').classList.remove('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center text-[11px] sm:text-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>

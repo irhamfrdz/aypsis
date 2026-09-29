@@ -2,29 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ShipperConsigneeDataExport;
 use App\Http\Controllers\Controller;
 use App\Models\ShipperConsignee;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ShipperConsigneeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ShipperConsignee::query();
+        $shipperConsignees = $this->filteredQuery($request)->orderByDesc('id')->paginate(50)->withQueryString();
+        return view('master.shipper-consignee.index', compact('shipperConsignees'));
+    }
 
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('shipper', 'like', "%{$search}%")
-                  ->orWhere('consignee', 'like', "%{$search}%")
-                  ->orWhere('telepon', 'like', "%{$search}%")
-                  ->orWhere('hs_code', 'like', "%{$search}%")
-                  ->orWhere('commodity', 'like', "%{$search}%");
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new ShipperConsigneeDataExport($this->filteredQuery($request)->orderByDesc('id')),
+            'Master_Shipper_Consignee_'.now()->format('Ymd_His').'.xlsx'
+        );
+    }
+
+    private function filteredQuery(Request $request): Builder
+    {
+        $query = ShipperConsignee::query();
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('shipper', 'like', "%{$search}%")
+                    ->orWhere('consignee', 'like', "%{$search}%")
+                    ->orWhere('telepon', 'like', "%{$search}%")
+                    ->orWhere('hs_code', 'like', "%{$search}%")
+                    ->orWhere('commodity', 'like', "%{$search}%");
             });
         }
 
-        $shipperConsignees = $query->orderBy('id', 'desc')->paginate(50)->withQueryString();
-        return view('master.shipper-consignee.index', compact('shipperConsignees'));
+        return $query;
     }
 
     public function create()
