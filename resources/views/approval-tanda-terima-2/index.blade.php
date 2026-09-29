@@ -36,42 +36,59 @@
         </div>
     @endif
 
-    <form method="GET" action="{{ route('approval-tanda-terima-2.index') }}" class="mb-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div class="mb-4 flex items-center gap-2 text-gray-800"><i class="fas fa-filter text-indigo-600" aria-hidden="true"></i><h2 class="font-semibold">Cari Tanda Terima</h2></div>
-        <div class="grid gap-4 md:grid-cols-12 md:items-end">
-            <div class="md:col-span-3">
-                <label for="type" class="mb-1 block text-sm font-medium text-gray-700">Jenis tanda terima</label>
-                <select id="type" name="type" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="fcl" @selected($type === 'fcl')>FCL</option>
-                    <option value="lcl" @selected($type === 'lcl')>LCL</option>
-                    <option value="ttsj" @selected($type === 'ttsj')>Tanpa Surat Jalan</option>
-                </select>
+    <form method="GET" action="{{ route('approval-tanda-terima-2.index') }}" class="mb-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="flex items-center gap-3 border-b border-gray-100 bg-gray-50/80 px-5 py-4 sm:px-6">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
+                <i class="fas fa-filter" aria-hidden="true"></i>
+            </span>
+            <div>
+                <h2 class="font-semibold text-gray-900">Cari Tanda Terima</h2>
+                <p class="text-xs text-gray-500">Cari berdasarkan nomor atau pengirim, lalu pilih filter yang dibutuhkan.</p>
             </div>
-            <div class="md:col-span-4">
-                <label for="search" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima atau pengirim</label>
-                <input id="search" name="search" type="search" value="{{ request('search') }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Cari nomor atau nama pengirim...">
+        </div>
+        <div class="space-y-5 px-5 py-5 sm:px-6">
+            <div>
+                <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima atau pengirim</label>
+                <div class="relative">
+                    <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
+                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor tanda terima atau nama pengirim...">
+                </div>
             </div>
-            <div class="md:col-span-3">
-                <label for="destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman</label>
-                <select id="destination" name="destination" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">Semua tujuan</option>
-                    <option value="jakarta" @selected(request('destination') === 'jakarta')>Jakarta</option>
-                    <option value="batam" @selected(request('destination') === 'batam')>Batam</option>
-                    <option value="tanjung-pinang" @selected(request('destination') === 'tanjung-pinang')>Tanjung Pinang</option>
-                </select>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                    <label for="type" class="mb-2 block text-sm font-semibold text-gray-700">Jenis tanda terima</label>
+                    <select id="type" name="type" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                        <option value="fcl" @selected($type === 'fcl')>FCL</option>
+                        <option value="lcl" @selected($type === 'lcl')>LCL</option>
+                        <option value="ttsj" @selected($type === 'ttsj')>Tanpa Surat Jalan</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="destination" class="mb-2 block text-sm font-semibold text-gray-700">Tujuan pengiriman</label>
+                    <select id="destination" name="destination" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                        <option value="">Semua tujuan</option>
+                        <option value="jakarta" @selected(request('destination') === 'jakarta')>Jakarta</option>
+                        <option value="batam" @selected(request('destination') === 'batam')>Batam</option>
+                        <option value="tanjung-pinang" @selected(request('destination') === 'tanjung-pinang')>Tanjung Pinang</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="status" class="mb-2 block text-sm font-semibold text-gray-700">Status shipper</label>
+                    <select id="status" name="status" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                        <option value="">Semua status</option>
+                        <option value="belum" @selected(request('status') === 'belum')>Belum dipilih</option>
+                        <option value="sudah" @selected(request('status') === 'sudah')>Sudah dipilih</option>
+                    </select>
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <label for="status" class="mb-1 block text-sm font-medium text-gray-700">Status shipper</label>
-                <select id="status" name="status" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">Semua</option>
-                    <option value="belum" @selected(request('status') === 'belum')>Belum dipilih</option>
-                    <option value="sudah" @selected(request('status') === 'sudah')>Sudah dipilih</option>
-                </select>
-            </div>
-            <div class="flex gap-2 md:col-span-12 md:justify-end">
-                <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 md:flex-none">Cari</button>
-                <a href="{{ route('approval-tanda-terima-2.index') }}" class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" title="Reset filter" aria-label="Reset filter"><i class="fas fa-rotate-left" aria-hidden="true"></i></a>
-            </div>
+        </div>
+        <div class="flex flex-col-reverse gap-2 border-t border-gray-100 bg-gray-50/80 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+            <a href="{{ route('approval-tanda-terima-2.index') }}" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-rotate-left" aria-hidden="true"></i>Reset filter
+            </a>
+            <button type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <i class="fas fa-search" aria-hidden="true"></i>Tampilkan hasil
+            </button>
         </div>
     </form>
 
