@@ -97,14 +97,14 @@ class BlController extends Controller
         }
 
         if ($request->get('duplikat') == '1') {
-            $query->whereIn(DB::raw('TRIM(nomor_bl)'), function ($subquery) {
-                $subquery->selectRaw('TRIM(nomor_bl)')
-                    ->from('bls')
-                    ->whereNotNull('nomor_bl')
-                    ->whereRaw("TRIM(nomor_bl) NOT IN ('', '-')")
-                    ->groupByRaw('TRIM(nomor_bl)')
-                    ->havingRaw('COUNT(*) > 1');
-            });
+            $query->whereNotNull('bls.nomor_bl')
+                ->whereRaw("TRIM(bls.nomor_bl) NOT IN ('', '-')")
+                ->whereExists(function ($subquery) {
+                    $subquery->selectRaw('1')
+                        ->from('bls as duplicate_bl')
+                        ->whereColumn('duplicate_bl.id', '!=', 'bls.id')
+                        ->whereRaw('TRIM(duplicate_bl.nomor_bl) = TRIM(bls.nomor_bl)');
+                });
         }
 
         // Sort berdasarkan parameter
