@@ -134,16 +134,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Adjustment</label>
                     <input type="text" name="trucking_sections[${sectionIndex}][notes_adjustment]" class="trucking-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Keterangan adjustment">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                        <input type="text" name="trucking_sections[${sectionIndex}][total_biaya]" 
-                               class="trucking-total-input w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg bg-blue-50 text-blue-800 font-bold focus:ring-0" 
-                               value="0" readonly>
-                    </div>
-                </div>
             </div>
+            <input type="hidden" name="trucking_sections[${sectionIndex}][total_biaya]" class="trucking-total-input" value="0">
         `;
         
         const group = shipGroup || document.createElement('div');
@@ -161,6 +153,7 @@
             `;
             group.setAttribute('data-trucking-ship-index', sectionIndex);
             truckingSectionsContainer.appendChild(group);
+            createTruckingShipSummary(group);
         }
         group.querySelector('.trucking-vendors-container').appendChild(section);
 
@@ -527,16 +520,12 @@
     }
 
     function calculateTotalFromAllTruckingSections() {
-        let totalSubtotal = 0;
-        document.querySelectorAll('.trucking-section').forEach(section => {
-            const sub = parseFloat(section.querySelector('.trucking-subtotal-input').value.replace(/\./g, '')) || 0;
-            totalSubtotal += sub;
-        });
+        const totalBiaya = updateTruckingShipTotals();
 
         const currentJenis = selectedJenisBiaya.kode || '';
         if (selectedJenisBiaya.nama.toLowerCase().includes('trucking')) {
             if (nominalInput) {
-                nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
+                nominalInput.value = totalBiaya > 0 ? Math.round(totalBiaya).toLocaleString('id-ID') : '';
             }
         }
     }
