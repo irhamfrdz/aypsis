@@ -15,13 +15,15 @@
         });
     }
 
-    window.addTruckingSection = function() {
+    window.addTruckingSection = function(shipGroup = null) {
         if (!truckingSectionsContainer) return;
         truckingSectionCounter++;
         const sectionIndex = truckingSectionCounter;
+        const vendorNumber = shipGroup ? shipGroup.querySelectorAll('.trucking-section').length + 1 : 1;
+        const shipNumber = shipGroup ? null : truckingSectionsContainer.querySelectorAll('.trucking-ship-group').length + 1;
         
         const section = document.createElement('div');
-        section.className = 'trucking-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
+        section.className = 'trucking-section rounded-lg border border-blue-200 bg-white p-4';
         section.setAttribute('data-trucking-section-index', sectionIndex);
         
         let kapalOptionsHtml = '<option value="">-- Pilih Kapal --</option>';
@@ -37,13 +39,13 @@
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-md font-semibold text-blue-800">
-                    <i class="fas fa-truck mr-2"></i>Vendor Trucking ${sectionIndex}
+                <h4 class="trucking-vendor-title text-md font-semibold text-blue-800">
+                    <i class="fas fa-truck mr-2"></i>Vendor Trucking ${vendorNumber}
                 </h4>
-                ${sectionIndex > 1 ? `<button type="button" onclick="removeTruckingSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
+                ${shipGroup ? `<button type="button" onclick="removeTruckingSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus Vendor</button>` : ''}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="trucking-ship-fields grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 ${shipGroup ? 'hidden' : ''}">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                     <select name="trucking_sections[${sectionIndex}][kapal]" class="trucking-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
@@ -83,10 +85,6 @@
                     <div class="text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
                 </div>
             </div>
-
-            <button type="button" onclick="addTruckingVendorForSection(${sectionIndex})" class="mb-4 inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
-                <i class="fas fa-plus"></i>Tambah vendor untuk kapal ini
-            </button>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-4 mt-2">
                 <div>
@@ -148,7 +146,23 @@
             </div>
         `;
         
-        truckingSectionsContainer.appendChild(section);
+        const group = shipGroup || document.createElement('div');
+        if (!shipGroup) {
+            group.className = 'trucking-ship-group mb-6 rounded-xl border-2 border-blue-200 bg-blue-50 p-4';
+            group.innerHTML = `
+                <div class="mb-4 flex items-center justify-between">
+                    <h4 class="trucking-ship-title font-semibold text-blue-900"><i class="fas fa-ship mr-2"></i>Kapal Trucking ${shipNumber}</h4>
+                    ${sectionIndex > 1 ? `<button type="button" onclick="removeTruckingShipGroup(${sectionIndex})" class="rounded bg-red-500 px-3 py-1.5 text-xs text-white hover:bg-red-600">Hapus Kapal</button>` : ''}
+                </div>
+                <div class="trucking-vendors-container space-y-4"></div>
+                <button type="button" onclick="addTruckingVendorForSection(${sectionIndex})" class="mt-4 inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                    <i class="fas fa-plus"></i>Tambah vendor untuk kapal ini
+                </button>
+            `;
+            group.setAttribute('data-trucking-ship-index', sectionIndex);
+            truckingSectionsContainer.appendChild(group);
+        }
+        group.querySelector('.trucking-vendors-container').appendChild(section);
 
         // Events
         const kapalSelect = section.querySelector('.trucking-kapal-select');
@@ -223,10 +237,18 @@
     window.removeTruckingSection = function(index) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);
         if (section) {
-             // No destroy needed for vanilla select
+            const group = section.closest('.trucking-ship-group');
             section.remove();
+            if (!group.querySelector('.trucking-section')) group.remove();
+            updateTruckingVendorLabels(group);
             calculateTotalFromAllTruckingSections();
         }
+    }
+
+    window.removeTruckingShipGroup = function(index) {
+        document.querySelector(`.trucking-ship-group[data-trucking-ship-index="${index}"]`)?.remove();
+        updateTruckingShipLabels();
+        calculateTotalFromAllTruckingSections();
     }
 
     function loadVoyagesForTruckingSection(sectionIndex, kapalNama) {

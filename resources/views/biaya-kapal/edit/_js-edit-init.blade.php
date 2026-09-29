@@ -1080,9 +1080,15 @@
         // 7. TRUCKING SECTIONS
         if (existingTruckingSections.length > 0) {
             clearAllTruckingSections();
+            const truckingShipGroups = new Map();
             existingTruckingSections.forEach(myData => {
+                const groupKey = JSON.stringify([myData.kapal || '', myData.voyage || '']);
+                const existingGroup = truckingShipGroups.get(groupKey);
                 (async function() {
-                    const section = addTruckingSection();
+                    const section = addTruckingSection(existingGroup || null);
+                    if (!existingGroup) {
+                        truckingShipGroups.set(groupKey, section.closest('.trucking-ship-group'));
+                    }
                     const sectionIndex = section.getAttribute('data-trucking-section-index');
                     
                     if (section) {
