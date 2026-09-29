@@ -347,6 +347,7 @@
             if (data.success && data.bls && Object.keys(data.bls).length > 0) {
                 // Group by kontainer to remove duplicates
                 const groupedBls = {};
+                const selectedVendor = section.querySelector('.trucking-vendor-select').value;
                 Object.keys(data.bls).forEach(id => {
                     const blData = data.bls[id];
                     const groupKey = String(blData.tipe || '').toLowerCase() === 'cargo'
@@ -381,10 +382,8 @@
                     html += `
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                              data-id="${blData.id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}" data-pengirim="${blData.pengirim || ''}" data-nama-barang="${blData.nama_barang || ''}" data-tipe="${blData.tipe || ''}">
-                            <div class="flex flex-wrap items-center justify-between gap-1">
-                                <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
-                                <span class="trucking-bl-price text-xs font-semibold text-blue-700"></span>
-                            </div>
+                            <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
+                            <div class="trucking-bl-price mt-1 text-sm font-semibold text-emerald-700">${getTruckingContainerPriceLabel(selectedVendor, blData.size, isCargo)}</div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
                                 ${isCargo
                                     ? `<span><i class="fas fa-user text-gray-400 mr-1"></i> Pengirim: ${blData.pengirim || '-'}</span><span><i class="fas fa-box text-gray-400 mr-1"></i> Barang: ${blData.nama_barang || '-'}</span>`
@@ -469,7 +468,7 @@
                             const chip = document.createElement('span');
                             chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
                             chip.setAttribute('data-id', id);
-                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <span class="trucking-chip-price">(${getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, this.getAttribute('data-size'), isCargo)})</span> <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
                             chip.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
                                 opt.click();
@@ -510,6 +509,15 @@
         return priceItem ? parseFloat(priceItem.biaya) || 0 : null;
     }
 
+    function getTruckingContainerPriceLabel(vendor, rawSize, isCargo) {
+        if (!vendor) return 'Pilih vendor untuk melihat biaya';
+        if (vendor === 'CARGO') return 'Biaya cargo diisi manual';
+        const cost = getTruckingContainerPrice(vendor, rawSize, isCargo);
+        return cost === null
+            ? 'Tarif belum tersedia'
+            : `Biaya per kontainer: Rp ${Math.round(cost).toLocaleString('id-ID')}`;
+    }
+
     function updateTruckingDropdownPrices(sectionIndex) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         if (!section) return;
@@ -517,14 +525,10 @@
         section.querySelectorAll('.trucking-bl-option').forEach(option => {
             const priceLabel = option.querySelector('.trucking-bl-price');
             const isCargo = (option.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
-            const cost = getTruckingContainerPrice(vendor, option.getAttribute('data-size'), isCargo);
-            priceLabel.textContent = !vendor
-                ? 'Pilih vendor untuk melihat biaya'
-                : vendor === 'CARGO'
-                    ? 'Biaya cargo diisi manual'
-                    : cost === null
-                        ? 'Tarif belum tersedia'
-                        : `Rp ${Math.round(cost).toLocaleString('id-ID')} / kontainer`;
+            const priceText = getTruckingContainerPriceLabel(vendor, option.getAttribute('data-size'), isCargo);
+            priceLabel.textContent = priceText;
+            const chipPrice = section.querySelector(`.trucking-chip[data-id="${option.getAttribute('data-id')}"] .trucking-chip-price`);
+            if (chipPrice) chipPrice.textContent = `(${priceText})`;
         });
     }
 
