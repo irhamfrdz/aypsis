@@ -12,8 +12,14 @@ class TandaTerimaTanpaSuratJalan extends Model
 
     protected $table = 'tanda_terima_tanpa_surat_jalan';
 
+    public function shipperJb()
+    {
+        return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
+    }
+
     protected $fillable = [
         'no_tanda_terima',
+        'shipper_jb_id',
         'tanggal_tanda_terima',
         'nomor_surat_jalan_customer',
         'surat_jalan_pabrik',

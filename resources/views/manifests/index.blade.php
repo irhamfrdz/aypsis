@@ -246,7 +246,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($manifests as $index => $manifest)
                         @php
-                            if (str_contains(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+                            if (str_contains(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id)) {
                                 $manifest->pengirim = null;
                                 $manifest->alamat_pengirim = null;
                                 $manifest->penerima = null;
@@ -358,6 +358,9 @@
                                     @endforeach
                                 @else
                                     <div class="font-bold">{{ $manifest->pengirim }}</div>
+                                @endif
+                                @if($manifest->shipper_jb_id)
+                                    <div class="mt-1 text-[10px] text-indigo-600">Shipper JB #{{ $manifest->shipper_jb_id }}</div>
                                 @endif
                                 @can('manifest-edit')
                                     @include('manifests.partials.shipper-button')

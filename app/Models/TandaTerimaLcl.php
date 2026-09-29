@@ -16,8 +16,14 @@ class TandaTerimaLcl extends Model
 
     protected $table = 'tanda_terimas_lcl';
 
+    public function shipperJb(): BelongsTo
+    {
+        return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
+    }
+
     protected $fillable = [
         'nomor_tanda_terima',
+        'shipper_jb_id',
         'tanggal_tanda_terima',
         'no_surat_jalan_customer',
         'surat_jalan_pabrik',

@@ -13,6 +13,7 @@ class Manifest extends Model
         'nomor_tanda_terima',
         'prospek_id',
         'shipper_id',
+        'shipper_jb_id',
         'nomor_kontainer',
         'no_seal',
         'tipe_kontainer',
@@ -90,6 +91,22 @@ class Manifest extends Model
     public function shipperConsignee()
     {
         return $this->belongsTo(ShipperConsignee::class, 'shipper_id');
+    }
+
+    public function shipperJb()
+    {
+        return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
+    }
+
+    public function applyShipperJb(ShipperConsignee $shipper): void
+    {
+        $this->shipper_jb_id = $shipper->id;
+        $this->pengirim = $shipper->shipper;
+        $this->alamat_pengirim = $shipper->alamat_shipper;
+        $this->penerima = $shipper->consignee;
+        $this->alamat_penerima = $shipper->alamat_consignee;
+        $this->notify_party = $shipper->notify_party_consignee;
+        $this->alamat_notify_party = $shipper->alamat_notify_party_consignee;
     }
 
     /** Shippers sharing this FCL Booking container. */
@@ -251,7 +268,33 @@ class Manifest extends Model
         parent::boot();
 
         static::creating(function ($manifest) {
-            if (str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id)) {
+            if (str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_jb_id)) {
+                $shipperJbId = null;
+
+                if ($manifest->prospek_id) {
+                    $tandaTerimaId = Prospek::whereKey($manifest->prospek_id)->value('tanda_terima_id');
+                    if ($tandaTerimaId) {
+                        $shipperJbId = TandaTerima::whereKey($tandaTerimaId)->value('shipper_jb_id');
+                    }
+                }
+
+                if (! $shipperJbId && filled($manifest->nomor_tanda_terima)) {
+                    $number = $manifest->nomor_tanda_terima;
+                    $shipperJbId = TandaTerima::where('no_surat_jalan', $number)->whereNotNull('shipper_jb_id')->value('shipper_jb_id')
+                        ?? TandaTerimaLcl::where('nomor_tanda_terima', $number)->whereNotNull('shipper_jb_id')->value('shipper_jb_id')
+                        ?? TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $number)->whereNotNull('shipper_jb_id')->value('shipper_jb_id')
+                        ?? TandaTerimaTanpaSuratJalan::where('nomor_tanda_terima', $number)->whereNotNull('shipper_jb_id')->value('shipper_jb_id');
+                }
+
+                if ($shipperJbId) {
+                    $shipper = ShipperConsignee::find($shipperJbId);
+                    if ($shipper) {
+                        $manifest->applyShipperJb($shipper);
+                    }
+                }
+            }
+
+            if (str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id)) {
                 $manifest->pengirim = null;
                 $manifest->alamat_pengirim = null;
                 $manifest->penerima = null;
@@ -266,7 +309,7 @@ class Manifest extends Model
                 $related = $manifest->getRelatedNotifyParty();
                 if ($related) {
                     // Check if it's not a JB voyage without shipper before auto-filling notify_party
-                    if (!(str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id))) {
+                    if (!(str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id))) {
                         $manifest->notify_party = $related['notify_party'];
                         $manifest->alamat_notify_party = $related['alamat_notify_party'];
                     }

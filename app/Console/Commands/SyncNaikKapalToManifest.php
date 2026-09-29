@@ -177,6 +177,10 @@ class SyncNaikKapalToManifest extends Command
                                     $existingManifest->update(['nama_barang' => $manifestData['nama_barang']]);
                                 } else {
                                     $existingManifest->update($manifestData);
+                                    if ($existingManifest->shipper_jb_id && $existingManifest->shipperJb) {
+                                        $existingManifest->applyShipperJb($existingManifest->shipperJb);
+                                        $existingManifest->save();
+                                    }
                                 }
                             } else {
                                 $lastManifest = Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
@@ -296,6 +300,10 @@ class SyncNaikKapalToManifest extends Command
                         $existingManifest->update(['nama_barang' => $manifestData['nama_barang']]);
                     } else {
                         $existingManifest->update($manifestData);
+                        if ($existingManifest->shipper_jb_id && $existingManifest->shipperJb) {
+                            $existingManifest->applyShipperJb($existingManifest->shipperJb);
+                            $existingManifest->save();
+                        }
                     }
                 } else {
                     // Create new

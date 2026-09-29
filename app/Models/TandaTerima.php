@@ -14,6 +14,7 @@ class TandaTerima extends Model
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
+        'shipper_jb_id',
         'surat_jalan_pabrik',
         'no_dn',
         'tanggal_surat_jalan_pabrik',
@@ -151,6 +152,11 @@ class TandaTerima extends Model
     public function prospeks()
     {
         return $this->hasMany(\App\Models\Prospek::class, 'tanda_terima_id');
+    }
+
+    public function shipperJb()
+    {
+        return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
     }
 
     /**
