@@ -813,6 +813,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.kapal' => 'nullable|string|max:255',
             'trucking_sections.*.voyage' => 'nullable|string|max:255',
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
@@ -1189,6 +1190,7 @@ class BiayaKapalController extends Controller
 
             // BIAYA TRUCKING SECTIONS: Store trucking details
             if ($request->has('trucking_sections') && ! empty($request->trucking_sections)) {
+                $truckingPphAllocations = $this->calculateTruckingPphAllocations($request->trucking_sections);
                 foreach ($request->trucking_sections as $sectionIndex => $section) {
                     // Skip empty sections
                     if (empty($section['kapal']) && empty($section['nama_vendor'])) {
@@ -1199,8 +1201,8 @@ class BiayaKapalController extends Controller
                     $subtotal = (float) ($section['subtotal'] ?? 0);
                     $adjustment = (float) ($section['adjustment'] ?? 0);
                     $adjustedSubtotal = $subtotal + $adjustment;
-                    $pphPercent = (float) ($section['pph_percent'] ?? 2);
-                    $pph = round($adjustedSubtotal * $pphPercent / 100);
+                    $pphPercent = $truckingPphAllocations[$sectionIndex]['percent'] ?? (float) ($section['pph_percent'] ?? 2);
+                    $pph = $truckingPphAllocations[$sectionIndex]['pph'] ?? round($adjustedSubtotal * $pphPercent / 100);
 
                     BiayaKapalTrucking::create([
                         'biaya_kapal_id' => $biayaKapal->id,
@@ -4152,6 +4154,7 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.kapal' => 'nullable|string|max:255',
             'trucking_sections.*.voyage' => 'nullable|string|max:255',
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
@@ -4731,7 +4734,8 @@ class BiayaKapalController extends Controller
             if ($request->has('trucking_sections')) {
                 BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 if (! empty($request->trucking_sections)) {
-                    foreach ($request->trucking_sections as $section) {
+                    $truckingPphAllocations = $this->calculateTruckingPphAllocations($request->trucking_sections);
+                    foreach ($request->trucking_sections as $sectionIndex => $section) {
                         if (empty($section['kapal']) && empty($section['nama_vendor'])) {
                             continue;
                         }
@@ -4739,8 +4743,8 @@ class BiayaKapalController extends Controller
                         $subtotal = (float) ($section['subtotal'] ?? 0);
                         $adjustment = (float) ($section['adjustment'] ?? 0);
                         $adjustedSubtotal = $subtotal + $adjustment;
-                        $pphPercent = (float) ($section['pph_percent'] ?? 2);
-                        $pph = round($adjustedSubtotal * $pphPercent / 100);
+                        $pphPercent = $truckingPphAllocations[$sectionIndex]['percent'] ?? (float) ($section['pph_percent'] ?? 2);
+                        $pph = $truckingPphAllocations[$sectionIndex]['pph'] ?? round($adjustedSubtotal * $pphPercent / 100);
 
                         BiayaKapalTrucking::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -7125,6 +7129,42 @@ class BiayaKapalController extends Controller
 
         return view('biaya-kapal.valuasi-print', compact('biayaKapals', 'request'));
     }
+    /**
+     * Round PPh once for each ship group, then allocate it to its vendor rows.
+     */
+    private function calculateTruckingPphAllocations(array $sections): array
+    {
+        $groups = [];
+        foreach ($sections as $index => $section) {
+            if (empty($section['kapal']) && empty($section['nama_vendor'])) {
+                continue;
+            }
+
+            $groups[$section['group_index'] ?? $index][$index] = $section;
+        }
+
+        $allocations = [];
+        foreach ($groups as $group) {
+            $first = reset($group);
+            $percent = (float) ($first['pph_percent'] ?? 2);
+            $groupBase = array_sum(array_map(
+                fn ($section) => (float) ($section['subtotal'] ?? 0) + (float) ($section['adjustment'] ?? 0),
+                $group
+            ));
+            $remainingPph = round($groupBase * $percent / 100);
+            $lastIndex = array_key_last($group);
+
+            foreach ($group as $index => $section) {
+                $sectionBase = (float) ($section['subtotal'] ?? 0) + (float) ($section['adjustment'] ?? 0);
+                $pph = $index === $lastIndex ? $remainingPph : round($sectionBase * $percent / 100);
+                $allocations[$index] = ['pph' => $pph, 'percent' => $percent];
+                $remainingPph -= $pph;
+            }
+        }
+
+        return $allocations;
+    }
+
     /**
      * Calculate trucking costs by container size from the selected manifests.
      * The values from the browser are intentionally not used as the source of truth.

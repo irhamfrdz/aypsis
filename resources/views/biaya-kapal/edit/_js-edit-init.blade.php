@@ -1087,7 +1087,13 @@
                 (async function() {
                     const section = addTruckingSection(existingGroup || null);
                     if (!existingGroup) {
-                        truckingShipGroups.set(groupKey, section.closest('.trucking-ship-group'));
+                        const group = section.closest('.trucking-ship-group');
+                        truckingShipGroups.set(groupKey, group);
+                        const groupRows = existingTruckingSections.filter(row => JSON.stringify([row.kapal || '', row.voyage || '']) === groupKey);
+                        const adjustment = groupRows.reduce((sum, row) => sum + Number(row.adjustment || 0), 0);
+                        group.querySelector('.trucking-ship-adjustment-input').value = new Intl.NumberFormat('id-ID').format(adjustment);
+                        group.querySelector('.trucking-ship-notes-input').value = groupRows.map(row => row.notes_adjustment).filter(Boolean).join('; ');
+                        group.querySelector('.trucking-ship-pph-half-input').checked = parseFloat(myData.pph_percent || 2) === 0.5;
                     }
                     const sectionIndex = section.getAttribute('data-trucking-section-index');
                     
@@ -1141,13 +1147,7 @@
                         }
                         
                         section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
-                        const adjustmentInput = section.querySelector('.trucking-adjustment-input');
-                        if (adjustmentInput) adjustmentInput.value = new Intl.NumberFormat('id-ID').format(myData.adjustment || 0);
-                        const pphHalfInput = section.querySelector('.trucking-pph-half-input');
-                        if (pphHalfInput) pphHalfInput.checked = parseFloat(myData.pph_percent || 2) === 0.5;
-                        const notesAdjustmentInput = section.querySelector('.trucking-notes-adjustment-input');
-                        if (notesAdjustmentInput) notesAdjustmentInput.value = myData.notes_adjustment || '';
-                        calculateTruckingTotals(sectionIndex);
+                        applyTruckingShipSettings(section.closest('.trucking-ship-group'));
                     }
                 })();
             });

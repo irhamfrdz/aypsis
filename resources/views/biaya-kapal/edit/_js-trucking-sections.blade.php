@@ -58,12 +58,12 @@
                         <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                     </select>
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Trucking <span class="text-red-500">*</span></label>
-                    <select name="trucking_sections[${sectionIndex}][nama_vendor]" class="trucking-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                        ${vendorOptionsHtml}
-                    </select>
-                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Trucking <span class="text-red-500">*</span></label>
+                <select name="trucking_sections[${sectionIndex}][nama_vendor]" class="trucking-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    ${vendorOptionsHtml}
+                </select>
             </div>
             
             <div class="mb-3">
@@ -86,7 +86,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-4 mt-2">
+            <div class="hidden">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya Kontainer 20ft</label>
                     <div class="relative"><span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -135,6 +135,7 @@
                     <input type="text" name="trucking_sections[${sectionIndex}][notes_adjustment]" class="trucking-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Keterangan adjustment">
                 </div>
             </div>
+            <input type="hidden" name="trucking_sections[${sectionIndex}][group_index]" value="${shipGroup ? shipGroup.getAttribute('data-trucking-ship-index') : sectionIndex}">
             <input type="hidden" name="trucking_sections[${sectionIndex}][total_biaya]" class="trucking-total-input" value="0">
         `;
         
