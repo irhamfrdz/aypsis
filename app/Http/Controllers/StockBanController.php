@@ -529,18 +529,59 @@ class StockBanController extends Controller
 
     public function showVelgHistory(string $type, int $id)
     {
-        abort_unless(in_array($type, ['ring-velg', 'velg'], true), 404);
-
-        $model = $type === 'velg' ? StockVelg::class : StockRingVelg::class;
+        $model = $this->velgHistoryModel($type);
         $label = $type === 'velg' ? 'Velg' : 'Ring Velg';
         $item = $model::with('namaStockBan')->findOrFail($id);
-        $usages = \App\Models\StockBanDalamUsage::with(['mobil', 'penerima', 'kapal', 'gudang'])
-            ->whereNull('stock_ban_dalam_id')
-            ->where('keterangan', 'like', "[{$label} ID: {$id}]%")
+        $usages = $this->velgHistoryUsages($type, $id)
+            ->with(['mobil', 'penerima', 'kapal', 'gudang'])
             ->orderByDesc('tanggal_keluar')
             ->get();
 
-        return view('stock-ban.show-velg-history', compact('item', 'label', 'usages'));
+        return view('stock-ban.show-velg-history', compact('item', 'label', 'type', 'usages'));
+    }
+
+    public function updateVelgUsageDate(Request $request, string $type, int $id, int $usageId)
+    {
+        $validated = $request->validate(['tanggal_keluar' => 'required|date_format:Y-m-d']);
+        $model = $this->velgHistoryModel($type);
+        $model::findOrFail($id);
+        $usage = $this->velgHistoryUsages($type, $id)->findOrFail($usageId);
+        $usage->update([
+            'tanggal_keluar' => $validated['tanggal_keluar'],
+            'tanggal_digunakan' => $validated['tanggal_keluar'],
+        ]);
+
+        return back()->with('success', 'Tanggal riwayat keluar berhasil diperbarui.');
+    }
+
+    public function destroyVelgUsage(string $type, int $id, int $usageId)
+    {
+        $model = $this->velgHistoryModel($type);
+
+        DB::transaction(function () use ($model, $type, $id, $usageId) {
+            $item = $model::whereKey($id)->lockForUpdate()->firstOrFail();
+            $usage = $this->velgHistoryUsages($type, $id)->lockForUpdate()->findOrFail($usageId);
+            $item->increment('qty', $usage->qty);
+            $usage->delete();
+        });
+
+        return back()->with('success', 'Riwayat keluar dihapus dan stok dikembalikan.');
+    }
+
+    private function velgHistoryModel(string $type): string
+    {
+        abort_unless(in_array($type, ['ring-velg', 'velg'], true), 404);
+
+        return $type === 'velg' ? StockVelg::class : StockRingVelg::class;
+    }
+
+    private function velgHistoryUsages(string $type, int $id)
+    {
+        $label = $type === 'velg' ? 'Velg' : 'Ring Velg';
+
+        return \App\Models\StockBanDalamUsage::query()
+            ->whereNull('stock_ban_dalam_id')
+            ->where('keterangan', 'like', "[{$label} ID: {$id}]%");
     }
 
     /**

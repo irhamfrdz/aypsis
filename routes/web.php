@@ -7503,6 +7503,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('stock-ban.velg-history')
         ->where('type', 'ring-velg|velg')
         ->middleware('can:stock-ban-view');
+    Route::patch('stock-ban/velg-history/{type}/{id}/usage/{usageId}', [\App\Http\Controllers\StockBanController::class, 'updateVelgUsageDate'])
+        ->name('stock-ban.velg-history.update-usage-date')
+        ->where('type', 'ring-velg|velg')
+        ->middleware('can:stock-ban-update');
+    Route::delete('stock-ban/velg-history/{type}/{id}/usage/{usageId}', [\App\Http\Controllers\StockBanController::class, 'destroyVelgUsage'])
+        ->name('stock-ban.velg-history.destroy-usage')
+        ->where('type', 'ring-velg|velg')
+        ->middleware('can:stock-ban-delete');
     Route::get('stock-ban/edit-lain/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'editStockLain'])
         ->name('stock-ban.edit-lain')
         ->middleware('can:stock-ban-update');

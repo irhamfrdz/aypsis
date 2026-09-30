@@ -5,6 +5,12 @@
 
 @section('content')
 <div class="container mx-auto max-w-6xl px-4 py-6">
+    @if(session('success'))
+        <div role="status" class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div role="alert" class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>
+    @endif
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Riwayat {{ $label }}</h1>
@@ -33,19 +39,39 @@
                     <tr>
                         <th class="px-5 py-3">Tanggal</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Penerima</th>
                         <th class="px-5 py-3">Tujuan</th><th class="px-5 py-3">Keterangan</th>
+                        @can('stock-ban-delete')<th class="px-5 py-3 text-right">Aksi</th>@endcan
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($usages as $usage)
                         <tr>
-                            <td class="whitespace-nowrap px-5 py-4">{{ $usage->tanggal_keluar ? \Carbon\Carbon::parse($usage->tanggal_keluar)->format('d/m/Y') : '-' }}</td>
+                            <td class="whitespace-nowrap px-5 py-4">
+                                @can('stock-ban-update')
+                                    <form method="POST" action="{{ route('stock-ban.velg-history.update-usage-date', ['type' => $type, 'id' => $item->id, 'usageId' => $usage->id]) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="date" name="tanggal_keluar" value="{{ $usage->tanggal_keluar ? \Carbon\Carbon::parse($usage->tanggal_keluar)->format('Y-m-d') : '' }}" required class="bg-gray-50 border border-gray-200 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" title="Ubah tanggal" onchange="if (confirm('Apakah Anda yakin ingin memperbarui tanggal?')) { this.form.submit(); } else { this.form.reset(); }">
+                                    </form>
+                                @else
+                                    {{ $usage->tanggal_keluar ? \Carbon\Carbon::parse($usage->tanggal_keluar)->format('d/m/Y') : '-' }}
+                                @endcan
+                            </td>
                             <td class="px-5 py-4 font-semibold">{{ $usage->qty }} {{ $item->type ?: 'pcs' }}</td>
                             <td class="px-5 py-4">{{ $usage->penerima?->nama_lengkap ?: ($usage->penerima_manual ?: '-') }}</td>
                             <td class="px-5 py-4">{{ $usage->mobil?->nomor_polisi ?: ($usage->kapal?->nama_kapal ?: ($usage->gudang?->nama_gudang ?: '-')) }}</td>
                             <td class="px-5 py-4">{{ preg_replace('/^\[(Ring Velg|Velg) ID: \d+\]\s*/', '', $usage->keterangan ?? '') ?: '-' }}</td>
+                            @can('stock-ban-delete')
+                                <td class="px-5 py-4 text-right">
+                                    <form method="POST" action="{{ route('stock-ban.velg-history.destroy-usage', ['type' => $type, 'id' => $item->id, 'usageId' => $usage->id]) }}" onsubmit="return confirm('Hapus riwayat ini?\n\nData riwayat akan dihapus dan stok akan dikembalikan sebanyak {{ $usage->qty }}. Tindakan ini tidak dapat dibatalkan.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors duration-200" title="Hapus riwayat"><i class="fas fa-trash-alt"></i></button>
+                                    </form>
+                                </td>
+                            @endcan
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-5 py-10 text-center text-gray-500">Belum ada riwayat keluar untuk barang ini.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->can('stock-ban-delete') ? 6 : 5 }}" class="px-5 py-10 text-center text-gray-500">Belum ada riwayat keluar untuk barang ini.</td></tr>
                     @endforelse
                 </tbody>
             </table>
