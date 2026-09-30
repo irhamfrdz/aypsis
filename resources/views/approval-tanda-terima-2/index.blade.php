@@ -293,14 +293,14 @@
         <div class="space-y-4 px-5 py-5 sm:px-6">
             <div>
                 <div class="mb-1 flex items-center justify-between gap-3">
-                    <label for="approval-shipper-search" class="text-sm font-medium text-gray-700">Cari shipper</label>
+                    <label for="approval-shipper-search" class="text-sm font-medium text-gray-700">Cari shipper atau consignee</label>
                     @can('master-shipper-consignee-create')
                         <a href="{{ route('master.shipper-consignee.create') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-700 hover:underline"><i class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah di master</a>
                     @endcan
                 </div>
                 <div class="approval-shipper-combobox">
                     <i class="approval-shipper-search-icon fas fa-magnifying-glass" aria-hidden="true"></i>
-                    <input id="approval-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper..." class="text-sm" aria-controls="approval-shipper-options" aria-expanded="false" aria-autocomplete="list">
+                    <input id="approval-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper atau consignee..." class="text-sm" aria-controls="approval-shipper-options" aria-expanded="false" aria-autocomplete="list">
                     <i class="approval-shipper-search-arrow fas fa-chevron-down text-xs" aria-hidden="true"></i>
                     <div id="approval-shipper-options" class="text-sm" aria-label="Hasil pencarian shipper" hidden></div>
                 </div>

@@ -31,7 +31,10 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         $items = $request->has('id')
             ? $query->whereKey($request->integer('id'))->get()
-            : $query->when($search !== '', fn ($query) => $query->where('shipper', 'like', '%'.$search.'%'))
+            : $query->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('shipper', 'like', '%'.$search.'%')
+                    ->orWhere('consignee', 'like', '%'.$search.'%');
+            }))
                 ->orderBy('shipper')
                 ->limit(50)
                 ->get();

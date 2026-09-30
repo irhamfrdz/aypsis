@@ -153,7 +153,7 @@
 
             options.replaceChildren();
             if (!records.length) {
-                options.textContent = 'Shipper tidak ditemukan. Coba nama lain.';
+                options.textContent = 'Shipper atau consignee tidak ditemukan. Coba nama lain.';
                 return;
             }
             options.classList.remove('approval-shipper-message');
