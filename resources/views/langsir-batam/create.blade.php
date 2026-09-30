@@ -205,6 +205,8 @@
                             <input type="text" name="no_plat" id="no_plat" value="{{ old('no_plat') }}" placeholder="Otomatis terisi saat pilih supir"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
                         </div>
+
+                        @include('langsir-batam.partials.chasis-fields', ['langsir' => null])
                     </div>
 
                     <!-- Section: Biaya -->

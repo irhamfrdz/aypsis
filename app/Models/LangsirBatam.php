@@ -22,6 +22,9 @@ class LangsirBatam extends Model
         'dari',
         'ke',
         'no_plat',
+        'sumber_chasis',
+        'chasis_mobil_id',
+        'no_chasis',
         'supir',
         'biaya',
         'keterangan',
@@ -44,6 +47,11 @@ class LangsirBatam extends Model
     public function supirKaryawan()
     {
         return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
+    }
+
+    public function chasisMobil()
+    {
+        return $this->belongsTo(Mobil::class, 'chasis_mobil_id');
     }
 
     public static function generateNoTransaksi()

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
 use App\Models\LangsirBatam;
+use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -88,8 +89,9 @@ class LangsirBatamController extends Controller
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        $chasisAyps = $this->chasisAyps();
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs'));
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisAyps'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -141,6 +143,7 @@ class LangsirBatamController extends Controller
             'dari' => 'nullable|string',
             'ke' => 'nullable|string',
             'no_plat' => 'nullable|string',
+            ...$this->chasisRules(true),
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
@@ -152,6 +155,7 @@ class LangsirBatamController extends Controller
         ]);
 
         $validated['input_by'] = Auth::id();
+        $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
 
         if ($validated['ob_dalam_pelabuhan']) {
@@ -444,8 +448,9 @@ class LangsirBatamController extends Controller
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
+        $chasisAyps = $this->chasisAyps();
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations'));
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisAyps'));
     }
 
     /**
@@ -469,6 +474,7 @@ class LangsirBatamController extends Controller
             'dari' => 'nullable|string',
             'ke' => 'nullable|string',
             'no_plat' => 'nullable|string',
+            ...$this->chasisRules(false),
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
@@ -478,6 +484,7 @@ class LangsirBatamController extends Controller
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
         ]);
 
+        $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
 
         if ($validated['ob_dalam_pelabuhan']) {
@@ -560,5 +567,46 @@ class LangsirBatamController extends Controller
         }
 
         return redirect()->route('langsir-batam.index')->with('success', count($request->ids).' Data Langsir Batam berhasil dihapus.');
+    }
+
+    private function chasisAyps()
+    {
+        return Mobil::query()
+            ->where('jenis', 'like', '%buntut%')
+            ->whereNotNull('no_kir')
+            ->whereRaw("TRIM(no_kir) <> ''")
+            ->orderBy('no_kir')
+            ->get(['id', 'no_kir', 'nomor_polisi']);
+    }
+
+    private function chasisRules(bool $required): array
+    {
+        return [
+            'sumber_chasis' => [$required ? 'required' : 'nullable', Rule::in(['AYP', 'PB'])],
+            'chasis_mobil_id' => [
+                'nullable', 'integer', 'required_if:sumber_chasis,AYP',
+                Rule::exists('mobils', 'id')->where(function ($query) {
+                    $query->where('jenis', 'like', '%buntut%')
+                        ->whereNotNull('no_kir')
+                        ->whereRaw("TRIM(no_kir) <> ''");
+                }),
+            ],
+            'no_chasis_pb' => ['nullable', 'string', 'max:255', 'required_if:sumber_chasis,PB'],
+        ];
+    }
+
+    private function resolveChasis(array &$validated): void
+    {
+        if (($validated['sumber_chasis'] ?? null) === 'AYP') {
+            $validated['no_chasis'] = trim(Mobil::findOrFail($validated['chasis_mobil_id'])->no_kir);
+        } elseif (($validated['sumber_chasis'] ?? null) === 'PB') {
+            $validated['chasis_mobil_id'] = null;
+            $validated['no_chasis'] = trim($validated['no_chasis_pb']);
+        } else {
+            $validated['chasis_mobil_id'] = null;
+            $validated['no_chasis'] = null;
+        }
+
+        unset($validated['no_chasis_pb']);
     }
 }

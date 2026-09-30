@@ -206,6 +206,9 @@
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-700">
                                         <div>{{ $langsir->supir ?? '-' }}</div>
                                         <div class="text-[10px] text-gray-500">{{ $langsir->no_plat ?? '-' }}</div>
+                                        @if($langsir->sumber_chasis)
+                                            <div class="text-[10px] text-emerald-700">Chasis {{ $langsir->sumber_chasis }}: {{ $langsir->no_chasis ?: '-' }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-gray-900">
                                         Rp {{ number_format($langsir->biaya, 0, ',', '.') }}

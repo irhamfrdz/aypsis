@@ -125,6 +125,17 @@
                                 </div>
                             </div>
 
+                            <div class="grid grid-cols-2 gap-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                                <div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">Sumber Chasis</div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $langsir->sumber_chasis ? 'Chasis '.$langsir->sumber_chasis : '-' }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">{{ $langsir->sumber_chasis === 'AYP' ? 'No. KIR' : 'No. Chasis' }}</div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $langsir->no_chasis ?: '-' }}</div>
+                                </div>
+                            </div>
+
                             <div class="bg-blue-600 text-white rounded-xl p-5 shadow-lg transform hover:scale-[1.02] transition-transform">
                                 <div class="text-xs font-medium uppercase tracking-widest opacity-80 mb-1">Biaya Langsir</div>
                                 <div class="text-3xl font-black">Rp {{ number_format($langsir->biaya, 0, ',', '.') }}</div>
