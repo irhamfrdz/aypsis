@@ -2167,6 +2167,39 @@ function handleFormSubmit(event) {
             return false;
         }
     }
+
+    // Validate Sumber Buntut
+    const buntutAsal = document.querySelector('input[name="buntut_asal"]#modal_buntut_asal_ayp')?.checked ? 'AYP' : 'PB';
+    if (buntutAsal === 'AYP') {
+        const hiddenBuntut = document.getElementById('modal_buntut_plat_kir');
+        const searchInputBuntut = document.getElementById('modal_buntut_search_input');
+        let isValidBuntut = false;
+        const val = hiddenBuntut ? hiddenBuntut.value.trim() : '';
+        const modalOptions = document.querySelectorAll('.modal-buntut-opt');
+        if (val) {
+            modalOptions.forEach(opt => {
+                if (opt.getAttribute('data-value') === val) isValidBuntut = true;
+            });
+        }
+        if (!isValidBuntut && searchInputBuntut && searchInputBuntut.value.trim()) {
+            const text = searchInputBuntut.value.trim().toLowerCase();
+            modalOptions.forEach(opt => {
+                if ((opt.getAttribute('data-value') || '').toLowerCase() === text || (opt.getAttribute('data-label') || '').toLowerCase() === text) {
+                    isValidBuntut = true;
+                    hiddenBuntut.value = opt.getAttribute('data-value');
+                }
+            });
+        }
+        if (!isValidBuntut) {
+            showModalAlert('Validasi Gagal!', 'Data tidak ada, silahkan periksa kembali', 'error');
+            if (searchInputBuntut) searchInputBuntut.focus();
+            return false;
+        }
+    } else {
+        const inputBuntut = document.getElementById('modal_buntut_plat_kir_input');
+        const hiddenBuntut = document.getElementById('modal_buntut_plat_kir');
+        if (hiddenBuntut && inputBuntut) hiddenBuntut.value = inputBuntut.value;
+    }
     
     // Show loading state
     submitBtn.disabled = true;
@@ -2267,7 +2300,9 @@ function getFieldLabel(fieldName) {
         'nomor_sj_sebelumnya': 'Nomor Surat Jalan Sebelumnya',
         'nama_kapal': 'Nama Kapal',
         'no_voyage': 'No Voyage',
-        'bl_id': 'BL ID'
+        'bl_id': 'BL ID',
+        'buntut_asal': 'Sumber Buntut',
+        'buntut_plat_kir': 'PLAT / KIR Buntut'
     };
     
     return labels[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -2907,6 +2942,39 @@ function handleEditFormSubmit(event) {
         showEditModalAlert('Field Wajib Diisi!', 'Tanggal Surat Jalan harus diisi sebelum menyimpan.', 'error');
         document.getElementById('edit_modal_tanggal_surat_jalan').focus();
         return false;
+    }
+    
+    // Validate Sumber Buntut
+    const editBuntutAsal = document.querySelector('input[name="buntut_asal"]#edit_modal_buntut_asal_ayp')?.checked ? 'AYP' : 'PB';
+    if (editBuntutAsal === 'AYP') {
+        const hiddenEditBuntut = document.getElementById('edit_modal_buntut_plat_kir');
+        const searchInputEditBuntut = document.getElementById('edit_modal_buntut_search_input');
+        let isValidEditBuntut = false;
+        const val = hiddenEditBuntut ? hiddenEditBuntut.value.trim() : '';
+        const editModalOptions = document.querySelectorAll('.edit-modal-buntut-opt');
+        if (val) {
+            editModalOptions.forEach(opt => {
+                if (opt.getAttribute('data-value') === val) isValidEditBuntut = true;
+            });
+        }
+        if (!isValidEditBuntut && searchInputEditBuntut && searchInputEditBuntut.value.trim()) {
+            const text = searchInputEditBuntut.value.trim().toLowerCase();
+            editModalOptions.forEach(opt => {
+                if ((opt.getAttribute('data-value') || '').toLowerCase() === text || (opt.getAttribute('data-label') || '').toLowerCase() === text) {
+                    isValidEditBuntut = true;
+                    hiddenEditBuntut.value = opt.getAttribute('data-value');
+                }
+            });
+        }
+        if (!isValidEditBuntut) {
+            showEditModalAlert('Validasi Gagal!', 'Data tidak ada, silahkan periksa kembali', 'error');
+            if (searchInputEditBuntut) searchInputEditBuntut.focus();
+            return false;
+        }
+    } else {
+        const inputEditBuntut = document.getElementById('edit_modal_buntut_plat_kir_input');
+        const hiddenEditBuntut = document.getElementById('edit_modal_buntut_plat_kir');
+        if (hiddenEditBuntut && inputEditBuntut) hiddenEditBuntut.value = inputEditBuntut.value;
     }
     
     // Show loading state

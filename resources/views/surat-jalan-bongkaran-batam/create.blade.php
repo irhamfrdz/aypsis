@@ -603,6 +603,16 @@
                     </div>
 
                     <input type="hidden" name="buntut_plat_kir" id="create_buntut_plat_kir" value="{{ old('buntut_plat_kir') }}">
+                    <p id="create_buntut_error" class="mt-1 text-sm text-red-600 font-medium flex items-center hidden">
+                        <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <span>Data tidak ada, silahkan periksa kembali</span>
+                    </p>
+                    @error('buntut_plat_kir')
+                        <p class="mt-1 text-sm text-red-600 font-medium flex items-center">
+                            <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                            <span>{{ $message }}</span>
+                        </p>
+                    @enderror
                 </div>
 
                 <!-- Informasi Packaging -->
@@ -991,6 +1001,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const buntutErrorEl = document.getElementById('create_buntut_error');
+
+    function clearBuntutError() {
+        if (buntutErrorEl) {
+            buntutErrorEl.classList.add('hidden');
+        }
+        if (buntutSearchInput) {
+            buntutSearchInput.classList.remove('border-red-500');
+        }
+    }
+
+    function showBuntutError() {
+        if (buntutErrorEl) {
+            buntutErrorEl.classList.remove('hidden');
+        }
+        if (buntutSearchInput) {
+            buntutSearchInput.classList.add('border-red-500');
+            buntutSearchInput.focus();
+        }
+    }
+
     buntutOptions.forEach(opt => {
         opt.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -998,6 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const label = this.getAttribute('data-label');
             buntutHidden.value = val;
             buntutSearchInput.value = label;
+            clearBuntutError();
             closeCreateBuntutDropdown();
         });
     });
@@ -1020,6 +1052,58 @@ document.addEventListener('DOMContentLoaded', function() {
         if (buntutSearchInput) buntutSearchInput.value = foundLabel;
     }
 
+    // Fungsi validasi Sumber Buntut:
+    // Jika AYP: periksa ke master PLAT/KIR, jika ada maka berhasil, jika tidak ada tampilkan error
+    // Jika PB: tidak usah memeriksa master karena PB tidak memiliki master (otomatis berhasil)
+    window.validateCreateBuntut = function() {
+        const checkedRadio = document.querySelector('input[name="buntut_asal"]:checked');
+        const source = checkedRadio ? checkedRadio.value : 'AYP';
+        const inputPb = document.getElementById('create_buntut_plat_kir_input');
+
+        if (source === 'PB') {
+            // PB tidak memiliki master -> otomatis berhasil (tidak perlu cek master)
+            if (buntutHidden && inputPb) {
+                buntutHidden.value = inputPb.value;
+            }
+            clearBuntutError();
+            return true;
+        }
+
+        // Sumber AYP -> Wajib ada di master
+        const val = buntutHidden ? buntutHidden.value.trim() : '';
+        let existsInMaster = false;
+
+        if (val) {
+            buntutOptions.forEach(opt => {
+                if (opt.getAttribute('data-value') === val) {
+                    existsInMaster = true;
+                }
+            });
+        }
+
+        // Jika value di hidden belum ada, cocokkan teks search input dengan opsi master
+        if (!existsInMaster && buntutSearchInput && buntutSearchInput.value.trim()) {
+            const typedText = buntutSearchInput.value.trim().toLowerCase();
+            buntutOptions.forEach(opt => {
+                const optVal = (opt.getAttribute('data-value') || '').toLowerCase();
+                const optLabel = (opt.getAttribute('data-label') || '').toLowerCase();
+                if (typedText === optVal || typedText === optLabel) {
+                    existsInMaster = true;
+                    buntutHidden.value = opt.getAttribute('data-value');
+                    buntutSearchInput.value = opt.getAttribute('data-label');
+                }
+            });
+        }
+
+        if (!existsInMaster) {
+            showBuntutError();
+            return false;
+        }
+
+        clearBuntutError();
+        return true;
+    };
+
     // Toggle Buntut Source (AYP / PB)
     window.toggleCreateBuntutSource = function(source) {
         const aypWrapper = document.getElementById('wrapper_buntut_ayp_create_page');
@@ -1027,6 +1111,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const label = document.getElementById('create_buntut_label');
         const input = document.getElementById('create_buntut_plat_kir_input');
         const hidden = document.getElementById('create_buntut_plat_kir');
+
+        clearBuntutError();
 
         if (source === 'AYP') {
             if (aypWrapper) aypWrapper.classList.remove('hidden');
@@ -1039,6 +1125,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hidden && input) hidden.value = input.value;
         }
     };
+
+    // Form submit listener
+    const createForm = document.querySelector('form[action*="surat-jalan-bongkaran-batam"]');
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            if (!validateCreateBuntut()) {
+                e.preventDefault();
+                e.stopPropagation();
+                const anchor = document.getElementById('create_buntut_label') || buntutSearchInput;
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
 
     // Initial trigger for old values
     const checkedBuntutRadio = document.querySelector('input[name="buntut_asal"]:checked');

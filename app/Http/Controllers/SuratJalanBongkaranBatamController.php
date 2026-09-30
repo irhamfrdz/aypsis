@@ -870,10 +870,26 @@ class SuratJalanBongkaranBatamController extends Controller
             throw $e;
         }
 
+        $buntutAsal = $request->buntut_asal ?? 'AYP';
+        if ($buntutAsal === 'AYP') {
+            if (! $this->isValidBuntutAyp($request->buntut_plat_kir)) {
+                $errorMsg = 'Data tidak ada, silahkan periksa kembali';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMsg,
+                        'errors' => ['buntut_plat_kir' => [$errorMsg]],
+                    ], 422);
+                }
+
+                return back()->withErrors(['buntut_plat_kir' => $errorMsg])->withInput();
+            }
+        }
+
         $validatedData['input_by'] = Auth::id();
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
-        $validatedData['buntut_asal'] = $request->buntut_asal ?? 'AYP';
+        $validatedData['buntut_asal'] = $buntutAsal;
         $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
         if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
@@ -1429,9 +1445,25 @@ class SuratJalanBongkaranBatamController extends Controller
             return back()->withErrors($e->errors())->withInput();
         }
 
+        $buntutAsal = $request->buntut_asal ?? 'AYP';
+        if ($buntutAsal === 'AYP') {
+            if (! $this->isValidBuntutAyp($request->buntut_plat_kir)) {
+                $errorMsg = 'Data tidak ada, silahkan periksa kembali';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMsg,
+                        'errors' => ['buntut_plat_kir' => [$errorMsg]],
+                    ], 422);
+                }
+
+                return back()->withErrors(['buntut_plat_kir' => $errorMsg])->withInput();
+            }
+        }
+
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
-            $validatedData['buntut_asal'] = $request->buntut_asal ?? 'AYP';
+            $validatedData['buntut_asal'] = $buntutAsal;
             $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
             if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
@@ -1736,5 +1768,40 @@ class SuratJalanBongkaranBatamController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch Manifest data'], 500);
         }
+    }
+
+    /**
+     * Validasi apakah data PLAT/KIR Buntut AYP terdaftar di master
+     */
+    private function isValidBuntutAyp(?string $val): bool
+    {
+        if (empty($val)) {
+            return false;
+        }
+
+        $val = trim($val);
+
+        // 1. Cek MasterChasisBatam
+        if (\App\Models\MasterChasisBatam::where('kode', $val)->exists()) {
+            return true;
+        }
+
+        // 2. Cek Mobil berjenis buntut
+        $buntutMobils = \App\Models\Mobil::where('jenis', 'like', '%buntut%')->get(['nomor_polisi', 'no_kir']);
+        foreach ($buntutMobils as $b) {
+            $plat = trim($b->nomor_polisi ?? '');
+            $kir = trim($b->no_kir ?? '');
+            $formattedVal = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-')
+                ? "$plat / $kir"
+                : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
+
+            if (strcasecmp($val, $formattedVal) === 0 ||
+                ($plat && strcasecmp($val, $plat) === 0) ||
+                ($kir && strcasecmp($val, $kir) === 0)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
