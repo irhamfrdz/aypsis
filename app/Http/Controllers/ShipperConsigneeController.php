@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ShipperConsigneeDataExport;
-use App\Http\Controllers\Controller;
 use App\Models\ShipperConsignee;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,6 +13,7 @@ class ShipperConsigneeController extends Controller
     public function index(Request $request)
     {
         $shipperConsignees = $this->filteredQuery($request)->orderByDesc('id')->paginate(50)->withQueryString();
+
         return view('master.shipper-consignee.index', compact('shipperConsignees'));
     }
 
@@ -33,9 +33,14 @@ class ShipperConsigneeController extends Controller
             $query->where(function (Builder $query) use ($search) {
                 $query->where('shipper', 'like', "%{$search}%")
                     ->orWhere('consignee', 'like', "%{$search}%")
-                    ->orWhere('telepon', 'like', "%{$search}%")
-                    ->orWhere('hs_code', 'like', "%{$search}%")
-                    ->orWhere('commodity', 'like', "%{$search}%");
+                    ->orWhere('alamat_shipper', 'like', "%{$search}%")
+                    ->orWhere('alamat_consignee', 'like', "%{$search}%")
+                    ->orWhere('npwp_shipper', 'like', "%{$search}%")
+                    ->orWhere('npwp_consignee', 'like', "%{$search}%")
+                    ->orWhere('notify_party_consignee', 'like', "%{$search}%")
+                    ->orWhere('delivery_address_contact_person', 'like', "%{$search}%")
+                    ->orWhere('document_ppftz_03', 'like', "%{$search}%")
+                    ->orWhere('condition', 'like', "%{$search}%");
             });
         }
 
@@ -55,26 +60,18 @@ class ShipperConsigneeController extends Controller
         ]);
 
         $dataToStore = $request->all();
-        $shipperConsignee = ShipperConsignee::create($dataToStore);
-        
-        // Memastikan contact_person tersimpan, bypass fillable cache jika ada
-        if (array_key_exists('contact_person', $dataToStore)) {
-            $shipperConsignee->contact_person = $dataToStore['contact_person'];
-            $shipperConsignee->save();
+        // Support either delivery_address_contact_person or legacy delivery_address input
+        if (isset($dataToStore['delivery_address']) && ! isset($dataToStore['delivery_address_contact_person'])) {
+            $dataToStore['delivery_address_contact_person'] = $dataToStore['delivery_address'];
         }
 
-        // Jika contact_person diisi, perbarui juga untuk semua baris dengan nama shipper yang sama
-        if (!empty($dataToStore['contact_person']) && !empty($shipperConsignee->shipper)) {
-            ShipperConsignee::where('shipper', $shipperConsignee->shipper)
-                ->where('id', '!=', $shipperConsignee->id)
-                ->update(['contact_person' => $dataToStore['contact_person']]);
-        }
+        $shipperConsignee = ShipperConsignee::create($dataToStore);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'data' => $shipperConsignee,
-                'message' => 'Data Shipper / Consignee berhasil ditambahkan.'
+                'message' => 'Data Shipper / Consignee berhasil ditambahkan.',
             ]);
         }
 
@@ -87,6 +84,7 @@ class ShipperConsigneeController extends Controller
         if ($request->wantsJson()) {
             return response()->json($shipper_consignee);
         }
+
         return view('master.shipper-consignee.show', compact('shipper_consignee'));
     }
 
@@ -103,26 +101,17 @@ class ShipperConsigneeController extends Controller
         ]);
 
         $dataToUpdate = $request->all();
-        $shipper_consignee->update($dataToUpdate);
-        
-        // Memastikan contact_person tersimpan, bypass fillable cache jika ada
-        if (array_key_exists('contact_person', $dataToUpdate)) {
-            $shipper_consignee->contact_person = $dataToUpdate['contact_person'];
-            $shipper_consignee->save();
+        if (isset($dataToUpdate['delivery_address']) && ! isset($dataToUpdate['delivery_address_contact_person'])) {
+            $dataToUpdate['delivery_address_contact_person'] = $dataToUpdate['delivery_address'];
         }
 
-        // Jika contact_person diisi, perbarui juga untuk semua baris dengan nama shipper yang sama
-        if (!empty($dataToUpdate['contact_person']) && !empty($shipper_consignee->shipper)) {
-            ShipperConsignee::where('shipper', $shipper_consignee->shipper)
-                ->where('id', '!=', $shipper_consignee->id)
-                ->update(['contact_person' => $dataToUpdate['contact_person']]);
-        }
+        $shipper_consignee->update($dataToUpdate);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'data' => $shipper_consignee,
-                'message' => 'Data Shipper / Consignee berhasil diperbarui.'
+                'message' => 'Data Shipper / Consignee berhasil diperbarui.',
             ]);
         }
 
@@ -146,14 +135,15 @@ class ShipperConsigneeController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
         try {
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ShipperConsigneeImport, $request->file('file'));
+
             return redirect()->back()->with('success', 'Data Shipper / Consignee berhasil diimport.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal import data: '.$e->getMessage());
         }
     }
 
@@ -165,14 +155,15 @@ class ShipperConsigneeController extends Controller
     public function importContact(Request $request)
     {
         $request->validate([
-            'file_contact' => 'required|mimes:xlsx,xls,csv|max:2048'
+            'file_contact' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
         try {
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ShipperContactImport, $request->file('file_contact'));
+
             return redirect()->back()->with('success', 'Data Contact Person berhasil diupdate secara massal.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update data: '.$e->getMessage());
         }
     }
 }

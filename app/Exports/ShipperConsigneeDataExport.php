@@ -11,11 +11,11 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShipperConsigneeDataExport extends StringValueBinder implements FromQuery, WithHeadings, WithMapping, WithStyles, WithCustomValueBinder
+class ShipperConsigneeDataExport extends StringValueBinder implements FromQuery, WithCustomValueBinder, WithHeadings, WithMapping, WithStyles
 {
-    public function __construct(private readonly Builder $query)
-    {
-    }
+    private int $rowNumber = 0;
+
+    public function __construct(private readonly Builder $query) {}
 
     public function query(): Builder
     {
@@ -25,41 +25,29 @@ class ShipperConsigneeDataExport extends StringValueBinder implements FromQuery,
     public function headings(): array
     {
         return [
-            'ID',
-            'Telepon',
-            'HS Code',
-            'Commodity',
-            'Alamat Email',
-            'NITKU Shipper',
-            'Shipper',
-            'Alamat Shipper',
-            'NPWP Shipper',
-            'Consignee',
-            'Alamat Consignee',
-            'NPWP Consignee',
-            'Notify Party (Consignee)',
-            'Alamat Notify Party (Consignee)',
-            'NPWP Notify Party (Consignee)',
-            'Delivery Address',
-            'NITKU Consignee',
-            'Document PPFTZ-03',
-            'Condition',
-            'IP BP Kawasan',
-            'NPWP Consignee (16 Digit)',
-            'Contact Person',
+            'No.',
+            'SHIPPER',
+            'ADDRESS',
+            'NO. IDENTITAS (NPWP SHIPPER)',
+            'CONSIGNEE',
+            'ADDRESS',
+            'NO. IDENTITAS (NPWP CONSIGNEE)',
+            'NOTIFY PARTY (CONSIGNEE)',
+            'ADDRESS',
+            'NO. IDENTITAS (NPWP NOTIFY PARTY CONSIGNEE)',
+            'DELIVERY ADDRESS & CONTACT PERSON',
+            'DOCUMENT PPFTZ-03',
+            'CONDITION',
             'Status',
         ];
     }
 
     public function map($row): array
     {
+        $this->rowNumber++;
+
         return [
-            $row->id,
-            $row->telepon,
-            $row->hs_code,
-            $row->commodity,
-            $row->alamat_email,
-            $row->nitku_shipper,
+            $this->rowNumber,
             $row->shipper,
             $row->alamat_shipper,
             $row->npwp_shipper,
@@ -69,21 +57,17 @@ class ShipperConsigneeDataExport extends StringValueBinder implements FromQuery,
             $row->notify_party_consignee,
             $row->alamat_notify_party_consignee,
             $row->npwp_notify_party_consignee,
-            $row->delivery_address,
-            $row->nitku_consignee,
+            $row->delivery_address_contact_person,
             $row->document_ppftz_03,
             $row->condition,
-            $row->ip_bp_kawasan,
-            $row->npwp_consignee_16_digit,
-            $row->contact_person,
             $row->status === null ? '' : ($row->status ? 'Aktif' : 'Tidak Aktif'),
         ];
     }
 
     public function styles(Worksheet $sheet): array
     {
-        $sheet->getStyle('A1:W1')->getFont()->setBold(true);
-        $sheet->setAutoFilter('A1:W1');
+        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+        $sheet->setAutoFilter('A1:N1');
         $sheet->freezePane('A2');
 
         return [];

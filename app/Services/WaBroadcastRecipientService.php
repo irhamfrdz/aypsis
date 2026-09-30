@@ -14,9 +14,7 @@ class WaBroadcastRecipientService
     /**
      * Resolve the broadcast recipients.
      *
-     * @param string $namaKapal
-     * @param string $noVoyage
-     * @param string $source 'manifest' or 'all_master_shippers'
+     * @param  string  $source  'manifest' or 'all_master_shippers'
      */
     public function recipients(string $namaKapal = '', string $noVoyage = '', string $source = 'manifest'): Collection
     {
@@ -31,7 +29,7 @@ class WaBroadcastRecipientService
         $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
 
         $manifests = Manifest::query()
-            ->with('shipperConsignee:id,shipper,contact_person,telepon')
+            ->with('shipperConsignee:id,shipper,delivery_address_contact_person')
             ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', trim($noVoyage))
             ->orderBy('nomor_bl')
@@ -108,7 +106,7 @@ class WaBroadcastRecipientService
             $overridePhone = $phoneOverrides->get($namaTujuan);
             if ($overridePhone) {
                 $nomorKontak = $overridePhone;
-                $sumberTabel = $sumberTabel . ' (Override WA)';
+                $sumberTabel = $sumberTabel.' (Override WA)';
             }
 
             return [
@@ -163,7 +161,8 @@ class WaBroadcastRecipientService
                         'daftar_resi' => [],
                     ]);
                 });
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // 2. Dari pengirims
         try {
@@ -181,7 +180,8 @@ class WaBroadcastRecipientService
                         'daftar_resi' => [],
                     ]);
                 });
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // 3. Dari shipper_consignees
         try {
@@ -189,7 +189,7 @@ class WaBroadcastRecipientService
                 ->where('shipper', '!=', '')
                 ->get()
                 ->each(function ($item) use (&$all) {
-                    $phone = $item->contact_person ?: $item->telepon;
+                    $phone = $item->delivery_address_contact_person ?? null;
                     $all->push([
                         'shipper_name' => trim($item->shipper),
                         'telepon' => $phone ? trim($phone) : null,
@@ -199,7 +199,8 @@ class WaBroadcastRecipientService
                         'daftar_resi' => [],
                     ]);
                 });
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // Deduplicate berdasarkan normalisasi nama shipper dan gabungkan nomor kontak & sumber tabel
         $groupedByName = $all->groupBy(function ($item) {
@@ -209,7 +210,7 @@ class WaBroadcastRecipientService
         $phoneOverrides = $this->loadPhoneOverrides();
 
         $deduplicated = $groupedByName->map(function ($items) use ($phoneOverrides) {
-            $withPhone = $items->first(fn ($i) => !empty($i['telepon']));
+            $withPhone = $items->first(fn ($i) => ! empty($i['telepon']));
             $sources = $items->pluck('sumber_tabel')->unique()->implode(', ');
 
             if ($withPhone) {
@@ -225,11 +226,11 @@ class WaBroadcastRecipientService
             $overridePhone = $phoneOverrides->get($base['shipper_name']);
             if ($overridePhone) {
                 $base['telepon'] = $overridePhone;
-                $base['sumber_tabel'] = $base['sumber_tabel'] . ' (Override WA)';
+                $base['sumber_tabel'] = $base['sumber_tabel'].' (Override WA)';
             }
 
             return $base;
-        })->filter(fn ($i) => !empty($i['shipper_name']))->sortBy('shipper_name')->values();
+        })->filter(fn ($i) => ! empty($i['shipper_name']))->sortBy('shipper_name')->values();
 
         return $deduplicated;
     }

@@ -10,11 +10,6 @@ class ShipperConsignee extends Model
     use Auditable;
 
     protected $fillable = [
-        'telepon',
-        'hs_code',
-        'commodity',
-        'alamat_email',
-        'nitku_shipper',
         'shipper',
         'alamat_shipper',
         'npwp_shipper',
@@ -24,13 +19,22 @@ class ShipperConsignee extends Model
         'notify_party_consignee',
         'alamat_notify_party_consignee',
         'npwp_notify_party_consignee',
-        'delivery_address',
-        'nitku_consignee',
+        'delivery_address_contact_person',
         'document_ppftz_03',
         'condition',
-        'ip_bp_kawasan',
-        'npwp_consignee_16_digit',
-        'contact_person',
         'status',
     ];
+
+    /**
+     * Backwards compatibility for delivery_address.
+     */
+    public function getDeliveryAddressAttribute(): ?string
+    {
+        return $this->attributes['delivery_address_contact_person'] ?? null;
+    }
+
+    public function setDeliveryAddressAttribute($value): void
+    {
+        $this->attributes['delivery_address_contact_person'] = $value;
+    }
 }

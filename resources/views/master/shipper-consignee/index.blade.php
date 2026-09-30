@@ -69,9 +69,10 @@
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipper</th>
                     <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consignee</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Person</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HS Code</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commodity</th>
+                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notify Party (Consignee)</th>
+                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Address & Contact Person</th>
+                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doc PPFTZ-03</th>
+                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
                     <th class="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -79,12 +80,30 @@
                 @forelse($shipperConsignees as $index => $item)
                     <tr class="hover:bg-gray-50">
                         <td class="py-4 px-4 text-[10px] text-gray-900">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
-                        <td class="py-4 px-4 text-[10px] font-medium text-gray-900">{{ $item->shipper ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->consignee ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->contact_person ?: $item->telepon ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->hs_code ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-500">{{ $item->commodity ?: '-' }}</td>
-                        <td class="py-4 px-4 text-center text-[10px] font-medium">
+                        <td class="py-4 px-4 text-[10px] text-gray-900">
+                            <span class="font-bold">{{ $item->shipper ?: '-' }}</span>
+                            @if($item->npwp_shipper)
+                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_shipper }}</div>
+                            @endif
+                        </td>
+                        <td class="py-4 px-4 text-[10px] text-gray-700">
+                            <span class="font-medium">{{ $item->consignee ?: '-' }}</span>
+                            @if($item->npwp_consignee)
+                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_consignee }}</div>
+                            @endif
+                        </td>
+                        <td class="py-4 px-4 text-[10px] text-gray-600">
+                            <span>{{ $item->notify_party_consignee ?: '-' }}</span>
+                            @if($item->npwp_notify_party_consignee)
+                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_notify_party_consignee }}</div>
+                            @endif
+                        </td>
+                        <td class="py-4 px-4 text-[10px] text-gray-600 max-w-xs truncate" title="{{ $item->delivery_address_contact_person }}">
+                            {{ $item->delivery_address_contact_person ?: '-' }}
+                        </td>
+                        <td class="py-4 px-4 text-[10px] text-gray-600 whitespace-nowrap">{{ $item->document_ppftz_03 ?: '-' }}</td>
+                        <td class="py-4 px-4 text-[10px] text-gray-600 whitespace-nowrap">{{ $item->condition ?: '-' }}</td>
+                        <td class="py-4 px-4 text-center text-[10px] font-medium whitespace-nowrap">
                             <div class="flex justify-center space-x-2">
                                 <a href="{{ route('master.shipper-consignee.show', $item) }}" class="text-blue-600 hover:text-blue-900 transition duration-200" title="Detail">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +134,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="py-8 px-6 text-center text-gray-500">
+                        <td colspan="8" class="py-8 px-6 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
