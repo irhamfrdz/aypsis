@@ -365,10 +365,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
 
-        $buntutAypList = \App\Models\Mobil::where(function ($q) {
-            $q->where('jenis', 'like', '%buntut%')
-                ->orWhereNotNull('no_kir');
-        })
+        $buntutAypList = \App\Models\Mobil::where('jenis', 'like', '%buntut%')
             ->orderBy('no_kir')
             ->orderBy('nomor_polisi')
             ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
@@ -800,10 +797,7 @@ class SuratJalanBongkaranBatamController extends Controller
             }
         }
 
-        $buntutAypList = \App\Models\Mobil::where(function ($q) {
-            $q->where('jenis', 'like', '%buntut%')
-                ->orWhereNotNull('no_kir');
-        })
+        $buntutAypList = \App\Models\Mobil::where('jenis', 'like', '%buntut%')
             ->orderBy('no_kir')
             ->orderBy('nomor_polisi')
             ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
@@ -1342,10 +1336,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
 
-        $buntutAypList = \App\Models\Mobil::where(function ($q) {
-            $q->where('jenis', 'like', '%buntut%')
-                ->orWhereNotNull('no_kir');
-        })
+        $buntutAypList = \App\Models\Mobil::where('jenis', 'like', '%buntut%')
             ->orderBy('no_kir')
             ->orderBy('nomor_polisi')
             ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);

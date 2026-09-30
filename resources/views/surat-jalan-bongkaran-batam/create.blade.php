@@ -528,40 +528,70 @@
 
                 <!-- PLAT / KIR Buntut -->
                 <div>
-                    <label id="create_buntut_label" for="create_buntut_plat_kir_select" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label id="create_buntut_label" for="create_buntut_search_input" class="block text-sm font-medium text-gray-700 mb-1">
                         PLAT / KIR Buntut (AYP)
                     </label>
                     
-                    <div id="wrapper_buntut_ayp_create_page">
-                        <select id="create_buntut_plat_kir_select"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                onchange="document.getElementById('create_buntut_plat_kir').value = this.value">
-                            <option value="">Pilih PLAT / KIR Buntut</option>
+                    <div id="wrapper_buntut_ayp_create_page" class="relative">
+                        <div class="relative">
+                            <input type="text" id="create_buntut_search_input"
+                                   class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                   placeholder="Pilih atau cari PLAT / KIR Buntut..."
+                                   autocomplete="off">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-400 hover:text-gray-600" id="create_buntut_toggle_btn">
+                                <svg id="create_buntut_arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Options List -->
+                        <div id="create_buntut_options_list"
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-xl max-h-60 rounded-lg py-1 text-sm overflow-y-auto hidden">
                             @if(isset($buntutAypList) && $buntutAypList->count() > 0)
-                                <optgroup label="Buntut AYP (KIR / PLAT)">
-                                    @foreach($buntutAypList as $b)
-                                        @php
-                                            $plat = trim($b->nomor_polisi ?? '');
-                                            $kir = trim($b->no_kir ?? '');
-                                            $val = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-') 
-                                                ? "$plat / $kir" 
-                                                : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
-                                            $desc = $b->jenis ? " ({$b->jenis})" : '';
-                                        @endphp
-                                        @if($val)
-                                            <option value="{{ $val }}" {{ old('buntut_plat_kir') == $val ? 'selected' : '' }}>{{ $val }}{{ $desc }}</option>
-                                        @endif
-                                    @endforeach
-                                </optgroup>
+                                <div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 z-10">
+                                    Buntut AYP (KIR / PLAT)
+                                </div>
+                                @foreach($buntutAypList as $b)
+                                    @php
+                                        $plat = trim($b->nomor_polisi ?? '');
+                                        $kir = trim($b->no_kir ?? '');
+                                        $val = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-') 
+                                            ? "$plat / $kir" 
+                                            : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
+                                        $desc = $b->jenis ? " ({$b->jenis})" : '';
+                                        $fullLabel = $val . $desc;
+                                    @endphp
+                                    @if($val)
+                                        <div class="create-buntut-opt px-3 py-2 cursor-pointer hover:bg-blue-50 text-gray-800 transition-colors flex items-center justify-between"
+                                             data-value="{{ $val }}"
+                                             data-label="{{ $fullLabel }}"
+                                             data-search="{{ strtolower($fullLabel) }}">
+                                            <span>{{ $fullLabel }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
                             @endif
                             @if(isset($chasisBatamList) && $chasisBatamList->count() > 0)
-                                <optgroup label="Chasis Batam AYP">
-                                    @foreach($chasisBatamList as $c)
-                                        <option value="{{ $c->kode }}" {{ old('buntut_plat_kir') == $c->kode ? 'selected' : '' }}>{{ $c->kode }}{{ $c->tipe ? " ({$c->tipe})" : '' }}</option>
-                                    @endforeach
-                                </optgroup>
+                                <div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 z-10">
+                                    Chasis Batam AYP
+                                </div>
+                                @foreach($chasisBatamList as $c)
+                                    @php
+                                        $fullLabel = $c->kode . ($c->tipe ? " ({$c->tipe})" : '');
+                                    @endphp
+                                    <div class="create-buntut-opt px-3 py-2 cursor-pointer hover:bg-blue-50 text-gray-800 transition-colors flex items-center justify-between"
+                                         data-value="{{ $c->kode }}"
+                                         data-label="{{ $fullLabel }}"
+                                         data-search="{{ strtolower($fullLabel) }}">
+                                        <span>{{ $fullLabel }}</span>
+                                    </div>
+                                @endforeach
                             @endif
-                        </select>
+                            <div id="create_buntut_empty" class="hidden px-4 py-3 text-xs text-gray-400 text-center italic">
+                                Tidak ada PLAT / KIR Buntut yang cocok
+                            </div>
+                        </div>
                     </div>
 
                     <div id="wrapper_buntut_pb_create_page" class="hidden">
@@ -890,12 +920,111 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Searchable dropdown Buntut AYP (Create Page)
+    const buntutSearchInput = document.getElementById('create_buntut_search_input');
+    const buntutOptionsList = document.getElementById('create_buntut_options_list');
+    const buntutArrow = document.getElementById('create_buntut_arrow');
+    const buntutToggleBtn = document.getElementById('create_buntut_toggle_btn');
+    const buntutHidden = document.getElementById('create_buntut_plat_kir');
+    const buntutEmpty = document.getElementById('create_buntut_empty');
+    const buntutOptions = document.querySelectorAll('.create-buntut-opt');
+
+    function openCreateBuntutDropdown() {
+        if (buntutOptionsList) {
+            buntutOptionsList.classList.remove('hidden');
+            if (buntutArrow) buntutArrow.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function closeCreateBuntutDropdown() {
+        if (buntutOptionsList) {
+            buntutOptionsList.classList.add('hidden');
+            if (buntutArrow) buntutArrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    function filterCreateBuntutOptions(q) {
+        let matchCount = 0;
+        buntutOptions.forEach(opt => {
+            const searchStr = opt.getAttribute('data-search') || '';
+            if (!q || searchStr.includes(q.toLowerCase())) {
+                opt.classList.remove('hidden');
+                matchCount++;
+            } else {
+                opt.classList.add('hidden');
+            }
+        });
+        if (buntutEmpty) {
+            if (matchCount === 0) {
+                buntutEmpty.classList.remove('hidden');
+            } else {
+                buntutEmpty.classList.add('hidden');
+            }
+        }
+    }
+
+    if (buntutSearchInput) {
+        buntutSearchInput.addEventListener('focus', function() {
+            filterCreateBuntutOptions('');
+            openCreateBuntutDropdown();
+        });
+
+        buntutSearchInput.addEventListener('input', function() {
+            filterCreateBuntutOptions(this.value);
+            openCreateBuntutDropdown();
+            if (this.value.trim() === '') {
+                buntutHidden.value = '';
+            }
+        });
+    }
+
+    if (buntutToggleBtn) {
+        buntutToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (buntutOptionsList.classList.contains('hidden')) {
+                filterCreateBuntutOptions('');
+                openCreateBuntutDropdown();
+                buntutSearchInput.focus();
+            } else {
+                closeCreateBuntutDropdown();
+            }
+        });
+    }
+
+    buntutOptions.forEach(opt => {
+        opt.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const val = this.getAttribute('data-value');
+            const label = this.getAttribute('data-label');
+            buntutHidden.value = val;
+            buntutSearchInput.value = label;
+            closeCreateBuntutDropdown();
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#wrapper_buntut_ayp_create_page')) {
+            closeCreateBuntutDropdown();
+        }
+    });
+
+    // Inisialisasi label awal berdasarkan value buntutHidden
+    const initialBuntutVal = buntutHidden ? buntutHidden.value : '';
+    if (initialBuntutVal) {
+        let foundLabel = initialBuntutVal;
+        buntutOptions.forEach(opt => {
+            if (opt.getAttribute('data-value') === initialBuntutVal) {
+                foundLabel = opt.getAttribute('data-label');
+            }
+        });
+        if (buntutSearchInput) buntutSearchInput.value = foundLabel;
+    }
+
     // Toggle Buntut Source (AYP / PB)
     window.toggleCreateBuntutSource = function(source) {
         const aypWrapper = document.getElementById('wrapper_buntut_ayp_create_page');
         const pbWrapper = document.getElementById('wrapper_buntut_pb_create_page');
         const label = document.getElementById('create_buntut_label');
-        const select = document.getElementById('create_buntut_plat_kir_select');
         const input = document.getElementById('create_buntut_plat_kir_input');
         const hidden = document.getElementById('create_buntut_plat_kir');
 
@@ -903,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (aypWrapper) aypWrapper.classList.remove('hidden');
             if (pbWrapper) pbWrapper.classList.add('hidden');
             if (label) label.textContent = 'PLAT / KIR Buntut (AYP)';
-            if (hidden && select) hidden.value = select.value;
         } else {
             if (aypWrapper) aypWrapper.classList.add('hidden');
             if (pbWrapper) pbWrapper.classList.remove('hidden');
