@@ -161,4 +161,43 @@ class Karyawan extends Model
     {
         return $this->hasMany(RiwayatUtangSupir::class, 'karyawan_id');
     }
+
+    /**
+     * Cek apakah karyawan dikecualikan (bebas) dari perhitungan keterlambatan.
+     * Bebas keterlambatan untuk penempatan kerja:
+     * JAKARTA PELABUHAN, GARASI JAKARTA, JAKARTA PELABUHAN 1, serta variasinya.
+     */
+    public function isExemptFromTerlambat(): bool
+    {
+        $penempatan = strtolower(trim($this->penempatan ?? ''));
+        if ($penempatan === '') {
+            return false;
+        }
+
+        $exemptList = [
+            'jakarta pelabuhan',
+            'jakarta pelabhuhan',
+            'garasi jakarta',
+            'garasai jakarta',
+            'jakarta pelabuhan 1',
+            'pelabuhan',
+            'garasi',
+            'pelabuhan 1',
+            '1',
+        ];
+
+        if (in_array($penempatan, $exemptList, true)) {
+            return true;
+        }
+
+        if (str_contains($penempatan, 'pelabuhan') || str_contains($penempatan, 'pelabhuhan')) {
+            return true;
+        }
+
+        if (str_contains($penempatan, 'garasi') || str_contains($penempatan, 'garasai')) {
+            return true;
+        }
+
+        return false;
+    }
 }

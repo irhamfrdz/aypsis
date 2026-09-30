@@ -137,6 +137,7 @@ class BeritaController extends Controller
     /**
      * Simpan file gambar ke folder sesuai tipe (berita / pamflet).
      * Folder dibuat otomatis jika belum ada.
+     * Gambar juga di-copy ke folder PWA_UPLOAD_DIR (jika dikonfigurasi di .env).
      *
      * @param  \Illuminate\Http\UploadedFile  $file
      * @param  string  $tipe  'berita' | 'pamflet'
@@ -156,18 +157,69 @@ class BeritaController extends Controller
         $file->move($destDir, $fileName);
         @chmod($destDir . DIRECTORY_SEPARATOR . $fileName, 0664);
 
+        // Sync: copy gambar ke folder PWA (jika PWA_UPLOAD_DIR dikonfigurasi)
+        $this->syncToPwa($folder . '/' . $fileName);
+
         return $folder . '/' . $fileName;
     }
 
     /**
-     * Hapus file gambar dari disk (public/).
+     * Sync / copy file gambar dari folder public AYPSIS ke folder PWA uploads.
+     * Folder PWA dikonfigurasi via env PWA_UPLOAD_DIR.
+     *
+     * @param  string  $relativePath  Path relatif dari public/ (misal: uploads/pamflet/xxx.jpg)
+     */
+    private function syncToPwa(string $relativePath): void
+    {
+        $pwaUploadDir = env('PWA_UPLOAD_DIR');
+        if (empty($pwaUploadDir)) {
+            return; // Tidak dikonfigurasi, skip
+        }
+
+        $srcPath  = public_path($relativePath);
+        if (!file_exists($srcPath)) {
+            return;
+        }
+
+        // Buat struktur folder di PWA jika belum ada
+        // relativePath contoh: uploads/pamflet/pamflet_xxx.jpg
+        // destPath: {PWA_UPLOAD_DIR}/pamflet/pamflet_xxx.jpg (tanpa prefix 'uploads/')
+        $withoutUploadsPrefix = preg_replace('#^uploads/#', '', $relativePath);
+        $destDir  = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . dirname($withoutUploadsPrefix);
+        $destPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $withoutUploadsPrefix;
+
+        if (!is_dir($destDir)) {
+            @mkdir($destDir, 0775, true);
+        }
+
+        @copy($srcPath, $destPath);
+        @chmod($destPath, 0664);
+    }
+
+    /**
+     * Hapus file gambar dari disk (public/) dan dari folder PWA (jika ada).
      *
      * @param  string|null  $path  Path relatif dari public/
      */
     private function deleteGambar(?string $path): void
     {
-        if ($path && file_exists(public_path($path))) {
+        if (!$path) {
+            return;
+        }
+
+        // Hapus dari AYPSIS public/
+        if (file_exists(public_path($path))) {
             unlink(public_path($path));
+        }
+
+        // Hapus dari PWA uploads/
+        $pwaUploadDir = env('PWA_UPLOAD_DIR');
+        if (!empty($pwaUploadDir)) {
+            $withoutUploadsPrefix = preg_replace('#^uploads/#', '', $path);
+            $pwaPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $withoutUploadsPrefix;
+            if (file_exists($pwaPath)) {
+                @unlink($pwaPath);
+            }
         }
     }
 
@@ -200,6 +252,21 @@ class BeritaController extends Controller
 
         rename($oldAbsolute, $newAbsolute);
 
-        return $newFolder . '/' . $fileName;
+        $newRelativePath = $newFolder . '/' . $fileName;
+
+        // Sync: pindahkan juga di folder PWA
+        $pwaUploadDir = env('PWA_UPLOAD_DIR');
+        if (!empty($pwaUploadDir)) {
+            // Hapus file lama di PWA
+            $oldWithoutPrefix = preg_replace('#^uploads/#', '', $oldPath);
+            $pwaOldPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $oldWithoutPrefix;
+            if (file_exists($pwaOldPath)) {
+                @unlink($pwaOldPath);
+            }
+            // Copy file baru ke lokasi baru di PWA
+            $this->syncToPwa($newRelativePath);
+        }
+
+        return $newRelativePath;
     }
 }

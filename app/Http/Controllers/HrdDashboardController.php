@@ -42,11 +42,11 @@ class HrdDashboardController extends Controller
         $karyawanBaseQuery = Karyawan::where('status', 'active')
             ->whereNull('tanggal_berhenti');
 
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $karyawanBaseQuery->where(function ($q) use ($selectedGroup) {
-                $q->where('grup', 'LIKE', '%"' . $selectedGroup . ':%')
-                  ->orWhere('grup', 'LIKE', '%"' . $selectedGroup . '"%')
-                  ->orWhere('grup', 'LIKE', '%' . $selectedGroup . '%');
+                $q->where('grup', 'LIKE', '%"'.$selectedGroup.':%')
+                    ->orWhere('grup', 'LIKE', '%"'.$selectedGroup.'"%')
+                    ->orWhere('grup', 'LIKE', '%'.$selectedGroup.'%');
             });
         }
 
@@ -59,7 +59,7 @@ class HrdDashboardController extends Controller
             ->whereDate('waktu', $filterDate)
             ->where('tipe', 'Masuk');
 
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $absensiMasukQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiMasuk = $absensiMasukQuery->get();
@@ -79,14 +79,18 @@ class HrdDashboardController extends Controller
         $batasTerlambat = $filterDate->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
         $karyawanTerlambat = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
             $waktuAbsen = Carbon::parse($absen->waktu);
+            $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
-            return $waktuAbsen->greaterThan($batasTerlambat);
+            return $waktuAbsen->greaterThan($batasTerlambat) && ! $isExempt;
         })->values();
 
-        // Karyawan yang hadir normal: tapping masuk sampai batas toleransi.
+        // Karyawan yang hadir normal: tapping masuk sampai batas toleransi atau bebas keterlambatan.
         // Satu karyawan hanya ditampilkan satu kali pada daftar dashboard.
         $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
-            return Carbon::parse($absen->waktu)->lessThanOrEqualTo($batasTerlambat);
+            $waktuAbsen = Carbon::parse($absen->waktu);
+            $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
+
+            return $waktuAbsen->lessThanOrEqualTo($batasTerlambat) || $isExempt;
         })->unique('karyawan_id')->sortBy(function ($absen) {
             return strtolower($absen->karyawan->nama_lengkap ?? '');
         })->values();
@@ -119,6 +123,7 @@ class HrdDashboardController extends Controller
                 $jarak = 6371000 * 2 * atan2(sqrt($a), sqrt(1 - $a));
 
                 $lokasi->jarak_meter = $jarak;
+
                 return $lokasi;
             })->filter()->sortBy('jarak_meter')->first();
 
@@ -135,7 +140,7 @@ class HrdDashboardController extends Controller
             ->whereDate('tanggal_selesai', '>=', $filterDate)
             ->where('status', 'approved');
 
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $karyawanCutiQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $karyawanCuti = $karyawanCutiQuery->get();
@@ -145,7 +150,7 @@ class HrdDashboardController extends Controller
         $absensiPulangQuery = Absensi::whereDate('waktu', $filterDate)
             ->where('tipe', 'Pulang');
 
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $absensiPulangQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiPulang = $absensiPulangQuery->pluck('karyawan_id')
@@ -165,14 +170,14 @@ class HrdDashboardController extends Controller
             ->where('detail_lokasi', 'like', '%Di luar radius%')
             ->orderBy('waktu', 'asc');
 
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $absensiLuarRadiusQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiLuarRadius = $absensiLuarRadiusQuery->get();
 
         // 8. Total presensi (Masuk + Pulang) hari ini
         $totalPresensiHariIniQuery = Absensi::whereDate('waktu', $filterDate);
-        if (!empty($selectedGroup)) {
+        if (! empty($selectedGroup)) {
             $totalPresensiHariIniQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $totalPresensiHariIni = $totalPresensiHariIniQuery->count();

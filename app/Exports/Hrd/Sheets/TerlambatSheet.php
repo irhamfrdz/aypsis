@@ -2,20 +2,20 @@
 
 namespace App\Exports\Hrd\Sheets;
 
-use App\Models\Karyawan;
 use App\Models\Absensi;
-use App\Models\HariLibur;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class TerlambatSheet implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($startDate, $endDate)
@@ -39,7 +39,7 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
         $data = [];
 
         foreach ($absensiRaw as $log) {
-            if (!$log->waktu_masuk || !isset($karyawans[$log->karyawan_id])) {
+            if (! $log->waktu_masuk || ! isset($karyawans[$log->karyawan_id])) {
                 continue;
             }
 
@@ -52,8 +52,12 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
             $batasTerlambat = $tanggal->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
 
             if ($waktuMasuk->greaterThan($batasTerlambat)) {
-                $menitTerlambat = round($batasTerlambat->copy()->setMinute(0)->diffInMinutes($waktuMasuk, true));
                 $karyawan = $karyawans[$log->karyawan_id];
+                if ($karyawan->isExemptFromTerlambat()) {
+                    continue;
+                }
+
+                $menitTerlambat = round($batasTerlambat->copy()->setMinute(0)->diffInMinutes($waktuMasuk, true));
 
                 $data[] = [
                     'Tanggal' => $tanggal->format('Y-m-d'),
@@ -62,16 +66,17 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
                     'Nama Karyawan' => $karyawan->nama_lengkap,
                     'Divisi' => $karyawan->divisi,
                     'Jam Masuk' => $waktuMasuk->format('H:i'),
-                    'Menit Terlambat' => $menitTerlambat . ' Menit'
+                    'Menit Terlambat' => $menitTerlambat.' Menit',
                 ];
             }
         }
 
         // Sort by tanggal then nama
-        usort($data, function($a, $b) {
+        usort($data, function ($a, $b) {
             if ($a['Tanggal'] == $b['Tanggal']) {
                 return $a['Nama Karyawan'] <=> $b['Nama Karyawan'];
             }
+
             return $a['Tanggal'] <=> $b['Tanggal'];
         });
 
@@ -87,7 +92,7 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
             'Nama Karyawan',
             'Divisi',
             'Jam Masuk',
-            'Menit Terlambat'
+            'Menit Terlambat',
         ];
     }
 
@@ -99,7 +104,7 @@ class TerlambatSheet implements FromCollection, WithHeadings, WithTitle, WithSty
     public function styles(Worksheet $sheet)
     {
         return [
-            1    => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EF4444']]],
+            1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EF4444']]],
         ];
     }
 }

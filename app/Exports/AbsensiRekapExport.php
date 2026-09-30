@@ -6,33 +6,46 @@ use App\Models\Absensi;
 use App\Models\Karyawan;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
-use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
-use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCustomValueBinder, WithEvents
 {
     protected $startDate;
+
     protected $endDate;
+
     protected $search;
+
     protected $pekerjaan;
+
     protected $divisi;
+
     protected $cabang;
+
     protected $tempat;
+
     protected $grup;
+
     protected $subGrup;
+
     protected $statusKaryawan;
 
     protected $totalDays;
+
     protected $dayHeaders;
+
     protected $rekapData;
+
     protected $periodText;
+
     protected $styleRanges = [];
 
     public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null, $statusKaryawan = 'aktif')
@@ -47,7 +60,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->grup = $grup;
         $this->subGrup = $subGrup;
         $this->statusKaryawan = $statusKaryawan;
-        
+
         $this->styleRanges = [
             'sakit' => [],
             'alpha' => [],
@@ -70,12 +83,12 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
         $startDate = Carbon::parse($this->startDate)->startOfDay();
         $endDate = Carbon::parse($this->endDate)->endOfDay();
-        
+
         $this->totalDays = $startDate->diffInDays($endDate) + 1;
 
-        $this->periodText = $startDate->translatedFormat('d M Y') . ' - ' . $endDate->translatedFormat('d M Y');
+        $this->periodText = $startDate->translatedFormat('d M Y').' - '.$endDate->translatedFormat('d M Y');
         if ($startDate->isSameMonth($endDate) && $startDate->isSameYear($endDate)) {
-            $this->periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
+            $this->periodText = $startDate->translatedFormat('d').' - '.$endDate->translatedFormat('d M Y');
         }
 
         $karyawansQuery = Karyawan::query();
@@ -84,47 +97,47 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         } elseif ($this->statusKaryawan === 'berhenti') {
             $karyawansQuery->whereNotNull('tanggal_berhenti');
         }
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $search = $this->search;
             $karyawansQuery->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
-        if (!empty($this->pekerjaan)) {
+        if (! empty($this->pekerjaan)) {
             $karyawansQuery->where('pekerjaan', $this->pekerjaan);
         }
-        if (!empty($this->divisi)) {
+        if (! empty($this->divisi)) {
             $karyawansQuery->where('divisi', $this->divisi);
         }
-        if (!empty($this->cabang)) {
+        if (! empty($this->cabang)) {
             $karyawansQuery->where('cabang', $this->cabang);
         }
-        if (!empty($this->tempat)) {
+        if (! empty($this->tempat)) {
             $karyawansQuery->where('penempatan', $this->tempat);
         }
-        if (!empty($this->grup)) {
+        if (! empty($this->grup)) {
             $grupReq = $this->grup;
-            if (!empty($this->subGrup)) {
+            if (! empty($this->subGrup)) {
                 $subGrupReq = $this->subGrup;
-                $searchStr = $grupReq . ':' . $subGrupReq;
-                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupReq.':'.$subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"'.$searchStr.'"%');
             } else {
-                $karyawansQuery->where(function($q) use ($grupReq) {
-                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                $karyawansQuery->where(function ($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"'.$grupReq.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$grupReq.'"%');
                 });
             }
-        } elseif (!empty($this->subGrup)) {
+        } elseif (! empty($this->subGrup)) {
             $subGrupReq = $this->subGrup;
-            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
+            $karyawansQuery->where('grup', 'LIKE', '%:'.$subGrupReq.'"%');
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
         $allLogs = Absensi::whereBetween('waktu', [
-                $startDate->copy()->setTime(6, 0, 0),
-                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
-            ])
+            $startDate->copy()->setTime(6, 0, 0),
+            $endDate->copy()->addDays(1)->setTime(5, 59, 59),
+        ])
             ->selectRaw('
                 karyawan_id,
                 DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
@@ -140,25 +153,25 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         // Fetch all approved permissions/leaves
         $cutis = \Illuminate\Support\Facades\DB::table('cutis')
             ->where('status', 'APPROVED')
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhere(function($sub) use ($startDate, $endDate) {
-                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
-                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
-                  });
+                    ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->orWhere(function ($sub) use ($startDate, $endDate) {
+                        $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                            ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                    });
             })
             ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"));
 
         $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
             ->where('status', 'APPROVED')
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhere(function($sub) use ($startDate, $endDate) {
-                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
-                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
-                  });
+                    ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->orWhere(function ($sub) use ($startDate, $endDate) {
+                        $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                            ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                    });
             })
             ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin')
             ->union($cutis)
@@ -170,7 +183,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ->toArray();
 
         $this->rekapData = [];
-        
+
         $dayMap = [
             'Sunday' => 'Min',
             'Monday' => 'Sen',
@@ -180,16 +193,16 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             'Friday' => 'Jum',
             'Saturday' => 'Sab',
         ];
-        
+
         $daysData = [];
         $normalDays = 0;
         $this->dayHeaders = [];
-        
+
         for ($i = 0; $i < $this->totalDays; $i++) {
             $date = $startDate->copy()->addDays($i);
             $dateString = $date->toDateString();
             $isWeekend = $date->isSunday();
-            if (!$isWeekend) {
+            if (! $isWeekend) {
                 $normalDays++;
             }
             $daysData[$dateString] = [
@@ -199,7 +212,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $this->dayHeaders[$dateString] = [
                 'date' => $date->format('d/m'),
                 'dayName' => $dayMap[$date->format('l')],
-                'isWeekend' => $isWeekend
+                'isWeekend' => $isWeekend,
             ];
         }
 
@@ -227,14 +240,14 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $log = $logsByDay->get($dateString);
 
                 // Check if they had an approved permission on this day FIRST
-                $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateString) {
+                $matchedPerm = $karyawanPermissions->first(function ($perm) use ($dateString) {
                     return $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
                 });
 
                 $isFullDayPerm = false;
                 if ($matchedPerm) {
                     $jenis = strtolower($matchedPerm->jenis_izin);
-                    if (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat') && !str_contains($jenis, 'dinas_luar')) {
+                    if (! str_contains($jenis, 'datang_terlambat') && ! str_contains($jenis, 'pulang_cepat') && ! str_contains($jenis, 'dinas_luar')) {
                         $isFullDayPerm = true;
                     }
                 }
@@ -251,7 +264,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $izinDays++;
                         $dailyStatus[$dateString] = 'I';
                     }
-                } elseif (!$log || (!$log->waktu_masuk && !$log->waktu_pulang)) {
+                } elseif (! $log || (! $log->waktu_masuk && ! $log->waktu_pulang)) {
                     if ($isWeekend || in_array($dateString, $hariLiburs) || $dateString > \Carbon\Carbon::today()->toDateString()) {
                         $dailyStatus[$dateString] = '';
                     } else {
@@ -259,10 +272,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $dailyStatus[$dateString] = 'A';
                     }
                 } else {
-                    if (!$isWeekend) {
+                    if (! $isWeekend) {
                         $riilDays++;
                     }
-                    
+
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
 
@@ -270,12 +283,14 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $diff = strtotime($inTimeStr.':00') - strtotime('09:00:00');
                         if ($diff > 0) {
                             // Check for approved datang_terlambat permission
-                            $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateString) {
-                                return strtolower($perm->jenis_izin) === 'datang_terlambat' && 
+                            $hasLatePermission = $karyawanPermissions->contains(function ($perm) use ($dateString) {
+                                return strtolower($perm->jenis_izin) === 'datang_terlambat' &&
                                        $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
                             });
 
-                            if (!$hasLatePermission) {
+                            $isExempt = $karyawan->isExemptFromTerlambat();
+
+                            if (! $hasLatePermission && ! $isExempt) {
                                 $totalLateMinutes += round($diff / 60);
                             }
                         }
@@ -285,12 +300,12 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $diff = strtotime('17:00:00') - strtotime($outTimeStr.':00');
                         if ($diff > 0) {
                             // Check for approved pulang_cepat permission
-                            $hasEarlyPermission = $karyawanPermissions->contains(function($perm) use ($dateString) {
-                                return strtolower($perm->jenis_izin) === 'pulang_cepat' && 
+                            $hasEarlyPermission = $karyawanPermissions->contains(function ($perm) use ($dateString) {
+                                return strtolower($perm->jenis_izin) === 'pulang_cepat' &&
                                        $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
                             });
 
-                            if (!$hasEarlyPermission) {
+                            if (! $hasEarlyPermission) {
                                 $totalEarlyMinutes += round($diff / 60);
                             }
                         }
@@ -303,7 +318,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         }
                     }
 
-                    $dailyStatus[$dateString] = $inTimeStr . ' - ' . $outTimeStr;
+                    $dailyStatus[$dateString] = $inTimeStr.' - '.$outTimeStr;
                 }
             }
 
@@ -326,24 +341,24 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     public function array(): array
     {
         $rows = [];
-        
-        $tempatText = 'Tempat: ' . ($this->tempat ?: 'Semua Tempat');
-        $pekerjaanText = 'Pekerjaan: ' . ($this->pekerjaan ?: 'Semua Pekerjaan');
+
+        $tempatText = 'Tempat: '.($this->tempat ?: 'Semua Tempat');
+        $pekerjaanText = 'Pekerjaan: '.($this->pekerjaan ?: 'Semua Pekerjaan');
 
         // Row 1: Empty (use [''] instead of [] to prevent Laravel Excel from skipping it)
         $rows[] = [''];
-        
+
         // Row 2: Period Text (Centered over dates, will start at Column C index 2)
         $periodRow = [$tempatText, ''];
-        $periodRow[] = 'Periode: ' . $this->periodText;
+        $periodRow[] = 'Periode: '.$this->periodText;
         for ($i = 1; $i < $this->totalDays; $i++) {
             $periodRow[] = '';
         }
         $rows[] = $periodRow;
-        
+
         // Row 3: Pekerjaan Info
         $rows[] = [$pekerjaanText, ''];
-        
+
         // Row 4: Header 1
         $header1 = ['Nama', 'No. ID', 'Divisi', 'Posisi', 'Pekerjaan', 'Cabang'];
         foreach ($this->dayHeaders as $h) {
@@ -351,7 +366,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         }
         $header1 = array_merge($header1, ['Normal Hari', 'Masuk Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Sakit', 'Ijin', 'Cuti', 'Alpha']);
         $rows[] = $header1;
-        
+
         // Row 5: Header 2
         $header2 = ['', '', '', '', '', ''];
         foreach ($this->dayHeaders as $h) {
@@ -359,54 +374,62 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         }
         $header2 = array_merge($header2, ['', '', '', '', '', '', '', '']);
         $rows[] = $header2;
-        
+
         // Data Rows (Starting at row 6)
         $currentRow = 6;
         foreach ($this->rekapData as $data) {
             $karyawan = $data['karyawan'];
             $row = [
-                 $karyawan ? ($karyawan->nama_lengkap . ' (' . $karyawan->nik . ')') : 'Unknown',
-                 $karyawan ? $karyawan->nik : 'Unknown',
-                 $karyawan ? $karyawan->divisi : '',
-                 $karyawan ? $karyawan->posisi : '',
-                 $karyawan ? $karyawan->pekerjaan : '',
-                 $karyawan ? $karyawan->cabang : ''
+                $karyawan ? ($karyawan->nama_lengkap.' ('.$karyawan->nik.')') : 'Unknown',
+                $karyawan ? $karyawan->nik : 'Unknown',
+                $karyawan ? $karyawan->divisi : '',
+                $karyawan ? $karyawan->posisi : '',
+                $karyawan ? $karyawan->pekerjaan : '',
+                $karyawan ? $karyawan->cabang : '',
             ];
-            
+
             $colIndex = 7;
             foreach ($this->dayHeaders as $date => $h) {
-                 $val = $data['dailyStatus'][$date];
-                 $row[] = $val;
-                 
-                 // Store coordinates for styling
-                 $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-                 $cellCoord = $colLetter . $currentRow;
+                $val = $data['dailyStatus'][$date];
+                $row[] = $val;
 
-                 if ($val === 'S') {
-                     $this->styleRanges['sakit'][] = $cellCoord;
-                 } elseif ($val === 'A') {
-                     $this->styleRanges['alpha'][] = $cellCoord;
-                 } elseif ($val === 'C') {
-                     $this->styleRanges['cuti'][] = $cellCoord;
-                 } elseif ($val === 'I') {
-                     $this->styleRanges['izin'][] = $cellCoord;
-                 } elseif (strpos($val, ' - ') !== false) {
-                     $parts = explode(' - ', $val);
-                     $masuk = trim($parts[0]);
-                     $pulang = trim($parts[1]);
-                     
-                     $isTidakMasuk = ($masuk === '-');
-                     $isTidakPulang = ($pulang === '-');
-                     $isTerlambat = (!$isTidakMasuk && $masuk > '09:05');
-                     $isPulangCepat = (!$isTidakPulang && $pulang < '17:00');
-                     
-                     if ($isTidakMasuk) $this->styleRanges['tidak_masuk'][] = $cellCoord;
-                     if ($isTidakPulang) $this->styleRanges['tidak_pulang'][] = $cellCoord;
-                     if ($isTerlambat) $this->styleRanges['terlambat'][] = $cellCoord;
-                     if ($isPulangCepat) $this->styleRanges['pulang_cepat'][] = $cellCoord;
-                 }
-                 
-                 $colIndex++;
+                // Store coordinates for styling
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                $cellCoord = $colLetter.$currentRow;
+
+                if ($val === 'S') {
+                    $this->styleRanges['sakit'][] = $cellCoord;
+                } elseif ($val === 'A') {
+                    $this->styleRanges['alpha'][] = $cellCoord;
+                } elseif ($val === 'C') {
+                    $this->styleRanges['cuti'][] = $cellCoord;
+                } elseif ($val === 'I') {
+                    $this->styleRanges['izin'][] = $cellCoord;
+                } elseif (strpos($val, ' - ') !== false) {
+                    $parts = explode(' - ', $val);
+                    $masuk = trim($parts[0]);
+                    $pulang = trim($parts[1]);
+
+                    $isTidakMasuk = ($masuk === '-');
+                    $isTidakPulang = ($pulang === '-');
+                    $isTerlambat = (! $isTidakMasuk && $masuk > '09:05' && ! $karyawan->isExemptFromTerlambat());
+                    $isPulangCepat = (! $isTidakPulang && $pulang < '17:00');
+
+                    if ($isTidakMasuk) {
+                        $this->styleRanges['tidak_masuk'][] = $cellCoord;
+                    }
+                    if ($isTidakPulang) {
+                        $this->styleRanges['tidak_pulang'][] = $cellCoord;
+                    }
+                    if ($isTerlambat) {
+                        $this->styleRanges['terlambat'][] = $cellCoord;
+                    }
+                    if ($isPulangCepat) {
+                        $this->styleRanges['pulang_cepat'][] = $cellCoord;
+                    }
+                }
+
+                $colIndex++;
             }
             $row[] = $data['normalDays'];
             $row[] = $data['riilDays'];
@@ -418,13 +441,13 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $row[] = $data['cutiDays'] ?: '';
             $row[] = $data['absenDays'] ?: '';
             $rows[] = $row;
-            
+
             $currentRow++;
         }
-        
+
         $rows[] = [''];
         $rows[] = ['Keterangan: Normal="", Absent="A", Format Jam="Masuk - Pulang"'];
-        
+
         return $rows;
     }
 
@@ -435,7 +458,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $sheet = $event->sheet->getDelegate();
                 $lastColIndex = 6 + $this->totalDays + 9;
                 $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
-                $totalRows = count($this->rekapData) + 5; 
+                $totalRows = count($this->rekapData) + 5;
 
                 // Set Default Styles for the whole sheet (Bypasses range-styling memory bugs)
                 $defaultStyle = $sheet->getParent()->getDefaultStyle();
@@ -448,10 +471,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $defaultStyle->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
                 // Row 1-3: Clear borders and styling (so it doesn't look boxed)
-                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
-                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
-                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
-                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:'.$lastColLetter.'3')->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:'.$lastColLetter.'3')->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:'.$lastColLetter.'3')->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:'.$lastColLetter.'3')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
 
                 // Filter Info (A2 and A3)
                 $sheet->getStyle('A2:A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
@@ -460,7 +483,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 // Row 2: Merge and Center Period Text over the date columns
                 $startPeriodCol = 'G';
                 $endPeriodCol = Coordinate::stringFromColumnIndex(6 + $this->totalDays);
-                $sheet->mergeCells($startPeriodCol . '2:' . $endPeriodCol . '2');
+                $sheet->mergeCells($startPeriodCol.'2:'.$endPeriodCol.'2');
                 $sheet->getStyle('G2')->getFont()->setBold(true);
 
                 // Merging header cells vertically (Row 4 & 5)
@@ -474,18 +497,18 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $summaryStart = 7 + $this->totalDays;
                 for ($i = 0; $i < 9; $i++) {
                     $col = Coordinate::stringFromColumnIndex($summaryStart + $i);
-                    $sheet->mergeCells($col . '4:' . $col . '5');
+                    $sheet->mergeCells($col.'4:'.$col.'5');
                 }
 
                 // Style headers cell-by-cell (Row 4 & 5 only)
                 for ($row = 4; $row <= 5; $row++) {
                     for ($colIdx = 1; $colIdx <= $lastColIndex; $colIdx++) {
                         $col = Coordinate::stringFromColumnIndex($colIdx);
-                        $cell = $col . $row;
+                        $cell = $col.$row;
                         $sheet->getStyle($cell)->getFont()->setBold(true);
                         $sheet->getStyle($cell)->getFill()
-                              ->setFillType(Fill::FILL_SOLID)
-                              ->getStartColor()->setARGB('FFF3F4F6');
+                            ->setFillType(Fill::FILL_SOLID)
+                            ->getStartColor()->setARGB('FFF3F4F6');
                         $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
                     }
                 }
@@ -503,26 +526,28 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 }
 
                 if (count($this->rekapData) > 0) {
-                    $gridRange = 'G6:' . $lastColLetter . $totalRows;
+                    $gridRange = 'G6:'.$lastColLetter.$totalRows;
 
                     // Column A (Nama Karyawan): Left-align only
-                    $sheet->getStyle('A6:A' . $totalRows)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle('A6:A'.$totalRows)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
                     // 1. Weekend Rule using Excel Formula: OR(G$5="Sab", G$5="Min")
-                    $weekendRule = new Conditional();
+                    $weekendRule = new Conditional;
                     $weekendRule->setConditionType(Conditional::CONDITION_EXPRESSION);
                     $weekendRule->addCondition('OR(G$5="Sab",G$5="Min")');
                     $weekendRule->getStyle()->getFill()
-                                ->setFillType(Fill::FILL_SOLID)
-                                ->getStartColor()->setARGB('FFD1D5DB'); // Gray
-                                
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setARGB('FFD1D5DB'); // Gray
+
                     // Apply weekend style base
                     $sheet->setConditionalStyles($gridRange, [$weekendRule]);
 
                     // Apply pre-calculated styles manually
-                    $applyStyles = function($cells, $bgColor, $textColor = null, $bold = false) use ($sheet) {
-                        if (empty($cells)) return;
-                        
+                    $applyStyles = function ($cells, $bgColor, $textColor = null, $bold = false) use ($sheet) {
+                        if (empty($cells)) {
+                            return;
+                        }
+
                         $styleArray = [
                             'fill' => [
                                 'fillType' => Fill::FILL_SOLID,
@@ -535,7 +560,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         if ($bold) {
                             $styleArray['font']['bold'] = true;
                         }
-                        
+
                         foreach ($cells as $cellCoord) {
                             $sheet->getStyle($cellCoord)->applyFromArray($styleArray);
                         }
@@ -543,20 +568,20 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
                     // Alpha: Red bg, Dark red text
                     $applyStyles($this->styleRanges['alpha'], 'FFFECACA', 'FF9C0006');
-                    
+
                     // Sakit: Yellow bg, Dark yellow text
                     $applyStyles($this->styleRanges['sakit'], 'FFFFF0B3', 'FF9C5700');
-                    
+
                     // Cuti: Blue bg, Dark blue text
                     $applyStyles($this->styleRanges['cuti'], 'FFBFDBFE', 'FF00008B');
-                    
+
                     // Izin: Orange bg
                     $applyStyles($this->styleRanges['izin'], 'FFFED7AA', 'FFB45309');
-                    
+
                     // Tidak Absen Masuk & Pulang: Purple/Pink bg
                     $applyStyles($this->styleRanges['tidak_masuk'], 'FFFBCFE8', 'FFBE185D');
                     $applyStyles($this->styleRanges['tidak_pulang'], 'FFFBCFE8', 'FFBE185D');
-                    
+
                     // Terlambat & Pulang Cepat: Peach/Amber bg
                     $applyStyles($this->styleRanges['terlambat'], 'FFFDE68A', 'FF92400E', true);
                     $applyStyles($this->styleRanges['pulang_cepat'], 'FFFDE68A', 'FF92400E', true);
@@ -565,13 +590,13 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     $lastDataRow = $totalRows;
                     $legendStart = $lastDataRow + 1;
                     $legendEnd = $lastDataRow + 2;
-                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
-                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
-                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
-                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
-                    
+                    $sheet->getStyle('A'.$legendStart.':'.$lastColLetter.$legendEnd)->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A'.$legendStart.':'.$lastColLetter.$legendEnd)->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A'.$legendStart.':'.$lastColLetter.$legendEnd)->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A'.$legendStart.':'.$lastColLetter.$legendEnd)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
+
                     // Left-align legend text
-                    $sheet->getStyle('A' . $legendEnd)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle('A'.$legendEnd)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 }
             },
         ];

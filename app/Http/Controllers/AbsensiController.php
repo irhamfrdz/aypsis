@@ -16,38 +16,38 @@ class AbsensiController extends Controller
     public function exportMachineUsers()
     {
         $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
-        
+
         try {
-            if (!function_exists('odbc_connect')) {
-                throw new \Exception("Ekstensi ODBC tidak aktif di PHP web server.");
+            if (! function_exists('odbc_connect')) {
+                throw new \Exception('Ekstensi ODBC tidak aktif di PHP web server.');
             }
 
-            $conn = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;", "", "");
-            
-            if (!$conn) {
+            $conn = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;", '', '');
+
+            if (! $conn) {
                 throw new \Exception(odbc_errormsg());
             }
 
-            $query = "SELECT u.Badgenumber, u.Name, u.USERID FROM USERINFO u ORDER BY u.USERID ASC";
+            $query = 'SELECT u.Badgenumber, u.Name, u.USERID FROM USERINFO u ORDER BY u.USERID ASC';
             $result = odbc_exec($conn, $query);
-            
+
             $mdbUsers = [];
             while ($row = odbc_fetch_array($result)) {
                 $mdbUsers[] = $row;
             }
             odbc_close($conn);
 
-            $filename = 'data_user_mesin_finger_' . date('Y-m-d_H-i-s') . '.csv';
+            $filename = 'data_user_mesin_finger_'.date('Y-m-d_H-i-s').'.csv';
 
             $headers = [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => "attachment; filename=\"$filename\"",
                 'Pragma' => 'no-cache',
                 'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0'
+                'Expires' => '0',
             ];
 
-            $callback = function() use ($mdbUsers) {
+            $callback = function () use ($mdbUsers) {
                 $file = fopen('php://output', 'w');
                 // CSV Header
                 fputcsv($file, ['No', 'USERID', 'Badgenumber (NIK)', 'Name']);
@@ -58,7 +58,7 @@ class AbsensiController extends Controller
                         $no++,
                         $user['USERID'],
                         $user['Badgenumber'],
-                        $user['Name']
+                        $user['Name'],
                     ]);
                 }
                 fclose($file);
@@ -67,9 +67,10 @@ class AbsensiController extends Controller
             return response()->stream($callback, 200, $headers);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal membaca database mesin finger: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membaca database mesin finger: '.$e->getMessage());
         }
     }
+
     /**
      * Display a listing of attendance logs.
      */
@@ -105,9 +106,9 @@ class AbsensiController extends Controller
         $defaultDate = Carbon::now()->toDateString();
 
         $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultDate);
-        
+
         // If end_date is provided (via URL or other forms), use it. Otherwise, match start_date.
-        $endDateObj = $request->filled('end_date') 
+        $endDateObj = $request->filled('end_date')
             ? $this->parseDateSafe($request->input('end_date'), $startDateObj->toDateString())
             : $startDateObj->copy();
 
@@ -164,7 +165,7 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            ' . Absensi::workDateSql() . ' as tanggal,
+            '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
@@ -190,7 +191,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN verify_mode ELSE NULL END) as verify_mode_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN verify_mode ELSE NULL END) as verify_mode_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen (Tidak Masuk/Tidak Pulang/Lengkap/Lembur) on aggregate having clause
         if ($request->filled('status_absen')) {
@@ -231,7 +232,7 @@ class AbsensiController extends Controller
     {
         // Cari karyawan
         $karyawan = Karyawan::where('nik', $nik)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = \App\Models\KaryawanTidakTetap::where('nik', $nik)->first();
         }
 
@@ -241,7 +242,7 @@ class AbsensiController extends Controller
             ->workDates($tanggal)
             ->orderBy('waktu', 'asc')
             ->get();
-            
+
         $mesins = Mesin::all()->keyBy('id');
 
         return view('absensi.show', compact('karyawan', 'tanggal', 'absensis', 'mesins', 'nik'));
@@ -308,7 +309,7 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            ' . Absensi::workDateSql() . ' as tanggal,
+            '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
@@ -318,7 +319,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen
         if ($request->filled('status_absen')) {
@@ -351,7 +352,7 @@ class AbsensiController extends Controller
             'status_absen' => $request->input('status_absen'),
         ];
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis, $filters), 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.xlsx');
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis, $filters), 'Laporan_Absensi_Karyawan_'.date('Ymd_His').'.xlsx');
     }
 
     /**
@@ -418,7 +419,7 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            ' . Absensi::workDateSql() . ' as tanggal,
+            '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) IN ("istirahat_keluar", "istirahat keluar") THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
@@ -428,7 +429,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('karyawan_id', 'nik', 'tanggal');
 
         // Filter by Status Absen
         if ($request->filled('status_absen')) {
@@ -456,30 +457,32 @@ class AbsensiController extends Controller
 
         foreach ($grouped as $karyawanId => $logs) {
             $karyawan = $logs->first()->karyawan;
-            if (!$karyawan) continue;
+            if (! $karyawan) {
+                continue;
+            }
 
             $dayLogs = [];
             foreach ($logs as $log) {
                 $date = \Carbon\Carbon::parse($log->tanggal);
-                $dayStr = $date->format('m/d') . ' ' . $hariIndo[$date->dayOfWeek];
-                
+                $dayStr = $date->format('m/d').' '.$hariIndo[$date->dayOfWeek];
+
                 $masuk = $log->waktu_masuk ? \Carbon\Carbon::parse($log->waktu_masuk)->format('H.i') : '';
                 $pulang = $log->waktu_pulang ? \Carbon\Carbon::parse($log->waktu_pulang)->format('H.i') : '';
-                
+
                 $scanStr = '-';
                 if ($masuk || $pulang) {
-                    $scanStr = ($masuk ?: '') . '-' . ($pulang ?: '');
+                    $scanStr = ($masuk ?: '').'-'.($pulang ?: '');
                 }
-                
+
                 $dayLogs[] = [
                     'date_label' => $dayStr,
-                    'scan' => $scanStr
+                    'scan' => $scanStr,
                 ];
             }
-            
+
             $pdfData[] = [
                 'karyawan' => $karyawan,
-                'logs' => $dayLogs
+                'logs' => $dayLogs,
             ];
         }
 
@@ -496,9 +499,9 @@ class AbsensiController extends Controller
         if ($request->filled('cabang')) {
             $titleParts[] = strtoupper($request->cabang);
         }
-        $filterTitle = !empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
+        $filterTitle = ! empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
 
-        $filename = 'Laporan_Absensi_Karyawan_' . date('Ymd_His') . '.pdf';
+        $filename = 'Laporan_Absensi_Karyawan_'.date('Ymd_His').'.pdf';
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.pdf', [
             'startDate' => $startDateObj,
@@ -519,13 +522,13 @@ class AbsensiController extends Controller
         ]);
 
         $nik = $request->nik;
-        
+
         $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
 
         foreach ($request->tanggal as $index => $tglInput) {
             $tanggal = Carbon::parse($tglInput)->toDateString();
-            
+
             $times = [
                 'Masuk' => $request->waktu_masuk[$index] ?? null,
                 'Istirahat_Keluar' => $request->waktu_istirahat_keluar[$index] ?? null,
@@ -534,9 +537,11 @@ class AbsensiController extends Controller
                 'Lembur_Masuk' => $request->waktu_lembur_masuk[$index] ?? null,
                 'Lembur_Pulang' => $request->waktu_lembur_pulang[$index] ?? null,
             ];
-            
+
             foreach ($times as $tipe => $time) {
-                if (empty($time)) continue;
+                if (empty($time)) {
+                    continue;
+                }
 
                 $existingLog = Absensi::where('nik', $nik)
                     ->where('tipe', $tipe)
@@ -559,19 +564,19 @@ class AbsensiController extends Controller
                     }
                 }
 
-                $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                    $waktu->addDay(); 
+                $waktu = Carbon::parse($tanggal.' '.$time);
+                if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
+                    $waktu->addDay();
                 }
 
                 try {
                     Absensi::create([
                         'karyawan_id' => $karyawan_id,
-                        'nik'         => $nik,
-                        'waktu'       => $waktu,
-                        'tipe'        => $tipe,
-                        'status'      => 'Manual',
-                        'keterangan'  => $request->keterangan ?? 'Ditambahkan secara manual',
+                        'nik' => $nik,
+                        'waktu' => $waktu,
+                        'tipe' => $tipe,
+                        'status' => 'Manual',
+                        'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
                     ]);
                 } catch (\Illuminate\Database\QueryException $e) {
                     // Abaikan jika duplikat (1062) — data sudah ada, tidak perlu insert ulang
@@ -597,7 +602,7 @@ class AbsensiController extends Controller
 
         $nik = $request->nik;
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
-        
+
         // Find existing employee
         $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
@@ -616,16 +621,24 @@ class AbsensiController extends Controller
             // Find existing log for this date and type
             // Note: The index groups by DATE(waktu - 6 hours), so we search in that range
             $tipeLower = strtolower($tipe);
-            
+
             $existingLogQuery = Absensi::where('nik', $nik)
-                ->where(function($q) use ($tipeLower) {
-                    if ($tipeLower === 'masuk') $q->whereRaw('LOWER(tipe) = ?', ['masuk']);
-                    elseif (in_array($tipeLower, ['pulang', 'keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['pulang', 'keluar']);
-                    elseif (in_array($tipeLower, ['istirahat_keluar', 'istirahat keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_keluar', 'istirahat keluar']);
-                    elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_masuk', 'istirahat masuk']);
-                    elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur']);
-                    elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar']);
-                    else $q->whereRaw('LOWER(tipe) = ?', [$tipeLower]);
+                ->where(function ($q) use ($tipeLower) {
+                    if ($tipeLower === 'masuk') {
+                        $q->whereRaw('LOWER(tipe) = ?', ['masuk']);
+                    } elseif (in_array($tipeLower, ['pulang', 'keluar'])) {
+                        $q->whereIn(\DB::raw('LOWER(tipe)'), ['pulang', 'keluar']);
+                    } elseif (in_array($tipeLower, ['istirahat_keluar', 'istirahat keluar'])) {
+                        $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_keluar', 'istirahat keluar']);
+                    } elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) {
+                        $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_masuk', 'istirahat masuk']);
+                    } elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur'])) {
+                        $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur']);
+                    } elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar'])) {
+                        $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur', 'lembur keluar']);
+                    } else {
+                        $q->whereRaw('LOWER(tipe) = ?', [$tipeLower]);
+                    }
                 })
                 ->workDates($tanggal);
 
@@ -637,12 +650,12 @@ class AbsensiController extends Controller
 
             // Update data jika sudah ada, atau hapus jika kosong
             if ($existingLog) {
-                if (!empty($time)) {
-                    $waktu = Carbon::parse($tanggal . ' ' . $time);
-                    if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                        $waktu->addDay(); 
+                if (! empty($time)) {
+                    $waktu = Carbon::parse($tanggal.' '.$time);
+                    if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
+                        $waktu->addDay();
                     }
-                    
+
                     try {
                         $existingLog->update([
                             'waktu' => $waktu,
@@ -656,7 +669,7 @@ class AbsensiController extends Controller
                                 ->where('waktu', $waktu)
                                 ->where('id', '!=', $existingLog->id)
                                 ->first();
-                                
+
                             if ($conflictLog) {
                                 $conflictLog->update([
                                     'status' => 'Manual',
@@ -672,14 +685,15 @@ class AbsensiController extends Controller
                     // Jika di-kosongkan dari form, hapus data jam tersebut
                     $existingLog->delete();
                 }
+
                 continue;
             }
 
             // Jika belum ada dan form diisi
-            if (!empty($time)) {
-                $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (($tipe === 'Lembur_Pulang' && !empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                    $waktu->addDay(); 
+            if (! empty($time)) {
+                $waktu = Carbon::parse($tanggal.' '.$time);
+                if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
+                    $waktu->addDay();
                 }
 
                 try {
@@ -760,7 +774,7 @@ class AbsensiController extends Controller
         foreach ($absensis as $absensi) {
             $time = Carbon::parse($absensi->waktu)->format('H:i');
             $tipeLower = strtolower($absensi->tipe);
-            
+
             if ($tipeLower === 'masuk') {
                 $data['waktu_masuk'] = $time;
             } elseif (in_array($tipeLower, ['pulang', 'keluar'])) {
@@ -787,7 +801,7 @@ class AbsensiController extends Controller
         $request->validate([
             'nik' => 'required',
             'tanggal' => 'required|date',
-            'tipe' => 'required|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang'
+            'tipe' => 'required|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang',
         ]);
 
         $types = match (strtolower($request->tipe)) {
@@ -815,6 +829,7 @@ class AbsensiController extends Controller
             if ($request->export === 'pdf') {
                 return $this->exportRekapPdf($request);
             }
+
             return $this->exportRekap($request);
         }
 
@@ -865,33 +880,33 @@ class AbsensiController extends Controller
 
             if ($kehadiran === 'tidak_absen_masuk') {
                 $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
 
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
-                      ->whereBetween('waktu', [$startObj, $endObj])
-                      ->groupBy(\DB::raw($dateExpr))
-                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0');
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0');
                 });
             } elseif ($kehadiran === 'tidak_absen_pulang') {
                 $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
 
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
-                      ->whereBetween('waktu', [$startObj, $endObj])
-                      ->groupBy(\DB::raw($dateExpr))
-                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0');
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0');
                 });
             } elseif ($kehadiran === 'tidak_absen_istirahat') {
                 $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
 
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
-                      ->whereBetween('waktu', [$startObj, $endObj])
-                      ->groupBy(\DB::raw($dateExpr))
-                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
                 });
             }
         }
@@ -900,39 +915,39 @@ class AbsensiController extends Controller
             $grupReq = $request->grup;
             if ($request->filled('sub_grup')) {
                 $subGrupReq = $request->sub_grup;
-                $searchStr = $grupReq . ':' . $subGrupReq;
-                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupReq.':'.$subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"'.$searchStr.'"%');
             } else {
-                $karyawansQuery->where(function($q) use ($grupReq) {
-                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                $karyawansQuery->where(function ($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"'.$grupReq.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$grupReq.'"%');
                 });
             }
         } elseif ($request->filled('sub_grup')) {
             $subGrupReq = $request->sub_grup;
-            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
+            $karyawansQuery->where('grup', 'LIKE', '%:'.$subGrupReq.'"%');
         }
 
         if ($request->filled('grup_bpjs')) {
             $grupBpjsReq = $request->grup_bpjs;
             if ($request->filled('sub_grup_bpjs')) {
                 $subGrupBpjsReq = $request->sub_grup_bpjs;
-                $searchStr = $grupBpjsReq . ':' . $subGrupBpjsReq;
-                $karyawansQuery->where('grup_bpjs', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupBpjsReq.':'.$subGrupBpjsReq;
+                $karyawansQuery->where('grup_bpjs', 'LIKE', '%"'.$searchStr.'"%');
             } else {
-                $karyawansQuery->where(function($q) use ($grupBpjsReq) {
-                    $q->where('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . ':%')
-                      ->orWhere('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . '"%');
+                $karyawansQuery->where(function ($q) use ($grupBpjsReq) {
+                    $q->where('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.':%')
+                        ->orWhere('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.'"%');
                 });
             }
         } elseif ($request->filled('sub_grup_bpjs')) {
             $subGrupBpjsReq = $request->sub_grup_bpjs;
-            $karyawansQuery->where('grup_bpjs', 'LIKE', '%:' . $subGrupBpjsReq . '"%');
+            $karyawansQuery->where('grup_bpjs', 'LIKE', '%:'.$subGrupBpjsReq.'"%');
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
         $allKaryawans = Karyawan::where('status', 'active')->orderBy('nama_lengkap')->get();
-        
+
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
@@ -943,7 +958,7 @@ class AbsensiController extends Controller
             'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
             'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
             'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-            'CUTI' => []
+            'CUTI' => [],
         ];
         $karyawansGrups = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->pluck('grup');
         foreach ($karyawansGrups as $grupArray) {
@@ -956,10 +971,10 @@ class AbsensiController extends Controller
                     $main = $parts[0];
                     $sub = $parts[1] ?? '';
                     if ($main !== '') {
-                        if (!isset($grupMap[$main])) {
+                        if (! isset($grupMap[$main])) {
                             $grupMap[$main] = [];
                         }
-                        if ($sub !== '' && !in_array($sub, $grupMap[$main])) {
+                        if ($sub !== '' && ! in_array($sub, $grupMap[$main])) {
                             $grupMap[$main][] = $sub;
                         }
                     }
@@ -974,7 +989,7 @@ class AbsensiController extends Controller
 
         $grupBpjsMap = [
             'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-            'BPJS-JKN' => ['BPU REIMBURSMENT']
+            'BPJS-JKN' => ['BPU REIMBURSMENT'],
         ];
         $karyawansGrupsBpjs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup_bpjs')->pluck('grup_bpjs');
         foreach ($karyawansGrupsBpjs as $grupBpjsArray) {
@@ -987,10 +1002,10 @@ class AbsensiController extends Controller
                     $main = $parts[0];
                     $sub = $parts[1] ?? '';
                     if ($main !== '') {
-                        if (!isset($grupBpjsMap[$main])) {
+                        if (! isset($grupBpjsMap[$main])) {
                             $grupBpjsMap[$main] = [];
                         }
-                        if ($sub !== '' && !in_array($sub, $grupBpjsMap[$main])) {
+                        if ($sub !== '' && ! in_array($sub, $grupBpjsMap[$main])) {
                             $grupBpjsMap[$main][] = $sub;
                         }
                     }
@@ -1007,7 +1022,7 @@ class AbsensiController extends Controller
         $normalWorkdays = 0;
         $tempDate = $startDate->copy();
         while ($tempDate->lte($endDate)) {
-            if (!$tempDate->isSunday()) {
+            if (! $tempDate->isSunday()) {
                 $normalWorkdays++;
             }
             $tempDate->addDay();
@@ -1015,32 +1030,32 @@ class AbsensiController extends Controller
 
         // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries)
         $attendance = Absensi::workDates($startDate, $endDate)
-            ->select('absensis.*')->selectRaw(Absensi::workDateSql() . ' as tanggal_kerja')
+            ->select('absensis.*')->selectRaw(Absensi::workDateSql().' as tanggal_kerja')
             ->get()
             ->groupBy('karyawan_id');
 
         // Fetch all approved permissions/leaves in the selected month
         $cutis = \Illuminate\Support\Facades\DB::table('cutis')
             ->where('status', 'APPROVED')
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhere(function($sub) use ($startDate, $endDate) {
-                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
-                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
-                  });
+                    ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->orWhere(function ($sub) use ($startDate, $endDate) {
+                        $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                            ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                    });
             })
             ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', \Illuminate\Support\Facades\DB::raw("CONCAT('Cuti ', jenis_cuti) as jenis_izin"), 'keterangan as alasan');
 
         $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
             ->where('status', 'APPROVED')
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
-                  ->orWhere(function($sub) use ($startDate, $endDate) {
-                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
-                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
-                  });
+                    ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->orWhere(function ($sub) use ($startDate, $endDate) {
+                        $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                            ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                    });
             })
             ->select('karyawan_id', 'tanggal_mulai', 'tanggal_selesai', 'jenis_izin', 'alasan')
             ->union($cutis)
@@ -1082,7 +1097,7 @@ class AbsensiController extends Controller
             $pulangCepatMenit = 0;
             $lemburJam = 0;
             $lemburKali = 0;
-            
+
             $tidakAbsenMasukKali = 0;
             $tidakAbsenPulangKali = 0;
             $tidakAbsenIstirahatKali = 0;
@@ -1095,14 +1110,14 @@ class AbsensiController extends Controller
                 $dateStr = $tempDate->toDateString();
 
                 // Check if they had an approved permission on this day FIRST
-                $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateStr) {
+                $matchedPerm = $karyawanPermissions->first(function ($perm) use ($dateStr) {
                     return $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
                 });
 
                 $isFullDayPerm = false;
                 if ($matchedPerm) {
                     $jenis = strtolower($matchedPerm->jenis_izin);
-                    if (!str_contains($jenis, 'datang_terlambat') && !str_contains($jenis, 'pulang_cepat') && !str_contains($jenis, 'dinas_luar')) {
+                    if (! str_contains($jenis, 'datang_terlambat') && ! str_contains($jenis, 'pulang_cepat') && ! str_contains($jenis, 'dinas_luar')) {
                         $isFullDayPerm = true;
                     }
                 }
@@ -1111,7 +1126,7 @@ class AbsensiController extends Controller
                     $jenis = strtolower($matchedPerm->jenis_izin);
                     $alasan = $matchedPerm->alasan ?: '-';
                     $tanggal = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
-                    
+
                     if (str_contains($jenis, 'sakit')) {
                         $sakit++;
                         $detail_sakit[] = ['tanggal' => $tanggal, 'jenis' => $matchedPerm->jenis_izin, 'alasan' => $alasan];
@@ -1126,26 +1141,26 @@ class AbsensiController extends Controller
                     $hadir++;
                     $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
-                    
+
                     // Lateness
                     $masukLog = $dayLogs->where('tipe', 'Masuk')->first();
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
-                        $jamMasukNormal = Carbon::parse($dateStr . ' 09:00:00');
+                        $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
                         if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
-                            // Cek apakah penempatan kebal terlambat
-                            $isExempt = in_array(strtolower(trim($karyawan->penempatan)), ['pelabuhan', 'garasi', 'pelabuhan 1', '1']);
+                            // Cek apakah penempatan kebal terlambat (Jakarta Pelabuhan, Garasi Jakarta, Jakarta Pelabuhan 1, dll)
+                            $isExempt = $karyawan->isExemptFromTerlambat();
 
                             // Check for approved datang_terlambat permission
-                            $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
-                                return strtolower($perm->jenis_izin) === 'datang_terlambat' && 
+                            $hasLatePermission = $karyawanPermissions->contains(function ($perm) use ($dateStr) {
+                                return strtolower($perm->jenis_izin) === 'datang_terlambat' &&
                                        $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
                             });
-                            
-                            if (!$hasLatePermission && !$isExempt) {
+
+                            if (! $hasLatePermission && ! $isExempt) {
                                 $terlambatKali++;
                                 $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
-                                $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $jamMasukNormal->diffInMinutes($waktuMasuk) . ' mnt)';
+                                $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$jamMasukNormal->diffInMinutes($waktuMasuk).' mnt)';
                             }
                         }
                     } else {
@@ -1157,20 +1172,20 @@ class AbsensiController extends Controller
                     $pulangLog = $dayLogs->where('tipe', 'Pulang')->first();
                     if ($pulangLog) {
                         $waktuPulang = Carbon::parse($pulangLog->waktu);
-                        $jamPulangNormal = Carbon::parse($dateStr . ' 17:00:00');
-                        // if clock out is next day (e.g. 02:00 AM), it's not early leave. 
+                        $jamPulangNormal = Carbon::parse($dateStr.' 17:00:00');
+                        // if clock out is next day (e.g. 02:00 AM), it's not early leave.
                         // But if it's same day before 17:00
                         if ($waktuPulang->lt($jamPulangNormal) && $waktuPulang->format('Y-m-d') == $dateStr) {
                             // Check for approved pulang_cepat permission
-                            $hasEarlyPermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
-                                return strtolower($perm->jenis_izin) === 'pulang_cepat' && 
+                            $hasEarlyPermission = $karyawanPermissions->contains(function ($perm) use ($dateStr) {
+                                return strtolower($perm->jenis_izin) === 'pulang_cepat' &&
                                        $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
                             });
-                            
-                            if (!$hasEarlyPermission) {
+
+                            if (! $hasEarlyPermission) {
                                 $pulangCepatKali++;
                                 $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
-                                $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $waktuPulang->diffInMinutes($jamPulangNormal) . ' mnt)';
+                                $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$waktuPulang->diffInMinutes($jamPulangNormal).' mnt)';
                             }
                         }
                     } else {
@@ -1179,15 +1194,21 @@ class AbsensiController extends Controller
                     }
 
                     // Istirahat
-                    $istirahatLog = $dayLogs->first(function($val) { return strpos(strtolower($val->tipe), 'istirahat') !== false; });
-                    if (!$istirahatLog) {
+                    $istirahatLog = $dayLogs->first(function ($val) {
+                        return strpos(strtolower($val->tipe), 'istirahat') !== false;
+                    });
+                    if (! $istirahatLog) {
                         $tidakAbsenIstirahatKali++;
                         $detail_tidak_absen_istirahat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
 
                     // Overtime (Lembur)
-                    $lemburMasuk = $dayLogs->first(function($val) { return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur masuk', 'mulai lembur', 'lembur']); });
-                    $lemburPulang = $dayLogs->first(function($val) { return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur pulang', 'selesai lembur', 'lembur keluar']); });
+                    $lemburMasuk = $dayLogs->first(function ($val) {
+                        return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur masuk', 'mulai lembur', 'lembur']);
+                    });
+                    $lemburPulang = $dayLogs->first(function ($val) {
+                        return in_array(strtolower(str_replace('_', ' ', $val->tipe)), ['lembur pulang', 'selesai lembur', 'lembur keluar']);
+                    });
                     if ($lemburMasuk || $lemburPulang) {
                         $lemburKali++;
                         $jam = 0;
@@ -1197,19 +1218,18 @@ class AbsensiController extends Controller
                             $jam = $lm->diffInMinutes($lp) / 60;
                             $lemburJam += $jam;
                         }
-                        $detail_lembur[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ($jam > 0 ? " (" . round($jam, 1) . " Jam)" : "");
+                        $detail_lembur[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').($jam > 0 ? ' ('.round($jam, 1).' Jam)' : '');
                     }
 
                 } else {
                     // No permission, no scan -> Alpha
                     // Jangan hitung alpha jika tanggalnya belum terjadi (future dates), atau jika hari libur (Minggu & Nasional)
-                    if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday() && !in_array($dateStr, $hariLiburs)) {
+                    if ($dateStr <= \Carbon\Carbon::today()->toDateString() && ! $tempDate->isSunday() && ! in_array($dateStr, $hariLiburs)) {
                         $alpha++;
                         $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
                 }
-                
-                
+
                 $tempDate->addDay();
             }
 
@@ -1297,14 +1317,15 @@ class AbsensiController extends Controller
         $subGrup = $request->input('sub_grup');
         $statusKaryawan = $request->input('status_karyawan', 'aktif');
 
-        $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat) . '-' : '';
-        $fileName = 'rekap-absensi-' . $tempatSlug . $startDate . '-sd-' . $endDate . '.xlsx';
+        $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat).'-' : '';
+        $fileName = 'rekap-absensi-'.$tempatSlug.$startDate.'-sd-'.$endDate.'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup, $statusKaryawan),
             $fileName
         );
     }
+
     public function exportDat(Request $request)
     {
         $defaultStart = Carbon::now()->startOfMonth()->toDateString();
@@ -1348,35 +1369,39 @@ class AbsensiController extends Controller
 
         $absensis = $query->orderBy('waktu', 'asc')->get();
 
-        $content = "";
+        $content = '';
         foreach ($absensis as $absensi) {
             $pin = $absensi->nik ?: ($absensi->karyawan_id ?: '0');
             $pin = ltrim($pin, '0') ?: '0';
             $paddedPin = str_pad($pin, 9, ' ', STR_PAD_LEFT);
             $waktu = Carbon::parse($absensi->waktu)->format('Y-m-d H:i:s');
-            
+
             $status = '255';
             $tipeLower = strtolower($absensi->tipe);
-            if (str_contains($tipeLower, 'masuk')) $status = '0';
-            elseif (str_contains($tipeLower, 'pulang') || str_contains($tipeLower, 'keluar')) $status = '1';
+            if (str_contains($tipeLower, 'masuk')) {
+                $status = '0';
+            } elseif (str_contains($tipeLower, 'pulang') || str_contains($tipeLower, 'keluar')) {
+                $status = '1';
+            }
 
             $content .= "{$paddedPin}\t{$waktu}\t1\t{$status}\t15\t0\r\n";
         }
 
         $fileName = '1_attlog.dat';
+
         return response($content)
             ->header('Content-Type', 'text/plain')
-            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
     }
 
     public function exportRekapPdf(Request $request)
     {
         $startDateStr = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
         $endDateStr = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
-        
+
         $startDate = Carbon::parse($startDateStr)->startOfDay();
         $endDate = Carbon::parse($endDateStr)->endOfDay();
-        
+
         $statusKaryawan = $request->input('status_karyawan', 'aktif');
         $karyawansQuery = Karyawan::query()->orderBy('nik', 'asc');
         if ($statusKaryawan === 'aktif') {
@@ -1384,7 +1409,7 @@ class AbsensiController extends Controller
         } elseif ($statusKaryawan === 'berhenti') {
             $karyawansQuery->whereNotNull('tanggal_berhenti');
         }
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
             $karyawansQuery->where(function ($q) use ($search) {
@@ -1406,17 +1431,17 @@ class AbsensiController extends Controller
             $grupReq = $request->grup;
             if ($request->filled('sub_grup')) {
                 $subGrupReq = $request->sub_grup;
-                $searchStr = $grupReq . ':' . $subGrupReq;
-                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupReq.':'.$subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"'.$searchStr.'"%');
             } else {
                 $karyawansQuery->where(function ($q) use ($grupReq) {
-                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                    $q->where('grup', 'LIKE', '%"'.$grupReq.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$grupReq.'"%');
                 });
             }
         } elseif ($request->filled('sub_grup')) {
             $subGrupReq = $request->sub_grup;
-            $karyawansQuery->where('grup', 'LIKE', '%:' . $subGrupReq . '"%');
+            $karyawansQuery->where('grup', 'LIKE', '%:'.$subGrupReq.'"%');
         }
 
         if ($request->filled('selected_karyawan') && is_array($request->selected_karyawan)) {
@@ -1426,11 +1451,11 @@ class AbsensiController extends Controller
         $karyawans = $karyawansQuery->get();
 
         $attendance = Absensi::workDates($startDate, $endDate)
-            ->select('absensis.*')->selectRaw(Absensi::workDateSql() . ' as tanggal_kerja')
+            ->select('absensis.*')->selectRaw(Absensi::workDateSql().' as tanggal_kerja')
             ->orderBy('waktu', 'asc')
             ->get()
             ->groupBy('karyawan_id');
-            
+
         $periodDates = [];
         $tempDate = $startDate->copy();
         while ($tempDate->lte($endDate)) {
@@ -1444,32 +1469,32 @@ class AbsensiController extends Controller
         foreach ($karyawans as $karyawan) {
             $logs = $attendance->get($karyawan->id, collect());
             $dayLogs = [];
-            
+
             foreach ($periodDates as $date) {
                 $todayLogs = $logs->where('tanggal_kerja', $date->toDateString());
-                
+
                 $masuk = null;
                 $pulang = null;
-                
+
                 if ($todayLogs->count() > 0) {
                     $masuk = Carbon::parse($todayLogs->first()->waktu)->format('H.i');
                     if ($todayLogs->count() > 1) {
                         $pulang = Carbon::parse($todayLogs->last()->waktu)->format('H.i');
                     }
                 }
-                
-                $dayStr = $date->format('m/d') . ' ' . $hariIndo[$date->dayOfWeek];
+
+                $dayStr = $date->format('m/d').' '.$hariIndo[$date->dayOfWeek];
                 $scanStr = $masuk ? ($pulang ? "$masuk-$pulang" : "$masuk-") : '-';
-                
+
                 $dayLogs[] = [
                     'date_label' => $dayStr,
-                    'scan' => $scanStr
+                    'scan' => $scanStr,
                 ];
             }
-            
+
             $pdfData[] = [
                 'karyawan' => $karyawan,
-                'logs' => $dayLogs
+                'logs' => $dayLogs,
             ];
         }
 
@@ -1486,7 +1511,7 @@ class AbsensiController extends Controller
         if ($request->filled('grup')) {
             $grupText = strtoupper($request->grup);
             if ($request->filled('sub_grup')) {
-                $grupText .= ' - ' . strtoupper($request->sub_grup);
+                $grupText .= ' - '.strtoupper($request->sub_grup);
             }
             $titleParts[] = $grupText;
         } elseif ($request->filled('sub_grup')) {
@@ -1495,15 +1520,15 @@ class AbsensiController extends Controller
         if ($request->filled('grup_bpjs')) {
             $grupBpjsText = strtoupper($request->grup_bpjs);
             if ($request->filled('sub_grup_bpjs')) {
-                $grupBpjsText .= ' - ' . strtoupper($request->sub_grup_bpjs);
+                $grupBpjsText .= ' - '.strtoupper($request->sub_grup_bpjs);
             }
             $titleParts[] = $grupBpjsText;
         } elseif ($request->filled('sub_grup_bpjs')) {
             $titleParts[] = strtoupper($request->sub_grup_bpjs);
         }
 
-        $filterTitle = !empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
-        $filename = 'Data_Scan_Karyawan' . (!empty($titleParts) ? '_' . \Illuminate\Support\Str::slug(implode('_', $titleParts)) : '') . '.pdf';
+        $filterTitle = ! empty($titleParts) ? implode(', ', $titleParts) : 'Semua Karyawan';
+        $filename = 'Data_Scan_Karyawan'.(! empty($titleParts) ? '_'.\Illuminate\Support\Str::slug(implode('_', $titleParts)) : '').'.pdf';
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.rekap-pdf', [
             'startDate' => $startDate,
@@ -1514,7 +1539,7 @@ class AbsensiController extends Controller
 
         return $pdf->download($filename);
     }
-    
+
     /**
      * Store new Hari Libur from rekap page.
      */
