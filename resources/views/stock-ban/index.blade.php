@@ -1498,12 +1498,17 @@
                 })->groupBy(function($item) {
                     return strtoupper($item->namaStockBan->nama);
                 })->map(function($group) {
-                    $units = $group->groupBy('type');
+                    $units = $group->groupBy(function($item) {
+                        return strtoupper(trim($item->type ?? '')) ?: 'PAIL';
+                    })->map(function($items) {
+                        return $items->sum('qty');
+                    })->filter(function($qty) {
+                        return $qty != 0;
+                    });
                     if ($units->count() > 1) {
                         $parts = [];
-                        foreach ($units as $unitName => $subGroup) {
-                            $sum = $subGroup->sum('qty');
-                            $parts[] = $sum . ' ' . strtoupper($unitName ?: 'pail');
+                        foreach ($units as $unitName => $qty) {
+                            $parts[] = $qty . ' ' . $unitName;
                         }
                         return [
                             'qty' => implode(' + ', $parts),
@@ -1512,8 +1517,8 @@
                         ];
                     } else {
                         return [
-                            'qty' => $group->sum('qty'),
-                            'unit' => $group->first()->type ?? 'pail',
+                            'qty' => $units->isEmpty() ? 0 : $units->first(),
+                            'unit' => $units->isEmpty() ? (strtoupper(trim($group->first()->type ?? '')) ?: 'PAIL') : $units->keys()->first(),
                             'is_mixed' => false
                         ];
                     }
