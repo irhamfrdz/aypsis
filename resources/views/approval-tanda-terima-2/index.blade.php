@@ -10,6 +10,8 @@
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-option { display: block; width: 100%; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
     .approval-shipper-option:hover, .approval-shipper-option:focus { background: #eef2ff; outline: 2px solid #6366f1; outline-offset: -2px; }
+    .approval-goods-dialog { width: min(1000px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
+    .approval-goods-dialog::backdrop { background: rgb(15 23 42 / 60%); }
 </style>
 @endpush
 
@@ -104,9 +106,9 @@
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
-                        <th scope="col" class="px-5 py-3">Pengirim pada Tanda Terima</th>
+                        <th scope="col" class="px-5 py-3">Shipper Perincian</th>
                         <th scope="col" class="px-5 py-3">Shipper Manifest JB</th>
-                        @can('approval-tanda-terima-2-approve')<th scope="col" class="px-5 py-3 text-right">Aksi</th>@endcan
+                        <th scope="col" class="px-5 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -116,6 +118,22 @@
                             $sender = $type === 'lcl' ? $item->nama_pengirim : $item->pengirim;
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
+                            $goods = match ($type) {
+                                'fcl' => collect($item->dimensi_items ?: $item->dimensi_details ?: $item->nama_barang ?: []),
+                                'lcl' => $item->items,
+                                'ttsj' => $item->dimensiItems,
+                            };
+                            if ($goods->isEmpty() && $type === 'ttsj' && ($item->nama_barang || $item->jenis_barang)) {
+                                $goods = collect([[
+                                    'nama_barang' => $item->nama_barang ?: $item->jenis_barang,
+                                    'jumlah' => $item->jumlah_barang,
+                                    'satuan' => $item->satuan_barang,
+                                    'ukuran' => $item->ukuran,
+                                    'meter_kubik' => $item->meter_kubik,
+                                    'tonase' => $item->tonase,
+                                    'keterangan_barang' => $item->keterangan_barang,
+                                ]]);
+                            }
                         @endphp
                         <tr class="hover:bg-gray-50/70">
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
@@ -130,8 +148,12 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                             </td>
-                            @can('approval-tanda-terima-2-approve')
-                                <td class="whitespace-nowrap px-5 py-4 text-right">
+                            <td class="whitespace-nowrap px-5 py-4 text-right">
+                                <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
+                                    <i class="fas fa-box-open" aria-hidden="true"></i>Detail Barang
+                                </button>
+                                @can('approval-tanda-terima-2-approve')
                                     <button type="button" class="approval-shipper-open inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}"
@@ -147,11 +169,55 @@
                                             <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"><i class="fas fa-trash" aria-hidden="true"></i>Hapus Shipper</button>
                                         </form>
                                     @endif
-                                </td>
-                            @endcan
+                                @endcan
+                                <dialog id="approval-goods-{{ $type }}-{{ $item->id }}" class="approval-goods-dialog whitespace-normal text-left shadow-2xl" aria-labelledby="approval-goods-title-{{ $type }}-{{ $item->id }}">
+                                    <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4">
+                                        <div>
+                                            <h2 id="approval-goods-title-{{ $type }}-{{ $item->id }}" class="text-lg font-semibold text-gray-900">Detail Barang</h2>
+                                            <p class="mt-1 text-sm text-gray-500">Tanda terima: {{ $number ?: 'Tanpa nomor' }}</p>
+                                        </div>
+                                        <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
+                                    </div>
+                                    <div class="overflow-x-auto p-5">
+                                        @if($goods->isNotEmpty())
+                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                                                    <tr>
+                                                        <th class="px-3 py-2">No.</th><th class="px-3 py-2">Nama Barang</th><th class="px-3 py-2">Jumlah</th>
+                                                        <th class="px-3 py-2">Satuan</th><th class="px-3 py-2">Ukuran / Dimensi</th>
+                                                        <th class="px-3 py-2">Volume (m³)</th><th class="px-3 py-2">Tonase</th><th class="px-3 py-2">Keterangan</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-100">
+                                                    @foreach($goods as $good)
+                                                        @php
+                                                            $dimensions = collect(['panjang', 'lebar', 'tinggi'])->map(fn ($field) => data_get($good, $field))->filter(fn ($value) => filled($value))->implode(' × ');
+                                                        @endphp
+                                                        <tr>
+                                                            <td class="px-3 py-3 text-gray-500">{{ $loop->iteration }}</td>
+                                                            <td class="px-3 py-3 font-medium text-gray-900">{{ is_scalar($good) ? $good : (data_get($good, 'nama_barang') ?: '-') }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'jumlah') ?? '-' }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'satuan') ?: '-' }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'ukuran') ?: ($dimensions ?: '-') }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'meter_kubik') ?? '-' }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'tonase') ?? '-' }}</td>
+                                                            <td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @else
+                                            <p class="text-sm text-gray-500">Detail barang belum tersedia untuk tanda terima ini.</p>
+                                        @endif
+                                    </div>
+                                    <div class="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-4">
+                                        <button type="button" class="approval-goods-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Tutup</button>
+                                    </div>
+                                </dialog>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ auth()->user()->can('approval-tanda-terima-2-approve') ? 6 : 5 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr><td colspan="6" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>

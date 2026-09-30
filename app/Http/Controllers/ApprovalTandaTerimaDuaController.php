@@ -58,7 +58,9 @@ class ApprovalTandaTerimaDuaController extends Controller
         $type = $filters['type'] ?? 'fcl';
         $query = self::SOURCES[$type]::query()->with('shipperJb');
         if ($type === 'lcl') {
-            $query->with('kontainerPivot');
+            $query->with(['kontainerPivot', 'items']);
+        } elseif ($type === 'ttsj') {
+            $query->with('dimensiItems');
         }
 
         if ($request->filled('search')) {

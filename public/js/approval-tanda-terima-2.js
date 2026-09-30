@@ -1,6 +1,21 @@
 (() => {
     'use strict';
 
+    document.querySelectorAll('.approval-goods-open').forEach(button => {
+        const dialog = document.getElementById(button.dataset.dialogId);
+        if (!dialog) return;
+
+        button.addEventListener('click', () => dialog.showModal());
+        dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
+            closeButton.addEventListener('click', () => dialog.close());
+        });
+        dialog.addEventListener('close', () => button.focus());
+    });
+})();
+
+(() => {
+    'use strict';
+
     const dialog = document.getElementById('approval-shipper-dialog');
     if (!dialog) return;
 
