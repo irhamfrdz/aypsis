@@ -998,6 +998,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $successCount = 0;
         $errors = [];
+        $failedRows = [];
 
         // Map valid karyawans (separated by division) and kendaraans to validate and auto-correct bulk data
         $supirMap = [];
@@ -1068,6 +1069,24 @@ class SuratJalanBongkaranBatamController extends Controller
                         $row['no_plat'] = $allKendaraansMap[$platClean];
                     } else {
                         $errors[] = "Baris {$rowNumber}: No Plat '{$row['no_plat']}' tidak terdaftar di Master Kendaraan.";
+                    }
+                }
+
+                // Process Sumber Buntut & PLAT/KIR
+                $rawBuntutAsal = strtoupper(trim($row['buntut_asal'] ?? ''));
+                $buntutAsal = in_array($rawBuntutAsal, ['PB', 'AYP']) ? $rawBuntutAsal : 'AYP';
+
+                $buntutPlatKirAyp = trim($row['buntut_plat_kir_ayp'] ?? '');
+                $buntutPlatKirPb = trim($row['buntut_plat_kir_pb'] ?? '');
+
+                if ($buntutAsal === 'PB') {
+                    $buntutPlatKir = $buntutPlatKirPb !== '' ? $buntutPlatKirPb : $buntutPlatKirAyp;
+                    // Buntut PB tidak memiliki master, otomatis berhasil
+                } else {
+                    $buntutPlatKir = $buntutPlatKirAyp !== '' ? $buntutPlatKirAyp : $buntutPlatKirPb;
+                    // Buntut AYP wajib ada di master jika diisi
+                    if (! empty($buntutPlatKir) && ! $this->isValidBuntutAyp($buntutPlatKir)) {
+                        $errors[] = "Baris {$rowNumber}: Data PLAT / KIR Buntut AYP '{$buntutPlatKir}' tidak ada di master, silahkan periksa kembali.";
                     }
                 }
 
@@ -1271,6 +1290,8 @@ class SuratJalanBongkaranBatamController extends Controller
                         'no_bl' => $finalNoBl,
                         'supir' => $row['supir'] ?? null,
                         'no_plat' => $row['no_plat'] ?? null,
+                        'buntut_asal' => $buntutAsal,
+                        'buntut_plat_kir' => $buntutPlatKir ?: null,
                         'pengirim' => $finalPengirim,
                         'penerima' => $finalPenerima,
                         'jenis_barang' => $finalJenisBarang,

@@ -1071,20 +1071,20 @@
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     @if(empty($selectedVoyage))
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;Bongkar;batam;Batu Ampar (PB);Full;VOY123
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full;VOY123
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
                     </p>
                     @else
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;Bongkar;batam;Batu Ampar (PB);Full
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
@@ -1100,7 +1100,7 @@
                     </label>
                     <textarea id="bulkTextarea" rows="10"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;EKO;FANI;Bongkar"></textarea>
+                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;PB; ;PB-123;Bongkar;batam;Batu Ampar (PB);Full"></textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -1129,7 +1129,9 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Kontainer / BL</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
-
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Sumber Buntut</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">PLAT/KIR (AYP)</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">PLAT/KIR (PB)</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Aktifitas</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
@@ -3223,7 +3225,8 @@ async function parseBulkData() {
     const isVoyageEmpty = '{{ $selectedVoyage }}' === '';
     let columnKeys = [
         'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
-        'supir', 'no_plat', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
+        'supir', 'no_plat', 'buntut_asal', 'buntut_plat_kir_ayp', 'buntut_plat_kir_pb',
+        'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
     ];
     if (isVoyageEmpty) {
         columnKeys.push('no_voyage');
@@ -3348,7 +3351,9 @@ async function parseBulkData() {
             row.no_kontainer || '-',
             row.supir || '-',
             row.no_plat || '-',
-
+            row.buntut_asal || 'AYP',
+            row.buntut_plat_kir_ayp || '-',
+            row.buntut_plat_kir_pb || '-',
             row.aktifitas || '-',
             row.lokasi || 'batam',
             row.tujuan_pengiriman || '-',
