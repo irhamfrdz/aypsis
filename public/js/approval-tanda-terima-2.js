@@ -85,12 +85,19 @@
     let timer;
     let pendingSearch;
     let generation = 0;
+    let pendingDetails;
+    let detailsGeneration = 0;
     let opener;
 
     function stopSearch() {
         clearTimeout(timer);
         pendingSearch?.abort();
         generation++;
+    }
+
+    function stopDetails() {
+        pendingDetails?.abort();
+        detailsGeneration++;
     }
 
     function hideOptions() {
@@ -110,6 +117,7 @@
 
     function choose(option) {
         stopSearch();
+        stopDetails();
         selectedId.value = option.real_id;
         search.value = option.text;
         selection.textContent = 'Dipilih: ' + (option.display_text || option.text);
@@ -134,6 +142,7 @@
             url.searchParams.set('q', search.value.trim());
             const response = await fetch(url, {
                 headers: {Accept: 'application/json'},
+                cache: 'no-store',
                 signal: pendingSearch.signal,
             });
             if (!response.ok) throw new Error('Daftar shipper gagal dimuat. Coba cari lagi.');
@@ -161,9 +170,47 @@
         }
     }
 
+    async function refreshCurrentShipper(id) {
+        stopDetails();
+        const currentGeneration = detailsGeneration;
+        pendingDetails = new AbortController();
+
+        try {
+            const url = new URL(dialog.dataset.searchUrl, window.location.href);
+            url.searchParams.set('id', id);
+            const response = await fetch(url, {
+                headers: {Accept: 'application/json'},
+                cache: 'no-store',
+                signal: pendingDetails.signal,
+            });
+            if (!response.ok) throw new Error('Data shipper terbaru gagal dimuat. Cari ulang shipper.');
+            const records = await response.json();
+            if (currentGeneration !== detailsGeneration || !dialog.open) return;
+
+            const current = Array.isArray(records) ? records[0] : null;
+            if (!current) {
+                search.value = '';
+                selection.textContent = 'Shipper saat ini tidak ditemukan di master. Cari shipper lain.';
+                showPreview(null);
+                fetchShippers();
+            } else {
+                const previousName = search.value;
+                search.value = current.text;
+                selection.textContent = 'Shipper saat ini: ' + current.text + '. Pilih dari hasil pencarian untuk mengubahnya.';
+                showPreview(current);
+                if (previousName !== current.text) fetchShippers();
+            }
+        } catch (error) {
+            if (error.name === 'AbortError' || currentGeneration !== detailsGeneration) return;
+            selection.textContent = error.message;
+            showPreview(null);
+        }
+    }
+
     document.querySelectorAll('.approval-shipper-open').forEach(button => {
         button.addEventListener('click', () => {
             stopSearch();
+            stopDetails();
             opener = button;
             form.action = button.dataset.updateUrl;
             selectedId.value = '';
@@ -171,20 +218,22 @@
             search.value = button.dataset.shipper || '';
             document.getElementById('approval-shipper-context').textContent =
                 'Tanda terima: ' + (button.dataset.number || '-') + ' · Pengirim: ' + (button.dataset.sender || '-');
-            selection.textContent = button.dataset.shipper
-                ? 'Shipper saat ini: ' + button.dataset.shipper + '. Pilih dari hasil pencarian untuk mengubahnya.'
+            selection.textContent = button.dataset.shipperId
+                ? 'Memuat data shipper terbaru...'
                 : 'Pilih shipper dari hasil pencarian.';
             selection.className = 'mt-2 text-xs text-gray-500';
-            showPreview(JSON.parse(button.dataset.shipperDetails || 'null'));
+            showPreview(null);
             hideOptions();
             dialog.showModal();
             search.focus();
             search.select();
+            if (button.dataset.shipperId) refreshCurrentShipper(button.dataset.shipperId);
         });
     });
 
     search.addEventListener('input', () => {
         stopSearch();
+        stopDetails();
         selectedId.value = '';
         save.disabled = true;
         selection.textContent = 'Pilih shipper dari hasil pencarian.';
@@ -211,6 +260,7 @@
     });
     dialog.addEventListener('close', () => {
         stopSearch();
+        stopDetails();
         opener?.focus();
     });
     dialog.querySelectorAll('.approval-shipper-close').forEach(button => {

@@ -25,13 +25,16 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
 
-        $items = ShipperConsignee::query()
+        $query = ShipperConsignee::query()
             ->whereNotNull('shipper')
-            ->where('shipper', '!=', '')
-            ->when($search !== '', fn ($query) => $query->where('shipper', 'like', '%'.$search.'%'))
-            ->orderBy('shipper')
-            ->limit(50)
-            ->get();
+            ->where('shipper', '!=', '');
+
+        $items = $request->has('id')
+            ? $query->whereKey($request->integer('id'))->get()
+            : $query->when($search !== '', fn ($query) => $query->where('shipper', 'like', '%'.$search.'%'))
+                ->orderBy('shipper')
+                ->limit(50)
+                ->get();
 
         return response()->json($items->map(fn (ShipperConsignee $item) => [
             ...$item->only([
@@ -44,7 +47,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'real_id' => $item->id,
             'text' => $item->shipper,
             'display_text' => $item->shipper.($item->consignee ? ' - '.$item->consignee : ''),
-        ])->values());
+        ])->values())->header('Cache-Control', 'no-store');
     }
 
     public function index(Request $request): View

@@ -158,8 +158,7 @@
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
-                                        data-shipper="{{ $item->shipperJb?->shipper }}"
-                                        data-shipper-details="{{ $item->shipperJb?->toJson() }}">
+                                        data-shipper="{{ $item->shipperJb?->shipper }}">
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i>{{ $item->shipper_jb_id ? 'Ubah Shipper' : 'Pilih Shipper' }}
                                     </button>
                                     @if($item->shipper_jb_id)
