@@ -42,6 +42,20 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->unsignedBigInteger('tanda_terima_lcl_id');
             $table->string('nomor_kontainer')->nullable();
         });
+        Schema::create('tanda_terima_lcl_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_lcl_id');
+        });
+        Schema::create('tanda_terima_dimensi_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_tanpa_surat_jalan_id');
+        });
+        Schema::create('approval_tanda_terima_2_goods', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_type');
+            $table->unsignedBigInteger('source_id');
+            $table->json('goods');
+        });
     }
 
     public function test_destination_filter_uses_the_correct_source_for_each_receipt_type(): void

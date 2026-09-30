@@ -131,12 +131,13 @@
                             $sender = $type === 'lcl' ? $item->nama_pengirim : $item->pengirim;
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
-                            $goods = match ($type) {
+                            $goodsOverride = $goodsOverrides->get($item->id);
+                            $goods = $goodsOverride ? collect($goodsOverride->goods) : match ($type) {
                                 'fcl' => collect($item->dimensi_items ?: $item->dimensi_details ?: $item->nama_barang ?: []),
                                 'lcl' => $item->items,
                                 'ttsj' => $item->dimensiItems,
                             };
-                            if ($goods->isEmpty() && $type === 'ttsj' && ($item->nama_barang || $item->jenis_barang)) {
+                            if (!$goodsOverride && $goods->isEmpty() && $type === 'ttsj' && ($item->nama_barang || $item->jenis_barang)) {
                                 $goods = collect([[
                                     'nama_barang' => $item->nama_barang ?: $item->jenis_barang,
                                     'jumlah' => $item->jumlah_barang,
@@ -147,6 +148,7 @@
                                     'keterangan_barang' => $item->keterangan_barang,
                                 ]]);
                             }
+                            $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
                         <tr class="hover:bg-gray-50/70">
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
@@ -190,6 +192,10 @@
                                         </div>
                                         <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
                                     </div>
+                                    <p class="mx-5 mt-4 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
+                                        {{ $goodsOverride ? 'Menampilkan detail barang versi approval.' : 'Menampilkan detail barang asli sebelum versi approval disimpan.' }}
+                                        Perubahan di sini tidak mengubah data FCL, LCL, atau TTSJ asli.
+                                    </p>
                                     @can('approval-tanda-terima-2-approve')
                                         <form method="POST" action="{{ route('approval-tanda-terima-2.update-goods', ['sourceType' => $type, 'id' => $item->id]) }}">
                                             @csrf
@@ -212,13 +218,6 @@
                                                         @can('approval-tanda-terima-2-approve')
                                                             @foreach(['nama_barang' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number', 'tonase' => 'number'] as $field => $inputType)
                                                                 <td class="px-2 py-2">
-                                                                    @if($field === 'nama_barang')
-                                                                        @if($type !== 'fcl')
-                                                                            <input type="hidden" name="goods[{{ $loop->parent->index }}][id]" value="{{ data_get($good, 'id') }}">
-                                                                        @else
-                                                                            <input type="hidden" name="goods[{{ $loop->parent->index }}][original_index]" value="{{ $loop->parent->index }}">
-                                                                        @endif
-                                                                    @endif
                                                                     <input type="{{ $inputType }}" name="goods[{{ $loop->parent->index }}][{{ $field }}]"
                                                                         value="{{ $field === 'nama_barang' && is_scalar($good) ? $good : data_get($good, $field) }}"
                                                                         @if($field === 'nama_barang') required @endif
@@ -244,9 +243,9 @@
                                             <div class="mt-4">
                                                 <label class="mb-1 block text-sm font-medium text-gray-700">Keterangan Barang</label>
                                                 @can('approval-tanda-terima-2-approve')
-                                                    <textarea name="keterangan_barang" rows="2" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ $item->keterangan_barang }}</textarea>
+                                                    <textarea name="keterangan_barang" rows="2" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ $keteranganBarang }}</textarea>
                                                 @else
-                                                    <p class="text-sm text-gray-700">{{ $item->keterangan_barang ?: '-' }}</p>
+                                                    <p class="text-sm text-gray-700">{{ $keteranganBarang ?: '-' }}</p>
                                                 @endcan
                                             </div>
                                         @endif
