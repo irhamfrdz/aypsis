@@ -1910,7 +1910,7 @@
             <!-- Mobile View: Barang Lainnya -->
             <div class="md:hidden space-y-3">
                 @forelse($allItems as $item)
-                <div class="mobile-card row-barang-lainnya bg-white rounded-xl border border-gray-100 shadow-sm p-4" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}">
+                <div class="mobile-card row-barang-lainnya bg-white rounded-xl border border-gray-100 shadow-sm p-4" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}" data-ukuran="{{ strtoupper($item->ukuran) }}">
                     <div class="flex justify-between items-start mb-2">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
                             {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
@@ -4353,16 +4353,16 @@ function closeJualBanModal() {
         }
 
         // FILTER ROWS
-        const upperName = name.toUpperCase();
+        const upperName = name.trim().toUpperCase();
         let found = 0;
         rows.forEach(row => {
-            const rowName = row.getAttribute('data-nama') || '';
-            const rowJenis = row.getAttribute('data-jenis') || '';
-            const rowUkuran = row.getAttribute('data-ukuran') || '';
+            const rowName = (row.getAttribute('data-nama') || '').trim().toUpperCase();
+            const rowJenis = (row.getAttribute('data-jenis') || '').trim().toUpperCase();
+            const rowUkuran = (row.getAttribute('data-ukuran') || '').trim().toUpperCase();
             const combinedName = (rowName + ' ' + rowUkuran).trim();
             const combinedJenis = (rowJenis + ' ' + rowUkuran).trim();
 
-            if (rowName === upperName || rowJenis === upperName || rowName.includes(upperName) || 
+            if (rowName === upperName || rowJenis === upperName ||
                 combinedName === upperName || combinedJenis === upperName) {
                 row.classList.remove('hidden');
                 found++;
