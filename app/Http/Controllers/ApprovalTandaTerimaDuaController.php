@@ -67,11 +67,16 @@ class ApprovalTandaTerimaDuaController extends Controller
             $search = trim($filters['search']);
             $numberColumn = $this->numberColumn($type);
             $senderColumn = $type === 'lcl' ? 'nama_pengirim' : 'pengirim';
-            $query->where(function ($query) use ($search, $numberColumn, $senderColumn) {
+            $containerColumn = $type === 'lcl' ? 'nomor_kontainer' : 'no_kontainer';
+            $query->where(function ($query) use ($search, $numberColumn, $senderColumn, $containerColumn, $type) {
                 $query->where($numberColumn, 'like', "%{$search}%")
-                    ->orWhere($senderColumn, 'like', "%{$search}%");
+                    ->orWhere($senderColumn, 'like', "%{$search}%")
+                    ->orWhere($containerColumn, 'like', "%{$search}%");
                 if ($numberColumn === 'no_tanda_terima') {
                     $query->orWhere('nomor_tanda_terima', 'like', "%{$search}%");
+                }
+                if ($type === 'lcl') {
+                    $query->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
                 }
             });
         }

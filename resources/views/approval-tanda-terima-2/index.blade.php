@@ -45,15 +45,15 @@
             </span>
             <div>
                 <h2 class="font-semibold text-gray-900">Cari Tanda Terima</h2>
-                <p class="text-xs text-gray-500">Cari berdasarkan nomor atau pengirim, lalu pilih filter yang dibutuhkan.</p>
+                <p class="text-xs text-gray-500">Cari berdasarkan nomor tanda terima, nomor kontainer, atau pengirim, lalu pilih filter yang dibutuhkan.</p>
             </div>
         </div>
         <div class="space-y-5 px-5 py-5 sm:px-6">
             <div>
-                <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima atau pengirim</label>
+                <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima, nomor kontainer, atau pengirim</label>
                 <div class="relative">
                     <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor tanda terima atau nama pengirim...">
+                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor tanda terima, kontainer, atau pengirim...">
                 </div>
             </div>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
