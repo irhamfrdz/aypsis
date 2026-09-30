@@ -4,12 +4,68 @@
     document.querySelectorAll('.approval-goods-open').forEach(button => {
         const dialog = document.getElementById(button.dataset.dialogId);
         if (!dialog) return;
+        const rows = dialog.querySelector('.approval-goods-rows');
+        const form = dialog.querySelector('form');
 
         button.addEventListener('click', () => dialog.showModal());
         dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
             closeButton.addEventListener('click', () => dialog.close());
         });
         dialog.addEventListener('close', () => button.focus());
+
+        dialog.querySelector('.approval-goods-add')?.addEventListener('click', () => {
+            const index = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+            const row = document.createElement('tr');
+            const fields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'];
+            fields.forEach(field => {
+                const cell = document.createElement('td');
+                cell.className = 'px-2 py-2';
+                const input = document.createElement('input');
+                input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'].includes(field) ? 'number' : 'text';
+                input.name = `goods[${index}][${field}]`;
+                input.className = 'w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500';
+                if (field === 'nama_barang') {
+                    input.required = true;
+                    input.classList.add('min-w-48');
+                }
+                if (input.type === 'number') {
+                    input.min = '0';
+                    input.step = field === 'jumlah' ? '1' : 'any';
+                }
+                cell.append(input);
+                row.append(cell);
+            });
+            if (dialog.dataset.sourceType !== 'ttsj') {
+                const cell = document.createElement('td');
+                cell.className = 'px-2 py-2';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = `goods[${index}][keterangan_barang]`;
+                input.className = 'w-40 rounded-lg border-gray-300 text-sm';
+                cell.append(input);
+                row.append(cell);
+            }
+            const action = document.createElement('td');
+            action.className = 'px-2 py-2';
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50';
+            remove.textContent = 'Hapus';
+            action.append(remove);
+            row.append(action);
+            rows.append(row);
+            dialog.querySelector('.approval-goods-empty')?.remove();
+            row.querySelector('input').focus();
+        });
+        rows.addEventListener('click', event => {
+            if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
+        });
+        form?.addEventListener('submit', event => {
+            if (!rows.querySelector('tr')) {
+                event.preventDefault();
+                alert('Tambahkan setidaknya satu barang sebelum menyimpan.');
+            }
+        });
     });
 })();
 

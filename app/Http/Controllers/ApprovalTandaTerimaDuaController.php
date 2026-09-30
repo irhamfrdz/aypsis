@@ -150,6 +150,104 @@ class ApprovalTandaTerimaDuaController extends Controller
         return back()->with('success', 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
     }
 
+    public function updateGoods(Request $request, string $sourceType, int $id): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $receipt = self::SOURCES[$sourceType]::findOrFail($id);
+        $validated = $request->validate([
+            'goods' => 'required|array|min:1|max:50',
+            'goods.*.id' => 'nullable|integer',
+            'goods.*.original_index' => 'nullable|integer|min:0',
+            'goods.*.nama_barang' => 'required|string|max:255',
+            'goods.*.jumlah' => 'nullable|integer|min:0',
+            'goods.*.satuan' => 'nullable|string|max:100',
+            'goods.*.ukuran' => 'nullable|string|max:255',
+            'goods.*.panjang' => 'nullable|numeric|min:0',
+            'goods.*.lebar' => 'nullable|numeric|min:0',
+            'goods.*.tinggi' => 'nullable|numeric|min:0',
+            'goods.*.meter_kubik' => 'nullable|numeric|min:0',
+            'goods.*.tonase' => 'nullable|numeric|min:0',
+            'goods.*.keterangan_barang' => 'nullable|string|max:2000',
+            'keterangan_barang' => 'nullable|string|max:2000',
+        ]);
+
+        DB::transaction(function () use ($receipt, $sourceType, $validated) {
+            $goods = collect($validated['goods'])->values();
+            $fields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'];
+
+            if ($sourceType === 'fcl') {
+                $original = $receipt->dimensi_items ?: $receipt->dimensi_details ?: [];
+                $rows = $goods->map(function ($good) use ($original, $fields) {
+                    $index = $good['original_index'] ?? null;
+                    $row = is_int($index) && isset($original[$index]) && is_array($original[$index])
+                        ? $original[$index] : [];
+                    foreach ($fields as $field) {
+                        $row[$field] = $good[$field] ?? null;
+                    }
+                    $row['keterangan_barang'] = $good['keterangan_barang'] ?? null;
+
+                    return $row;
+                })->all();
+
+                $receipt->update([
+                    'dimensi_items' => $rows,
+                    'dimensi_details' => $rows,
+                    'nama_barang' => $goods->pluck('nama_barang')->all(),
+                    ...collect($fields)->except(0)->mapWithKeys(fn ($field) => [$field => $rows[0][$field]])->all(),
+                    'updated_by' => auth()->id(),
+                ]);
+
+                return;
+            }
+
+            $relationName = $sourceType === 'lcl' ? 'items' : 'dimensiItems';
+            $existingIds = $receipt->{$relationName}()->pluck('id')->all();
+            $submittedIds = $goods->pluck('id')->filter()->all();
+            abort_if(count($submittedIds) !== count(array_unique($submittedIds))
+                || array_diff($submittedIds, $existingIds), 422, 'Item barang tidak valid.');
+
+            $savedIds = [];
+            foreach ($goods as $index => $good) {
+                $values = collect($fields)->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])->all();
+                if ($sourceType === 'lcl') {
+                    $values['keterangan_barang'] = $good['keterangan_barang'] ?? null;
+                    $values['item_number'] = $index + 1;
+                } else {
+                    $values['item_order'] = $index;
+                }
+
+                $model = isset($good['id'])
+                    ? $receipt->{$relationName}()->findOrFail($good['id'])
+                    : $receipt->{$relationName}()->create($values);
+                if (isset($good['id'])) {
+                    $model->update($values);
+                }
+                $savedIds[] = $model->id;
+            }
+            $receipt->{$relationName}()->whereNotIn('id', $savedIds)->delete();
+
+            if ($sourceType === 'ttsj') {
+                $first = $goods->first();
+                $names = $goods->pluck('nama_barang')->unique()->implode(', ');
+                $receipt->update([
+                    'nama_barang' => \Illuminate\Support\Str::limit($names, 250, '...'),
+                    'jenis_barang' => \Illuminate\Support\Str::limit($names, 250, '...'),
+                    'jumlah_barang' => $goods->sum('jumlah'),
+                    'satuan_barang' => $first['satuan'] ?? null,
+                    'ukuran' => $first['ukuran'] ?? null,
+                    'meter_kubik' => $goods->sum('meter_kubik'),
+                    'tonase' => $goods->sum('tonase'),
+                    'keterangan_barang' => $validated['keterangan_barang'] ?? null,
+                    'updated_by' => auth()->id(),
+                ]);
+            } else {
+                $receipt->update(['updated_by' => auth()->id()]);
+            }
+        });
+
+        return back()->with('success', 'Detail barang berhasil diperbarui.');
+    }
+
     public function destroy(string $sourceType, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);

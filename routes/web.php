@@ -7731,6 +7731,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
         ->middleware('can:approval-tanda-terima-2-approve');
+    Route::put('approval-tanda-terima-2/{sourceType}/{id}/goods', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'updateGoods'])
+        ->name('approval-tanda-terima-2.update-goods')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::delete('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'destroy'])
         ->name('approval-tanda-terima-2.destroy')
         ->middleware('can:approval-tanda-terima-2-approve');

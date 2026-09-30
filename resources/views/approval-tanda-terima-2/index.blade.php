@@ -170,7 +170,7 @@
                                         </form>
                                     @endif
                                 @endcan
-                                <dialog id="approval-goods-{{ $type }}-{{ $item->id }}" class="approval-goods-dialog whitespace-normal text-left shadow-2xl" aria-labelledby="approval-goods-title-{{ $type }}-{{ $item->id }}">
+                                <dialog id="approval-goods-{{ $type }}-{{ $item->id }}" data-source-type="{{ $type }}" class="approval-goods-dialog whitespace-normal text-left shadow-2xl" aria-labelledby="approval-goods-title-{{ $type }}-{{ $item->id }}">
                                     <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4">
                                         <div>
                                             <h2 id="approval-goods-title-{{ $type }}-{{ $item->id }}" class="text-lg font-semibold text-gray-900">Detail Barang</h2>
@@ -178,41 +178,78 @@
                                         </div>
                                         <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
                                     </div>
+                                    @can('approval-tanda-terima-2-approve')
+                                        <form method="POST" action="{{ route('approval-tanda-terima-2.update-goods', ['sourceType' => $type, 'id' => $item->id]) }}">
+                                            @csrf
+                                            @method('PUT')
+                                    @endcan
                                     <div class="overflow-x-auto p-5">
-                                        @if($goods->isNotEmpty())
-                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                            <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                                                <tr>
+                                                    <th class="px-3 py-2">Nama Barang</th><th class="px-3 py-2">Jumlah</th><th class="px-3 py-2">Satuan</th>
+                                                    <th class="px-3 py-2">Ukuran</th><th class="px-3 py-2">Panjang</th><th class="px-3 py-2">Lebar</th>
+                                                    <th class="px-3 py-2">Tinggi</th><th class="px-3 py-2">Volume (m³)</th><th class="px-3 py-2">Tonase</th>
+                                                    @if($type !== 'ttsj')<th class="px-3 py-2">Keterangan</th>@endif
+                                                    @can('approval-tanda-terima-2-approve')<th class="px-3 py-2">Aksi</th>@endcan
+                                                </tr>
+                                            </thead>
+                                            <tbody class="approval-goods-rows divide-y divide-gray-100">
+                                                @foreach($goods as $good)
                                                     <tr>
-                                                        <th class="px-3 py-2">No.</th><th class="px-3 py-2">Nama Barang</th><th class="px-3 py-2">Jumlah</th>
-                                                        <th class="px-3 py-2">Satuan</th><th class="px-3 py-2">Ukuran / Dimensi</th>
-                                                        <th class="px-3 py-2">Volume (m³)</th><th class="px-3 py-2">Tonase</th><th class="px-3 py-2">Keterangan</th>
+                                                        @can('approval-tanda-terima-2-approve')
+                                                            @foreach(['nama_barang' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number', 'tonase' => 'number'] as $field => $inputType)
+                                                                <td class="px-2 py-2">
+                                                                    @if($field === 'nama_barang')
+                                                                        @if($type !== 'fcl')
+                                                                            <input type="hidden" name="goods[{{ $loop->parent->index }}][id]" value="{{ data_get($good, 'id') }}">
+                                                                        @else
+                                                                            <input type="hidden" name="goods[{{ $loop->parent->index }}][original_index]" value="{{ $loop->parent->index }}">
+                                                                        @endif
+                                                                    @endif
+                                                                    <input type="{{ $inputType }}" name="goods[{{ $loop->parent->index }}][{{ $field }}]"
+                                                                        value="{{ $field === 'nama_barang' && is_scalar($good) ? $good : data_get($good, $field) }}"
+                                                                        @if($field === 'nama_barang') required @endif
+                                                                        @if($inputType === 'number') min="0" step="{{ $field === 'jumlah' ? '1' : 'any' }}" @endif
+                                                                        class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $field === 'nama_barang' ? 'min-w-48' : '' }}">
+                                                                </td>
+                                                            @endforeach
+                                                            @if($type !== 'ttsj')
+                                                                <td class="px-2 py-2"><input type="text" name="goods[{{ $loop->index }}][keterangan_barang]" value="{{ data_get($good, 'keterangan_barang') }}" class="w-40 rounded-lg border-gray-300 text-sm"></td>
+                                                            @endif
+                                                            <td class="px-2 py-2"><button type="button" class="approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">Hapus</button></td>
+                                                        @else
+                                                            @foreach(['nama_barang', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'] as $field)
+                                                                <td class="px-3 py-3">{{ $field === 'nama_barang' && is_scalar($good) ? $good : (data_get($good, $field) ?? '-') }}</td>
+                                                            @endforeach
+                                                            @if($type !== 'ttsj')<td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>@endif
+                                                        @endcan
                                                     </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-gray-100">
-                                                    @foreach($goods as $good)
-                                                        @php
-                                                            $dimensions = collect(['panjang', 'lebar', 'tinggi'])->map(fn ($field) => data_get($good, $field))->filter(fn ($value) => filled($value))->implode(' × ');
-                                                        @endphp
-                                                        <tr>
-                                                            <td class="px-3 py-3 text-gray-500">{{ $loop->iteration }}</td>
-                                                            <td class="px-3 py-3 font-medium text-gray-900">{{ is_scalar($good) ? $good : (data_get($good, 'nama_barang') ?: '-') }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'jumlah') ?? '-' }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'satuan') ?: '-' }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'ukuran') ?: ($dimensions ?: '-') }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'meter_kubik') ?? '-' }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'tonase') ?? '-' }}</td>
-                                                            <td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        @else
-                                            <p class="text-sm text-gray-500">Detail barang belum tersedia untuk tanda terima ini.</p>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                        @if($type === 'ttsj')
+                                            <div class="mt-4">
+                                                <label class="mb-1 block text-sm font-medium text-gray-700">Keterangan Barang</label>
+                                                @can('approval-tanda-terima-2-approve')
+                                                    <textarea name="keterangan_barang" rows="2" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ $item->keterangan_barang }}</textarea>
+                                                @else
+                                                    <p class="text-sm text-gray-700">{{ $item->keterangan_barang ?: '-' }}</p>
+                                                @endcan
+                                            </div>
                                         @endif
+                                        @if($goods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang belum tersedia.</p>@endif
+                                        @can('approval-tanda-terima-2-approve')
+                                            <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang</button>
+                                        @endcan
                                     </div>
-                                    <div class="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-4">
+                                    <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4">
                                         <button type="button" class="approval-goods-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Tutup</button>
+                                        @can('approval-tanda-terima-2-approve')<button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan Detail Barang</button>@endcan
                                     </div>
+                                    @can('approval-tanda-terima-2-approve')
+                                        </form>
+                                    @endcan
                                 </dialog>
                             </td>
                         </tr>
