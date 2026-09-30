@@ -527,6 +527,22 @@ class StockBanController extends Controller
         return view('stock-ban.show-ban-dalam', compact('stockBanDalam'));
     }
 
+    public function showVelgHistory(string $type, int $id)
+    {
+        abort_unless(in_array($type, ['ring-velg', 'velg'], true), 404);
+
+        $model = $type === 'velg' ? StockVelg::class : StockRingVelg::class;
+        $label = $type === 'velg' ? 'Velg' : 'Ring Velg';
+        $item = $model::with('namaStockBan')->findOrFail($id);
+        $usages = \App\Models\StockBanDalamUsage::with(['mobil', 'penerima', 'kapal', 'gudang'])
+            ->whereNull('stock_ban_dalam_id')
+            ->where('keterangan', 'like', "[{$label} ID: {$id}]%")
+            ->orderByDesc('tanggal_keluar')
+            ->get();
+
+        return view('stock-ban.show-velg-history', compact('item', 'label', 'usages'));
+    }
+
     /**
      * Store the usage of Lock Kontainer/Stock Ban Biasa (Pakai Ban).
      */

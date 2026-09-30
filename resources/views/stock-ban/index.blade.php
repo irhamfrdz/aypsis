@@ -1772,7 +1772,7 @@
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
                                     'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
+                                    'url_detail' => route('stock-ban.velg-history', ['type' => 'ring-velg', 'id' => $item->id]),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'ring-velg', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'ring-velg', 'id' => $item->id]),
                                 ]);
@@ -1790,7 +1790,7 @@
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
                                     'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
+                                    'url_detail' => route('stock-ban.velg-history', ['type' => 'velg', 'id' => $item->id]),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'velg', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'velg', 'id' => $item->id]),
                                 ]);

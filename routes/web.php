@@ -7499,6 +7499,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->middleware('can:stock-ban-delete');
 
     // Other Stock Items Edit/Update/Delete Routes
+    Route::get('stock-ban/velg-history/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'showVelgHistory'])
+        ->name('stock-ban.velg-history')
+        ->where('type', 'ring-velg|velg')
+        ->middleware('can:stock-ban-view');
     Route::get('stock-ban/edit-lain/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'editStockLain'])
         ->name('stock-ban.edit-lain')
         ->middleware('can:stock-ban-update');
