@@ -7056,6 +7056,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 
     // Manifest
     Route::get('manifests/select-ship', [App\Http\Controllers\ManifestController::class, 'selectShip'])->name('manifests.select-ship');
+    Route::delete('manifests/voyage/AS16PJ26', [App\Http\Controllers\ManifestController::class, 'destroyVoyageAs16pj26'])->name('manifests.destroy-voyage-as16pj26');
     Route::get('manifests/download-template', [App\Http\Controllers\ManifestController::class, 'downloadTemplate'])->name('manifests.download-template');
     Route::get('manifests/download-bulk-template', [App\Http\Controllers\ManifestController::class, 'downloadBulkTemplate'])->name('manifests.download-bulk-template');
     Route::post('manifests/import', [App\Http\Controllers\ManifestController::class, 'import'])->name('manifests.import');
@@ -7729,6 +7730,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->middleware('can:approval-tanda-terima-2-approve');
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
+        ->middleware('can:approval-tanda-terima-2-approve');
+    Route::delete('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'destroy'])
+        ->name('approval-tanda-terima-2.destroy')
         ->middleware('can:approval-tanda-terima-2-approve');
 
     // 🚚 TANDA TERIMA SURAT JALAN TARIK KOSONG BATAM

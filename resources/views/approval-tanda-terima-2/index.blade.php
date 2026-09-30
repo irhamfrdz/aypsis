@@ -140,6 +140,13 @@
                                         data-shipper-details="{{ $item->shipperJb?->toJson() }}">
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i>{{ $item->shipper_jb_id ? 'Ubah Shipper' : 'Pilih Shipper' }}
                                     </button>
+                                    @if($item->shipper_jb_id)
+                                        <form method="POST" action="{{ route('approval-tanda-terima-2.destroy', ['sourceType' => $type, 'id' => $item->id]) }}" class="ml-2 inline-block" onsubmit="return confirm('Hapus shipper JB dari tanda terima ini dan manifest terkait?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"><i class="fas fa-trash" aria-hidden="true"></i>Hapus Shipper</button>
+                                        </form>
+                                    @endif
                                 </td>
                             @endcan
                         </tr>

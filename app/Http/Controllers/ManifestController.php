@@ -20,7 +20,7 @@ class ManifestController extends Controller
         $this->middleware('permission:manifest-view')->only(['index', 'show', 'export', 'printDocument']);
         $this->middleware('permission:manifest-create')->only(['create', 'store']);
         $this->middleware('permission:manifest-edit')->only(['edit', 'update', 'updateShipper']);
-        $this->middleware('permission:manifest-delete')->only(['destroy']);
+        $this->middleware('permission:manifest-delete')->only(['destroy', 'destroyVoyageAs16pj26']);
         $this->middleware(['permission:manifest-create', 'permission:manifest-edit'])->only(['addShipper']);
     }
 
@@ -468,6 +468,24 @@ class ManifestController extends Controller
             'nama_kapal' => $namaKapal,
             'no_voyage' => $noVoyage,
         ])->with('success', 'Manifest berhasil dihapus');
+    }
+
+    public function destroyVoyageAs16pj26()
+    {
+        $deleted = DB::transaction(function () {
+            $ids = Manifest::where('no_voyage', 'AS16PJ26')->pluck('id');
+
+            if ($ids->isEmpty()) {
+                return 0;
+            }
+
+            ManifestShipperDetail::whereIn('manifest_id', $ids)->delete();
+
+            return Manifest::whereIn('id', $ids)->delete();
+        });
+
+        return redirect()->route('report.manifests.select-ship')
+            ->with('success', "{$deleted} data manifest voyage AS16PJ26 berhasil dihapus.");
     }
 
     /**

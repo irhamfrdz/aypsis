@@ -148,6 +148,53 @@ class ApprovalTandaTerimaDuaController extends Controller
         return back()->with('success', 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
     }
 
+    public function destroy(string $sourceType, int $id): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $item = self::SOURCES[$sourceType]::findOrFail($id);
+        $shipperId = $item->shipper_jb_id;
+
+        if (! $shipperId) {
+            return back()->with('success', 'Tanda terima ini belum memiliki shipper JB.');
+        }
+
+        DB::transaction(function () use ($item, $sourceType, $shipperId) {
+            $item->update(['shipper_jb_id' => null]);
+
+            $number = $item->{$this->numberColumn($sourceType)};
+            if ($sourceType === 'ttsj' && blank($number)) {
+                $number = $item->nomor_tanda_terima;
+            }
+
+            if ($sourceType !== 'fcl' && blank($number)) {
+                return;
+            }
+
+            Manifest::where('no_voyage', 'like', '%JB%')
+                ->where('shipper_jb_id', $shipperId)
+                ->where(function ($query) use ($sourceType, $item, $number) {
+                    if ($sourceType === 'fcl') {
+                        $query->whereIn('prospek_id', $item->prospeks()->select('id'));
+                    }
+                    if (filled($number)) {
+                        $query->orWhere('nomor_tanda_terima', $number);
+                    }
+                })
+                ->update([
+                    'shipper_jb_id' => null,
+                    'pengirim' => null,
+                    'alamat_pengirim' => null,
+                    'penerima' => null,
+                    'alamat_penerima' => null,
+                    'notify_party' => null,
+                    'alamat_notify_party' => null,
+                    'updated_by' => auth()->id(),
+                ]);
+        });
+
+        return back()->with('success', 'Shipper JB berhasil dilepas dari tanda terima dan manifest terkait.');
+    }
+
     private function numberColumn(string $type): string
     {
         return match ($type) {

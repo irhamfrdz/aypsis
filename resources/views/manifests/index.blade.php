@@ -102,6 +102,18 @@
                     </a>
                 </div>
                 @endcan
+                @if ($noVoyage === 'AS16PJ26')
+                    @can('manifest-delete')
+                        <form action="{{ route('report.manifests.destroy-voyage-as16pj26') }}" method="POST"
+                              onsubmit="return prompt('Semua data manifest voyage AS16PJ26 akan dihapus. Ketik AS16PJ26 untuk konfirmasi:') === 'AS16PJ26';">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700">
+                                Hapus Semua Manifest AS16PJ26
+                            </button>
+                        </form>
+                    @endcan
+                @endif
             </div>
 
             <!-- Ship & Voyage Info Banner -->
