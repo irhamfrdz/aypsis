@@ -1,0 +1,60 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('surat_jalan_bongkaran_batams', function (Blueprint $table) {
+            if (! Schema::hasColumn('surat_jalan_bongkaran_batams', 'buntut_asal')) {
+                $table->string('buntut_asal', 20)->nullable()->after('size');
+            }
+            if (! Schema::hasColumn('surat_jalan_bongkaran_batams', 'buntut_plat_kir')) {
+                $table->string('buntut_plat_kir', 255)->nullable()->after('buntut_asal');
+            }
+        });
+
+        if (Schema::hasTable('surat_jalan_batams')) {
+            Schema::table('surat_jalan_batams', function (Blueprint $table) {
+                if (! Schema::hasColumn('surat_jalan_batams', 'buntut_asal')) {
+                    $table->string('buntut_asal', 20)->nullable()->after('size');
+                }
+                if (! Schema::hasColumn('surat_jalan_batams', 'buntut_plat_kir')) {
+                    $table->string('buntut_plat_kir', 255)->nullable()->after('buntut_asal');
+                }
+            });
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('surat_jalan_bongkaran_batams', function (Blueprint $table) {
+            if (Schema::hasColumn('surat_jalan_bongkaran_batams', 'buntut_plat_kir')) {
+                $table->dropColumn('buntut_plat_kir');
+            }
+            if (Schema::hasColumn('surat_jalan_bongkaran_batams', 'buntut_asal')) {
+                $table->dropColumn('buntut_asal');
+            }
+        });
+
+        if (Schema::hasTable('surat_jalan_batams')) {
+            Schema::table('surat_jalan_batams', function (Blueprint $table) {
+                if (Schema::hasColumn('surat_jalan_batams', 'buntut_plat_kir')) {
+                    $table->dropColumn('buntut_plat_kir');
+                }
+                if (Schema::hasColumn('surat_jalan_batams', 'buntut_asal')) {
+                    $table->dropColumn('buntut_asal');
+                }
+            });
+        }
+    }
+};

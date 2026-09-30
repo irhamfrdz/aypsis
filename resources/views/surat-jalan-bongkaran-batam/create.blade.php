@@ -511,6 +511,70 @@
                     @endif
                 </div>
 
+                <!-- Buntut Berasal Dari -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Buntut Berasal Dari</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="buntut_asal" id="create_buntut_asal_ayp" value="AYP" {{ old('buntut_asal', 'AYP') === 'AYP' ? 'checked' : '' }} class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleCreateBuntutSource('AYP')">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">AYP</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="buntut_asal" id="create_buntut_asal_pb" value="PB" {{ old('buntut_asal') === 'PB' ? 'checked' : '' }} class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleCreateBuntutSource('PB')">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">PB</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PLAT / KIR Buntut -->
+                <div>
+                    <label id="create_buntut_label" for="create_buntut_plat_kir_select" class="block text-sm font-medium text-gray-700 mb-1">
+                        PLAT / KIR Buntut (AYP)
+                    </label>
+                    
+                    <div id="wrapper_buntut_ayp_create_page">
+                        <select id="create_buntut_plat_kir_select"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onchange="document.getElementById('create_buntut_plat_kir').value = this.value">
+                            <option value="">Pilih PLAT / KIR Buntut</option>
+                            @if(isset($buntutAypList) && $buntutAypList->count() > 0)
+                                <optgroup label="Buntut AYP (KIR / PLAT)">
+                                    @foreach($buntutAypList as $b)
+                                        @php
+                                            $plat = trim($b->nomor_polisi ?? '');
+                                            $kir = trim($b->no_kir ?? '');
+                                            $val = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-') 
+                                                ? "$plat / $kir" 
+                                                : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
+                                            $desc = $b->jenis ? " ({$b->jenis})" : '';
+                                        @endphp
+                                        @if($val)
+                                            <option value="{{ $val }}" {{ old('buntut_plat_kir') == $val ? 'selected' : '' }}>{{ $val }}{{ $desc }}</option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                            @if(isset($chasisBatamList) && $chasisBatamList->count() > 0)
+                                <optgroup label="Chasis Batam AYP">
+                                    @foreach($chasisBatamList as $c)
+                                        <option value="{{ $c->kode }}" {{ old('buntut_plat_kir') == $c->kode ? 'selected' : '' }}>{{ $c->kode }}{{ $c->tipe ? " ({$c->tipe})" : '' }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        </select>
+                    </div>
+
+                    <div id="wrapper_buntut_pb_create_page" class="hidden">
+                        <input type="text" id="create_buntut_plat_kir_input"
+                               value="{{ old('buntut_plat_kir') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Masukkan PLAT / KIR buntut secara manual"
+                               oninput="document.getElementById('create_buntut_plat_kir').value = this.value">
+                    </div>
+
+                    <input type="hidden" name="buntut_plat_kir" id="create_buntut_plat_kir" value="{{ old('buntut_plat_kir') }}">
+                </div>
+
                 <!-- Informasi Packaging -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Packaging</h3>
@@ -824,6 +888,34 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tujuanPengambilanSelect.value) {
             calculateUangJalan();
         }
+    }
+
+    // Toggle Buntut Source (AYP / PB)
+    window.toggleCreateBuntutSource = function(source) {
+        const aypWrapper = document.getElementById('wrapper_buntut_ayp_create_page');
+        const pbWrapper = document.getElementById('wrapper_buntut_pb_create_page');
+        const label = document.getElementById('create_buntut_label');
+        const select = document.getElementById('create_buntut_plat_kir_select');
+        const input = document.getElementById('create_buntut_plat_kir_input');
+        const hidden = document.getElementById('create_buntut_plat_kir');
+
+        if (source === 'AYP') {
+            if (aypWrapper) aypWrapper.classList.remove('hidden');
+            if (pbWrapper) pbWrapper.classList.add('hidden');
+            if (label) label.textContent = 'PLAT / KIR Buntut (AYP)';
+            if (hidden && select) hidden.value = select.value;
+        } else {
+            if (aypWrapper) aypWrapper.classList.add('hidden');
+            if (pbWrapper) pbWrapper.classList.remove('hidden');
+            if (label) label.textContent = 'PLAT / KIR Buntut (PB - Manual)';
+            if (hidden && input) hidden.value = input.value;
+        }
+    };
+
+    // Initial trigger for old values
+    const checkedBuntutRadio = document.querySelector('input[name="buntut_asal"]:checked');
+    if (checkedBuntutRadio) {
+        toggleCreateBuntutSource(checkedBuntutRadio.value);
     }
 });
 </script>

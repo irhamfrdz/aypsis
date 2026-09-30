@@ -158,6 +158,14 @@
                             <p class="text-gray-900">{{ $suratJalanBongkaran->size ?: '-' }}</p>
                         </div>
                         <div>
+                            <label class="text-sm font-medium text-gray-500">Buntut Berasal Dari</label>
+                            <p class="text-gray-900 font-medium">{{ $suratJalanBongkaran->buntut_asal ?: '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">PLAT/KIR Buntut</label>
+                            <p class="text-gray-900 font-medium">{{ $suratJalanBongkaran->buntut_plat_kir ?: '-' }}</p>
+                        </div>
+                        <div>
                             <label class="text-sm font-medium text-gray-500">Tipe Kontainer</label>
                             <p class="text-gray-900">{{ $suratJalanBongkaran->tipe_kontainer ?: '-' }}</p>
                         </div>

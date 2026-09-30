@@ -56,8 +56,8 @@ class SuratJalanBongkaranBatamController extends Controller
         }
 
         $target = $request->get('target', 'list');
-        $targetRoute = $target === 'dashboard' 
-            ? route('surat-jalan-bongkaran-batam.dashboard') 
+        $targetRoute = $target === 'dashboard'
+            ? route('surat-jalan-bongkaran-batam.dashboard')
             : route('surat-jalan-bongkaran-batam.list');
 
         return view('surat-jalan-bongkaran-batam.select-ship', compact('kapals', 'voyages', 'targetRoute'));
@@ -99,16 +99,16 @@ class SuratJalanBongkaranBatamController extends Controller
     public function checkContainerSizes(Request $request)
     {
         $no_kontainers = $request->input('no_kontainers', []);
-        
-        if (empty($no_kontainers) || !is_array($no_kontainers)) {
+
+        if (empty($no_kontainers) || ! is_array($no_kontainers)) {
             return response()->json(['success' => true, 'sizes' => []]);
         }
 
         // Clean container numbers
-        $cleanedNumbers = array_map(function($no) {
+        $cleanedNumbers = array_map(function ($no) {
             return preg_replace('/[^A-Za-z0-9]/', '', $no);
         }, $no_kontainers);
-        
+
         $cleanedNumbers = array_filter(array_unique($cleanedNumbers));
 
         // First check in stock_kontainers
@@ -121,7 +121,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $missingNumbers = array_diff($cleanedNumbers, array_keys($stockSizes));
 
         $kontainerSizes = [];
-        if (!empty($missingNumbers)) {
+        if (! empty($missingNumbers)) {
             // Check in kontainers for the missing ones
             $kontainerSizes = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $missingNumbers)
                 ->whereNotNull('ukuran')
@@ -135,7 +135,9 @@ class SuratJalanBongkaranBatamController extends Controller
         // Map back to original input strings (ignoring punctuation differences)
         $result = [];
         foreach ($no_kontainers as $original) {
-            if (!$original) continue;
+            if (! $original) {
+                continue;
+            }
             $clean = preg_replace('/[^A-Za-z0-9]/', '', $original);
             if (isset($allSizes[$clean])) {
                 $result[$original] = $allSizes[$clean];
@@ -156,7 +158,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $selectedKapal = $request->nama_kapal;
         $selectedVoyage = $request->no_voyage;
 
-        if (!$selectedKapal || !$selectedVoyage) {
+        if (! $selectedKapal || ! $selectedVoyage) {
             return redirect()->route('surat-jalan-bongkaran-batam.index', ['target' => 'dashboard']);
         }
 
@@ -177,15 +179,15 @@ class SuratJalanBongkaranBatamController extends Controller
         $belumSj = $totalManifest - $sudahSj;
 
         $leadtimeQuery = clone $statsQuery;
-        $avgLeadtimeData = collect(\DB::select("
+        $avgLeadtimeData = collect(\DB::select('
             SELECT AVG(TIMESTAMPDIFF(HOUR, m.created_at, sj.created_at)) as avg_hours
             FROM manifests m
             JOIN surat_jalan_bongkaran_batams sj ON sj.manifest_id = m.id
-            " . ($selectedKapal || $selectedVoyage ? "WHERE " : "") . "
-            " . ($selectedKapal ? "m.nama_kapal = '{$selectedKapal}' " : "") . "
-            " . ($selectedKapal && $selectedVoyage ? "AND " : "") . "
-            " . ($selectedVoyage ? "m.no_voyage = '{$selectedVoyage}'" : "") . "
-        "))->first();
+            '.($selectedKapal || $selectedVoyage ? 'WHERE ' : '').'
+            '.($selectedKapal ? "m.nama_kapal = '{$selectedKapal}' " : '').'
+            '.($selectedKapal && $selectedVoyage ? 'AND ' : '').'
+            '.($selectedVoyage ? "m.no_voyage = '{$selectedVoyage}'" : '').'
+        '))->first();
 
         $avgHours = $avgLeadtimeData->avg_hours ? round($avgLeadtimeData->avg_hours) : 0;
         $avg_leadtime_days = floor($avgHours / 24);
@@ -197,7 +199,7 @@ class SuratJalanBongkaranBatamController extends Controller
             ->groupBy('tipe_kontainer')
             ->get();
 
-        $stats = (object)[
+        $stats = (object) [
             'total_manifest' => $totalManifest,
             'sudah_sj' => $sudahSj,
             'belum_sj' => $belumSj,
@@ -252,7 +254,7 @@ class SuratJalanBongkaranBatamController extends Controller
                     foreach ($searchTerms as $search) {
                         // Remove all punctuation from search term
                         $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
-                        
+
                         $q->orWhere(function ($sq) use ($search, $searchClean) {
                             // Normal search (with punctuation)
                             $sq->where('surat_jalan_bongkaran_batams.nomor_surat_jalan', 'like', "%{$search}%")
@@ -338,7 +340,7 @@ class SuratJalanBongkaranBatamController extends Controller
             }
 
             $manifests = $query->orderByRaw("FIELD(UPPER(manifests.tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-                               ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
+                ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
 
@@ -348,7 +350,6 @@ class SuratJalanBongkaranBatamController extends Controller
             ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
-
 
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
             ->orderBy('ke')
@@ -363,6 +364,16 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $terms = \App\Models\Term::orderBy('kode')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+
+        $buntutAypList = \App\Models\Mobil::where(function ($q) {
+            $q->where('jenis', 'like', '%buntut%')
+                ->orWhereNotNull('no_kir');
+        })
+            ->orderBy('no_kir')
+            ->orderBy('nomor_polisi')
+            ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
+
+        $chasisBatamList = \App\Models\MasterChasisBatam::orderBy('kode')->get(['id', 'kode', 'tipe']);
 
         // --- DASHBOARD STATS CALCULATION ---
         $statsQuery = Manifest::query();
@@ -390,17 +401,17 @@ class SuratJalanBongkaranBatamController extends Controller
         $avgLeadtimeDays = $avgLeadtimeHours > 0 ? floor($avgLeadtimeHours / 24) : 0;
         $remainingHours = $avgLeadtimeHours > 0 ? round($avgLeadtimeHours % 24) : 0;
 
-        $stats = (object)[
+        $stats = (object) [
             'total_manifest' => $totalManifest,
             'sudah_sj' => $sudahSj,
             'belum_sj' => $belumSj,
             'avg_leadtime_days' => $avgLeadtimeDays,
             'avg_leadtime_hours' => $remainingHours,
-            'persentase_selesai' => $totalManifest > 0 ? round(($sudahSj / $totalManifest) * 100, 1) : 0
+            'persentase_selesai' => $totalManifest > 0 ? round(($sudahSj / $totalManifest) * 100, 1) : 0,
         ];
         // -----------------------------------
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats', 'buntutAypList', 'chasisBatamList'));
     }
 
     public function penarikanIndex(Request $request)
@@ -503,7 +514,7 @@ class SuratJalanBongkaranBatamController extends Controller
             if ($request->filled('types')) {
                 $types = (array) $request->types;
                 $query->where(function ($q) use ($types) {
-                        $q->whereIn('surat_jalan_bongkaran_batams.jenis_pengiriman', $types)
+                    $q->whereIn('surat_jalan_bongkaran_batams.jenis_pengiriman', $types)
                         ->orWhereIn('surat_jalan_bongkaran_batams.tipe_kontainer', $types);
                 });
             }
@@ -511,7 +522,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 $search = $request->search;
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
                 $query->where(function ($q) use ($search) {
-                        $q->where('surat_jalan_bongkaran_batams.nomor_surat_jalan', 'like', "%{$search}%")
+                    $q->where('surat_jalan_bongkaran_batams.nomor_surat_jalan', 'like', "%{$search}%")
                         ->orWhere('surat_jalan_bongkaran_batams.no_kontainer', 'like', "%{$search}%")
                         ->orWhere('surat_jalan_bongkaran_batams.no_seal', 'like', "%{$search}%")
                         ->orWhere('surat_jalan_bongkaran_batams.term', 'like', "%{$search}%")
@@ -522,7 +533,7 @@ class SuratJalanBongkaranBatamController extends Controller
             }
             // Keep the Excel order aligned with the BL order shown in the list.
             $data = $query
-                ->orderByRaw("ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC")
+                ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->orderBy('surat_jalan_bongkaran_batams.created_at', 'desc')
                 ->get();
             $filename = 'Surat_Jalan_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
@@ -557,7 +568,7 @@ class SuratJalanBongkaranBatamController extends Controller
             }
             // BL number is the primary ordering; null BL numbers are placed last.
             $data = $query
-                ->orderByRaw("ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC")
+                ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->orderBy('manifests.nomor_bl', 'asc')
                 ->orderBy('manifests.created_at', 'desc')
                 ->get();
@@ -694,7 +705,6 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
-
         // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
             ->orderBy('ke')
@@ -790,8 +800,18 @@ class SuratJalanBongkaranBatamController extends Controller
             }
         }
 
+        $buntutAypList = \App\Models\Mobil::where(function ($q) {
+            $q->where('jenis', 'like', '%buntut%')
+                ->orWhereNotNull('no_kir');
+        })
+            ->orderBy('no_kir')
+            ->orderBy('nomor_polisi')
+            ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
+
+        $chasisBatamList = \App\Models\MasterChasisBatam::orderBy('kode')->get(['id', 'kode', 'tipe']);
+
         return view('surat-jalan-bongkaran-batam.create', compact(
-            'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
+            'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId', 'buntutAypList', 'chasisBatamList'
         ));
     }
 
@@ -827,6 +847,8 @@ class SuratJalanBongkaranBatamController extends Controller
                 'manifest_id' => 'nullable|integer|exists:manifests,id',
                 'no_seal' => 'nullable|string|max:100',
                 'size' => 'nullable|string|max:50',
+                'buntut_asal' => 'nullable|string|in:AYP,PB',
+                'buntut_plat_kir' => 'nullable|string|max:255',
                 'karton' => 'nullable|string|in:ya,tidak',
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
@@ -857,6 +879,8 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['input_by'] = Auth::id();
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
+        $validatedData['buntut_asal'] = $request->buntut_asal ?? 'AYP';
+        $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
         if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
             $validatedData['uang_jalan_nominal'] = 0;
@@ -868,9 +892,9 @@ class SuratJalanBongkaranBatamController extends Controller
             DB::beginTransaction();
 
             $suratJalanBongkaran = SuratJalanBongkaranBatam::create($validatedData);
-            
+
             // Update StockKontainer gudang if provided
-            if ($request->filled('gudang_tujuan') && !empty($validatedData['no_kontainer'])) {
+            if ($request->filled('gudang_tujuan') && ! empty($validatedData['no_kontainer'])) {
                 $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $validatedData['no_kontainer'])
                     ->latest()
                     ->first();
@@ -883,7 +907,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         $userId = Auth::id();
                         $gudang = \App\Models\Gudang::find($request->gudang_tujuan);
                         $gudangName = $gudang ? $gudang->nama_gudang : '-';
-                        
+
                         if ($oldGudangId) {
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $validatedData['no_kontainer'],
@@ -891,18 +915,18 @@ class SuratJalanBongkaranBatamController extends Controller
                                 'jenis_kegiatan' => 'Keluar',
                                 'tanggal_kegiatan' => $now,
                                 'gudang_id' => $oldGudangId,
-                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'] . ')',
+                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (SJ Bongkaran Batam: '.$validatedData['nomor_surat_jalan'].')',
                                 'created_by' => $userId,
                             ]);
                         }
-                        
+
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $validatedData['no_kontainer'],
                             'tipe_kontainer' => 'bongkaran',
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => $now,
                             'gudang_id' => $request->gudang_tujuan,
-                            'keterangan' => 'Masuk dari SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'],
+                            'keterangan' => 'Masuk dari SJ Bongkaran Batam: '.$validatedData['nomor_surat_jalan'],
                             'created_by' => $userId,
                         ]);
                     }
@@ -969,8 +993,12 @@ class SuratJalanBongkaranBatamController extends Controller
         $supirMap = [];
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['nama_panggilan', 'nama_lengkap']);
         foreach ($karyawanSupirs as $k) {
-            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
-            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+            if ($k->nama_panggilan) {
+                $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            }
+            if ($k->nama_lengkap) {
+                $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+            }
         }
 
         $allKendaraansMap = [];
@@ -990,6 +1018,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -997,6 +1026,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 if (empty($rowVoyage)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Voyage wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -1007,9 +1037,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 ];
 
                 // Check Supir in Master Karyawan (divisi supir)
-                if (!empty($row['supir'])) {
+                if (! empty($row['supir'])) {
                     $supirKey = strtolower(trim($row['supir']));
-                    
+
                     if (isset($aliasSupir[$supirKey])) {
                         $supirKey = strtolower(trim($aliasSupir[$supirKey]));
                     }
@@ -1022,7 +1052,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 }
 
                 // Check No Plat in Master Kendaraan and auto-correct formatting
-                if (!empty($row['no_plat'])) {
+                if (! empty($row['no_plat'])) {
                     $platClean = strtolower(trim(str_replace(' ', '', $row['no_plat'])));
                     if (isset($allKendaraansMap[$platClean])) {
                         $row['no_plat'] = $allKendaraansMap[$platClean];
@@ -1030,9 +1060,9 @@ class SuratJalanBongkaranBatamController extends Controller
                         $errors[] = "Baris {$rowNumber}: No Plat '{$row['no_plat']}' tidak terdaftar di Master Kendaraan.";
                     }
                 }
-                
+
                 // If there are errors in this row regarding karyawan/kendaraan, skip to next row
-                if (!empty($errors)) {
+                if (! empty($errors)) {
                     // Check if current row caused errors by matching row number prefix
                     $rowHasError = false;
                     foreach ($errors as $err) {
@@ -1043,6 +1073,7 @@ class SuratJalanBongkaranBatamController extends Controller
                     }
                     if ($rowHasError) {
                         $failedRows[] = $row['_original_line'] ?? '';
+
                         continue;
                     }
                 }
@@ -1051,6 +1082,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -1096,17 +1128,17 @@ class SuratJalanBongkaranBatamController extends Controller
 
                     if (empty($manifest)) {
                         $containerName = empty($noKontainerOrBl) ? 'kosong' : $noKontainerOrBl;
-                        
+
                         // Suggest available voyages for this container
                         $voyageSuggestion = '';
-                        if (!empty($noKontainerOrBl)) {
+                        if (! empty($noKontainerOrBl)) {
                             $availableVoyages = \App\Models\Manifest::where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
                                 ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%')
                                 ->pluck('no_voyage')
                                 ->unique()
                                 ->filter()
                                 ->implode(', ');
-                            
+
                             if ($availableVoyages) {
                                 $voyageSuggestion = " (Tersedia di voyage: {$availableVoyages})";
                             }
@@ -1114,6 +1146,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
                         $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$rowVoyage}.{$voyageSuggestion}";
                         $failedRows[] = $row['_original_line'] ?? '';
+
                         continue;
                     }
 
@@ -1149,7 +1182,7 @@ class SuratJalanBongkaranBatamController extends Controller
                             $searchTujuan = trim($rowTujuan);
                             if (preg_match('/^(.*?)\s*\((?:Ring\s+(\d+)\s*-\s*)?([A-Za-z0-9]+)\)$/i', $searchTujuan, $matches)) {
                                 $searchTujuan = trim($matches[1]);
-                                $requestedRing = !empty($matches[2]) ? trim($matches[2]) : null;
+                                $requestedRing = ! empty($matches[2]) ? trim($matches[2]) : null;
                                 $requestedExpedisi = strtoupper(trim($matches[3]));
                             }
 
@@ -1165,13 +1198,13 @@ class SuratJalanBongkaranBatamController extends Controller
                                 if ($requestedExpedisi && strtoupper($item->expedisi) !== $requestedExpedisi) {
                                     continue;
                                 }
-                                if ($requestedRing && (string)$item->ring !== $requestedRing) {
+                                if ($requestedRing && (string) $item->ring !== $requestedRing) {
                                     continue;
                                 }
 
                                 $originalSubWilayahs = array_map('trim', explode(',', $item->wilayah));
                                 $lowerSubWilayahs = array_map('strtolower', $originalSubWilayahs);
-                                
+
                                 $idx = array_search(strtolower($searchTujuan), $lowerSubWilayahs);
                                 if ($idx !== false) {
                                     $matchedItem = $item;
@@ -1258,9 +1291,9 @@ class SuratJalanBongkaranBatamController extends Controller
 
             return response()->json([
                 'success' => empty($errors),
-                'message' => empty($errors) 
-                    ? "{$successCount} surat jalan berhasil dibuat." 
-                    : "Proses selesai sebagian. {$successCount} berhasil disimpan, namun terdapat " . count($errors) . " error yang harus diperbaiki.",
+                'message' => empty($errors)
+                    ? "{$successCount} surat jalan berhasil dibuat."
+                    : "Proses selesai sebagian. {$successCount} berhasil disimpan, namun terdapat ".count($errors).' error yang harus diperbaiki.',
                 'success_count' => $successCount,
                 'error_count' => count($errors),
                 'errors' => $errors,
@@ -1308,9 +1341,19 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
-        
+
+        $buntutAypList = \App\Models\Mobil::where(function ($q) {
+            $q->where('jenis', 'like', '%buntut%')
+                ->orWhereNotNull('no_kir');
+        })
+            ->orderBy('no_kir')
+            ->orderBy('nomor_polisi')
+            ->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
+
+        $chasisBatamList = \App\Models\MasterChasisBatam::orderBy('kode')->get(['id', 'kode', 'tipe']);
+
         $selectedGudangId = null;
-        if (!empty($suratJalanBongkaran->no_kontainer)) {
+        if (! empty($suratJalanBongkaran->no_kontainer)) {
             $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $suratJalanBongkaran->no_kontainer)
                 ->latest()
                 ->first();
@@ -1328,7 +1371,9 @@ class SuratJalanBongkaranBatamController extends Controller
             'karyawanSupirs',
             'gudangs',
             'selectedGudangId',
-            'pricelistUangJalanBatams'
+            'pricelistUangJalanBatams',
+            'buntutAypList',
+            'chasisBatamList'
         ));
     }
 
@@ -1363,6 +1408,8 @@ class SuratJalanBongkaranBatamController extends Controller
                 'no_kontainer' => 'nullable|string|max:100',
                 'no_seal' => 'nullable|string|max:100',
                 'size' => 'nullable|string|max:50',
+                'buntut_asal' => 'nullable|string|in:AYP,PB',
+                'buntut_plat_kir' => 'nullable|string|max:255',
                 'karton' => 'nullable|string|in:ya,tidak',
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
@@ -1393,6 +1440,8 @@ class SuratJalanBongkaranBatamController extends Controller
 
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
+            $validatedData['buntut_asal'] = $request->buntut_asal ?? 'AYP';
+            $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
             if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
                 $validatedData['uang_jalan_nominal'] = 0;
@@ -1403,9 +1452,9 @@ class SuratJalanBongkaranBatamController extends Controller
             DB::beginTransaction();
 
             $suratJalanBongkaran->update($validatedData);
-            
+
             // Update StockKontainer gudang if provided
-            if ($request->filled('gudang_tujuan') && !empty($validatedData['no_kontainer'])) {
+            if ($request->filled('gudang_tujuan') && ! empty($validatedData['no_kontainer'])) {
                 $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $validatedData['no_kontainer'])
                     ->latest()
                     ->first();
@@ -1418,7 +1467,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         $userId = Auth::id();
                         $gudang = \App\Models\Gudang::find($request->gudang_tujuan);
                         $gudangName = $gudang ? $gudang->nama_gudang : '-';
-                        
+
                         if ($oldGudangId) {
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $validatedData['no_kontainer'],
@@ -1426,18 +1475,18 @@ class SuratJalanBongkaranBatamController extends Controller
                                 'jenis_kegiatan' => 'Keluar',
                                 'tanggal_kegiatan' => $now,
                                 'gudang_id' => $oldGudangId,
-                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (Edit SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'] . ')',
+                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (Edit SJ Bongkaran Batam: '.$validatedData['nomor_surat_jalan'].')',
                                 'created_by' => $userId,
                             ]);
                         }
-                        
+
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $validatedData['no_kontainer'],
                             'tipe_kontainer' => 'bongkaran',
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => $now,
                             'gudang_id' => $request->gudang_tujuan,
-                            'keterangan' => 'Masuk dari Edit SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'],
+                            'keterangan' => 'Masuk dari Edit SJ Bongkaran Batam: '.$validatedData['nomor_surat_jalan'],
                             'created_by' => $userId,
                         ]);
                     }
@@ -1609,7 +1658,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
             // Fetch gudang_tujuan from StockKontainer
             $gudangTujuanId = '';
-            if (!empty($suratJalan->no_kontainer)) {
+            if (! empty($suratJalan->no_kontainer)) {
                 $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
                     ->latest()
                     ->first();
@@ -1646,6 +1695,8 @@ class SuratJalanBongkaranBatamController extends Controller
                 'no_seal' => $suratJalan->no_seal ?? '',
                 'no_bl' => $suratJalan->no_bl ?? '',
                 'size' => $suratJalan->size ?? '',
+                'buntut_asal' => $suratJalan->buntut_asal ?? 'AYP',
+                'buntut_plat_kir' => $suratJalan->buntut_plat_kir ?? '',
                 'karton' => $suratJalan->karton ?? 'tidak',
                 'plastik' => $suratJalan->plastik ?? 'tidak',
                 'terpal' => $suratJalan->terpal ?? 'tidak',

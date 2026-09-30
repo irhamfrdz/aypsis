@@ -36,6 +36,8 @@ class SuratJalanBongkaranBatam extends Model
         'no_kontainer',
         'no_seal',
         'size',
+        'buntut_asal',
+        'buntut_plat_kir',
         'jumlah_kontainer',
         'karton',
         'plastik',

@@ -281,7 +281,16 @@
                                                 ->where('keterangan', 'LIKE', '%FREE%USE%')->exists();
                                         }
                                     @endphp
-                                    <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $sj->no_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">
+                                        <div>{{ $sj->no_kontainer ?: '-' }}</div>
+                                        @if($sj->buntut_plat_kir)
+                                            <div class="mt-0.5">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium {{ $sj->buntut_asal === 'AYP' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                                                    Buntut {{ $sj->buntut_asal ?: 'AYP' }}: {{ $sj->buntut_plat_kir }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->jenis_pengiriman ?: ($sj->tipe_kontainer ?: ($sj->manifest->tipe_kontainer ?? '-')) }}
                                     </td>
@@ -768,6 +777,71 @@
                                 <option value="40ft">40ft</option>
                                 <option value="40hc">40hc</option>
                             </select>
+                        </div>
+
+                        <!-- Buntut Berasal Dari -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Buntut Berasal Dari</label>
+                            <div class="flex space-x-4 mt-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="buntut_asal" id="modal_buntut_asal_ayp" value="AYP" checked class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleBuntutSource('AYP', 'create')">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">AYP</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="buntut_asal" id="modal_buntut_asal_pb" value="PB" class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleBuntutSource('PB', 'create')">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">PB</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- PLAT / KIR Buntut -->
+                        <div>
+                            <label id="modal_buntut_label" for="modal_buntut_plat_kir_select" class="block text-sm font-medium text-gray-700 mb-1">
+                                PLAT / KIR Buntut (AYP)
+                            </label>
+                            
+                            <!-- Container jika AYP: Dropdown Select -->
+                            <div id="wrapper_buntut_ayp_create">
+                                <select id="modal_buntut_plat_kir_select"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        onchange="document.getElementById('modal_buntut_plat_kir').value = this.value">
+                                    <option value="">Pilih PLAT / KIR Buntut</option>
+                                    @if(isset($buntutAypList) && $buntutAypList->count() > 0)
+                                        <optgroup label="Buntut AYP (KIR / PLAT)">
+                                            @foreach($buntutAypList as $b)
+                                                @php
+                                                    $plat = trim($b->nomor_polisi ?? '');
+                                                    $kir = trim($b->no_kir ?? '');
+                                                    $val = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-') 
+                                                        ? "$plat / $kir" 
+                                                        : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
+                                                    $desc = $b->jenis ? " ({$b->jenis})" : '';
+                                                @endphp
+                                                @if($val)
+                                                    <option value="{{ $val }}">{{ $val }}{{ $desc }}</option>
+                                                @endif
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                    @if(isset($chasisBatamList) && $chasisBatamList->count() > 0)
+                                        <optgroup label="Chasis Batam AYP">
+                                            @foreach($chasisBatamList as $c)
+                                                <option value="{{ $c->kode }}">{{ $c->kode }}{{ $c->tipe ? " ({$c->tipe})" : '' }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                </select>
+                            </div>
+
+                            <!-- Container jika PB: Input Manual -->
+                            <div id="wrapper_buntut_pb_create" class="hidden">
+                                <input type="text" id="modal_buntut_plat_kir_input"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan PLAT / KIR buntut secara manual"
+                                       oninput="document.getElementById('modal_buntut_plat_kir').value = this.value">
+                            </div>
+
+                            <input type="hidden" name="buntut_plat_kir" id="modal_buntut_plat_kir" value="">
                         </div>
 
                         <!-- Informasi Packaging -->
@@ -1331,6 +1405,71 @@
                                 <option value="40ft">40ft</option>
                                 <option value="40hc">40hc</option>
                             </select>
+                        </div>
+
+                        <!-- Buntut Berasal Dari -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Buntut Berasal Dari</label>
+                            <div class="flex space-x-4 mt-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="buntut_asal" id="edit_modal_buntut_asal_ayp" value="AYP" checked class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleBuntutSource('AYP', 'edit')">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">AYP</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="buntut_asal" id="edit_modal_buntut_asal_pb" value="PB" class="form-radio text-blue-600 focus:ring-blue-500" onchange="toggleBuntutSource('PB', 'edit')">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">PB</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- PLAT / KIR Buntut -->
+                        <div>
+                            <label id="edit_modal_buntut_label" for="edit_modal_buntut_plat_kir_select" class="block text-sm font-medium text-gray-700 mb-1">
+                                PLAT / KIR Buntut (AYP)
+                            </label>
+                            
+                            <!-- Container jika AYP: Dropdown Select -->
+                            <div id="wrapper_buntut_ayp_edit">
+                                <select id="edit_modal_buntut_plat_kir_select"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        onchange="document.getElementById('edit_modal_buntut_plat_kir').value = this.value">
+                                    <option value="">Pilih PLAT / KIR Buntut</option>
+                                    @if(isset($buntutAypList) && $buntutAypList->count() > 0)
+                                        <optgroup label="Buntut AYP (KIR / PLAT)">
+                                            @foreach($buntutAypList as $b)
+                                                @php
+                                                    $plat = trim($b->nomor_polisi ?? '');
+                                                    $kir = trim($b->no_kir ?? '');
+                                                    $val = ($plat && $plat !== '-' && $plat !== '0' && $kir && $kir !== '-') 
+                                                        ? "$plat / $kir" 
+                                                        : ($plat && $plat !== '-' && $plat !== '0' ? $plat : $kir);
+                                                    $desc = $b->jenis ? " ({$b->jenis})" : '';
+                                                @endphp
+                                                @if($val)
+                                                    <option value="{{ $val }}">{{ $val }}{{ $desc }}</option>
+                                                @endif
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                    @if(isset($chasisBatamList) && $chasisBatamList->count() > 0)
+                                        <optgroup label="Chasis Batam AYP">
+                                            @foreach($chasisBatamList as $c)
+                                                <option value="{{ $c->kode }}">{{ $c->kode }}{{ $c->tipe ? " ({$c->tipe})" : '' }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                </select>
+                            </div>
+
+                            <!-- Container jika PB: Input Manual -->
+                            <div id="wrapper_buntut_pb_edit" class="hidden">
+                                <input type="text" id="edit_modal_buntut_plat_kir_input"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan PLAT / KIR buntut secara manual"
+                                       oninput="document.getElementById('edit_modal_buntut_plat_kir').value = this.value">
+                            </div>
+
+                            <input type="hidden" name="buntut_plat_kir" id="edit_modal_buntut_plat_kir" value="">
                         </div>
 
                         <!-- Informasi Packaging -->
@@ -1935,6 +2074,7 @@ function setupModalLanjutMuatToggle() {
 // Handle form submit with validation and loading state
 function handleFormSubmit(event) {
     event.preventDefault();
+    updateBuntutValue('create');
     
     const form = document.getElementById('formBuatSuratJalan');
     const submitBtn = document.getElementById('btnSubmitModal');
@@ -2143,11 +2283,63 @@ function closeModal() {
     submitText.classList.remove('hidden');
     submitLoading.classList.add('hidden');
     
+    // Reset buntut
+    toggleBuntutSource('AYP', 'create');
+    const aypRadio = document.getElementById('modal_buntut_asal_ayp');
+    if (aypRadio) aypRadio.checked = true;
+    const selectBuntut = document.getElementById('modal_buntut_plat_kir_select');
+    if (selectBuntut) selectBuntut.value = '';
+    const inputBuntut = document.getElementById('modal_buntut_plat_kir_input');
+    if (inputBuntut) inputBuntut.value = '';
+    const hiddenBuntut = document.getElementById('modal_buntut_plat_kir');
+    if (hiddenBuntut) hiddenBuntut.value = '';
+
     // Remove any alerts
     const existingAlert = document.querySelector('.modal-alert');
     if (existingAlert) {
         existingAlert.remove();
     }
+}
+
+// Toggle Buntut Source (AYP / PB)
+function toggleBuntutSource(source, modalType) {
+    const isCreate = (modalType === 'create');
+    const aypWrapper = document.getElementById(isCreate ? 'wrapper_buntut_ayp_create' : 'wrapper_buntut_ayp_edit');
+    const pbWrapper = document.getElementById(isCreate ? 'wrapper_buntut_pb_create' : 'wrapper_buntut_pb_edit');
+    const label = document.getElementById(isCreate ? 'modal_buntut_label' : 'edit_modal_buntut_label');
+    const select = document.getElementById(isCreate ? 'modal_buntut_plat_kir_select' : 'edit_modal_buntut_plat_kir_select');
+    const input = document.getElementById(isCreate ? 'modal_buntut_plat_kir_input' : 'edit_modal_buntut_plat_kir_input');
+    const hidden = document.getElementById(isCreate ? 'modal_buntut_plat_kir' : 'edit_modal_buntut_plat_kir');
+
+    if (source === 'AYP') {
+        if (aypWrapper) aypWrapper.classList.remove('hidden');
+        if (pbWrapper) pbWrapper.classList.add('hidden');
+        if (label) label.textContent = 'PLAT / KIR Buntut (AYP)';
+        if (hidden && select) hidden.value = select.value;
+    } else {
+        if (aypWrapper) aypWrapper.classList.add('hidden');
+        if (pbWrapper) pbWrapper.classList.remove('hidden');
+        if (label) label.textContent = 'PLAT / KIR Buntut (PB - Manual)';
+        if (hidden && input) hidden.value = input.value;
+    }
+}
+
+function updateBuntutValue(modalType) {
+    const isCreate = (modalType === 'create');
+    const prefix = isCreate ? 'modal_' : 'edit_modal_';
+    const checkedRadio = document.querySelector(`input[name="buntut_asal"]${isCreate ? '#modal_buntut_asal_ayp, #modal_buntut_asal_pb' : '#edit_modal_buntut_asal_ayp, #edit_modal_buntut_asal_pb'}:checked`);
+    const source = checkedRadio ? checkedRadio.value : 'AYP';
+    
+    let val = '';
+    if (source === 'AYP') {
+        const select = document.getElementById(prefix + 'buntut_plat_kir_select');
+        val = select ? select.value : '';
+    } else {
+        const input = document.getElementById(prefix + 'buntut_plat_kir_input');
+        val = input ? input.value : '';
+    }
+    const hidden = document.getElementById(prefix + 'buntut_plat_kir');
+    if (hidden) hidden.value = val;
 }
 
 // Close modal when clicking outside
@@ -2299,6 +2491,25 @@ function openEditModal(suratJalanId) {
                     if (normSize.includes('20')) editSizeSelect.value = '20ft';
                     else if (normSize.includes('40')) editSizeSelect.value = '40ft';
                 }
+
+                // Populate buntut asal and plat/kir
+                const buntutAsal = data.buntut_asal || 'AYP';
+                const buntutPlatKir = data.buntut_plat_kir || '';
+                const editAypRadio = document.getElementById('edit_modal_buntut_asal_ayp');
+                const editPbRadio = document.getElementById('edit_modal_buntut_asal_pb');
+                if (buntutAsal === 'PB') {
+                    if (editPbRadio) editPbRadio.checked = true;
+                    toggleBuntutSource('PB', 'edit');
+                    const inputEl = document.getElementById('edit_modal_buntut_plat_kir_input');
+                    if (inputEl) inputEl.value = buntutPlatKir;
+                } else {
+                    if (editAypRadio) editAypRadio.checked = true;
+                    toggleBuntutSource('AYP', 'edit');
+                    const selectEl = document.getElementById('edit_modal_buntut_plat_kir_select');
+                    if (selectEl) selectEl.value = buntutPlatKir;
+                }
+                const hiddenBuntut = document.getElementById('edit_modal_buntut_plat_kir');
+                if (hiddenBuntut) hiddenBuntut.value = buntutPlatKir;
                 
                 // Set radio buttons
                 // Set radio buttons safely
@@ -2523,6 +2734,7 @@ function setupEditModalUangJalanCalculation(containerSize) {
 // Handle edit form submit
 function handleEditFormSubmit(event) {
     event.preventDefault();
+    updateBuntutValue('edit');
     
     const form = document.getElementById('formEditSuratJalan');
     const submitBtn = document.getElementById('btnSubmitEditModal');
@@ -2665,6 +2877,17 @@ function closeEditModal() {
     submitText.classList.remove('hidden');
     submitLoading.classList.add('hidden');
     
+    // Reset buntut
+    toggleBuntutSource('AYP', 'edit');
+    const aypEditRadio = document.getElementById('edit_modal_buntut_asal_ayp');
+    if (aypEditRadio) aypEditRadio.checked = true;
+    const selectEditBuntut = document.getElementById('edit_modal_buntut_plat_kir_select');
+    if (selectEditBuntut) selectEditBuntut.value = '';
+    const inputEditBuntut = document.getElementById('edit_modal_buntut_plat_kir_input');
+    if (inputEditBuntut) inputEditBuntut.value = '';
+    const hiddenEditBuntut = document.getElementById('edit_modal_buntut_plat_kir');
+    if (hiddenEditBuntut) hiddenEditBuntut.value = '';
+
     const existingAlert = document.querySelector('#modalEditSuratJalan .modal-alert');
     if (existingAlert) {
         existingAlert.remove();
