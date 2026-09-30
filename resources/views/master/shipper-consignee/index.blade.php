@@ -66,44 +66,45 @@
         <table class="min-w-full bg-white divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipper</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consignee</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notify Party (Consignee)</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Address & Contact Person</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doc PPFTZ-03</th>
-                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
-                    <th class="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">No</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Shipper</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Address (Shipper)</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">NPWP Shipper</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Consignee</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Address (Consignee)</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">NPWP Consignee</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Notify Party (Consignee)</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Address (Notify Party)</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">NPWP Notify Party</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Delivery Address & Contact Person</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Doc PPFTZ-03</th>
+                    <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Condition</th>
+                    <th class="py-3 px-3 text-center text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th class="py-3 px-3 text-center text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Aksi</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($shipperConsignees as $index => $item)
                     <tr class="hover:bg-gray-50">
-                        <td class="py-4 px-4 text-[10px] text-gray-900">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-900">
-                            <span class="font-bold">{{ $item->shipper ?: '-' }}</span>
-                            @if($item->npwp_shipper)
-                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_shipper }}</div>
-                            @endif
+                        <td class="py-3 px-3 text-[10px] text-gray-900 whitespace-nowrap">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
+                        <td class="py-3 px-3 text-[10px] font-bold text-gray-900 min-w-[150px]">{{ $item->shipper ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_shipper }}">{{ $item->alamat_shipper ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_shipper ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] font-semibold text-gray-900 min-w-[150px]">{{ $item->consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_consignee }}">{{ $item->alamat_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-800 min-w-[150px]">{{ $item->notify_party_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_notify_party_consignee }}">{{ $item->alamat_notify_party_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_notify_party_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 min-w-[220px] max-w-sm truncate" title="{{ $item->delivery_address_contact_person }}">{{ $item->delivery_address_contact_person ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap">{{ $item->document_ppftz_03 ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap">{{ $item->condition ?: '-' }}</td>
+                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                            <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-semibold {{ $item->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $item->status ? 'Aktif' : 'Tidak Aktif' }}
+                            </span>
                         </td>
-                        <td class="py-4 px-4 text-[10px] text-gray-700">
-                            <span class="font-medium">{{ $item->consignee ?: '-' }}</span>
-                            @if($item->npwp_consignee)
-                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_consignee }}</div>
-                            @endif
-                        </td>
-                        <td class="py-4 px-4 text-[10px] text-gray-600">
-                            <span>{{ $item->notify_party_consignee ?: '-' }}</span>
-                            @if($item->npwp_notify_party_consignee)
-                                <div class="text-[9px] text-gray-500">NPWP: {{ $item->npwp_notify_party_consignee }}</div>
-                            @endif
-                        </td>
-                        <td class="py-4 px-4 text-[10px] text-gray-600 max-w-xs truncate" title="{{ $item->delivery_address_contact_person }}">
-                            {{ $item->delivery_address_contact_person ?: '-' }}
-                        </td>
-                        <td class="py-4 px-4 text-[10px] text-gray-600 whitespace-nowrap">{{ $item->document_ppftz_03 ?: '-' }}</td>
-                        <td class="py-4 px-4 text-[10px] text-gray-600 whitespace-nowrap">{{ $item->condition ?: '-' }}</td>
-                        <td class="py-4 px-4 text-center text-[10px] font-medium whitespace-nowrap">
+                        <td class="py-3 px-3 text-center text-[10px] font-medium whitespace-nowrap">
                             <div class="flex justify-center space-x-2">
                                 <a href="{{ route('master.shipper-consignee.show', $item) }}" class="text-blue-600 hover:text-blue-900 transition duration-200" title="Detail">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +113,7 @@
                                     </svg>
                                 </a>
                                 @can('master-shipper-consignee-edit')
-                                <a href="{{ route('master.shipper-consignee.edit', $item) }}" class="text-yellow-600 hover:text-yellow-900 transition duration-200">
+                                <a href="{{ route('master.shipper-consignee.edit', $item) }}" class="text-yellow-600 hover:text-yellow-900 transition duration-200" title="Edit">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
@@ -122,7 +123,7 @@
                                 <form action="{{ route('master.shipper-consignee.destroy', $item) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 transition duration-200">
+                                    <button type="submit" class="text-red-600 hover:text-red-900 transition duration-200" title="Hapus">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -134,7 +135,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="py-8 px-6 text-center text-gray-500">
+                        <td colspan="15" class="py-8 px-6 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
