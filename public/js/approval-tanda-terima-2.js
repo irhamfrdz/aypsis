@@ -133,6 +133,7 @@
         const currentGeneration = generation;
         pendingSearch = new AbortController();
         options.replaceChildren();
+        options.classList.add('approval-shipper-message');
         options.textContent = 'Mencari shipper...';
         options.hidden = false;
         search.setAttribute('aria-expanded', 'true');
@@ -155,11 +156,21 @@
                 options.textContent = 'Shipper tidak ditemukan. Coba nama lain.';
                 return;
             }
+            options.classList.remove('approval-shipper-message');
             records.forEach(option => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'approval-shipper-option';
-                button.textContent = option.display_text || option.text;
+                const name = document.createElement('span');
+                name.className = 'approval-shipper-option-name';
+                name.textContent = option.text;
+                button.append(name);
+                if (option.consignee) {
+                    const detail = document.createElement('span');
+                    detail.className = 'approval-shipper-option-detail';
+                    detail.textContent = 'Consignee: ' + option.consignee;
+                    button.append(detail);
+                }
                 button.addEventListener('click', () => choose(option));
                 options.append(button);
             });

@@ -8,8 +8,21 @@
     #approval-shipper-dialog { width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-shipper-dialog [hidden] { display: none !important; }
-    .approval-shipper-option { display: block; width: 100%; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .approval-shipper-combobox { position: relative; }
+    #approval-shipper-search { display: block; width: 100%; min-height: 44px; padding: 10px 42px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgb(15 23 42 / 5%); }
+    #approval-shipper-search::placeholder { color: #94a3b8; }
+    #approval-shipper-search:hover { border-color: #818cf8; }
+    #approval-shipper-search:focus { border-color: #6366f1; outline: 0; box-shadow: 0 0 0 3px rgb(99 102 241 / 18%); }
+    .approval-shipper-search-icon, .approval-shipper-search-arrow { position: absolute; top: 22px; transform: translateY(-50%); color: #64748b; pointer-events: none; }
+    .approval-shipper-search-icon { left: 15px; }
+    .approval-shipper-search-arrow { right: 16px; }
+    #approval-shipper-options { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; max-height: 220px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-shadow: 0 14px 32px rgb(15 23 42 / 16%); padding: 4px; color: #475569; }
+    #approval-shipper-options.approval-shipper-message { padding: 12px; }
+    .approval-shipper-option { display: block; width: 100%; padding: 10px 12px; text-align: left; border: 0; border-radius: 7px; background: #fff; color: #0f172a; }
+    .approval-shipper-option + .approval-shipper-option { border-top: 1px solid #f1f5f9; }
     .approval-shipper-option:hover, .approval-shipper-option:focus { background: #eef2ff; outline: 2px solid #6366f1; outline-offset: -2px; }
+    .approval-shipper-option-name { display: block; font-weight: 600; }
+    .approval-shipper-option-detail { display: block; margin-top: 2px; font-size: 12px; color: #64748b; }
     .approval-goods-dialog { width: min(1000px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     .approval-goods-dialog::backdrop { background: rgb(15 23 42 / 60%); }
 </style>
@@ -285,8 +298,12 @@
                         <a href="{{ route('master.shipper-consignee.create') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-700 hover:underline"><i class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah di master</a>
                     @endcan
                 </div>
-                <input id="approval-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper..." class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" aria-controls="approval-shipper-options" aria-expanded="false">
-                <div id="approval-shipper-options" class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 text-sm" aria-label="Hasil pencarian shipper" hidden></div>
+                <div class="approval-shipper-combobox">
+                    <i class="approval-shipper-search-icon fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="approval-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper..." class="text-sm" aria-controls="approval-shipper-options" aria-expanded="false" aria-autocomplete="list">
+                    <i class="approval-shipper-search-arrow fas fa-chevron-down text-xs" aria-hidden="true"></i>
+                    <div id="approval-shipper-options" class="text-sm" aria-label="Hasil pencarian shipper" hidden></div>
+                </div>
                 <p id="approval-shipper-selection" class="mt-2 text-xs text-gray-500" aria-live="polite">Pilih shipper dari hasil pencarian.</p>
             </div>
             @php
