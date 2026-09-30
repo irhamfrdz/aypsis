@@ -238,6 +238,8 @@ class LangsirBatamController extends Controller
             }
         }
 
+        $chasisAypByKir = $this->chasisAyps()->groupBy(fn (Mobil $mobil) => strtolower(trim($mobil->no_kir)));
+
         $gudangMap = [];
         foreach (\App\Models\Gudang::where('status', 'aktif')->get() as $g) {
             $gudangMap[strtolower(trim($g->nama_gudang))] = $g->id;
@@ -336,6 +338,28 @@ class LangsirBatamController extends Controller
                     }
                 }
 
+                $sumberChasis = strtoupper(trim((string) ($row['sumber_chasis'] ?? '')));
+                $inputChasis = trim((string) ($row['no_chasis'] ?? ''));
+                if (! in_array($sumberChasis, ['AYP', 'PB'], true) || $inputChasis === '' || mb_strlen($inputChasis) > 255) {
+                    $errors[] = "Baris {$rowNumber}: Sumber chasis harus AYP/PB dan No. KIR/No. Chasis wajib diisi (maksimal 255 karakter).";
+
+                    continue;
+                }
+
+                $chasisMobilId = null;
+                $noChasis = $inputChasis;
+                if ($sumberChasis === 'AYP') {
+                    $matches = $chasisAypByKir->get(strtolower($inputChasis), collect());
+                    if ($matches->count() !== 1) {
+                        $errors[] = "Baris {$rowNumber}: No. KIR '{$inputChasis}' harus cocok dengan tepat satu mobil berjenis Buntut di master.";
+
+                        continue;
+                    }
+
+                    $chasisMobilId = $matches->first()->id;
+                    $noChasis = trim($matches->first()->no_kir);
+                }
+
                 $noTransaksi = LangsirBatam::generateNoTransaksi();
 
                 $dataInsert = [
@@ -350,6 +374,9 @@ class LangsirBatamController extends Controller
                     'gudang_tujuan_id' => $row['gudang_tujuan_id'],
                     'supir' => $row['supir'] ?? null,
                     'no_plat' => $row['no_plat'] ?? null,
+                    'sumber_chasis' => $sumberChasis,
+                    'chasis_mobil_id' => $chasisMobilId,
+                    'no_chasis' => $noChasis,
                     'biaya' => floatval(str_replace(['Rp', '.', ',', ' '], '', $row['biaya'] ?? 0)),
                     'keterangan' => $row['keterangan'] ?? null,
                     'status' => strtoupper(trim($row['status'] ?? 'FULL')),

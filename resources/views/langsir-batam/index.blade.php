@@ -373,9 +373,9 @@
                         <svg class="w-4 h-4 inline-block mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Panduan Format Data (Dipisahkan Titik Koma <code class="bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-900 font-bold">;</code>)
                     </h4>
-                    <p class="text-xs text-emerald-700 mb-2">Setiap baris = 1 data langsir. Terdapat <strong>14 kolom</strong> yang dipisahkan dengan tanda titik koma (<strong>;</strong>):</p>
+                    <p class="text-xs text-emerald-700 mb-2">Setiap baris = 1 data langsir. Terdapat <strong>16 kolom</strong> yang dipisahkan dengan tanda titik koma (<strong>;</strong>):</p>
                     
-                    <!-- Badges Daftar 14 Kolom -->
+                    <!-- Badges Daftar 16 Kolom -->
                     <div class="flex flex-wrap gap-1.5 mb-3">
                         <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-900 text-xs border border-indigo-300 font-bold shadow-sm">1. No. Surat Jalan (Unik)</span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">2. Tanggal <span class="text-red-500 ml-0.5">*</span></span>
@@ -391,23 +391,26 @@
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">12. Status</span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">13. OB Pelabuhan</span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">14. Keterangan</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">15. Sumber Chasis (AYP/PB) <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">16. No. KIR / No. Chasis <span class="text-red-500 ml-0.5">*</span></span>
                     </div>
 
                     <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100">
-                        <strong>Template:</strong> No Surat Jalan ; Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan
+                        <strong>Template:</strong> No Surat Jalan ; Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; Sumber Chasis (AYP/PB) ; No. KIR (AYP) / No. Chasis (PB)
                     </div>
                     <div class="mt-2 text-xs text-emerald-700">
                         <strong>Contoh Baris Data:</strong>
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
-                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat
+                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345
                         </div>
+                        <p class="mt-1">AYP: isi nomor KIR dari master mobil berjenis Buntut. PB: isi nomor chasis secara manual.</p>
                     </div>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Langsir <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat"></textarea>
+                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345"></textarea>
                 </div>
                 <div class="flex items-center gap-3 mb-4">
                     <button type="button" onclick="parseBulkData()" class="inline-flex items-center px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -430,6 +433,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Dari & Ke</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Gudang</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Supir & Plat</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Chasis</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Biaya</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Status</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OB</th>
@@ -520,6 +524,10 @@ function convertExcelDate(serial) {
     return `${year}-${month}-${day}`;
 }
 
+function escapeBulkHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
+}
+
 const containerSizesMap = @json($containerSizes ?? []);
 
 function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
@@ -574,11 +582,16 @@ function parseBulkData() {
     let validCount = 0;
     const seenSjInBulk = {};
     let duplicateSjErrors = [];
+    const formatErrors = [];
     
-    lines.forEach((line) => {
+    lines.forEach((line, lineIndex) => {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
-        if (cols.length >= 3) {
+        if (cols.length !== 16) {
+            formatErrors.push(`Baris ${lineIndex + 1}: harus berisi 16 kolom.`);
+            return;
+        }
+        {
             const noSuratJalanVal = cols[0] || '';
             const tanggalVal = convertExcelDate(cols[1] || '');
             const noKontainerVal = cols[2] || '';
@@ -602,6 +615,12 @@ function parseBulkData() {
             const statusVal = cols[11] || 'FULL';
             const obVal = cols[12] || 'Tidak';
             const keteranganVal = cols[13] || '';
+            const sumberChasisVal = (cols[14] || '').toUpperCase();
+            const noChasisVal = cols[15] || '';
+            if (!['AYP', 'PB'].includes(sumberChasisVal) || !noChasisVal || noChasisVal.length > 255) {
+                formatErrors.push(`Baris ${lineIndex + 1}: sumber chasis harus AYP/PB dan nomor chasis wajib diisi (maksimal 255 karakter).`);
+                return;
+            }
             
             // Auto calculate biaya jika dikosongkan atau 0
             if (biayaVal === '' || biayaVal === '0') {
@@ -616,7 +635,7 @@ function parseBulkData() {
             if (noSuratJalanVal) {
                 const sjKey = noSuratJalanVal.toUpperCase();
                 if (seenSjInBulk[sjKey]) {
-                    duplicateSjErrors.push(`Baris ${validCount + 1}: No. Surat Jalan '${noSuratJalanVal}' duplikat dengan baris ${seenSjInBulk[sjKey]}`);
+                    duplicateSjErrors.push(`Baris ${validCount + 1}: No. Surat Jalan '${escapeBulkHtml(noSuratJalanVal)}' duplikat dengan baris ${seenSjInBulk[sjKey]}`);
                 } else {
                     seenSjInBulk[sjKey] = validCount + 1;
                 }
@@ -636,28 +655,39 @@ function parseBulkData() {
                 biaya: biayaVal,
                 status: statusVal,
                 ob_dalam_pelabuhan: obVal,
-                keterangan: keteranganVal
+                keterangan: keteranganVal,
+                sumber_chasis: sumberChasisVal,
+                no_chasis: noChasisVal
             };
             bulkParsedRows.push(rowData);
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${validCount + 1}</td>
-                <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_surat_jalan || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.tanggal}</td>
-                <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${rowData.no_kontainer}<br><span class="text-gray-500 text-[10px]">${rowData.no_seal}</span></td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${rowData.size}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.dari} <br> ${rowData.ke}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.gudang_tujuan}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.supir}<br><span class="text-gray-500 text-[10px]">${rowData.no_plat}</span></td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${rowData.biaya}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${rowData.status}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${rowData.ob_dalam_pelabuhan}</td>
+                <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${escapeBulkHtml(rowData.no_surat_jalan || '-')}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.tanggal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${escapeBulkHtml(rowData.no_kontainer)}<br><span class="text-gray-500 text-[10px]">${escapeBulkHtml(rowData.no_seal)}</span></td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${escapeBulkHtml(rowData.size)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.dari)} <br> ${escapeBulkHtml(rowData.ke)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.gudang_tujuan)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.supir)}<br><span class="text-gray-500 text-[10px]">${escapeBulkHtml(rowData.no_plat)}</span></td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.sumber_chasis)}<br><span class="text-gray-500 text-[10px]">${escapeBulkHtml(rowData.no_chasis)}</span></td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.biaya)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${escapeBulkHtml(rowData.status)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-500">${escapeBulkHtml(rowData.ob_dalam_pelabuhan)}</td>
             `;
             previewBody.appendChild(tr);
             validCount++;
         }
     });
+
+    if (formatErrors.length > 0) {
+        showBulkAlert('Format Chasis / Kolom Tidak Valid', `<ul class="list-disc pl-5 mt-1 text-left">${formatErrors.map(error => `<li>${error}</li>`).join('')}</ul>`, 'error');
+        submitBtn.disabled = true;
+        previewContainer.classList.toggle('hidden', validCount === 0);
+        parseInfo.textContent = `${validCount} baris siap, ${formatErrors.length} baris bermasalah`;
+        return;
+    }
 
     if (duplicateSjErrors.length > 0) {
         let errorMsg = '<ul class="list-disc pl-5 mt-1 text-left">';
@@ -682,6 +712,13 @@ function parseBulkData() {
         submitBtn.disabled = true;
     }
 }
+
+document.getElementById('bulkTextarea').addEventListener('input', function () {
+    bulkParsedRows = [];
+    document.getElementById('btnSubmitBulk').disabled = true;
+    document.getElementById('bulkPreviewContainer').classList.add('hidden');
+    document.getElementById('bulkParseInfo').textContent = 'Klik Parse & Preview setelah mengubah data.';
+});
 
 function submitBulkLangsir() {
     if (bulkParsedRows.length === 0) return;
@@ -721,10 +758,10 @@ function submitBulkLangsir() {
         if (data.success) {
             window.location.href = data.redirect;
         } else {
-            let errorMsg = data.message;
+            let errorMsg = escapeBulkHtml(data.message);
             if (data.errors && data.errors.length > 0) {
                 errorMsg += '<ul class="list-disc pl-5 mt-2 text-left">';
-                data.errors.forEach(e => { errorMsg += `<li>${e}</li>`; });
+                data.errors.forEach(e => { errorMsg += `<li>${escapeBulkHtml(e)}</li>`; });
                 errorMsg += '</ul>';
             }
             showBulkAlert('Gagal Menyimpan', errorMsg, 'error');
