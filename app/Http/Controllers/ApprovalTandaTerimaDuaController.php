@@ -38,11 +38,10 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         return response()->json($items->map(fn (ShipperConsignee $item) => [
             ...$item->only([
-                'shipper', 'alamat_shipper', 'npwp_shipper', 'nitku_shipper', 'contact_person',
-                'consignee', 'alamat_consignee', 'npwp_consignee', 'npwp_consignee_16_digit', 'nitku_consignee',
+                'shipper', 'alamat_shipper', 'npwp_shipper',
+                'consignee', 'alamat_consignee', 'npwp_consignee',
                 'notify_party_consignee', 'alamat_notify_party_consignee', 'npwp_notify_party_consignee',
-                'telepon', 'alamat_email', 'hs_code', 'commodity', 'document_ppftz_03',
-                'condition', 'ip_bp_kawasan', 'delivery_address', 'status',
+                'delivery_address_contact_person', 'document_ppftz_03', 'condition', 'status',
             ]),
             'real_id' => $item->id,
             'text' => $item->shipper,
