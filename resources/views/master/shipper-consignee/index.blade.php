@@ -88,15 +88,83 @@
                     <tr class="hover:bg-gray-50">
                         <td class="py-3 px-3 text-[10px] text-gray-900 whitespace-nowrap">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
                         <td class="py-3 px-3 text-[10px] font-bold text-gray-900 min-w-[150px]">{{ $item->shipper ?: '-' }}</td>
-                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_shipper }}">{{ $item->alamat_shipper ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[220px] max-w-xs">
+                            <div class="flex items-center justify-between gap-1.5">
+                                <span class="truncate" title="{{ $item->alamat_shipper }}">{{ $item->alamat_shipper ?: '-' }}</span>
+                                @if($item->alamat_shipper)
+                                    <button type="button" 
+                                        class="btn-view-address inline-flex items-center text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded text-[9px] font-semibold transition duration-150 flex-shrink-0"
+                                        data-title="Alamat Lengkap Shipper"
+                                        data-subtitle="Shipper"
+                                        data-name="{{ $item->shipper ?: '-' }}"
+                                        data-extra="{{ $item->npwp_shipper ? 'NPWP: '.$item->npwp_shipper : '' }}"
+                                        data-address="{{ $item->alamat_shipper }}"
+                                        title="Lihat Alamat Lengkap Shipper">
+                                        <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Lihat
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_shipper ?: '-' }}</td>
                         <td class="py-3 px-3 text-[10px] font-semibold text-gray-900 min-w-[150px]">{{ $item->consignee ?: '-' }}</td>
-                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_consignee }}">{{ $item->alamat_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[220px] max-w-xs">
+                            <div class="flex items-center justify-between gap-1.5">
+                                <span class="truncate" title="{{ $item->alamat_consignee }}">{{ $item->alamat_consignee ?: '-' }}</span>
+                                @if($item->alamat_consignee)
+                                    <button type="button" 
+                                        class="btn-view-address inline-flex items-center text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-1.5 py-0.5 rounded text-[9px] font-semibold transition duration-150 flex-shrink-0"
+                                        data-title="Alamat Lengkap Consignee"
+                                        data-subtitle="Consignee"
+                                        data-name="{{ $item->consignee ?: '-' }}"
+                                        data-extra="{{ $item->npwp_consignee ? 'NPWP: '.$item->npwp_consignee : '' }}"
+                                        data-address="{{ $item->alamat_consignee }}"
+                                        title="Lihat Alamat Lengkap Consignee">
+                                        <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Lihat
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_consignee ?: '-' }}</td>
                         <td class="py-3 px-3 text-[10px] text-gray-800 min-w-[150px]">{{ $item->notify_party_consignee ?: '-' }}</td>
-                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[200px] max-w-xs truncate" title="{{ $item->alamat_notify_party_consignee }}">{{ $item->alamat_notify_party_consignee ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[220px] max-w-xs">
+                            <div class="flex items-center justify-between gap-1.5">
+                                <span class="truncate" title="{{ $item->alamat_notify_party_consignee }}">{{ $item->alamat_notify_party_consignee ?: '-' }}</span>
+                                @if($item->alamat_notify_party_consignee)
+                                    <button type="button" 
+                                        class="btn-view-address inline-flex items-center text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.5 rounded text-[9px] font-semibold transition duration-150 flex-shrink-0"
+                                        data-title="Alamat Lengkap Notify Party (Consignee)"
+                                        data-subtitle="Notify Party (Consignee)"
+                                        data-name="{{ $item->notify_party_consignee ?: '-' }}"
+                                        data-extra="{{ $item->npwp_notify_party_consignee ? 'NPWP: '.$item->npwp_notify_party_consignee : '' }}"
+                                        data-address="{{ $item->alamat_notify_party_consignee }}"
+                                        title="Lihat Alamat Lengkap Notify Party">
+                                        <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Lihat
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap font-mono">{{ $item->npwp_notify_party_consignee ?: '-' }}</td>
-                        <td class="py-3 px-3 text-[10px] text-gray-700 min-w-[220px] max-w-sm truncate" title="{{ $item->delivery_address_contact_person }}">{{ $item->delivery_address_contact_person ?: '-' }}</td>
+                        <td class="py-3 px-3 text-[10px] text-gray-700 min-w-[240px] max-w-sm">
+                            <div class="flex items-center justify-between gap-1.5">
+                                <span class="truncate" title="{{ $item->delivery_address_contact_person }}">{{ $item->delivery_address_contact_person ?: '-' }}</span>
+                                @if($item->delivery_address_contact_person)
+                                    <button type="button" 
+                                        class="btn-view-address inline-flex items-center text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-1.5 py-0.5 rounded text-[9px] font-semibold transition duration-150 flex-shrink-0"
+                                        data-title="Delivery Address & Contact Person"
+                                        data-subtitle="Consignee / Delivery"
+                                        data-name="{{ $item->consignee ?: '-' }}"
+                                        data-extra="{{ $item->condition ? 'Condition: '.$item->condition : '' }}"
+                                        data-address="{{ $item->delivery_address_contact_person }}"
+                                        title="Lihat Full Delivery Address & Contact Person">
+                                        <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Lihat
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap">{{ $item->document_ppftz_03 ?: '-' }}</td>
                         <td class="py-3 px-3 text-[10px] text-gray-700 whitespace-nowrap">{{ $item->condition ?: '-' }}</td>
                         <td class="py-3 px-3 text-center whitespace-nowrap">
@@ -253,4 +321,103 @@
         </div>
     </div>
 </div>
+
+<!-- Detail Alamat Modal -->
+<div id="addressDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="addressModalTitle" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeAddressModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" style="font-family: Arial, sans-serif;">
+            <div class="bg-indigo-600 px-4 py-3 sm:px-6 flex justify-between items-center text-white">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <h3 class="text-sm font-bold text-white tracking-wide" id="addressModalTitle">Detail Alamat</h3>
+                </div>
+                <button type="button" onclick="closeAddressModal()" class="text-indigo-200 hover:text-white focus:outline-none transition duration-150">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                <div class="mb-3 border-b pb-3">
+                    <p class="text-[10px] uppercase font-bold text-indigo-600 tracking-wider mb-0.5" id="addressModalSubTitle">Shipper</p>
+                    <p class="text-sm font-bold text-gray-900" id="addressModalName">-</p>
+                    <p class="text-xs text-gray-500 font-mono mt-0.5" id="addressModalExtra"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Alamat Lengkap:</label>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3.5 text-xs text-gray-800 whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto selection:bg-indigo-100" id="addressModalContent">
+                        -
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                <button type="button" id="btnCopyAddress" onclick="copyAddressText()" class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-700 sm:w-auto transition duration-150">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                    </svg>
+                    <span id="copyButtonText">Salin Alamat</span>
+                </button>
+                <button type="button" onclick="closeAddressModal()" class="mt-2 sm:mt-0 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-100 sm:w-auto transition duration-150">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-view-address').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const title = this.dataset.title || 'Detail Alamat';
+            const name = this.dataset.name || '-';
+            const extra = this.dataset.extra || '';
+            const address = this.dataset.address || '-';
+            const subTitle = this.dataset.subtitle || 'Identitas';
+
+            document.getElementById('addressModalTitle').innerText = title;
+            document.getElementById('addressModalSubTitle').innerText = subTitle;
+            document.getElementById('addressModalName').innerText = name;
+            document.getElementById('addressModalExtra').innerText = extra;
+            document.getElementById('addressModalContent').innerText = address;
+
+            const copyBtnText = document.getElementById('copyButtonText');
+            if (copyBtnText) copyBtnText.innerText = 'Salin Alamat';
+
+            document.getElementById('addressDetailModal').classList.remove('hidden');
+        });
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeAddressModal();
+        }
+    });
+});
+
+function closeAddressModal() {
+    const modal = document.getElementById('addressDetailModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function copyAddressText() {
+    const text = document.getElementById('addressModalContent').innerText;
+    if (!text || text === '-') return;
+
+    navigator.clipboard.writeText(text).then(function () {
+        const copyBtnText = document.getElementById('copyButtonText');
+        if (copyBtnText) {
+            copyBtnText.innerText = 'Tersalin!';
+            setTimeout(function () {
+                copyBtnText.innerText = 'Salin Alamat';
+            }, 2000);
+        }
+    }).catch(function (err) {
+        console.error('Gagal menyalin alamat:', err);
+    });
+}
+</script>
 @endsection
