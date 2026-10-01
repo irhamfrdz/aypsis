@@ -2,6 +2,49 @@
 
 @section('title', 'Rekap Pemakaian Barang')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+    .rekap-filter .select2-container { width: 100% !important; }
+    .rekap-filter .select2-container--default .select2-selection--single {
+        height: 44px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.75rem;
+        background: #fff;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .rekap-filter .select2-container--default .select2-selection--single .select2-selection__rendered {
+        display: flex;
+        align-items: center;
+        height: 42px;
+        padding: 0 4.5rem 0 0.875rem;
+        color: #111827;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+    }
+    .rekap-filter .select2-container--default .select2-selection--single .select2-selection__placeholder { color: #9ca3af; }
+    .rekap-filter .select2-container--default .select2-selection--single .select2-selection__arrow {
+        top: 1px;
+        right: 0.625rem;
+        height: 40px;
+    }
+    .rekap-filter .select2-container--default .select2-selection--single .select2-selection__clear {
+        position: absolute;
+        top: 50%;
+        right: 2.5rem;
+        margin: 0;
+        transform: translateY(-50%);
+        color: #6b7280;
+    }
+    .rekap-filter .select2-container--default.select2-container--focus .select2-selection--single,
+    .rekap-filter .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #6366f1;
+        outline: 0;
+        box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="p-6">
     <!-- Header -->
@@ -14,12 +57,19 @@
     </div>
 
     <!-- Filter Form -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-8">
-        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div class="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="border-b border-gray-100 bg-gray-50/80 px-5 py-4 sm:px-6">
+            <h3 class="flex items-center gap-2 font-semibold text-gray-900">
+                <i class="fas fa-filter text-indigo-600" aria-hidden="true"></i>
+                Filter Laporan
+            </h3>
+            <p class="mt-1 text-xs text-gray-500">Pilih tipe barang dan periode pemakaian yang ingin ditampilkan.</p>
+        </div>
+        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter grid grid-cols-1 items-end gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-12">
             <!-- Select Barang -->
-            <div class="col-span-1 md:col-span-2">
-                <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tipe Barang <span class="text-red-500">*</span></label>
-                <select name="nama_barang" id="nama_barang" class="select2 form-input-premium w-full" required>
+            <div class="sm:col-span-2 lg:col-span-5">
+                <label for="nama_barang" class="mb-2 block text-sm font-semibold text-gray-700">Pilih Tipe Barang <span class="text-red-500">*</span></label>
+                <select name="nama_barang" id="nama_barang" class="select2 w-full" required>
                     <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari tipe barang --</option>
                     @foreach($allBarang as $barang)
                         <option value="{{ $barang }}" {{ $namaBarang === $barang ? 'selected' : '' }}>{{ $barang }}</option>
@@ -28,23 +78,23 @@
             </div>
 
             <!-- Start Date -->
-            <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
-                <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="form-input-premium w-full">
+            <div class="lg:col-span-2">
+                <label for="start_date" class="mb-2 block text-sm font-semibold text-gray-700">Dari Tanggal</label>
+                <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
             <!-- End Date -->
-            <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
-                <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="form-input-premium w-full">
+            <div class="lg:col-span-2">
+                <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-700">Sampai Tanggal</label>
+                <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
-            <div class="col-span-1 md:col-span-4 flex justify-end mt-2 gap-2">
-                <a href="{{ route('rekap-pemakaian-barang.index') }}" class="px-4 py-2 bg-gray-100 text-gray-600 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                    <i class="fas fa-redo mr-1"></i> Reset
+            <div class="flex gap-2 sm:col-span-2 sm:justify-end lg:col-span-3">
+                <a href="{{ route('rekap-pemakaian-barang.index') }}" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <i class="fas fa-rotate-left" aria-hidden="true"></i>Reset
                 </a>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                    <i class="fas fa-search mr-1"></i> Tampilkan Laporan
+                <button type="submit" class="inline-flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:flex-none">
+                    <i class="fas fa-search" aria-hidden="true"></i>Tampilkan Laporan
                 </button>
             </div>
         </form>
@@ -158,7 +208,6 @@
 @endsection
 
 @push('scripts')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -205,32 +254,4 @@
         @endif
     }
 </script>
-<style>
-    .select2-container--default .select2-selection--single {
-        height: 42px;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        background-color: #f9fafb;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-    .select2-container--default .select2-selection--single:focus,
-    .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #a5b4fc;
-        outline: 0;
-        box-shadow: 0 0 0 0.1rem rgba(99, 102, 241, 0.25);
-        background-color: #fff;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 40px;
-        right: 8px;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 24px;
-        color: #374151;
-        padding-left: 0;
-    }
-</style>
 @endpush
