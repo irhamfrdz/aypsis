@@ -14,44 +14,35 @@ class MasterPricelistLoloBatam extends Model
     protected $table = 'master_pricelist_lolo_batams';
 
     protected $fillable = [
-        'vendor',
-        'nama_biaya',
-        'kegiatan',
         'size',
-        'tipe',
         'tarif',
         'status',
         'keterangan',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
         'tarif' => 'decimal:2',
     ];
 
-    public function scopeAktif($query)
+    public function creator()
     {
-        return $query->where('status', 'aktif');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function scopeSearch($query, $term)
+    public function updater()
     {
-        if (empty($term)) {
-            return $query;
-        }
-
-        $term = '%'.str_replace(' ', '%', $term).'%';
-
-        return $query->where(function ($q) use ($term) {
-            $q->where('nama_biaya', 'like', $term)
-                ->orWhere('vendor', 'like', $term)
-                ->orWhere('kegiatan', 'like', $term)
-                ->orWhere('size', 'like', $term)
-                ->orWhere('tipe', 'like', $term);
-        });
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function getFormattedTarifAttribute(): string
     {
-        return 'Rp '.number_format($this->tarif, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->tarif, 0, ',', '.');
+    }
+
+    public function scopeAktif($query)
+    {
+        return $query->where('status', 'aktif');
     }
 }

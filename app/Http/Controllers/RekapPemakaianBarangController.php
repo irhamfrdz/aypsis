@@ -16,9 +16,12 @@ class RekapPemakaianBarangController extends Controller
         $namaBarang = $request->input('nama_barang');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-        $aktiva = $request->validate([
+        $filters = $request->validate([
             'aktiva' => 'nullable|in:kendaraan,alat_berat,kantor,kapal',
-        ])['aktiva'] ?? null;
+            'lokasi' => 'nullable|in:jakarta,batam,tanjung_pinang',
+        ]);
+        $aktiva = $filters['aktiva'] ?? null;
+        $lokasi = in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? ($filters['lokasi'] ?? null) : null;
 
         // Fetch distinct type barang from master for Amprahan
         $amprahanItems = StockAmprahan::with('masterNamaBarangAmprahan')
@@ -60,26 +63,32 @@ class RekapPemakaianBarangController extends Controller
                 foreach ($amprahanUsages as $usage) {
                     $unitName = '-';
                     $jenisAktiva = null;
+                    $lokasiAktiva = null;
                     if ($usage->kendaraan) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeAssetLocation($usage->kendaraan->lokasi);
                         $nopol = trim($usage->kendaraan->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->kendaraan->no_kir) ?: '-');
                     } elseif ($usage->truck) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeAssetLocation($usage->truck->lokasi);
                         $nopol = trim($usage->truck->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->truck->no_kir) ?: '-');
                     } elseif ($usage->buntut) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeAssetLocation($usage->buntut->lokasi);
                         $nopol = trim($usage->buntut->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->buntut->no_kir) ?: '-');
                     } elseif ($usage->alatBerat) {
                         $jenisAktiva = 'alat_berat';
+                        $lokasiAktiva = $this->normalizeAssetLocation($usage->alatBerat->lokasi);
                         $unitName = $usage->alatBerat->nama;
                     } elseif ($usage->kapal) {
                         $jenisAktiva = 'kapal';
                         $unitName = $usage->kapal->nama_kapal;
                     } elseif ($usage->chasisBatam) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeAssetLocation($usage->chasisBatam->lokasi) ?? 'batam';
                         $unitName = $usage->chasisBatam->kode;
                     } elseif ($usage->kantor) {
                         $jenisAktiva = 'kantor';
@@ -87,6 +96,9 @@ class RekapPemakaianBarangController extends Controller
                     }
 
                     if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
+                    }
+                    if ($lokasi && in_array($jenisAktiva, ['kendaraan', 'alat_berat'], true) && $lokasiAktiva !== $lokasi) {
                         continue;
                     }
                     
@@ -134,12 +146,15 @@ class RekapPemakaianBarangController extends Controller
                 foreach ($banUsages as $ban) {
                     $unitName = '-';
                     $jenisAktiva = null;
+                    $lokasiAktiva = null;
                     if ($ban->mobil) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeAssetLocation($ban->mobil->lokasi);
                         $nopol = trim($ban->mobil->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($ban->mobil->no_kir) ?: '-');
                     } elseif ($ban->alatBerat) {
                         $jenisAktiva = 'alat_berat';
+                        $lokasiAktiva = $this->normalizeAssetLocation($ban->alatBerat->lokasi);
                         $unitName = $ban->alatBerat->nama;
                     } elseif ($ban->kapal) {
                         $jenisAktiva = 'kapal';
@@ -147,6 +162,9 @@ class RekapPemakaianBarangController extends Controller
                     }
 
                     if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
+                    }
+                    if ($lokasi && in_array($jenisAktiva, ['kendaraan', 'alat_berat'], true) && $lokasiAktiva !== $lokasi) {
                         continue;
                     }
                     
@@ -175,6 +193,23 @@ class RekapPemakaianBarangController extends Controller
             $results = $results->sortByDesc('tanggal')->values();
         }
 
-        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva'));
+        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva', 'lokasi'));
+    }
+
+    private function normalizeAssetLocation(?string $location): ?string
+    {
+        $location = strtoupper(trim((string) $location));
+
+        if ($location === 'PNG' || str_contains($location, 'TANJUNG PINANG') || str_contains($location, 'TANJUNGPINANG') || str_contains($location, 'SRI BINTAN')) {
+            return 'tanjung_pinang';
+        }
+        if ($location === 'JKT' || str_contains($location, 'JAKARTA') || str_contains($location, 'SUNDA KELAPA') || str_contains($location, 'GARASI SEMUT')) {
+            return 'jakarta';
+        }
+        if ($location === 'BTM' || str_contains($location, 'BATAM') || str_contains($location, 'SRIMAS') || str_contains($location, 'BATU AMPAR')) {
+            return 'batam';
+        }
+
+        return null;
     }
 }

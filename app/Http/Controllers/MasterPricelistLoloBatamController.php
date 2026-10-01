@@ -9,93 +9,53 @@ class MasterPricelistLoloBatamController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MasterPricelistLoloBatam::query();
+        $pricelists = MasterPricelistLoloBatam::query()
+            ->with(['creator', 'updater'])
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $search = $request->string('q')->trim()->toString();
+                $query->where(function ($query) use ($search) {
+                    $query->where('keterangan', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('size'), fn ($query) => $query->where('size', $request->input('size')))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-        if ($request->filled('vendor')) {
-            $query->where('vendor', 'like', '%'.$request->vendor.'%');
-        }
-
-        if ($request->filled('size')) {
-            $query->where('size', $request->size);
-        }
-
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('search')) {
-            $query->search($request->search);
-        }
-
-        $pricelists = $query->orderBy('vendor')->orderBy('size')->orderBy('tipe')->paginate(20)->withQueryString();
-
-        $vendors = MasterPricelistLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
-
-        return view('master.pricelist-lolo-batam.index', compact('pricelists', 'vendors'));
+        return view('master.pricelist-lolo-batam.index', compact('pricelists'));
     }
 
     public function create()
     {
-        $existingVendors = MasterPricelistLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
-
-        return view('master.pricelist-lolo-batam.create', compact('existingVendors'));
+        return view('master.pricelist-lolo-batam.create');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'vendor' => 'nullable|string|max:255',
-            'nama_biaya' => 'required|string|max:255',
-            'kegiatan' => 'nullable|string|max:255',
-            'size' => 'required|in:20,40',
-            'tipe' => 'required|in:FULL,EMPTY,ALL',
-            'tarif' => 'required|numeric|min:0',
-            'status' => 'required|in:aktif,non-aktif',
-            'keterangan' => 'nullable|string',
-        ]);
+        $data = $this->validateData($request);
+        $data['created_by'] = auth()->id();
+        $data['updated_by'] = auth()->id();
 
-        if (empty($validated['kegiatan'])) {
-            $validated['kegiatan'] = 'LOLO Batam';
-        }
-
-        MasterPricelistLoloBatam::create($validated);
+        MasterPricelistLoloBatam::create($data);
 
         return redirect()->route('master.pricelist-lolo-batam.index')
-            ->with('success', 'Master Pricelist LOLO Batam berhasil ditambahkan.');
+            ->with('success', 'Pricelist LOLO Batam berhasil ditambahkan.');
     }
 
     public function edit(MasterPricelistLoloBatam $pricelistLoloBatam)
     {
-        $existingVendors = MasterPricelistLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
-
-        return view('master.pricelist-lolo-batam.edit', compact('pricelistLoloBatam', 'existingVendors'));
+        return view('master.pricelist-lolo-batam.edit', compact('pricelistLoloBatam'));
     }
 
     public function update(Request $request, MasterPricelistLoloBatam $pricelistLoloBatam)
     {
-        $validated = $request->validate([
-            'vendor' => 'nullable|string|max:255',
-            'nama_biaya' => 'required|string|max:255',
-            'kegiatan' => 'nullable|string|max:255',
-            'size' => 'required|in:20,40',
-            'tipe' => 'required|in:FULL,EMPTY,ALL',
-            'tarif' => 'required|numeric|min:0',
-            'status' => 'required|in:aktif,non-aktif',
-            'keterangan' => 'nullable|string',
-        ]);
-
-        if (empty($validated['kegiatan'])) {
-            $validated['kegiatan'] = 'LOLO Batam';
-        }
-
-        $pricelistLoloBatam->update($validated);
+        $data = $this->validateData($request);
+        $data['updated_by'] = auth()->id();
+        $pricelistLoloBatam->update($data);
 
         return redirect()->route('master.pricelist-lolo-batam.index')
-            ->with('success', 'Master Pricelist LOLO Batam berhasil diperbarui.');
+            ->with('success', 'Pricelist LOLO Batam berhasil diperbarui.');
     }
 
     public function destroy(MasterPricelistLoloBatam $pricelistLoloBatam)
@@ -103,6 +63,22 @@ class MasterPricelistLoloBatamController extends Controller
         $pricelistLoloBatam->delete();
 
         return redirect()->route('master.pricelist-lolo-batam.index')
-            ->with('success', 'Master Pricelist LOLO Batam berhasil dihapus.');
+            ->with('success', 'Pricelist LOLO Batam berhasil dihapus.');
+    }
+
+    private function validateData(Request $request): array
+    {
+        return $request->validate([
+            'size' => ['required', 'in:20,40,45'],
+            'tarif' => ['required', 'numeric', 'min:0'],
+            'status' => ['required', 'in:aktif,non-aktif'],
+            'keterangan' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'size.required' => 'Ukuran kontainer wajib dipilih.',
+            'size.in' => 'Ukuran kontainer harus 20, 40, atau 45 kaki.',
+            'tarif.required' => 'Tarif wajib diisi.',
+            'tarif.numeric' => 'Tarif harus berupa angka.',
+            'tarif.min' => 'Tarif tidak boleh kurang dari nol.',
+        ]);
     }
 }

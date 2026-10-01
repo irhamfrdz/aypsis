@@ -6560,6 +6560,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('pembayaran-pranota-ob-antar-gudang', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'store'])
         ->name('pembayaran-pranota-ob-antar-gudang.store')
         ->middleware('can:pembayaran-pranota-ob-antar-gudang-create');
+    Route::patch('pembayaran-pranota-ob-antar-gudang/{id}/pranota/{pranotaId}/tanggal', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'updateTanggalPranota'])
+        ->name('pembayaran-pranota-ob-antar-gudang.update-tanggal-pranota')
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-edit');
     Route::get('pembayaran-pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'show'])
         ->name('pembayaran-pranota-ob-antar-gudang.show')
         ->middleware('can:pembayaran-pranota-ob-antar-gudang-view');

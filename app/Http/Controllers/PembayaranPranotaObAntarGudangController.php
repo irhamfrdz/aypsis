@@ -171,6 +171,26 @@ class PembayaranPranotaObAntarGudangController extends Controller
         return view('pembayaran-pranota-ob-antar-gudang.show', compact('pembayaran'));
     }
 
+    public function updateTanggalPranota(Request $request, $id, $pranotaId)
+    {
+        $validated = $request->validate([
+            'tanggal_pranota' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
+        $pranotaIds = collect($pembayaran->pranota_ob_antar_gudang_ids)
+            ->map(fn ($pranotaId) => (int) $pranotaId);
+
+        abort_unless($pranotaIds->contains((int) $pranotaId), 404);
+
+        $pranota = PranotaObAntarGudang::findOrFail($pranotaId);
+        $pranota->update(['tanggal_pranota' => $validated['tanggal_pranota']]);
+
+        return redirect()
+            ->route('pembayaran-pranota-ob-antar-gudang.show', $pembayaran->id)
+            ->with('success', 'Tanggal pranota '.$pranota->nomor_pranota.' berhasil diperbarui.');
+    }
+
     public function edit($id)
     {
         $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);

@@ -204,6 +204,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         $validated = $request->validate([
             'goods' => 'required|array|min:1|max:50',
             'goods.*.nama_barang' => 'required|string|max:255',
+            'goods.*.hs_code' => 'nullable|string|max:255',
             'goods.*.jumlah' => 'nullable|integer|min:0',
             'goods.*.satuan' => 'nullable|string|max:100',
             'goods.*.ukuran' => 'nullable|string|max:255',
@@ -216,7 +217,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'keterangan_barang' => 'nullable|string|max:2000',
         ]);
 
-        $fields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'keterangan_barang'];
+        $fields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'keterangan_barang'];
         $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($fields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
