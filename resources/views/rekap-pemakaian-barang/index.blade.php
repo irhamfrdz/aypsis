@@ -89,13 +89,14 @@
                 </select>
             </div>
 
-            <!-- Vehicle Location -->
-            <div id="lokasi-filter" class="xl:col-span-1 {{ $aktiva === 'kendaraan' ? '' : 'hidden' }}">
+            <!-- Asset Location -->
+            <div id="lokasi-filter" class="xl:col-span-1 {{ in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? '' : 'hidden' }}">
                 <label for="lokasi" class="mb-2 block text-sm font-semibold text-gray-700">Lokasi</label>
-                <select name="lokasi" id="lokasi" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" @disabled($aktiva !== 'kendaraan')>
+                <select name="lokasi" id="lokasi" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" @disabled(!in_array($aktiva, ['kendaraan', 'alat_berat'], true))>
                     <option value="">Semua Lokasi</option>
                     <option value="jakarta" @selected($lokasi === 'jakarta')>Jakarta</option>
                     <option value="batam" @selected($lokasi === 'batam')>Batam</option>
+                    <option value="tanjung_pinang" @selected($lokasi === 'tanjung_pinang')>Tanjung Pinang</option>
                 </select>
             </div>
 
@@ -244,10 +245,10 @@
         const lokasi = document.getElementById('lokasi');
 
         function toggleLokasiFilter() {
-            const isKendaraan = aktiva.value === 'kendaraan';
-            lokasiFilter.classList.toggle('hidden', !isKendaraan);
-            lokasi.disabled = !isKendaraan;
-            if (!isKendaraan) lokasi.value = '';
+            const supportsLocation = ['kendaraan', 'alat_berat'].includes(aktiva.value);
+            lokasiFilter.classList.toggle('hidden', !supportsLocation);
+            lokasi.disabled = !supportsLocation;
+            if (!supportsLocation) lokasi.value = '';
         }
 
         aktiva.addEventListener('change', toggleLokasiFilter);
