@@ -28,6 +28,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->id();
             $table->string('no_tanda_terima')->nullable();
             $table->string('nomor_tanda_terima')->nullable();
+            $table->date('tanggal_tanda_terima')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
         });
@@ -38,6 +39,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         Schema::create('tanda_terimas_lcl', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_tanda_terima')->nullable();
+            $table->date('tanggal_tanda_terima')->nullable();
             $table->unsignedBigInteger('tujuan_pengiriman_id')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
             $table->softDeletes();
@@ -152,7 +154,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         $this->assertEqualsCanonicalizing([$visibleTtsjId], $ttsjItems->pluck('id')->all());
     }
 
-    public function test_fcl_receipts_from_2025_are_hidden(): void
+    public function test_receipts_from_2025_are_hidden_for_all_types(): void
     {
         DB::table('tanda_terimas')->insert([
             ['no_surat_jalan' => 'SJ-2025', 'tanggal_surat_jalan' => '2025-12-31'],
@@ -168,5 +170,23 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             ['SJ-2026', 'SJ-TANPA-TANGGAL'],
             $items->pluck('no_surat_jalan')->all()
         );
+
+        DB::table('tanda_terimas_lcl')->insert([
+            ['nomor_tanda_terima' => 'LCL-2025', 'tanggal_tanda_terima' => '2025-01-01'],
+            ['nomor_tanda_terima' => 'LCL-2026', 'tanggal_tanda_terima' => '2026-01-01'],
+        ]);
+        $lclItems = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'lcl'])
+        )->getData()['items'];
+        $this->assertEqualsCanonicalizing(['LCL-2026'], $lclItems->pluck('nomor_tanda_terima')->all());
+
+        DB::table('tanda_terima_tanpa_surat_jalan')->insert([
+            ['no_tanda_terima' => 'TTSJ-2025', 'tanggal_tanda_terima' => '2025-06-15'],
+            ['no_tanda_terima' => 'TTSJ-2026', 'tanggal_tanda_terima' => '2026-06-15'],
+        ]);
+        $ttsjItems = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'ttsj'])
+        )->getData()['items'];
+        $this->assertEqualsCanonicalizing(['TTSJ-2026'], $ttsjItems->pluck('no_tanda_terima')->all());
     }
 }

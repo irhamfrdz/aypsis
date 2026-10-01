@@ -71,12 +71,14 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         // A receipt that already has a manifest no longer needs approval here.
         if ($type === 'fcl') {
-            $query->whereDoesntHave('prospeks.manifests')
-                ->where(function ($query) {
-                    $query->whereNull('tanggal_surat_jalan')
-                        ->orWhereYear('tanggal_surat_jalan', '!=', 2025);
-                });
+            $query->whereDoesntHave('prospeks.manifests');
         }
+
+        $dateColumn = $type === 'fcl' ? 'tanggal_surat_jalan' : 'tanggal_tanda_terima';
+        $query->where(function ($query) use ($dateColumn) {
+            $query->whereNull($dateColumn)
+                ->orWhereYear($dateColumn, '!=', 2025);
+        });
 
         $sourceTable = $query->getModel()->getTable();
         $numberColumns = $type === 'ttsj'
