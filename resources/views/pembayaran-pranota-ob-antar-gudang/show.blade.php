@@ -123,7 +123,28 @@
                                         {{ $item->nomor_pranota }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-gray-900">{{ \Carbon\Carbon::parse($item->tanggal_pranota)->format('d/m/Y') }}</td>
+                                <td class="px-6 py-4 text-xs text-gray-900">
+                                    @can('pembayaran-pranota-ob-antar-gudang-edit')
+                                        <form method="POST" action="{{ route('pembayaran-pranota-ob-antar-gudang.update-tanggal-pranota', ['id' => $pembayaran->id, 'pranotaId' => $item->id]) }}" class="flex min-w-52 items-center gap-2">
+                                            @csrf
+                                            @method('PATCH')
+                                            <label for="tanggal-pranota-{{ $item->id }}" class="sr-only">Tanggal pranota {{ $item->nomor_pranota }}</label>
+                                            <input
+                                                type="date"
+                                                id="tanggal-pranota-{{ $item->id }}"
+                                                name="tanggal_pranota"
+                                                value="{{ \Carbon\Carbon::parse($item->tanggal_pranota)->format('Y-m-d') }}"
+                                                required
+                                                class="h-9 min-w-36 rounded-md border border-gray-300 px-2 text-xs text-gray-900 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                                            <button type="submit" title="Simpan tanggal pranota" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-teal-600 text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1">
+                                                <i class="fas fa-save" aria-hidden="true"></i>
+                                                <span class="sr-only">Simpan tanggal</span>
+                                            </button>
+                                        </form>
+                                    @else
+                                        {{ \Carbon\Carbon::parse($item->tanggal_pranota)->format('d/m/Y') }}
+                                    @endcan
+                                </td>
                                 <td class="px-6 py-4 text-xs text-center text-gray-900 font-bold">{{ $item->items->count() }} kontainer</td>
                                 <td class="px-6 py-4 text-xs text-right font-bold text-gray-900">Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td>
                             </tr>
