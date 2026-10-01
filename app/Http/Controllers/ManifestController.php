@@ -85,7 +85,7 @@ class ManifestController extends Controller
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $noVoyage = trim($noVoyage);
 
-        $query = Manifest::with(['prospek.tandaTerima', 'createdBy', 'updatedBy', 'shipperDetails'])
+        $query = Manifest::with(['prospek.tandaTerima', 'createdBy', 'updatedBy', 'shipperDetails', 'shipperJb'])
             ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage);
 
@@ -98,7 +98,12 @@ class ManifestController extends Controller
                     ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                     ->orWhere('nama_barang', 'LIKE', "%{$search}%")
                     ->orWhere('pengirim', 'LIKE', "%{$search}%")
-                    ->orWhere('penerima', 'LIKE', "%{$search}%");
+                    ->orWhere('penerima', 'LIKE', "%{$search}%")
+                    ->orWhereHas('shipperJb', function ($shipper) use ($search) {
+                        $shipper->where('shipper', 'LIKE', "%{$search}%")
+                            ->orWhere('consignee', 'LIKE', "%{$search}%")
+                            ->orWhere('notify_party_consignee', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -432,6 +437,7 @@ class ManifestController extends Controller
                         'shipper_id' => 'Tambah shipper hanya tersedia untuk FCL Booking.',
                     ]);
                 }
+
                 return ManifestShipperDetail::create(array_merge($fields, $cargo, [
                     'manifest_id' => $manifest->id,
                     'created_by' => Auth::id(),
@@ -669,6 +675,7 @@ class ManifestController extends Controller
             if ($cmp === 0) {
                 return $a->id <=> $b->id;
             }
+
             return $cmp;
         })->values();
 
@@ -1341,6 +1348,7 @@ class ManifestController extends Controller
                 if ($item->consignee) {
                     $displayText .= ' - ' . $item->consignee;
                 }
+
                 return [
                     'id' => $item->name,
                     'real_id' => $item->id,
@@ -1379,6 +1387,7 @@ class ManifestController extends Controller
                 if ($item->notify_party) {
                     $displayText .= ' - ' . $item->notify_party;
                 }
+
                 return [
                     'id' => $item->name,
                     'real_id' => $item->id,
@@ -1509,12 +1518,12 @@ class ManifestController extends Controller
         $baData->no_bl = $manifest->nomor_bl;
         $baData->pelabuhan_asal = '';
         $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan;
-        
+
         $relatedManifests = Manifest::where('nama_kapal', $manifest->nama_kapal)
             ->where('no_voyage', $manifest->no_voyage)
             ->orderBy('nomor_bl')
             ->get(['id', 'nomor_bl', 'pengirim', 'penerima', 'nomor_kontainer']);
-            
+
         return view('manifests.print-ba', compact('baData', 'manifest', 'relatedManifests'));
     }
 
@@ -1542,6 +1551,7 @@ class ManifestController extends Controller
             }
         }
     }
+
     public function broadcastPreview(Request $request, ?WaBroadcastRecipientService $recipientService = null)
     {
         $recipientService = $recipientService ?? app(WaBroadcastRecipientService::class);
@@ -1554,7 +1564,7 @@ class ManifestController extends Controller
         $templateId = $request->input('template_id');
 
         $template = \App\Models\WaTemplate::find($templateId);
-        
+
         if (!$template) {
             return back()->with('error', 'Template WA tidak ditemukan.');
         }
@@ -1818,6 +1828,7 @@ class ManifestController extends Controller
                         $matchShip = ($bl->nama_kapal == $namaKapalVal && $bl->no_voyage == $noVoyageVal);
                         $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
                         $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
+
                         return $matchShip && (($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl));
                     });
 
@@ -1826,6 +1837,7 @@ class ManifestController extends Controller
                         $matchedBl = $blRecords->first(function ($bl) use ($cleanC, $cleanB) {
                             $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
                             $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
+
                             return ($cleanC && $cleanC === $cBl) || ($cleanB && $cleanB === $bBl);
                         });
                     }
@@ -1837,11 +1849,13 @@ class ManifestController extends Controller
                     $matchedNaik = $naikRecords->first(function ($n) use ($namaKapalVal, $noVoyageVal, $cleanC) {
                         $matchShip = ($n->nama_kapal == $namaKapalVal && $n->no_voyage == $noVoyageVal);
                         $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
+
                         return $matchShip && ($cleanC && $cleanC === $cNk);
                     });
                     if (!$matchedNaik) {
                         $matchedNaik = $naikRecords->first(function ($n) use ($cleanC) {
                             $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
+
                             return $cleanC && $cleanC === $cNk;
                         });
                     }

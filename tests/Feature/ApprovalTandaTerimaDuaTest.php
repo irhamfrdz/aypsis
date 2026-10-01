@@ -89,7 +89,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         });
     }
 
-    public function test_shipper_selection_updates_linked_jb_manifests_and_future_manifest_without_changing_existing_shipper_id(): void
+    public function test_shipper_selection_links_approval_data_without_replacing_manifest_data(): void
     {
         $shipperId = DB::table('shipper_consignees')->insertGetId([
             'shipper' => 'PT Pengirim JB',
@@ -104,6 +104,9 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $jbId = DB::table('manifests')->insertGetId([
             'no_voyage' => 'SA16JB26', 'nomor_tanda_terima' => 'SJ-JB-001',
             'prospek_id' => $prospekId, 'shipper_id' => 77,
+            'pengirim' => 'Pengirim Asli', 'alamat_pengirim' => 'Alamat Pengirim Asli',
+            'penerima' => 'Penerima Asli', 'alamat_penerima' => 'Alamat Penerima Asli',
+            'notify_party' => 'Notify Asli', 'alamat_notify_party' => 'Alamat Notify Asli',
         ]);
         $nonJbId = DB::table('manifests')->insertGetId([
             'no_voyage' => 'SA16BJ26', 'nomor_tanda_terima' => 'SJ-JB-001',
@@ -118,12 +121,29 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $this->assertEquals($shipperId, DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('shipper_jb_id'));
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $jbId)->value('shipper_jb_id'));
         $this->assertEquals(77, DB::table('manifests')->where('id', $jbId)->value('shipper_id'));
-        $this->assertEquals('PT Pengirim JB', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
+        $this->assertEquals('Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
+        $this->assertEquals('Alamat Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('alamat_pengirim'));
+        $this->assertEquals('Penerima Asli', DB::table('manifests')->where('id', $jbId)->value('penerima'));
+        $this->assertEquals('Alamat Penerima Asli', DB::table('manifests')->where('id', $jbId)->value('alamat_penerima'));
+        $this->assertEquals('Notify Asli', DB::table('manifests')->where('id', $jbId)->value('notify_party'));
+        $this->assertEquals('Alamat Notify Asli', DB::table('manifests')->where('id', $jbId)->value('alamat_notify_party'));
         $this->assertNull(DB::table('manifests')->where('id', $nonJbId)->value('shipper_jb_id'));
 
-        $newManifest = Manifest::create(['no_voyage' => 'SA17JB26', 'nomor_tanda_terima' => 'SJ-JB-001']);
+        $newManifest = Manifest::create([
+            'no_voyage' => 'SA17JB26',
+            'nomor_tanda_terima' => 'SJ-JB-001',
+            'pengirim' => 'Pengirim Manifest Baru',
+        ]);
         $this->assertEquals($shipperId, $newManifest->shipper_jb_id);
-        $this->assertEquals('PT Pengirim JB', $newManifest->pengirim);
+        $this->assertEquals('Pengirim Manifest Baru', $newManifest->pengirim);
+        $this->assertEquals('PT Pengirim JB', $newManifest->shipperJb->shipper);
+
+        (new ApprovalTandaTerimaDuaController)->destroy('fcl', $tandaTerimaId);
+
+        $this->assertNull(DB::table('manifests')->where('id', $jbId)->value('shipper_jb_id'));
+        $this->assertEquals('Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
+        $this->assertEquals('Penerima Asli', DB::table('manifests')->where('id', $jbId)->value('penerima'));
+        $this->assertEquals('Notify Asli', DB::table('manifests')->where('id', $jbId)->value('notify_party'));
     }
 
     public function test_lcl_selection_matches_its_receipt_and_an_unnumbered_receipt_cannot_update_unrelated_manifests(): void

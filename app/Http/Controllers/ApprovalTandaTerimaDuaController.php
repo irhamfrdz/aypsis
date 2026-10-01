@@ -267,12 +267,6 @@ class ApprovalTandaTerimaDuaController extends Controller
                 })
                 ->update([
                     'shipper_jb_id' => null,
-                    'pengirim' => null,
-                    'alamat_pengirim' => null,
-                    'penerima' => null,
-                    'alamat_penerima' => null,
-                    'notify_party' => null,
-                    'alamat_notify_party' => null,
                     'updated_by' => auth()->id(),
                 ]);
         });

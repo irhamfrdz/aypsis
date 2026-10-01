@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Manifest extends Model
 {
+    private bool $applyingShipperJb = false;
+
     protected $fillable = [
         'nomor_bl',
         'nomor_urut',
@@ -100,13 +102,8 @@ class Manifest extends Model
 
     public function applyShipperJb(ShipperConsignee $shipper): void
     {
+        $this->applyingShipperJb = true;
         $this->shipper_jb_id = $shipper->id;
-        $this->pengirim = $shipper->shipper;
-        $this->alamat_pengirim = $shipper->alamat_shipper;
-        $this->penerima = $shipper->consignee;
-        $this->alamat_penerima = $shipper->alamat_consignee;
-        $this->notify_party = $shipper->notify_party_consignee;
-        $this->alamat_notify_party = $shipper->alamat_notify_party_consignee;
     }
 
     /** Shippers sharing this FCL Booking container. */
@@ -305,7 +302,7 @@ class Manifest extends Model
         });
 
         static::saving(function ($manifest) {
-            if (empty($manifest->notify_party)) {
+            if (! $manifest->applyingShipperJb && empty($manifest->notify_party)) {
                 $related = $manifest->getRelatedNotifyParty();
                 if ($related) {
                     // Check if it's not a JB voyage without shipper before auto-filling notify_party

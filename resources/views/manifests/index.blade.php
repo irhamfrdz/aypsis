@@ -258,14 +258,13 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($manifests as $index => $manifest)
                         @php
-                            if (str_contains(strtoupper($manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id)) {
-                                $manifest->pengirim = null;
-                                $manifest->alamat_pengirim = null;
-                                $manifest->penerima = null;
-                                $manifest->alamat_penerima = null;
-                                $manifest->notify_party = null;
-                                $manifest->alamat_notify_party = null;
-                            }
+                            $approvalShipper = $manifest->shipperJb;
+                            $displayPengirim = $approvalShipper?->shipper ?? $manifest->pengirim;
+                            $displayAlamatPengirim = $approvalShipper?->alamat_shipper ?? $manifest->alamat_pengirim;
+                            $displayPenerima = $approvalShipper?->consignee ?? $manifest->penerima;
+                            $displayAlamatPenerima = $approvalShipper?->alamat_consignee ?? $manifest->alamat_penerima;
+                            $displayNotifyParty = $approvalShipper?->notify_party_consignee ?? $manifest->notify_party;
+                            $displayAlamatNotifyParty = $approvalShipper?->alamat_notify_party_consignee ?? $manifest->alamat_notify_party;
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-3">
@@ -364,12 +363,12 @@
                                 @endcan
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                @if(!$approvalShipper && $manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
                                     @foreach($manifest->shipperDetails as $detail)
                                         <div class="font-bold {{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}">{{ $detail->pengirim ?: '-' }}</div>
                                     @endforeach
                                 @else
-                                    <div class="font-bold">{{ $manifest->pengirim }}</div>
+                                    <div class="font-bold">{{ $displayPengirim ?: '-' }}</div>
                                 @endif
                                 @if($manifest->shipper_jb_id)
                                     <div class="mt-1 text-[10px] text-indigo-600">Shipper JB #{{ $manifest->shipper_jb_id }}</div>
@@ -379,40 +378,40 @@
                                 @endcan
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                @if(!$approvalShipper && $manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
                                     @foreach($manifest->shipperDetails as $detail)
                                         <div class="text-[10px] text-gray-500 {{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}" title="{{ $detail->alamat_pengirim }}">{{ $detail->alamat_pengirim ?: '-' }}</div>
                                     @endforeach
-                                @elseif($manifest->alamat_pengirim)
-                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-2" title="{{ $manifest->alamat_pengirim }}">{{ $manifest->alamat_pengirim }}</div>
+                                @elseif($displayAlamatPengirim)
+                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-2" title="{{ $displayAlamatPengirim }}">{{ $displayAlamatPengirim }}</div>
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                @if(!$approvalShipper && $manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
                                     @foreach($manifest->shipperDetails as $detail)
                                         <div class="{{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}"><div class="font-bold">{{ $detail->penerima ?: '-' }}</div>@if($detail->alamat_penerima)<div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $detail->alamat_penerima }}">{{ $detail->alamat_penerima }}</div>@endif</div>
                                     @endforeach
                                 @else
-                                <div class="font-bold">{{ $manifest->penerima }}</div>
-                                @if($manifest->alamat_penerima)
-                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $manifest->alamat_penerima }}">
-                                        {{ $manifest->alamat_penerima }}
+                                <div class="font-bold">{{ $displayPenerima ?: '-' }}</div>
+                                @if($displayAlamatPenerima)
+                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $displayAlamatPenerima }}">
+                                        {{ $displayAlamatPenerima }}
                                     </div>
                                 @endif
                                 @endif
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+                                @if(!$approvalShipper && $manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
                                     @foreach($manifest->shipperDetails as $detail)
                                         <div class="{{ !$loop->first ? 'mt-2 pt-2 border-t border-gray-200' : '' }}"><div class="font-bold">{{ $detail->notify_party ?: '-' }}</div>@if($detail->alamat_notify_party)<div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $detail->alamat_notify_party }}">{{ $detail->alamat_notify_party }}</div>@endif</div>
                                     @endforeach
-                                @elseif($manifest->notify_party)
-                                    <div class="font-bold">{{ $manifest->notify_party }}</div>
-                                    @if($manifest->alamat_notify_party)
-                                        <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $manifest->alamat_notify_party }}">
-                                            {{ $manifest->alamat_notify_party }}
+                                @elseif($displayNotifyParty)
+                                    <div class="font-bold">{{ $displayNotifyParty }}</div>
+                                    @if($displayAlamatNotifyParty)
+                                        <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $displayAlamatNotifyParty }}">
+                                            {{ $displayAlamatNotifyParty }}
                                         </div>
                                     @endif
                                 @else
@@ -450,8 +449,8 @@
                                         $waText .= "No. Kontainer: " . $manifest->nomor_kontainer . " (" . $manifest->size_kontainer . "' " . $manifest->tipe_kontainer . ")\n";
                                         $waText .= "Barang: " . $manifest->nama_barang . "\n";
                                         $waText .= "Kuantitas: " . $manifest->kuantitas . " " . $manifest->satuan . "\n\n";
-                                        $waText .= "Pengirim: " . $manifest->pengirim . "\n";
-                                        $waText .= "Penerima: " . $manifest->penerima;
+                                        $waText .= "Pengirim: " . $displayPengirim . "\n";
+                                        $waText .= "Penerima: " . $displayPenerima;
                                         $waUrl = "https://wa.me/?text=" . rawurlencode($waText);
                                     @endphp
                                     <a href="{{ $waUrl }}" target="_blank"
