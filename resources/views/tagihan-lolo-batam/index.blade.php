@@ -12,6 +12,12 @@
             <p class="text-gray-500 text-sm mt-1">Kelola dan pantau seluruh kontainer berstatus LOLO serta penerbitan faktur tagihan di Batam.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+            @if(Route::has('pranota-lolo-batam.index'))
+            <a href="{{ route('pranota-lolo-batam.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-150">
+                <i class="fas fa-file-invoice mr-2"></i>
+                Daftar Pranota LOLO Batam
+            </a>
+            @endif
             <a href="{{ route('master.pricelist-lolo-batam.index') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-150">
                 <i class="fas fa-tags mr-2"></i>
                 Master Tarif LOLO Batam
@@ -307,10 +313,17 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     @if($c->is_billed)
-                                        <a href="{{ route('tagihan-lolo-batam.show', $c->tagihan_id) }}" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 transition-colors" title="Klik untuk lihat pranota/faktur">
+                                        @if($c->tagihan_id)
+                                        <a href="{{ route('pranota-lolo-batam.show', $c->tagihan_id) }}" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 transition-colors" title="Klik untuk lihat pranota/faktur">
                                             <i class="fas fa-check-circle mr-1 text-emerald-600"></i>
                                             Sudah Masuk Pranota ({{ $c->nomor_tagihan }})
                                         </a>
+                                        @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                            <i class="fas fa-check-circle mr-1 text-emerald-600"></i>
+                                            Sudah Masuk Pranota
+                                        </span>
+                                        @endif
                                     @else
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
                                             <i class="fas fa-clock mr-1 text-amber-600"></i> Belum Masuk Pranota

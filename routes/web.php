@@ -4167,6 +4167,25 @@ Route::middleware([
             'destroy' => 'tagihan-lolo-batam.destroy',
         ]);
 
+        // 📋 PRANOTA LOLO BATAM
+        Route::get('pranota-lolo-batam/export', [\App\Http\Controllers\PranotaLoloBatamController::class, 'export'])
+            ->name('pranota-lolo-batam.export')
+            ->middleware('can:pranota-lolo-batam-export');
+        Route::get('pranota-lolo-batam/{pranotaLoloBatam}/print', [\App\Http\Controllers\PranotaLoloBatamController::class, 'print'])
+            ->name('pranota-lolo-batam.print')
+            ->middleware('can:pranota-lolo-batam-print');
+        Route::resource('pranota-lolo-batam', \App\Http\Controllers\PranotaLoloBatamController::class)->parameters([
+            'pranota-lolo-batam' => 'pranotaLoloBatam',
+        ])->names([
+            'index' => 'pranota-lolo-batam.index',
+            'create' => 'pranota-lolo-batam.create',
+            'store' => 'pranota-lolo-batam.store',
+            'show' => 'pranota-lolo-batam.show',
+            'edit' => 'pranota-lolo-batam.edit',
+            'update' => 'pranota-lolo-batam.update',
+            'destroy' => 'pranota-lolo-batam.destroy',
+        ]);
+
         Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
             ->name('orders-batam.generate-number')
             ->middleware('can:order-batam-create');

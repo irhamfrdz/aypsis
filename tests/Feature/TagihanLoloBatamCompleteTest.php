@@ -6,6 +6,7 @@ use App\Models\LangsirBatam;
 use App\Models\MasterPricelistLoloBatam;
 use App\Models\SuratJalanBongkaranBatam;
 use App\Models\TagihanLoloBatam;
+use App\Models\TagihanLoloBatamItem;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -563,5 +564,61 @@ class TagihanLoloBatamCompleteTest extends TestCase
         $responseIndex->assertStatus(200);
         $responseIndex->assertSee('AYP: Budi Santoso');
         $responseIndex->assertSee('Vendor: Vendor Trans Indo');
+    }
+
+    public function test_pranota_lolo_batam_dedicated_menu_and_views()
+    {
+        // 1. Create a TagihanLoloBatam entry
+        $pranota = TagihanLoloBatam::create([
+            'nomor_tagihan' => 'PLB/10/26/000001',
+            'tanggal_tagihan' => '2026-10-01',
+            'vendor' => 'Pelindo Batam',
+            'tipe_operator' => 'AYP',
+            'operator' => 'Operator Test',
+            'kapal' => 'KM ALEXINDO 01',
+            'voyage' => 'VOY 09',
+            'status_pembayaran' => 'Belum Lunas',
+            'total_tagihan' => 700000,
+            'created_by' => $this->user->id,
+        ]);
+
+        TagihanLoloBatamItem::create([
+            'tagihan_lolo_batam_id' => $pranota->id,
+            'nomor_kontainer' => 'AYPU9988776',
+            'size' => '20',
+            'tipe_kontainer' => 'FULL',
+            'kegiatan' => 'LOLO Batam',
+            'tarif' => 350000,
+            'jumlah' => 2,
+            'total' => 700000,
+        ]);
+
+        // 2. Index Pranota LOLO Batam
+        $response = $this->get(route('pranota-lolo-batam.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Pranota LOLO Batam');
+        $response->assertSee('PLB/10/26/000001');
+        $response->assertSee('Pelindo Batam');
+
+        // 3. Show Pranota
+        $showResponse = $this->get(route('pranota-lolo-batam.show', $pranota->id));
+        $showResponse->assertStatus(200);
+        $showResponse->assertSee('PLB/10/26/000001');
+        $showResponse->assertSee('AYPU9988776');
+
+        // 4. Print Pranota
+        $printResponse = $this->get(route('pranota-lolo-batam.print', $pranota->id));
+        $printResponse->assertStatus(200);
+        $printResponse->assertSee('PRANOTA BIAYA LOLO');
+        $printResponse->assertSee('PLB/10/26/000001');
+
+        // 5. Edit Pranota
+        $editResponse = $this->get(route('pranota-lolo-batam.edit', $pranota->id));
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee('PLB/10/26/000001');
+
+        // 6. Export Pranota CSV
+        $exportResponse = $this->get(route('pranota-lolo-batam.export'));
+        $exportResponse->assertStatus(200);
     }
 }

@@ -137,7 +137,7 @@ class TagihanLoloBatamMasterUserTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('permissions[tagihan-lolo-batam][view]', $viewCreate);
-        $this->assertStringContainsString('Tagihan LOLO Batam', $viewCreate);
+        $this->assertStringContainsString('Pranota LOLO Batam', $viewCreate);
 
         $viewEdit = view('master-user.edit', [
             'user' => $user,
@@ -152,6 +152,6 @@ class TagihanLoloBatamMasterUserTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('permissions[tagihan-lolo-batam][view]', $viewEdit);
-        $this->assertStringContainsString('Tagihan LOLO Batam', $viewEdit);
+        $this->assertStringContainsString('Pranota LOLO Batam', $viewEdit);
     }
 }

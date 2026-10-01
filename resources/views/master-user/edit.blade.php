@@ -1943,12 +1943,12 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Tagihan LOLO Batam --}}
+                            {{-- Pranota LOLO Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span class="text-teal-600 font-bold">Tagihan LOLO Batam</span>
+                                        <span class="text-teal-600 font-bold">Pranota LOLO Batam</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[tagihan-lolo-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.view') || (isset($userMatrixPermissions['tagihan-lolo-batam']['view']) && $userMatrixPermissions['tagihan-lolo-batam']['view']) || ($user && $user->can('tagihan-lolo-batam-view'))) checked @endif></td>
