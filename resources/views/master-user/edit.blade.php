@@ -1595,10 +1595,10 @@
                                         <span>Pricelist LOLO Batam</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['view']) && $userMatrixPermissions['master-pricelist-lolo-batam']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['create']) && $userMatrixPermissions['master-pricelist-lolo-batam']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['update']) && $userMatrixPermissions['master-pricelist-lolo-batam']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['delete']) && $userMatrixPermissions['master-pricelist-lolo-batam']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][view]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['view'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][create]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['create'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][update]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['update'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][delete]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['delete'] ?? false)></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
