@@ -1587,6 +1587,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist LOLO Batam --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist LOLO Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][view]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['view'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][create]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['create'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][update]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['update'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][delete]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-pricelist-lolo-batam']['delete'] ?? false)></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Biaya Storage --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">
