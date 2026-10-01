@@ -19,11 +19,14 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
 
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
+            $table->string('no_surat_jalan')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
         });
         Schema::create('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             $table->id();
+            $table->string('no_tanda_terima')->nullable();
+            $table->string('nomor_tanda_terima')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
         });
@@ -33,6 +36,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         });
         Schema::create('tanda_terimas_lcl', function (Blueprint $table) {
             $table->id();
+            $table->string('nomor_tanda_terima')->nullable();
             $table->unsignedBigInteger('tujuan_pengiriman_id')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
             $table->softDeletes();
@@ -55,6 +59,15 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->string('source_type');
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
+        });
+        Schema::create('prospek', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_id')->nullable();
+        });
+        Schema::create('manifests', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('prospek_id')->nullable();
+            $table->string('nomor_tanda_terima')->nullable();
         });
     }
 
@@ -93,5 +106,48 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
                 : $items->first()->tujuan_pengiriman;
             $this->assertSame($expected, $actual);
         }
+    }
+
+    public function test_receipts_already_used_in_a_manifest_are_hidden(): void
+    {
+        $visibleFclId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-VISIBLE']);
+        $linkedFclId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-LINKED']);
+        $numberedFclId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-NUMBERED']);
+        $prospekId = DB::table('prospek')->insertGetId(['tanda_terima_id' => $linkedFclId]);
+        DB::table('manifests')->insert([
+            ['prospek_id' => $prospekId, 'nomor_tanda_terima' => null],
+            ['prospek_id' => null, 'nomor_tanda_terima' => 'SJ-NUMBERED'],
+        ]);
+
+        $fclItems = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'fcl'])
+        )->getData()['items'];
+
+        $this->assertEqualsCanonicalizing([$visibleFclId], $fclItems->pluck('id')->all());
+        $this->assertNotContains($linkedFclId, $fclItems->pluck('id')->all());
+        $this->assertNotContains($numberedFclId, $fclItems->pluck('id')->all());
+
+        $visibleLclId = DB::table('tanda_terimas_lcl')->insertGetId(['nomor_tanda_terima' => 'LCL-VISIBLE']);
+        DB::table('tanda_terimas_lcl')->insert(['nomor_tanda_terima' => 'LCL-MANIFEST']);
+        DB::table('manifests')->insert(['nomor_tanda_terima' => 'LCL-MANIFEST']);
+
+        $lclItems = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'lcl'])
+        )->getData()['items'];
+        $this->assertEqualsCanonicalizing([$visibleLclId], $lclItems->pluck('id')->all());
+
+        $visibleTtsjId = DB::table('tanda_terima_tanpa_surat_jalan')->insertGetId([
+            'nomor_tanda_terima' => 'TTSJ-VISIBLE',
+        ]);
+        DB::table('tanda_terima_tanpa_surat_jalan')->insert([
+            'no_tanda_terima' => null,
+            'nomor_tanda_terima' => 'TTSJ-MANIFEST',
+        ]);
+        DB::table('manifests')->insert(['nomor_tanda_terima' => 'TTSJ-MANIFEST']);
+
+        $ttsjItems = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'ttsj'])
+        )->getData()['items'];
+        $this->assertEqualsCanonicalizing([$visibleTtsjId], $ttsjItems->pluck('id')->all());
     }
 }

@@ -69,6 +69,28 @@ class ApprovalTandaTerimaDuaController extends Controller
             $query->with('dimensiItems');
         }
 
+        // A receipt that already has a manifest no longer needs approval here.
+        if ($type === 'fcl') {
+            $query->whereDoesntHave('prospeks.manifests');
+        }
+
+        $sourceTable = $query->getModel()->getTable();
+        $numberColumns = $type === 'ttsj'
+            ? ['no_tanda_terima', 'nomor_tanda_terima']
+            : [$this->numberColumn($type)];
+        $query->whereNotExists(function ($manifestQuery) use ($sourceTable, $numberColumns) {
+            $manifestQuery->selectRaw('1')->from('manifests')
+                ->where(function ($numbers) use ($sourceTable, $numberColumns) {
+                    foreach ($numberColumns as $column) {
+                        $numbers->orWhere(function ($match) use ($sourceTable, $column) {
+                            $match->whereNotNull("{$sourceTable}.{$column}")
+                                ->where("{$sourceTable}.{$column}", '!=', '')
+                                ->whereColumn('manifests.nomor_tanda_terima', "{$sourceTable}.{$column}");
+                        });
+                    }
+                });
+        });
+
         if ($request->filled('search')) {
             $search = trim($filters['search']);
             $numberColumn = $this->numberColumn($type);
