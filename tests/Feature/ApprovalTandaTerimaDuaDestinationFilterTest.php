@@ -20,6 +20,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->string('no_surat_jalan')->nullable();
+            $table->date('tanggal_surat_jalan')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
         });
@@ -149,5 +150,23 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             Request::create('/', 'GET', ['type' => 'ttsj'])
         )->getData()['items'];
         $this->assertEqualsCanonicalizing([$visibleTtsjId], $ttsjItems->pluck('id')->all());
+    }
+
+    public function test_fcl_receipts_from_2025_are_hidden(): void
+    {
+        DB::table('tanda_terimas')->insert([
+            ['no_surat_jalan' => 'SJ-2025', 'tanggal_surat_jalan' => '2025-12-31'],
+            ['no_surat_jalan' => 'SJ-2026', 'tanggal_surat_jalan' => '2026-01-01'],
+            ['no_surat_jalan' => 'SJ-TANPA-TANGGAL', 'tanggal_surat_jalan' => null],
+        ]);
+
+        $items = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'fcl'])
+        )->getData()['items'];
+
+        $this->assertEqualsCanonicalizing(
+            ['SJ-2026', 'SJ-TANPA-TANGGAL'],
+            $items->pluck('no_surat_jalan')->all()
+        );
     }
 }
