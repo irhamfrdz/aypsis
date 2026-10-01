@@ -105,7 +105,8 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
 
         TandaTerima::withoutEvents(fn () => app(ApprovalTandaTerimaDuaController::class)->updateGoods(
             Request::create('/', 'PUT', ['goods' => [[
-                'original_index' => 0, 'nama_barang' => 'Mesin', 'jumlah' => 2, 'satuan' => 'Unit', 'meter_kubik' => 3.5,
+                'original_index' => 0, 'nama_barang' => 'Mesin', 'hs_code' => '8429.51.00',
+                'jumlah' => 2, 'satuan' => 'Unit', 'meter_kubik' => 3.5,
             ]]]), 'fcl', $id
         ));
 
@@ -116,6 +117,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $this->assertNull($receipt->jumlah);
         $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail();
         $this->assertSame('Mesin', $override->goods[0]['nama_barang']);
+        $this->assertSame('8429.51.00', $override->goods[0]['hs_code']);
         $this->assertSame(2, $override->goods[0]['jumlah']);
 
         app(ApprovalTandaTerimaDuaController::class)->updateGoods(

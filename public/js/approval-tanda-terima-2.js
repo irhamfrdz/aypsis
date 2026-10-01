@@ -16,7 +16,7 @@
         dialog.querySelector('.approval-goods-add')?.addEventListener('click', () => {
             const index = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2);
             const row = document.createElement('tr');
-            const fields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'];
+            const fields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'];
             fields.forEach(field => {
                 const cell = document.createElement('td');
                 cell.className = 'px-2 py-2';
