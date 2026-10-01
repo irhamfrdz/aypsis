@@ -67,6 +67,10 @@
                             <p class="text-gray-900">{{ $suratJalanBongkaran->aktifitas ?: '-' }}</p>
                         </div>
                         <div>
+                            <label class="text-sm font-medium text-gray-500">Menggunakan LOLO</label>
+                            <p class="text-gray-900">{{ $suratJalanBongkaran->menggunakan_lolo ? 'Ya' : 'Tidak' }}</p>
+                        </div>
+                        <div>
                             <label class="text-sm font-medium text-gray-500">Status</label>
                             <div class="mt-1">
                                 @php

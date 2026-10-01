@@ -116,6 +116,27 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">
+                                Menggunakan LOLO <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex space-x-6 pt-1">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="menggunakan_lolo" value="tidak" required {{ old('menggunakan_lolo') == 'tidak' ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">Tidak</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="menggunakan_lolo" value="ya" required {{ old('menggunakan_lolo') == 'ya' ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">Ya</span>
+                                </label>
+                            </div>
+                            @error('menggunakan_lolo')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Section: Rute & Transport -->

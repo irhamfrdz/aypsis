@@ -150,13 +150,17 @@ class LangsirBatamController extends Controller
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
+            'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
+            'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
+            'menggunakan_lolo.in' => 'Pilihan Menggunakan LOLO harus bernilai Ya atau Tidak.',
         ]);
 
         $validated['input_by'] = Auth::id();
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
+        $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
 
         if ($validated['ob_dalam_pelabuhan']) {
             $validated['dari'] = 'PELABUHAN';
@@ -360,6 +364,17 @@ class LangsirBatamController extends Controller
                     $noChasis = trim($matches->first()->no_kir);
                 }
 
+                $rawLolo = strtolower(trim((string) ($row['menggunakan_lolo'] ?? '')));
+                if ($rawLolo === '') {
+                    $errors[] = "Baris {$rowNumber}: Kolom Menggunakan LOLO wajib diisi ('Ya' atau 'Tidak').";
+
+                    continue;
+                } elseif (! in_array($rawLolo, ['ya', 'tidak', '1', '0', 'true', 'false'], true)) {
+                    $errors[] = "Baris {$rowNumber}: Kolom Menggunakan LOLO bernilai '{$row['menggunakan_lolo']}'. Harus 'Ya' atau 'Tidak'.";
+
+                    continue;
+                }
+
                 $noTransaksi = LangsirBatam::generateNoTransaksi();
 
                 $dataInsert = [
@@ -381,6 +396,7 @@ class LangsirBatamController extends Controller
                     'keterangan' => $row['keterangan'] ?? null,
                     'status' => strtoupper(trim($row['status'] ?? 'FULL')),
                     'ob_dalam_pelabuhan' => $obDalamPelabuhan,
+                    'menggunakan_lolo' => in_array(strtolower((string) ($row['menggunakan_lolo'] ?? '')), ['ya', '1', 'true'], true),
                     'input_by' => Auth::id(),
                 ];
 
@@ -507,12 +523,16 @@ class LangsirBatamController extends Controller
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
+            'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
+            'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
+            'menggunakan_lolo.in' => 'Pilihan Menggunakan LOLO harus bernilai Ya atau Tidak.',
         ]);
 
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
+        $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
 
         if ($validated['ob_dalam_pelabuhan']) {
             $validated['dari'] = 'PELABUHAN';

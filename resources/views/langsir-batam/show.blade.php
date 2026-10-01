@@ -81,6 +81,14 @@
                                 <span class="text-xs text-gray-500 uppercase">No. Seal</span>
                                 <span class="text-sm font-bold text-gray-900">{{ $langsir->no_seal ?? '-' }}</span>
                             </div>
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                <span class="text-xs text-gray-500 uppercase">Menggunakan LOLO</span>
+                                @if($langsir->menggunakan_lolo)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Ya</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Tidak</span>
+                                @endif
+                            </div>
                             <div class="pt-2">
                                 <div class="text-[10px] text-gray-500 uppercase mb-2">Rute Perjalanan</div>
                                 <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">

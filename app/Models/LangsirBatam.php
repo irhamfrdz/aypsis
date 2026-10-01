@@ -30,6 +30,7 @@ class LangsirBatam extends Model
         'keterangan',
         'status',
         'ob_dalam_pelabuhan',
+        'menggunakan_lolo',
         'input_by',
     ];
 
@@ -37,6 +38,7 @@ class LangsirBatam extends Model
         'tanggal' => 'date',
         'biaya' => 'decimal:2',
         'ob_dalam_pelabuhan' => 'boolean',
+        'menggunakan_lolo' => 'boolean',
     ];
 
     public function user()

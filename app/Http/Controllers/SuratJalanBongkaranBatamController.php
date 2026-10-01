@@ -823,6 +823,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams',
                 'tanggal_surat_jalan' => 'required|date',
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
+                'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -858,6 +859,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 'keterangan' => 'nullable|string',
                 'uang_jalan_nominal' => 'nullable|numeric|min:0',
                 'f_e' => 'nullable|string|in:Full,Empty',
+            ], [
+                'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib diisi (Ya atau Tidak).',
+                'menggunakan_lolo.in' => 'Pilihan Menggunakan LOLO harus Ya atau Tidak.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->ajax() || $request->wantsJson()) {
@@ -889,6 +893,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['input_by'] = Auth::id();
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
+        $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
         $validatedData['buntut_asal'] = $buntutAsal;
         $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
@@ -1088,6 +1093,14 @@ class SuratJalanBongkaranBatamController extends Controller
                     if (! empty($buntutPlatKir) && ! $this->isValidBuntutAyp($buntutPlatKir)) {
                         $errors[] = "Baris {$rowNumber}: Data PLAT / KIR Buntut AYP '{$buntutPlatKir}' tidak ada di master, silahkan periksa kembali.";
                     }
+                }
+
+                // Check Menggunakan LOLO
+                $rawLolo = strtolower(trim($row['menggunakan_lolo'] ?? ''));
+                if ($rawLolo === '') {
+                    $errors[] = "Baris {$rowNumber}: Kolom Menggunakan LOLO wajib diisi ('Ya' atau 'Tidak').";
+                } elseif (! in_array($rawLolo, ['ya', 'tidak', '1', '0', 'true', 'false'], true)) {
+                    $errors[] = "Baris {$rowNumber}: Kolom Menggunakan LOLO bernilai '{$row['menggunakan_lolo']}'. Harus 'Ya' atau 'Tidak'.";
                 }
 
                 // If there are errors in this row regarding karyawan/kendaraan, skip to next row
@@ -1308,6 +1321,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         'nama_kapal' => $namaKapal,
                         'no_voyage' => $rowVoyage,
                         'lokasi' => $rowLokasi,
+                        'menggunakan_lolo' => in_array(strtolower((string) ($row['menggunakan_lolo'] ?? '')), ['ya', '1', 'true'], true),
                         'input_by' => Auth::id(),
                     ]);
                     $successCount++;
@@ -1419,6 +1433,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams,nomor_surat_jalan,'.$suratJalanBongkaran->id,
                 'tanggal_surat_jalan' => 'required|date',
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
+                'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -1453,6 +1468,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 'keterangan' => 'nullable|string',
                 'uang_jalan_nominal' => 'nullable|numeric|min:0',
                 'f_e' => 'nullable|string|in:Full,Empty',
+            ], [
+                'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib diisi (Ya atau Tidak).',
+                'menggunakan_lolo.in' => 'Pilihan Menggunakan LOLO harus Ya atau Tidak.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->ajax() || $request->wantsJson()) {
@@ -1484,6 +1502,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
+            $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
             $validatedData['buntut_asal'] = $buntutAsal;
             $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
@@ -1750,6 +1769,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tanpa_uang_jalan' => $suratJalan->tanpa_uang_jalan ?? 0,
                 'lokasi' => $suratJalan->lokasi ?? '',
                 'f_e' => $suratJalan->f_e ?? 'Full',
+                'menggunakan_lolo' => $suratJalan->menggunakan_lolo ? 1 : 0,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch Surat Jalan data'], 500);

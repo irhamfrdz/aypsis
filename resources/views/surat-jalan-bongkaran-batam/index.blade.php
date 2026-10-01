@@ -598,6 +598,25 @@
                             </select>
                         </div>
 
+                        <!-- Menggunakan LOLO -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Menggunakan LOLO <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="menggunakan_lolo" value="tidak" required
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="menggunakan_lolo" value="ya" required
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Informasi Penerimaan -->
                         <div class="md:col-span-2 mt-3">
                             <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pengiriman</h4>
@@ -1071,20 +1090,20 @@
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     @if(empty($selectedVoyage))
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; Menggunakan LOLO (Ya/Tidak) ; No Voyage
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full;VOY123
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full;Ya;VOY123
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
                     </p>
                     @else
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Sumber Buntut (AYP/PB) ; No PLAT/ KIR (AYP) ; No PLAT/KIR (PB) ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; Menggunakan LOLO (Ya/Tidak)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full;Ya
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
@@ -1100,7 +1119,7 @@
                     </label>
                     <textarea id="bulkTextarea" rows="10"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;PB; ;PB-123;Bongkar;batam;Batu Ampar (PB);Full"></textarea>
+                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;AYP;BP 9000 AY; ;Bongkar;batam;Batu Ampar (PB);Full;Ya&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;PB; ;PB-123;Bongkar;batam;Batu Ampar (PB);Full;Tidak"></textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -1136,6 +1155,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">LOLO</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Size</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
                                     @if(empty($selectedVoyage))
@@ -1257,6 +1277,25 @@
                                     <option value="{{ $kegiatan->nama_kegiatan }}">{{ $kegiatan->nama_kegiatan }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <!-- Menggunakan LOLO -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Menggunakan LOLO <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_tidak" value="tidak" required
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_ya" value="ya" required
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Informasi Pengiriman -->
@@ -2170,6 +2209,13 @@ function handleFormSubmit(event) {
         }
     }
 
+    // Validate Menggunakan LOLO
+    const menggunakanLolo = document.querySelector('#modalBuatSuratJalan input[name="menggunakan_lolo"]:checked')?.value;
+    if (!menggunakanLolo) {
+        showModalAlert('Field Wajib Diisi!', 'Pilihan Menggunakan LOLO harus dipilih (Ya atau Tidak).', 'error');
+        return false;
+    }
+
     // Validate Sumber Buntut
     const buntutAsal = document.querySelector('input[name="buntut_asal"]#modal_buntut_asal_ayp')?.checked ? 'AYP' : 'PB';
     if (buntutAsal === 'AYP') {
@@ -2299,6 +2345,7 @@ function getFieldLabel(fieldName) {
         'uang_jalan_type': 'Tipe Uang Jalan',
         'uang_jalan_nominal': 'Nominal Uang Jalan',
         'lanjut_muat': 'Lanjut Muat',
+        'menggunakan_lolo': 'Menggunakan LOLO',
         'nomor_sj_sebelumnya': 'Nomor Surat Jalan Sebelumnya',
         'nama_kapal': 'Nama Kapal',
         'no_voyage': 'No Voyage',
@@ -2387,6 +2434,9 @@ function closeModal() {
     toggleBuntutSource('AYP', 'create');
     const aypRadio = document.getElementById('modal_buntut_asal_ayp');
     if (aypRadio) aypRadio.checked = true;
+
+    // Reset Menggunakan LOLO
+    document.querySelectorAll('#modalBuatSuratJalan input[name="menggunakan_lolo"]').forEach(r => r.checked = false);
 
     // Remove any alerts
     const existingAlert = document.querySelector('.modal-alert');
@@ -2727,6 +2777,11 @@ function openEditModal(suratJalanId) {
                     const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
                     if (feRadio) feRadio.checked = true;
                 }
+                if (data.menggunakan_lolo !== undefined && data.menggunakan_lolo !== null) {
+                    const isLolo = (data.menggunakan_lolo == 1 || data.menggunakan_lolo === true || data.menggunakan_lolo === '1');
+                    const loloRadio = document.querySelector(`#modalEditSuratJalan input[name="menggunakan_lolo"][value="${isLolo ? 'ya' : 'tidak'}"]`);
+                    if (loloRadio) loloRadio.checked = true;
+                }
                 
                 // Convert to integer to remove decimal places
                 const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
@@ -2943,6 +2998,13 @@ function handleEditFormSubmit(event) {
     if (!tanggalSuratJalan) {
         showEditModalAlert('Field Wajib Diisi!', 'Tanggal Surat Jalan harus diisi sebelum menyimpan.', 'error');
         document.getElementById('edit_modal_tanggal_surat_jalan').focus();
+        return false;
+    }
+
+    // Validate Menggunakan LOLO
+    const editMenggunakanLolo = document.querySelector('#modalEditSuratJalan input[name="menggunakan_lolo"]:checked')?.value;
+    if (!editMenggunakanLolo) {
+        showEditModalAlert('Field Wajib Diisi!', 'Pilihan Menggunakan LOLO harus dipilih (Ya atau Tidak).', 'error');
         return false;
     }
     
@@ -3226,7 +3288,7 @@ async function parseBulkData() {
     let columnKeys = [
         'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
         'supir', 'no_plat', 'buntut_asal', 'buntut_plat_kir_ayp', 'buntut_plat_kir_pb',
-        'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
+        'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e', 'menggunakan_lolo'
     ];
     if (isVoyageEmpty) {
         columnKeys.push('no_voyage');
@@ -3344,6 +3406,20 @@ async function parseBulkData() {
             }
         }
 
+        let loloDisplay = '';
+        const rawLolo = (row.menggunakan_lolo || '').trim().toLowerCase();
+        if (!rawLolo) {
+            errors.push(`Baris ${index + 1}: Kolom Menggunakan LOLO wajib diisi (Ya / Tidak).`);
+            loloDisplay = '<span class="text-red-600 font-bold">KOSONG</span>';
+        } else if (!['ya', 'tidak', '1', '0', 'true', 'false'].includes(rawLolo)) {
+            errors.push(`Baris ${index + 1}: Kolom Menggunakan LOLO bernilai "${row.menggunakan_lolo}". Harus "Ya" atau "Tidak".`);
+            loloDisplay = `<span class="text-red-600 font-bold">${row.menggunakan_lolo}</span>`;
+        } else {
+            loloDisplay = (rawLolo === 'ya' || rawLolo === '1' || rawLolo === 'true')
+                ? '<span class="text-green-600 font-semibold">Ya</span>'
+                : '<span class="text-gray-600 font-medium">Tidak</span>';
+        }
+
         const cellValues = [
             bulkParsedRows.length,
             row.nomor_surat_jalan,
@@ -3358,6 +3434,7 @@ async function parseBulkData() {
             row.lokasi || 'batam',
             row.tujuan_pengiriman || '-',
             row.f_e || 'Full',
+            loloDisplay,
             displaySize,
             displayBiaya > 0 ? 'Rp ' + displayBiaya.toLocaleString('id-ID') : '<span class="text-gray-400 italic">Auto (Berdasarkan Kontainer)</span>'
         ];

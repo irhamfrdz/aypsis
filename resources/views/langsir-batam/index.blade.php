@@ -192,7 +192,12 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-900">
                                         <div class="font-bold">{{ $langsir->no_kontainer }}</div>
-                                        <div class="text-gray-500 text-[10px]">{{ $langsir->size }}</div>
+                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                            <span class="text-gray-500 text-[10px]">{{ $langsir->size }}</span>
+                                            @if($langsir->menggunakan_lolo)
+                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">LOLO</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-700">
                                         <div class="flex items-center">
@@ -373,9 +378,9 @@
                         <svg class="w-4 h-4 inline-block mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Panduan Format Data (Dipisahkan Titik Koma <code class="bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-900 font-bold">;</code>)
                     </h4>
-                    <p class="text-xs text-emerald-700 mb-2">Setiap baris = 1 data langsir. Terdapat <strong>16 kolom</strong> yang dipisahkan dengan tanda titik koma (<strong>;</strong>):</p>
+                    <p class="text-xs text-emerald-700 mb-2">Setiap baris = 1 data langsir. Terdapat <strong>17 kolom</strong> yang dipisahkan dengan tanda titik koma (<strong>;</strong>):</p>
                     
-                    <!-- Badges Daftar 16 Kolom -->
+                    <!-- Badges Daftar 17 Kolom -->
                     <div class="flex flex-wrap gap-1.5 mb-3">
                         <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-900 text-xs border border-indigo-300 font-bold shadow-sm">1. No. Surat Jalan (Unik)</span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">2. Tanggal <span class="text-red-500 ml-0.5">*</span></span>
@@ -393,15 +398,16 @@
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">14. Keterangan</span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">15. Sumber Chasis (AYP/PB) <span class="text-red-500 ml-0.5">*</span></span>
                         <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">16. No. KIR / No. Chasis <span class="text-red-500 ml-0.5">*</span></span>
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-white text-emerald-900 text-xs border border-emerald-200 font-medium">17. Menggunakan LOLO (Ya/Tidak) <span class="text-red-500 ml-0.5">*</span></span>
                     </div>
 
                     <div class="bg-white rounded px-3 py-2 text-xs text-emerald-900 font-mono overflow-x-auto border border-emerald-100">
-                        <strong>Template:</strong> No Surat Jalan ; Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; Sumber Chasis (AYP/PB) ; No. KIR (AYP) / No. Chasis (PB)
+                        <strong>Template:</strong> No Surat Jalan ; Tanggal ; No Kontainer ; Size ; No Seal ; Dari ; Ke ; Gudang Tujuan ; Supir ; No Plat ; Biaya ; Status ; OB Dalam Pelabuhan (Ya/Tidak) ; Keterangan ; Sumber Chasis (AYP/PB) ; No. KIR (AYP) / No. Chasis (PB) ; Menggunakan LOLO (Ya/Tidak)
                     </div>
                     <div class="mt-2 text-xs text-emerald-700">
                         <strong>Contoh Baris Data:</strong>
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
-                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345
+                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya
                         </div>
                         <p class="mt-1">AYP: isi nomor KIR dari master mobil berjenis Buntut. PB: isi nomor chasis secara manual.</p>
                     </div>
@@ -410,7 +416,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Langsir <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345"></textarea>
+                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya"></textarea>
                 </div>
                 <div class="flex items-center gap-3 mb-4">
                     <button type="button" onclick="parseBulkData()" class="inline-flex items-center px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -437,6 +443,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Biaya</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Status</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OB</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">LOLO</th>
                                 </tr>
                             </thead>
                             <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-100"></tbody>
@@ -621,6 +628,18 @@ function parseBulkData() {
                 formatErrors.push(`Baris ${lineIndex + 1}: sumber chasis harus AYP/PB dan nomor chasis wajib diisi (maksimal 255 karakter).`);
                 return;
             }
+
+            const rawLolo = (cols[16] || '').trim().toLowerCase();
+            let loloVal = '';
+            if (!rawLolo) {
+                formatErrors.push(`Baris ${lineIndex + 1}: kolom Menggunakan LOLO wajib diisi (Ya / Tidak).`);
+                return;
+            } else if (!['ya', 'tidak', '1', '0', 'true', 'false'].includes(rawLolo)) {
+                formatErrors.push(`Baris ${lineIndex + 1}: kolom Menggunakan LOLO bernilai "${cols[16]}". Harus "Ya" atau "Tidak".`);
+                return;
+            } else {
+                loloVal = (rawLolo === 'ya' || rawLolo === '1' || rawLolo === 'true') ? 'Ya' : 'Tidak';
+            }
             
             // Auto calculate biaya jika dikosongkan atau 0
             if (biayaVal === '' || biayaVal === '0') {
@@ -657,7 +676,8 @@ function parseBulkData() {
                 ob_dalam_pelabuhan: obVal,
                 keterangan: keteranganVal,
                 sumber_chasis: sumberChasisVal,
-                no_chasis: noChasisVal
+                no_chasis: noChasisVal,
+                menggunakan_lolo: loloVal
             };
             bulkParsedRows.push(rowData);
             
@@ -675,6 +695,7 @@ function parseBulkData() {
                 <td class="px-3 py-2 whitespace-nowrap text-gray-900">${escapeBulkHtml(rowData.biaya)}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${escapeBulkHtml(rowData.status)}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500">${escapeBulkHtml(rowData.ob_dalam_pelabuhan)}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${rowData.menggunakan_lolo === 'Ya' ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Ya</span>' : '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Tidak</span>'}</td>
             `;
             previewBody.appendChild(tr);
             validCount++;

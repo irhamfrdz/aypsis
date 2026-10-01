@@ -17,6 +17,7 @@ class SuratJalanBongkaranBatam extends Model
         'ring',
         'tanggal_surat_jalan',
         'lanjut_muat',
+        'menggunakan_lolo',
         'nomor_sj_sebelumnya',
         'nomor_surat_jalan',
         'kegiatan',
@@ -98,6 +99,7 @@ class SuratJalanBongkaranBatam extends Model
         'nginap' => 'boolean',
         'tidak_lembur_nginap' => 'boolean',
         'lanjut_muat' => 'boolean',
+        'menggunakan_lolo' => 'boolean',
     ];
 
     // Relationships

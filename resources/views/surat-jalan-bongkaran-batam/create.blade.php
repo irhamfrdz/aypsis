@@ -249,6 +249,28 @@
                     @enderror
                 </div>
 
+                <!-- Menggunakan LOLO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Menggunakan LOLO <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="menggunakan_lolo" value="tidak" required {{ old('menggunakan_lolo') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="menggunakan_lolo" value="ya" required {{ old('menggunakan_lolo') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                    </div>
+                    @error('menggunakan_lolo')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Informasi Pengiriman -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Pengiriman</h3>
