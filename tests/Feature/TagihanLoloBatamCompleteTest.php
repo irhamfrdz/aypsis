@@ -87,14 +87,12 @@ class TagihanLoloBatamCompleteTest extends TestCase
         // Setup master_pricelist_lolo_batams
         Schema::create('master_pricelist_lolo_batams', function (Blueprint $table) {
             $table->id();
-            $table->string('vendor')->nullable();
-            $table->string('nama_biaya');
-            $table->string('kegiatan')->default('LOLO Batam');
-            $table->enum('size', ['20', '40'])->default('20');
-            $table->enum('tipe', ['FULL', 'EMPTY', 'ALL'])->default('FULL');
+            $table->string('size');
             $table->decimal('tarif', 15, 2)->default(0);
-            $table->enum('status', ['aktif', 'non-aktif'])->default('aktif');
+            $table->string('status')->default('aktif');
             $table->text('keterangan')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -204,11 +202,7 @@ class TagihanLoloBatamCompleteTest extends TestCase
 
         // 2. Create / Store
         $postData = [
-            'vendor' => 'Pelindo Batam',
-            'nama_biaya' => 'LOLO 20ft Full Pelindo',
-            'kegiatan' => 'LOLO Batam',
             'size' => '20',
-            'tipe' => 'FULL',
             'tarif' => 350000,
             'status' => 'aktif',
             'keterangan' => 'Tarif resmi 2026',
@@ -218,12 +212,11 @@ class TagihanLoloBatamCompleteTest extends TestCase
         $storeResponse->assertRedirect(route('master.pricelist-lolo-batam.index'));
 
         $this->assertDatabaseHas('master_pricelist_lolo_batams', [
-            'vendor' => 'Pelindo Batam',
-            'tarif' => 350000,
             'size' => '20',
+            'tarif' => 350000,
         ]);
 
-        $pricelist = MasterPricelistLoloBatam::where('vendor', 'Pelindo Batam')->first();
+        $pricelist = MasterPricelistLoloBatam::where('size', '20')->first();
 
         // 3. Edit view
         $editResponse = $this->get(route('master.pricelist-lolo-batam.edit', $pricelist->id));
@@ -231,10 +224,7 @@ class TagihanLoloBatamCompleteTest extends TestCase
 
         // 4. Update
         $updateResponse = $this->put(route('master.pricelist-lolo-batam.update', $pricelist->id), [
-            'vendor' => 'Pelindo Batam Updated',
-            'nama_biaya' => 'LOLO 20ft Full Pelindo Rev',
             'size' => '20',
-            'tipe' => 'FULL',
             'tarif' => 375000,
             'status' => 'aktif',
         ]);
@@ -243,7 +233,7 @@ class TagihanLoloBatamCompleteTest extends TestCase
         $this->assertDatabaseHas('master_pricelist_lolo_batams', [
             'id' => $pricelist->id,
             'tarif' => 375000,
-            'vendor' => 'Pelindo Batam Updated',
+            'size' => '20',
         ]);
 
         // 5. Delete (Soft delete)
@@ -256,11 +246,7 @@ class TagihanLoloBatamCompleteTest extends TestCase
     {
         // 1. Create pricelist
         $pricelist = MasterPricelistLoloBatam::create([
-            'vendor' => 'Pelindo Batam',
-            'nama_biaya' => 'LOLO 20ft Full',
-            'kegiatan' => 'LOLO Batam',
             'size' => '20',
-            'tipe' => 'FULL',
             'tarif' => 300000,
             'status' => 'aktif',
         ]);

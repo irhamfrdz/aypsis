@@ -73,7 +73,7 @@ class TagihanLoloBatamController extends Controller
 
     public function create()
     {
-        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('vendor')->orderBy('size')->orderBy('tipe')->get();
+        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('size')->get();
 
         // Generate automatic invoice number: TLB-YYYYMMDD-XXXX
         $datePrefix = 'TLB-'.date('Ymd');
@@ -90,8 +90,8 @@ class TagihanLoloBatamController extends Controller
 
         $nomorTagihan = $datePrefix.'-'.$nextNum;
 
-        // Existing vendors for autocomplete / select
-        $vendors = MasterPricelistLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
+        // Existing vendors from previous invoices
+        $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->where('vendor', '!=', '')->distinct()->pluck('vendor');
 
         // Kapal list from recent Bongkaran Batam
         $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
@@ -200,8 +200,8 @@ class TagihanLoloBatamController extends Controller
     public function edit(TagihanLoloBatam $tagihanLoloBatam)
     {
         $tagihanLoloBatam->load('items');
-        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('vendor')->orderBy('size')->orderBy('tipe')->get();
-        $vendors = MasterPricelistLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
+        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('size')->get();
+        $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->where('vendor', '!=', '')->distinct()->pluck('vendor');
         $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
 
         return view('tagihan-lolo-batam.edit', compact('tagihanLoloBatam', 'pricelists', 'vendors', 'kapals'));

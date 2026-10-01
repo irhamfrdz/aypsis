@@ -319,8 +319,8 @@
                 <select name="items[${rowCount}][master_pricelist_lolo_batam_id]" onchange="onPricelistChange(${rowCount}, this)" class="w-full rounded-md border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">-- Pilih Tarif Master --</option>
                     ${pricelists.map(p => `
-                        <option value="${p.id}" data-tarif="${p.tarif}" data-size="${p.size}" data-tipe="${p.tipe}" ${pricelistId == p.id ? 'selected' : ''}>
-                            ${p.vendor ? p.vendor + ' - ' : ''}${p.nama_biaya} (${p.size}' ${p.tipe}) - Rp ${Number(p.tarif).toLocaleString('id-ID')}
+                        <option value="${p.id}" data-tarif="${p.tarif}" data-size="${p.size}" ${pricelistId == p.id ? 'selected' : ''}>
+                            ${p.size ? p.size + 'ft' : ''} - Rp ${Number(p.tarif).toLocaleString('id-ID')}${p.keterangan ? ' (' + p.keterangan + ')' : ''}
                         </option>
                     `).join('')}
                 </select>
