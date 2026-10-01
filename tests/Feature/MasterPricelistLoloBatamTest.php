@@ -20,8 +20,6 @@ class MasterPricelistLoloBatamTest extends TestCase
 
         Schema::create('master_pricelist_lolo_batams', function (Blueprint $table) {
             $table->id();
-            $table->string('vendor');
-            $table->string('nama_biaya');
             $table->string('size', 10);
             $table->decimal('tarif', 15, 2);
             $table->string('status', 20);
@@ -38,8 +36,6 @@ class MasterPricelistLoloBatamTest extends TestCase
         $controller = app(MasterPricelistLoloBatamController::class);
 
         MasterPricelistLoloBatam::withoutEvents(fn () => $controller->store(Request::create('/', 'POST', [
-            'vendor' => 'PT Batam Terminal',
-            'nama_biaya' => 'Lift On',
             'size' => '20',
             'tarif' => 750000,
             'status' => 'aktif',
@@ -47,12 +43,9 @@ class MasterPricelistLoloBatamTest extends TestCase
         ])));
 
         $pricelist = MasterPricelistLoloBatam::firstOrFail();
-        $this->assertSame('PT Batam Terminal', $pricelist->vendor);
         $this->assertSame('750000.00', $pricelist->tarif);
 
         MasterPricelistLoloBatam::withoutEvents(fn () => $controller->update(Request::create('/', 'PUT', [
-            'vendor' => 'PT Batam Terminal',
-            'nama_biaya' => 'Lift Off',
             'size' => '40',
             'tarif' => 1250000,
             'status' => 'non-aktif',
@@ -61,12 +54,31 @@ class MasterPricelistLoloBatamTest extends TestCase
 
         $this->assertDatabaseHas('master_pricelist_lolo_batams', [
             'id' => $pricelist->id,
-            'nama_biaya' => 'Lift Off',
             'size' => '40',
             'status' => 'non-aktif',
         ]);
 
         MasterPricelistLoloBatam::withoutEvents(fn () => $controller->destroy($pricelist));
         $this->assertSoftDeleted('master_pricelist_lolo_batams', ['id' => $pricelist->id]);
+    }
+
+    public function test_vendor_and_nama_biaya_columns_are_removed_by_migration(): void
+    {
+        Schema::table('master_pricelist_lolo_batams', function (Blueprint $table) {
+            $table->string('vendor')->nullable();
+            $table->string('nama_biaya')->nullable();
+            $table->index('vendor');
+        });
+
+        $migration = require database_path('migrations/2026_10_01_120000_drop_vendor_and_nama_biaya_from_master_pricelist_lolo_batams_table.php');
+        $migration->up();
+
+        $this->assertFalse(Schema::hasColumn('master_pricelist_lolo_batams', 'vendor'));
+        $this->assertFalse(Schema::hasColumn('master_pricelist_lolo_batams', 'nama_biaya'));
+
+        $migration->down();
+
+        $this->assertTrue(Schema::hasColumn('master_pricelist_lolo_batams', 'vendor'));
+        $this->assertTrue(Schema::hasColumn('master_pricelist_lolo_batams', 'nama_biaya'));
     }
 }

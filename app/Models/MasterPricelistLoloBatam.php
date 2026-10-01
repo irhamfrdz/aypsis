@@ -14,8 +14,6 @@ class MasterPricelistLoloBatam extends Model
     protected $table = 'master_pricelist_lolo_batams';
 
     protected $fillable = [
-        'vendor',
-        'nama_biaya',
         'size',
         'tarif',
         'status',

@@ -23,7 +23,7 @@
     <form method="GET" action="{{ route('master.pricelist-lolo-batam.index') }}" class="grid grid-cols-1 items-end gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:grid-cols-12">
         <div class="md:col-span-5">
             <label for="q" class="mb-1 block text-sm font-medium text-gray-700">Pencarian</label>
-            <input type="search" id="q" name="q" value="{{ request('q') }}" placeholder="Vendor, nama biaya, atau keterangan" class="h-10 w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="search" id="q" name="q" value="{{ request('q') }}" placeholder="Keterangan" class="h-10 w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
         </div>
         <div class="md:col-span-2">
             <label for="size" class="mb-1 block text-sm font-medium text-gray-700">Ukuran</label>
@@ -54,8 +54,6 @@
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         <th class="px-5 py-3">No</th>
-                        <th class="px-5 py-3">Vendor</th>
-                        <th class="px-5 py-3">Nama Biaya</th>
                         <th class="px-5 py-3 text-center">Ukuran</th>
                         <th class="px-5 py-3 text-right">Tarif</th>
                         <th class="px-5 py-3 text-center">Status</th>
@@ -67,8 +65,6 @@
                     @forelse ($pricelists as $pricelist)
                         <tr class="hover:bg-gray-50">
                             <td class="px-5 py-4 text-gray-500">{{ $pricelists->firstItem() + $loop->index }}</td>
-                            <td class="px-5 py-4 font-medium text-gray-900">{{ $pricelist->vendor }}</td>
-                            <td class="px-5 py-4 text-gray-700">{{ $pricelist->nama_biaya }}</td>
                             <td class="px-5 py-4 text-center text-gray-700">{{ $pricelist->size }} Feet</td>
                             <td class="px-5 py-4 text-right font-semibold text-indigo-700">{{ $pricelist->formatted_tarif }}</td>
                             <td class="px-5 py-4 text-center">
@@ -89,7 +85,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-5 py-12 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Belum ada data Pricelist LOLO Batam.</td></tr>
+                        <tr><td colspan="6" class="px-5 py-12 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Belum ada data Pricelist LOLO Batam.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -16,14 +16,6 @@
 
 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
     <div>
-        <label for="vendor" class="block text-sm font-medium text-gray-700">Vendor <span class="text-red-500">*</span></label>
-        <input type="text" id="vendor" name="vendor" value="{{ old('vendor', $item?->vendor) }}" class="{{ $fieldClass }}" maxlength="255" required placeholder="Nama vendor LOLO">
-    </div>
-    <div>
-        <label for="nama_biaya" class="block text-sm font-medium text-gray-700">Nama Biaya <span class="text-red-500">*</span></label>
-        <input type="text" id="nama_biaya" name="nama_biaya" value="{{ old('nama_biaya', $item?->nama_biaya) }}" class="{{ $fieldClass }}" maxlength="255" required placeholder="Contoh: Lift On / Lift Off">
-    </div>
-    <div>
         <label for="size" class="block text-sm font-medium text-gray-700">Ukuran Kontainer <span class="text-red-500">*</span></label>
         <select id="size" name="size" class="{{ $fieldClass }}" required>
             <option value="">Pilih ukuran</option>

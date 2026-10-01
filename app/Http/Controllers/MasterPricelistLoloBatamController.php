@@ -14,9 +14,7 @@ class MasterPricelistLoloBatamController extends Controller
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = $request->string('q')->trim()->toString();
                 $query->where(function ($query) use ($search) {
-                    $query->where('vendor', 'like', "%{$search}%")
-                        ->orWhere('nama_biaya', 'like', "%{$search}%")
-                        ->orWhere('keterangan', 'like', "%{$search}%");
+                    $query->where('keterangan', 'like', "%{$search}%");
                 });
             })
             ->when($request->filled('size'), fn ($query) => $query->where('size', $request->input('size')))
@@ -71,15 +69,11 @@ class MasterPricelistLoloBatamController extends Controller
     private function validateData(Request $request): array
     {
         return $request->validate([
-            'vendor' => ['required', 'string', 'max:255'],
-            'nama_biaya' => ['required', 'string', 'max:255'],
             'size' => ['required', 'in:20,40,45'],
             'tarif' => ['required', 'numeric', 'min:0'],
             'status' => ['required', 'in:aktif,non-aktif'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ], [
-            'vendor.required' => 'Vendor wajib diisi.',
-            'nama_biaya.required' => 'Nama biaya wajib diisi.',
             'size.required' => 'Ukuran kontainer wajib dipilih.',
             'size.in' => 'Ukuran kontainer harus 20, 40, atau 45 kaki.',
             'tarif.required' => 'Tarif wajib diisi.',
