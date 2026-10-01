@@ -2232,6 +2232,26 @@ Route::middleware([
             ->name('pricelist-lolo.destroy')
             ->middleware('can:master-pricelist-lolo-delete');
 
+        // Master Pricelist LOLO Batam
+        Route::get('pricelist-lolo-batam', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'index'])
+            ->name('pricelist-lolo-batam.index')
+            ->middleware('can:master-pricelist-lolo-batam-view');
+        Route::get('pricelist-lolo-batam/create', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'create'])
+            ->name('pricelist-lolo-batam.create')
+            ->middleware('can:master-pricelist-lolo-batam-create');
+        Route::post('pricelist-lolo-batam', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'store'])
+            ->name('pricelist-lolo-batam.store')
+            ->middleware('can:master-pricelist-lolo-batam-create');
+        Route::get('pricelist-lolo-batam/{pricelistLoloBatam}/edit', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'edit'])
+            ->name('pricelist-lolo-batam.edit')
+            ->middleware('can:master-pricelist-lolo-batam-update');
+        Route::put('pricelist-lolo-batam/{pricelistLoloBatam}', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'update'])
+            ->name('pricelist-lolo-batam.update')
+            ->middleware('can:master-pricelist-lolo-batam-update');
+        Route::delete('pricelist-lolo-batam/{pricelistLoloBatam}', [\App\Http\Controllers\MasterPricelistLoloBatamController::class, 'destroy'])
+            ->name('pricelist-lolo-batam.destroy')
+            ->middleware('can:master-pricelist-lolo-batam-delete');
+
         // Master pricelist biaya dokumen routes - granular permissions
         Route::get('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'index'])
             ->name('pricelist-biaya-dokumen.index')
@@ -4124,6 +4144,28 @@ Route::middleware([
         Route::delete('langsir-batam/{id}', [\App\Http\Controllers\LangsirBatamController::class, 'destroy'])
             ->name('langsir-batam.destroy')
             ->middleware('can:langsir-batam-delete');
+
+        // 🏗️ TAGIHAN LOLO BATAM
+        Route::get('tagihan-lolo-batam/export', [\App\Http\Controllers\TagihanLoloBatamController::class, 'export'])
+            ->name('tagihan-lolo-batam.export')
+            ->middleware('can:tagihan-lolo-batam-export');
+        Route::get('tagihan-lolo-batam/api/pending-lolo', [\App\Http\Controllers\TagihanLoloBatamController::class, 'getPendingLolo'])
+            ->name('tagihan-lolo-batam.api.pending-lolo')
+            ->middleware('can:tagihan-lolo-batam-view');
+        Route::get('tagihan-lolo-batam/{tagihanLoloBatam}/print', [\App\Http\Controllers\TagihanLoloBatamController::class, 'print'])
+            ->name('tagihan-lolo-batam.print')
+            ->middleware('can:tagihan-lolo-batam-print');
+        Route::resource('tagihan-lolo-batam', \App\Http\Controllers\TagihanLoloBatamController::class)->parameters([
+            'tagihan-lolo-batam' => 'tagihanLoloBatam',
+        ])->names([
+            'index' => 'tagihan-lolo-batam.index',
+            'create' => 'tagihan-lolo-batam.create',
+            'store' => 'tagihan-lolo-batam.store',
+            'show' => 'tagihan-lolo-batam.show',
+            'edit' => 'tagihan-lolo-batam.edit',
+            'update' => 'tagihan-lolo-batam.update',
+            'destroy' => 'tagihan-lolo-batam.destroy',
+        ]);
 
         Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
             ->name('orders-batam.generate-number')

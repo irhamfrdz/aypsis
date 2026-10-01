@@ -2172,6 +2172,36 @@ function setupModalLanjutMuatToggle() {
     toggleNomorSjSebelumnya();
 }
 
+// Sync and update Buntut (PLAT/KIR) hidden value before submission
+function updateBuntutValue(modalType) {
+    const isCreate = (modalType === 'create');
+    const aypRadio = document.getElementById(isCreate ? 'modal_buntut_asal_ayp' : 'edit_modal_buntut_asal_ayp');
+    const isAyp = aypRadio ? aypRadio.checked : true;
+    const hidden = document.getElementById(isCreate ? 'modal_buntut_plat_kir' : 'edit_modal_buntut_plat_kir');
+    
+    if (isAyp) {
+        const searchInput = document.getElementById(isCreate ? 'modal_buntut_search_input' : 'edit_modal_buntut_search_input');
+        if (hidden && searchInput && !hidden.value && searchInput.value) {
+            const optClass = isCreate ? '.modal-buntut-opt' : '.edit-modal-buntut-opt';
+            const options = document.querySelectorAll(optClass);
+            const query = searchInput.value.trim().toLowerCase();
+            options.forEach(opt => {
+                const val = opt.getAttribute('data-value') || '';
+                const label = opt.getAttribute('data-label') || '';
+                if (val.toLowerCase() === query || label.toLowerCase() === query) {
+                    hidden.value = val;
+                }
+            });
+        }
+    } else {
+        const input = document.getElementById(isCreate ? 'modal_buntut_plat_kir_input' : 'edit_modal_buntut_plat_kir_input');
+        if (hidden && input) {
+            hidden.value = input.value.trim();
+        }
+    }
+}
+window.updateBuntutValue = updateBuntutValue;
+
 // Handle form submit with validation and loading state
 function handleFormSubmit(event) {
     event.preventDefault();

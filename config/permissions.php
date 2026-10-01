@@ -184,6 +184,20 @@ return [
                 'tagihan-pelindo-delete' => 'Hapus Tagihan',
             ],
         ],
+        'tagihan-lolo-batam' => [
+            'name' => 'Tagihan LOLO Batam',
+            'description' => 'Menu tagihan LOLO Batam',
+            'required' => true,
+            'sub_modules' => [
+                'tagihan-lolo-batam-view' => 'View Tagihan LOLO Batam',
+                'tagihan-lolo-batam-create' => 'Buat Tagihan LOLO Batam',
+                'tagihan-lolo-batam-update' => 'Edit Tagihan LOLO Batam',
+                'tagihan-lolo-batam-delete' => 'Hapus Tagihan LOLO Batam',
+                'tagihan-lolo-batam-approve' => 'Approve Tagihan LOLO Batam',
+                'tagihan-lolo-batam-print' => 'Cetak Tagihan LOLO Batam',
+                'tagihan-lolo-batam-export' => 'Export Tagihan LOLO Batam',
+            ],
+        ],
         'pembelian-bbm-batam' => [
             'name' => 'Pembelian BBM Batam',
             'description' => 'Menu pembelian BBM Batam',
@@ -362,6 +376,9 @@ return [
 
         // Tagihan Pelindo - butuh tagihan-pelindo-view
         'tagihan-pelindo' => ['tagihan-pelindo-view'],
+
+        // Tagihan LOLO Batam - butuh tagihan-lolo-batam-view
+        'tagihan-lolo-batam' => ['tagihan-lolo-batam-view'],
 
         // Pembelian BBM Batam - butuh pembelian-bbm-batam-view
         'pembelian-bbm-batam' => ['pembelian-bbm-batam-view'],

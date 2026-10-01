@@ -1587,6 +1587,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist LOLO Batam --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist LOLO Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['view']) && $userMatrixPermissions['master-pricelist-lolo-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['create']) && $userMatrixPermissions['master-pricelist-lolo-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['update']) && $userMatrixPermissions['master-pricelist-lolo-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-lolo-batam']['delete']) && $userMatrixPermissions['master-pricelist-lolo-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Biaya Storage --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">
@@ -1924,6 +1941,23 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Tagihan LOLO Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-teal-600 font-bold">Tagihan LOLO Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.view') || (isset($userMatrixPermissions['tagihan-lolo-batam']['view']) && $userMatrixPermissions['tagihan-lolo-batam']['view']) || ($user && $user->can('tagihan-lolo-batam-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.create') || (isset($userMatrixPermissions['tagihan-lolo-batam']['create']) && $userMatrixPermissions['tagihan-lolo-batam']['create']) || ($user && $user->can('tagihan-lolo-batam-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.update') || (isset($userMatrixPermissions['tagihan-lolo-batam']['update']) && $userMatrixPermissions['tagihan-lolo-batam']['update']) || ($user && $user->can('tagihan-lolo-batam-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.delete') || (isset($userMatrixPermissions['tagihan-lolo-batam']['delete']) && $userMatrixPermissions['tagihan-lolo-batam']['delete']) || ($user && $user->can('tagihan-lolo-batam-delete'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][approve]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.approve') || (isset($userMatrixPermissions['tagihan-lolo-batam']['approve']) && $userMatrixPermissions['tagihan-lolo-batam']['approve']) || ($user && $user->can('tagihan-lolo-batam-approve'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.print') || (isset($userMatrixPermissions['tagihan-lolo-batam']['print']) && $userMatrixPermissions['tagihan-lolo-batam']['print']) || ($user && $user->can('tagihan-lolo-batam-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.export') || (isset($userMatrixPermissions['tagihan-lolo-batam']['export']) && $userMatrixPermissions['tagihan-lolo-batam']['export']) || ($user && $user->can('tagihan-lolo-batam-export'))) checked @endif></td>
                             </tr>
 
                             {{-- Tanda Terima Tanpa Surat Jalan --}}

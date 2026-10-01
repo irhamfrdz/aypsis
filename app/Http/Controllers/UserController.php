@@ -687,6 +687,7 @@ class UserController extends Controller
                     $matrixPermissions[$module] = [];
                 }
                 $matrixPermissions[$module][$action] = true;
+
                 continue;
             }
 
@@ -747,6 +748,8 @@ class UserController extends Controller
                 'ongkos-truck' => 'ongkos-truck',
                 'order-batam' => 'order-batam',
                 'langsir-batam' => 'langsir-batam',
+                'tagihan-lolo-batam' => 'tagihan-lolo-batam',
+                'master-pricelist-lolo-batam' => 'master-pricelist-lolo-batam',
                 'order-management' => 'order', // Map order-management to order for permission names
                 'pembayaran-aktivitas-lain' => 'pembayaran-aktivitas-lain',
                 'pembayaran-ob' => 'pembayaran-ob',
@@ -1316,6 +1319,11 @@ class UserController extends Controller
                             // For master-pricelist-freight-view, extract the action
                             $action = str_replace('pricelist-freight-', '', $action);
                             $module = 'master-pricelist-freight';
+                        }
+                        // Special handling for master-pricelist-lolo-batam permissions
+                        elseif (strpos($action, 'pricelist-lolo-batam-') === 0) {
+                            $action = str_replace('pricelist-lolo-batam-', '', $action);
+                            $module = 'master-pricelist-lolo-batam';
                         }
                         // Special handling for master-pricelist-lolo permissions
                         elseif (strpos($action, 'pricelist-lolo-') === 0) {
@@ -1991,6 +1999,7 @@ class UserController extends Controller
                         if ($permission) {
                             $permissionIds[] = $permission->id;
                         }
+
                         continue;
                     }
 
@@ -2035,23 +2044,24 @@ class UserController extends Controller
                     if (in_array($module, ['payroll', 'payroll-uang-karyawan', 'payroll-perhitungan-lembur', 'data-cuti', 'data-uang-makan']) && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         // Map update to edit for some permissions, or just check both
                         $actionMap = [
-                            'view' => $module . '-view',
-                            'create' => $module . '-create',
-                            'update' => $module . '-edit', // In database they use -edit instead of -update sometimes
-                            'delete' => $module . '-delete',
+                            'view' => $module.'-view',
+                            'create' => $module.'-create',
+                            'update' => $module.'-edit', // In database they use -edit instead of -update sometimes
+                            'delete' => $module.'-delete',
                         ];
-                        
-                        $permissionName = $actionMap[$action] ?? ($module . '-' . $action);
+
+                        $permissionName = $actionMap[$action] ?? ($module.'-'.$action);
                         $directPermission = Permission::where('name', $permissionName)->first();
-                        
+
                         // fallback if the database actually uses -update
-                        if (!$directPermission && $action === 'update') {
-                            $directPermission = Permission::where('name', $module . '-update')->first();
+                        if (! $directPermission && $action === 'update') {
+                            $directPermission = Permission::where('name', $module.'-update')->first();
                         }
 
                         if ($directPermission) {
                             $permissionIds[] = $directPermission->id;
                             $found = true;
+
                             continue;
                         }
                     }
@@ -2652,8 +2662,6 @@ class UserController extends Controller
                             }
                         }
 
-
-
                         // DIRECT FIX: Handle karyawan-tidak-tetap permissions explicitly
                         if ($module === 'karyawan-tidak-tetap' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                             // Map action to correct permission name
@@ -3123,6 +3131,25 @@ class UserController extends Controller
                             'create' => 'master-pricelist-lolo-create',
                             'update' => 'master-pricelist-lolo-update',
                             'delete' => 'master-pricelist-lolo-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-lolo-batam permissions explicitly
+                    if ($module === 'master-pricelist-lolo-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'master-pricelist-lolo-batam-view',
+                            'create' => 'master-pricelist-lolo-batam-create',
+                            'update' => 'master-pricelist-lolo-batam-update',
+                            'delete' => 'master-pricelist-lolo-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4680,6 +4707,47 @@ class UserController extends Controller
                             'create' => 'langsir-batam-create',
                             'update' => 'langsir-batam-update',
                             'delete' => 'langsir-batam-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle tagihan-lolo-batam permissions explicitly
+                    if ($module === 'tagihan-lolo-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'tagihan-lolo-batam-view',
+                            'create' => 'tagihan-lolo-batam-create',
+                            'update' => 'tagihan-lolo-batam-update',
+                            'delete' => 'tagihan-lolo-batam-delete',
+                            'approve' => 'tagihan-lolo-batam-approve',
+                            'print' => 'tagihan-lolo-batam-print',
+                            'export' => 'tagihan-lolo-batam-export',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle master-pricelist-lolo-batam permissions explicitly in update
+                    if ($module === 'master-pricelist-lolo-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'master-pricelist-lolo-batam-view',
+                            'create' => 'master-pricelist-lolo-batam-create',
+                            'update' => 'master-pricelist-lolo-batam-update',
+                            'delete' => 'master-pricelist-lolo-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {

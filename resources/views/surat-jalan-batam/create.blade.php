@@ -473,6 +473,10 @@
 
 @push('scripts')
 <script>
+    // Safe global fallback for updateBuntutValue
+    window.updateBuntutValue = function(type) {
+        // no-op if buntut element does not exist on this page
+    };
     async function generateSjNumber() {
         const dateInput = document.querySelector('input[name="tanggal_surat_jalan"]');
         const sjInput = document.getElementById('no_surat_jalan');

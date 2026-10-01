@@ -1336,6 +1336,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Pricelist LOLO Batam --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Pricelist LOLO Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Pricelist Biaya Storage --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">
@@ -1756,6 +1773,23 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Tagihan LOLO Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-teal-600 font-bold">Tagihan LOLO Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.delete')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][approve]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.approve')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-lolo-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.export')) checked @endif></td>
                             </tr>
 
                             {{-- Tanda Terima Bongkaran --}}

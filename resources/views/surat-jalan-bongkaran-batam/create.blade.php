@@ -1077,6 +1077,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fungsi validasi Sumber Buntut:
     // Jika AYP: periksa ke master PLAT/KIR, jika ada maka berhasil, jika tidak ada tampilkan error
     // Jika PB: tidak usah memeriksa master karena PB tidak memiliki master (otomatis berhasil)
+    window.updateBuntutValue = function(type) {
+        if (typeof window.validateCreateBuntut === 'function') {
+            return window.validateCreateBuntut();
+        }
+    };
+
     window.validateCreateBuntut = function() {
         const checkedRadio = document.querySelector('input[name="buntut_asal"]:checked');
         const source = checkedRadio ? checkedRadio.value : 'AYP';
