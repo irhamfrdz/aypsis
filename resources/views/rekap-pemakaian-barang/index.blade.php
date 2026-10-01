@@ -42,6 +42,26 @@
         outline: 0;
         box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
     }
+    .rekap-filter {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: end;
+        gap: 1rem;
+    }
+    @media (min-width: 640px) {
+        .rekap-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .rekap-filter__barang,
+        .rekap-filter__actions { grid-column: span 2 / span 2; }
+    }
+    @media (min-width: 1280px) {
+        .rekap-filter { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+        .rekap-filter__barang { grid-column: span 6 / span 6; }
+        .rekap-filter__aktiva,
+        .rekap-filter__lokasi,
+        .rekap-filter__date { grid-column: span 3 / span 3; }
+        .rekap-filter:not(.has-location) .rekap-filter__aktiva { grid-column: span 6 / span 6; }
+        .rekap-filter__actions { grid-column: span 6 / span 6; }
+    }
 </style>
 @endpush
 
@@ -65,9 +85,9 @@
             </h3>
             <p class="mt-1 text-xs text-gray-500">Pilih tipe barang dan periode pemakaian yang ingin ditampilkan.</p>
         </div>
-        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter grid grid-cols-1 items-end gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-12">
+        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter {{ in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? 'has-location' : '' }} p-5 sm:p-6">
             <!-- Select Barang -->
-            <div class="xl:col-span-2">
+            <div class="rekap-filter__barang min-w-0">
                 <label for="nama_barang" class="mb-2 block text-sm font-semibold text-gray-700">Pilih Tipe Barang <span class="text-red-500">*</span></label>
                 <select name="nama_barang" id="nama_barang" class="select2 w-full" required>
                     <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari tipe barang --</option>
@@ -78,7 +98,7 @@
             </div>
 
             <!-- Asset Type -->
-            <div class="xl:col-span-2">
+            <div class="rekap-filter__aktiva min-w-0">
                 <label for="aktiva" class="mb-2 block text-sm font-semibold text-gray-700">Aktiva</label>
                 <select name="aktiva" id="aktiva" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="">Semua Aktiva</option>
@@ -90,7 +110,7 @@
             </div>
 
             <!-- Asset Location -->
-            <div id="lokasi-filter" class="xl:col-span-1 {{ in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? '' : 'hidden' }}">
+            <div id="lokasi-filter" class="rekap-filter__lokasi min-w-0 {{ in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? '' : 'hidden' }}">
                 <label for="lokasi" class="mb-2 block text-sm font-semibold text-gray-700">Lokasi</label>
                 <select name="lokasi" id="lokasi" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" @disabled(!in_array($aktiva, ['kendaraan', 'alat_berat'], true))>
                     <option value="">Semua Lokasi</option>
@@ -101,18 +121,18 @@
             </div>
 
             <!-- Start Date -->
-            <div class="xl:col-span-2">
+            <div class="rekap-filter__date min-w-0">
                 <label for="start_date" class="mb-2 block text-sm font-semibold text-gray-700">Dari Tanggal</label>
                 <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
             <!-- End Date -->
-            <div class="xl:col-span-2">
+            <div class="rekap-filter__date min-w-0">
                 <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-700">Sampai Tanggal</label>
                 <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
-            <div class="flex gap-2 sm:col-span-2 sm:justify-end xl:col-span-3">
+            <div class="rekap-filter__actions flex flex-wrap gap-2 sm:justify-end">
                 <a href="{{ route('rekap-pemakaian-barang.index') }}" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300">
                     <i class="fas fa-rotate-left" aria-hidden="true"></i>Reset
                 </a>
@@ -246,6 +266,7 @@
 
         function toggleLokasiFilter() {
             const supportsLocation = ['kendaraan', 'alat_berat'].includes(aktiva.value);
+            aktiva.form.classList.toggle('has-location', supportsLocation);
             lokasiFilter.classList.toggle('hidden', !supportsLocation);
             lokasi.disabled = !supportsLocation;
             if (!supportsLocation) lokasi.value = '';
