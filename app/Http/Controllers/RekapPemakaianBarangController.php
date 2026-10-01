@@ -16,6 +16,9 @@ class RekapPemakaianBarangController extends Controller
         $namaBarang = $request->input('nama_barang');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $aktiva = $request->validate([
+            'aktiva' => 'nullable|in:kendaraan,alat_berat,kantor,kapal',
+        ])['aktiva'] ?? null;
 
         // Fetch distinct type barang from master for Amprahan
         $amprahanItems = StockAmprahan::with('masterNamaBarangAmprahan')
@@ -56,23 +59,35 @@ class RekapPemakaianBarangController extends Controller
                     
                 foreach ($amprahanUsages as $usage) {
                     $unitName = '-';
+                    $jenisAktiva = null;
                     if ($usage->kendaraan) {
+                        $jenisAktiva = 'kendaraan';
                         $nopol = trim($usage->kendaraan->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->kendaraan->no_kir) ?: '-');
                     } elseif ($usage->truck) {
+                        $jenisAktiva = 'kendaraan';
                         $nopol = trim($usage->truck->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->truck->no_kir) ?: '-');
                     } elseif ($usage->buntut) {
+                        $jenisAktiva = 'kendaraan';
                         $nopol = trim($usage->buntut->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->buntut->no_kir) ?: '-');
                     } elseif ($usage->alatBerat) {
+                        $jenisAktiva = 'alat_berat';
                         $unitName = $usage->alatBerat->nama;
                     } elseif ($usage->kapal) {
+                        $jenisAktiva = 'kapal';
                         $unitName = $usage->kapal->nama_kapal;
                     } elseif ($usage->chasisBatam) {
+                        $jenisAktiva = 'kendaraan';
                         $unitName = $usage->chasisBatam->kode;
                     } elseif ($usage->kantor) {
+                        $jenisAktiva = 'kantor';
                         $unitName = $usage->kantor;
+                    }
+
+                    if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
                     }
                     
                     $penerimaName = '-';
@@ -118,13 +133,21 @@ class RekapPemakaianBarangController extends Controller
                     
                 foreach ($banUsages as $ban) {
                     $unitName = '-';
+                    $jenisAktiva = null;
                     if ($ban->mobil) {
+                        $jenisAktiva = 'kendaraan';
                         $nopol = trim($ban->mobil->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($ban->mobil->no_kir) ?: '-');
                     } elseif ($ban->alatBerat) {
+                        $jenisAktiva = 'alat_berat';
                         $unitName = $ban->alatBerat->nama;
                     } elseif ($ban->kapal) {
+                        $jenisAktiva = 'kapal';
                         $unitName = $ban->kapal->nama_kapal;
+                    }
+
+                    if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
                     }
                     
                     $penerimaName = '-';
@@ -152,6 +175,6 @@ class RekapPemakaianBarangController extends Controller
             $results = $results->sortByDesc('tanggal')->values();
         }
 
-        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate'));
+        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva'));
     }
 }

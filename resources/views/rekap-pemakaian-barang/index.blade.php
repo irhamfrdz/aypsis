@@ -67,13 +67,25 @@
         </div>
         <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter grid grid-cols-1 items-end gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-12">
             <!-- Select Barang -->
-            <div class="sm:col-span-2 lg:col-span-5">
+            <div class="lg:col-span-3">
                 <label for="nama_barang" class="mb-2 block text-sm font-semibold text-gray-700">Pilih Tipe Barang <span class="text-red-500">*</span></label>
                 <select name="nama_barang" id="nama_barang" class="select2 w-full" required>
                     <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari tipe barang --</option>
                     @foreach($allBarang as $barang)
                         <option value="{{ $barang }}" {{ $namaBarang === $barang ? 'selected' : '' }}>{{ $barang }}</option>
                     @endforeach
+                </select>
+            </div>
+
+            <!-- Asset Type -->
+            <div class="lg:col-span-2">
+                <label for="aktiva" class="mb-2 block text-sm font-semibold text-gray-700">Aktiva</label>
+                <select name="aktiva" id="aktiva" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Semua Aktiva</option>
+                    <option value="kendaraan" @selected($aktiva === 'kendaraan')>Kendaraan</option>
+                    <option value="alat_berat" @selected($aktiva === 'alat_berat')>Alat Berat</option>
+                    <option value="kantor" @selected($aktiva === 'kantor')>Kantor</option>
+                    <option value="kapal" @selected($aktiva === 'kapal')>Kapal</option>
                 </select>
             </div>
 
