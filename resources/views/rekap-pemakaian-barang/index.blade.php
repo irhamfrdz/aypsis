@@ -65,9 +65,9 @@
             </h3>
             <p class="mt-1 text-xs text-gray-500">Pilih tipe barang dan periode pemakaian yang ingin ditampilkan.</p>
         </div>
-        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter grid grid-cols-1 items-end gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-12">
+        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="rekap-filter grid grid-cols-1 items-end gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-12">
             <!-- Select Barang -->
-            <div class="lg:col-span-3">
+            <div class="xl:col-span-2">
                 <label for="nama_barang" class="mb-2 block text-sm font-semibold text-gray-700">Pilih Tipe Barang <span class="text-red-500">*</span></label>
                 <select name="nama_barang" id="nama_barang" class="select2 w-full" required>
                     <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari tipe barang --</option>
@@ -78,7 +78,7 @@
             </div>
 
             <!-- Asset Type -->
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2">
                 <label for="aktiva" class="mb-2 block text-sm font-semibold text-gray-700">Aktiva</label>
                 <select name="aktiva" id="aktiva" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="">Semua Aktiva</option>
@@ -89,19 +89,29 @@
                 </select>
             </div>
 
+            <!-- Vehicle Location -->
+            <div id="lokasi-filter" class="xl:col-span-1 {{ $aktiva === 'kendaraan' ? '' : 'hidden' }}">
+                <label for="lokasi" class="mb-2 block text-sm font-semibold text-gray-700">Lokasi</label>
+                <select name="lokasi" id="lokasi" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" @disabled($aktiva !== 'kendaraan')>
+                    <option value="">Semua Lokasi</option>
+                    <option value="jakarta" @selected($lokasi === 'jakarta')>Jakarta</option>
+                    <option value="batam" @selected($lokasi === 'batam')>Batam</option>
+                </select>
+            </div>
+
             <!-- Start Date -->
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2">
                 <label for="start_date" class="mb-2 block text-sm font-semibold text-gray-700">Dari Tanggal</label>
                 <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
             <!-- End Date -->
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2">
                 <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-700">Sampai Tanggal</label>
                 <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
             </div>
 
-            <div class="flex gap-2 sm:col-span-2 sm:justify-end lg:col-span-3">
+            <div class="flex gap-2 sm:col-span-2 sm:justify-end xl:col-span-3">
                 <a href="{{ route('rekap-pemakaian-barang.index') }}" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300">
                     <i class="fas fa-rotate-left" aria-hidden="true"></i>Reset
                 </a>
@@ -228,6 +238,20 @@
             allowClear: true,
             width: '100%'
         });
+
+        const aktiva = document.getElementById('aktiva');
+        const lokasiFilter = document.getElementById('lokasi-filter');
+        const lokasi = document.getElementById('lokasi');
+
+        function toggleLokasiFilter() {
+            const isKendaraan = aktiva.value === 'kendaraan';
+            lokasiFilter.classList.toggle('hidden', !isKendaraan);
+            lokasi.disabled = !isKendaraan;
+            if (!isKendaraan) lokasi.value = '';
+        }
+
+        aktiva.addEventListener('change', toggleLokasiFilter);
+        toggleLokasiFilter();
     });
 
     function filterByUnit(unitName, cardElement) {

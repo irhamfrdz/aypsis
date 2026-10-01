@@ -16,9 +16,12 @@ class RekapPemakaianBarangController extends Controller
         $namaBarang = $request->input('nama_barang');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-        $aktiva = $request->validate([
+        $filters = $request->validate([
             'aktiva' => 'nullable|in:kendaraan,alat_berat,kantor,kapal',
-        ])['aktiva'] ?? null;
+            'lokasi' => 'nullable|in:jakarta,batam',
+        ]);
+        $aktiva = $filters['aktiva'] ?? null;
+        $lokasi = $aktiva === 'kendaraan' ? ($filters['lokasi'] ?? null) : null;
 
         // Fetch distinct type barang from master for Amprahan
         $amprahanItems = StockAmprahan::with('masterNamaBarangAmprahan')
@@ -60,16 +63,20 @@ class RekapPemakaianBarangController extends Controller
                 foreach ($amprahanUsages as $usage) {
                     $unitName = '-';
                     $jenisAktiva = null;
+                    $lokasiAktiva = null;
                     if ($usage->kendaraan) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeVehicleLocation($usage->kendaraan->lokasi);
                         $nopol = trim($usage->kendaraan->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->kendaraan->no_kir) ?: '-');
                     } elseif ($usage->truck) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeVehicleLocation($usage->truck->lokasi);
                         $nopol = trim($usage->truck->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->truck->no_kir) ?: '-');
                     } elseif ($usage->buntut) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeVehicleLocation($usage->buntut->lokasi);
                         $nopol = trim($usage->buntut->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->buntut->no_kir) ?: '-');
                     } elseif ($usage->alatBerat) {
@@ -80,6 +87,7 @@ class RekapPemakaianBarangController extends Controller
                         $unitName = $usage->kapal->nama_kapal;
                     } elseif ($usage->chasisBatam) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeVehicleLocation($usage->chasisBatam->lokasi) ?? 'batam';
                         $unitName = $usage->chasisBatam->kode;
                     } elseif ($usage->kantor) {
                         $jenisAktiva = 'kantor';
@@ -87,6 +95,9 @@ class RekapPemakaianBarangController extends Controller
                     }
 
                     if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
+                    }
+                    if ($lokasi && $jenisAktiva === 'kendaraan' && $lokasiAktiva !== $lokasi) {
                         continue;
                     }
                     
@@ -134,8 +145,10 @@ class RekapPemakaianBarangController extends Controller
                 foreach ($banUsages as $ban) {
                     $unitName = '-';
                     $jenisAktiva = null;
+                    $lokasiAktiva = null;
                     if ($ban->mobil) {
                         $jenisAktiva = 'kendaraan';
+                        $lokasiAktiva = $this->normalizeVehicleLocation($ban->mobil->lokasi);
                         $nopol = trim($ban->mobil->nomor_polisi);
                         $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($ban->mobil->no_kir) ?: '-');
                     } elseif ($ban->alatBerat) {
@@ -147,6 +160,9 @@ class RekapPemakaianBarangController extends Controller
                     }
 
                     if ($aktiva && $jenisAktiva !== $aktiva) {
+                        continue;
+                    }
+                    if ($lokasi && $jenisAktiva === 'kendaraan' && $lokasiAktiva !== $lokasi) {
                         continue;
                     }
                     
@@ -175,6 +191,15 @@ class RekapPemakaianBarangController extends Controller
             $results = $results->sortByDesc('tanggal')->values();
         }
 
-        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva'));
+        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva', 'lokasi'));
+    }
+
+    private function normalizeVehicleLocation(?string $location): ?string
+    {
+        return match (strtoupper(trim((string) $location))) {
+            'JKT', 'JAKARTA' => 'jakarta',
+            'BTM', 'BATAM' => 'batam',
+            default => null,
+        };
     }
 }
