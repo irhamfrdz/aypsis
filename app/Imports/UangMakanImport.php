@@ -14,11 +14,11 @@ class UangMakanImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         $karyawan = Karyawan::where('nik', $row['nik'])->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             return null; // Skip if NIK not found
         }
 
-        $tanggal = is_numeric($row['tanggal']) 
+        $tanggal = is_numeric($row['tanggal'])
             ? Date::excelToDateTimeObject($row['tanggal'])->format('Y-m-d')
             : date('Y-m-d', strtotime($row['tanggal']));
 
@@ -32,16 +32,16 @@ class UangMakanImport implements ToModel, WithHeadingRow, WithValidation
 
         return new UangMakan([
             'karyawan_id' => $karyawan->id,
-            'tanggal'     => $tanggal,
-            'nominal'     => $row['nominal'] ?? 0,
-            'keterangan'  => $row['keterangan'] ?? null,
+            'tanggal' => $tanggal,
+            'nominal' => $row['nominal'] ?? 0,
+            'keterangan' => $row['keterangan'] ?? null,
         ]);
     }
 
     public function rules(): array
     {
         return [
-            'nik'     => 'required',
+            'nik' => 'required',
             'tanggal' => 'required',
             'nominal' => 'required|numeric|min:0',
         ];

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class PranotaLemburKaryawanController extends Controller
@@ -13,9 +12,9 @@ class PranotaLemburKaryawanController extends Controller
             ->whereNull('pranota_puml_id');
 
         if ($request->filled('nomor_pranota')) {
-            $query->where('nomor_pranota', 'like', '%' . $request->nomor_pranota . '%');
+            $query->where('nomor_pranota', 'like', '%'.$request->nomor_pranota.'%');
         }
-        
+
         if ($request->filled('tanggal_pranota')) {
             $query->where('tanggal_pranota', $request->tanggal_pranota);
         }
@@ -36,7 +35,7 @@ class PranotaLemburKaryawanController extends Controller
     {
         $pranota = \App\Models\PranotaLemburKaryawanHeader::with(['karyawans.karyawan'])
             ->findOrFail($id);
-            
+
         return view('pranota-lembur-karyawan.show', compact('pranota'));
     }
 
@@ -46,7 +45,7 @@ class PranotaLemburKaryawanController extends Controller
             ->findOrFail($id);
 
         $safeNomor = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pranota->nomor_pranota);
-        $filename = 'Pranota_Lembur_' . $safeNomor . '.xlsx';
+        $filename = 'Pranota_Lembur_'.$safeNomor.'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaLemburKaryawanExport($pranota), $filename);
     }
@@ -127,11 +126,12 @@ class PranotaLemburKaryawanController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            return back()->with('success', 'Pranota Lembur berhasil disimpan dengan nomor: ' . $nomorPranota);
+            return back()->with('success', 'Pranota Lembur berhasil disimpan dengan nomor: '.$nomorPranota);
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan Pranota Lembur: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan Pranota Lembur: '.$e->getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ class PranotaLemburKaryawanController extends Controller
             return back()->with('error', 'Pranota tidak dapat dihapus karena sudah digabungkan ke Pranota PUML.');
         }
 
-        if ($pranota->created_by != auth()->id() && !auth()->user()->can('payroll-delete')) {
+        if ($pranota->created_by != auth()->id() && ! auth()->user()->can('payroll-delete')) {
             return back()->with('error', 'Anda hanya dapat menghapus pranota yang Anda buat sendiri.');
         }
 
@@ -155,10 +155,11 @@ class PranotaLemburKaryawanController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            return back()->with('success', 'Pranota lembur ' . $pranota->nomor_pranota . ' berhasil dihapus.');
+            return back()->with('success', 'Pranota lembur '.$pranota->nomor_pranota.' berhasil dihapus.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            return back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus pranota: '.$e->getMessage());
         }
     }
 }

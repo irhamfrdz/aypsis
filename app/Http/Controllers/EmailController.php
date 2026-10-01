@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\EmailAccount;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Webklex\PHPIMAP\ClientManager;
 
 class EmailController extends Controller
@@ -16,23 +16,24 @@ class EmailController extends Controller
     {
         $account = EmailAccount::where('user_id', Auth::id())->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception('Akun email belum dikonfigurasi.');
         }
 
-        $cm = new ClientManager();
+        $cm = new ClientManager;
         $client = $cm->make([
-            'host'          => $account->imap_host,
-            'port'          => $account->imap_port,
-            'encryption'    => $account->imap_encryption,
+            'host' => $account->imap_host,
+            'port' => $account->imap_port,
+            'encryption' => $account->imap_encryption,
             'validate_cert' => false,
-            'username'      => $account->email_address,
-            'password'      => $account->password,
+            'username' => $account->email_address,
+            'password' => $account->password,
             'authentication' => null,
-            'protocol'      => 'imap'
+            'protocol' => 'imap',
         ]);
-        
+
         $client->connect();
+
         return $client;
     }
 
@@ -40,7 +41,7 @@ class EmailController extends Controller
     {
         $account = EmailAccount::where('user_id', Auth::id())->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception('Akun email belum dikonfigurasi.');
         }
 
@@ -59,8 +60,8 @@ class EmailController extends Controller
     private function fetchFolder($folderNames, Request $request, $viewName)
     {
         set_time_limit(120);
-        
-        if (!EmailAccount::where('user_id', Auth::id())->exists()) {
+
+        if (! EmailAccount::where('user_id', Auth::id())->exists()) {
             return redirect()->route('email.settings')->with('error', 'Silakan konfigurasikan email Anda terlebih dahulu.');
         }
 
@@ -71,13 +72,15 @@ class EmailController extends Controller
         foreach ((array) $folderNames as $name) {
             try {
                 $folder = $client->getFolder($name);
-                if ($folder) break;
+                if ($folder) {
+                    break;
+                }
             } catch (\Exception $e) {
                 continue;
             }
         }
 
-        if (!$folder) {
+        if (! $folder) {
             return view($viewName, ['emails' => new LengthAwarePaginator([], 0, 15)]);
         }
 
@@ -112,7 +115,8 @@ class EmailController extends Controller
             return $this->fetchFolder(['INBOX'], $request, 'email.inbox');
         } catch (\Exception $e) {
             \Log::error('Email inbox error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal. Pastikan pengaturan email Anda benar. Pesan error: ' . $e->getMessage());
+
+            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal. Pastikan pengaturan email Anda benar. Pesan error: '.$e->getMessage());
         }
     }
 
@@ -122,7 +126,8 @@ class EmailController extends Controller
             return $this->fetchFolder(['[Gmail]/Sent Mail', 'Sent', 'Sent Messages', 'Sent Items'], $request, 'email.sent');
         } catch (\Exception $e) {
             \Log::error('Email sent error', ['message' => $e->getMessage()]);
-            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: ' . $e->getMessage());
+
+            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: '.$e->getMessage());
         }
     }
 
@@ -132,7 +137,8 @@ class EmailController extends Controller
             return $this->fetchFolder(['[Gmail]/Spam', 'Spam', 'Junk'], $request, 'email.spam');
         } catch (\Exception $e) {
             \Log::error('Email spam error', ['message' => $e->getMessage()]);
-            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: ' . $e->getMessage());
+
+            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: '.$e->getMessage());
         }
     }
 
@@ -142,7 +148,8 @@ class EmailController extends Controller
             return $this->fetchFolder(['[Gmail]/Trash', 'Trash', 'Deleted Items'], $request, 'email.trash');
         } catch (\Exception $e) {
             \Log::error('Email trash error', ['message' => $e->getMessage()]);
-            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: ' . $e->getMessage());
+
+            return redirect()->route('email.settings')->with('error', 'Koneksi IMAP gagal: '.$e->getMessage());
         }
     }
 
@@ -164,11 +171,12 @@ class EmailController extends Controller
 
             Mail::raw($request->body, function ($message) use ($request) {
                 $message->to($request->recipient_email)
-                        ->subject($request->subject);
+                    ->subject($request->subject);
             });
+
             return redirect()->route('email.sent')->with('success', 'Email berhasil dikirim!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengirim email: '.$e->getMessage());
         }
     }
 
@@ -188,15 +196,19 @@ class EmailController extends Controller
             foreach ($folderNames as $folderName) {
                 try {
                     $folder = $client->getFolder($folderName);
-                    if (!$folder) continue;
+                    if (! $folder) {
+                        continue;
+                    }
                     $email = $folder->messages()->getMessageByUid($message_uid);
-                    if ($email) break;
+                    if ($email) {
+                        break;
+                    }
                 } catch (\Exception $e) {
                     continue;
                 }
             }
 
-            if (!$email) {
+            if (! $email) {
                 return redirect()->route('email.inbox')->with('error', 'Email tidak ditemukan.');
             }
 
@@ -209,7 +221,7 @@ class EmailController extends Controller
 
             return view('email.show', compact('email'));
         } catch (\Exception $e) {
-            return redirect()->route('email.inbox')->with('error', 'Gagal memuat email: ' . $e->getMessage());
+            return redirect()->route('email.inbox')->with('error', 'Gagal memuat email: '.$e->getMessage());
         }
     }
 
@@ -222,11 +234,13 @@ class EmailController extends Controller
             $email = $folder->messages()->getMessageByUid($message_uid);
             if ($email) {
                 $email->move('[Gmail]/Trash');
+
                 return redirect()->back()->with('success', 'Email berhasil dipindahkan ke Terhapus.');
             }
+
             return redirect()->back()->with('error', 'Email tidak ditemukan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memindahkan email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memindahkan email: '.$e->getMessage());
         }
     }
 
@@ -239,11 +253,13 @@ class EmailController extends Controller
             $email = $folder->messages()->getMessageByUid($message_uid);
             if ($email) {
                 $email->move('[Gmail]/Spam');
+
                 return redirect()->back()->with('success', 'Email berhasil ditandai sebagai Spam.');
             }
+
             return redirect()->back()->with('error', 'Email tidak ditemukan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menandai spam: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menandai spam: '.$e->getMessage());
         }
     }
 
@@ -255,19 +271,23 @@ class EmailController extends Controller
             foreach (['[Gmail]/Trash', '[Gmail]/Spam'] as $folderName) {
                 try {
                     $folder = $client->getFolder($folderName);
-                    if (!$folder) continue;
+                    if (! $folder) {
+                        continue;
+                    }
                     $email = $folder->messages()->getMessageByUid($message_uid);
                     if ($email) {
                         $email->move('INBOX');
+
                         return redirect()->back()->with('success', 'Email berhasil dikembalikan ke Kotak Masuk.');
                     }
                 } catch (\Exception $e) {
                     continue;
                 }
             }
+
             return redirect()->back()->with('error', 'Email tidak ditemukan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengembalikan email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengembalikan email: '.$e->getMessage());
         }
     }
 
@@ -281,12 +301,14 @@ class EmailController extends Controller
                 $email = $folder->messages()->getMessageByUid($message_uid);
                 if ($email) {
                     $email->delete(true);
+
                     return redirect()->back()->with('success', 'Email berhasil dihapus permanen.');
                 }
             }
+
             return redirect()->back()->with('error', 'Email tidak ditemukan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus email: '.$e->getMessage());
         }
     }
 }

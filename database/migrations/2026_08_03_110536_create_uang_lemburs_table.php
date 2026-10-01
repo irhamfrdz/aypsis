@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('master_uang_lemburs', function (Blueprint $table) {
             $table->id();
             $table->string('group')->default('Lembur');
-            $table->string('sub_group'); 
+            $table->string('sub_group');
             $table->timestamps();
         });
     }

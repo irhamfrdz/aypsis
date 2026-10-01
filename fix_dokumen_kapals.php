@@ -1,4 +1,5 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -10,7 +11,7 @@ $allKapals = \App\Models\MasterKapal::pluck('nama_kapal')->toArray();
 
 $updated = 0;
 
-$cleanStr = function($str) {
+$cleanStr = function ($str) {
     return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $str));
 };
 
@@ -18,10 +19,10 @@ foreach ($dokumens as $dok) {
     if (in_array($dok->kapal, $allKapals)) {
         continue;
     }
-    
+
     $dokClean = $cleanStr($dok->kapal);
     $bestMatch = null;
-    
+
     foreach ($allKapals as $k) {
         $kClean = $cleanStr($k);
         if ($kClean === $dokClean) {
@@ -29,8 +30,8 @@ foreach ($dokumens as $dok) {
             break;
         }
     }
-    
-    if (!$bestMatch) {
+
+    if (! $bestMatch) {
         // Try fallback to search inside
         foreach ($allKapals as $k) {
             if (strpos($cleanStr($k), $dokClean) !== false || strpos($dokClean, $cleanStr($k)) !== false) {
@@ -39,7 +40,7 @@ foreach ($dokumens as $dok) {
             }
         }
     }
-    
+
     if ($bestMatch) {
         \DB::table('biaya_kapal_dokumens')
             ->where('id', $dok->id)

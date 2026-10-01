@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Models\PersetujuanAbsensiLupa;
-use Illuminate\Http\Request;
-
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Absensi;
 
 class MasterPersetujuanAbsensiLupaController extends Controller
 {
@@ -18,7 +17,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
             $data = PersetujuanAbsensiLupa::with(['karyawan', 'approver', 'creator'])
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             $formattedData = $data->map(function ($row, $index) {
                 // Foto selfie PWA disimpan pada log absensi, bukan pada tabel pengajuan lupa absen.
                 // Cocokkan berdasarkan karyawan dan tanggal pengajuan.
@@ -61,6 +60,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
     public function create()
     {
         $karyawans = Karyawan::where('status', 'Aktif')->get();
+
         return view('master-persetujuan-absensi-lupa.create', compact('karyawans'));
     }
 
@@ -83,21 +83,21 @@ class MasterPersetujuanAbsensiLupaController extends Controller
             'status' => 'pending',
             'created_by' => auth()->id(),
         ]);
-        
+
         // Kirim notifikasi ke semua user yang memiliki hak akses approval
-        $approvers = \App\Models\User::all()->filter(function($user) {
+        $approvers = \App\Models\User::all()->filter(function ($user) {
             return $user->can('approval-absensi-lupa-approve');
         });
-        
+
         if ($approvers->count() > 0) {
             \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\PersetujuanAbsensiLupaNotification($pengajuan));
-            
+
             // Siapkan data untuk Push Notification (Device/HP)
             $pengajuan->load('karyawan');
             $karyawanNama = $pengajuan->karyawan ? $pengajuan->karyawan->nama_lengkap : 'Karyawan';
-            $title = "Pengajuan Lupa Absen";
+            $title = 'Pengajuan Lupa Absen';
             $body = "{$karyawanNama} mengajukan lupa absen {$pengajuan->tipe_absen}.";
-            
+
             // Kirim Push Notification ke setiap approver yang memiliki token
             foreach ($approvers as $approver) {
                 if ($approver->expo_push_token) {
@@ -121,6 +121,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
         }
 
         $karyawans = Karyawan::where('status', 'Aktif')->get();
+
         return view('master-persetujuan-absensi-lupa.edit', compact('persetujuanAbsensiLupa', 'karyawans'));
     }
 
@@ -157,6 +158,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
         }
 
         $persetujuanAbsensiLupa->delete();
+
         return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.']);
     }
 
@@ -176,7 +178,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
 
             // Tambahkan ke tabel absensis juga agar tercatat sebagai kehadiran sah
             $karyawan = Karyawan::find($persetujuanAbsensiLupa->karyawan_id);
-            if($karyawan) {
+            if ($karyawan) {
                 // Mapping tipe absen ke format absensis yang standar
                 $mappedTipe = $persetujuanAbsensiLupa->tipe_absen;
                 if (strtolower($mappedTipe) === 'mulai lembur') {
@@ -190,8 +192,8 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                 }
 
                 // Kombinasikan tanggal dan waktu
-                $waktuDateTime = Carbon::parse($persetujuanAbsensiLupa->tanggal)->format('Y-m-d') . ' ' . Carbon::parse($persetujuanAbsensiLupa->waktu)->format('H:i:s');
-                
+                $waktuDateTime = Carbon::parse($persetujuanAbsensiLupa->tanggal)->format('Y-m-d').' '.Carbon::parse($persetujuanAbsensiLupa->waktu)->format('H:i:s');
+
                 $tanggalAbsen = Carbon::parse($persetujuanAbsensiLupa->tanggal);
                 $startDateObj = $tanggalAbsen->copy()->setTime(6, 0, 0);
                 $endDateObj = $tanggalAbsen->copy()->addDays(1)->setTime(5, 59, 59);
@@ -204,7 +206,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                 if ($existingLog) {
                     $existingLog->update([
                         'waktu' => $waktuDateTime,
-                        'keterangan' => 'Lupa Absen: ' . $persetujuanAbsensiLupa->alasan,
+                        'keterangan' => 'Lupa Absen: '.$persetujuanAbsensiLupa->alasan,
                         'status' => 'Valid',
                         'device' => 'Manual Approval',
                         'foto' => $existingLog->foto ?: $this->fotoPengajuan($persetujuanAbsensiLupa),
@@ -215,7 +217,7 @@ class MasterPersetujuanAbsensiLupaController extends Controller
                         'nik' => $karyawan->nik,
                         'waktu' => $waktuDateTime,
                         'tipe' => $mappedTipe,
-                        'keterangan' => 'Lupa Absen: ' . $persetujuanAbsensiLupa->alasan,
+                        'keterangan' => 'Lupa Absen: '.$persetujuanAbsensiLupa->alasan,
                         'status' => 'Valid',
                         'device' => 'Manual Approval',
                         'foto' => $this->fotoPengajuan($persetujuanAbsensiLupa),
@@ -224,10 +226,12 @@ class MasterPersetujuanAbsensiLupaController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('master.persetujuan-absensi-lupa.index')->with('success', 'Pengajuan absensi lupa berhasil disetujui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('master.persetujuan-absensi-lupa.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return redirect()->route('master.persetujuan-absensi-lupa.index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 

@@ -57,6 +57,7 @@ class CreateUsersForActiveKaryawan extends Command
 
         if ($total === 0) {
             $this->info('✅ Semua karyawan aktif sudah memiliki akun user.');
+
             return 0;
         }
 
@@ -72,13 +73,13 @@ class CreateUsersForActiveKaryawan extends Command
                 $panggilan = trim((string) $karyawan->nama_panggilan);
 
                 // Jika nama panggilan ada dan bukan deretan angka panjang (misal KTP)
-                if (!empty($panggilan) && !(is_numeric($panggilan) && strlen($panggilan) > 8)) {
+                if (! empty($panggilan) && ! (is_numeric($panggilan) && strlen($panggilan) > 8)) {
                     $words = preg_split('/\s+/', $panggilan);
                     $sourceName = $words[0] ?? $panggilan;
                 }
 
                 // Jika masih kosong / invalid, fallback ke kata pertama nama lengkap
-                if (empty($sourceName) && !empty(trim((string) $karyawan->nama_lengkap))) {
+                if (empty($sourceName) && ! empty(trim((string) $karyawan->nama_lengkap))) {
                     $words = preg_split('/\s+/', trim($karyawan->nama_lengkap));
                     $sourceName = $words[0] ?? '';
                 }
@@ -86,7 +87,7 @@ class CreateUsersForActiveKaryawan extends Command
                 // Bersihkan karakter non-alphanumeric dan ubah ke lowercase
                 $baseUsername = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sourceName));
                 if (empty($baseUsername)) {
-                    $baseUsername = 'karyawan' . ($karyawan->nik ?? $karyawan->id);
+                    $baseUsername = 'karyawan'.($karyawan->nik ?? $karyawan->id);
                 }
 
                 // Logika penomoran jika username sudah ada (di database atau di batch saat ini)
@@ -97,7 +98,7 @@ class CreateUsersForActiveKaryawan extends Command
                     in_array($username, $usedUsernames, true) ||
                     User::where('username', $username)->exists()
                 ) {
-                    $username = $baseUsername . $counter;
+                    $username = $baseUsername.$counter;
                     $counter++;
                 }
 
@@ -153,6 +154,7 @@ class CreateUsersForActiveKaryawan extends Command
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->error("❌ Terjadi kesalahan: {$e->getMessage()}");
+
             return 1;
         }
     }

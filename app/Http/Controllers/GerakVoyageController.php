@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Manifest;
 use App\Models\MasterKapal;
 use Illuminate\Http\Request;
@@ -148,7 +147,7 @@ class GerakVoyageController extends Controller
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('gerak-voyage.index')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
 

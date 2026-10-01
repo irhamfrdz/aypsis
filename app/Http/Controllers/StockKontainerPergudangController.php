@@ -194,7 +194,7 @@ class StockKontainerPergudangController extends Controller
     public function exportLaporanBulan(Request $request)
     {
         $request->validate([
-            'bulan' => 'required|date_format:Y-m'
+            'bulan' => 'required|date_format:Y-m',
         ]);
 
         $bulan = $request->bulan; // format: "2026-07"

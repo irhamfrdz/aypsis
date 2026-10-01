@@ -1,4 +1,5 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -13,8 +14,8 @@ $usages = \App\Models\StockAmprahanUsage::with('stockAmprahan')
     ->get();
 
 foreach ($usages as $u) {
-    echo "Usage ID: " . $u->id . " | Jumlah: " . $u->jumlah . " | Stock ID: " . $u->stock_amprahan_id . "\n";
+    echo 'Usage ID: '.$u->id.' | Jumlah: '.$u->jumlah.' | Stock ID: '.$u->stock_amprahan_id."\n";
     if ($u->stockAmprahan) {
-        echo "Stock Harga Satuan: " . $u->stockAmprahan->harga_satuan . "\n";
+        echo 'Stock Harga Satuan: '.$u->stockAmprahan->harga_satuan."\n";
     }
 }

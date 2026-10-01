@@ -37,12 +37,13 @@ class CleanOrphanedManifests extends Command
 
         if ($badRecords->isEmpty()) {
             $this->info('Tidak ada data salah yang ditemukan.');
+
             return;
         }
 
-        $this->info('Ditemukan ' . $badRecords->count() . ' baris data yang salah.');
+        $this->info('Ditemukan '.$badRecords->count().' baris data yang salah.');
 
-        if ($this->confirm('Apakah Anda yakin ingin menghapus ' . $badRecords->count() . ' baris data ini?')) {
+        if ($this->confirm('Apakah Anda yakin ingin menghapus '.$badRecords->count().' baris data ini?')) {
             $deleted = DB::table('manifests')
                 ->where('nama_kapal', 'like', 'BCA%')
                 ->orWhere('nama_kapal', 'like', 'EBK%')

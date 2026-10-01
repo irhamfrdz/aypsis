@@ -11,6 +11,7 @@ class EmailAccountController extends Controller
     public function settings()
     {
         $account = EmailAccount::where('user_id', Auth::id())->first();
+
         return view('email.settings', compact('account'));
     }
 
@@ -26,7 +27,7 @@ class EmailAccountController extends Controller
             'smtp_port' => 'required|integer',
             'smtp_encryption' => 'nullable|string',
         ]);
-        
+
         // Membersihkan spasi, tab, enter, dan karakter whitespace lainnya pada sandi aplikasi
         $cleanPassword = preg_replace('/\s+/', '', $request->password);
 
@@ -53,6 +54,7 @@ class EmailAccountController extends Controller
         if ($account) {
             $account->delete();
         }
+
         return redirect()->route('email.settings')->with('success', 'Akun email berhasil dihapus (Logout).');
     }
 }

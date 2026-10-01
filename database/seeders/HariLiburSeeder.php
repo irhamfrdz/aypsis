@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\HariLibur;
+use Illuminate\Database\Seeder;
 
 class HariLiburSeeder extends Seeder
 {

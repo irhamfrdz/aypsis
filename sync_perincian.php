@@ -1,11 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use App\Models\Manifest;
-use App\Models\Perincian;
+use Illuminate\Support\Facades\DB;
 
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
@@ -36,7 +35,7 @@ Manifest::orderBy('id')->chunk($chunkSize, function ($manifests) use (&$processe
 
     foreach ($manifests as $manifest) {
         $data = $manifest->getAttributes();
-        
+
         $insertData[] = $data;
     }
 

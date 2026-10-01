@@ -91,7 +91,7 @@ class MasterKapalController extends Controller
             'disabled_slots' => 'nullable|string',
         ]);
 
-        if (!empty($validated['disabled_slots'])) {
+        if (! empty($validated['disabled_slots'])) {
             $validated['disabled_slots'] = json_decode($validated['disabled_slots'], true);
         } else {
             $validated['disabled_slots'] = [];
@@ -151,7 +151,7 @@ class MasterKapalController extends Controller
             'disabled_slots' => 'nullable|string',
         ]);
 
-        if (!empty($validated['disabled_slots'])) {
+        if (! empty($validated['disabled_slots'])) {
             $validated['disabled_slots'] = json_decode($validated['disabled_slots'], true);
         } else {
             $validated['disabled_slots'] = [];
@@ -712,6 +712,7 @@ class MasterKapalController extends Controller
 
         $groupedPergerakan = $pergerakanKapals->groupBy('no_voyage')->map(function ($items, $voyage) {
             $first = $items->first();
+
             return [
                 'no_voyage' => $voyage,
                 'pelabuhan_tujuan' => $first->pelabuhan_tujuan,
@@ -727,7 +728,7 @@ class MasterKapalController extends Controller
 
         // Merge tanpa duplicate (jika di manifest sudah ada, biarkan)
         foreach ($groupedPergerakan as $voyage => $data) {
-            if (!$grouped->has($voyage)) {
+            if (! $grouped->has($voyage)) {
                 $grouped->put($voyage, $data);
             }
         }
@@ -813,11 +814,11 @@ class MasterKapalController extends Controller
                 // Map/Simplify names based on rules to get nice category tags
                 $cleanName = '';
                 $isVehicle = false;
-                
+
                 if (stripos($name, 'mobil') !== false || stripos($name, 'toyota') !== false || stripos($name, 'fortuner') !== false) {
                     $cleanName = 'Mobil';
                     $isVehicle = true;
-                } elseif (stripos($name, 'motor') !== false && !stripos($name, 'dinamo') && !stripos($name, 'listrik')) {
+                } elseif (stripos($name, 'motor') !== false && ! stripos($name, 'dinamo') && ! stripos($name, 'listrik')) {
                     $cleanName = 'Motor';
                     $isVehicle = true;
                 } elseif (stripos($name, 'forklift') !== false) {
@@ -848,7 +849,7 @@ class MasterKapalController extends Controller
                 }
 
                 if ($isVehicle) {
-                    if (!$vehicleCounts->has($cleanName)) {
+                    if (! $vehicleCounts->has($cleanName)) {
                         $vehicleCounts[$cleanName] = 0;
                     }
                     $vehicleCounts[$cleanName] += $qty;
@@ -862,9 +863,9 @@ class MasterKapalController extends Controller
             $cargoNamesStr = implode(', ', $uniqueCargoNames);
 
             if ($totalCargoQty > 0) {
-                $lines[] = "- {$totalCargoQty} Colly" . ($cargoNamesStr ? " ({$cargoNamesStr})" : "");
+                $lines[] = "- {$totalCargoQty} Colly".($cargoNamesStr ? " ({$cargoNamesStr})" : '');
             }
-            
+
             foreach ($vehicleCounts as $vehicleName => $vQty) {
                 $lines[] = "- {$vQty} Unit {$vehicleName}";
             }

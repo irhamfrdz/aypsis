@@ -83,6 +83,13 @@
                         </svg>
                         Download Excel
                     </a>
+                    @can('tagihan-lolo-batam-view')
+                    <a href="{{ route('tagihan-lolo-batam.index', ['tab' => 'kontainer']) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm" title="Buka Menu Tagihan LOLO Batam">
+                        <i class="fas fa-boxes mr-2"></i>
+                        Tagihan LOLO Batam
+                    </a>
+                    @endcan
                     <a href="{{ route('surat-jalan-bongkaran-batam.select-ship') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,6 +218,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type (Manifest)</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LOLO</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             </tr>
@@ -229,6 +237,17 @@
 
                                             <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
+                                                    @if($sj->menggunakan_lolo)
+                                                        @can('tagihan-lolo-batam-create')
+                                                        <a href="{{ route('tagihan-lolo-batam.create', ['bongkaran_ids' => $sj->id]) }}" 
+                                                           class="group flex items-center px-3 py-2 text-xs text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900">
+                                                            <svg class="mr-2 h-4 w-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                            </svg>
+                                                            Buat Tagihan LOLO
+                                                        </a>
+                                                        @endcan
+                                                    @endif
                                                     <a href="#" onclick="editSuratJalan({{ $sj->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
                                                         <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,6 +313,18 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->jenis_pengiriman ?: ($sj->tipe_kontainer ?: ($sj->manifest->tipe_kontainer ?? '-')) }}
                                     </td>
+                                    <td class="px-4 py-3 text-center">
+                                        @if($sj->menggunakan_lolo)
+                                            <a href="{{ route('tagihan-lolo-batam.index', ['tab' => 'kontainer', 'search' => $sj->no_kontainer]) }}" 
+                                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 transition-colors" title="Lihat di Menu Tagihan LOLO Batam">
+                                                <i class="fas fa-check mr-1 text-emerald-600"></i> LOLO
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-400">
+                                                Tidak
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->lokasi ? ucfirst($sj->lokasi) : '-' }}
                                     </td>
@@ -301,7 +332,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $showKapalVoyage ? 11 : 9 }}" class="px-4 py-12 text-center">
+                                    <td colspan="{{ $showKapalVoyage ? 12 : 10 }}" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>

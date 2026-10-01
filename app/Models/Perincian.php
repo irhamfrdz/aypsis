@@ -219,7 +219,7 @@ class Perincian extends Model
                 $related = $perincian->getRelatedNotifyParty();
                 if ($related) {
                     // Check if it's not a JB voyage without shipper before auto-filling notify_party
-                    if (!(str_contains(strtoupper((string) $perincian->no_voyage), 'JB') && empty($perincian->shipper_id))) {
+                    if (! (str_contains(strtoupper((string) $perincian->no_voyage), 'JB') && empty($perincian->shipper_id))) {
                         $perincian->notify_party = $related['notify_party'];
                         $perincian->alamat_notify_party = $related['alamat_notify_party'];
                     }

@@ -3194,7 +3194,7 @@ class ObController extends Controller
                                 if (! empty($itemNames)) {
                                     $manifestData['nama_barang'] = implode(', ', $itemNames);
                                 }
-                            } else if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $prospek->keterangan, $matches)) {
+                            } elseif (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $prospek->keterangan, $matches)) {
                                 $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first();
                                 if ($tttsj) {
                                     $manifestData['nomor_tanda_terima'] = $tttsj->no_tanda_terima;
@@ -4167,30 +4167,30 @@ class ObController extends Controller
 
                         if ($pivotRecords->count() > 0) {
                             $tandaTerimaPertama = $pivotRecords->first()->tandaTerima;
-                            
+
                             $manifest->nomor_tanda_terima = $pivotRecords->map(function ($p) {
                                 return $p->tandaTerima ? $p->tandaTerima->nomor_tanda_terima : null;
                             })->filter()->implode(', ');
-                            
+
                             $namaBarangItems = collect();
                             $satuans = collect();
-                            
+
                             foreach ($pivotRecords as $pivot) {
                                 if ($tt = $pivot->tandaTerima) {
                                     $namaBarangItems->push($tt->items->pluck('nama_barang')->filter()->implode(', '));
                                     $satuans = $satuans->merge($tt->items->pluck('satuan')->filter());
                                 }
                             }
-                            
+
                             $manifest->nama_barang = $namaBarangItems->filter()->implode(', ') ?: $manifestDataForLater['jenis_barang'];
-                            
+
                             $uniqueSatuan = $satuans->unique();
                             if ($uniqueSatuan->count() === 1) {
                                 $manifest->satuan = $uniqueSatuan->first();
                             } elseif ($uniqueSatuan->count() > 1) {
                                 $manifest->satuan = 'PKGS';
                             }
-                            
+
                             if ($tandaTerimaPertama) {
                                 $manifest->pengirim = $tandaTerimaPertama->nama_pengirim;
                                 $manifest->penerima = $tandaTerimaPertama->nama_penerima;

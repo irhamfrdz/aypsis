@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pranota_lembur_karyawans')) {
+        if (! Schema::hasTable('pranota_lembur_karyawans')) {
             Schema::create('pranota_lembur_karyawans', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pranota_lembur_karyawan_header_id')->nullable();

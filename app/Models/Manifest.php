@@ -306,7 +306,7 @@ class Manifest extends Model
                 $related = $manifest->getRelatedNotifyParty();
                 if ($related) {
                     // Check if it's not a JB voyage without shipper before auto-filling notify_party
-                    if (!(str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id))) {
+                    if (! (str_contains(strtoupper((string) $manifest->no_voyage), 'JB') && empty($manifest->shipper_id) && empty($manifest->shipper_jb_id))) {
                         $manifest->notify_party = $related['notify_party'];
                         $manifest->alamat_notify_party = $related['alamat_notify_party'];
                     }

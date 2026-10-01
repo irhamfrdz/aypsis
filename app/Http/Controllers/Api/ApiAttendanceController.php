@@ -26,7 +26,7 @@ class ApiAttendanceController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         if (! $user->karyawan_id) {
             return response()->json([
                 'success' => false,
@@ -36,9 +36,9 @@ class ApiAttendanceController extends Controller
 
         $karyawan = $user->karyawan;
         $today = Carbon::today('Asia/Jakarta');
-        
+
         // Normalize tipe to match what we store (or just keep what's sent)
-        $tipe = strtolower($request->tipe) == 'masuk' ? 'Masuk' : 
+        $tipe = strtolower($request->tipe) == 'masuk' ? 'Masuk' :
                (strtolower($request->tipe) == 'pulang' ? 'Pulang' : $request->tipe);
 
         // Check if already checked in/out today for this specific type
@@ -65,17 +65,17 @@ class ApiAttendanceController extends Controller
             } else {
                 $ext = 'jpg';
             }
-            
+
             $decodedData = base64_decode($fotoData);
-            $fileName = 'selfie_' . $karyawan->nik . '_' . time() . '.' . $ext;
-            
+            $fileName = 'selfie_'.$karyawan->nik.'_'.time().'.'.$ext;
+
             $uploadPath = public_path('uploads/absensi');
-            if (!file_exists($uploadPath)) {
+            if (! file_exists($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
-            
-            file_put_contents($uploadPath . '/' . $fileName, $decodedData);
-            $fotoUrl = '/uploads/absensi/' . $fileName;
+
+            file_put_contents($uploadPath.'/'.$fileName, $decodedData);
+            $fotoUrl = '/uploads/absensi/'.$fileName;
         }
 
         // Tentukan waktu absensi
@@ -108,7 +108,7 @@ class ApiAttendanceController extends Controller
                 ->where('is_active', 1)
                 ->where(function ($q) {
                     $q->where('tipe_penugasan', 'semua')
-                      ->orWhereNull('tipe_penugasan');
+                        ->orWhereNull('tipe_penugasan');
                 })
                 ->get();
         }
@@ -127,7 +127,7 @@ class ApiAttendanceController extends Controller
             $lon1 = deg2rad((float) $request->longitude);
 
             foreach ($assignedLocations as $loc) {
-                if (!is_numeric($loc->latitude) || !is_numeric($loc->longitude)) {
+                if (! is_numeric($loc->latitude) || ! is_numeric($loc->longitude)) {
                     continue;
                 }
 
@@ -162,11 +162,11 @@ class ApiAttendanceController extends Controller
                     $detailLokasi = "Di luar radius {$nearestLoc->nama_lokasi} (Jarak: {$distRound}m, Radius: {$nearestLoc->radius}m)";
                 }
             }
-        } elseif (!$request->filled('latitude') || !$request->filled('longitude')) {
+        } elseif (! $request->filled('latitude') || ! $request->filled('longitude')) {
             $hasSpecial = DB::table('lokasi_absensi_karyawan')->where('karyawan_id', $karyawan->id)->exists();
             if ($hasSpecial) {
                 $statusAbsensi = 'PERSETUJUAN';
-                $detailLokasi = ($detailLokasi ? $detailLokasi . " | " : "") . "Koordinat GPS tidak terdeteksi pada lokasi wajib";
+                $detailLokasi = ($detailLokasi ? $detailLokasi.' | ' : '').'Koordinat GPS tidak terdeteksi pada lokasi wajib';
             }
         }
 
@@ -206,24 +206,24 @@ class ApiAttendanceController extends Controller
         $nik = $request->query('nik') ?? ($user->karyawan ? $user->karyawan->nik : null);
         $karyawan_id = $request->query('karyawan_id') ?? $user->karyawan_id;
 
-        if (!$nik && !$karyawan_id) {
-             return response()->json([
-                 'success' => false,
-                 'message' => 'Data karyawan tidak ditemukan.'
-             ], 400);
+        if (! $nik && ! $karyawan_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data karyawan tidak ditemukan.',
+            ], 400);
         }
 
         $today = Carbon::today('Asia/Jakarta');
-        
+
         $query = Absensi::whereDate('waktu', $today);
         if ($karyawan_id) {
-             $query->where('karyawan_id', $karyawan_id);
+            $query->where('karyawan_id', $karyawan_id);
         } else {
-             $query->where('nik', $nik);
+            $query->where('nik', $nik);
         }
-        
+
         $records = $query->get();
-        
+
         // Match the casing used in normalized store method
         $result = [
             'checkIn' => $records->where('tipe', 'Masuk')->first(),
@@ -231,7 +231,7 @@ class ApiAttendanceController extends Controller
             'istirahatKeluar' => $records->where('tipe', 'istirahat_keluar')->first(),
             'istirahatMasuk' => $records->where('tipe', 'istirahat_masuk')->first(),
         ];
-        
+
         return response()->json($result);
     }
 

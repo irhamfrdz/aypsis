@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class OnlineUserController extends Controller
 {
@@ -21,8 +20,8 @@ class OnlineUserController extends Controller
             ->groupBy('user_id');
 
         $onlineUsers = User::joinSub($latestSessions, 'latest_sessions', function ($join) {
-                $join->on('users.id', '=', 'latest_sessions.user_id');
-            })
+            $join->on('users.id', '=', 'latest_sessions.user_id');
+        })
             ->select('users.*', 'latest_sessions.last_activity')
             ->orderBy('latest_sessions.last_activity', 'desc')
             ->get();

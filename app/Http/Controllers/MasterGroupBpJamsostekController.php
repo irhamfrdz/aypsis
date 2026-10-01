@@ -10,6 +10,7 @@ class MasterGroupBpJamsostekController extends Controller
     public function index()
     {
         $groups = MasterGroupBpJamsostek::orderBy('nama_group')->get();
+
         return view('master-group-bp-jamsostek.index', compact('groups'));
     }
 

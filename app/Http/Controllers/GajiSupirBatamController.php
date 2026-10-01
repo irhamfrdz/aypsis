@@ -160,7 +160,7 @@ class GajiSupirBatamController extends Controller
         $karyawan = $gaji->karyawan;
         $supirNames = array_unique(array_filter([
             $karyawan->nama_panggilan,
-            $karyawan->nama_lengkap
+            $karyawan->nama_lengkap,
         ]));
 
         $startDate = $gaji->tanggal_mulai;
@@ -287,7 +287,7 @@ class GajiSupirBatamController extends Controller
         $karyawan = $gaji->karyawan;
         $supirNames = array_unique(array_filter([
             $karyawan->nama_panggilan,
-            $karyawan->nama_lengkap
+            $karyawan->nama_lengkap,
         ]));
 
         $startDate = $gaji->tanggal_mulai;
@@ -543,7 +543,7 @@ class GajiSupirBatamController extends Controller
 
         $supirNames = array_unique(array_filter([
             $karyawan->nama_panggilan,
-            $karyawan->nama_lengkap
+            $karyawan->nama_lengkap,
         ]));
 
         // Search in SuratJalanBatam, SuratJalanBongkaranBatam, and SuratJalanTarikKosongBatam
@@ -696,5 +696,3 @@ class GajiSupirBatamController extends Controller
         ]);
     }
 }
-
-

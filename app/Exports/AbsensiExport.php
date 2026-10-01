@@ -6,9 +6,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class AbsensiExport implements FromCollection, WithHeadings, WithMapping, \Maatwebsite\Excel\Concerns\WithStyles
+class AbsensiExport implements \Maatwebsite\Excel\Concerns\WithStyles, FromCollection, WithHeadings, WithMapping
 {
     protected $absensis;
+
     protected $filters;
 
     public function __construct($absensis, $filters = [])
@@ -33,18 +34,18 @@ class AbsensiExport implements FromCollection, WithHeadings, WithMapping, \Maatw
             'ada_lembur' => 'Ada Absen Lembur',
             'luar_radius' => 'Di Luar Radius',
         ];
-        
-        $statusAbsenLabel = !empty($this->filters['status_absen']) ? ($statusAbsenMap[$this->filters['status_absen']] ?? $this->filters['status_absen']) : '-';
+
+        $statusAbsenLabel = ! empty($this->filters['status_absen']) ? ($statusAbsenMap[$this->filters['status_absen']] ?? $this->filters['status_absen']) : '-';
 
         return [
             ['LAPORAN DATA ABSENSI KARYAWAN'],
-            ['Periode', ': ' . ($this->filters['start_date'] ?? '-') . ' s/d ' . ($this->filters['end_date'] ?? '-')],
-            ['Pencarian', ': ' . (!empty($this->filters['search']) ? $this->filters['search'] : '-')],
-            ['Pekerjaan', ': ' . (!empty($this->filters['pekerjaan']) ? $this->filters['pekerjaan'] : '-')],
-            ['Penempatan', ': ' . (!empty($this->filters['penempatan']) ? strtoupper($this->filters['penempatan']) : '-')],
-            ['Cabang', ': ' . (!empty($this->filters['cabang']) ? strtoupper($this->filters['cabang']) : '-')],
-            ['Divisi', ': ' . (!empty($this->filters['divisi']) ? strtoupper($this->filters['divisi']) : '-')],
-            ['Status Absen', ': ' . $statusAbsenLabel],
+            ['Periode', ': '.($this->filters['start_date'] ?? '-').' s/d '.($this->filters['end_date'] ?? '-')],
+            ['Pencarian', ': '.(! empty($this->filters['search']) ? $this->filters['search'] : '-')],
+            ['Pekerjaan', ': '.(! empty($this->filters['pekerjaan']) ? $this->filters['pekerjaan'] : '-')],
+            ['Penempatan', ': '.(! empty($this->filters['penempatan']) ? strtoupper($this->filters['penempatan']) : '-')],
+            ['Cabang', ': '.(! empty($this->filters['cabang']) ? strtoupper($this->filters['cabang']) : '-')],
+            ['Divisi', ': '.(! empty($this->filters['divisi']) ? strtoupper($this->filters['divisi']) : '-')],
+            ['Status Absen', ': '.$statusAbsenLabel],
             [],
             [
                 'NIK',
@@ -59,15 +60,15 @@ class AbsensiExport implements FromCollection, WithHeadings, WithMapping, \Maatw
                 'Istirahat Masuk',
                 'Lembur Masuk',
                 'Lembur Pulang',
-            ]
+            ],
         ];
     }
 
     public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
     {
         return [
-            1    => ['font' => ['bold' => true, 'size' => 12]],
-            10   => ['font' => ['bold' => true]],
+            1 => ['font' => ['bold' => true, 'size' => 12]],
+            10 => ['font' => ['bold' => true]],
         ];
     }
 

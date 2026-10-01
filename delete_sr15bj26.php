@@ -2,7 +2,7 @@
 
 // Pastikan script dijalankan dari command line (CLI)
 if (php_sapi_name() !== 'cli') {
-    die("Script ini hanya boleh dijalankan dari terminal/command line.\n");
+    exit("Script ini hanya boleh dijalankan dari terminal/command line.\n");
 }
 
 echo "Memulai proses penghapusan...\n";
@@ -28,5 +28,5 @@ try {
     }
 } catch (\Exception $e) {
     echo "ERROR: Terjadi kesalahan saat menghapus data:\n";
-    echo $e->getMessage() . "\n";
+    echo $e->getMessage()."\n";
 }

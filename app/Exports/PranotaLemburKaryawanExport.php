@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -82,10 +81,10 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
                 // Insert metadata header rows
                 $sheet->insertNewRowBefore(1, 5);
                 $sheet->setCellValue('A1', 'PRANOTA LEMBUR KARYAWAN');
-                $sheet->setCellValue('A2', 'Nomor Pranota: ' . $this->pranota->nomor_pranota);
-                $sheet->setCellValue('A3', 'Tanggal: ' . ($this->pranota->tanggal_pranota ? $this->pranota->tanggal_pranota->format('d/m/Y') : '-'));
+                $sheet->setCellValue('A2', 'Nomor Pranota: '.$this->pranota->nomor_pranota);
+                $sheet->setCellValue('A3', 'Tanggal: '.($this->pranota->tanggal_pranota ? $this->pranota->tanggal_pranota->format('d/m/Y') : '-'));
                 $creatorName = $this->pranota->creator->name ?? 'System';
-                $sheet->setCellValue('A4', 'Dibuat Oleh: ' . $creatorName . ' | Total Karyawan: ' . $this->pranota->karyawans->count() . ' Orang');
+                $sheet->setCellValue('A4', 'Dibuat Oleh: '.$creatorName.' | Total Karyawan: '.$this->pranota->karyawans->count().' Orang');
 
                 // Title style
                 $sheet->mergeCells("A1:{$lastCol}1");
@@ -111,26 +110,26 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal row
-                $sheet->setCellValue('F' . $currentRow, 'Subtotal:');
-                $sheet->setCellValue('G' . $currentRow, "=SUM(G{$dataStartRow}:G{$lastDataRow})");
-                $sheet->setCellValue('H' . $currentRow, "=SUM(H{$dataStartRow}:H{$lastDataRow})");
-                $sheet->setCellValue('I' . $currentRow, "=SUM(I{$dataStartRow}:I{$lastDataRow})");
+                $sheet->setCellValue('F'.$currentRow, 'Subtotal:');
+                $sheet->setCellValue('G'.$currentRow, "=SUM(G{$dataStartRow}:G{$lastDataRow})");
+                $sheet->setCellValue('H'.$currentRow, "=SUM(H{$dataStartRow}:H{$lastDataRow})");
+                $sheet->setCellValue('I'.$currentRow, "=SUM(I{$dataStartRow}:I{$lastDataRow})");
                 $sheet->getStyle("F{$currentRow}:J{$currentRow}")->getFont()->setBold(true);
                 $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 $currentRow++;
 
                 // Adjustment Row (if any)
                 if ((float) $this->pranota->adjustment != 0) {
-                    $sheet->setCellValue('F' . $currentRow, 'Adjustment:');
-                    $sheet->setCellValue('I' . $currentRow, (float) $this->pranota->adjustment);
+                    $sheet->setCellValue('F'.$currentRow, 'Adjustment:');
+                    $sheet->setCellValue('I'.$currentRow, (float) $this->pranota->adjustment);
                     $sheet->getStyle("F{$currentRow}:J{$currentRow}")->getFont()->setBold(true);
                     $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                     $currentRow++;
                 }
 
                 // Total Row
-                $sheet->setCellValue('F' . $currentRow, 'TOTAL:');
-                $sheet->setCellValue('I' . $currentRow, (float) $this->pranota->total_setelah_adjustment);
+                $sheet->setCellValue('F'.$currentRow, 'TOTAL:');
+                $sheet->setCellValue('I'.$currentRow, (float) $this->pranota->total_setelah_adjustment);
                 $sheet->getStyle("F{$currentRow}:J{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Perincian;
-use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -106,9 +105,9 @@ class PerincianController extends Controller
         }
 
         $perincians = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-                           ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate(20);
+            ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         // Store selection in session
         session([
@@ -156,47 +155,47 @@ class PerincianController extends Controller
 
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->setCellValue($col.'1', $header);
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
             $sheet->getColumnDimension($col)->setAutoSize(true);
             $col++;
         }
 
         $row = 2;
         foreach ($perincians as $i => $p) {
-            $sheet->setCellValue('A' . $row, $i + 1);
-            $sheet->setCellValue('B' . $row, $p->nomor_urut);
-            $sheet->setCellValue('C' . $row, $p->nomor_bl);
-            $sheet->setCellValue('D' . $row, $p->nomor_tanda_terima_display);
-            $sheet->setCellValue('E' . $row, $p->nomor_kontainer);
-            $sheet->setCellValue('F' . $row, $p->no_seal);
-            $sheet->setCellValue('G' . $row, $p->tipe_kontainer);
-            $sheet->setCellValue('H' . $row, $p->size_kontainer);
-            $sheet->setCellValue('I' . $row, $p->nama_barang);
-            $sheet->setCellValue('J' . $row, $p->pengirim);
-            $sheet->setCellValue('K' . $row, $p->alamat_pengirim);
-            $sheet->setCellValue('L' . $row, $p->penerima);
-            $sheet->setCellValue('M' . $row, $p->alamat_penerima);
-            $sheet->setCellValue('N' . $row, $p->contact_person);
-            $sheet->setCellValue('O' . $row, $p->tonnage);
-            $sheet->setCellValue('P' . $row, $p->tonnage_perincian);
-            $sheet->setCellValue('Q' . $row, $p->volume);
-            $sheet->setCellValue('R' . $row, $p->volume_perincian);
-            $sheet->setCellValue('S' . $row, $p->satuan);
-            $sheet->setCellValue('T' . $row, $p->kuantitas);
-            $sheet->setCellValue('U' . $row, $p->term);
-            $sheet->setCellValue('V' . $row, $p->pelabuhan_muat);
-            $sheet->setCellValue('W' . $row, $p->pelabuhan_bongkar);
-            $sheet->setCellValue('X' . $row, $p->tanggal_berangkat ? $p->tanggal_berangkat->format('d/m/Y') : '');
+            $sheet->setCellValue('A'.$row, $i + 1);
+            $sheet->setCellValue('B'.$row, $p->nomor_urut);
+            $sheet->setCellValue('C'.$row, $p->nomor_bl);
+            $sheet->setCellValue('D'.$row, $p->nomor_tanda_terima_display);
+            $sheet->setCellValue('E'.$row, $p->nomor_kontainer);
+            $sheet->setCellValue('F'.$row, $p->no_seal);
+            $sheet->setCellValue('G'.$row, $p->tipe_kontainer);
+            $sheet->setCellValue('H'.$row, $p->size_kontainer);
+            $sheet->setCellValue('I'.$row, $p->nama_barang);
+            $sheet->setCellValue('J'.$row, $p->pengirim);
+            $sheet->setCellValue('K'.$row, $p->alamat_pengirim);
+            $sheet->setCellValue('L'.$row, $p->penerima);
+            $sheet->setCellValue('M'.$row, $p->alamat_penerima);
+            $sheet->setCellValue('N'.$row, $p->contact_person);
+            $sheet->setCellValue('O'.$row, $p->tonnage);
+            $sheet->setCellValue('P'.$row, $p->tonnage_perincian);
+            $sheet->setCellValue('Q'.$row, $p->volume);
+            $sheet->setCellValue('R'.$row, $p->volume_perincian);
+            $sheet->setCellValue('S'.$row, $p->satuan);
+            $sheet->setCellValue('T'.$row, $p->kuantitas);
+            $sheet->setCellValue('U'.$row, $p->term);
+            $sheet->setCellValue('V'.$row, $p->pelabuhan_muat);
+            $sheet->setCellValue('W'.$row, $p->pelabuhan_bongkar);
+            $sheet->setCellValue('X'.$row, $p->tanggal_berangkat ? $p->tanggal_berangkat->format('d/m/Y') : '');
             $row++;
         }
 
-        $filename = 'Perincian_' . str_replace(' ', '_', $namaKapal) . '_' . str_replace('/', '-', $noVoyage) . '.xlsx';
+        $filename = 'Perincian_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -378,7 +377,7 @@ class PerincianController extends Controller
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->back()->with('error', 'Nama Kapal dan Voyage harus diisi untuk melakukan sinkronisasi.');
         }
 
@@ -392,13 +391,13 @@ class PerincianController extends Controller
         foreach ($perincians as $perincian) {
             $naikKapalQuery = \App\Models\NaikKapal::where('no_voyage', $perincian->no_voyage)
                 ->where('nama_kapal', $perincian->nama_kapal);
-                
+
             if ($perincian->prospek_id) {
                 $naikKapalQuery->where('prospek_id', $perincian->prospek_id);
             } else {
                 $naikKapalQuery->where('nomor_kontainer', $perincian->nomor_kontainer);
             }
-            
+
             $naikKapal = $naikKapalQuery->first();
             $newNamaBarang = null;
 
@@ -434,8 +433,8 @@ class PerincianController extends Controller
                 if (empty($newNamaBarang)) {
                     $newNamaBarang = $naikKapal->jenis_barang;
                 }
-                
-                if (!empty($newNamaBarang) && (empty($perincian->nama_barang) || $perincian->nama_barang !== $newNamaBarang)) {
+
+                if (! empty($newNamaBarang) && (empty($perincian->nama_barang) || $perincian->nama_barang !== $newNamaBarang)) {
                     $perincian->nama_barang = $newNamaBarang;
                     $perincian->save();
                     $updatedCount++;

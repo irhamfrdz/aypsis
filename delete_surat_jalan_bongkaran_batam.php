@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use App\Models\SuratJalanBongkaranBatam;
 use App\Models\HistoryKontainer;
+use App\Models\SuratJalanBongkaranBatam;
+use Illuminate\Support\Facades\DB;
 
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
@@ -37,5 +37,5 @@ try {
 
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Gagal menghapus data: " . $e->getMessage() . "\n";
+    echo 'Gagal menghapus data: '.$e->getMessage()."\n";
 }

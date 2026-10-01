@@ -34,7 +34,7 @@ class MasterRumusBpjsController extends Controller
         $defaultJkn = [
             'JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN',
             'JKN-KIS-NON KARY', 'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI',
-            'JKN-REIMBURSEMENT-CREW'
+            'JKN-REIMBURSEMENT-CREW',
         ];
         $groupsJkn = array_values(array_unique(array_merge($groupsJkn, $defaultJkn)));
         sort($groupsJkn);
@@ -50,7 +50,7 @@ class MasterRumusBpjsController extends Controller
         $defaultJamsostek = [
             'BPU-CREW', 'BPU-HARIAN', 'BPU-LAPANGAN', 'BPU-NON KARY-PBM',
             'BPU-NON KARY-UMKM', 'BPU-NON KARY-UMKM NO PP', 'BPU-TUNAI',
-            'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI'
+            'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI',
         ];
         $groupsJamsostek = array_values(array_unique(array_merge($groupsJamsostek, $defaultJamsostek)));
         sort($groupsJamsostek);
@@ -105,9 +105,9 @@ class MasterRumusBpjsController extends Controller
             if (is_string($rawGroupNames)) {
                 $rawGroupNames = explode(',', $rawGroupNames);
             }
-            $groupNames = array_values(array_filter(array_map('trim', (array)$rawGroupNames)));
+            $groupNames = array_values(array_filter(array_map('trim', (array) $rawGroupNames)));
 
-            if (!empty($groupNames)) {
+            if (! empty($groupNames)) {
                 // Decode hutang_tiers JSON dari hidden input
                 $tiersRaw = $request->hutang_tiers[$key] ?? null;
                 $tiers = null;
@@ -115,7 +115,7 @@ class MasterRumusBpjsController extends Controller
                     $decoded = json_decode($tiersRaw, true);
                     // Filter tier kosong
                     if (is_array($decoded)) {
-                        $tiers = array_values(array_filter($decoded, fn($t) => !empty($t['dpp']) || !empty($t['potongan'])));
+                        $tiers = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
                         $tiers = count($tiers) ? $tiers : null;
                     }
                 }
@@ -179,28 +179,60 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
 
         $dataToUpdate = [];
-        if ($request->has('cabang_bpjs')) $dataToUpdate['cabang_bpjs'] = $request->cabang_bpjs;
-        if ($request->has('jenis')) $dataToUpdate['jenis'] = $request->jenis;
-        if ($request->has('tunjangan_persen')) $dataToUpdate['tunjangan_persen'] = $request->tunjangan_persen;
-        if ($request->has('hutang_persen')) $dataToUpdate['hutang_persen'] = $request->hutang_persen;
-        if ($request->has('biaya_persen')) $dataToUpdate['biaya_persen'] = $request->biaya_persen;
-        if ($request->has('keterangan_custom')) $dataToUpdate['keterangan_custom'] = $request->keterangan_custom;
-        if ($request->has('jht_biaya')) $dataToUpdate['jht_biaya'] = $request->jht_biaya;
-        if ($request->has('jht_hutang')) $dataToUpdate['jht_hutang'] = $request->jht_hutang;
-        if ($request->has('jkk_tunjangan')) $dataToUpdate['jkk_tunjangan'] = $request->jkk_tunjangan;
-        if ($request->has('jkm_tunjangan')) $dataToUpdate['jkm_tunjangan'] = $request->jkm_tunjangan;
-        if ($request->has('jp_biaya')) $dataToUpdate['jp_biaya'] = $request->jp_biaya;
-        if ($request->has('jp_hutang')) $dataToUpdate['jp_hutang'] = $request->jp_hutang;
-        if ($request->has('jp_max_dpp')) $dataToUpdate['jp_max_dpp'] = $request->jp_max_dpp;
-        if ($request->has('jp_max_age')) $dataToUpdate['jp_max_age'] = $request->jp_max_age;
+        if ($request->has('cabang_bpjs')) {
+            $dataToUpdate['cabang_bpjs'] = $request->cabang_bpjs;
+        }
+        if ($request->has('jenis')) {
+            $dataToUpdate['jenis'] = $request->jenis;
+        }
+        if ($request->has('tunjangan_persen')) {
+            $dataToUpdate['tunjangan_persen'] = $request->tunjangan_persen;
+        }
+        if ($request->has('hutang_persen')) {
+            $dataToUpdate['hutang_persen'] = $request->hutang_persen;
+        }
+        if ($request->has('biaya_persen')) {
+            $dataToUpdate['biaya_persen'] = $request->biaya_persen;
+        }
+        if ($request->has('keterangan_custom')) {
+            $dataToUpdate['keterangan_custom'] = $request->keterangan_custom;
+        }
+        if ($request->has('jht_biaya')) {
+            $dataToUpdate['jht_biaya'] = $request->jht_biaya;
+        }
+        if ($request->has('jht_hutang')) {
+            $dataToUpdate['jht_hutang'] = $request->jht_hutang;
+        }
+        if ($request->has('jkk_tunjangan')) {
+            $dataToUpdate['jkk_tunjangan'] = $request->jkk_tunjangan;
+        }
+        if ($request->has('jkm_tunjangan')) {
+            $dataToUpdate['jkm_tunjangan'] = $request->jkm_tunjangan;
+        }
+        if ($request->has('jp_biaya')) {
+            $dataToUpdate['jp_biaya'] = $request->jp_biaya;
+        }
+        if ($request->has('jp_hutang')) {
+            $dataToUpdate['jp_hutang'] = $request->jp_hutang;
+        }
+        if ($request->has('jp_max_dpp')) {
+            $dataToUpdate['jp_max_dpp'] = $request->jp_max_dpp;
+        }
+        if ($request->has('jp_max_age')) {
+            $dataToUpdate['jp_max_age'] = $request->jp_max_age;
+        }
         if ($request->has('diskon_status')) {
             $dataToUpdate['diskon_status'] = $request->diskon_status;
             if ($request->diskon_status === 'tidak_ada') {
                 $dataToUpdate['diskon_nilai'] = 0;
             }
         }
-        if ($request->has('diskon_tipe')) $dataToUpdate['diskon_tipe'] = $request->diskon_tipe;
-        if ($request->has('diskon_nilai')) $dataToUpdate['diskon_nilai'] = $request->diskon_nilai;
+        if ($request->has('diskon_tipe')) {
+            $dataToUpdate['diskon_tipe'] = $request->diskon_tipe;
+        }
+        if ($request->has('diskon_nilai')) {
+            $dataToUpdate['diskon_nilai'] = $request->diskon_nilai;
+        }
 
         // Handle hutang_tiers (JSON string dari form)
         if ($request->has('hutang_tiers')) {
@@ -209,7 +241,7 @@ class MasterRumusBpjsController extends Controller
             if ($tiersRaw) {
                 $decoded = json_decode($tiersRaw, true);
                 if (is_array($decoded)) {
-                    $filtered = array_values(array_filter($decoded, fn($t) => !empty($t['dpp']) || !empty($t['potongan'])));
+                    $filtered = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
                     $tiers = count($filtered) ? $filtered : null;
                 }
             }
@@ -218,7 +250,7 @@ class MasterRumusBpjsController extends Controller
 
         // Existing IDs from group
         $existingIds = [];
-        if ($request->has('existing_ids') && !empty($request->existing_ids)) {
+        if ($request->has('existing_ids') && ! empty($request->existing_ids)) {
             $existingIds = array_values(array_filter(explode(',', $request->existing_ids)));
         }
         if (empty($existingIds)) {
@@ -231,9 +263,9 @@ class MasterRumusBpjsController extends Controller
             if (is_string($rawGroupNames)) {
                 $rawGroupNames = explode(',', $rawGroupNames);
             }
-            $groupNames = array_values(array_filter(array_map('trim', (array)$rawGroupNames)));
+            $groupNames = array_values(array_filter(array_map('trim', (array) $rawGroupNames)));
 
-            if (!empty($groupNames)) {
+            if (! empty($groupNames)) {
                 $existingRecords = MasterRumusBpjs::whereIn('id', $existingIds)->get()->keyBy('id');
                 $existingIdList = $existingRecords->keys()->toArray();
 
@@ -273,7 +305,7 @@ class MasterRumusBpjsController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        if ($request->has('ids') && !empty($request->ids)) {
+        if ($request->has('ids') && ! empty($request->ids)) {
             $ids = array_values(array_filter(explode(',', $request->ids)));
             MasterRumusBpjs::whereIn('id', $ids)->delete();
         } else {

@@ -1,4 +1,5 @@
 <?php
+
 $files = [
     'resources/views/bl/rekap_bongkaran_kontainer_select.blade.php',
     'resources/views/bl/rekap_bongkaran_kontainer.blade.php',
@@ -7,12 +8,12 @@ $files = [
 
 foreach ($files as $file) {
     $content = file_get_contents($file);
-    
+
     // Replace route names
     $content = str_replace('route(\'bl.rekap-bongkaran\')', 'route(\'bl.rekap-bongkaran-kontainer\')', $content);
     $content = str_replace('route(\'bl.rekap-bongkaran.select\')', 'route(\'bl.rekap-bongkaran-kontainer.select\')', $content);
     $content = str_replace('route(\'bl.rekap-bongkaran.print', 'route(\'bl.rekap-bongkaran-kontainer.print', $content);
-    
+
     // Replace Titles
     $content = str_replace('Rekapan Bongkar/Muat Barang', 'Rekapan Bongkar/Muat Kontainer', $content);
     $content = str_replace('Pilih Kapal untuk Rekap Bongkaran', 'Pilih Kapal untuk Rekap Bongkaran Kontainer', $content);
@@ -25,4 +26,4 @@ foreach ($files as $file) {
     file_put_contents($file, $content);
 }
 
-echo "Replaced strings in views.";
+echo 'Replaced strings in views.';

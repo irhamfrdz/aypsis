@@ -591,9 +591,10 @@ class PembayaranObController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
+                ->with('error', 'Gagal mengupdate data: '.$e->getMessage());
         }
     }
 
@@ -623,7 +624,8 @@ class PembayaranObController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal mengupdate tanggal: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengupdate tanggal: '.$e->getMessage());
         }
     }
 

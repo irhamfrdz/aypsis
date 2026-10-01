@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Karyawan;
 use App\Models\Absensi;
 use App\Models\HariLibur;
+use App\Models\Karyawan;
 use App\Models\UangLembur;
-use App\Models\UangLemburRule;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class PerhitunganLemburController extends Controller
 {
@@ -70,14 +69,14 @@ class PerhitunganLemburController extends Controller
                 });
             } elseif ($kehadiran === 'tidak_lengkap') {
                 $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
 
                 $karyawanQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
-                      ->whereBetween('waktu', [$startObj, $endObj])
-                      ->whereIn('tipe', ['Masuk', 'Pulang'])
-                      ->groupBy(\DB::raw($dateExpr))
-                      ->havingRaw('COUNT(DISTINCT tipe) = 1');
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->whereIn('tipe', ['Masuk', 'Pulang'])
+                        ->groupBy(\DB::raw($dateExpr))
+                        ->havingRaw('COUNT(DISTINCT tipe) = 1');
                 });
             }
         }
@@ -86,12 +85,12 @@ class PerhitunganLemburController extends Controller
             $grupReq = $request->grup;
             if ($request->filled('sub_grup')) {
                 $subGrupReq = $request->sub_grup;
-                $searchStr = $grupReq . ':' . $subGrupReq;
-                $karyawanQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupReq.':'.$subGrupReq;
+                $karyawanQuery->where('grup', 'LIKE', '%"'.$searchStr.'"%');
             } else {
-                $karyawanQuery->where(function($q) use ($grupReq) {
-                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                $karyawanQuery->where(function ($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"'.$grupReq.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$grupReq.'"%');
                 });
             }
         }
@@ -100,12 +99,12 @@ class PerhitunganLemburController extends Controller
             $grupBpjsReq = $request->grup_bpjs;
             if ($request->filled('sub_grup_bpjs')) {
                 $subGrupBpjsReq = $request->sub_grup_bpjs;
-                $searchStr = $grupBpjsReq . ':' . $subGrupBpjsReq;
-                $karyawanQuery->where('grup_bpjs', 'LIKE', '%"' . $searchStr . '"%');
+                $searchStr = $grupBpjsReq.':'.$subGrupBpjsReq;
+                $karyawanQuery->where('grup_bpjs', 'LIKE', '%"'.$searchStr.'"%');
             } else {
-                $karyawanQuery->where(function($q) use ($grupBpjsReq) {
-                    $q->where('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . ':%')
-                      ->orWhere('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . '"%');
+                $karyawanQuery->where(function ($q) use ($grupBpjsReq) {
+                    $q->where('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.':%')
+                        ->orWhere('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.'"%');
                 });
             }
         }
@@ -115,15 +114,15 @@ class PerhitunganLemburController extends Controller
         // Ambil nominal uang makan terbaru langsung dari tabel uang_makans per karyawan_id
         $karyawanIds = $karyawans->pluck('id')->filter()->unique()->values();
         $uangMakanMap = \App\Models\UangMakan::whereIn('karyawan_id', $karyawanIds)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
-                  ->orWhereNull('tipe_karyawan');
+                    ->orWhereNull('tipe_karyawan');
             })
             ->orderBy('tanggal', 'desc')
             ->orderBy('id', 'desc')
             ->get()
             ->groupBy('karyawan_id')
-            ->map(fn($items) => (float) $items->first()->nominal);
+            ->map(fn ($items) => (float) $items->first()->nominal);
 
         // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
         // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
@@ -132,12 +131,12 @@ class PerhitunganLemburController extends Controller
         $workDateExprAlias = \App\Helpers\AttendanceWorkDate::sql($driver, 'a');
 
         $lemburStartsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
-        $lemburEndsSub   = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+        $lemburEndsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
         $lemburStartsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
-        $lemburEndsOut   = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+        $lemburEndsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
 
         $workStart = $startDate->copy()->startOfDay();
-        $workEnd   = $endDate->copy()->addDays(2)->startOfDay();
+        $workEnd = $endDate->copy()->addDays(2)->startOfDay();
 
         // Inner subquery: satu baris per log absensi, dilabeli dengan tanggal kerja
         $inner = \DB::table(\DB::raw('absensis a'))
@@ -166,11 +165,11 @@ class PerhitunganLemburController extends Controller
         // Fetch registered holidays (hari_liburs) within the selected date range
         // These are holidays manually registered by admin (e.g. national holidays on weekdays)
         $hariLiburDates = HariLibur::whereBetween('tanggal', [
-                $startDate->toDateString(),
-                $endDate->toDateString()
-            ])
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ])
             ->pluck('tanggal')
-            ->map(fn($t) => \Carbon\Carbon::parse($t)->toDateString())
+            ->map(fn ($t) => \Carbon\Carbon::parse($t)->toDateString())
             ->toArray();
 
         $rekapData = [];
@@ -186,9 +185,9 @@ class PerhitunganLemburController extends Controller
                     if (count($parts) >= 2 && trim(strtoupper($parts[0])) === 'LEMBUR') {
                         $group = trim(strtoupper($parts[0]));
                         $sub_group = trim(strtoupper($parts[1]));
-                        
+
                         // Find in DB
-                        $ul = $uangLemburs->first(function($item) use ($group, $sub_group) {
+                        $ul = $uangLemburs->first(function ($item) use ($group, $sub_group) {
                             return strtoupper($item->group) === $group && strtoupper($item->sub_group) === $sub_group;
                         });
 
@@ -216,17 +215,17 @@ class PerhitunganLemburController extends Controller
                 $tipeHari = $isHoliday ? 'Hari Libur' : 'Hari Biasa';
 
                 $dayLog = $logsByDate->get($dateStr);
-                
+
                 if ($dayLog && $dayLog->waktu_lembur_masuk && $dayLog->waktu_lembur_pulang) {
                     $lm = Carbon::parse($dayLog->waktu_lembur_masuk);
                     $lp = Carbon::parse($dayLog->waktu_lembur_pulang);
-                    
+
                     // Jika jam pulang terekam lebih awal dari jam masuk (melewati tengah malam)
                     // asumsikan jam pulang adalah di keesokan harinya
                     if ($lp < $lm) {
                         $lp->addDay();
                     }
-                    
+
                     $durationMinutes = $lm->diffInMinutes($lp);
                     $durasiJam = ceil($durationMinutes / 60);
 
@@ -235,113 +234,113 @@ class PerhitunganLemburController extends Controller
                         $durasiJam = 24;
                     }
 
-                        // Aturan Hari Sabtu: jika lembur selesai nanggung 17:00-17:59, bulatkan ke 18:00
-                        // Aturan ini TIDAK berlaku jika Sabtu tersebut terdaftar sebagai Hari Libur di hari_liburs
-                        $lpEvaluation = $lp->copy();
-                        if ($tempDate->isSaturday() && !$isHoliday && $lpEvaluation->hour == 17) {
-                            $lpEvaluation->setTime(18, 0, 0);
-                        }
+                    // Aturan Hari Sabtu: jika lembur selesai nanggung 17:00-17:59, bulatkan ke 18:00
+                    // Aturan ini TIDAK berlaku jika Sabtu tersebut terdaftar sebagai Hari Libur di hari_liburs
+                    $lpEvaluation = $lp->copy();
+                    if ($tempDate->isSaturday() && ! $isHoliday && $lpEvaluation->hour == 17) {
+                        $lpEvaluation->setTime(18, 0, 0);
+                    }
 
-                        $jamMasukTime = $lm->format('H:i:s');
-                        $jamPulangTime = $lp->format('H:i:s');
-                        
-                        // Calculate nominal based on matched rules
-                        $nominalHariIni = 0;
-                        $ruleApplied = null;
+                    $jamMasukTime = $lm->format('H:i:s');
+                    $jamPulangTime = $lp->format('H:i:s');
 
-                        foreach ($matchingUangLemburs as $ul) {
-                            $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
-                            
-                            // Find rule for this tipe_hari that matches jam_pulang
-                            foreach ($ul->rules as $rule) {
-                                if ($rule->tipe_hari === $tipeHari) {
-                                    $matchesTime = false;
-                                    
-                                    if ($tipeHari === 'Hari Libur' && !$isPelabuhan1) {
-                                        // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
-                                        // Asumsi rule 18:00 - Selesai (is_sampai_selesai = 1) untuk > 10 jam
-                                        // Asumsi rule 08:00 - 18:00 (is_sampai_selesai = 0) untuk <= 10 jam
+                    // Calculate nominal based on matched rules
+                    $nominalHariIni = 0;
+                    $ruleApplied = null;
+
+                    foreach ($matchingUangLemburs as $ul) {
+                        $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
+
+                        // Find rule for this tipe_hari that matches jam_pulang
+                        foreach ($ul->rules as $rule) {
+                            if ($rule->tipe_hari === $tipeHari) {
+                                $matchesTime = false;
+
+                                if ($tipeHari === 'Hari Libur' && ! $isPelabuhan1) {
+                                    // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
+                                    // Asumsi rule 18:00 - Selesai (is_sampai_selesai = 1) untuk > 10 jam
+                                    // Asumsi rule 08:00 - 18:00 (is_sampai_selesai = 0) untuk <= 10 jam
+                                    if ($rule->is_sampai_selesai) {
+                                        if ($durasiJam > 10) {
+                                            $matchesTime = true;
+                                        }
+                                    } else {
+                                        if ($durasiJam <= 10) {
+                                            $matchesTime = true;
+                                        }
+                                    }
+                                } else {
+                                    if ($rule->jam_mulai) {
+                                        // Build Carbon boundaries for the rule
+                                        $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
+
+                                        // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
+                                        if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                            $ruleMulai->addDay();
+                                        }
+
                                         if ($rule->is_sampai_selesai) {
-                                            if ($durasiJam > 10) {
+                                            if ($lpEvaluation >= $ruleMulai) {
                                                 $matchesTime = true;
                                             }
-                                        } else {
-                                            if ($durasiJam <= 10) {
+                                        } elseif ($rule->jam_selesai) {
+                                            $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d').' '.$rule->jam_selesai);
+                                            // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
+                                            if ($ruleSelesai < $ruleMulai) {
+                                                $ruleSelesai->addDay();
+                                            }
+
+                                            if ($lpEvaluation >= $ruleMulai && $lpEvaluation <= $ruleSelesai) {
                                                 $matchesTime = true;
                                             }
                                         }
                                     } else {
-                                        if ($rule->jam_mulai) {
-                                            // Build Carbon boundaries for the rule
-                                            $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d') . ' ' . $rule->jam_mulai);
-                                            
-                                            // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
-                                            if ($ruleMulai->copy()->addHours(6) < $lm) {
-                                                $ruleMulai->addDay();
-                                            }
-
-                                            if ($rule->is_sampai_selesai) {
-                                                if ($lpEvaluation >= $ruleMulai) {
-                                                    $matchesTime = true;
-                                                }
-                                            } else if ($rule->jam_selesai) {
-                                                $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d') . ' ' . $rule->jam_selesai);
-                                                // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
-                                                if ($ruleSelesai < $ruleMulai) {
-                                                    $ruleSelesai->addDay();
-                                                }
-                                                
-                                                if ($lpEvaluation >= $ruleMulai && $lpEvaluation <= $ruleSelesai) {
-                                                    $matchesTime = true;
-                                                }
-                                            }
-                                        } else {
-                                            // No time condition, matches by default
-                                            $matchesTime = true;
-                                        }
+                                        // No time condition, matches by default
+                                        $matchesTime = true;
                                     }
+                                }
 
-                                    if ($matchesTime) {
-                                        if (strtolower(trim($rule->satuan)) === 'jam' || strtolower(trim($rule->satuan)) === 'per jam') {
-                                            $nominalHariIni = $durasiJam * $rule->nominal;
-                                        } else { // Hari / Borongan
-                                            $nominalHariIni = $rule->nominal;
-                                        }
-                                        $ruleApplied = $rule;
-                                        break 2; // Stop searching once a rule matches
+                                if ($matchesTime) {
+                                    if (strtolower(trim($rule->satuan)) === 'jam' || strtolower(trim($rule->satuan)) === 'per jam') {
+                                        $nominalHariIni = $durasiJam * $rule->nominal;
+                                    } else { // Hari / Borongan
+                                        $nominalHariIni = $rule->nominal;
                                     }
+                                    $ruleApplied = $rule;
+                                    break 2; // Stop searching once a rule matches
                                 }
                             }
                         }
-
-                        if ($isHoliday) {
-                            $totalJamHariLibur += $durasiJam;
-                            // Hitung uang makan lembur hari libur (flat per hari, tidak bergantung jam)
-                            $baseUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
-                            $pengaliUangMakan = 1.0;
-                            if (!empty($matchingUangLemburs)) {
-                                $pengaliUangMakan = (float) ($matchingUangLemburs[0]->pengali_uang_makan_hari_libur ?? 1);
-                            }
-                            $nominalUangMakanLembur = $baseUangMakan * $pengaliUangMakan;
-                            $totalUangMakanLembur += $nominalUangMakanLembur;
-                        } else {
-                            $totalJamHariBiasa += $durasiJam;
-                            $nominalUangMakanLembur = 0;
-                        }
-                        
-                        $totalNominal += $nominalHariIni;
-
-                        $detailPerhitungan[] = [
-                            'tanggal' => $dateStr,
-                            'tipe_hari' => $tipeHari,
-                            'durasi_jam' => $durasiJam,
-                            'jam_masuk' => $jamMasukTime,
-                            'jam_pulang' => $jamPulangTime,
-                            'nominal' => $nominalHariIni,
-                            'uang_makan_lembur' => $nominalUangMakanLembur ?? 0,
-                            'rule' => $ruleApplied ? $ruleApplied->satuan . ' x ' . number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
-                        ];
                     }
+
+                    if ($isHoliday) {
+                        $totalJamHariLibur += $durasiJam;
+                        // Hitung uang makan lembur hari libur (flat per hari, tidak bergantung jam)
+                        $baseUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
+                        $pengaliUangMakan = 1.0;
+                        if (! empty($matchingUangLemburs)) {
+                            $pengaliUangMakan = (float) ($matchingUangLemburs[0]->pengali_uang_makan_hari_libur ?? 1);
+                        }
+                        $nominalUangMakanLembur = $baseUangMakan * $pengaliUangMakan;
+                        $totalUangMakanLembur += $nominalUangMakanLembur;
+                    } else {
+                        $totalJamHariBiasa += $durasiJam;
+                        $nominalUangMakanLembur = 0;
+                    }
+
+                    $totalNominal += $nominalHariIni;
+
+                    $detailPerhitungan[] = [
+                        'tanggal' => $dateStr,
+                        'tipe_hari' => $tipeHari,
+                        'durasi_jam' => $durasiJam,
+                        'jam_masuk' => $jamMasukTime,
+                        'jam_pulang' => $jamPulangTime,
+                        'nominal' => $nominalHariIni,
+                        'uang_makan_lembur' => $nominalUangMakanLembur ?? 0,
+                        'rule' => $ruleApplied ? $ruleApplied->satuan.' x '.number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
+                    ];
+                }
 
                 $tempDate->addDay();
             }
@@ -371,8 +370,8 @@ class PerhitunganLemburController extends Controller
             ->get();
 
         $pekerjaans = $allActiveKaryawans->pluck('pekerjaan')->filter()->unique()->sort()->values();
-        $divisis    = $allActiveKaryawans->pluck('divisi')->filter()->unique()->sort()->values();
-        $cabangs    = $allActiveKaryawans->pluck('cabang')->filter()->unique()->sort()->values();
+        $divisis = $allActiveKaryawans->pluck('divisi')->filter()->unique()->sort()->values();
+        $cabangs = $allActiveKaryawans->pluck('cabang')->filter()->unique()->sort()->values();
         $penempatans = $allActiveKaryawans->pluck('penempatan')->filter()->unique()->sort()->values();
 
         $grupMap = [
@@ -380,7 +379,7 @@ class PerhitunganLemburController extends Controller
             'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
             'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
             'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-            'CUTI' => []
+            'CUTI' => [],
         ];
         foreach ($allActiveKaryawans->pluck('grup') as $grupArray) {
             if (is_array($grupArray)) {
@@ -389,10 +388,10 @@ class PerhitunganLemburController extends Controller
                     $main = $parts[0];
                     $sub = $parts[1] ?? '';
                     if ($main !== '') {
-                        if (!isset($grupMap[$main])) {
+                        if (! isset($grupMap[$main])) {
                             $grupMap[$main] = [];
                         }
-                        if ($sub !== '' && !in_array($sub, $grupMap[$main])) {
+                        if ($sub !== '' && ! in_array($sub, $grupMap[$main])) {
                             $grupMap[$main][] = $sub;
                         }
                     }
@@ -407,7 +406,7 @@ class PerhitunganLemburController extends Controller
 
         $grupBpjsMap = [
             'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-            'BPJS-JKN' => ['BPU REIMBURSMENT']
+            'BPJS-JKN' => ['BPU REIMBURSMENT'],
         ];
         foreach ($allActiveKaryawans->pluck('grup_bpjs') as $grupBpjsArray) {
             if (is_array($grupBpjsArray)) {
@@ -416,10 +415,10 @@ class PerhitunganLemburController extends Controller
                     $main = $parts[0];
                     $sub = $parts[1] ?? '';
                     if ($main !== '') {
-                        if (!isset($grupBpjsMap[$main])) {
+                        if (! isset($grupBpjsMap[$main])) {
                             $grupBpjsMap[$main] = [];
                         }
-                        if ($sub !== '' && !in_array($sub, $grupBpjsMap[$main])) {
+                        if ($sub !== '' && ! in_array($sub, $grupBpjsMap[$main])) {
                             $grupBpjsMap[$main][] = $sub;
                         }
                     }
@@ -445,9 +444,9 @@ class PerhitunganLemburController extends Controller
             ->get();
 
         return view('payroll.perhitungan-lembur.index', compact(
-            'rekapData', 
-            'startDateStr', 
-            'endDateStr', 
+            'rekapData',
+            'startDateStr',
+            'endDateStr',
             'divisis',
             'penempatans',
             'pekerjaans',

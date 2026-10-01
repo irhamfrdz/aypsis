@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\StowagePlan;
 use App\Models\Manifest;
+use App\Models\StowagePlan;
 use Illuminate\Http\Request;
 
 class StowagePlanController extends Controller
@@ -12,6 +12,7 @@ class StowagePlanController extends Controller
     public function index(Request $request)
     {
         $plans = StowagePlan::with(['manifest', 'createdBy'])->get();
+
         return response()->json($plans);
     }
 
@@ -23,17 +24,17 @@ class StowagePlanController extends Controller
             ->where('nama_kapal', '!=', '')
             ->get()
             ->pluck('nama_kapal');
-            
+
         return response()->json($ships);
     }
-    
+
     public function getByShip(Request $request)
     {
         $ship = $request->input('nama_kapal');
-        $plans = StowagePlan::whereHas('manifest', function($q) use ($ship) {
+        $plans = StowagePlan::whereHas('manifest', function ($q) use ($ship) {
             $q->where('nama_kapal', $ship);
         })->with('manifest')->get();
-        
+
         return response()->json($plans);
     }
 
@@ -65,7 +66,7 @@ class StowagePlanController extends Controller
                     'updated_by' => auth()->id() ?? null,
                 ]
             );
-            
+
             if ($stowagePlan->wasRecentlyCreated) {
                 $stowagePlan->created_by = auth()->id() ?? null;
                 $stowagePlan->save();
@@ -77,16 +78,16 @@ class StowagePlanController extends Controller
             'message' => 'Stowage plan updated successfully',
         ]);
     }
-    
+
     public function getManifestsWithoutPlan(Request $request)
     {
         $ship = $request->input('nama_kapal');
         $manifests = Manifest::whereDoesntHave('stowagePlan');
-        
+
         if ($ship) {
             $manifests->where('nama_kapal', $ship);
         }
-        
+
         return response()->json($manifests->get());
     }
 
@@ -103,9 +104,9 @@ class StowagePlanController extends Controller
         $plansQuery = StowagePlan::where('bay', $data['bay'])
             ->where('row', $data['row'])
             ->where('tier', $data['tier'])
-            ->whereHas('manifest', function($q) use ($data) {
+            ->whereHas('manifest', function ($q) use ($data) {
                 $q->where('nama_kapal', $data['nama_kapal']);
-                if (!empty($data['no_voyage'])) {
+                if (! empty($data['no_voyage'])) {
                     $q->where('no_voyage', $data['no_voyage']);
                 }
             });

@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\InvoiceAktivitasLain;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -96,7 +95,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
                     $adjNominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
                     $adjJenis = strtolower($adj->jenis_penyesuaian ?? '');
                     $isPembatalan = (($adj->_source_type ?? null) === 'pembatalan');
-                    $isPenambahan = !$isPembatalan && ($adjJenis === 'penambahan');
+                    $isPenambahan = ! $isPembatalan && ($adjJenis === 'penambahan');
                     $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? null);
                     $adjNomorInvoice = $adj->nomor_invoice ?? ($adj->nomor ?? '-');
                     $adjNomorBukti = $adj->_resolved_nomor_bukti ?? '-';

@@ -5,19 +5,19 @@ $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-use Illuminate\Support\Facades\DB;
 use App\Models\BiayaKapal;
 use App\Models\BiayaKapalDokumen;
+use Illuminate\Support\Facades\DB;
 
 try {
     DB::beginTransaction();
     $count = 0;
 
-    $oldBiayas = BiayaKapal::whereHas('klasifikasiBiaya', function($q) {
+    $oldBiayas = BiayaKapal::whereHas('klasifikasiBiaya', function ($q) {
         $q->where('nama', 'like', '%Dokumen%');
     })->get();
 
-    foreach($oldBiayas as $biaya) {
+    foreach ($oldBiayas as $biaya) {
         // Check if dokumens already exist
         if ($biaya->dokumens()->count() > 0) {
             continue; // Already migrated or created in new format
@@ -27,13 +27,15 @@ try {
         $voyages = is_array($biaya->no_voyage) ? $biaya->no_voyage : (json_decode($biaya->no_voyage, true) ?? [$biaya->no_voyage]);
         $bls = is_array($biaya->no_bl) ? $biaya->no_bl : (json_decode($biaya->no_bl, true) ?? [$biaya->no_bl]);
 
-        // Iterate assuming array size matches if there are multiple. 
-        foreach($kapals as $i => $k) {
+        // Iterate assuming array size matches if there are multiple.
+        foreach ($kapals as $i => $k) {
             $kapal = $k;
             $voyage = $voyages[$i] ?? ($voyages[0] ?? null);
             $bl = $bls[$i] ?? ($bls[0] ?? null);
 
-            if (!$kapal && !$voyage) continue;
+            if (! $kapal && ! $voyage) {
+                continue;
+            }
 
             BiayaKapalDokumen::create([
                 'biaya_kapal_id' => $biaya->id,
@@ -53,5 +55,5 @@ try {
     echo "Successfully migrated $count records.\n";
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Error: " . $e->getMessage() . "\n";
+    echo 'Error: '.$e->getMessage()."\n";
 }

@@ -13,7 +13,7 @@ class MasterGroupBpJamsostek extends Model
         'keterangan',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     public function createdBy()
@@ -31,7 +31,7 @@ class MasterGroupBpJamsostek extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            if (!$model->created_by && auth()->check()) {
+            if (! $model->created_by && auth()->check()) {
                 $model->created_by = auth()->id();
             }
         });

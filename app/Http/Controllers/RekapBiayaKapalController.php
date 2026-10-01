@@ -67,12 +67,16 @@ class RekapBiayaKapalController extends Controller
         $parentVoyagesLower = array_map(fn ($v) => strtolower(trim($v)), $parentVoyages);
 
         $indices = array_keys($parentShipsLower, $kapalLower);
-        if (!empty($indices)) {
+        if (! empty($indices)) {
             foreach ($indices as $idx) {
                 if (isset($parentVoyagesLower[$idx])) {
-                    if ($parentVoyagesLower[$idx] === $voyageLower) return true;
+                    if ($parentVoyagesLower[$idx] === $voyageLower) {
+                        return true;
+                    }
                 } elseif (count($parentVoyagesLower) === 1) {
-                    if ($parentVoyagesLower[0] === $voyageLower) return true;
+                    if ($parentVoyagesLower[0] === $voyageLower) {
+                        return true;
+                    }
                 }
             }
         }
@@ -303,7 +307,7 @@ class RekapBiayaKapalController extends Controller
         // Get Master Kapal data for Pemilik (Owner) filtering
         $masterKapals = \App\Models\MasterKapal::all();
         $pemilikList = $masterKapals->pluck('pelayaran')->filter()->unique()->sort()->values();
-        
+
         $kapalPemilikMap = [];
         foreach ($masterKapals as $mk) {
             if ($mk->nama_kapal) {
@@ -351,8 +355,8 @@ class RekapBiayaKapalController extends Controller
                 $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
                 $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
                 $indices = array_keys($parentShipsLower, $selectedShipLower);
-                
-                if (!empty($indices)) {
+
+                if (! empty($indices)) {
                     $parentVoyages = is_array($record->no_voyage) ? $record->no_voyage : ($record->no_voyage ? [$record->no_voyage] : []);
                     foreach ($indices as $idx) {
                         $voyageToUse = null;
@@ -361,7 +365,7 @@ class RekapBiayaKapalController extends Controller
                         } elseif (count($parentVoyages) === 1) {
                             $voyageToUse = $parentVoyages[0];
                         }
-                        
+
                         if ($voyageToUse !== null) {
                             $trimmed = trim($voyageToUse);
                             if ($trimmed !== '') {
@@ -375,7 +379,7 @@ class RekapBiayaKapalController extends Controller
         krsort($voyages);
 
         $voyageList = array_values($voyages);
-        
+
         // Pindahkan "DOCK" ke paling bawah
         $dockItems = [];
         $otherItems = [];
@@ -386,20 +390,20 @@ class RekapBiayaKapalController extends Controller
                 $otherItems[] = $v;
             }
         }
-        
+
         // Urutkan berdasarkan tahun (2 digit terakhir) secara descending, lalu secara alfabetikal descending
-        usort($otherItems, function($a, $b) {
-            $yearA = preg_match('/(\d{2})$/', trim($a), $matchesA) ? (int)$matchesA[1] : 0;
-            $yearB = preg_match('/(\d{2})$/', trim($b), $matchesB) ? (int)$matchesB[1] : 0;
-            
+        usort($otherItems, function ($a, $b) {
+            $yearA = preg_match('/(\d{2})$/', trim($a), $matchesA) ? (int) $matchesA[1] : 0;
+            $yearB = preg_match('/(\d{2})$/', trim($b), $matchesB) ? (int) $matchesB[1] : 0;
+
             if ($yearA !== $yearB) {
                 return $yearB <=> $yearA;
             }
-            
+
             // Jika tahun sama (atau tidak memiliki format tahun 2 digit di akhir), urutkan secara descending seperti semula
             return strcmp(strtolower(trim($b)), strtolower(trim($a)));
         });
-        
+
         $finalVoyages = array_merge($otherItems, $dockItems);
 
         return response()->json($finalVoyages);
@@ -431,7 +435,7 @@ class RekapBiayaKapalController extends Controller
             $record->apportioned = $this->getApportionedCostForRecord($record, $kapal, $voyage);
         }
 
-        $kapalLike = '%' . preg_replace('/[^a-z0-9]+/i', '%', $kapal) . '%';
+        $kapalLike = '%'.preg_replace('/[^a-z0-9]+/i', '%', $kapal).'%';
 
         // Fetch Pranota OB
         $pranotaObs = \App\Models\PranotaOb::where('nama_kapal', 'like', $kapalLike)
@@ -461,7 +465,7 @@ class RekapBiayaKapalController extends Controller
             })
             ->where('nomor_voyage', $voyage)
             ->get();
-            
+
         foreach ($amprahanUsages as $usage) {
             $totalBiaya = floatval($usage->jumlah) * floatval($usage->stockAmprahan->harga_satuan ?? 0);
             $usage->apportioned = [
@@ -475,21 +479,21 @@ class RekapBiayaKapalController extends Controller
             $usage->tanggal = $usage->tanggal_pengambilan;
             $usage->jenis_biaya = 'Pemakaian Amprahan';
             $usage->nama_barang_amprahan = $usage->stockAmprahan->nama_barang ?? 'Barang';
-            
+
             $biayaKapals->push($usage);
         }
 
         // Fetch Uang Jalan (Muat dan Bongkar)
-        $uangJalans = \App\Models\UangJalan::where(function($query) use ($kapalLike, $voyage) {
-            $query->whereHas('suratJalan.prospeks', function($q) use ($kapalLike, $voyage) {
+        $uangJalans = \App\Models\UangJalan::where(function ($query) use ($kapalLike, $voyage) {
+            $query->whereHas('suratJalan.prospeks', function ($q) use ($kapalLike, $voyage) {
                 $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             })
-            ->orWhereHas('suratJalanBongkaran', function($q) use ($kapalLike, $voyage) {
-                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
-            })
-            ->orWhereHas('suratJalanBongkaranBatam', function($q) use ($kapalLike, $voyage) {
-                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
-            });
+                ->orWhereHas('suratJalanBongkaran', function ($q) use ($kapalLike, $voyage) {
+                    $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
+                })
+                ->orWhereHas('suratJalanBongkaranBatam', function ($q) use ($kapalLike, $voyage) {
+                    $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
+                });
         })->where('status', '!=', 'dibatalkan')->get();
 
         foreach ($uangJalans as $uj) {
@@ -504,16 +508,16 @@ class RekapBiayaKapalController extends Controller
             $uj->nomor_invoice = $uj->nomor_uang_jalan ?? '-';
             $uj->tanggal = $uj->tanggal_uang_jalan;
             $uj->jenis_biaya = 'Uang Jalan';
-            
+
             $biayaKapals->push($uj);
         }
 
         // Fetch Tagihan Vendor Supir (Pranota Invoice Vendor Supir details)
         $tagihanVendors = \App\Models\TagihanSupirVendor::with(['vendor', 'suratJalan.prospeks'])
-            ->whereHas('suratJalan.prospeks', function($q) use ($kapalLike, $voyage) {
+            ->whereHas('suratJalan.prospeks', function ($q) use ($kapalLike, $voyage) {
                 $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             })
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('status_pembayaran', '!=', 'dibatalkan')->orWhereNull('status_pembayaran');
             })
             ->get();
@@ -529,12 +533,10 @@ class RekapBiayaKapalController extends Controller
             $tagihan->is_tagihan_vendor = true;
             $tagihan->nomor_invoice = $tagihan->suratJalan->no_surat_jalan ?? '-';
             $tagihan->tanggal = $tagihan->suratJalan->tanggal_surat_jalan ?? $tagihan->created_at;
-            $tagihan->jenis_biaya = 'Tagihan Vendor Supir (' . ($tagihan->vendor->nama_vendor ?? 'Vendor') . ')';
-            
+            $tagihan->jenis_biaya = 'Tagihan Vendor Supir ('.($tagihan->vendor->nama_vendor ?? 'Vendor').')';
+
             $biayaKapals->push($tagihan);
         }
-
-
 
         // Calculate summaries based on apportioned costs
         $summary = [

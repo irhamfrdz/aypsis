@@ -33,7 +33,7 @@ class ReportKerjaSupirBatamController extends Controller
             'totalRit' => $data['totalRit'],
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'karyawanId' => $karyawanId
+            'karyawanId' => $karyawanId,
         ]);
     }
 
@@ -46,7 +46,7 @@ class ReportKerjaSupirBatamController extends Controller
         $endDate = $request->get('end_date', '');
         $karyawanId = $request->get('karyawan_id', '');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return back()->with('error', 'Silakan pilih rentang tanggal terlebih dahulu.');
         }
 
@@ -63,7 +63,7 @@ class ReportKerjaSupirBatamController extends Controller
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\ReportKerjaSupirBatamExport($data['waybills'], $startDate, $endDate, $data['totalRit']),
-            'Report_Kerja_Supir_Batam_' . $startDate . '_sd_' . $endDate . '.xlsx'
+            'Report_Kerja_Supir_Batam_'.$startDate.'_sd_'.$endDate.'.xlsx'
         );
     }
 
@@ -105,7 +105,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $supirList->pluck('nama_lengkap')->filter()->toArray()
                 );
             }
-            
+
             $supirNames = array_unique($supirNames);
 
             // Pre-calculate ring mapping from Master Pricelist Uang Jalan Batam for Tarik Kosong & Langsir
@@ -123,7 +123,7 @@ class ReportKerjaSupirBatamController extends Controller
                 }
             }
 
-            if (!empty($supirNames)) {
+            if (! empty($supirNames)) {
                 // 1. Surat Jalan Batam (Regular)
                 $regularSJs = \App\Models\SuratJalanBatam::whereIn('supir', $supirNames)
                     ->whereBetween('tanggal_surat_jalan', [$start, $end])
@@ -229,7 +229,7 @@ class ReportKerjaSupirBatamController extends Controller
 
         return [
             'waybills' => $waybills,
-            'totalRit' => $totalRit
+            'totalRit' => $totalRit,
         ];
     }
 }

@@ -4,21 +4,23 @@ namespace App\Exports;
 
 use App\Models\PayrollUangMakan;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithColumnFormatting, WithEvents
+class PayrollUangMakanExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings, WithMapping
 {
     protected $startDate;
+
     protected $endDate;
+
     protected $penempatan;
 
     public function __construct($startDate, $endDate, $penempatan = null)
@@ -34,8 +36,8 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
             ->where('periode_start', $this->startDate)
             ->where('periode_end', $this->endDate);
 
-        if (!empty($this->penempatan)) {
-            $query->whereHasMorph('karyawan', '*', function($q) {
+        if (! empty($this->penempatan)) {
+            $query->whereHasMorph('karyawan', '*', function ($q) {
                 $q->where('penempatan', $this->penempatan);
             });
         }
@@ -51,8 +53,8 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
 
         return [
             ['LAPORAN PAYROLL UANG MAKAN'],
-            ['Periode: ' . $startDateFormatted . ' s/d ' . $endDateFormatted],
-            ['Penempatan: ' . $penempatanStr],
+            ['Periode: '.$startDateFormatted.' s/d '.$endDateFormatted],
+            ['Penempatan: '.$penempatanStr],
             [],
             [
                 'NIK',
@@ -61,8 +63,8 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
                 'Total Kehadiran',
                 'Multiplier',
                 'Nominal Uang Makan',
-                'Total Payout'
-            ]
+                'Total Payout',
+            ],
         ];
     }
 
@@ -73,9 +75,9 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
             $row->karyawan->nama_lengkap ?? '-',
             $row->karyawan->penempatan ?? '-',
             $row->total_kehadiran,
-            $row->multiplier . 'x',
+            $row->multiplier.'x',
             $row->nominal_per_hari,
-            $row->total_payout
+            $row->total_payout,
         ];
     }
 
@@ -91,26 +93,26 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
-                
+
                 // Merge Title cells
                 $sheet->mergeCells('A1:G1');
                 $sheet->mergeCells('A2:G2');
                 $sheet->mergeCells('A3:G3');
-                
+
                 // Style Title
                 $sheet->getStyle('A1:A3')->applyFromArray([
                     'font' => [
                         'bold' => true,
-                        'size' => 12
+                        'size' => 12,
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A1')->getFont()->setSize(14);
 
                 // Style Table Headings (Row 5)
@@ -121,17 +123,17 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
                     ],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FF0E7490'] // Cyan-700
+                        'startColor' => ['argb' => 'FF0E7490'], // Cyan-700
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Auto Add Borders to Table
                 if ($highestRow >= 5) {
-                    $sheet->getStyle('A5:G' . $highestRow)->applyFromArray([
+                    $sheet->getStyle('A5:G'.$highestRow)->applyFromArray([
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
@@ -140,10 +142,10 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
                         ],
                     ]);
                 }
-                
+
                 // Center align specific columns
-                $sheet->getStyle('A6:A' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('D6:E' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A6:A'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('D6:E'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             },
         ];
     }

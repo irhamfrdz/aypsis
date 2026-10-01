@@ -19,7 +19,7 @@ class PricelistBuruhBongkarController extends Controller
         if ($search = $request->get('q')) {
             $query->where(function ($q) use ($search) {
                 $q->where('size', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 

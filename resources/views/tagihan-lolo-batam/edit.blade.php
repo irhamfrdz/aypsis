@@ -98,6 +98,40 @@
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Catatan / Keterangan</label>
                     <input type="text" name="keterangan" value="{{ old('keterangan', $tagihanLoloBatam->keterangan) }}" placeholder="Catatan tagihan..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
+
+                {{-- Operator Selector --}}
+                <div class="sm:col-span-2 md:col-span-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mt-2">
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">
+                        <i class="fas fa-user-cog text-indigo-500 mr-1"></i> Operator LOLO <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                        <div class="flex items-center gap-4 bg-white p-2.5 rounded-lg border border-gray-200">
+                            <label class="inline-flex items-center text-xs font-bold text-gray-700 cursor-pointer">
+                                <input type="radio" name="tipe_operator" value="AYP" {{ old('tipe_operator', $tagihanLoloBatam->tipe_operator ?? 'AYP') === 'AYP' ? 'checked' : '' }} onchange="toggleTipeOperator(this.value)" class="text-indigo-600 focus:ring-indigo-500 mr-2">
+                                Operator AYP
+                            </label>
+                            <label class="inline-flex items-center text-xs font-bold text-gray-700 cursor-pointer">
+                                <input type="radio" name="tipe_operator" value="VENDOR" {{ old('tipe_operator', $tagihanLoloBatam->tipe_operator ?? 'AYP') === 'VENDOR' ? 'checked' : '' }} onchange="toggleTipeOperator(this.value)" class="text-indigo-600 focus:ring-indigo-500 mr-2">
+                                Vendor
+                            </label>
+                        </div>
+
+                        <div id="operator_ayp_box" class="md:col-span-2 {{ old('tipe_operator', $tagihanLoloBatam->tipe_operator ?? 'AYP') === 'AYP' ? '' : 'hidden' }}">
+                            <select name="operator_karyawan_id" id="operator_karyawan_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white">
+                                <option value="">-- Pilih Nama Operator dari Data Karyawan --</option>
+                                @foreach($karyawanOperators as $ko)
+                                    <option value="{{ $ko->id }}" {{ old('operator_karyawan_id', $tagihanLoloBatam->operator_karyawan_id) == $ko->id ? 'selected' : '' }}>
+                                        {{ $ko->nama_lengkap }}{{ $ko->pekerjaan ? ' ('.$ko->pekerjaan.')' : ($ko->divisi ? ' ('.$ko->divisi.')' : '') }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div id="operator_vendor_box" class="md:col-span-2 {{ old('tipe_operator', $tagihanLoloBatam->tipe_operator ?? 'AYP') === 'VENDOR' ? '' : 'hidden' }}">
+                            <input type="text" name="operator" id="operator_vendor_input" value="{{ old('operator', $tagihanLoloBatam->operator) }}" placeholder="Ketik nama vendor..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -251,6 +285,18 @@
     const initialItems = @json($tagihanLoloBatam->items);
     let rowCount = 0;
     let pendingLoloData = [];
+
+    function toggleTipeOperator(tipe) {
+        const aypBox = document.getElementById('operator_ayp_box');
+        const vendorBox = document.getElementById('operator_vendor_box');
+        if (tipe === 'AYP') {
+            aypBox.classList.remove('hidden');
+            vendorBox.classList.add('hidden');
+        } else {
+            aypBox.classList.add('hidden');
+            vendorBox.classList.remove('hidden');
+        }
+    }
 
     function toggleTanggalBayar() {
         const status = document.getElementById('status_pembayaran').value;

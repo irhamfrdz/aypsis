@@ -11,6 +11,7 @@ class WaTemplateController extends Controller
     public function index()
     {
         $templates = WaTemplate::orderBy('id', 'desc')->get();
+
         return view('master.wa-templates.index', compact('templates'));
     }
 
@@ -61,6 +62,7 @@ class WaTemplateController extends Controller
     public function destroy(WaTemplate $wa_template)
     {
         $wa_template->delete();
+
         return redirect()->route('master.wa-templates.index')->with('success', 'Template WA berhasil dihapus.');
     }
 }

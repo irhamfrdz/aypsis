@@ -12,9 +12,9 @@ if ($karyawanTujuan) {
     $jumlahDataDipindah = \App\Models\Absensi::where('nik', $nikAsal)
         ->update([
             'nik' => $karyawanTujuan->nik,
-            'karyawan_id' => $karyawanTujuan->id
+            'karyawan_id' => $karyawanTujuan->id,
         ]);
-    
+
     echo "Berhasil memindahkan $jumlahDataDipindah log absensi dari NIK $nikAsal (Feriyanto) ke NIK $nikTujuan (Elfani)!\n";
 } else {
     echo "Gagal: Data Karyawan dengan NIK $nikTujuan (Elfani) tidak ditemukan di database.\n";

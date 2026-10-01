@@ -98,13 +98,14 @@ class ReportUangJalanController extends Controller
         // Group pembayarans by no_surat_jalan
         $adjPembayaransGrouped = $adjPembayarans->filter(function ($dp) {
             $type = strtolower($dp->jenis_aktivitas ?? '');
+
             return str_contains($type, 'adjusment') || str_contains($type, 'adjustment');
         })->groupBy('no_surat_jalan');
 
         // Fetch pembatalan surat jalan (cancellation = return of uang jalan)
         $pembatalanBySjId = PembatalanSuratJalan::where(function ($q) use ($sjIds, $sjbIds) {
             $q->whereIn('surat_jalan_id', $sjIds)
-              ->orWhereIn('surat_jalan_bongkaran_id', $sjbIds);
+                ->orWhereIn('surat_jalan_bongkaran_id', $sjbIds);
         })->get()->groupBy(function ($p) {
             return $p->surat_jalan_id ?? $p->surat_jalan_bongkaran_id;
         });
@@ -136,7 +137,7 @@ class ReportUangJalanController extends Controller
             if ($sjId && isset($pembatalanBySjId[$sjId])) {
                 foreach ($pembatalanBySjId[$sjId] as $pembatalan) {
                     // Wrap pembatalan data into a stdClass with consistent properties
-                    $adjObj = new \stdClass();
+                    $adjObj = new \stdClass;
                     $adjObj->_source_type = 'pembatalan';
                     $adjObj->tanggal_invoice = $pembatalan->tanggal_kas;
                     $adjObj->tanggal = $pembatalan->tanggal_kas;
@@ -185,6 +186,7 @@ class ReportUangJalanController extends Controller
                 }
 
                 $adj->_resolved_nomor_bukti = $nomorBukti;
+
                 return $adj;
             });
 
@@ -199,19 +201,19 @@ class ReportUangJalanController extends Controller
     private function appendStandalonePembatalans(&$uangJalans, &$adjustmentsByUjId, $startDate, $endDate, $search)
     {
         $pembatalans = PembatalanSuratJalan::where(function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('tanggal_kas', [$startDate, $endDate])
-                    ->orWhereBetween('tanggal_pembayaran', [$startDate, $endDate]);
-            });
-        
+            $q->whereBetween('tanggal_kas', [$startDate, $endDate])
+                ->orWhereBetween('tanggal_pembayaran', [$startDate, $endDate]);
+        });
+
         if ($search) {
             $pembatalans->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                  ->orWhereRaw("REPLACE(nomor_accurate, ' ', '') LIKE ?", ['%'.str_replace(' ', '', $search).'%'])
-                  ->orWhere('no_surat_jalan', 'like', "%{$search}%");
+                    ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                    ->orWhereRaw("REPLACE(nomor_accurate, ' ', '') LIKE ?", ['%'.str_replace(' ', '', $search).'%'])
+                    ->orWhere('no_surat_jalan', 'like', "%{$search}%");
             });
         }
-        
+
         $pembatalans = $pembatalans->get();
 
         foreach ($pembatalans as $pbl) {
@@ -226,7 +228,7 @@ class ReportUangJalanController extends Controller
             }
 
             // Create fake UangJalan
-            $fakeUj = new UangJalan();
+            $fakeUj = new UangJalan;
             $fakeUj->id = $standaloneId;
             $fakeUj->tanggal_uang_jalan = Carbon::parse($pbl->tanggal_kas);
             $fakeUj->nomor_uang_jalan = '-';
@@ -235,11 +237,11 @@ class ReportUangJalanController extends Controller
             $fakeUj->jumlah_pelancar = 0;
             $fakeUj->jumlah_kawalan = 0;
             $fakeUj->jumlah_parkir = 0;
-            $fakeUj->jumlah_total = 0; 
+            $fakeUj->jumlah_total = 0;
 
             if ($pbl->tipe_sj === 'reguler') {
                 $fakeUj->surat_jalan_id = $pbl->surat_jalan_id ?? 1; // dummy truthy value
-                $fakeSjModel = new \App\Models\SuratJalan();
+                $fakeSjModel = new \App\Models\SuratJalan;
                 $fakeSjModel->no_surat_jalan = $pbl->no_surat_jalan;
                 $fakeSjModel->jenis_barang = '-';
                 $fakeSjModel->tujuan_pengambilan = '-';
@@ -248,7 +250,7 @@ class ReportUangJalanController extends Controller
                 $fakeUj->setRelation('suratJalan', $fakeSjModel);
             } else {
                 $fakeUj->surat_jalan_bongkaran_id = $pbl->surat_jalan_bongkaran_id ?? 1; // dummy truthy value
-                $fakeSjModel = new \App\Models\SuratJalanBongkaran();
+                $fakeSjModel = new \App\Models\SuratJalanBongkaran;
                 $fakeSjModel->nomor_surat_jalan = $pbl->no_surat_jalan;
                 $fakeSjModel->jenis_barang = '-';
                 $fakeSjModel->tujuan_pengambilan = '-';
@@ -259,15 +261,15 @@ class ReportUangJalanController extends Controller
 
             // Fake relations
             $fakeUj->setRelation('pranotaUangJalan', collect());
-            
-            $fakeUser = new \App\Models\User();
+
+            $fakeUser = new \App\Models\User;
             $fakeUser->username = '-';
             $fakeUj->setRelation('createdBy', $fakeUser);
 
             $uangJalans->push($fakeUj);
 
             // Create adjustment obj
-            $adjObj = new \stdClass();
+            $adjObj = new \stdClass;
             $adjObj->_source_type = 'pembatalan';
             $adjObj->tanggal_invoice = $pbl->tanggal_kas;
             $adjObj->tanggal = $pbl->tanggal_kas;
@@ -286,7 +288,7 @@ class ReportUangJalanController extends Controller
 
             $adjustmentsByUjId[$fakeUj->id] = collect([$adjObj]);
         }
-        
+
         $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
     }
 
@@ -316,8 +318,8 @@ class ReportUangJalanController extends Controller
                 continue;
             }
 
-            $fakeUj = new UangJalan();
-            $fakeUj->id = 'pal_' . $payment->id;
+            $fakeUj = new UangJalan;
+            $fakeUj->id = 'pal_'.$payment->id;
             $fakeUj->tanggal_uang_jalan = Carbon::parse($payment->tanggal);
             $fakeUj->nomor_uang_jalan = $payment->nomor ?: '-';
             $fakeUj->jumlah_uang_jalan = (float) ($payment->jumlah ?? 0);
@@ -329,7 +331,7 @@ class ReportUangJalanController extends Controller
             $fakeUj->_source_type = 'pembayaran_aktivitas_lain';
             $fakeUj->_standalone_payment = $payment;
 
-            $fakeSj = new \App\Models\SuratJalan();
+            $fakeSj = new \App\Models\SuratJalan;
             $fakeSj->no_surat_jalan = '-';
             $fakeSj->jenis_barang = $payment->keterangan ?: 'Pembayaran Aktivitas Lain';
             $fakeSj->tujuan_pengambilan = '-';
@@ -390,7 +392,7 @@ class ReportUangJalanController extends Controller
 
         // Fetch adjustments
         $adjustmentsByUjId = $this->fetchAdjustments($uangJalans);
-        
+
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
@@ -449,7 +451,7 @@ class ReportUangJalanController extends Controller
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
-        
+
         // In export, order needs to be ascending as before
         $uangJalans = $uangJalans->sortBy('tanggal_uang_jalan')->values();
 

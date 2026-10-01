@@ -8,6 +8,7 @@ use App\Models\SuratJalanBongkaranBatam;
 use App\Models\TagihanLoloBatam;
 use App\Models\TagihanLoloBatamItem;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,79 +17,351 @@ class TagihanLoloBatamController extends Controller
 {
     public function index(Request $request)
     {
+        $activeTab = $request->get('tab', 'kontainer');
         $search = $request->get('search');
         $statusPembayaran = $request->get('status_pembayaran');
+        $statusTagihan = $request->get('status_tagihan'); // 'belum', 'sudah', or ''
+        $sumber = $request->get('sumber', 'all'); // 'all', 'bongkaran', 'langsir'
         $vendor = $request->get('vendor');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        $query = TagihanLoloBatam::with(['createdBy', 'updatedBy', 'items'])->latest('tanggal_tagihan');
+        // 1. INVOICE QUERY & STATS (Faktur Tab)
+        $invoiceQuery = TagihanLoloBatam::with(['createdBy', 'updatedBy', 'items', 'operatorKaryawan'])->latest('tanggal_tagihan');
 
-        if ($search) {
-            $query->search($search);
+        if ($search && $activeTab === 'faktur') {
+            $invoiceQuery->search($search);
         }
 
         if ($statusPembayaran) {
-            $query->where('status_pembayaran', $statusPembayaran);
+            $invoiceQuery->where('status_pembayaran', $statusPembayaran);
         }
 
         if ($vendor) {
-            $query->where('vendor', 'like', '%'.$vendor.'%');
+            $invoiceQuery->where('vendor', 'like', '%'.$vendor.'%');
         }
 
-        if ($startDate) {
-            $query->whereDate('tanggal_tagihan', '>=', $startDate);
+        if ($startDate && $activeTab === 'faktur') {
+            $invoiceQuery->whereDate('tanggal_tagihan', '>=', $startDate);
         }
 
-        if ($endDate) {
-            $query->whereDate('tanggal_tagihan', '<=', $endDate);
+        if ($endDate && $activeTab === 'faktur') {
+            $invoiceQuery->whereDate('tanggal_tagihan', '<=', $endDate);
         }
 
-        // Summary Statistics
         $totalTagihanCount = TagihanLoloBatam::count();
         $totalNominal = TagihanLoloBatam::sum('total_tagihan');
         $totalLunas = TagihanLoloBatam::where('status_pembayaran', 'Lunas')->sum('total_tagihan');
         $totalBelumLunas = TagihanLoloBatam::where('status_pembayaran', 'Belum Lunas')->sum('total_tagihan');
         $countBelumLunas = TagihanLoloBatam::where('status_pembayaran', 'Belum Lunas')->count();
 
-        $tagihans = $query->paginate(20)->withQueryString();
+        $tagihans = $invoiceQuery->paginate(20, ['*'], 'faktur_page')->withQueryString();
+
+        // 2. LOLO CONTAINERS QUERY (Kontainer LOLO Tab)
+        $pricelists = MasterPricelistLoloBatam::aktif()->get();
+
+        $matchPricelist = function ($containerSize) use ($pricelists) {
+            if (empty($containerSize)) {
+                return $pricelists->firstWhere('size', '20') ?? $pricelists->first();
+            }
+
+            // 1. Exact match (case-insensitive & trimmed)
+            $exact = $pricelists->first(function ($p) use ($containerSize) {
+                return strcasecmp(trim($p->size), trim($containerSize)) === 0;
+            });
+            if ($exact) {
+                return $exact;
+            }
+
+            // 2. Numeric digits match (e.g. '20FT', '20 FT', '20 feet' matches '20' or '20FT')
+            $numSize = preg_replace('/[^0-9]/', '', (string) $containerSize);
+            if ($numSize !== '') {
+                $numMatch = $pricelists->first(function ($p) use ($numSize) {
+                    $pNum = preg_replace('/[^0-9]/', '', (string) $p->size);
+
+                    return $pNum !== '' && $pNum === $numSize;
+                });
+                if ($numMatch) {
+                    return $numMatch;
+                }
+            }
+
+            // 3. Substring match
+            return $pricelists->first(function ($p) use ($containerSize) {
+                return stripos($containerSize, (string) $p->size) !== false || stripos((string) $p->size, (string) $containerSize) !== false;
+            });
+        };
+
+        $billedBongkarans = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan'])
+            ->whereNotNull('surat_jalan_bongkaran_id')
+            ->get()
+            ->keyBy('surat_jalan_bongkaran_id');
+
+        $billedLangsirs = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan'])
+            ->whereNotNull('langsir_batam_id')
+            ->get()
+            ->keyBy('langsir_batam_id');
+
+        $containers = collect();
+
+        // Bongkaran Batam containers with LOLO = 1
+        if ($sumber === 'all' || $sumber === 'bongkaran') {
+            $bongkaranQuery = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1);
+
+            if ($search && $activeTab !== 'faktur') {
+                $bongkaranQuery->where(function ($q) use ($search) {
+                    $q->where('no_kontainer', 'like', '%'.$search.'%')
+                        ->orWhere('nomor_surat_jalan', 'like', '%'.$search.'%')
+                        ->orWhere('nama_kapal', 'like', '%'.$search.'%')
+                        ->orWhere('no_voyage', 'like', '%'.$search.'%')
+                        ->orWhere('supir', 'like', '%'.$search.'%');
+                });
+            }
+
+            if ($startDate && $activeTab !== 'faktur') {
+                $bongkaranQuery->whereDate('tanggal_surat_jalan', '>=', $startDate);
+            }
+
+            if ($endDate && $activeTab !== 'faktur') {
+                $bongkaranQuery->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            }
+
+            $bongkarans = $bongkaranQuery->latest('tanggal_surat_jalan')->get();
+
+            foreach ($bongkarans as $b) {
+                $isBilled = isset($billedBongkarans[$b->id]);
+                $tagihanItem = $isBilled ? $billedBongkarans[$b->id] : null;
+
+                if ($statusTagihan === 'belum' && $isBilled) {
+                    continue;
+                }
+                if ($statusTagihan === 'sudah' && ! $isBilled) {
+                    continue;
+                }
+
+                $operatorName = null;
+                $tipeOperator = null;
+                if ($tagihanItem && $tagihanItem->tagihanLoloBatam) {
+                    $tlb = $tagihanItem->tagihanLoloBatam;
+                    $tipeOperator = $tlb->tipe_operator;
+                    $operatorName = $tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? ($tipeOperator === 'VENDOR' ? $tlb->vendor : null));
+                }
+
+                $size = $b->size ?? '20';
+                $matchedPl = $matchPricelist($size);
+                $totalTarif = $isBilled && $tagihanItem ? ($tagihanItem->total ?? $tagihanItem->tarif) : ($matchedPl ? (float) $matchedPl->tarif : 0);
+                $displaySize = (preg_replace('/[^0-9]/', '', (string) $size) ?: $size)."'";
+
+                $containers->push((object) [
+                    'sumber' => 'bongkaran',
+                    'id' => $b->id,
+                    'nomor_surat_jalan' => $b->nomor_surat_jalan,
+                    'tanggal' => $b->tanggal_surat_jalan,
+                    'no_kontainer' => $b->no_kontainer,
+                    'size' => $size,
+                    'display_size' => $displaySize,
+                    'total_tarif' => $totalTarif,
+                    'formatted_total_tarif' => $totalTarif > 0 ? 'Rp '.number_format($totalTarif, 0, ',', '.') : '-',
+                    'tipe_kontainer' => $b->tipe_kontainer ?? ($b->f_e ? strtoupper($b->f_e) : 'FULL'),
+                    'kapal' => $b->nama_kapal ?? '-',
+                    'voyage' => $b->no_voyage ?? '-',
+                    'supir' => $b->supir ?? '-',
+                    'no_plat' => $b->no_plat ?? '-',
+                    'lokasi' => $b->lokasi ?? 'Batam',
+                    'is_billed' => $isBilled,
+                    'tipe_operator' => $tipeOperator,
+                    'operator' => $operatorName,
+                    'tagihan_id' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->id : null,
+                    'nomor_tagihan' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->nomor_tagihan : null,
+                    'tanggal_tagihan' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->tanggal_tagihan : null,
+                    'tarif' => $tagihanItem ? $tagihanItem->tarif : null,
+                ]);
+            }
+        }
+
+        // Langsir Batam containers with LOLO = 1
+        if ($sumber === 'all' || $sumber === 'langsir') {
+            $langsirQuery = LangsirBatam::where('menggunakan_lolo', 1);
+
+            if ($search && $activeTab !== 'faktur') {
+                $langsirQuery->where(function ($q) use ($search) {
+                    $q->where('no_kontainer', 'like', '%'.$search.'%')
+                        ->orWhere('no_surat_jalan', 'like', '%'.$search.'%')
+                        ->orWhere('no_transaksi', 'like', '%'.$search.'%')
+                        ->orWhere('supir', 'like', '%'.$search.'%');
+                });
+            }
+
+            if ($startDate && $activeTab !== 'faktur') {
+                $langsirQuery->whereDate('tanggal', '>=', $startDate);
+            }
+
+            if ($endDate && $activeTab !== 'faktur') {
+                $langsirQuery->whereDate('tanggal', '<=', $endDate);
+            }
+
+            $langsirs = $langsirQuery->latest('tanggal')->get();
+
+            foreach ($langsirs as $l) {
+                $isBilled = isset($billedLangsirs[$l->id]);
+                $tagihanItem = $isBilled ? $billedLangsirs[$l->id] : null;
+
+                if ($statusTagihan === 'belum' && $isBilled) {
+                    continue;
+                }
+                if ($statusTagihan === 'sudah' && ! $isBilled) {
+                    continue;
+                }
+
+                $operatorName = null;
+                $tipeOperator = null;
+                if ($tagihanItem && $tagihanItem->tagihanLoloBatam) {
+                    $tlb = $tagihanItem->tagihanLoloBatam;
+                    $tipeOperator = $tlb->tipe_operator;
+                    $operatorName = $tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? ($tipeOperator === 'VENDOR' ? $tlb->vendor : null));
+                }
+
+                $size = $l->size ?? '20';
+                $matchedPl = $matchPricelist($size);
+                $totalTarif = $isBilled && $tagihanItem ? ($tagihanItem->total ?? $tagihanItem->tarif) : ($matchedPl ? (float) $matchedPl->tarif : 0);
+                $displaySize = (preg_replace('/[^0-9]/', '', (string) $size) ?: $size)."'";
+
+                $containers->push((object) [
+                    'sumber' => 'langsir',
+                    'id' => $l->id,
+                    'nomor_surat_jalan' => $l->no_surat_jalan ?? $l->no_transaksi,
+                    'tanggal' => $l->tanggal,
+                    'no_kontainer' => $l->no_kontainer,
+                    'size' => $size,
+                    'display_size' => $displaySize,
+                    'total_tarif' => $totalTarif,
+                    'formatted_total_tarif' => $totalTarif > 0 ? 'Rp '.number_format($totalTarif, 0, ',', '.') : '-',
+                    'tipe_kontainer' => 'FULL',
+                    'kapal' => '-',
+                    'voyage' => '-',
+                    'supir' => $l->supir ?? '-',
+                    'no_plat' => $l->no_plat ?? '-',
+                    'lokasi' => ($l->dari ?? '-').' -> '.($l->ke ?? '-'),
+                    'is_billed' => $isBilled,
+                    'tipe_operator' => $tipeOperator,
+                    'operator' => $operatorName,
+                    'tagihan_id' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->id : null,
+                    'nomor_tagihan' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->nomor_tagihan : null,
+                    'tanggal_tagihan' => $tagihanItem && $tagihanItem->tagihanLoloBatam ? $tagihanItem->tagihanLoloBatam->tanggal_tagihan : null,
+                    'tarif' => $tagihanItem ? $tagihanItem->tarif : null,
+                ]);
+            }
+        }
+
+        // Sort all containers by date descending
+        $containers = $containers->sortByDesc(function ($item) {
+            return $item->tanggal ? strtotime($item->tanggal) : 0;
+        })->values();
+
+        // Container Statistics
+        $totalBongkaranLolo = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->count();
+        $totalLangsirLolo = LangsirBatam::where('menggunakan_lolo', 1)->count();
+        $totalKontainerLoloCount = $totalBongkaranLolo + $totalLangsirLolo;
+        $unbilledBongkaranCount = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->whereNotIn('id', $billedBongkarans->keys())->count();
+        $unbilledLangsirCount = LangsirBatam::where('menggunakan_lolo', 1)->whereNotIn('id', $billedLangsirs->keys())->count();
+        $countBelumDitagihKontainer = $unbilledBongkaranCount + $unbilledLangsirCount;
+        $countSudahDitagihKontainer = $totalKontainerLoloCount - $countBelumDitagihKontainer;
+
+        // Paginate containers collection
+        $perPage = 20;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage('kontainer_page');
+        $currentItems = $containers->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $pendingContainers = new LengthAwarePaginator(
+            $currentItems,
+            $containers->count(),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath(), 'pageName' => 'kontainer_page', 'query' => $request->query()]
+        );
 
         $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
+        $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
+
+        // Generate automatic invoice number: 2 digit kode (LB) - 2 digit bulan - 2 digit tahun - 6 digit no urut
+        $nomorTagihan = self::generateNomorPranota();
+
+        $karyawanOperators = \Illuminate\Support\Facades\Schema::hasTable('karyawans')
+            ? \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                ->where(function ($q) {
+                    $q->whereIn('pekerjaan', ['OPERATOR FORKLIFT', 'OPERATOR CRANE / ALAT BERAT'])
+                        ->orWhere('pekerjaan', 'like', '%FORKLIFT%')
+                        ->orWhere('pekerjaan', 'like', '%CRANE%')
+                        ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+                })
+                ->orderBy('nama_lengkap')
+                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'divisi', 'pekerjaan'])
+            : collect();
 
         return view('tagihan-lolo-batam.index', compact(
+            'activeTab',
+            'pendingContainers',
             'tagihans',
             'search',
             'statusPembayaran',
+            'statusTagihan',
+            'sumber',
             'vendor',
             'startDate',
             'endDate',
+            'totalKontainerLoloCount',
+            'countBelumDitagihKontainer',
+            'countSudahDitagihKontainer',
             'totalTagihanCount',
             'totalNominal',
             'totalLunas',
             'totalBelumLunas',
             'countBelumLunas',
-            'vendors'
+            'vendors',
+            'kapals',
+            'nomorTagihan',
+            'pricelists',
+            'karyawanOperators'
         ));
     }
 
-    public function create()
+    public static function generateNomorPranota(): string
     {
-        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('size')->get();
+        $bulan = date('m');
+        $tahun = date('y');
+        $prefix = "LB-{$bulan}-{$tahun}-";
 
-        // Generate automatic invoice number: TLB-YYYYMMDD-XXXX
-        $datePrefix = 'TLB-'.date('Ymd');
-        $lastInvoice = TagihanLoloBatam::where('nomor_tagihan', 'like', $datePrefix.'%')
+        $lastInvoice = TagihanLoloBatam::withTrashed()
+            ->where('nomor_tagihan', 'like', $prefix.'%')
             ->orderBy('nomor_tagihan', 'desc')
             ->first();
 
         if ($lastInvoice) {
-            $lastNum = (int) substr($lastInvoice->nomor_tagihan, -4);
-            $nextNum = str_pad($lastNum + 1, 4, '0', STR_PAD_LEFT);
+            $lastNum = (int) substr($lastInvoice->nomor_tagihan, -6);
+            $nextNum = str_pad($lastNum + 1, 6, '0', STR_PAD_LEFT);
         } else {
-            $nextNum = '0001';
+            $nextNum = '000001';
         }
 
-        $nomorTagihan = $datePrefix.'-'.$nextNum;
+        return $prefix.$nextNum;
+    }
+
+    public function create(Request $request)
+    {
+        $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('size')->get();
+        $karyawanOperators = \Illuminate\Support\Facades\Schema::hasTable('karyawans')
+            ? \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                ->where(function ($q) {
+                    $q->whereIn('pekerjaan', ['OPERATOR FORKLIFT', 'OPERATOR CRANE / ALAT BERAT'])
+                        ->orWhere('pekerjaan', 'like', '%FORKLIFT%')
+                        ->orWhere('pekerjaan', 'like', '%CRANE%')
+                        ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+                })
+                ->orderBy('nama_lengkap')
+                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'divisi', 'pekerjaan'])
+            : collect();
+
+        // Generate automatic invoice number: 2 digit kode (LB) - 2 digit bulan - 2 digit tahun - 6 digit no urut
+        $nomorTagihan = self::generateNomorPranota();
 
         // Existing vendors from previous invoices
         $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->where('vendor', '!=', '')->distinct()->pluck('vendor');
@@ -96,7 +369,179 @@ class TagihanLoloBatamController extends Controller
         // Kapal list from recent Bongkaran Batam
         $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
 
-        return view('tagihan-lolo-batam.create', compact('pricelists', 'nomorTagihan', 'vendors', 'kapals'));
+        // Handle operator parameters from query
+        $defaultTipeOperator = $request->get('tipe_operator', 'AYP');
+        $defaultOperatorKaryawanId = $request->get('operator_karyawan_id');
+        $defaultOperator = $request->get('operator');
+        $operatorsInput = $request->get('operators', []);
+
+        // Handle preloaded items from Bongkaran or Langsir query parameters
+        $preloadedItems = [];
+        $defaultKapal = null;
+        $defaultVoyage = null;
+
+        $matchPricelist = function ($containerSize, $containerTipe = 'FULL') use ($pricelists) {
+            if (empty($containerSize)) {
+                return $pricelists->firstWhere('size', '20') ?? $pricelists->first();
+            }
+
+            // 1. Exact match
+            $exact = $pricelists->first(function ($p) use ($containerSize) {
+                return strcasecmp(trim($p->size), trim($containerSize)) === 0;
+            });
+            if ($exact) {
+                return $exact;
+            }
+
+            // 2. Numeric digits match (e.g. '20FT' matches '20')
+            $numSize = preg_replace('/[^0-9]/', '', (string) $containerSize);
+            if ($numSize !== '') {
+                $numMatch = $pricelists->first(function ($p) use ($numSize) {
+                    $pNum = preg_replace('/[^0-9]/', '', (string) $p->size);
+
+                    return $pNum !== '' && $pNum === $numSize;
+                });
+                if ($numMatch) {
+                    return $numMatch;
+                }
+            }
+
+            // 3. Substring match
+            return $pricelists->first(function ($p) use ($containerSize) {
+                return stripos($containerSize, (string) $p->size) !== false || stripos((string) $p->size, (string) $containerSize) !== false;
+            });
+        };
+
+        $bongkaranIds = [];
+        if ($request->filled('bongkaran_ids')) {
+            $bongkaranIds = is_array($request->bongkaran_ids) ? $request->bongkaran_ids : explode(',', $request->bongkaran_ids);
+        } elseif ($request->filled('bongkaran_id')) {
+            $bongkaranIds = [$request->bongkaran_id];
+        }
+
+        if (! empty($bongkaranIds)) {
+            $bongkarans = SuratJalanBongkaranBatam::whereIn('id', $bongkaranIds)->get();
+            foreach ($bongkarans as $b) {
+                $size = $b->size ?? '20';
+                $tipe = $b->tipe_kontainer ?? ($b->f_e ? strtoupper($b->f_e) : 'FULL');
+
+                $matchedPl = $matchPricelist($size, $tipe);
+
+                $opInfo = $operatorsInput['bongkaran'][$b->id] ?? null;
+                $itemTipeOp = $opInfo['tipe'] ?? $defaultTipeOperator;
+                $itemOpKaryawanId = ! empty($opInfo['karyawan_id']) ? $opInfo['karyawan_id'] : $defaultOperatorKaryawanId;
+                $itemOpName = $opInfo['vendor_nama'] ?? $defaultOperator;
+                if ($itemTipeOp === 'AYP' && $itemOpKaryawanId) {
+                    $karyawan = $karyawanOperators->firstWhere('id', $itemOpKaryawanId);
+                    if ($karyawan) {
+                        $itemOpName = $karyawan->nama_lengkap;
+                    }
+                }
+
+                if (! $defaultOperatorKaryawanId && $itemOpKaryawanId) {
+                    $defaultOperatorKaryawanId = $itemOpKaryawanId;
+                    $defaultTipeOperator = $itemTipeOp;
+                    $defaultOperator = $itemOpName;
+                } elseif (! $defaultOperator && $itemOpName) {
+                    $defaultTipeOperator = $itemTipeOp;
+                    $defaultOperator = $itemOpName;
+                }
+
+                $preloadedItems[] = [
+                    'sumber_data' => 'bongkaran',
+                    'surat_jalan_bongkaran_id' => $b->id,
+                    'langsir_batam_id' => null,
+                    'master_pricelist_lolo_batam_id' => $matchedPl ? $matchedPl->id : null,
+                    'nomor_surat_jalan' => $b->nomor_surat_jalan,
+                    'nomor_kontainer' => $b->no_kontainer,
+                    'size' => $size,
+                    'tipe_kontainer' => $tipe,
+                    'tipe_operator' => $itemTipeOp,
+                    'operator_karyawan_id' => $itemOpKaryawanId,
+                    'operator' => $itemOpName,
+                    'kegiatan' => 'LOLO Bongkaran Batam ('.($b->nomor_surat_jalan ?? '-').')',
+                    'tarif' => $matchedPl ? $matchedPl->tarif : 0,
+                    'jumlah' => 1,
+                    'keterangan' => 'Kapal: '.($b->nama_kapal ?? '-').' Voy: '.($b->no_voyage ?? '-'),
+                ];
+
+                if (! $defaultKapal && $b->nama_kapal) {
+                    $defaultKapal = $b->nama_kapal;
+                }
+                if (! $defaultVoyage && $b->no_voyage) {
+                    $defaultVoyage = $b->no_voyage;
+                }
+            }
+        }
+
+        $langsirIds = [];
+        if ($request->filled('langsir_ids')) {
+            $langsirIds = is_array($request->langsir_ids) ? $request->langsir_ids : explode(',', $request->langsir_ids);
+        } elseif ($request->filled('langsir_id')) {
+            $langsirIds = [$request->langsir_id];
+        }
+
+        if (! empty($langsirIds)) {
+            $langsirs = LangsirBatam::whereIn('id', $langsirIds)->get();
+            foreach ($langsirs as $l) {
+                $size = $l->size ?? '20';
+                $tipe = 'FULL';
+
+                $matchedPl = $matchPricelist($size, $tipe);
+
+                $opInfo = $operatorsInput['langsir'][$l->id] ?? null;
+                $itemTipeOp = $opInfo['tipe'] ?? $defaultTipeOperator;
+                $itemOpKaryawanId = ! empty($opInfo['karyawan_id']) ? $opInfo['karyawan_id'] : $defaultOperatorKaryawanId;
+                $itemOpName = $opInfo['vendor_nama'] ?? $defaultOperator;
+                if ($itemTipeOp === 'AYP' && $itemOpKaryawanId) {
+                    $karyawan = $karyawanOperators->firstWhere('id', $itemOpKaryawanId);
+                    if ($karyawan) {
+                        $itemOpName = $karyawan->nama_lengkap;
+                    }
+                }
+
+                if (! $defaultOperatorKaryawanId && $itemOpKaryawanId) {
+                    $defaultOperatorKaryawanId = $itemOpKaryawanId;
+                    $defaultTipeOperator = $itemTipeOp;
+                    $defaultOperator = $itemOpName;
+                } elseif (! $defaultOperator && $itemOpName) {
+                    $defaultTipeOperator = $itemTipeOp;
+                    $defaultOperator = $itemOpName;
+                }
+
+                $preloadedItems[] = [
+                    'sumber_data' => 'langsir',
+                    'surat_jalan_bongkaran_id' => null,
+                    'langsir_batam_id' => $l->id,
+                    'master_pricelist_lolo_batam_id' => $matchedPl ? $matchedPl->id : null,
+                    'nomor_surat_jalan' => $l->no_surat_jalan ?? $l->no_transaksi,
+                    'nomor_kontainer' => $l->no_kontainer,
+                    'size' => $size,
+                    'tipe_kontainer' => $tipe,
+                    'tipe_operator' => $itemTipeOp,
+                    'operator_karyawan_id' => $itemOpKaryawanId,
+                    'operator' => $itemOpName,
+                    'kegiatan' => 'LOLO Langsir Batam ('.($l->dari ?? '-').' -> '.($l->ke ?? '-').')',
+                    'tarif' => $matchedPl ? $matchedPl->tarif : 0,
+                    'jumlah' => 1,
+                    'keterangan' => 'Supir: '.($l->supir ?? '-').' Plat: '.($l->no_plat ?? '-'),
+                ];
+            }
+        }
+
+        return view('tagihan-lolo-batam.create', compact(
+            'pricelists',
+            'nomorTagihan',
+            'vendors',
+            'kapals',
+            'preloadedItems',
+            'defaultKapal',
+            'defaultVoyage',
+            'karyawanOperators',
+            'defaultTipeOperator',
+            'defaultOperatorKaryawanId',
+            'defaultOperator'
+        ));
     }
 
     public function store(Request $request)
@@ -105,6 +550,9 @@ class TagihanLoloBatamController extends Controller
             'nomor_tagihan' => 'required|string|unique:tagihan_lolo_batams,nomor_tagihan',
             'tanggal_tagihan' => 'required|date',
             'vendor' => 'nullable|string|max:255',
+            'tipe_operator' => 'nullable|in:AYP,VENDOR',
+            'operator_karyawan_id' => 'nullable|exists:karyawans,id',
+            'operator' => 'nullable|string|max:255',
             'kapal' => 'nullable|string|max:255',
             'voyage' => 'nullable|string|max:255',
             'status_pembayaran' => 'required|in:Belum Lunas,Lunas',
@@ -134,6 +582,24 @@ class TagihanLoloBatamController extends Controller
             $totalTagihan = 0;
             $itemsData = [];
 
+            $tipeOperator = $request->tipe_operator ?: 'AYP';
+            $operatorKaryawanId = $request->operator_karyawan_id;
+            $operatorName = $request->operator;
+
+            if ($tipeOperator === 'AYP') {
+                if ($operatorKaryawanId) {
+                    $karyawan = \App\Models\Karyawan::find($operatorKaryawanId);
+                    if ($karyawan) {
+                        $operatorName = $karyawan->nama_lengkap;
+                    }
+                }
+            } else {
+                $operatorKaryawanId = null;
+                if (empty($operatorName)) {
+                    $operatorName = $request->vendor ?: 'Vendor';
+                }
+            }
+
             foreach ($request->items as $item) {
                 $subtotal = (float) $item['tarif'] * (int) $item['jumlah'];
                 $totalTagihan += $subtotal;
@@ -148,6 +614,9 @@ class TagihanLoloBatamController extends Controller
                     'size' => $item['size'] ?? '20',
                     'tipe_kontainer' => $item['tipe_kontainer'] ?? 'FULL',
                     'kegiatan' => $item['kegiatan'] ?? 'LOLO Batam',
+                    'tipe_operator' => $tipeOperator,
+                    'operator' => $operatorName,
+                    'operator_karyawan_id' => $operatorKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
                     'total' => $subtotal,
@@ -161,6 +630,9 @@ class TagihanLoloBatamController extends Controller
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
                 'vendor' => $request->vendor,
+                'tipe_operator' => $tipeOperator,
+                'operator' => $operatorName,
+                'operator_karyawan_id' => $operatorKaryawanId,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,
@@ -192,19 +664,30 @@ class TagihanLoloBatamController extends Controller
 
     public function show(TagihanLoloBatam $tagihanLoloBatam)
     {
-        $tagihanLoloBatam->load(['items.pricelistLoloBatam', 'createdBy', 'updatedBy']);
+        $tagihanLoloBatam->load(['items.pricelistLoloBatam', 'createdBy', 'updatedBy', 'operatorKaryawan']);
 
         return view('tagihan-lolo-batam.show', compact('tagihanLoloBatam'));
     }
 
     public function edit(TagihanLoloBatam $tagihanLoloBatam)
     {
-        $tagihanLoloBatam->load('items');
+        $tagihanLoloBatam->load(['items', 'operatorKaryawan']);
         $pricelists = MasterPricelistLoloBatam::aktif()->orderBy('size')->get();
         $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->where('vendor', '!=', '')->distinct()->pluck('vendor');
         $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
+        $karyawanOperators = \Illuminate\Support\Facades\Schema::hasTable('karyawans')
+            ? \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                ->where(function ($q) {
+                    $q->whereIn('pekerjaan', ['OPERATOR FORKLIFT', 'OPERATOR CRANE / ALAT BERAT'])
+                        ->orWhere('pekerjaan', 'like', '%FORKLIFT%')
+                        ->orWhere('pekerjaan', 'like', '%CRANE%')
+                        ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+                })
+                ->orderBy('nama_lengkap')
+                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'divisi', 'pekerjaan'])
+            : collect();
 
-        return view('tagihan-lolo-batam.edit', compact('tagihanLoloBatam', 'pricelists', 'vendors', 'kapals'));
+        return view('tagihan-lolo-batam.edit', compact('tagihanLoloBatam', 'pricelists', 'vendors', 'kapals', 'karyawanOperators'));
     }
 
     public function update(Request $request, TagihanLoloBatam $tagihanLoloBatam)
@@ -213,6 +696,9 @@ class TagihanLoloBatamController extends Controller
             'nomor_tagihan' => 'required|string|unique:tagihan_lolo_batams,nomor_tagihan,'.$tagihanLoloBatam->id,
             'tanggal_tagihan' => 'required|date',
             'vendor' => 'nullable|string|max:255',
+            'tipe_operator' => 'nullable|in:AYP,VENDOR',
+            'operator_karyawan_id' => 'nullable|exists:karyawans,id',
+            'operator' => 'nullable|string|max:255',
             'kapal' => 'nullable|string|max:255',
             'voyage' => 'nullable|string|max:255',
             'status_pembayaran' => 'required|in:Belum Lunas,Lunas',
@@ -242,6 +728,24 @@ class TagihanLoloBatamController extends Controller
             $totalTagihan = 0;
             $itemsData = [];
 
+            $tipeOperator = $request->tipe_operator ?: 'AYP';
+            $operatorKaryawanId = $request->operator_karyawan_id;
+            $operatorName = $request->operator;
+
+            if ($tipeOperator === 'AYP') {
+                if ($operatorKaryawanId) {
+                    $karyawan = \App\Models\Karyawan::find($operatorKaryawanId);
+                    if ($karyawan) {
+                        $operatorName = $karyawan->nama_lengkap;
+                    }
+                }
+            } else {
+                $operatorKaryawanId = null;
+                if (empty($operatorName)) {
+                    $operatorName = $request->vendor ?: 'Vendor';
+                }
+            }
+
             foreach ($request->items as $item) {
                 $subtotal = (float) $item['tarif'] * (int) $item['jumlah'];
                 $totalTagihan += $subtotal;
@@ -257,6 +761,9 @@ class TagihanLoloBatamController extends Controller
                     'size' => $item['size'] ?? '20',
                     'tipe_kontainer' => $item['tipe_kontainer'] ?? 'FULL',
                     'kegiatan' => $item['kegiatan'] ?? 'LOLO Batam',
+                    'tipe_operator' => $tipeOperator,
+                    'operator' => $operatorName,
+                    'operator_karyawan_id' => $operatorKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
                     'total' => $subtotal,
@@ -270,6 +777,9 @@ class TagihanLoloBatamController extends Controller
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
                 'vendor' => $request->vendor,
+                'tipe_operator' => $tipeOperator,
+                'operator' => $operatorName,
+                'operator_karyawan_id' => $operatorKaryawanId,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,

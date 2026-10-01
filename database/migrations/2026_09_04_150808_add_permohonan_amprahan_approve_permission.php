@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -19,14 +17,14 @@ return new class extends Migration
                 'updated_at' => now(),
             ]
         );
-        
+
         $adminRole = DB::table('roles')->where('name', 'admin')->first();
         if ($adminRole) {
             $permission = DB::table('permissions')->where('name', 'permohonan-amprahan-approve')->first();
             if ($permission) {
                 DB::table('permission_role')->updateOrInsert([
                     'permission_id' => $permission->id,
-                    'role_id' => $adminRole->id
+                    'role_id' => $adminRole->id,
                 ]);
             }
         }

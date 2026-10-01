@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Gudang;
+use App\Models\HistoryKontainer;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
-use App\Models\HistoryKontainer;
 use App\Models\MasterPricelistObAntarGudang;
 use App\Models\StockKontainer;
 use App\Models\TagihanOb;
@@ -302,9 +302,9 @@ class ObAntarGudangController extends Controller
             // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
             if ($validated['source'] === 'stock') {
                 $stockModel = StockKontainer::where(function ($q) use ($validated) {
-                        $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
-                            ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
-                    })->first();
+                    $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
+                        ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
+                })->first();
 
                 if ($stockModel) {
                     $asalGudangId = $validated['gudang_id'];
@@ -324,9 +324,9 @@ class ObAntarGudangController extends Controller
                 }
             } else {
                 $kontainerModel = Kontainer::where(function ($q) use ($validated) {
-                        $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
-                            ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
-                    })->first();
+                    $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
+                        ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
+                })->first();
 
                 if ($kontainerModel) {
                     $asalGudangId = $validated['gudang_id'];

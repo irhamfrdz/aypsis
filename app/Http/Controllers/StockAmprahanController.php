@@ -156,7 +156,7 @@ class StockAmprahanController extends Controller
         $chasis = MasterChasisBatam::orderBy('kode')->get();
 
         $banks = Bank::orderBy('name')->pluck('name')->toArray();
-        
+
         $availableStocks = \App\Models\StockAmprahan::select('nama_barang', DB::raw('MIN(id) as id'), DB::raw('SUM(jumlah) as total_stock'), DB::raw('MAX(satuan) as satuan'))
             ->where('jumlah', '>', 0)
             ->whereNotNull('nama_barang')
@@ -175,12 +175,12 @@ class StockAmprahanController extends Controller
 
         $stockDetails = [];
         foreach ($stockDetailsQuery as $sd) {
-            if (!isset($stockDetails[$sd->nama_barang])) {
+            if (! isset($stockDetails[$sd->nama_barang])) {
                 $stockDetails[$sd->nama_barang] = [];
             }
             $stockDetails[$sd->nama_barang][] = [
                 'jumlah' => (float) $sd->jumlah,
-                'harga_satuan' => (float) $sd->harga_satuan
+                'harga_satuan' => (float) $sd->harga_satuan,
             ];
         }
 
@@ -627,13 +627,13 @@ class StockAmprahanController extends Controller
                 if (! is_numeric($hargaSatuan)) {
                     $hargaSatuan = 0;
                 }
-                
+
                 if (! is_numeric($hargaTotal)) {
                     $hargaTotal = 0;
                 }
 
                 if (empty($hargaSatuan) || $hargaSatuan == 0) {
-                    if (!empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
+                    if (! empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
                         $hargaSatuan = $hargaTotal / $jumlah;
                     }
                 }
@@ -763,7 +763,7 @@ class StockAmprahanController extends Controller
         ]);
 
         try {
-            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $request->file('file_excel'));
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass, $request->file('file_excel'));
             $rows = $data[0] ?? [];
 
             if (empty($rows)) {
@@ -771,7 +771,7 @@ class StockAmprahanController extends Controller
             }
 
             // Remove header row if first cell looks like a header
-            if (!empty($rows) && (stripos((string)$rows[0][0], 'Bukti') !== false || stripos((string)$rows[0][1], 'Tanggal') !== false || stripos((string)$rows[0][0], 'nomor') !== false)) {
+            if (! empty($rows) && (stripos((string) $rows[0][0], 'Bukti') !== false || stripos((string) $rows[0][1], 'Tanggal') !== false || stripos((string) $rows[0][0], 'nomor') !== false)) {
                 array_shift($rows);
             }
 
@@ -784,20 +784,22 @@ class StockAmprahanController extends Controller
             $validTipe = ['Pemakaian', 'Perbaikan', 'Perlengkapan', 'Peralatan', 'Transportasi', 'Inventory'];
 
             DB::beginTransaction();
-            
+
             foreach ($rows as $index => $parts) {
                 $lineNum = $index + 2; // +1 for 0-index, +1 for header
-                
+
                 // Skip completely empty rows
-                if (empty(array_filter($parts))) continue;
+                if (empty(array_filter($parts))) {
+                    continue;
+                }
 
                 $nomorBukti = $parts[0] ?? '';
-                
+
                 // Parse excel date (can be numeric or string)
                 $tanggalBeli = $parts[1] ?? '';
                 if (is_numeric($tanggalBeli)) {
                     $tanggalBeli = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tanggalBeli)->format('Y-m-d');
-                } else if (!empty($tanggalBeli)) {
+                } elseif (! empty($tanggalBeli)) {
                     $tanggalBeli = date('Y-m-d', strtotime($tanggalBeli));
                 }
 
@@ -819,28 +821,31 @@ class StockAmprahanController extends Controller
                 if (! is_numeric($hargaSatuan)) {
                     $hargaSatuan = 0;
                 }
-                
+
                 if (! is_numeric($hargaTotal)) {
                     $hargaTotal = 0;
                 }
 
                 if (empty($hargaSatuan) || $hargaSatuan == 0) {
-                    if (!empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
+                    if (! empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
                         $hargaSatuan = $hargaTotal / $jumlah;
                     }
                 }
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
+
                     continue;
                 }
 
                 if (! is_numeric($jumlah) || $jumlah <= 0) {
                     $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+
                     continue;
                 }
 
                 if (! empty($tanggalBeli) && ! strtotime($tanggalBeli)) {
                     $errors[] = "Baris {$lineNum}: Format tanggal tidak valid";
+
                     continue;
                 }
 
@@ -853,11 +858,13 @@ class StockAmprahanController extends Controller
                 }
                 if (! $matchedTipe) {
                     $errors[] = "Baris {$lineNum}: Tipe amprahan '{$tipeAmprahan}' tidak valid";
+
                     continue;
                 }
 
                 if (empty($vendorName)) {
                     $errors[] = "Baris {$lineNum}: Nama vendor kosong";
+
                     continue;
                 }
 
@@ -867,6 +874,7 @@ class StockAmprahanController extends Controller
 
                 if (! $vendorMatch) {
                     $errors[] = "Baris {$lineNum}: Vendor/Toko '{$vendorName}' tidak ditemukan di database master";
+
                     continue;
                 }
 
@@ -877,6 +885,7 @@ class StockAmprahanController extends Controller
 
                     if (! $lokasiMatch) {
                         $errors[] = "Baris {$lineNum}: Lokasi/Gudang '{$lokasi}' tidak ditemukan di master gudang";
+
                         continue;
                     }
                     $lokasi = $lokasiMatch->nama_gudang;
@@ -890,6 +899,7 @@ class StockAmprahanController extends Controller
 
                 if (! $masterMatch) {
                     $errors[] = "Baris {$lineNum}: Tipe barang '{$tipeBarang}' tidak ditemukan di master barang";
+
                     continue;
                 }
 
@@ -906,23 +916,26 @@ class StockAmprahanController extends Controller
                     'keterangan' => $keterangan,
                     'vendor_amprahan_id' => $vendorMatch->id,
                     'created_by' => Auth::id(),
-                    'status_lunas' => 'Belum Lunas'
+                    'status_lunas' => 'Belum Lunas',
                 ]);
 
                 $successCount++;
             }
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 DB::rollBack();
-                return redirect()->back()->with('error', "Ditemukan kesalahan pada data Excel:\n" . implode("\n", $errors));
+
+                return redirect()->back()->with('error', "Ditemukan kesalahan pada data Excel:\n".implode("\n", $errors));
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', "Berhasil import {$successCount} data stock dari Excel.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat membaca Excel: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat membaca Excel: '.$e->getMessage());
         }
     }
 

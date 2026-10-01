@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use Carbon\Carbon;
 
 class PushAbsensiHistory extends Command
 {
@@ -32,9 +32,10 @@ class PushAbsensiHistory extends Command
         $secret = env('API_SYNC_SECRET', 'aypsis-sync-12345');
 
         $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
-        
-        if (!file_exists($mdbPath)) {
+
+        if (! file_exists($mdbPath)) {
             $this->error("Database Solution tidak ditemukan di: {$mdbPath}");
+
             return;
         }
 
@@ -44,19 +45,19 @@ class PushAbsensiHistory extends Command
             $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
             $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-            $query = "SELECT u.Badgenumber, c.CHECKTIME, c.CHECKTYPE 
+            $query = 'SELECT u.Badgenumber, c.CHECKTIME, c.CHECKTYPE 
                       FROM CHECKINOUT c 
                       INNER JOIN USERINFO u ON c.USERID = u.USERID
-                      ORDER BY c.CHECKTIME DESC";
+                      ORDER BY c.CHECKTIME DESC';
             $stmt = $conn->query($query);
 
             $logs = [];
             $chunks = [];
-            
+
             while ($log = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $checktype = strtoupper($log['CHECKTYPE']);
                 $type = (in_array($checktype, ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
-                
+
                 $logTime = Carbon::parse($log['CHECKTIME']);
                 if ($logTime->hour >= 4 && $logTime->hour < 12) {
                     $type = 'Masuk';
@@ -65,7 +66,7 @@ class PushAbsensiHistory extends Command
                 $logs[] = [
                     'nik' => trim($log['Badgenumber']),
                     'waktu' => $logTime->format('Y-m-d H:i:s'),
-                    'tipe' => $type
+                    'tipe' => $type,
                 ];
 
                 if (count($logs) >= 500) {
@@ -81,9 +82,10 @@ class PushAbsensiHistory extends Command
             foreach ($chunks as $c) {
                 $total += count($c);
             }
-            
+
             if ($total === 0) {
-                $this->info("Tidak ada data absensi di file MDB.");
+                $this->info('Tidak ada data absensi di file MDB.');
+
                 return;
             }
 
@@ -95,16 +97,16 @@ class PushAbsensiHistory extends Command
 
             foreach ($chunks as $chunk) {
                 $response = Http::timeout(60)->withHeaders([
-                    'X-Sync-Secret' => $secret
+                    'X-Sync-Secret' => $secret,
                 ])->post($apiUrl, [
                     'mesin_id' => $mesinId,
-                    'logs' => $chunk
+                    'logs' => $chunk,
                 ]);
 
                 if ($response->successful()) {
                     $berhasil += $response->json('synced_count', 0);
                 } else {
-                    $this->error("Gagal mengirim batch: " . $response->body());
+                    $this->error('Gagal mengirim batch: '.$response->body());
                 }
 
                 $bar->advance();
@@ -115,7 +117,7 @@ class PushAbsensiHistory extends Command
             $this->info("Selesai! {$berhasil} data riwayat baru berhasil masuk ke server.");
 
         } catch (\Exception $e) {
-            $this->error("Terjadi kesalahan: " . $e->getMessage());
+            $this->error('Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

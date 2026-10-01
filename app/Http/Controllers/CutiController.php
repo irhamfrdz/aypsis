@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class CutiController extends Controller
@@ -10,16 +9,16 @@ class CutiController extends Controller
     public function index(Request $request)
     {
         $query = \App\Models\Cuti::with('karyawan')->latest();
-        
+
         if ($request->filled('penempatan')) {
-            $query->whereHas('karyawan', function($q) use ($request) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
                 $q->where('penempatan', $request->penempatan);
             });
         }
-        
+
         $cutis = $query->paginate(10)->withQueryString();
         $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
-        
+
         return view('cuti.index', compact('cutis', 'penempatans'));
     }
 
@@ -27,6 +26,7 @@ class CutiController extends Controller
     {
         $karyawans = \App\Models\Karyawan::with('saldoCutis')->whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
         $penempatans = $karyawans->pluck('penempatan')->filter()->unique()->values();
+
         return view('cuti.create', compact('karyawans', 'penempatans'));
     }
 
@@ -50,12 +50,14 @@ class CutiController extends Controller
                 'keterangan' => $validated['keterangan'],
             ]);
         }
+
         return redirect()->route('cuti.index')->with('success', 'Data cuti berhasil ditambahkan.');
     }
 
     public function edit(\App\Models\Cuti $cuti)
     {
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+
         return view('cuti.edit', compact('cuti', 'karyawans'));
     }
 
@@ -71,12 +73,14 @@ class CutiController extends Controller
         ]);
 
         $cuti->update($validated);
+
         return redirect()->route('cuti.index')->with('success', 'Data cuti berhasil diupdate.');
     }
 
     public function destroy(\App\Models\Cuti $cuti)
     {
         $cuti->delete();
+
         return redirect()->route('cuti.index')->with('success', 'Data cuti berhasil dihapus.');
     }
 }

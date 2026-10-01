@@ -223,7 +223,7 @@ class MesinController extends Controller
                 $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 // Fetch all machines from MDB to map MDB SENSORID / SN to IP Address
-                $macStmt = $conn->query("SELECT ID, IP, sn FROM Machines");
+                $macStmt = $conn->query('SELECT ID, IP, sn FROM Machines');
                 $mdbMachines = $macStmt->fetchAll(\PDO::FETCH_ASSOC);
 
                 // Build a lookup map: MDB Machine ID -> Laravel Mesin ID & MDB Machine SN -> Laravel Mesin ID
@@ -241,16 +241,16 @@ class MesinController extends Controller
 
                     if ($matchedMesin) {
                         $machineMap[$mdbId] = $matchedMesin->id;
-                        if (!empty($sn)) {
+                        if (! empty($sn)) {
                             $snMap[$sn] = $matchedMesin->id;
                         }
                     }
                 }
 
                 // Fetch all historical logs with SENSORID and sn
-                $query = "SELECT c.USERID, u.Badgenumber, c.CHECKTIME, c.CHECKTYPE, c.SENSORID, c.sn 
+                $query = 'SELECT c.USERID, u.Badgenumber, c.CHECKTIME, c.CHECKTYPE, c.SENSORID, c.sn 
                           FROM CHECKINOUT c 
-                          INNER JOIN USERINFO u ON c.USERID = u.USERID";
+                          INNER JOIN USERINFO u ON c.USERID = u.USERID';
                 $stmt = $conn->query($query);
                 $mdbLogs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -258,10 +258,11 @@ class MesinController extends Controller
                 $existingLogs = Absensi::select('nik', 'waktu', 'tipe')
                     ->get()
                     ->mapWithKeys(function ($item) {
-                        $timeStr = $item->waktu instanceof \Carbon\Carbon 
-                            ? $item->waktu->format('Y-m-d H:i:s') 
+                        $timeStr = $item->waktu instanceof \Carbon\Carbon
+                            ? $item->waktu->format('Y-m-d H:i:s')
                             : \Carbon\Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
-                        return [$item->nik . '_' . $timeStr . '_' . $item->tipe => true];
+
+                        return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
                     })
                     ->toArray();
 
@@ -278,14 +279,14 @@ class MesinController extends Controller
                     $logSn = trim($log['sn'] ?? '');
 
                     $resolvedMesinId = null;
-                    if (!empty($logSn) && isset($snMap[$logSn])) {
+                    if (! empty($logSn) && isset($snMap[$logSn])) {
                         $resolvedMesinId = $snMap[$logSn];
                     } elseif (isset($machineMap[$logSensorId])) {
                         $resolvedMesinId = $machineMap[$logSensorId];
                     }
 
                     // Fallback to the first machine in the list if cannot resolve
-                    if (!$resolvedMesinId) {
+                    if (! $resolvedMesinId) {
                         $resolvedMesinId = $laravelMesins->first()->id ?? $mesin->id;
                     }
 
@@ -301,7 +302,7 @@ class MesinController extends Controller
                     $type = (in_array(strtoupper($log['CHECKTYPE']), ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
                     $logTime = \Carbon\Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s');
 
-                    $key = $nik . '_' . $logTime . '_' . $type;
+                    $key = $nik.'_'.$logTime.'_'.$type;
                     if (isset($existingLogs[$key])) {
                         continue;
                     }
@@ -322,7 +323,7 @@ class MesinController extends Controller
                     ->with('success', "Sinkronisasi database lokal berhasil! {$syncedCount} data absensi baru telah diimpor.");
 
             } catch (\Exception $e) {
-                return back()->with('error', 'Gagal membaca database lokal: ' . $e->getMessage());
+                return back()->with('error', 'Gagal membaca database lokal: '.$e->getMessage());
             }
         }
 
@@ -384,7 +385,7 @@ class MesinController extends Controller
     {
         $mesin = Mesin::findOrFail($id);
         $syncedCount = 0;
-        
+
         // Check if we use MS Access database (.mdb) file sync
         $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
         if (file_exists($mdbPath)) {
@@ -394,11 +395,11 @@ class MesinController extends Controller
 
                 // Check fingerprint templates and update karyawans
                 // In ZKTeco MDB, USERINFO stores users (Badgenumber is NIK), TEMPLATE stores fingerprints
-                $query = "SELECT u.Badgenumber, COUNT(t.TEMPLATEID) as finger_count
+                $query = 'SELECT u.Badgenumber, COUNT(t.TEMPLATEID) as finger_count
                           FROM USERINFO u
                           LEFT JOIN TEMPLATE t ON u.USERID = t.USERID
-                          GROUP BY u.Badgenumber";
-                          
+                          GROUP BY u.Badgenumber';
+
                 $stmt = $conn->query($query);
                 $mdbUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -407,68 +408,69 @@ class MesinController extends Controller
                     if (is_numeric($nik)) {
                         $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                     }
-                    
+
                     $karyawan = Karyawan::where('nik', $nik)->first();
                     if ($karyawan) {
                         $hasFingerprint = (intval($user['finger_count']) > 0);
-                        
+
                         if ($karyawan->has_fingerprint != $hasFingerprint) {
                             $karyawan->update([
-                                'has_fingerprint' => $hasFingerprint
+                                'has_fingerprint' => $hasFingerprint,
                             ]);
                             $syncedCount++;
                         }
                     }
                 }
-                
+
                 return back()->with('success', "Sinkronisasi user berhasil! {$syncedCount} karyawan diperbarui status sidik jarinya dari database lokal mesin.");
-                
+
             } catch (\Exception $e) {
-                return back()->with('error', 'Gagal membaca database lokal MDB: ' . $e->getMessage());
+                return back()->with('error', 'Gagal membaca database lokal MDB: '.$e->getMessage());
             }
         }
-        
+
         // Fallback to UDP Direct Connection
         if (empty($mesin->ip_address)) {
             return back()->with('error', 'IP Address mesin belum dikonfigurasi!');
         }
 
         $service = new \App\Services\ZKLibrary($mesin->ip_address, $mesin->port);
-        
+
         if (! $service->connect()) {
             return back()->with('error', 'Gagal terhubung ke mesin fingerprint. Silakan periksa koneksi jaringan.');
         }
 
         $users = $service->getUser();
-        
-        \Log::info("SyncUsers from $mesin->ip_address: Found " . count($users) . " users.");
+
+        \Log::info("SyncUsers from $mesin->ip_address: Found ".count($users).' users.');
 
         if (empty($users)) {
             $service->disconnect();
+
             return back()->with('error', 'Koneksi berhasil, tetapi tidak ada data user yang ditemukan di mesin (Mungkin fungsi getUser tidak didukung mesin ini).');
         }
 
         foreach ($users as $uid => $userData) {
             $nik = trim($userData[0]); // userid/pin
-            
+
             if (is_numeric($nik)) {
                 $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
             }
-            
+
             // Check if user exists in database
             $karyawan = Karyawan::where('nik', $nik)->first();
             if ($karyawan) {
                 $hasFingerprint = true;
-                
+
                 if ($karyawan->has_fingerprint != $hasFingerprint) {
                     $karyawan->update([
-                        'has_fingerprint' => $hasFingerprint
+                        'has_fingerprint' => $hasFingerprint,
                     ]);
                     $syncedCount++;
                 }
             }
         }
-        
+
         $service->disconnect();
 
         return back()->with('success', "Sinkronisasi user berhasil! {$syncedCount} karyawan diperbarui status sidik jarinya via UDP.");

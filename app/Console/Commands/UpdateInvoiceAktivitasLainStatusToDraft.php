@@ -25,6 +25,7 @@ class UpdateInvoiceAktivitasLainStatusToDraft extends Command
 
         if ($invoices->isEmpty()) {
             $this->error('Tidak ada invoice yang ditemukan!');
+
             return 1;
         }
 
@@ -37,6 +38,7 @@ class UpdateInvoiceAktivitasLainStatusToDraft extends Command
         foreach ($invoices as $invoice) {
             if ($invoice->status !== 'paid') {
                 $this->warn("Skip {$invoice->nomor_invoice} — status saat ini: {$invoice->status} (bukan paid)");
+
                 continue;
             }
 

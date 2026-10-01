@@ -29,7 +29,7 @@ return new class extends Migration
                 'document_ppftz_03',
                 'condition',
                 'ip_bp_kawasan',
-                'npwp_consignee_16_digit'
+                'npwp_consignee_16_digit',
             ]);
         });
     }

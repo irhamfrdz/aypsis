@@ -373,7 +373,7 @@ class OrderController extends Controller
 
             // Log the change in processing history
             $history = $order->processing_history;
-            if (!is_array($history)) {
+            if (! is_array($history)) {
                 $history = [];
             }
             $history[] = [

@@ -1,4 +1,5 @@
 <?php
+
 $nomor = 'BTJ0726000109';
 $oldTransactions = \App\Models\CoaTransaction::where('nomor_referensi', $nomor)->get();
 foreach ($oldTransactions as $trans) {

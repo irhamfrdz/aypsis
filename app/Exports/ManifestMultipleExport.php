@@ -17,7 +17,7 @@ class ManifestMultipleExport implements WithMultipleSheets
     {
         return [
             new ManifestTableExport($this->manifests),
-            new ShipperConsigneeSheetExport()
+            new ShipperConsigneeSheetExport,
         ];
     }
 }

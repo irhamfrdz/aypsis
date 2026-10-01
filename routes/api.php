@@ -1,11 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\ApiAuthController;
-use App\Http\Controllers\Api\ApiAttendanceController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-
 use App\Http\Controllers\Api\AbsensiSyncController;
+use App\Http\Controllers\Api\ApiAttendanceController;
+use App\Http\Controllers\Api\ApiAuthController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('/login', [ApiAuthController::class, 'login']);
@@ -28,27 +27,27 @@ Route::post('/absensi/notify', function (Request $request) {
     ]);
 
     $absensi = \App\Models\Absensi::find($data['absensi_id']);
-    if (!$absensi) {
+    if (! $absensi) {
         return response()->json(['success' => false, 'message' => 'Absensi not found'], 404);
     }
 
     // Kirim notifikasi hanya ke user 'adit' dan 'kiky'
     $users = \App\Models\User::whereIn('username', ['adit', 'kiky'])->get();
-    
-    $karyawanNama = $absensi->karyawan 
-        ? $absensi->karyawan->nama_lengkap 
-        : 'Karyawan NIK: ' . $absensi->nik;
-    $waktuFormatted = $absensi->waktu instanceof \Carbon\Carbon 
-        ? $absensi->waktu->format('H:i:s') 
+
+    $karyawanNama = $absensi->karyawan
+        ? $absensi->karyawan->nama_lengkap
+        : 'Karyawan NIK: '.$absensi->nik;
+    $waktuFormatted = $absensi->waktu instanceof \Carbon\Carbon
+        ? $absensi->waktu->format('H:i:s')
         : \Carbon\Carbon::parse($absensi->waktu)->format('H:i:s');
-        
+
     $title = "Absensi Baru: {$absensi->tipe}";
     $body = "{$karyawanNama} telah melakukan absen {$absensi->tipe} pukul {$waktuFormatted}.";
 
     foreach ($users as $user) {
         // Notifikasi web/database
         $user->notify(new \App\Notifications\AbsensiMasukNotification($absensi));
-        
+
         // Notifikasi HP/Expo Push
         if ($user->expo_push_token) {
             \App\Services\ExpoNotificationService::send(
@@ -62,7 +61,7 @@ Route::post('/absensi/notify', function (Request $request) {
 
     return response()->json([
         'success' => true,
-        'message' => 'Notifications dispatched successfully.'
+        'message' => 'Notifications dispatched successfully.',
     ]);
 });
 
@@ -70,52 +69,52 @@ Route::post('/absensi/notify', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [ApiAuthController::class, 'logout']);
     Route::get('/me', [ApiAuthController::class, 'me']);
-    
+
     Route::post('/attendance', [ApiAttendanceController::class, 'store']);
     Route::post('/attendance/record', [ApiAttendanceController::class, 'store']);
     Route::get('/attendance/history', [ApiAttendanceController::class, 'history']);
     Route::get('/attendance/today', [ApiAttendanceController::class, 'today']);
-    Route::get('/attendance/locations', function(Request $request) {
+    Route::get('/attendance/locations', function (Request $request) {
         $user = $request->user();
         $karyawanId = $user ? $user->karyawan_id : null;
-        
+
         $locations = \Illuminate\Support\Facades\DB::table('lokasi_absensis')->where('is_active', 1)->orderBy('created_at', 'desc')->get();
-        
+
         if ($karyawanId) {
             $assignedLocIds = \Illuminate\Support\Facades\DB::table('lokasi_absensi_karyawan')
                 ->where('karyawan_id', $karyawanId)
                 ->pluck('lokasi_absensi_id')
                 ->toArray();
-                
-            $hasSpecialAssignment = !empty($assignedLocIds);
+
+            $hasSpecialAssignment = ! empty($assignedLocIds);
             foreach ($locations as $loc) {
                 if (($loc->tipe_penugasan ?? 'semua') === 'khusus') {
                     $loc->is_assigned = in_array($loc->id, $assignedLocIds);
                 } else {
-                    $loc->is_assigned = !$hasSpecialAssignment;
+                    $loc->is_assigned = ! $hasSpecialAssignment;
                 }
             }
         }
-        
+
         return response()->json($locations);
     });
-    
-    Route::post('/attendance/detect-face', function(Request $request) {
+
+    Route::post('/attendance/detect-face', function (Request $request) {
         return response()->json(['success' => true, 'hasFace' => true]);
     });
-    
+
     Route::post('/user/push-token', function (Request $request) {
         $data = $request->validate([
             'token' => 'required|string',
         ]);
-        
+
         $request->user()->update([
-            'expo_push_token' => $data['token']
+            'expo_push_token' => $data['token'],
         ]);
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Expo Push Token saved successfully.'
+            'message' => 'Expo Push Token saved successfully.',
         ]);
     });
 });
@@ -123,7 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Lokasi Absensi API endpoints (public/shared with Node.js port mapping)
 use Illuminate\Support\Facades\DB;
 
-Route::get('/lokasi-absensi/karyawans', function() {
+Route::get('/lokasi-absensi/karyawans', function () {
     $karyawans = DB::table('karyawans')
         ->leftJoin('users', 'users.karyawan_id', '=', 'karyawans.id')
         ->whereNull('karyawans.tanggal_berhenti')
@@ -139,13 +138,13 @@ Route::get('/lokasi-absensi/karyawans', function() {
         )
         ->orderBy('karyawans.nama_lengkap', 'asc')
         ->get();
-        
+
     return response()->json($karyawans);
 });
 
-Route::get('/lokasi-absensi', function() {
+Route::get('/lokasi-absensi', function () {
     $locations = DB::table('lokasi_absensis')->orderBy('created_at', 'desc')->get();
-    
+
     $locationIds = $locations->pluck('id')->toArray();
     $assignments = DB::table('lokasi_absensi_karyawan as lak')
         ->join('karyawans as k', 'lak.karyawan_id', '=', 'k.id')
@@ -153,18 +152,18 @@ Route::get('/lokasi-absensi', function() {
         ->select('lak.lokasi_absensi_id', 'lak.karyawan_id', 'k.nama_lengkap', 'k.nik', 'k.divisi')
         ->get()
         ->groupBy('lokasi_absensi_id');
-        
+
     foreach ($locations as $loc) {
         $assigned = $assignments->get($loc->id, collect());
         $loc->assigned_karyawan_ids = $assigned->pluck('karyawan_id')->toArray();
         $loc->assigned_karyawans = $assigned->values();
         $loc->tipe_penugasan = $loc->tipe_penugasan ?? 'semua';
     }
-    
+
     return response()->json($locations);
 });
 
-Route::post('/lokasi-absensi', function(Request $request) {
+Route::post('/lokasi-absensi', function (Request $request) {
     $data = $request->validate([
         'nama_lokasi' => 'required|string',
         'latitude' => 'required|numeric',
@@ -174,12 +173,12 @@ Route::post('/lokasi-absensi', function(Request $request) {
         'is_active' => 'nullable',
         'tipe_penugasan' => 'nullable|in:semua,khusus',
         'karyawan_ids' => 'nullable|array',
-        'karyawan_ids.*' => 'integer'
+        'karyawan_ids.*' => 'integer',
     ]);
-    
+
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
     $tipePenugasan = $data['tipe_penugasan'] ?? 'semua';
-    
+
     $id = DB::table('lokasi_absensis')->insertGetId([
         'nama_lokasi' => $data['nama_lokasi'],
         'latitude' => $data['latitude'],
@@ -189,13 +188,13 @@ Route::post('/lokasi-absensi', function(Request $request) {
         'is_active' => $isActive,
         'tipe_penugasan' => $tipePenugasan,
         'created_at' => now(),
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
-    if ($tipePenugasan === 'khusus' && !empty($data['karyawan_ids'])) {
+
+    if ($tipePenugasan === 'khusus' && ! empty($data['karyawan_ids'])) {
         $karyawanIds = array_unique($data['karyawan_ids']);
         $userMap = DB::table('users')->whereIn('karyawan_id', $karyawanIds)->pluck('id', 'karyawan_id');
-        
+
         $inserts = [];
         foreach ($karyawanIds as $kId) {
             $inserts[] = [
@@ -203,19 +202,19 @@ Route::post('/lokasi-absensi', function(Request $request) {
                 'karyawan_id' => $kId,
                 'user_id' => $userMap->get($kId) ?? null,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
         DB::table('lokasi_absensi_karyawan')->insert($inserts);
     }
-    
+
     return response()->json([
         'message' => 'Lokasi absensi berhasil ditambahkan.',
-        'id' => $id
+        'id' => $id,
     ]);
 });
 
-Route::put('/lokasi-absensi/{id}', function(Request $request, $id) {
+Route::put('/lokasi-absensi/{id}', function (Request $request, $id) {
     $data = $request->validate([
         'nama_lokasi' => 'required|string',
         'latitude' => 'required|numeric',
@@ -225,12 +224,12 @@ Route::put('/lokasi-absensi/{id}', function(Request $request, $id) {
         'is_active' => 'nullable',
         'tipe_penugasan' => 'nullable|in:semua,khusus',
         'karyawan_ids' => 'nullable|array',
-        'karyawan_ids.*' => 'integer'
+        'karyawan_ids.*' => 'integer',
     ]);
-    
+
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
     $tipePenugasan = $data['tipe_penugasan'] ?? 'semua';
-    
+
     DB::table('lokasi_absensis')->where('id', $id)->update([
         'nama_lokasi' => $data['nama_lokasi'],
         'latitude' => $data['latitude'],
@@ -239,15 +238,15 @@ Route::put('/lokasi-absensi/{id}', function(Request $request, $id) {
         'keterangan' => $data['keterangan'] ?? null,
         'is_active' => $isActive,
         'tipe_penugasan' => $tipePenugasan,
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
+
     // Sinkronisasi penugasan karyawan
     DB::table('lokasi_absensi_karyawan')->where('lokasi_absensi_id', $id)->delete();
-    if ($tipePenugasan === 'khusus' && !empty($data['karyawan_ids'])) {
+    if ($tipePenugasan === 'khusus' && ! empty($data['karyawan_ids'])) {
         $karyawanIds = array_unique($data['karyawan_ids']);
         $userMap = DB::table('users')->whereIn('karyawan_id', $karyawanIds)->pluck('id', 'karyawan_id');
-        
+
         $inserts = [];
         foreach ($karyawanIds as $kId) {
             $inserts[] = [
@@ -255,41 +254,42 @@ Route::put('/lokasi-absensi/{id}', function(Request $request, $id) {
                 'karyawan_id' => $kId,
                 'user_id' => $userMap->get($kId) ?? null,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
         DB::table('lokasi_absensi_karyawan')->insert($inserts);
     }
-    
+
     return response()->json([
-        'message' => 'Lokasi absensi berhasil diperbarui.'
+        'message' => 'Lokasi absensi berhasil diperbarui.',
     ]);
 });
 
-Route::delete('/lokasi-absensi/{id}', function($id) {
+Route::delete('/lokasi-absensi/{id}', function ($id) {
     DB::table('lokasi_absensi_karyawan')->where('lokasi_absensi_id', $id)->delete();
     DB::table('lokasi_absensis')->where('id', $id)->delete();
+
     return response()->json([
-        'message' => 'Lokasi absensi berhasil dihapus.'
+        'message' => 'Lokasi absensi berhasil dihapus.',
     ]);
 });
 
 // Jam Kerja (Working Hours) API endpoints
-Route::get('/working-hours', function() {
+Route::get('/working-hours', function () {
     return response()->json(DB::table('jam_kerjas')->orderBy('created_at', 'desc')->get());
 });
 
-Route::post('/working-hours', function(Request $request) {
+Route::post('/working-hours', function (Request $request) {
     $data = $request->validate([
         'nama_shift' => 'required|string',
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
-        'is_active' => 'nullable'
+        'is_active' => 'nullable',
     ]);
-    
+
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
-    
+
     $id = DB::table('jam_kerjas')->insertGetId([
         'nama_shift' => $data['nama_shift'],
         'jam_masuk' => $data['jam_masuk'],
@@ -297,106 +297,106 @@ Route::post('/working-hours', function(Request $request) {
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
         'is_active' => $isActive,
         'created_at' => now(),
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
+
     return response()->json([
         'message' => 'Jam kerja berhasil ditambahkan.',
-        'id' => $id
+        'id' => $id,
     ]);
 });
 
-Route::put('/working-hours/{id}', function(Request $request, $id) {
+Route::put('/working-hours/{id}', function (Request $request, $id) {
     $data = $request->validate([
         'nama_shift' => 'required|string',
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
-        'is_active' => 'nullable'
+        'is_active' => 'nullable',
     ]);
-    
+
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
-    
+
     DB::table('jam_kerjas')->where('id', $id)->update([
         'nama_shift' => $data['nama_shift'],
         'jam_masuk' => $data['jam_masuk'],
         'jam_keluar' => $data['jam_keluar'],
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
         'is_active' => $isActive,
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
+
     return response()->json([
-        'message' => 'Jam kerja berhasil diperbarui.'
+        'message' => 'Jam kerja berhasil diperbarui.',
     ]);
 });
 
-Route::delete('/working-hours/{id}', function($id) {
+Route::delete('/working-hours/{id}', function ($id) {
     DB::table('jam_kerjas')->where('id', $id)->delete();
+
     return response()->json([
-        'message' => 'Jam kerja berhasil dihapus.'
+        'message' => 'Jam kerja berhasil dihapus.',
     ]);
 });
 
 // Hari Libur (Holidays) API endpoints
-Route::get('/holidays', function() {
+Route::get('/holidays', function () {
     return response()->json(DB::table('hari_liburs')->orderBy('tanggal', 'asc')->get());
 });
 
-Route::post('/holidays', function(Request $request) {
+Route::post('/holidays', function (Request $request) {
     $data = $request->validate([
         'tanggal' => 'required|date',
-        'keterangan' => 'required|string'
+        'keterangan' => 'required|string',
     ]);
-    
+
     $existing = DB::table('hari_liburs')->where('tanggal', $data['tanggal'])->first();
     if ($existing) {
         return response()->json(['error' => 'Tanggal tersebut sudah diatur sebagai hari libur'], 400);
     }
-    
+
     $id = DB::table('hari_liburs')->insertGetId([
         'tanggal' => $data['tanggal'],
         'keterangan' => $data['keterangan'],
         'created_at' => now(),
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
+
     return response()->json([
         'message' => 'Hari libur berhasil ditambahkan.',
-        'id' => $id
+        'id' => $id,
     ]);
 });
 
-Route::put('/holidays/{id}', function(Request $request, $id) {
+Route::put('/holidays/{id}', function (Request $request, $id) {
     $data = $request->validate([
         'tanggal' => 'required|date',
-        'keterangan' => 'required|string'
+        'keterangan' => 'required|string',
     ]);
-    
+
     $existing = DB::table('hari_liburs')->where('tanggal', $data['tanggal'])->where('id', '!=', $id)->first();
     if ($existing) {
         return response()->json(['error' => 'Tanggal tersebut sudah diatur sebagai hari libur'], 400);
     }
-    
+
     DB::table('hari_liburs')->where('id', $id)->update([
         'tanggal' => $data['tanggal'],
         'keterangan' => $data['keterangan'],
-        'updated_at' => now()
+        'updated_at' => now(),
     ]);
-    
+
     return response()->json([
-        'message' => 'Hari libur berhasil diperbarui.'
+        'message' => 'Hari libur berhasil diperbarui.',
     ]);
 });
 
-Route::delete('/holidays/{id}', function($id) {
+Route::delete('/holidays/{id}', function ($id) {
     DB::table('hari_liburs')->where('id', $id)->delete();
+
     return response()->json([
-        'message' => 'Hari libur berhasil dihapus.'
+        'message' => 'Hari libur berhasil dihapus.',
     ]);
 });
-
-
 
 // Stowage Plan API routes
 use App\Http\Controllers\Api\StowagePlanController;
@@ -407,4 +407,3 @@ Route::get('/stowage-plans/manifests-without-plan', [StowagePlanController::clas
 Route::get('/stowage-plans', [StowagePlanController::class, 'index']);
 Route::post('/stowage-plans/cancel', [StowagePlanController::class, 'cancel']);
 Route::post('/stowage-plans', [StowagePlanController::class, 'store']);
-

@@ -13,7 +13,7 @@ echo "Memulai update lokasi pranota...\n";
 
 // Update semua data pranota yang lokasinya masih kosong (null) menjadi 'Jakarta'
 $updated = PranotaStock::whereNull('lokasi')->orWhere('lokasi', '')->update([
-    'lokasi' => 'Jakarta'
+    'lokasi' => 'Jakarta',
 ]);
 
 echo "Berhasil mengupdate {$updated} data pranota menjadi lokasi Jakarta.\n";

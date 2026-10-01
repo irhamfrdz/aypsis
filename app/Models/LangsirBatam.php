@@ -56,6 +56,11 @@ class LangsirBatam extends Model
         return $this->belongsTo(Mobil::class, 'chasis_mobil_id');
     }
 
+    public function tagihanLoloItem()
+    {
+        return $this->hasOne(TagihanLoloBatamItem::class, 'langsir_batam_id');
+    }
+
     public static function generateNoTransaksi()
     {
         $date = now()->format('Ymd');

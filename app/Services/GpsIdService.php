@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class GpsIdService
 {
     protected $baseUrl;
+
     protected $username;
+
     protected $password;
 
     public function __construct()
@@ -31,6 +33,7 @@ class GpsIdService
 
         if (Cache::has('gps_id_token')) {
             $cached = Cache::get('gps_id_token');
+
             return $cached === 'FAILED' ? null : $cached;
         }
 
@@ -55,17 +58,20 @@ class GpsIdService
                 if ($token) {
                     // Cache selama 23 jam (23 * 3600 detik = 82800)
                     Cache::put('gps_id_token', $token, 82800);
+
                     return $token;
                 }
             }
 
-            Log::error('GPS.id Login Failed: ' . $response->body());
+            Log::error('GPS.id Login Failed: '.$response->body());
             // Jika gagal (termasuk too many requests), blokir hit ke API selama 10 menit
             Cache::put('gps_id_token', 'FAILED', 600);
+
             return null;
         } catch (\Exception $e) {
-            Log::error('GPS.id Login Error: ' . $e->getMessage());
+            Log::error('GPS.id Login Error: '.$e->getMessage());
             Cache::put('gps_id_token', 'FAILED', 600);
+
             return null;
         }
     }
@@ -79,6 +85,7 @@ class GpsIdService
 
         if (empty($token)) {
             Log::warning('GPS.id Username/Password is not set in .env or login failed');
+
             return null;
         }
 
@@ -97,11 +104,13 @@ class GpsIdService
                 return $response->json();
             }
 
-            Log::error("GPS.id API Error for IMEI {$imei}: " . $response->body());
+            Log::error("GPS.id API Error for IMEI {$imei}: ".$response->body());
+
             return null;
 
         } catch (\Exception $e) {
-            Log::error("GPS.id Connection Error: " . $e->getMessage());
+            Log::error('GPS.id Connection Error: '.$e->getMessage());
+
             return null;
         }
     }
@@ -115,6 +124,7 @@ class GpsIdService
 
         if (empty($token)) {
             Log::warning('GPS.id Username/Password is not set in .env or login failed');
+
             return [];
         }
 
@@ -134,11 +144,11 @@ class GpsIdService
                     if ($response->status() === 401) {
                         Cache::forget('gps_id_token');
                     }
-                    
+
                     if ($response->successful()) {
                         $results[$imei] = $response->json();
                     } else {
-                        Log::error("GPS.id API Error for IMEI {$imei}: " . $response->body());
+                        Log::error("GPS.id API Error for IMEI {$imei}: ".$response->body());
                         $results[$imei] = null;
                     }
                 } else {
@@ -149,7 +159,8 @@ class GpsIdService
             return $results;
 
         } catch (\Exception $e) {
-            Log::error("GPS.id Connection Error Bulk: " . $e->getMessage());
+            Log::error('GPS.id Connection Error Bulk: '.$e->getMessage());
+
             return [];
         }
     }

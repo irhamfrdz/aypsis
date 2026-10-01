@@ -256,7 +256,7 @@ class MasterJadwalKapalBerlabuhController extends Controller
 
         $jadwals = $query->get();
 
-        $filename = 'jadwal_kapal_berlabuh_' . date('Ymd_His') . '.xlsx';
+        $filename = 'jadwal_kapal_berlabuh_'.date('Ymd_His').'.xlsx';
 
         return Excel::download(new MasterJadwalKapalBerlabuhExport($jadwals, $request->pelabuhan), $filename);
     }

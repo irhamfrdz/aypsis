@@ -10,16 +10,16 @@ class ExpoNotificationService
     /**
      * Send push notification using Expo Push API
      *
-     * @param string $to Expo Push Token (e.g. ExponentPushToken[xxx])
-     * @param string $title Notification title
-     * @param string $body Notification body content
-     * @param array $data Optional custom data payload
-     * @return bool
+     * @param  string  $to  Expo Push Token (e.g. ExponentPushToken[xxx])
+     * @param  string  $title  Notification title
+     * @param  string  $body  Notification body content
+     * @param  array  $data  Optional custom data payload
      */
     public static function send(string $to, string $title, string $body, array $data = []): bool
     {
-        if (empty($to) || !str_starts_with($to, 'ExponentPushToken')) {
+        if (empty($to) || ! str_starts_with($to, 'ExponentPushToken')) {
             Log::warning("Expo Notification: Invalid push token: {$to}");
+
             return false;
         }
 
@@ -42,12 +42,12 @@ class ExpoNotificationService
                 if (isset($resData['data']['status']) && $resData['data']['status'] === 'ok') {
                     return true;
                 }
-                Log::warning("Expo Notification Error response: " . json_encode($resData));
+                Log::warning('Expo Notification Error response: '.json_encode($resData));
             } else {
                 Log::error("Expo Notification HTTP Failed: {$response->status()} - {$response->body()}");
             }
         } catch (\Exception $e) {
-            Log::error("Expo Notification Exception: " . $e->getMessage());
+            Log::error('Expo Notification Exception: '.$e->getMessage());
         }
 
         return false;

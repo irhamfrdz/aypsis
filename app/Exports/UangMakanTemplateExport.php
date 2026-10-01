@@ -21,7 +21,7 @@ class UangMakanTemplateExport implements FromArray, WithHeadings
             'NIK',
             'Tanggal',
             'Nominal',
-            'Keterangan'
+            'Keterangan',
         ];
     }
 }

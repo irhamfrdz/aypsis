@@ -87,7 +87,7 @@ class SupirDashboardController extends Controller
 
         // Hitung report kerja 1 minggu terakhir
         $startOfWeek = now()->subDays(7)->startOfDay();
-        
+
         $listPermohonan = Permohonan::where('supir_id', $supirId)
             ->where('status', 'Selesai')
             ->where('updated_at', '>=', $startOfWeek)
@@ -103,7 +103,7 @@ class SupirDashboardController extends Controller
             ->where('tanggal_checkpoint', '>=', $startOfWeek)
             ->latest('tanggal_checkpoint')
             ->get();
-            
+
         $listBongkaran = SuratJalanBongkaran::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
             $query->where('supir', $supirNamaLengkap)
                 ->orWhere('supir', $supirUsername)
@@ -454,10 +454,18 @@ class SupirDashboardController extends Controller
             }
 
             // Mencegah error SQL Data too long for column (batas VARCHAR 255)
-            if (!empty($blData['pengirim'])) $blData['pengirim'] = \Illuminate\Support\Str::limit($blData['pengirim'], 250, '...');
-            if (!empty($blData['penerima'])) $blData['penerima'] = \Illuminate\Support\Str::limit($blData['penerima'], 250, '...');
-            if (!empty($blData['nama_barang'])) $blData['nama_barang'] = \Illuminate\Support\Str::limit($blData['nama_barang'], 250, '...');
-            if (!empty($blData['alamat_pengiriman'])) $blData['alamat_pengiriman'] = \Illuminate\Support\Str::limit($blData['alamat_pengiriman'], 250, '...');
+            if (! empty($blData['pengirim'])) {
+                $blData['pengirim'] = \Illuminate\Support\Str::limit($blData['pengirim'], 250, '...');
+            }
+            if (! empty($blData['penerima'])) {
+                $blData['penerima'] = \Illuminate\Support\Str::limit($blData['penerima'], 250, '...');
+            }
+            if (! empty($blData['nama_barang'])) {
+                $blData['nama_barang'] = \Illuminate\Support\Str::limit($blData['nama_barang'], 250, '...');
+            }
+            if (! empty($blData['alamat_pengiriman'])) {
+                $blData['alamat_pengiriman'] = \Illuminate\Support\Str::limit($blData['alamat_pengiriman'], 250, '...');
+            }
 
             $bl = \App\Models\Bl::create($blData);
 

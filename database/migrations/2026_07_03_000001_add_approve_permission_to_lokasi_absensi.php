@@ -16,7 +16,7 @@ return new class extends Migration
                 'description' => 'Menyetujui pengaturan lokasi absensi',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
     }
 

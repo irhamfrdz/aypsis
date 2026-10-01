@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MasterCustomerBuruh;
-use App\Imports\MasterCustomerBuruhImport;
 use App\Exports\MasterCustomerBuruhTemplateExport;
+use App\Imports\MasterCustomerBuruhImport;
+use App\Models\MasterCustomerBuruh;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -21,6 +21,7 @@ class MasterCustomerBuruhController extends Controller
     public function index()
     {
         $customers = MasterCustomerBuruh::orderBy('id', 'desc')->get();
+
         return view('master-customer-buruh.index', compact('customers'));
     }
 
@@ -40,7 +41,7 @@ class MasterCustomerBuruhController extends Controller
         ]);
 
         $data = $request->all();
-        
+
         // Auto generate kode
         $lastCustomer = MasterCustomerBuruh::orderBy('id', 'desc')->first();
         if ($lastCustomer) {
@@ -49,9 +50,9 @@ class MasterCustomerBuruhController extends Controller
         } else {
             $newId = 1;
         }
-        $data['kode'] = 'CBB-' . str_pad($newId, 4, '0', STR_PAD_LEFT);
+        $data['kode'] = 'CBB-'.str_pad($newId, 4, '0', STR_PAD_LEFT);
 
-        if (!isset($data['is_active'])) {
+        if (! isset($data['is_active'])) {
             $data['is_active'] = false;
         }
 
@@ -81,7 +82,7 @@ class MasterCustomerBuruhController extends Controller
         ]);
 
         $data = $request->all();
-        if (!isset($data['is_active'])) {
+        if (! isset($data['is_active'])) {
             $data['is_active'] = false;
         }
 
@@ -93,20 +94,22 @@ class MasterCustomerBuruhController extends Controller
     public function destroy(MasterCustomerBuruh $masterCustomerBuruh)
     {
         $masterCustomerBuruh->delete();
+
         return redirect()->route('master-customer-buruh.index')->with('success', 'Customer Buruh berhasil dihapus.');
     }
 
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+            'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
         try {
             Excel::import(new MasterCustomerBuruhImport, $request->file('file'));
+
             return redirect()->route('master-customer-buruh.index')->with('success', 'Data Customer Buruh berhasil diimport.');
         } catch (\Exception $e) {
-            return redirect()->route('master-customer-buruh.index')->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+            return redirect()->route('master-customer-buruh.index')->with('error', 'Gagal mengimport data: '.$e->getMessage());
         }
     }
 

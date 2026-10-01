@@ -2,19 +2,20 @@
 
 namespace App\Exports\Hrd\Sheets;
 
-use App\Models\Karyawan;
 use App\Models\Absensi;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class PulangCepatSheet implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($startDate, $endDate)
@@ -38,7 +39,7 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
         $data = [];
 
         foreach ($absensiRaw as $log) {
-            if (!$log->waktu_pulang || !isset($karyawans[$log->karyawan_id])) {
+            if (! $log->waktu_pulang || ! isset($karyawans[$log->karyawan_id])) {
                 continue;
             }
 
@@ -61,16 +62,17 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
                     'Nama Karyawan' => $karyawan->nama_lengkap,
                     'Divisi' => $karyawan->divisi,
                     'Jam Pulang' => $waktuPulang->format('H:i'),
-                    'Pulang Cepat' => $menitCepat . ' Menit'
+                    'Pulang Cepat' => $menitCepat.' Menit',
                 ];
             }
         }
 
         // Sort by tanggal then nama
-        usort($data, function($a, $b) {
+        usort($data, function ($a, $b) {
             if ($a['Tanggal'] == $b['Tanggal']) {
                 return $a['Nama Karyawan'] <=> $b['Nama Karyawan'];
             }
+
             return $a['Tanggal'] <=> $b['Tanggal'];
         });
 
@@ -86,7 +88,7 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
             'Nama Karyawan',
             'Divisi',
             'Jam Pulang',
-            'Pulang Cepat'
+            'Pulang Cepat',
         ];
     }
 
@@ -98,7 +100,7 @@ class PulangCepatSheet implements FromCollection, WithHeadings, WithTitle, WithS
     public function styles(Worksheet $sheet)
     {
         return [
-            1    => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F59E0B']]],
+            1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F59E0B']]],
         ];
     }
 }

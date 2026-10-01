@@ -10,46 +10,47 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class KaryawanSupervisorImport implements ToCollection, WithHeadingRow
 {
     public $successCount = 0;
+
     public $failedRows = [];
 
-    /**
-     * @param Collection $rows
-     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {
             $nik = $row['nik'] ?? null;
             $nik_supervisor = $row['nik_supervisor'] ?? null;
-            
+
             if (empty($nik)) {
                 $this->failedRows[] = [
                     'row' => $index + 2,
                     'nik' => 'KOSONG',
-                    'reason' => 'NIK Karyawan tidak boleh kosong.'
+                    'reason' => 'NIK Karyawan tidak boleh kosong.',
                 ];
+
                 continue;
             }
 
             $karyawan = Karyawan::where('nik', $nik)->first();
 
-            if (!$karyawan) {
+            if (! $karyawan) {
                 $this->failedRows[] = [
                     'row' => $index + 2,
                     'nik' => $nik,
-                    'reason' => 'Karyawan dengan NIK tersebut tidak ditemukan.'
+                    'reason' => 'Karyawan dengan NIK tersebut tidak ditemukan.',
                 ];
+
                 continue;
             }
 
             try {
                 if ($nik_supervisor !== null && $nik_supervisor !== '') {
                     $supervisor = Karyawan::where('nik', $nik_supervisor)->first();
-                    if (!$supervisor) {
+                    if (! $supervisor) {
                         $this->failedRows[] = [
                             'row' => $index + 2,
                             'nik' => $nik,
-                            'reason' => "Supervisor dengan NIK {$nik_supervisor} tidak ditemukan."
+                            'reason' => "Supervisor dengan NIK {$nik_supervisor} tidak ditemukan.",
                         ];
+
                         continue;
                     }
 
@@ -69,7 +70,7 @@ class KaryawanSupervisorImport implements ToCollection, WithHeadingRow
                 $this->failedRows[] = [
                     'row' => $index + 2,
                     'nik' => $nik,
-                    'reason' => 'Gagal menyimpan: ' . $e->getMessage()
+                    'reason' => 'Gagal menyimpan: '.$e->getMessage(),
                 ];
             }
         }

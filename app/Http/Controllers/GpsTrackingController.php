@@ -42,7 +42,7 @@ class GpsTrackingController extends Controller
             ->get();
 
         $imeis = $mobils->pluck('imei_gps')->filter()->toArray();
-        $bulkGpsData = !empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
+        $bulkGpsData = ! empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
 
         $nopols = $mobils->pluck('nomor_polisi')->filter()->toArray();
         $activeSjs = \DB::table('surat_jalans as sj')
@@ -52,8 +52,8 @@ class GpsTrackingController extends Controller
             ->whereNull('sj.tanggal_tanda_terima') // Sudah tanda terima berarti selesai
             ->whereNotExists(function ($query) {
                 $query->select(\DB::raw(1))
-                      ->from('tanda_terimas')
-                      ->whereColumn('tanda_terimas.surat_jalan_id', 'sj.id');
+                    ->from('tanda_terimas')
+                    ->whereColumn('tanda_terimas.surat_jalan_id', 'sj.id');
             })
             ->orderBy('sj.created_at', 'desc')
             ->get()
@@ -65,8 +65,8 @@ class GpsTrackingController extends Controller
             ->whereIn('sjb.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
             ->whereNotExists(function ($query) {
                 $query->select(\DB::raw(1))
-                      ->from('tanda_terima_bongkarans')
-                      ->whereColumn('tanda_terima_bongkarans.surat_jalan_bongkaran_id', 'sjb.id');
+                    ->from('tanda_terima_bongkarans')
+                    ->whereColumn('tanda_terima_bongkarans.surat_jalan_bongkaran_id', 'sjb.id');
             })
             ->orderBy('sjb.created_at', 'desc')
             ->get()
@@ -78,8 +78,8 @@ class GpsTrackingController extends Controller
             ->whereIn('sjbb.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
             ->whereNotExists(function ($query) {
                 $query->select(\DB::raw(1))
-                      ->from('tanda_terima_bongkaran_batams')
-                      ->whereColumn('tanda_terima_bongkaran_batams.surat_jalan_bongkaran_id', 'sjbb.id');
+                    ->from('tanda_terima_bongkaran_batams')
+                    ->whereColumn('tanda_terima_bongkaran_batams.surat_jalan_bongkaran_id', 'sjbb.id');
             })
             ->orderBy('sjbb.created_at', 'desc')
             ->get()
@@ -89,11 +89,11 @@ class GpsTrackingController extends Controller
 
         foreach ($mobils as $mobil) {
             $gpsData = $bulkGpsData[$mobil->imei_gps] ?? null;
-            
+
             // Jika request API berhasil dan mengembalikan koordinat
             if ($gpsData && isset($gpsData['status']) && $gpsData['status']) {
                 $payload = $gpsData['message']['data'] ?? [];
-                
+
                 $statusText = 'Berhenti';
                 if (($payload['speed'] ?? 0) > 0) {
                     $statusText = 'Berjalan';
@@ -104,7 +104,7 @@ class GpsTrackingController extends Controller
                 $sjList = $activeSjs->get($mobil->nomor_polisi) ?? collect();
                 $sjbList = $activeSjBongkarans->get($mobil->nomor_polisi) ?? collect();
                 $sjbatamList = $activeSjBatam->get($mobil->nomor_polisi) ?? collect();
-                
+
                 // Gabungkan semua surat jalan aktif yang dimiliki truk ini
                 $allActiveSj = $sjList->concat($sjbList)->concat($sjbatamList)->sortByDesc('created_at')->values();
 
@@ -116,7 +116,7 @@ class GpsTrackingController extends Controller
                         'tujuan' => in_array($activeSj->tipe_sj, ['Muatan', 'Bongkaran']) ? ($activeSj->tujuan_pengambilan ?? '-') : ($activeSj->tujuan_pengiriman ?? '-'),
                         'no_kontainer' => $activeSj->no_kontainer ?? '-',
                         'jenis_barang' => $activeSj->jenis_barang ?? '-',
-                        'tipe' => $activeSj->tipe_sj
+                        'tipe' => $activeSj->tipe_sj,
                     ];
                 }
 
@@ -139,7 +139,7 @@ class GpsTrackingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $locations
+            'data' => $locations,
         ]);
     }
 
@@ -151,21 +151,21 @@ class GpsTrackingController extends Controller
         // Hitung batas waktu mulai diam
         // Menggunakan waktu saat data ditarik
         $mobil = Mobil::findOrFail($mobil_id);
-        
+
         $history = \App\Models\GpsHistory::where('mobil_id', $mobil_id)
             ->where('recorded_at', '>=', now()->subDays(14))
             ->orderBy('recorded_at', 'asc')
             ->get();
-            
+
         // Logika untuk mendeteksi berapa hari mobil tidak bergerak dari posisi terakhir
         $lastLocation = $history->last();
         $daysNotMoving = 0;
-        
+
         if ($lastLocation) {
             // Cari dari belakang ke depan, kapan mobil terakhir memiliki kecepatan > 0 atau berubah posisi signifikan
             // Namun untuk lebih mudah, cek kapan terakhir kali bergerak (speed > 0)
             $lastMoved = $history->where('speed', '>', 0)->last();
-            
+
             if ($lastMoved) {
                 $daysNotMoving = $lastMoved->recorded_at->diffInDays(now());
             } else {
@@ -183,7 +183,7 @@ class GpsTrackingController extends Controller
                     'merek' => $mobil->merek,
                 ],
                 'days_not_moving' => floor($daysNotMoving),
-                'history' => $history->map(function($item) {
+                'history' => $history->map(function ($item) {
                     return [
                         'lat' => $item->lat,
                         'lng' => $item->lng,
@@ -192,8 +192,8 @@ class GpsTrackingController extends Controller
                         'recorded_at' => $item->recorded_at->format('Y-m-d H:i:s'),
                         'alamat' => $item->alamat,
                     ];
-                })
-            ]
+                }),
+            ],
         ]);
     }
 }

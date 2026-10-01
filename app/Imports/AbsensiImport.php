@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 class AbsensiImport implements ToCollection
 {
     protected $employees;
+
     public $importedCount = 0;
 
     public function __construct()
@@ -29,10 +30,11 @@ class AbsensiImport implements ToCollection
         $existingLogs = Absensi::select('nik', 'waktu')
             ->get()
             ->mapWithKeys(function ($item) {
-                $timeStr = $item->waktu instanceof Carbon 
-                    ? $item->waktu->format('Y-m-d H:i:s') 
+                $timeStr = $item->waktu instanceof Carbon
+                    ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
-                return [$item->nik . '_' . $timeStr => true];
+
+                return [$item->nik.'_'.$timeStr => true];
             })
             ->toArray();
 
@@ -52,30 +54,34 @@ class AbsensiImport implements ToCollection
             $typeStr = null;
 
             foreach ($row as $cell) {
-                if (empty($cell)) continue;
-                
-                $cellStr = trim((string)$cell);
+                if (empty($cell)) {
+                    continue;
+                }
+
+                $cellStr = trim((string) $cell);
 
                 // Cek apakah ini datetime (Excel date number atau string tanggal)
-                if (is_numeric($cell) && $cell > 20000 && $cell < 100000 && strpos((string)$cell, '.') !== false) {
+                if (is_numeric($cell) && $cell > 20000 && $cell < 100000 && strpos((string) $cell, '.') !== false) {
                     // Excel datetime format (serial number)
                     try {
                         $waktu = Date::excelToDateTimeObject($cell)->format('Y-m-d H:i:s');
-                    } catch (\Exception $e) { }
-                } elseif (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $cellStr) || 
+                    } catch (\Exception $e) {
+                    }
+                } elseif (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $cellStr) ||
                           preg_match('/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/', $cellStr) ||
                           preg_match('/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/', $cellStr) ||
                           preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $cellStr)) {
                     // Format tanggal string
                     try {
                         $waktu = Carbon::parse($cellStr)->format('Y-m-d H:i:s');
-                    } catch (\Exception $e) { }
+                    } catch (\Exception $e) {
+                    }
                 }
 
                 // Cek NIK (angka yang mungkin ada di kolom-kolom awal)
                 // NIK kita format 4 digit
                 if (is_numeric($cellStr) && strlen($cellStr) <= 10 && strpos($cellStr, '.') === false) {
-                    if (!$nik) {
+                    if (! $nik) {
                         $nik = str_pad($cellStr, 4, '0', STR_PAD_LEFT);
                     }
                 }
@@ -102,7 +108,7 @@ class AbsensiImport implements ToCollection
                 // Tentukan type default jika tidak ditemukan
                 $type = $typeStr ?: 'Masuk';
 
-                $key = $nik . '_' . $waktu;
+                $key = $nik.'_'.$waktu;
                 if (isset($existingLogs[$key])) {
                     continue; // Skip duplikat log persis
                 }

@@ -35,20 +35,21 @@ class SyncGpsHistory extends Command
         $imeis = $mobils->pluck('imei_gps')->filter()->toArray();
         if (empty($imeis)) {
             $this->info('Tidak ada IMEI GPS yang terdaftar.');
+
             return;
         }
 
         // 2. Fetch data dari API GPS
         $bulkGpsData = $gpsService->getLatestLocationsBulk($imeis);
-        
+
         $insertedCount = 0;
 
         foreach ($mobils as $mobil) {
             $gpsData = $bulkGpsData[$mobil->imei_gps] ?? null;
-            
+
             if ($gpsData && isset($gpsData['status']) && $gpsData['status']) {
                 $payload = $gpsData['message']['data'] ?? [];
-                
+
                 $statusText = 'Berhenti';
                 if (($payload['speed'] ?? 0) > 0) {
                     $statusText = 'Berjalan';
@@ -60,12 +61,12 @@ class SyncGpsHistory extends Command
                 if (isset($payload['latitude']) && isset($payload['longitude'])) {
                     // Cek duplikasi record pada waktu yang sama
                     $recordedAt = isset($payload['last_update']) ? \Carbon\Carbon::parse($payload['last_update']) : now();
-                    
+
                     $exists = \App\Models\GpsHistory::where('mobil_id', $mobil->id)
                         ->where('recorded_at', $recordedAt)
                         ->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         \App\Models\GpsHistory::create([
                             'mobil_id' => $mobil->id,
                             'imei_gps' => $mobil->imei_gps,

@@ -31,9 +31,13 @@ class PranotaBiayaBensin extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_SUBMITTED = 'submitted';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusOptions()
@@ -70,6 +74,7 @@ class PranotaBiayaBensin extends Model
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
@@ -88,6 +93,6 @@ class PranotaBiayaBensin extends Model
 
     public function getFormattedTotalBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->total_biaya, 0, ',', '.');
+        return 'Rp '.number_format($this->total_biaya, 0, ',', '.');
     }
 }

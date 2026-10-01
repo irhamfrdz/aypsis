@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Models\Absensi;
-use App\Models\Karyawan;
 use App\Models\AdmsCommand;
+use App\Models\Karyawan;
 use App\Models\MesinUser;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ADMSController extends Controller
 {
@@ -20,7 +20,7 @@ class ADMSController extends Controller
     public function handshake(Request $request)
     {
         $sn = $request->query('SN'); // Serial Number mesin
-        
+
         Log::info("ADMS Handshake dari Mesin SN: {$sn}");
 
         // Response wajib agar mesin tahu server merespon dan siap menerima data
@@ -46,9 +46,9 @@ class ADMSController extends Controller
     {
         $sn = $request->query('SN');
         $table = $request->query('table'); // biasanya bernilai 'ATTLOG'
-        
+
         $rawData = $request->getContent();
-        
+
         Log::info("ADMS Terima Data dari SN: {$sn} | Table: {$table} | Payload:", ['data' => $rawData]);
 
         if ($table === 'ATTLOG' || $table === 'attlog') {
@@ -57,7 +57,7 @@ class ADMSController extends Controller
             $this->processUserInfo($rawData, $sn);
         }
 
-        // Harus membalas "OK" agar mesin menganggap data sudah terkirim 
+        // Harus membalas "OK" agar mesin menganggap data sudah terkirim
         // dan menghapusnya dari memori antrean pengiriman.
         return response("OK\r\n", 200)->header('Content-Type', 'text/plain');
     }
@@ -69,7 +69,7 @@ class ADMSController extends Controller
     {
         $sn = $request->query('SN');
         Log::info("ADMS GetRequest dari SN: {$sn}");
-        
+
         // Cek apakah ada antrean perintah untuk mesin ini
         $command = AdmsCommand::where('sn', $sn)
             ->where('status', 'pending')
@@ -80,7 +80,8 @@ class ADMSController extends Controller
             $command->update(['status' => 'sent']);
             // Format wajib ADMS: C:<id>:<command>
             $response = "C:{$command->id}:{$command->command}\r\n";
-            Log::info("ADMS SendCommand ke SN: {$sn} -> " . $response);
+            Log::info("ADMS SendCommand ke SN: {$sn} -> ".$response);
+
             return response($response, 200)->header('Content-Type', 'text/plain');
         }
 
@@ -113,7 +114,7 @@ class ADMSController extends Controller
             if ($command) {
                 $command->update([
                     'status' => 'success',
-                    'response_data' => $rawData
+                    'response_data' => $rawData,
                 ]);
 
                 // Jika ini adalah perintah tarik user
@@ -129,26 +130,30 @@ class ADMSController extends Controller
     private function processUserInfo($rawData, $sn)
     {
         $lines = explode("\n", $rawData);
-        
+
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             $userData = [];
 
             // Format 1: Dari devicecmd (misal: PIN=123 Name=Adit Pri=0)
             if (strpos(strtoupper($line), 'PIN=') !== false) {
                 preg_match_all('/(\w+)=([^,\t]*)/', $line, $matches);
-                if (!empty($matches[1])) {
+                if (! empty($matches[1])) {
                     foreach ($matches[1] as $idx => $key) {
                         $userData[strtoupper($key)] = trim($matches[2][$idx]);
                     }
                 }
-            } 
+            }
             // Format 2: Dari cdata?table=USERINFO (Tab-separated values: PIN Name Pri Pass Grp...)
             else {
                 // Abaikan jika baris adalah header teks "PIN"
-                if (strtoupper(trim(explode("\t", $line)[0])) === 'PIN') continue;
+                if (strtoupper(trim(explode("\t", $line)[0])) === 'PIN') {
+                    continue;
+                }
 
                 // Kadang dipisahkan koma, kadang tab. Kita coba pisahkan
                 $parts = preg_split('/[\t,]+/', $line);
@@ -162,7 +167,7 @@ class ADMSController extends Controller
                 }
             }
 
-            if (!empty($userData['PIN']) && is_numeric($userData['PIN'])) {
+            if (! empty($userData['PIN']) && is_numeric($userData['PIN'])) {
                 MesinUser::updateOrCreate(
                     ['sn' => $sn, 'pin' => $userData['PIN']],
                     [
@@ -183,28 +188,30 @@ class ADMSController extends Controller
     {
         // Format raw biasanya dipisah dengan newline \n
         $lines = explode("\n", $rawData);
-        
+
         $employees = Karyawan::select('id', 'nik')->whereNotNull('nik')->get()->pluck('id', 'nik')->toArray();
         // Cari Mesin ID berdasarkan SN, atau gunakan mesin pertama sebagai fallback
         $mesin = \App\Models\Mesin::where('kode_mesin', $sn)
-                    ->orWhere('keterangan', 'like', "%{$sn}%")
-                    ->first();
-                    
-        if (!$mesin) {
+            ->orWhere('keterangan', 'like', "%{$sn}%")
+            ->first();
+
+        if (! $mesin) {
             $mesin = \App\Models\Mesin::create([
                 'kode_mesin' => $sn,
-                'nama_mesin' => 'Mesin Baru ' . $sn,
+                'nama_mesin' => 'Mesin Baru '.$sn,
                 'tipe_mesin' => 'ADMS',
                 'status' => 'Aktif',
                 'keterangan' => 'Auto-register dari ADMS',
             ]);
         }
-        
+
         $mesinId = $mesin->id;
-        
+
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             // Format baris: PIN\tWaktu\tState\tVerifyMethod
             // Contoh: 1511    2023-10-12 08:00:00    1    1
@@ -214,28 +221,28 @@ class ADMSController extends Controller
                 if (is_numeric($nik)) {
                     $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                 }
-                
+
                 $dateStr = $parts[1]; // misal 2023-10-12
                 $timeStr = $parts[2]; // misal 08:00:00
-                $datetimeStr = $dateStr . ' ' . $timeStr;
-                
+                $datetimeStr = $dateStr.' '.$timeStr;
+
                 try {
                     // Memastikan data yang diproses selalu menggunakan zona waktu Jakarta (WIB)
                     $parsedTime = Carbon::parse($datetimeStr, 'Asia/Jakarta');
-                    
+
                     // Jika waktu absensi adalah 09:01 atau 09:02, sesuaikan menjadi 09:00
                     if ($parsedTime->format('H:i') === '09:01' || $parsedTime->format('H:i') === '09:02') {
                         $parsedTime->setTime(9, 0, 0);
                     }
-                    
+
                     $logTime = $parsedTime->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip format tanggal salah
                 }
-                
+
                 // Index ke-3 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
                 $state = isset($parts[3]) ? (int) $parts[3] : 0;
-                
+
                 if (in_array($state, [0, 3, 4])) {
                     $type = 'Masuk';
                 } else {
@@ -246,26 +253,31 @@ class ADMSController extends Controller
                 $verifyMethodRaw = isset($parts[4]) ? (int) $parts[4] : (isset($parts[3]) ? (int) $parts[3] : null);
                 $verifyMode = null;
                 if ($verifyMethodRaw !== null) {
-                    if ($verifyMethodRaw === 1) $verifyMode = 'Fingerprint';
-                    elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) $verifyMode = 'Face';
-                    elseif ($verifyMethodRaw === 0) $verifyMode = 'Password';
-                    elseif ($verifyMethodRaw === 2) $verifyMode = 'Card';
+                    if ($verifyMethodRaw === 1) {
+                        $verifyMode = 'Fingerprint';
+                    } elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) {
+                        $verifyMode = 'Face';
+                    } elseif ($verifyMethodRaw === 0) {
+                        $verifyMode = 'Password';
+                    } elseif ($verifyMethodRaw === 2) {
+                        $verifyMode = 'Card';
+                    }
                 }
 
                 // Cegah duplikasi log yang sama persis (berdasarkan NIK dan waktu spesifik)
                 // Hal ini memastikan semua tarikan punch (meskipun user lupa ganti state) tetap tersimpan
                 $exists = Absensi::where('nik', $nik)
-                                 ->where('waktu', $logTime)
-                                 ->exists();
+                    ->where('waktu', $logTime)
+                    ->exists();
 
-                if (!$exists) {
+                if (! $exists) {
                     Absensi::create([
                         'nik' => $nik,
                         'waktu' => $logTime,
                         'tipe' => $type,
                         'karyawan_id' => $employees[$nik] ?? null,
                         'mesin_id' => $mesinId,
-                        'keterangan' => 'ADMS Push (SN: ' . $sn . ')',
+                        'keterangan' => 'ADMS Push (SN: '.$sn.')',
                         'verify_mode' => $verifyMode,
                     ]);
                 }

@@ -37,7 +37,7 @@ class PranotaUangJalanExport implements WithMultipleSheets
 
 // ── Sheet 1: Pranota Uang Jalan ──────────────────────────────────────────────
 
-class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollection, ShouldAutoSize, WithEvents, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle
+class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, ShouldAutoSize, WithEvents
 {
     protected $filters;
 
@@ -168,7 +168,7 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $range = 'A1:M' . $lastRow;
+                $range = 'A1:M'.$lastRow;
 
                 // Header styling
                 $sheet->getStyle('A1:M1')->applyFromArray([
@@ -188,7 +188,7 @@ class PranotaUangJalanSheet implements \Maatwebsite\Excel\Concerns\FromCollectio
 
 // ── Sheet 2: Invoice Aktivitas Lain ──────────────────────────────────────────
 
-class InvoiceAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCollection, ShouldAutoSize, WithEvents, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle
+class InvoiceAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, ShouldAutoSize, WithEvents
 {
     protected $filters;
 
@@ -261,7 +261,7 @@ class InvoiceAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromColle
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $range = 'A1:N' . $lastRow;
+                $range = 'A1:N'.$lastRow;
 
                 $sheet->getStyle('A1:N1')->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -279,7 +279,7 @@ class InvoiceAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromColle
 
 // ── Sheet 3: Pembayaran Aktivitas Lain ───────────────────────────────────────
 
-class PembayaranAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCollection, ShouldAutoSize, WithEvents, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle
+class PembayaranAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, ShouldAutoSize, WithEvents
 {
     protected $filters;
 
@@ -352,7 +352,7 @@ class PembayaranAktivitasLainSheet implements \Maatwebsite\Excel\Concerns\FromCo
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $range = 'A1:M' . $lastRow;
+                $range = 'A1:M'.$lastRow;
 
                 $sheet->getStyle('A1:M1')->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],

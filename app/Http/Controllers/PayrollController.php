@@ -26,52 +26,52 @@ class PayrollController extends Controller
 
         if ($isGenerated) {
             $allKaryawans = collect();
-            
+
             if ($tipeKaryawan === 'all' || $tipeKaryawan === 'Karyawan') {
                 $query = \App\Models\Karyawan::where('status', 'active');
-                if (!empty($penempatan)) {
+                if (! empty($penempatan)) {
                     $query->where('penempatan', $penempatan);
                 }
-                if (!empty($group)) {
-                    $query->where(function($q) use ($group) {
-                        $q->where('grup', 'LIKE', '%"' . $group . ':%')
-                          ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+                if (! empty($group)) {
+                    $query->where(function ($q) use ($group) {
+                        $q->where('grup', 'LIKE', '%"'.$group.':%')
+                            ->orWhere('grup', 'LIKE', '%"'.$group.'"%');
                     });
                 }
-                if (!empty($subGroup)) {
-                    $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+                if (! empty($subGroup)) {
+                    $query->where('grup', 'LIKE', '%:'.$subGroup.'"%');
                 }
-                if (!empty($cabang)) {
+                if (! empty($cabang)) {
                     $query->where('cabang', $cabang);
                 }
-                $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
-                        $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                          ->where('tipe', 'Masuk');
-                    }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+                $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                        ->where('tipe', 'Masuk');
+                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($karyawans);
             }
 
             if ($tipeKaryawan === 'all' || $tipeKaryawan === 'KaryawanTidakTetap') {
                 $queryNon = \App\Models\KaryawanTidakTetap::query();
-                if (!empty($penempatan)) {
+                if (! empty($penempatan)) {
                     $queryNon->where('penempatan', $penempatan);
                 }
-                if (!empty($group)) {
-                    $queryNon->where(function($q) use ($group) {
-                        $q->where('group', 'LIKE', '%"' . $group . ':%')
-                          ->orWhere('group', 'LIKE', '%"' . $group . '"%');
+                if (! empty($group)) {
+                    $queryNon->where(function ($q) use ($group) {
+                        $q->where('group', 'LIKE', '%"'.$group.':%')
+                            ->orWhere('group', 'LIKE', '%"'.$group.'"%');
                     });
                 }
-                if (!empty($subGroup)) {
-                    $queryNon->where('group', 'LIKE', '%:' . $subGroup . '"%');
+                if (! empty($subGroup)) {
+                    $queryNon->where('group', 'LIKE', '%:'.$subGroup.'"%');
                 }
-                if (!empty($cabang)) {
+                if (! empty($cabang)) {
                     $queryNon->where('cabang', $cabang);
                 }
-                $nonKaryawans = $queryNon->with(['absensi' => function($q) use ($startDate, $endDate) {
-                        $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                          ->where('tipe', 'Masuk');
-                    }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+                $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                        ->where('tipe', 'Masuk');
+                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($nonKaryawans);
             }
 
@@ -79,9 +79,9 @@ class PayrollController extends Controller
                 $isSatpam = false;
                 $isSatpamPelabuhan = false;
                 if ($k instanceof \App\Models\Karyawan) {
-                    $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+                    $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
                 } else {
-                    $kGrup = is_string($k->group) ? json_decode($k->group, true) : (array)$k->group;
+                    $kGrup = is_string($k->group) ? json_decode($k->group, true) : (array) $k->group;
                 }
                 if (is_array($kGrup)) {
                     foreach ($kGrup as $g) {
@@ -96,10 +96,13 @@ class PayrollController extends Controller
                 }
 
                 // Count unique days they clocked in
-                $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
-                    if ($isSatpam) return true;
-                    return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
-                })->map(function($abs) {
+                $uniqueDaysDates = $k->absensi->filter(function ($abs) use ($isSatpam) {
+                    if ($isSatpam) {
+                        return true;
+                    }
+
+                    return ! \Carbon\Carbon::parse($abs->waktu)->isSunday();
+                })->map(function ($abs) {
                     return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
                 })->unique()->values();
                 $uniqueDays = $uniqueDaysDates->count();
@@ -110,9 +113,9 @@ class PayrollController extends Controller
                     if (strcasecmp(trim($k->penempatan), 'Pelabuhan 1') === 0 || $k->penempatan == '1') {
                         $multiplier = 2;
                     }
-                    
+
                     $karyawanNominalDasar = $k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0);
-                    
+
                     if ($isSatpamPelabuhan) {
                         $totalPayout = $multiplier * $karyawanNominalDasar;
                     } else {
@@ -136,13 +139,17 @@ class PayrollController extends Controller
         $allKaryawans = \App\Models\Karyawan::where('status', 'active')->get(['grup']);
         $allGroups = [];
         $allSubGroups = [];
-        foreach($allKaryawans as $k) {
-            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
-            if(is_array($kGrup)) {
-                foreach($kGrup as $g) {
+        foreach ($allKaryawans as $k) {
+            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
+            if (is_array($kGrup)) {
+                foreach ($kGrup as $g) {
                     $parts = explode(':', $g, 2);
-                    if($parts[0] !== '' && !in_array($parts[0], $allGroups)) $allGroups[] = $parts[0];
-                    if(isset($parts[1]) && $parts[1] !== '' && !in_array($parts[1], $allSubGroups)) $allSubGroups[] = $parts[1];
+                    if ($parts[0] !== '' && ! in_array($parts[0], $allGroups)) {
+                        $allGroups[] = $parts[0];
+                    }
+                    if (isset($parts[1]) && $parts[1] !== '' && ! in_array($parts[1], $allSubGroups)) {
+                        $allSubGroups[] = $parts[1];
+                    }
                 }
             }
         }
@@ -159,30 +166,30 @@ class PayrollController extends Controller
             ->get();
 
         // Suggested nomor pranota berikutnya
-        $prefix = 'PUM-' . now()->format('y') . '-' . now()->format('m') . '-';
-        $lastPranota = \App\Models\PranotaUangMakan::where('nomor_pranota', 'like', $prefix . '%')
+        $prefix = 'PUM-'.now()->format('y').'-'.now()->format('m').'-';
+        $lastPranota = \App\Models\PranotaUangMakan::where('nomor_pranota', 'like', $prefix.'%')
             ->orderBy('nomor_pranota', 'desc')
             ->first();
         if ($lastPranota) {
             $parts = explode('-', $lastPranota->nomor_pranota);
             $lastNum = isset($parts[3]) ? (int) $parts[3] : 0;
             $nextNum = str_pad($lastNum + 1, 3, '0', STR_PAD_LEFT);
-            $suggestedNomorPranota = $prefix . $nextNum;
+            $suggestedNomorPranota = $prefix.$nextNum;
         } else {
-            $suggestedNomorPranota = $prefix . '001';
+            $suggestedNomorPranota = $prefix.'001';
         }
 
         return view('payroll.uang-makan', compact(
-            'startDate', 
-            'endDate', 
-            'penempatan', 
-            'group', 
-            'subGroup', 
-            'cabang', 
-            'allGroups', 
-            'allSubGroups', 
-            'allCabang', 
-            'payrolls', 
+            'startDate',
+            'endDate',
+            'penempatan',
+            'group',
+            'subGroup',
+            'cabang',
+            'allGroups',
+            'allSubGroups',
+            'allCabang',
+            'payrolls',
             'isGenerated',
             'riwayatPranota',
             'suggestedNomorPranota'
@@ -205,52 +212,52 @@ class PayrollController extends Controller
         $tipeKaryawan = $request->tipe_karyawan ?? 'all';
 
         $allKaryawans = collect();
-            
+
         if ($tipeKaryawan === 'all' || $tipeKaryawan === 'Karyawan') {
             $query = \App\Models\Karyawan::where('status', 'active');
-            if (!empty($penempatan)) {
+            if (! empty($penempatan)) {
                 $query->where('penempatan', $penempatan);
             }
-            if (!empty($group)) {
-                $query->where(function($q) use ($group) {
-                    $q->where('grup', 'LIKE', '%"' . $group . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+            if (! empty($group)) {
+                $query->where(function ($q) use ($group) {
+                    $q->where('grup', 'LIKE', '%"'.$group.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$group.'"%');
                 });
             }
-            if (!empty($subGroup)) {
-                $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+            if (! empty($subGroup)) {
+                $query->where('grup', 'LIKE', '%:'.$subGroup.'"%');
             }
-            if (!empty($cabang)) {
+            if (! empty($cabang)) {
                 $query->where('cabang', $cabang);
             }
-            $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
-                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                      ->where('tipe', 'Masuk');
-                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+            $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                    ->where('tipe', 'Masuk');
+            }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($karyawans);
         }
 
         if ($tipeKaryawan === 'all' || $tipeKaryawan === 'KaryawanTidakTetap') {
             $queryNon = \App\Models\KaryawanTidakTetap::query();
-            if (!empty($penempatan)) {
+            if (! empty($penempatan)) {
                 $queryNon->where('penempatan', $penempatan);
             }
-            if (!empty($group)) {
-                $queryNon->where(function($q) use ($group) {
-                    $q->where('group', 'LIKE', '%"' . $group . ':%')
-                      ->orWhere('group', 'LIKE', '%"' . $group . '"%');
+            if (! empty($group)) {
+                $queryNon->where(function ($q) use ($group) {
+                    $q->where('group', 'LIKE', '%"'.$group.':%')
+                        ->orWhere('group', 'LIKE', '%"'.$group.'"%');
                 });
             }
-            if (!empty($subGroup)) {
-                $queryNon->where('group', 'LIKE', '%:' . $subGroup . '"%');
+            if (! empty($subGroup)) {
+                $queryNon->where('group', 'LIKE', '%:'.$subGroup.'"%');
             }
-            if (!empty($cabang)) {
+            if (! empty($cabang)) {
                 $queryNon->where('cabang', $cabang);
             }
-            $nonKaryawans = $queryNon->with(['absensi' => function($q) use ($startDate, $endDate) {
-                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                      ->where('tipe', 'Masuk');
-                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+            $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                    ->where('tipe', 'Masuk');
+            }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($nonKaryawans);
         }
 
@@ -259,7 +266,7 @@ class PayrollController extends Controller
         foreach ($allKaryawans as $k) {
             $isSatpam = false;
             $isSatpamPelabuhan = false;
-            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
             if (is_array($kGrup)) {
                 foreach ($kGrup as $g) {
                     if (stripos($g, 'SATPAM GARASI') !== false) {
@@ -272,10 +279,13 @@ class PayrollController extends Controller
                 }
             }
 
-            $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
-                if ($isSatpam) return true;
-                return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
-            })->map(function($abs) {
+            $uniqueDaysDates = $k->absensi->filter(function ($abs) use ($isSatpam) {
+                if ($isSatpam) {
+                    return true;
+                }
+
+                return ! \Carbon\Carbon::parse($abs->waktu)->isSunday();
+            })->map(function ($abs) {
                 return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
             })->unique()->values();
             $uniqueDays = $uniqueDaysDates->count();
@@ -285,13 +295,13 @@ class PayrollController extends Controller
                 if (strcasecmp(trim($k->penempatan), 'Pelabuhan 1') === 0 || $k->penempatan == '1') {
                     $multiplier = 2;
                 }
-                
+
                 // Identifikasi tipe dan id unik untuk mengambil data manual dari form
-                $formKey = class_basename($k) . '_' . $k->id;
-                
+                $formKey = class_basename($k).'_'.$k->id;
+
                 // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
                 $karyawanNominalDasar = $submittedPayrolls[$formKey]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
-                
+
                 if ($isSatpamPelabuhan) {
                     $totalPayout = $multiplier * $karyawanNominalDasar;
                 } else {
@@ -319,8 +329,8 @@ class PayrollController extends Controller
 
         $formattedStartDate = $startDate->format('Y-m-d');
         $formattedEndDate = $endDate->format('Y-m-d');
-        $fileName = 'payroll_uang_makan_' . $formattedStartDate . '_sd_' . $formattedEndDate . '.xlsx';
-        
+        $fileName = 'payroll_uang_makan_'.$formattedStartDate.'_sd_'.$formattedEndDate.'.xlsx';
+
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\PayrollUangMakanExport($formattedStartDate, $formattedEndDate, $penempatan),
             $fileName

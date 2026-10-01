@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Kontainer;
-use App\Models\HistoryKontainer;
 use App\Models\Gudang;
+use App\Models\HistoryKontainer;
+use App\Models\Kontainer;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class UpdateKontainerDepoZona extends Command
@@ -31,9 +31,10 @@ class UpdateKontainerDepoZona extends Command
     {
         // Temukan gudang Depo Zona
         $gudang = Gudang::where('nama_gudang', 'like', '%Zona%')->first();
-        
-        if (!$gudang) {
+
+        if (! $gudang) {
             $this->error('Gudang Depo Zona tidak ditemukan.');
+
             return;
         }
 
@@ -62,7 +63,7 @@ class UpdateKontainerDepoZona extends Command
                     $kontainer->tanggal_selesai_sewa = $history->tanggal_kegiatan;
                     $kontainer->status = 'Tidak Tersedia';
                     $kontainer->save();
-                    
+
                     $this->line("Diupdate: {$kontainer->nomor_seri_gabungan} -> Tgl Selesai Sewa: {$history->tanggal_kegiatan}");
                     $updatedCount++;
                 }
@@ -71,7 +72,7 @@ class UpdateKontainerDepoZona extends Command
             $this->info("Berhasil mengupdate $updatedCount kontainer.");
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Terjadi kesalahan: ' . $e->getMessage());
+            $this->error('Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

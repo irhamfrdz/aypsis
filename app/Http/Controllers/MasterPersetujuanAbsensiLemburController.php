@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PersetujuanAbsensiLembur;
-use App\Models\Karyawan;
 use App\Models\Absensi;
+use App\Models\Karyawan;
+use App\Models\PersetujuanAbsensiLembur;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\PersetujuanAbsensiLemburNotification;
 use App\Services\ExpoNotificationService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class MasterPersetujuanAbsensiLemburController extends Controller
 {
@@ -22,7 +21,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             $data = PersetujuanAbsensiLembur::with(['karyawan', 'approver', 'creator'])
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             $formattedData = $data->map(function ($row, $index) {
                 $status_badge = '';
                 if ($row->status == 'approved') {
@@ -35,8 +34,8 @@ class MasterPersetujuanAbsensiLemburController extends Controller
 
                 $foto_html = '-';
                 if ($row->foto) {
-                    $fotoUrl = asset('storage/' . $row->foto);
-                    $foto_html = '<a href="' . $fotoUrl . '" target="_blank"><img src="' . $fotoUrl . '" class="w-10 h-10 rounded-md object-cover border" alt="Foto"></a>';
+                    $fotoUrl = asset('storage/'.$row->foto);
+                    $foto_html = '<a href="'.$fotoUrl.'" target="_blank"><img src="'.$fotoUrl.'" class="w-10 h-10 rounded-md object-cover border" alt="Foto"></a>';
                 }
 
                 $action = view('master-persetujuan-absensi-lembur.action', ['row' => $row])->render();
@@ -51,7 +50,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
                     'keterangan' => $row->keterangan,
                     'foto' => $foto_html,
                     'status_badge' => $status_badge,
-                    'action' => $action
+                    'action' => $action,
                 ];
             });
 
@@ -64,6 +63,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
     public function create()
     {
         $karyawans = Karyawan::where('status', 'Aktif')->get();
+
         return view('master-persetujuan-absensi-lembur.create', compact('karyawans'));
     }
 
@@ -86,20 +86,20 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             'status' => 'pending',
             'created_by' => auth()->id(),
         ]);
-        
+
         // Kirim notifikasi
-        $approvers = User::all()->filter(function($user) {
+        $approvers = User::all()->filter(function ($user) {
             return $user->can('approval-absensi-lembur-approve');
         });
-        
+
         if ($approvers->count() > 0) {
             Notification::send($approvers, new PersetujuanAbsensiLemburNotification($pengajuan));
-            
+
             $pengajuan->load('karyawan');
             $karyawanNama = $pengajuan->karyawan ? $pengajuan->karyawan->nama_lengkap : 'Karyawan';
-            $title = "Pengajuan Lembur Baru";
-            $body = "{$karyawanNama} mengajukan lembur pada tanggal " . Carbon::parse($pengajuan->tanggal)->format('d M Y') . ".";
-            
+            $title = 'Pengajuan Lembur Baru';
+            $body = "{$karyawanNama} mengajukan lembur pada tanggal ".Carbon::parse($pengajuan->tanggal)->format('d M Y').'.';
+
             foreach ($approvers as $approver) {
                 if ($approver->expo_push_token) {
                     ExpoNotificationService::send(
@@ -122,6 +122,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
         }
 
         $karyawans = Karyawan::where('status', 'Aktif')->get();
+
         return view('master-persetujuan-absensi-lembur.edit', compact('persetujuanAbsensiLembur', 'karyawans'));
     }
 
@@ -154,11 +155,11 @@ class MasterPersetujuanAbsensiLemburController extends Controller
     public function destroy(PersetujuanAbsensiLembur $persetujuanAbsensiLembur)
     {
         $persetujuanAbsensiLembur->delete();
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pengajuan lembur berhasil dihapus.'
+                'message' => 'Pengajuan lembur berhasil dihapus.',
             ]);
         }
 
@@ -177,18 +178,18 @@ class MasterPersetujuanAbsensiLemburController extends Controller
                 'status' => 'approved',
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
-                'catatan_admin' => $request->catatan_admin
+                'catatan_admin' => $request->catatan_admin,
             ]);
 
             // Sync ke absensi
-            $waktuMasuk = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d') . ' ' . $persetujuanAbsensiLembur->jam_mulai);
-            $waktuPulang = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d') . ' ' . $persetujuanAbsensiLembur->jam_selesai);
-            
+            $waktuMasuk = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d').' '.$persetujuanAbsensiLembur->jam_mulai);
+            $waktuPulang = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d').' '.$persetujuanAbsensiLembur->jam_selesai);
+
             // Jika jam selesai lebih kecil dari jam mulai (misal lewat tengah malam), tambah 1 hari
             if ($waktuPulang->lt($waktuMasuk)) {
                 $waktuPulang->addDay();
             }
-            
+
             $karyawan = Karyawan::find($persetujuanAbsensiLembur->karyawan_id);
             if ($karyawan) {
                 // Insert Lembur Masuk
@@ -213,10 +214,12 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Pengajuan lembur berhasil disetujui dan data absensi telah ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -230,7 +233,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             'status' => 'rejected',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
-            'catatan_admin' => $request->catatan_admin
+            'catatan_admin' => $request->catatan_admin,
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan lembur berhasil ditolak.');

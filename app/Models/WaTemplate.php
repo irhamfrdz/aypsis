@@ -9,7 +9,7 @@ class WaTemplate extends Model
     protected $fillable = [
         'nama_template',
         'isi_template',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [

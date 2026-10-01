@@ -113,7 +113,7 @@ class PembayaranPranotaObController extends Controller
                             if ($supir) {
                                 $namaSupir = $supir->nama_panggilan ? $supir->nama_panggilan : $supir->nama_lengkap;
                                 $key = strtoupper(trim($namaSupir));
-                                if (!isset($dpSupirData[$key])) {
+                                if (! isset($dpSupirData[$key])) {
                                     $dpSupirData[$key] = 0;
                                 }
                                 $dpSupirData[$key] += floatval($jumlah);
@@ -219,7 +219,7 @@ class PembayaranPranotaObController extends Controller
             $dpAmount = 0;
             $selectedDps = collect();
 
-            if (!empty($dpIds)) {
+            if (! empty($dpIds)) {
                 $selectedDps = \App\Models\PembayaranOb::whereIn('id', $dpIds)->get();
                 foreach ($selectedDps as $dp) {
                     $dpAmount += $dp->dp_amount ?? 0;
@@ -267,7 +267,7 @@ class PembayaranPranotaObController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
                 'pranota_ob_ids' => $pranotaIds,
-                'pembayaran_ob_id' => !empty($dpIds) ? $dpIds[0] : null,
+                'pembayaran_ob_id' => ! empty($dpIds) ? $dpIds[0] : null,
                 'pembayaran_ob_ids' => $dpIds,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,

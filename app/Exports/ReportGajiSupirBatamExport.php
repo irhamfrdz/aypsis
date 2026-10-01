@@ -6,13 +6,15 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ReportGajiSupirBatamExport implements FromView, ShouldAutoSize, WithStyles
 {
     protected $gajiList;
+
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($gajiList, $startDate, $endDate)
@@ -44,9 +46,9 @@ class ReportGajiSupirBatamExport implements FromView, ShouldAutoSize, WithStyles
             ],
         ];
 
-        $sheet->getStyle('A4:H' . $lastRow)->applyFromArray($styleArray);
+        $sheet->getStyle('A4:H'.$lastRow)->applyFromArray($styleArray);
         $sheet->getStyle('A4:H4')->getFont()->setBold(true);
-        $sheet->getStyle('A' . $lastRow . ':H' . $lastRow)->getFont()->setBold(true);
+        $sheet->getStyle('A'.$lastRow.':H'.$lastRow)->getFont()->setBold(true);
 
         return [];
     }

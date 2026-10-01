@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Mesin;
-use App\Models\Karyawan;
 use App\Models\Absensi;
+use App\Models\Karyawan;
+use App\Models\Mesin;
 use App\Services\ZkTecoService;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class SyncAttendanceLocal extends Command
 {
@@ -34,14 +34,15 @@ class SyncAttendanceLocal extends Command
 
         $mesinId = $this->option('mesin');
         $query = Mesin::where('status', 'Aktif');
-        
+
         if ($mesinId) {
             $query->where('id', $mesinId);
         }
-        
+
         $mesins = $query->get();
         if ($mesins->isEmpty()) {
             $this->warn('Tidak ada mesin aktif yang terdaftar.');
+
             return 0;
         }
 
@@ -52,10 +53,11 @@ class SyncAttendanceLocal extends Command
         $existingLogs = Absensi::select('nik', 'waktu', 'tipe')
             ->get()
             ->mapWithKeys(function ($item) {
-                $timeStr = $item->waktu instanceof Carbon 
-                    ? $item->waktu->format('Y-m-d H:i:s') 
+                $timeStr = $item->waktu instanceof Carbon
+                    ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
-                return [$item->nik . '_' . $timeStr . '_' . $item->tipe => true];
+
+                return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
             })
             ->toArray();
 
@@ -71,7 +73,7 @@ class SyncAttendanceLocal extends Command
             $syncedDirectly = false;
 
             // Method 1: Try direct connection to the machine over the network (Real-time UDP Socket)
-            if (!empty($mesin->ip_address)) {
+            if (! empty($mesin->ip_address)) {
                 $this->info("Mencoba koneksi langsung ke mesin ({$mesin->ip_address}:{$mesin->port})...");
                 try {
                     $service = new ZkTecoService($mesin->ip_address, $mesin->port);
@@ -79,7 +81,7 @@ class SyncAttendanceLocal extends Command
                         $logs = $service->getAttendance();
                         $service->disconnect();
 
-                        if (!empty($logs)) {
+                        if (! empty($logs)) {
                             $syncedCount = 0;
                             foreach ($logs as $log) {
                                 $nik = trim($log['pin']);
@@ -88,14 +90,14 @@ class SyncAttendanceLocal extends Command
                                 }
                                 $type = $log['type'];
                                 $logTimeObj = Carbon::parse($log['timestamp']);
-                                
+
                                 // Fix timezone offset for Mesin Pelabuhan (ID: 2) which is on UTC
                                 if ($mesin->id == 2) {
                                     $logTimeObj->addHours(7);
                                 }
                                 $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
-                                $key = $nik . '_' . $logTime . '_' . $type;
+                                $key = $nik.'_'.$logTime.'_'.$type;
                                 if (isset($existingLogs[$key])) {
                                     continue;
                                 }
@@ -120,7 +122,7 @@ class SyncAttendanceLocal extends Command
                         $this->warn("Gagal terhubung langsung ke IP mesin {$mesin->nama_mesin}.");
                     }
                 } catch (\Exception $e) {
-                    $this->error("Gagal melakukan koneksi langsung: " . $e->getMessage());
+                    $this->error('Gagal melakukan koneksi langsung: '.$e->getMessage());
                 }
             }
 
@@ -132,7 +134,7 @@ class SyncAttendanceLocal extends Command
                     $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                     // Fetch all machines from MDB to map MDB SENSORID / SN to IP Address
-                    $macStmt = $conn->query("SELECT ID, IP, sn FROM Machines");
+                    $macStmt = $conn->query('SELECT ID, IP, sn FROM Machines');
                     $mdbMachines = $macStmt->fetchAll(\PDO::FETCH_ASSOC);
 
                     // Build a lookup map: MDB Machine ID -> Laravel Mesin ID & MDB Machine SN -> Laravel Mesin ID
@@ -150,7 +152,7 @@ class SyncAttendanceLocal extends Command
 
                         if ($matchedMesin) {
                             $machineMap[$mdbId] = $matchedMesin->id;
-                            if (!empty($sn)) {
+                            if (! empty($sn)) {
                                 $snMap[$sn] = $matchedMesin->id;
                             }
                         }
@@ -170,14 +172,14 @@ class SyncAttendanceLocal extends Command
                         $logSn = trim($log['sn'] ?? '');
 
                         $resolvedMesinId = null;
-                        if (!empty($logSn) && isset($snMap[$logSn])) {
+                        if (! empty($logSn) && isset($snMap[$logSn])) {
                             $resolvedMesinId = $snMap[$logSn];
                         } elseif (isset($machineMap[$logSensorId])) {
                             $resolvedMesinId = $machineMap[$logSensorId];
                         }
 
                         // If we cannot resolve it, skip safely instead of attributing it to the first machine
-                        if (!$resolvedMesinId) {
+                        if (! $resolvedMesinId) {
                             continue;
                         }
 
@@ -209,15 +211,15 @@ class SyncAttendanceLocal extends Command
                         }
 
                         $logTimeObj = Carbon::parse($log['CHECKTIME']);
-                        
+
                         // Fix timezone offset for Mesin Pelabuhan (ID: 2) which is on UTC
                         if ($mesin->id == 2) {
                             $logTimeObj->addHours(7);
                         }
-                        
+
                         $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
-                        $key = $nik . '_' . $logTime . '_' . $type;
+                        $key = $nik.'_'.$logTime.'_'.$type;
                         if (isset($existingLogs[$key])) {
                             continue;
                         }
@@ -237,12 +239,13 @@ class SyncAttendanceLocal extends Command
                     $this->info("Berhasil! {$syncedCount} data absensi baru diimpor dari database lokal.");
 
                 } catch (\Exception $e) {
-                    $this->error('Gagal membaca database lokal: ' . $e->getMessage());
+                    $this->error('Gagal membaca database lokal: '.$e->getMessage());
                 }
             }
         }
 
         $this->info('Sinkronisasi selesai!');
+
         return 0;
     }
 }

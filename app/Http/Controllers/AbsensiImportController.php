@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Imports\AbsensiImport;
-use Maatwebsite\Excel\Facades\Excel;
-use Carbon\Carbon;
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiImportController extends Controller
 {
@@ -35,7 +35,7 @@ class AbsensiImportController extends Controller
                 $importedCount = $this->parseDatFile($file->getPathname());
             } else {
                 // Parsing file .xls/.xlsx menggunakan Laravel Excel
-                $import = new AbsensiImport();
+                $import = new AbsensiImport;
                 Excel::import($import, $file);
                 $importedCount = $import->importedCount;
             }
@@ -47,8 +47,9 @@ class AbsensiImportController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error("Error import absensi: " . $e->getMessage());
-            return redirect()->route('absensi.index')->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+            Log::error('Error import absensi: '.$e->getMessage());
+
+            return redirect()->route('absensi.index')->with('error', 'Terjadi kesalahan saat memproses file: '.$e->getMessage());
         }
     }
 
@@ -64,10 +65,11 @@ class AbsensiImportController extends Controller
         $existingLogs = Absensi::select('nik', 'waktu')
             ->get()
             ->mapWithKeys(function ($item) {
-                $timeStr = $item->waktu instanceof Carbon 
-                    ? $item->waktu->format('Y-m-d H:i:s') 
+                $timeStr = $item->waktu instanceof Carbon
+                    ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
-                return [$item->nik . '_' . $timeStr => true];
+
+                return [$item->nik.'_'.$timeStr => true];
             })
             ->toArray();
 
@@ -80,55 +82,62 @@ class AbsensiImportController extends Controller
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             // ZKTeco ATTLOG format: NIK \t Waktu \t State \t VerifyMethod
             // Contoh: 1593    2026-07-22 09:01:21    0    1
             // Kadang dipisah koma jika CSV
-            $separator = strpos($line, "\t") !== false ? "\t" : (strpos($line, ",") !== false ? "," : " ");
-            
+            $separator = strpos($line, "\t") !== false ? "\t" : (strpos($line, ',') !== false ? ',' : ' ');
+
             // Regex untuk memecah berdasarkan separator tab atau multiple spaces
             $parts = preg_split("/[\t,]+| {2,}/", $line);
-            
+
             if (count($parts) >= 2) {
                 $nikRaw = trim($parts[0]);
                 // Format NIK to 4 digits if numeric
                 $nik = is_numeric($nikRaw) ? str_pad($nikRaw, 4, '0', STR_PAD_LEFT) : $nikRaw;
-                
+
                 $datetimeStr = trim($parts[1]);
-                
+
                 try {
                     $parsedTime = Carbon::parse($datetimeStr);
-                    
+
                     // Jika waktu absensi adalah 09:01 atau 09:02, sesuaikan menjadi 09:00
                     if ($parsedTime->format('H:i') === '09:01' || $parsedTime->format('H:i') === '09:02') {
                         $parsedTime->setTime(9, 0, 0);
                     }
-                    
+
                     $waktu = $parsedTime->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip invalid date
                 }
 
-                $state = isset($parts[2]) ? (int)trim($parts[2]) : 0;
-                
+                $state = isset($parts[2]) ? (int) trim($parts[2]) : 0;
+
                 if (in_array($state, [0, 3, 4])) {
                     $type = 'Masuk';
                 } else {
                     $type = 'Pulang';
                 }
 
-                $verifyMethodRaw = isset($parts[3]) ? (int)trim($parts[3]) : null;
+                $verifyMethodRaw = isset($parts[3]) ? (int) trim($parts[3]) : null;
                 $verifyMode = null;
                 if ($verifyMethodRaw !== null) {
-                    if ($verifyMethodRaw === 1) $verifyMode = 'Fingerprint';
-                    elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) $verifyMode = 'Face';
-                    elseif ($verifyMethodRaw === 0) $verifyMode = 'Password';
-                    elseif ($verifyMethodRaw === 2) $verifyMode = 'Card';
+                    if ($verifyMethodRaw === 1) {
+                        $verifyMode = 'Fingerprint';
+                    } elseif ($verifyMethodRaw === 15 || $verifyMethodRaw === 14) {
+                        $verifyMode = 'Face';
+                    } elseif ($verifyMethodRaw === 0) {
+                        $verifyMode = 'Password';
+                    } elseif ($verifyMethodRaw === 2) {
+                        $verifyMode = 'Card';
+                    }
                 }
 
-                $key = $nik . '_' . $waktu;
-                if (!isset($existingLogs[$key])) {
+                $key = $nik.'_'.$waktu;
+                if (! isset($existingLogs[$key])) {
                     Absensi::create([
                         'nik' => $nik,
                         'waktu' => $waktu,
@@ -137,7 +146,7 @@ class AbsensiImportController extends Controller
                         'keterangan' => 'Import File Log (.dat)',
                         'verify_mode' => $verifyMode,
                     ]);
-                    
+
                     $existingLogs[$key] = true;
                     $importedCount++;
                 }
@@ -153,7 +162,7 @@ class AbsensiImportController extends Controller
     public function downloadTemplate(Request $request)
     {
         $tipe = $request->query('tipe', 'Reguler');
-        
+
         $headersList = ['NIK', 'NAMA', 'TANGGAL (YYYY-MM-DD)'];
         if ($tipe === 'Lembur') {
             $headersList[] = 'LEMBUR MASUK';
@@ -162,9 +171,9 @@ class AbsensiImportController extends Controller
             $headersList[] = 'JAM MASUK';
             $headersList[] = 'JAM PULANG';
         }
-        
-        $filename = "Template_Koreksi_Absensi_" . str_replace(' ', '_', $tipe) . ".xlsx";
-        
+
+        $filename = 'Template_Koreksi_Absensi_'.str_replace(' ', '_', $tipe).'.xlsx';
+
         return Excel::download(new \App\Exports\TemplateKoreksiAbsensiExport($headersList), $filename);
     }
 
@@ -176,7 +185,7 @@ class AbsensiImportController extends Controller
         $request->validate([
             'file_excel' => 'required|file|mimes:xls,xlsx,csv|max:10240',
             'tipe_absen' => 'required|string',
-            'tanggal_absensi' => 'required|date'
+            'tanggal_absensi' => 'required|date',
         ]);
 
         try {
@@ -184,13 +193,14 @@ class AbsensiImportController extends Controller
                 $request->tipe_absen,
                 $request->tanggal_absensi
             );
-            
+
             Excel::import($import, $request->file('file_excel'));
-            
+
             return redirect()->route('absensi.index')->with('success', "Berhasil mengupdate {$import->importedCount} data koreksi absensi.");
         } catch (\Exception $e) {
-            Log::error("Error import koreksi absensi: " . $e->getMessage());
-            return redirect()->route('absensi.index')->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+            Log::error('Error import koreksi absensi: '.$e->getMessage());
+
+            return redirect()->route('absensi.index')->with('error', 'Terjadi kesalahan saat memproses file: '.$e->getMessage());
         }
     }
 }

@@ -32,7 +32,7 @@ class DashboardController extends Controller
         if ($user->karyawan) {
             $divisi = strtoupper(trim($user->karyawan->divisi ?? ''));
             $pekerjaan = strtoupper(trim($user->karyawan->pekerjaan ?? ''));
-            
+
             if (in_array('HRD', [$divisi, $pekerjaan]) && $user->can('hrd-dashboard-view')) {
                 return redirect()->route('hrd.dashboard');
             }
@@ -95,9 +95,9 @@ class DashboardController extends Controller
         // Ambil daftar nama supir Non-AYP (Customer + Vendor)
         $supirNonAypNames = DB::table('surat_jalans')
             ->leftJoin('tagihan_supir_vendors', 'surat_jalans.id', '=', 'tagihan_supir_vendors.surat_jalan_id')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('surat_jalans.is_supir_customer', true)
-                  ->orWhereNotNull('tagihan_supir_vendors.id');
+                    ->orWhereNotNull('tagihan_supir_vendors.id');
             })
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->whereNotNull('surat_jalans.supir')
@@ -113,16 +113,17 @@ class DashboardController extends Controller
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function($q) use ($hariIni) {
+            ->where(function ($q) use ($hariIni) {
                 $q->doesntHave('tandaTerima')
-                  ->orWhereHas('tandaTerima', function($q2) use ($hariIni) {
-                      $q2->whereDate('created_at', '>', $hariIni);
-                  });
+                    ->orWhereHas('tandaTerima', function ($q2) use ($hariIni) {
+                        $q2->whereDate('created_at', '>', $hariIni);
+                    });
             })
             ->when(request('supir'), function ($q) use ($supirNonAypNames) {
                 if (request('supir') === 'NON_AYP') {
                     return $q->whereIn('supir', $supirNonAypNames);
                 }
+
                 return $q->where('supir', request('supir'));
             })
             ->orderBy('tanggal_surat_jalan', 'desc')
@@ -134,11 +135,11 @@ class DashboardController extends Controller
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('surat_jalans.tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function($q) use ($hariIni) {
+            ->where(function ($q) use ($hariIni) {
                 $q->doesntHave('tandaTerima')
-                  ->orWhereHas('tandaTerima', function($q2) use ($hariIni) {
-                      $q2->whereDate('created_at', '>', $hariIni);
-                  });
+                    ->orWhereHas('tandaTerima', function ($q2) use ($hariIni) {
+                        $q2->whereDate('created_at', '>', $hariIni);
+                    });
             })
             ->select('surat_jalans.supir', DB::raw('count(surat_jalans.id) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
             ->groupBy('surat_jalans.supir')
@@ -172,10 +173,10 @@ class DashboardController extends Controller
             ->whereNotIn('sj.status', ['cancelled', 'draft'])
             ->where('sj.status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('sj.tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function($q) use ($hariIni) {
-                $q->whereNotExists(function($q2) {
+            ->where(function ($q) use ($hariIni) {
+                $q->whereNotExists(function ($q2) {
                     $q2->select(DB::raw(1))->from('tanda_terimas as tt')->whereColumn('tt.surat_jalan_id', 'sj.id');
-                })->orWhereExists(function($q2) use ($hariIni) {
+                })->orWhereExists(function ($q2) use ($hariIni) {
                     $q2->select(DB::raw(1))->from('tanda_terimas as tt')->whereColumn('tt.surat_jalan_id', 'sj.id')->whereDate('tt.created_at', '>', $hariIni);
                 });
             })
@@ -184,9 +185,9 @@ class DashboardController extends Controller
 
         $mutasiAllDrivers = DB::table('uang_jalans')
             ->join('surat_jalans', 'uang_jalans.surat_jalan_id', '=', 'surat_jalans.id')
-            ->joinSub($oldestUnsettledSubquery, 'ou', function($join) {
+            ->joinSub($oldestUnsettledSubquery, 'ou', function ($join) {
                 $join->on('surat_jalans.supir', '=', 'ou.supir')
-                     ->whereColumn(DB::raw('DATE(uang_jalans.tanggal_uang_jalan)'), '>=', 'ou.oldest_date');
+                    ->whereColumn(DB::raw('DATE(uang_jalans.tanggal_uang_jalan)'), '>=', 'ou.oldest_date');
             })
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
@@ -204,13 +205,13 @@ class DashboardController extends Controller
 
         $rekapSupirBelumTandaTerima = collect();
 
-        $getMutasi = function($nama) use ($mutasiAllDrivers) {
+        $getMutasi = function ($nama) use ($mutasiAllDrivers) {
             $m = $mutasiAllDrivers->get($nama);
             $debitSeb = $m ? $m->debit_sebelumnya : 0;
             $kreditSeb = $m ? $m->kredit_sebelumnya : 0;
             $totalDebit = $m ? $m->total_debit : 0;
             $totalKredit = $m ? $m->total_kredit : 0;
-            
+
             $saldoAkhir = $totalDebit - $totalKredit;
             $saldoAwal = $debitSeb - $kreditSeb;
 
@@ -226,15 +227,17 @@ class DashboardController extends Controller
                 'saldo_awal' => $saldoAwal,
                 'debit' => $totalDebit,
                 'kredit' => $totalKredit,
-                'saldo_akhir' => $saldoAkhir
+                'saldo_akhir' => $saldoAkhir,
             ];
         };
 
         // 1. Masukkan semua supir Jakarta
         foreach ($supirJakarta as $nama => $data) {
             // Jangan masukkan jika dia termasuk supir Non-AYP
-            if (in_array($nama, $supirNonAypNames)) continue;
-            
+            if (in_array($nama, $supirNonAypNames)) {
+                continue;
+            }
+
             $pending = $pendingTandaTerima->firstWhere('supir', $nama);
             $rekapSupirBelumTandaTerima->push((object) [
                 'supir' => $nama,
@@ -243,7 +246,7 @@ class DashboardController extends Controller
                 'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
                 'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
                 'is_jakarta' => true,
-                'mutasi' => $getMutasi($nama)
+                'mutasi' => $getMutasi($nama),
             ]);
         }
 
@@ -254,9 +257,10 @@ class DashboardController extends Controller
         foreach ($pendingTandaTerima as $pending) {
             if (in_array($pending->supir, $supirNonAypNames)) {
                 $totalPendingNonAyp += $pending->total;
-                if (!$oldestUjNonAyp || $pending->oldest_uang_jalan < $oldestUjNonAyp) {
+                if (! $oldestUjNonAyp || $pending->oldest_uang_jalan < $oldestUjNonAyp) {
                     $oldestUjNonAyp = $pending->oldest_uang_jalan;
                 }
+
                 continue;
             }
 
@@ -275,13 +279,13 @@ class DashboardController extends Controller
                     'is_jakarta' => false,
                     'is_customer' => false,
                     'is_vendor' => false,
-                    'mutasi' => $getMutasi($pending->supir)
+                    'mutasi' => $getMutasi($pending->supir),
                 ]);
             }
         }
 
         // 3. Masukkan grup Supir Non-AYP (Customer & Vendor) sebagai satu card
-        if (!empty($supirNonAypNames)) {
+        if (! empty($supirNonAypNames)) {
             $terakhirSjNonAyp = \App\Models\SuratJalan::whereIn('supir', $supirNonAypNames)
                 ->whereNotIn('status', ['cancelled', 'draft'])
                 ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
@@ -324,8 +328,8 @@ class DashboardController extends Controller
                     'saldo_awal' => $saldoAwalNonAyp,
                     'debit' => $totalDebitNonAyp,
                     'kredit' => $totalKreditNonAyp,
-                    'saldo_akhir' => $saldoAkhirNonAyp
-                ]
+                    'saldo_akhir' => $saldoAkhirNonAyp,
+                ],
             ]);
         }
 
@@ -351,9 +355,9 @@ class DashboardController extends Controller
         if (request('supir')) {
             $selectedSupir = request('supir');
             $selectedData = $rekapSupirBelumTandaTerima->firstWhere('supir', $selectedSupir);
-            
+
             if ($selectedData) {
-                $mutasiUangJalan = (object)[
+                $mutasiUangJalan = (object) [
                     'supir' => $selectedData->supir,
                     'total_debit' => $selectedData->mutasi->debit,
                     'total_kredit' => $selectedData->mutasi->kredit,
@@ -361,7 +365,7 @@ class DashboardController extends Controller
                     'saldo_akhir' => $selectedData->mutasi->saldo_akhir,
                 ];
             } else {
-                $mutasiUangJalan = (object)[
+                $mutasiUangJalan = (object) [
                     'supir' => $selectedSupir,
                     'total_debit' => 0,
                     'total_kredit' => 0,

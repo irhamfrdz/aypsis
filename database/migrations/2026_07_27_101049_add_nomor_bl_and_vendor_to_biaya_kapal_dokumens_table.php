@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('biaya_kapal_dokumens', function (Blueprint $table) {
             $table->string('nomor_bl')->nullable()->after('voyage');
             $table->unsignedBigInteger('vendor_id')->nullable()->after('nomor_bl');
-            
+
             $table->foreign('vendor_id')->references('id')->on('pricelist_biaya_dokumen')->onDelete('set null');
         });
     }

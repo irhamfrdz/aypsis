@@ -7,14 +7,14 @@ $kernel->bootstrap();
 
 use App\Models\StockAmprahan;
 
-$targetName = "plat 10MM";
+$targetName = 'plat 10MM';
 
 echo "Mencari data dengan nama barang EXACT MATCH: '{$targetName}'...\n";
 
 $stocks = StockAmprahan::where('nama_barang', 'LIKE', $targetName)->get();
 
 // Memastikan EXACT match (case-insensitive)
-$filteredStocks = $stocks->filter(function($stock) use ($targetName) {
+$filteredStocks = $stocks->filter(function ($stock) use ($targetName) {
     return strtolower(trim($stock->nama_barang)) === strtolower(trim($targetName));
 });
 
@@ -23,7 +23,7 @@ if ($filteredStocks->isEmpty()) {
     exit;
 }
 
-echo "Ditemukan " . $filteredStocks->count() . " data stock.\n";
+echo 'Ditemukan '.$filteredStocks->count()." data stock.\n";
 
 $deletedUsages = 0;
 $deletedStocks = 0;
@@ -37,7 +37,7 @@ try {
             $stock->usages()->delete();
             $deletedUsages += $usagesCount;
         }
-        
+
         // Hapus parent data (stock)
         $stock->delete();
         $deletedStocks++;
@@ -48,5 +48,5 @@ try {
     echo "- $deletedStocks data stock terhapus.\n";
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "\nTERJADI KESALAHAN, rollback dilakukan. Error: " . $e->getMessage() . "\n";
+    echo "\nTERJADI KESALAHAN, rollback dilakukan. Error: ".$e->getMessage()."\n";
 }

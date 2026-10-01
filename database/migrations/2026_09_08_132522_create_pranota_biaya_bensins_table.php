@@ -18,12 +18,12 @@ return new class extends Migration
             $table->decimal('total_biaya', 15, 2)->default(0);
             $table->string('status', 20)->default('draft');
             $table->text('catatan')->nullable();
-            
+
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();
-            
+
             $table->timestamps();
             $table->softDeletes();
         });

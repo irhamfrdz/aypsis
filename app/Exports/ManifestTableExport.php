@@ -18,6 +18,7 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
     protected $manifests;
 
     protected $penerimaLookup = [];
+
     protected $shipperConsigneeLookup = [];
 
     protected $termLookup = [];
@@ -246,11 +247,11 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
                 $shipperName = $sc->shipper ?: $shipperName;
                 $shipperAddress = $sc->alamat_shipper ?: $shipperAddress;
                 $shipperNpwp = $sc->npwp_shipper ?: $shipperNpwp;
-                
+
                 $consigneeName = $sc->consignee ?: $consigneeName;
                 $consigneeAddress = $sc->alamat_consignee ?: $consigneeAddress;
                 $consigneeNpwp = $sc->npwp_consignee ?: $consigneeNpwp;
-                
+
                 $notifyName = $sc->notify_party ?: $notifyName;
                 $notifyAddress = $sc->alamat_notify_party ?: $notifyAddress;
                 $notifyNpwp = $sc->npwp_notify_party ?: $notifyNpwp;
@@ -828,6 +829,7 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
         for ($r = $sigStart; $r <= $highestRow; $r++) {
             $sheet->getStyle("W{$r}")->getFont()->setName('Arial')->setSize(10)->setBold(true);
         }
+
         return [];
     }
 

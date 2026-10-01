@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AlatBerat;
 use App\Models\MasterKapal;
 use App\Models\Mobil;
-use App\Models\AlatBerat;
 use App\Models\PermohonanAmprahan;
-use App\Models\PermohonanAmprahanItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class PermohonanAmprahanController extends Controller
 {
@@ -97,14 +95,14 @@ class PermohonanAmprahanController extends Controller
     public function show($id)
     {
         $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->findOrFail($id);
-        
+
         return view('permohonan-amprahan.show', compact('permohonan'));
     }
 
     public function print($id)
     {
         $permohonan = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->findOrFail($id);
-        
+
         // Since AYPSIS usually uses DOMPDF for printing, or just a printable view.
         // I will just return a view with window.print()
         return view('permohonan-amprahan.print', compact('permohonan'));
@@ -124,7 +122,7 @@ class PermohonanAmprahanController extends Controller
         $selectedStatus = $request->input('status', 'pending');
 
         $query = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->latest();
-        
+
         if ($selectedStatus && $selectedStatus != 'all') {
             $query->where('status', $selectedStatus);
         }
@@ -137,7 +135,7 @@ class PermohonanAmprahanController extends Controller
     public function approvalProcessForm($id)
     {
         $permohonan = PermohonanAmprahan::with(['items', 'kapal', 'mobil', 'alatBerat', 'user'])->findOrFail($id);
-        
+
         return view('permohonan-amprahan.approval-process', compact('permohonan'));
     }
 
@@ -194,7 +192,7 @@ class PermohonanAmprahanController extends Controller
         });
 
         return redirect()->route('approval-permohonan-amprahan.index', ['status' => 'all'])
-                         ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
+            ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
     }
 
     public function resetApproval($id)

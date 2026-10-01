@@ -206,33 +206,33 @@ class TandaTerimaApprovalController extends Controller
             $model = $this->getModel($sourceType, $id);
 
             $documentColumns = [
-            'file_ppbj' => 'dokumen_ppbj',
-            'file_packing_list' => 'dokumen_packing_list',
-            'file_invoice' => 'dokumen_invoice',
-            'file_faktur_pajak' => 'dokumen_faktur_pajak',
-            'file_si' => 'dokumen_si',
+                'file_ppbj' => 'dokumen_ppbj',
+                'file_packing_list' => 'dokumen_packing_list',
+                'file_invoice' => 'dokumen_invoice',
+                'file_faktur_pajak' => 'dokumen_faktur_pajak',
+                'file_si' => 'dokumen_si',
             ];
 
             $uploaded = false;
             $updateData = [];
 
             foreach ($documentColumns as $inputName => $column) {
-            if ($request->hasFile($inputName)) {
-                $rawExisting = $model->{$column};
-                $existingFiles = [];
+                if ($request->hasFile($inputName)) {
+                    $rawExisting = $model->{$column};
+                    $existingFiles = [];
 
-                if (is_array($rawExisting)) {
-                    $existingFiles = $rawExisting;
-                } elseif (is_string($rawExisting) && ! empty($rawExisting)) {
-                    $existingFiles = json_decode($rawExisting, true) ?? [];
-                }
+                    if (is_array($rawExisting)) {
+                        $existingFiles = $rawExisting;
+                    } elseif (is_string($rawExisting) && ! empty($rawExisting)) {
+                        $existingFiles = json_decode($rawExisting, true) ?? [];
+                    }
 
-                foreach ($request->file($inputName) as $file) {
-                    $existingFiles[] = $file->store('asuransi_tanda_terima', 'public');
-                    $uploaded = true;
+                    foreach ($request->file($inputName) as $file) {
+                        $existingFiles[] = $file->store('asuransi_tanda_terima', 'public');
+                        $uploaded = true;
+                    }
+                    $updateData[$column] = json_encode($existingFiles);
                 }
-                $updateData[$column] = json_encode($existingFiles);
-            }
             }
 
             if ($uploaded) {

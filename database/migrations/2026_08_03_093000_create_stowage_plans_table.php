@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('row', 10)->nullable();
             $table->string('tier', 10)->nullable();
             $table->text('notes')->nullable();
-            
+
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 

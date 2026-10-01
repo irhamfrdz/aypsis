@@ -94,6 +94,7 @@ class PembayaranPranotaOb extends Model
             if ($this->pembayaran_ob_id) {
                 return PembayaranOb::where('id', $this->pembayaran_ob_id)->get();
             }
+
             return collect([]);
         }
 

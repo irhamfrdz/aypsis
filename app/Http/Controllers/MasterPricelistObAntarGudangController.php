@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MasterPricelistObAntarGudang;
 use App\Models\Gudang;
+use App\Models\MasterPricelistObAntarGudang;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class MasterPricelistObAntarGudangController extends Controller
 {

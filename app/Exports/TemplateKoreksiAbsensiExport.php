@@ -6,7 +6,7 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class TemplateKoreksiAbsensiExport implements FromArray, WithHeadings, ShouldAutoSize
+class TemplateKoreksiAbsensiExport implements FromArray, ShouldAutoSize, WithHeadings
 {
     protected $headersList;
 
@@ -23,7 +23,7 @@ class TemplateKoreksiAbsensiExport implements FromArray, WithHeadings, ShouldAut
     public function array(): array
     {
         return [
-            ['1234', 'Contoh Nama', '2026-08-31', '08:00', '17:00']
+            ['1234', 'Contoh Nama', '2026-08-31', '08:00', '17:00'],
         ];
     }
 }

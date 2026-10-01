@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\SuratJalanBongkaranBatam;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class DeleteSuratJalanBongkaranBatam extends Command
@@ -33,14 +33,15 @@ class DeleteSuratJalanBongkaranBatam extends Command
         $this->info("Mencari data surat jalan bongkaran batam dari tanggal {$startDate} sampai {$endDate}...");
 
         $count = SuratJalanBongkaranBatam::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])->count();
-        
+
         if ($count === 0) {
-            $this->warn("Tidak ada data ditemukan pada rentang tanggal tersebut.");
+            $this->warn('Tidak ada data ditemukan pada rentang tanggal tersebut.');
+
             return;
         }
 
         $this->info("Ditemukan {$count} data.");
-        
+
         if ($this->confirm("Apakah Anda yakin ingin menghapus {$count} data ini?")) {
             DB::transaction(function () use ($startDate, $endDate) {
                 SuratJalanBongkaranBatam::whereBetween('tanggal_surat_jalan', [$startDate, $endDate])->delete();
@@ -48,7 +49,7 @@ class DeleteSuratJalanBongkaranBatam extends Command
 
             $this->info("✅ {$count} data surat jalan bongkaran batam berhasil dihapus.");
         } else {
-            $this->info("❌ Operasi dibatalkan.");
+            $this->info('❌ Operasi dibatalkan.');
         }
     }
 }

@@ -101,12 +101,15 @@ class TagihanLoloBatamCompleteTest extends TestCase
         Schema::create('surat_jalan_bongkaran_batams', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_surat_jalan')->nullable();
-            $table->string('nomor_kontainer')->nullable();
+            $table->string('no_kontainer')->nullable();
             $table->string('size')->nullable();
             $table->string('tipe_kontainer')->nullable();
             $table->string('nama_kapal')->nullable();
-            $table->string('voyage')->nullable();
-            $table->date('tanggal_bongkar')->nullable();
+            $table->string('no_voyage')->nullable();
+            $table->string('supir')->nullable();
+            $table->string('no_plat')->nullable();
+            $table->string('lokasi')->nullable();
+            $table->date('tanggal_surat_jalan')->nullable();
             $table->boolean('menggunakan_lolo')->default(false);
             $table->timestamps();
             $table->softDeletes();
@@ -115,16 +118,30 @@ class TagihanLoloBatamCompleteTest extends TestCase
         // Setup langsir_batams
         Schema::create('langsir_batams', function (Blueprint $table) {
             $table->id();
-            $table->string('nomor_langsir')->nullable();
-            $table->string('nomor_kontainer')->nullable();
+            $table->string('no_transaksi')->nullable();
+            $table->string('no_surat_jalan')->nullable();
+            $table->string('no_kontainer')->nullable();
             $table->string('size')->nullable();
             $table->string('tipe_kontainer')->nullable();
-            $table->string('nama_kapal')->nullable();
-            $table->string('voyage')->nullable();
+            $table->string('supir')->nullable();
+            $table->string('no_plat')->nullable();
+            $table->string('dari')->nullable();
+            $table->string('ke')->nullable();
             $table->date('tanggal')->nullable();
             $table->boolean('menggunakan_lolo')->default(false);
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        // Setup karyawans
+        Schema::create('karyawans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_lengkap');
+            $table->string('nama_panggilan')->nullable();
+            $table->string('divisi')->nullable();
+            $table->string('pekerjaan')->nullable();
+            $table->date('tanggal_berhenti')->nullable();
+            $table->timestamps();
         });
 
         // Setup tagihan_lolo_batams
@@ -133,6 +150,9 @@ class TagihanLoloBatamCompleteTest extends TestCase
             $table->string('nomor_tagihan')->unique();
             $table->date('tanggal_tagihan');
             $table->string('vendor')->nullable();
+            $table->string('tipe_operator')->default('AYP');
+            $table->string('operator')->nullable();
+            $table->unsignedBigInteger('operator_karyawan_id')->nullable();
             $table->string('kapal')->nullable();
             $table->string('voyage')->nullable();
             $table->enum('status_pembayaran', ['Belum Lunas', 'Lunas'])->default('Belum Lunas');
@@ -159,6 +179,9 @@ class TagihanLoloBatamCompleteTest extends TestCase
             $table->string('size')->nullable();
             $table->string('tipe_kontainer')->nullable();
             $table->string('kegiatan')->default('LOLO Batam');
+            $table->string('tipe_operator')->nullable();
+            $table->string('operator')->nullable();
+            $table->unsignedBigInteger('operator_karyawan_id')->nullable();
             $table->decimal('tarif', 15, 2)->default(0);
             $table->integer('jumlah')->default(1);
             $table->decimal('total', 15, 2)->default(0);
@@ -254,23 +277,21 @@ class TagihanLoloBatamCompleteTest extends TestCase
         // 2. Create Surat Jalan Bongkaran with menggunakan_lolo = 1
         $bongkaran = SuratJalanBongkaranBatam::create([
             'nomor_surat_jalan' => 'SJB-001',
-            'nomor_kontainer' => 'TBKU1234567',
+            'no_kontainer' => 'TBKU1234567',
             'size' => '20',
             'tipe_kontainer' => 'FULL',
             'nama_kapal' => 'KM ALEXINDO 01',
-            'voyage' => '01/2026',
-            'tanggal_bongkar' => '2026-10-01',
+            'no_voyage' => '01/2026',
+            'tanggal_surat_jalan' => '2026-10-01',
             'menggunakan_lolo' => true,
         ]);
 
         // 3. Create Langsir Batam with menggunakan_lolo = 1
         $langsir = LangsirBatam::create([
-            'nomor_langsir' => 'LGS-001',
-            'nomor_kontainer' => 'MRKU9876543',
+            'no_surat_jalan' => 'LGS-001',
+            'no_kontainer' => 'MRKU9876543',
             'size' => '40',
             'tipe_kontainer' => 'EMPTY',
-            'nama_kapal' => 'KM ALEXINDO 02',
-            'voyage' => '02/2026',
             'tanggal' => '2026-10-01',
             'menggunakan_lolo' => true,
         ]);
@@ -395,5 +416,151 @@ class TagihanLoloBatamCompleteTest extends TestCase
         $deleteResponse = $this->delete(route('tagihan-lolo-batam.destroy', $tagihan->id));
         $deleteResponse->assertRedirect(route('tagihan-lolo-batam.index'));
         $this->assertSoftDeleted('tagihan_lolo_batams', ['id' => $tagihan->id]);
+    }
+
+    public function test_tagihan_lolo_batam_index_shows_pending_lolo_containers_tab()
+    {
+        // 1. Create pricelist
+        MasterPricelistLoloBatam::create([
+            'size' => '20',
+            'tarif' => 350000,
+            'status' => 'aktif',
+        ]);
+
+        // 2. Create Surat Jalan Bongkaran with LOLO = 1 (size 20)
+        $bongkaran = SuratJalanBongkaranBatam::create([
+            'nomor_surat_jalan' => 'SJB-BATAM-999',
+            'no_kontainer' => 'AYPU8889991',
+            'size' => '20',
+            'tipe_kontainer' => 'FULL',
+            'nama_kapal' => 'KM ALEXINDO 08',
+            'no_voyage' => 'V08-2026',
+            'tanggal_surat_jalan' => '2026-10-01',
+            'menggunakan_lolo' => true,
+        ]);
+
+        // 3. Create Langsir Batam with LOLO = 1 (size 20FT)
+        $langsir = LangsirBatam::create([
+            'no_transaksi' => 'TRX-LANGSIR-001',
+            'no_surat_jalan' => 'LGS-BATAM-999',
+            'no_kontainer' => 'ALLU2202097',
+            'size' => '20FT',
+            'tipe_kontainer' => 'FULL',
+            'tanggal' => '2026-10-01',
+            'menggunakan_lolo' => true,
+        ]);
+
+        // 4. Access Tagihan LOLO Batam index on kontainer tab
+        $response = $this->get(route('tagihan-lolo-batam.index', ['tab' => 'kontainer']));
+        $response->assertStatus(200);
+        $response->assertSee('SJB-BATAM-999');
+        $response->assertSee('AYPU8889991');
+        $response->assertSee('ALLU2202097');
+        $response->assertSee('Total Tarif');
+        $response->assertSee('Rp 350.000');
+        $response->assertSee('Belum Masuk Pranota');
+        $response->assertDontSee('Buat Tagihan Baru');
+    }
+
+    public function test_tagihan_lolo_batam_create_preloads_container_data()
+    {
+        // 1. Create pricelist
+        $pricelist = MasterPricelistLoloBatam::create([
+            'size' => '20',
+            'tarif' => 350000,
+            'status' => 'aktif',
+        ]);
+
+        // 2. Create Surat Jalan Bongkaran with LOLO = 1
+        $bongkaran = SuratJalanBongkaranBatam::create([
+            'nomor_surat_jalan' => 'SJB-PRELOAD-001',
+            'no_kontainer' => 'AYPU7771112',
+            'size' => '20',
+            'tipe_kontainer' => 'FULL',
+            'nama_kapal' => 'KM ALEXINDO 09',
+            'no_voyage' => 'V09-2026',
+            'tanggal_surat_jalan' => '2026-10-01',
+            'menggunakan_lolo' => true,
+        ]);
+
+        // 3. Access create route with bongkaran_ids parameter
+        $response = $this->get(route('tagihan-lolo-batam.create', ['bongkaran_ids' => [$bongkaran->id]]));
+        $response->assertStatus(200);
+        $response->assertSee('AYPU7771112');
+        $response->assertSee('KM ALEXINDO 09');
+        $response->assertSee('V09-2026');
+    }
+
+    public function test_tagihan_lolo_batam_operator_ayp_and_vendor_support()
+    {
+        // 1. Create a Karyawan as operator
+        $karyawan = \App\Models\Karyawan::create([
+            'nama_lengkap' => 'Budi Santoso',
+            'nama_panggilan' => 'Budi',
+            'divisi' => 'OPERASIONAL',
+            'pekerjaan' => 'OPERATOR FORKLIFT',
+        ]);
+
+        // 2. Store Tagihan LOLO with AYP Operator
+        $postDataAyp = [
+            'nomor_tagihan' => 'TLB-OP-AYP-001',
+            'tanggal_tagihan' => '2026-10-01',
+            'vendor' => 'Pelindo Batam',
+            'tipe_operator' => 'AYP',
+            'operator_karyawan_id' => $karyawan->id,
+            'status_pembayaran' => 'Belum Lunas',
+            'items' => [
+                [
+                    'nomor_kontainer' => 'AYPU1112223',
+                    'size' => '20',
+                    'tipe_kontainer' => 'FULL',
+                    'kegiatan' => 'LOLO Batam',
+                    'tarif' => 400000,
+                    'jumlah' => 1,
+                ],
+            ],
+        ];
+
+        $responseAyp = $this->post(route('tagihan-lolo-batam.store'), $postDataAyp);
+        $this->assertDatabaseHas('tagihan_lolo_batams', [
+            'nomor_tagihan' => 'TLB-OP-AYP-001',
+            'tipe_operator' => 'AYP',
+            'operator' => 'Budi Santoso',
+            'operator_karyawan_id' => $karyawan->id,
+        ]);
+
+        // 3. Store Tagihan LOLO with Vendor Operator
+        $postDataVendor = [
+            'nomor_tagihan' => 'TLB-OP-VND-001',
+            'tanggal_tagihan' => '2026-10-01',
+            'vendor' => 'PT Trans Logistik',
+            'tipe_operator' => 'VENDOR',
+            'operator' => 'Vendor Trans Indo',
+            'status_pembayaran' => 'Belum Lunas',
+            'items' => [
+                [
+                    'nomor_kontainer' => 'AYPU3334445',
+                    'size' => '40',
+                    'tipe_kontainer' => 'FULL',
+                    'kegiatan' => 'LOLO Batam',
+                    'tarif' => 600000,
+                    'jumlah' => 1,
+                ],
+            ],
+        ];
+
+        $responseVendor = $this->post(route('tagihan-lolo-batam.store'), $postDataVendor);
+        $this->assertDatabaseHas('tagihan_lolo_batams', [
+            'nomor_tagihan' => 'TLB-OP-VND-001',
+            'tipe_operator' => 'VENDOR',
+            'operator' => 'Vendor Trans Indo',
+        ]);
+
+        // 4. View index and verify operator badges
+        $tagihanAyp = TagihanLoloBatam::where('nomor_tagihan', 'TLB-OP-AYP-001')->first();
+        $responseIndex = $this->get(route('tagihan-lolo-batam.index', ['tab' => 'faktur']));
+        $responseIndex->assertStatus(200);
+        $responseIndex->assertSee('AYP: Budi Santoso');
+        $responseIndex->assertSee('Vendor: Vendor Trans Indo');
     }
 }

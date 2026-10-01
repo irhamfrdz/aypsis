@@ -26,6 +26,9 @@ class TagihanLoloBatamItem extends Model
         'tarif',
         'jumlah',
         'total',
+        'tipe_operator',
+        'operator',
+        'operator_karyawan_id',
         'keterangan',
     ];
 
@@ -53,6 +56,11 @@ class TagihanLoloBatamItem extends Model
     public function pricelistLoloBatam(): BelongsTo
     {
         return $this->belongsTo(MasterPricelistLoloBatam::class, 'master_pricelist_lolo_batam_id');
+    }
+
+    public function operatorKaryawan(): BelongsTo
+    {
+        return $this->belongsTo(Karyawan::class, 'operator_karyawan_id');
     }
 
     public function getFormattedTarifAttribute(): string

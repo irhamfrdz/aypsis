@@ -13,13 +13,13 @@ return new class extends Migration
     {
         if (Schema::hasTable('lokasi_absensis')) {
             Schema::table('lokasi_absensis', function (Blueprint $table) {
-                if (!Schema::hasColumn('lokasi_absensis', 'tipe_penugasan')) {
+                if (! Schema::hasColumn('lokasi_absensis', 'tipe_penugasan')) {
                     $table->string('tipe_penugasan', 20)->default('semua')->after('is_active');
                 }
             });
         }
 
-        if (!Schema::hasTable('lokasi_absensi_karyawan')) {
+        if (! Schema::hasTable('lokasi_absensi_karyawan')) {
             Schema::create('lokasi_absensi_karyawan', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('lokasi_absensi_id');

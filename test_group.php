@@ -1,4 +1,5 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -20,6 +21,7 @@ $pergerakanKapals = \App\Models\PergerakanKapal::where(function ($q) use ($namaK
 
 $groupedPergerakan = $pergerakanKapals->groupBy('no_voyage')->map(function ($items, $voyage) {
     $first = $items->first();
+
     return [
         'no_voyage' => $voyage,
         'pelabuhan_tujuan' => $first->pelabuhan_tujuan,
@@ -33,4 +35,4 @@ $groupedPergerakan = $pergerakanKapals->groupBy('no_voyage')->map(function ($ite
     ];
 });
 
-echo "Found " . $groupedPergerakan->count() . " voyages from pergerakan_kapal.\n";
+echo 'Found '.$groupedPergerakan->count()." voyages from pergerakan_kapal.\n";

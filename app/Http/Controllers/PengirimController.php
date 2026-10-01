@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PengirimDataExport;
 use App\Exports\PengirimExport;
+use App\Imports\PengirimUpdateImport;
 use App\Models\Pengirim;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PengirimDataExport;
-use App\Imports\PengirimUpdateImport;
 
 class PengirimController extends Controller
 {
@@ -357,12 +357,14 @@ class PengirimController extends Controller
             'message' => 'Pengirim berhasil diperbarui!',
         ]);
     }
+
     /**
      * Export data pengirim ke Excel
      */
     public function exportData()
     {
-        $filename = 'master_pengirim_data_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'master_pengirim_data_'.date('Y-m-d_His').'.xlsx';
+
         return Excel::download(new PengirimDataExport, $filename);
     }
 
@@ -381,16 +383,16 @@ class PengirimController extends Controller
 
             if ($import->successCount > 0) {
                 $message = "Berhasil memperbarui {$import->successCount} data pengirim";
-                if (!empty($import->errors)) {
-                    $message .= '. Namun ada ' . count($import->errors) . ' error: ' . implode('; ', $import->errors);
+                if (! empty($import->errors)) {
+                    $message .= '. Namun ada '.count($import->errors).' error: '.implode('; ', $import->errors);
                 }
 
                 return redirect()->route('pengirim.index')->with('success', $message);
             } else {
-                return redirect()->route('pengirim.index')->with('error', 'Tidak ada data yang diperbarui. ' . implode('; ', $import->errors));
+                return redirect()->route('pengirim.index')->with('error', 'Tidak ada data yang diperbarui. '.implode('; ', $import->errors));
             }
         } catch (\Exception $e) {
-            return redirect()->route('pengirim.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('pengirim.index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

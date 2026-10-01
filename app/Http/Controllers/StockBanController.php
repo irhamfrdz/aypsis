@@ -23,8 +23,8 @@ class StockBanController extends Controller
     {
         $bulan = $request->input('bulan', date('m'));
         $tahun = $request->input('tahun', date('Y'));
-        
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\OpnameBanLuarExport($bulan, $tahun), 'Opname_Ban_Luar_' . $bulan . '_' . $tahun . '.xlsx');
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\OpnameBanLuarExport($bulan, $tahun), 'Opname_Ban_Luar_'.$bulan.'_'.$tahun.'.xlsx');
     }
 
     /**
@@ -886,7 +886,7 @@ class StockBanController extends Controller
             if ($stockBan->jumlah_masak == 0) {
                 $stockBan->status_masak = 'belum';
             }
-            
+
             // Clean up keterangan if it contains [Masak Kanisir]
             if ($stockBan->keterangan) {
                 $lines = explode("\n", $stockBan->keterangan);
@@ -906,7 +906,7 @@ class StockBanController extends Controller
                     $item = \App\Models\InvoiceKanisirBanItem::where('invoice_kanisir_ban_id', $invoice->id)
                         ->where('stock_ban_id', $stockBan->id)
                         ->first();
-                    
+
                     if ($item) {
                         $item->delete();
                         // Recalculate invoice
@@ -920,7 +920,7 @@ class StockBanController extends Controller
                     }
                 }
                 $stockBan->nomor_bukti = null;
-                $stockBan->nomor_faktur = null; 
+                $stockBan->nomor_faktur = null;
             }
 
             $stockBan->save();

@@ -17,18 +17,18 @@ class UpdateManifestNamaBarangCommand extends Command
 
     public function handle()
     {
-        $this->info("Starting Manifest nama_barang update...");
-        
+        $this->info('Starting Manifest nama_barang update...');
+
         $updated = 0;
-        
+
         \App\Models\Manifest::chunkById(200, function ($manifests) use (&$updated) {
             foreach ($manifests as $manifest) {
                 try {
                     $tt = null;
-                    if (!empty($manifest->nomor_tanda_terima)) {
+                    if (! empty($manifest->nomor_tanda_terima)) {
                         $tt = \App\Models\TandaTerima::where('no_surat_jalan', $manifest->nomor_tanda_terima)->first();
                     }
-                    if (!$tt && $manifest->prospek_id) {
+                    if (! $tt && $manifest->prospek_id) {
                         $prospek = \App\Models\Prospek::find($manifest->prospek_id);
                         if ($prospek && $prospek->tandaTerima) {
                             $tt = $prospek->tandaTerima;
@@ -69,11 +69,11 @@ class UpdateManifestNamaBarangCommand extends Command
                         }
                     }
                 } catch (\Exception $e) {
-                    $this->error("Error updating Manifest ID {$manifest->id}: " . $e->getMessage());
+                    $this->error("Error updating Manifest ID {$manifest->id}: ".$e->getMessage());
                 }
             }
         });
-        
+
         $this->info("Finished updating {$updated} manifests.");
     }
 }

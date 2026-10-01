@@ -11,7 +11,9 @@ use Maatwebsite\Excel\Events\AfterSheet;
 class BiayaBuruhRangeExport implements FromView, ShouldAutoSize, WithEvents
 {
     protected $biayaKapals;
+
     protected $tanggalMulai;
+
     protected $tanggalAkhir;
 
     public function __construct($biayaKapals, $tanggalMulai, $tanggalAkhir)
@@ -63,7 +65,7 @@ class BiayaBuruhRangeExport implements FromView, ShouldAutoSize, WithEvents
             $tenagaKerjaGroups = $biayaKapal->tenagaKerjaDetails->groupBy(function ($item) {
                 return ($item->kapal ?? '-').' - '.($item->voyage ?? '-');
             });
-            
+
             $processedData[] = [
                 'biayaKapal' => $biayaKapal,
                 'groupedDetails' => $groupedDetails,

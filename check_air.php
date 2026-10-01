@@ -1,11 +1,15 @@
 <?php
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 // Fix BKP-02-26-000016 (ID 71)
 $bk = \App\Models\BiayaKapal::where('nomor_invoice', 'BKP-02-26-000016')->first();
-if (!$bk) { echo "Invoice not found!\n"; exit; }
+if (! $bk) {
+    echo "Invoice not found!\n";
+    exit;
+}
 
 echo "=== BEFORE FIX ===\n";
 echo "Nominal: {$bk->nominal}\n\n";
@@ -20,10 +24,10 @@ $correctJasaAir = 100000;
 $totalGrand = 0;
 
 foreach ($airs as $a) {
-    $waterCost = (float)$a->kuantitas * (float)$a->harga;
+    $waterCost = (float) $a->kuantitas * (float) $a->harga;
     $jasaAir = ($a->jasa_air > 0) ? $correctJasaAir : 0; // only if originally had jasa_air
     $subTotal = $waterCost + $jasaAir;
-    
+
     // Abqori PPH logic: "Air Tawar (Tanki)" is NOT taxable, only jasa_air is
     $isAbqori = str_contains(strtoupper($a->vendor ?? ''), 'ABQORI');
     $isTypeTaxable = true;
@@ -37,18 +41,18 @@ foreach ($airs as $a) {
             }
         }
     }
-    
+
     $pphBase = $isTypeTaxable ? $subTotal : $jasaAir;
     $pph = $a->pph_active ? round($pphBase * 0.02) : 0;
     $grandTotal = $subTotal - $pph;
-    
+
     $a->update([
         'jasa_air' => $jasaAir,
         'sub_total' => $subTotal,
         'pph' => $pph,
         'grand_total' => $grandTotal,
     ]);
-    
+
     $totalGrand += $grandTotal;
 }
 
@@ -76,6 +80,8 @@ $suspicious = \DB::select("
 
 foreach ($suspicious as $s) {
     $inv = \App\Models\BiayaKapal::find($s->biaya_kapal_id);
-    if (!$inv) continue;
+    if (! $inv) {
+        continue;
+    }
     echo "  Invoice: {$inv->nomor_invoice} (ID: {$s->biaya_kapal_id}), count: {$s->cnt}, max jasa_air: {$s->max_jasa}\n";
 }

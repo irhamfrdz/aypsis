@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Chat;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
@@ -46,7 +45,7 @@ class ChatController extends Controller
             ->get();
 
         return response()->json([
-            'messages' => $messages
+            'messages' => $messages,
         ]);
     }
 
@@ -54,7 +53,7 @@ class ChatController extends Controller
     {
         $request->validate([
             'session_id' => 'required|string',
-            'message' => 'required|string'
+            'message' => 'required|string',
         ]);
 
         $chat = Chat::create([
@@ -67,7 +66,7 @@ class ChatController extends Controller
 
         return response()->json([
             'success' => true,
-            'chat' => $chat
+            'chat' => $chat,
         ]);
     }
 
@@ -76,7 +75,7 @@ class ChatController extends Controller
         Chat::where('session_id', $sessionId)->delete();
 
         return response()->json([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -85,7 +84,7 @@ class ChatController extends Controller
     public function getMessages(Request $request)
     {
         $request->validate([
-            'session_id' => 'required|string'
+            'session_id' => 'required|string',
         ]);
 
         // Mark admin messages as read for this session
@@ -99,15 +98,16 @@ class ChatController extends Controller
             ->get();
 
         return response()->json([
-            'messages' => $messages
+            'messages' => $messages,
         ]);
     }
 
     public function getFaqs()
     {
         $faqs = \App\Models\ChatFaq::where('is_active', true)->orderBy('id', 'asc')->get();
+
         return response()->json([
-            'faqs' => $faqs
+            'faqs' => $faqs,
         ]);
     }
 
@@ -117,7 +117,7 @@ class ChatController extends Controller
             'session_id' => 'required|string',
             'message' => 'required|string',
             'is_faq' => 'nullable|boolean',
-            'faq_id' => 'nullable|integer'
+            'faq_id' => 'nullable|integer',
         ]);
 
         $chat = Chat::create([
@@ -129,7 +129,7 @@ class ChatController extends Controller
         ]);
 
         $autoReply = null;
-        
+
         // Check if this is an FAQ message
         if ($request->has('is_faq') && $request->is_faq && $request->has('faq_id')) {
             $faq = \App\Models\ChatFaq::where('id', $request->faq_id)->where('is_active', true)->first();
@@ -147,46 +147,48 @@ class ChatController extends Controller
             // Auto-responder logic based on keywords
             $userMessage = strtolower($request->message);
             $userMessage = preg_replace('/[^\w\s]/', '', $userMessage); // Remove punctuation
-            
+
             // Get all active FAQs
             $faqs = \App\Models\ChatFaq::where('is_active', true)->get();
-            
+
             $bestMatch = null;
             $highestScore = 0;
-            
+
             // Common Indonesian stop words to ignore
             $stopWords = ['apa', 'apakah', 'bagaimana', 'dimana', 'kapan', 'siapa', 'mengapa', 'kenapa', 'bisa', 'yang', 'di', 'ke', 'dari', 'dan', 'atau', 'untuk', 'saya', 'kami', 'tolong', 'cara', 'halo', 'min', 'admin'];
-            
+
             foreach ($faqs as $faq) {
                 $faqQuestion = strtolower($faq->question);
                 $faqQuestion = preg_replace('/[^\w\s]/', '', $faqQuestion);
-                
+
                 // Split question into words
                 $allFaqWords = array_filter(explode(' ', $faqQuestion));
                 $faqWords = array_diff($allFaqWords, $stopWords);
-                
+
                 if (count($faqWords) === 0) {
                     $faqWords = $allFaqWords;
                 }
-                
-                if (count($faqWords) === 0) continue;
-                
+
+                if (count($faqWords) === 0) {
+                    continue;
+                }
+
                 $matchCount = 0;
                 foreach ($faqWords as $word) {
                     if (strpos($userMessage, $word) !== false) {
                         $matchCount++;
                     }
                 }
-                
+
                 $score = $matchCount / count($faqWords);
-                
+
                 // Match if at least 50% of the significant words in the FAQ question are present in the user's message
                 if ($score >= 0.5 && $score > $highestScore) {
                     $highestScore = $score;
                     $bestMatch = $faq;
                 }
             }
-            
+
             if ($bestMatch) {
                 $autoReply = Chat::create([
                     'session_id' => $request->session_id,
@@ -201,7 +203,7 @@ class ChatController extends Controller
         return response()->json([
             'success' => true,
             'chat' => $chat,
-            'auto_reply' => $autoReply
+            'auto_reply' => $autoReply,
         ]);
     }
 }

@@ -249,9 +249,9 @@ PHP;
 
 $insertIndex = strrpos($content, '}'); // Find the closing brace of the class
 if ($insertIndex !== false) {
-    $content = substr($content, 0, $insertIndex) . $selectMethod . "\n" . $rekapMethod . "\n" . $printMethod . "\n" . "}\n";
+    $content = substr($content, 0, $insertIndex).$selectMethod."\n".$rekapMethod."\n".$printMethod."\n"."}\n";
     file_put_contents($file, $content);
-    echo "Added rekapBongkaranKontainer methods successfully.";
+    echo 'Added rekapBongkaranKontainer methods successfully.';
 } else {
-    echo "Failed to find the class closing brace.";
+    echo 'Failed to find the class closing brace.';
 }

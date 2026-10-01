@@ -1868,10 +1868,10 @@ class BiayaKapalController extends Controller
 
                     $nominalRaw = $section['nominal'] ?? 0;
                     $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
-                    
+
                     $pphRaw = $section['pph'] ?? 0;
                     $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
-                    
+
                     \App\Models\BiayaKapalUmum::create([
                         'biaya_kapal_id' => $biayaKapal->id,
                         'kapal' => $section['kapal'] ?? null,
@@ -1884,7 +1884,7 @@ class BiayaKapalController extends Controller
                         'nominal' => $nominal,
                         'pph' => $pph,
                     ]);
-                    
+
                     $totalUmum += ($nominal - $pph);
                 }
 
@@ -2582,18 +2582,19 @@ class BiayaKapalController extends Controller
                 'truckingDetails', 'stuffingDetails', 'perlengkapanDetails',
                 'labuhTambatDetails', 'oppOptDetails', 'thcDetails', 'loloDetails',
                 'storageDetails', 'freightDetails', 'perijinanDetails', 'meratusDetails',
-                'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails'
+                'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails',
             ];
 
             foreach ($relationsToFilter as $rel) {
                 if ($biayaKapal->relationLoaded($rel)) {
-                    $filtered = $biayaKapal->{$rel}->filter(function($detail) use ($kapalLower, $voyageLower) {
+                    $filtered = $biayaKapal->{$rel}->filter(function ($detail) use ($kapalLower, $voyageLower) {
                         $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
                         $dVoyage = isset($detail->voyage) ? strtolower(trim($detail->voyage)) : '';
+
                         // Special handling for labuhTambat which stores data a bit differently? Actually it uses kapal/voyage in DB.
                         return $dKapal === $kapalLower && $dVoyage === $voyageLower;
                     })->values();
-                    
+
                     $biayaKapal->setRelation($rel, $filtered);
                 }
             }
@@ -4896,10 +4897,10 @@ class BiayaKapalController extends Controller
 
                         $nominalRaw = $section['nominal'] ?? 0;
                         $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
-                        
+
                         $pphRaw = $section['pph'] ?? 0;
                         $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
-                        
+
                         \App\Models\BiayaKapalUmum::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
@@ -4924,7 +4925,7 @@ class BiayaKapalController extends Controller
             if ($request->has('perlengkapan_sections')) {
                 BiayaKapalPerlengkapan::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 $totalPerlengkapan = 0;
-                
+
                 if (! empty($request->perlengkapan_sections)) {
                     foreach ($request->perlengkapan_sections as $section) {
                         if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
@@ -4946,7 +4947,7 @@ class BiayaKapalController extends Controller
                         $totalPerlengkapan += $jumlah;
                     }
                 }
-                
+
                 if ($totalPerlengkapan > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'perlengkapan') !== false)) {
                     $biayaKapal->update(['nominal' => $totalPerlengkapan]);
                 }
@@ -5168,7 +5169,7 @@ class BiayaKapalController extends Controller
             });
 
             $voyagesFromNaikKapalQuery->select(
-                'no_voyage', 
+                'no_voyage',
                 DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as min_tanggal'),
                 DB::raw('MAX(COALESCE(tanggal_muat, created_at)) as max_tanggal')
             );
@@ -5187,7 +5188,7 @@ class BiayaKapalController extends Controller
             });
 
             $voyagesFromBlsQuery->select(
-                'no_voyage', 
+                'no_voyage',
                 DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as min_tanggal'),
                 DB::raw('MAX(COALESCE(tanggal_berangkat, created_at)) as max_tanggal')
             );
@@ -5198,14 +5199,14 @@ class BiayaKapalController extends Controller
             foreach ($voyagesFromNaikKapal as $row) {
                 $voyageDates[$row->no_voyage] = [
                     'min' => $row->min_tanggal,
-                    'max' => $row->max_tanggal
+                    'max' => $row->max_tanggal,
                 ];
             }
             foreach ($voyagesFromBls as $row) {
                 if (! isset($voyageDates[$row->no_voyage])) {
                     $voyageDates[$row->no_voyage] = [
                         'min' => $row->min_tanggal,
-                        'max' => $row->max_tanggal
+                        'max' => $row->max_tanggal,
                     ];
                 } else {
                     if ($row->min_tanggal < $voyageDates[$row->no_voyage]['min']) {
@@ -5224,7 +5225,7 @@ class BiayaKapalController extends Controller
                 $formattedDate = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('d/M/Y') : '-';
                 $minTanggal = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('Y-m-d') : '';
                 $maxTanggal = $dates['max'] ? \Carbon\Carbon::parse($dates['max'])->format('Y-m-d') : '';
-                
+
                 $voyagesDetailed[] = [
                     'no_voyage' => $no_voyage,
                     'tanggal' => $formattedDate,
@@ -5259,7 +5260,7 @@ class BiayaKapalController extends Controller
             $dariTanggal = $request->input('dari_tanggal');
             $sampaiTanggal = $request->input('sampai_tanggal');
 
-            if (!$dariTanggal || !$sampaiTanggal) {
+            if (! $dariTanggal || ! $sampaiTanggal) {
                 return response()->json(['success' => false, 'message' => 'Tanggal harus diisi']);
             }
 
@@ -5269,8 +5270,8 @@ class BiayaKapalController extends Controller
                 ->where('no_voyage', '!=', '')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) >= ?", [$dariTanggal])
-                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) <= ?", [$sampaiTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_muat, created_at)) >= ?', [$dariTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_muat, created_at)) <= ?', [$sampaiTanggal])
                 ->select(
                     'nama_kapal',
                     'no_voyage',
@@ -5286,8 +5287,8 @@ class BiayaKapalController extends Controller
                 ->where('no_voyage', '!=', '')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) >= ?", [$dariTanggal])
-                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) <= ?", [$sampaiTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_berangkat, created_at)) >= ?', [$dariTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_berangkat, created_at)) <= ?', [$sampaiTanggal])
                 ->select(
                     'nama_kapal',
                     'no_voyage',
@@ -5299,23 +5300,23 @@ class BiayaKapalController extends Controller
 
             $voyagesMap = [];
             foreach ($naikKapalQuery as $row) {
-                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
+                $key = trim($row->nama_kapal).'|'.trim($row->no_voyage);
                 $voyagesMap[$key] = [
                     'nama_kapal' => $row->nama_kapal,
                     'no_voyage' => $row->no_voyage,
                     'min_tanggal' => $row->min_tanggal,
-                    'max_tanggal' => $row->max_tanggal
+                    'max_tanggal' => $row->max_tanggal,
                 ];
             }
 
             foreach ($blsQuery as $row) {
-                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
-                if (!isset($voyagesMap[$key])) {
+                $key = trim($row->nama_kapal).'|'.trim($row->no_voyage);
+                if (! isset($voyagesMap[$key])) {
                     $voyagesMap[$key] = [
                         'nama_kapal' => $row->nama_kapal,
                         'no_voyage' => $row->no_voyage,
                         'min_tanggal' => $row->min_tanggal,
-                        'max_tanggal' => $row->max_tanggal
+                        'max_tanggal' => $row->max_tanggal,
                     ];
                 } else {
                     if ($row->min_tanggal < $voyagesMap[$key]['min_tanggal']) {
@@ -5340,11 +5341,12 @@ class BiayaKapalController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $results,
             ]);
 
         } catch (\Exception $e) {
             Log::error('getVoyagesByDateRange error', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data voyage: '.$e->getMessage(),
@@ -5930,10 +5932,10 @@ class BiayaKapalController extends Controller
             'tenagaKerjaDetails.buruh',
             'bank',
         ])
-        ->where('jenis_biaya', 'KB024')
-        ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
-        ->orderBy('tanggal', 'asc')
-        ->get();
+            ->where('jenis_biaya', 'KB024')
+            ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+            ->orderBy('tanggal', 'asc')
+            ->get();
 
         if ($biayaKapals->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada data Biaya Buruh pada rentang tanggal tersebut.');
@@ -6018,7 +6020,7 @@ class BiayaKapalController extends Controller
     public function searchPengirim(Request $request)
     {
         $search = $request->get('q', '');
-        
+
         $query = \App\Models\Manifest::select('pengirim')
             ->distinct()
             ->whereNotNull('pengirim')
@@ -6047,7 +6049,7 @@ class BiayaKapalController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        if (!$pengirim || !$startDate || !$endDate) {
+        if (! $pengirim || ! $startDate || ! $endDate) {
             return response()->json(['data' => []]);
         }
 
@@ -6060,7 +6062,7 @@ class BiayaKapalController extends Controller
         $data = $manifests->map(function ($manifest) {
             $suratJalan = '-';
             $tipe = null;
-            
+
             if ($manifest->suratJalanBongkaran) {
                 $suratJalan = $manifest->suratJalanBongkaran->nomor_surat_jalan;
                 $tipe = 'regular';

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class BeritaController extends Controller
 {
@@ -17,10 +17,11 @@ class BeritaController extends Controller
             $query->where('tipe', $request->tipe);
         }
         if ($request->filled('search')) {
-            $query->where('judul', 'like', '%' . $request->search . '%');
+            $query->where('judul', 'like', '%'.$request->search.'%');
         }
 
         $beritas = $query->paginate(15)->withQueryString();
+
         return view('berita.index', compact('beritas'));
     }
 
@@ -32,15 +33,16 @@ class BeritaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul'        => 'required|string|max:255',
-            'konten'       => 'nullable|string',
-            'tipe'         => 'required|in:berita,pamflet',
-            'gambar'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'judul' => 'required|string|max:255',
+            'konten' => 'nullable|string',
+            'tipe' => 'required|in:berita,pamflet',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
 
         if ($request->hasFile('gambar') === false && $request->file('gambar')) {
             $err = $request->file('gambar')->getErrorMessage();
+
             return back()->withInput()->withErrors(['gambar' => "Gagal upload gambar: {$err}. Pastikan ukuran file tidak melebihi batas upload server."]);
         }
 
@@ -50,14 +52,14 @@ class BeritaController extends Controller
         }
 
         Berita::create([
-            'judul'        => $request->judul,
-            'konten'       => $request->konten,
-            'tipe'         => $request->tipe,
-            'gambar'       => $gambarPath,
-            'is_active'    => $request->boolean('is_active', true),
-            'pinned'       => $request->boolean('pinned', false),
+            'judul' => $request->judul,
+            'konten' => $request->konten,
+            'tipe' => $request->tipe,
+            'gambar' => $gambarPath,
+            'is_active' => $request->boolean('is_active', true),
+            'pinned' => $request->boolean('pinned', false),
             'published_at' => $request->published_at ? Carbon::parse($request->published_at) : Carbon::now(),
-            'created_by'   => Auth::id(),
+            'created_by' => Auth::id(),
         ]);
 
         return redirect()->route('berita.index')->with('success', 'Berita/Pamflet berhasil ditambahkan.');
@@ -71,15 +73,16 @@ class BeritaController extends Controller
     public function update(Request $request, Berita $berita)
     {
         $request->validate([
-            'judul'        => 'required|string|max:255',
-            'konten'       => 'nullable|string',
-            'tipe'         => 'required|in:berita,pamflet',
-            'gambar'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'judul' => 'required|string|max:255',
+            'konten' => 'nullable|string',
+            'tipe' => 'required|in:berita,pamflet',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
 
         if ($request->hasFile('gambar') === false && $request->file('gambar')) {
             $err = $request->file('gambar')->getErrorMessage();
+
             return back()->withInput()->withErrors(['gambar' => "Gagal upload gambar: {$err}. Pastikan ukuran file tidak melebihi batas upload server."]);
         }
 
@@ -94,12 +97,12 @@ class BeritaController extends Controller
         }
 
         $berita->update([
-            'judul'        => $request->judul,
-            'konten'       => $request->konten,
-            'tipe'         => $request->tipe,
-            'gambar'       => $gambarPath,
-            'is_active'    => $request->boolean('is_active', true),
-            'pinned'       => $request->boolean('pinned', false),
+            'judul' => $request->judul,
+            'konten' => $request->konten,
+            'tipe' => $request->tipe,
+            'gambar' => $gambarPath,
+            'is_active' => $request->boolean('is_active', true),
+            'pinned' => $request->boolean('pinned', false),
             'published_at' => $request->published_at ? Carbon::parse($request->published_at) : $berita->published_at,
         ]);
 
@@ -114,6 +117,7 @@ class BeritaController extends Controller
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json(['success' => true, 'message' => 'Berita/Pamflet berhasil dihapus.']);
         }
+
         return redirect()->route('berita.index')->with('success', 'Berita/Pamflet berhasil dihapus.');
     }
 
@@ -122,16 +126,17 @@ class BeritaController extends Controller
      */
     public function toggleActive(Berita $berita)
     {
-        $berita->update(['is_active' => !$berita->is_active]);
+        $berita->update(['is_active' => ! $berita->is_active]);
+
         return response()->json([
-            'success'   => true,
+            'success' => true,
             'is_active' => $berita->is_active,
-            'message'   => $berita->is_active ? 'Berita diaktifkan.' : 'Berita dinonaktifkan.',
+            'message' => $berita->is_active ? 'Berita diaktifkan.' : 'Berita dinonaktifkan.',
         ]);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Helper: Manajemen File Gambar                                      */
+    /*  Helper: Manajemen File Gambar */
     /* ------------------------------------------------------------------ */
 
     /**
@@ -141,26 +146,26 @@ class BeritaController extends Controller
      *
      * @param  \Illuminate\Http\UploadedFile  $file
      * @param  string  $tipe  'berita' | 'pamflet'
-     * @return string  Path relatif dari public/ (misal: uploads/pamflet/xxx.jpg)
+     * @return string Path relatif dari public/ (misal: uploads/pamflet/xxx.jpg)
      */
     private function storeGambar($file, string $tipe): string
     {
-        $folder  = 'uploads/' . $tipe;          // uploads/berita  atau  uploads/pamflet
+        $folder = 'uploads/'.$tipe;          // uploads/berita  atau  uploads/pamflet
         $destDir = public_path($folder);
 
-        if (!is_dir($destDir)) {
+        if (! is_dir($destDir)) {
             mkdir($destDir, 0775, true);
         }
 
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
-        $fileName  = $tipe . '_' . time() . '_' . uniqid() . '.' . $extension;
+        $fileName = $tipe.'_'.time().'_'.uniqid().'.'.$extension;
         $file->move($destDir, $fileName);
-        @chmod($destDir . DIRECTORY_SEPARATOR . $fileName, 0664);
+        @chmod($destDir.DIRECTORY_SEPARATOR.$fileName, 0664);
 
         // Sync: copy gambar ke folder PWA (jika PWA_UPLOAD_DIR dikonfigurasi)
-        $this->syncToPwa($folder . '/' . $fileName);
+        $this->syncToPwa($folder.'/'.$fileName);
 
-        return $folder . '/' . $fileName;
+        return $folder.'/'.$fileName;
     }
 
     /**
@@ -176,8 +181,8 @@ class BeritaController extends Controller
             return; // Tidak dikonfigurasi, skip
         }
 
-        $srcPath  = public_path($relativePath);
-        if (!file_exists($srcPath)) {
+        $srcPath = public_path($relativePath);
+        if (! file_exists($srcPath)) {
             return;
         }
 
@@ -185,10 +190,10 @@ class BeritaController extends Controller
         // relativePath contoh: uploads/pamflet/pamflet_xxx.jpg
         // destPath: {PWA_UPLOAD_DIR}/pamflet/pamflet_xxx.jpg (tanpa prefix 'uploads/')
         $withoutUploadsPrefix = preg_replace('#^uploads/#', '', $relativePath);
-        $destDir  = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . dirname($withoutUploadsPrefix);
-        $destPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $withoutUploadsPrefix;
+        $destDir = rtrim($pwaUploadDir, '/\\').DIRECTORY_SEPARATOR.dirname($withoutUploadsPrefix);
+        $destPath = rtrim($pwaUploadDir, '/\\').DIRECTORY_SEPARATOR.$withoutUploadsPrefix;
 
-        if (!is_dir($destDir)) {
+        if (! is_dir($destDir)) {
             @mkdir($destDir, 0775, true);
         }
 
@@ -203,7 +208,7 @@ class BeritaController extends Controller
      */
     private function deleteGambar(?string $path): void
     {
-        if (!$path) {
+        if (! $path) {
             return;
         }
 
@@ -214,9 +219,9 @@ class BeritaController extends Controller
 
         // Hapus dari PWA uploads/
         $pwaUploadDir = env('PWA_UPLOAD_DIR');
-        if (!empty($pwaUploadDir)) {
+        if (! empty($pwaUploadDir)) {
             $withoutUploadsPrefix = preg_replace('#^uploads/#', '', $path);
-            $pwaPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $withoutUploadsPrefix;
+            $pwaPath = rtrim($pwaUploadDir, '/\\').DIRECTORY_SEPARATOR.$withoutUploadsPrefix;
             if (file_exists($pwaPath)) {
                 @unlink($pwaPath);
             }
@@ -230,36 +235,36 @@ class BeritaController extends Controller
      *
      * @param  string  $oldPath  Path relatif lama (misal: uploads/berita/xxx.jpg)
      * @param  string  $newTipe  Tipe baru ('berita' | 'pamflet')
-     * @return string  Path relatif baru, atau path lama jika file tidak ditemukan
+     * @return string Path relatif baru, atau path lama jika file tidak ditemukan
      */
     private function moveGambar(string $oldPath, string $newTipe): string
     {
         $oldAbsolute = public_path($oldPath);
 
-        if (!file_exists($oldAbsolute)) {
+        if (! file_exists($oldAbsolute)) {
             return $oldPath; // file tidak ada, kembalikan path lama
         }
 
-        $newFolder  = 'uploads/' . $newTipe;
+        $newFolder = 'uploads/'.$newTipe;
         $newDestDir = public_path($newFolder);
 
-        if (!is_dir($newDestDir)) {
+        if (! is_dir($newDestDir)) {
             mkdir($newDestDir, 0755, true);
         }
 
-        $fileName    = basename($oldAbsolute);
-        $newAbsolute = $newDestDir . DIRECTORY_SEPARATOR . $fileName;
+        $fileName = basename($oldAbsolute);
+        $newAbsolute = $newDestDir.DIRECTORY_SEPARATOR.$fileName;
 
         rename($oldAbsolute, $newAbsolute);
 
-        $newRelativePath = $newFolder . '/' . $fileName;
+        $newRelativePath = $newFolder.'/'.$fileName;
 
         // Sync: pindahkan juga di folder PWA
         $pwaUploadDir = env('PWA_UPLOAD_DIR');
-        if (!empty($pwaUploadDir)) {
+        if (! empty($pwaUploadDir)) {
             // Hapus file lama di PWA
             $oldWithoutPrefix = preg_replace('#^uploads/#', '', $oldPath);
-            $pwaOldPath = rtrim($pwaUploadDir, '/\\') . DIRECTORY_SEPARATOR . $oldWithoutPrefix;
+            $pwaOldPath = rtrim($pwaUploadDir, '/\\').DIRECTORY_SEPARATOR.$oldWithoutPrefix;
             if (file_exists($pwaOldPath)) {
                 @unlink($pwaOldPath);
             }

@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 class MasterJadwalKapalBerlabuhExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $jadwals;
+
     protected $filterPelabuhan;
 
     public function __construct($jadwals, $filterPelabuhan = null)

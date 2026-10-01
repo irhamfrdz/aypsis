@@ -60,6 +60,22 @@
                     </span>
                 </div>
                 <div>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Operator LOLO</span>
+                    <span class="text-sm font-bold text-gray-800 mt-1 block">
+                        @if($tagihanLoloBatam->tipe_operator === 'AYP')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                <i class="fas fa-user-tie mr-1 text-blue-600"></i> AYP: {{ $tagihanLoloBatam->operator ?: ($tagihanLoloBatam->operatorKaryawan->nama_lengkap ?? '-') }}
+                            </span>
+                        @elseif($tagihanLoloBatam->tipe_operator === 'VENDOR')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                <i class="fas fa-building mr-1 text-purple-600"></i> Vendor: {{ $tagihanLoloBatam->operator ?: ($tagihanLoloBatam->vendor ?: '-') }}
+                            </span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </span>
+                </div>
+                <div>
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Kapal & Voyage</span>
                     <span class="text-sm font-bold text-gray-800 mt-1 block">
                         {{ $tagihanLoloBatam->kapal ?: '-' }} {{ $tagihanLoloBatam->voyage ? '(' . $tagihanLoloBatam->voyage . ')' : '' }}

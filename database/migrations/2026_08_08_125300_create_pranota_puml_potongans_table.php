@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('pot_pph', 15, 2)->default(0);
             $table->decimal('pot_terlambat', 15, 2)->default(0);
             $table->timestamps();
-            
+
             // A Karyawan can only have one set of adjustments per PUML
             $table->unique(['pranota_puml_id', 'karyawan_id']);
         });

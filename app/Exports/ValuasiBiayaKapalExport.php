@@ -4,18 +4,22 @@ namespace App\Exports;
 
 use App\Models\BiayaKapal;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class ValuasiBiayaKapalExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $kapal;
+
     protected $jenisBiaya;
+
     protected $tanggalMulai;
+
     protected $tanggalAkhir;
+
     protected $biayaKapals;
 
     public function __construct($kapal, $jenisBiaya, $tanggalMulai, $tanggalAkhir, $biayaKapals = null)
@@ -39,8 +43,8 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             $kapal = $this->kapal;
             $query->where(function ($q) use ($kapal) {
                 $q->whereJsonContains('nama_kapal', $kapal)
-                  ->orWhere('nama_kapal', 'like', "%\"{$kapal}\"%")
-                  ->orWhere('nama_kapal', 'like', "%{$kapal}%");
+                    ->orWhere('nama_kapal', 'like', "%\"{$kapal}\"%")
+                    ->orWhere('nama_kapal', 'like', "%{$kapal}%");
             });
         }
 
@@ -67,7 +71,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             'Nominal',
             'PPN',
             'PPh',
-            'Total Biaya'
+            'Total Biaya',
         ];
     }
 
@@ -121,7 +125,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             $row->nominal ?? 0,
             $row->ppn ?? 0,
             $row->pph ?? 0,
-            $row->total_biaya ?? 0
+            $row->total_biaya ?? 0,
         ];
     }
 

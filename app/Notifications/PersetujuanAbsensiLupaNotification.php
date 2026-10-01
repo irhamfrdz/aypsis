@@ -36,17 +36,17 @@ class PersetujuanAbsensiLupaNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        $karyawanNama = $this->pengajuan->karyawan 
-            ? $this->pengajuan->karyawan->nama_lengkap 
-            : 'Karyawan NIK: ' . $this->pengajuan->karyawan_id;
+        $karyawanNama = $this->pengajuan->karyawan
+            ? $this->pengajuan->karyawan->nama_lengkap
+            : 'Karyawan NIK: '.$this->pengajuan->karyawan_id;
 
         $tanggalFormatted = \Carbon\Carbon::parse($this->pengajuan->tanggal)->format('d M Y');
         $waktuFormatted = \Carbon\Carbon::parse($this->pengajuan->waktu)->format('H:i');
 
         return [
-            'title' => "Pengajuan Lupa Absen Baru",
+            'title' => 'Pengajuan Lupa Absen Baru',
             'message' => "{$karyawanNama} mengajukan lupa absen {$this->pengajuan->tipe_absen} pada tanggal {$tanggalFormatted} pukul {$waktuFormatted}.",
-            'notes' => "Alasan: " . $this->pengajuan->alasan,
+            'notes' => 'Alasan: '.$this->pengajuan->alasan,
             'url' => route('master.persetujuan-absensi-lupa.index', [], false),
         ];
     }

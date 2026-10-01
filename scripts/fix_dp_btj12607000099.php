@@ -1,4 +1,5 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -12,7 +13,7 @@ foreach ($breakdown as &$b) {
     $b['potongan_bpjs'] = 0;
     $b['potongan_utang'] = 0;
     $b['potongan_tabungan'] = 0;
-    
+
     // Recalculate sisa
     $b['sisa'] = $b['total_biaya'] - $b['dp'] - ($b['potongan_bpjs'] ?? 0) - ($b['potongan_utang'] ?? 0) - ($b['potongan_tabungan'] ?? 0);
     $b['grand_total'] = $b['sisa'];

@@ -87,9 +87,10 @@ class MasterJadwalKapalBerlabuh extends Model
      */
     public function scopeByPelabuhan($query, $pelabuhan)
     {
-        if (!empty($pelabuhan)) {
+        if (! empty($pelabuhan)) {
             return $query->where('pelabuhan', $pelabuhan);
         }
+
         return $query;
     }
 
@@ -98,9 +99,10 @@ class MasterJadwalKapalBerlabuh extends Model
      */
     public function scopeByKapal($query, $kapal)
     {
-        if (!empty($kapal)) {
+        if (! empty($kapal)) {
             return $query->where('nama_kapal', $kapal);
         }
+
         return $query;
     }
 
@@ -109,9 +111,10 @@ class MasterJadwalKapalBerlabuh extends Model
      */
     public function scopeByStatus($query, $status)
     {
-        if (!empty($status)) {
+        if (! empty($status)) {
             return $query->where('status', $status);
         }
+
         return $query;
     }
 
@@ -124,7 +127,7 @@ class MasterJadwalKapalBerlabuh extends Model
             'aktif' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800"><span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-green-600"></span>Aktif</span>',
             'selesai' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800"><span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-gray-600"></span>Selesai</span>',
             'batal' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800"><span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-red-600"></span>Batal</span>',
-            default => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">' . ucfirst($this->status) . '</span>',
+            default => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">'.ucfirst($this->status).'</span>',
         };
     }
 }

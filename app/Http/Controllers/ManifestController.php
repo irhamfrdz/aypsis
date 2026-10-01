@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ManifestMultipleExport;
-use App\Exports\ManifestTableExport;
 use App\Models\Manifest;
 use App\Models\ManifestShipperDetail;
 use App\Models\Prospek;
@@ -119,15 +118,15 @@ class ManifestController extends Controller
                 $q->whereNull('size_kontainer')
                     ->orWhereRaw("TRIM(size_kontainer) = ''");
             });
-        // Filter by size kontainer
+            // Filter by size kontainer
         } elseif ($request->filled('size_kontainer')) {
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
         $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-                           ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate(20);
+            ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         // Store selection in session
         session([
@@ -157,12 +156,12 @@ class ManifestController extends Controller
                 '--voyage' => $noVoyage,
                 '--kapal' => $namaKapal,
                 '--force' => true,
-                '--nama-barang-only' => true
+                '--nama-barang-only' => true,
             ]);
 
             return redirect()->back()->with('success', 'Sinkronisasi data berhasil dijalankan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: '.$e->getMessage());
         }
     }
 
@@ -210,9 +209,9 @@ class ManifestController extends Controller
         }
 
         $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-                           ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
-                           ->orderBy('created_at', 'desc')
-                           ->get();
+            ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
@@ -602,7 +601,7 @@ class ManifestController extends Controller
         $request->validate([
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
-            'tanggal_berangkat' => 'required|date'
+            'tanggal_berangkat' => 'required|date',
         ]);
 
         $namaKapal = $request->input('nama_kapal');
@@ -1346,7 +1345,7 @@ class ManifestController extends Controller
             ->get()->map(function ($item) {
                 $displayText = $item->name;
                 if ($item->consignee) {
-                    $displayText .= ' - ' . $item->consignee;
+                    $displayText .= ' - '.$item->consignee;
                 }
 
                 return [
@@ -1385,7 +1384,7 @@ class ManifestController extends Controller
             ->get()->map(function ($item) {
                 $displayText = $item->name;
                 if ($item->notify_party) {
-                    $displayText .= ' - ' . $item->notify_party;
+                    $displayText .= ' - '.$item->notify_party;
                 }
 
                 return [
@@ -1565,7 +1564,7 @@ class ManifestController extends Controller
 
         $template = \App\Models\WaTemplate::find($templateId);
 
-        if (!$template) {
+        if (! $template) {
             return back()->with('error', 'Template WA tidak ditemukan.');
         }
 
@@ -1573,22 +1572,22 @@ class ManifestController extends Controller
         $isAllShips = $request->input('jadwal_id') === 'all';
         $jadwalKapal = null;
 
-        if (!$isAllShips && $request->filled('jadwal_id') && is_numeric($request->input('jadwal_id'))) {
+        if (! $isAllShips && $request->filled('jadwal_id') && is_numeric($request->input('jadwal_id'))) {
             $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::find($request->input('jadwal_id'));
         }
 
-        if (!$isAllShips && !$jadwalKapal && $namaKapal && $namaKapal !== 'Semua Master Shipper' && !str_starts_with($namaKapal, 'Semua Kapal')) {
+        if (! $isAllShips && ! $jadwalKapal && $namaKapal && $namaKapal !== 'Semua Master Shipper' && ! str_starts_with($namaKapal, 'Semua Kapal')) {
             $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::where('nama_kapal', $namaKapal)
-                ->when($noVoyage && $noVoyage !== '-', fn($q) => $q->where('no_voyage', $noVoyage))
-                ->when($request->filled('pelabuhan'), fn($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
+                ->when($noVoyage && $noVoyage !== '-', fn ($q) => $q->where('no_voyage', $noVoyage))
+                ->when($request->filled('pelabuhan'), fn ($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
                 ->orderBy('tanggal_etd', 'desc')
                 ->first();
 
-            if (!$jadwalKapal) {
+            if (! $jadwalKapal) {
                 $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
                 $normalizedKapal = preg_replace('/\s+/', ' ', $normalizedKapal);
                 $jadwalKapal = \App\Models\MasterJadwalKapalBerlabuh::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-                    ->when($request->filled('pelabuhan'), fn($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
+                    ->when($request->filled('pelabuhan'), fn ($q) => $q->where('pelabuhan', $request->input('pelabuhan')))
                     ->orderBy('tanggal_etd', 'desc')
                     ->first();
             }
@@ -1614,7 +1613,7 @@ class ManifestController extends Controller
             }
 
             $totalKapal = $schedulesForPort->count();
-            $namaKapalVal = "Semua Kapal" . ($pelabuhanVal ? " ({$pelabuhanVal} - {$totalKapal} Kapal)" : '');
+            $namaKapalVal = 'Semua Kapal'.($pelabuhanVal ? " ({$pelabuhanVal} - {$totalKapal} Kapal)" : '');
             $noVoyageVal = '-';
             $closeVal = '-';
             $etdVal = '-';
@@ -1627,7 +1626,7 @@ class ManifestController extends Controller
             $etaVal = ($jadwalKapal && $jadwalKapal->tanggal_eta) ? \Carbon\Carbon::parse($jadwalKapal->tanggal_eta)->format('d-M-Y') : ($request->input('tanggal_eta') ?: '');
         }
 
-        if (!$kategoriMasalah && $pelabuhanVal) {
+        if (! $kategoriMasalah && $pelabuhanVal) {
             $kategoriMasalah = $isAllShips ? "Jadwal Kapal {$pelabuhanVal} (Semua Kapal)" : "Jadwal Kapal {$pelabuhanVal}";
         }
 
@@ -1638,7 +1637,7 @@ class ManifestController extends Controller
         } elseif ($targetPenerima === 'kendala_kapal') {
             $targetPenerima = 'manifest';
             $request->merge(['type' => 'kendala']);
-        } elseif (!$targetPenerima) {
+        } elseif (! $targetPenerima) {
             if (str_contains(strtolower($template->nama_template), 'jadwal') || $request->input('type') === 'jadwal') {
                 $targetPenerima = 'all_master_shippers';
             } else {
@@ -1669,7 +1668,7 @@ class ManifestController extends Controller
         }
 
         $allRecipients = $recipientService->recipients((string) $namaKapal, (string) $noVoyage, (string) $targetPenerima);
-        if (!empty($selectedShippers)) {
+        if (! empty($selectedShippers)) {
             $allRecipients = $allRecipients->filter(fn ($r) => in_array($r['shipper_name'], $selectedShippers));
         }
 
@@ -1729,10 +1728,10 @@ class ManifestController extends Controller
         $allBlNumbers = [];
         foreach ($allRecipients as $r) {
             foreach ($r['daftar_resi'] ?? [] as $resi) {
-                if (!empty($resi['nomor_kontainer'])) {
+                if (! empty($resi['nomor_kontainer'])) {
                     $allContainers[] = trim($resi['nomor_kontainer']);
                 }
-                if (!empty($resi['nomor_bl'])) {
+                if (! empty($resi['nomor_bl'])) {
                     $allBlNumbers[] = trim($resi['nomor_bl']);
                 }
             }
@@ -1741,11 +1740,11 @@ class ManifestController extends Controller
         $allBlNumbers = array_values(array_unique(array_filter($allBlNumbers)));
 
         $kegiatanOb = $request->input('kegiatan_ob');
-        if (!$kegiatanOb) {
+        if (! $kegiatanOb) {
             $katLower = strtolower($kategoriMasalah ?? '');
-            if (str_contains($katLower, 'bongkar') && !str_contains($katLower, 'muat')) {
+            if (str_contains($katLower, 'bongkar') && ! str_contains($katLower, 'muat')) {
                 $kegiatanOb = 'bongkar';
-            } elseif (str_contains($katLower, 'muat') && !str_contains($katLower, 'bongkar')) {
+            } elseif (str_contains($katLower, 'muat') && ! str_contains($katLower, 'bongkar')) {
                 $kegiatanOb = 'muat';
             } else {
                 $kegiatanOb = 'all';
@@ -1754,7 +1753,7 @@ class ManifestController extends Controller
 
         $blRecords = collect();
         if ($kegiatanOb !== 'muat') {
-            if (!empty($allContainers) || !empty($allBlNumbers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+            if (! empty($allContainers) || ! empty($allBlNumbers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
                 $blRecords = \App\Models\Bl::query()
                     ->select('id', 'nama_kapal', 'no_voyage', 'nomor_bl', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
                     ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers, $allBlNumbers) {
@@ -1763,13 +1762,13 @@ class ManifestController extends Controller
                                 $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
                             });
                         }
-                        if (!empty($allContainers) || !empty($allBlNumbers)) {
+                        if (! empty($allContainers) || ! empty($allBlNumbers)) {
                             $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
                             $q->$method(function ($sub) use ($allContainers, $allBlNumbers) {
-                                if (!empty($allContainers)) {
+                                if (! empty($allContainers)) {
                                     $sub->whereIn('nomor_kontainer', $allContainers);
                                 }
-                                if (!empty($allBlNumbers)) {
+                                if (! empty($allBlNumbers)) {
                                     $sub->orWhereIn('nomor_bl', $allBlNumbers);
                                 }
                             });
@@ -1782,7 +1781,7 @@ class ManifestController extends Controller
 
         $naikRecords = collect();
         if ($kegiatanOb !== 'bongkar') {
-            if (!empty($allContainers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
+            if (! empty($allContainers) || ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-')) {
                 $naikRecords = \App\Models\NaikKapal::query()
                     ->select('id', 'nama_kapal', 'no_voyage', 'nomor_kontainer', 'sudah_ob', 'tanggal_ob')
                     ->where(function ($q) use ($namaKapalVal, $noVoyageVal, $allContainers) {
@@ -1791,7 +1790,7 @@ class ManifestController extends Controller
                                 $sub->where('nama_kapal', $namaKapalVal)->where('no_voyage', $noVoyageVal);
                             });
                         }
-                        if (!empty($allContainers)) {
+                        if (! empty($allContainers)) {
                             $method = ($namaKapalVal && $noVoyageVal && $noVoyageVal !== '-') ? 'orWhere' : 'where';
                             $q->$method(function ($sub) use ($allContainers) {
                                 $sub->whereIn('nomor_kontainer', $allContainers);
@@ -1833,7 +1832,7 @@ class ManifestController extends Controller
                     });
 
                     // Fallback Bl tanpa filter kapal
-                    if (!$matchedBl) {
+                    if (! $matchedBl) {
                         $matchedBl = $blRecords->first(function ($bl) use ($cleanC, $cleanB) {
                             $cBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_kontainer ?? ''));
                             $bBl = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $bl->nomor_bl ?? ''));
@@ -1852,7 +1851,7 @@ class ManifestController extends Controller
 
                         return $matchShip && ($cleanC && $cleanC === $cNk);
                     });
-                    if (!$matchedNaik) {
+                    if (! $matchedNaik) {
                         $matchedNaik = $naikRecords->first(function ($n) use ($cleanC) {
                             $cNk = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $n->nomor_kontainer ?? ''));
 
@@ -1896,10 +1895,10 @@ class ManifestController extends Controller
                 }
 
                 if ($isOb && $tglOb) {
-                    $badge .= ' (' . \Carbon\Carbon::parse($tglOb)->format('d-M-Y H:i') . ')';
+                    $badge .= ' ('.\Carbon\Carbon::parse($tglOb)->format('d-M-Y H:i').')';
                 }
 
-                $line = '- BL: ' . ($rawB ?: '-') . ' / Kontainer: ' . ($rawC ?: '-') . ' [' . $badge . ']';
+                $line = '- BL: '.($rawB ?: '-').' / Kontainer: '.($rawC ?: '-').' ['.$badge.']';
                 $formattedResiLines[] = $line;
             }
 
@@ -1911,7 +1910,7 @@ class ManifestController extends Controller
                 $statusOb = "Belum OB{$suffix}";
             } elseif ($obCount === $totalResi) {
                 if ($totalResi === 1 && $lastTglOb) {
-                    $statusOb = "Sudah OB{$suffix} (" . \Carbon\Carbon::parse($lastTglOb)->format('d-M-Y H:i') . ')';
+                    $statusOb = "Sudah OB{$suffix} (".\Carbon\Carbon::parse($lastTglOb)->format('d-M-Y H:i').')';
                 } else {
                     $statusOb = "Sudah OB{$suffix}";
                 }
@@ -1936,7 +1935,7 @@ class ManifestController extends Controller
                 || empty($kategoriMasalah)
                 || in_array(strtolower(trim($kategoriMasalah)), [
                     'status ob', 'status ob bongkar', 'status ob muat', 'status ob bongkar & muat', 'status ob bongkar dan muat',
-                    'status pengiriman', 'status', 'overbrengen', 'oper bongkar'
+                    'status pengiriman', 'status', 'overbrengen', 'oper bongkar',
                 ]);
 
             $effectiveKategori = $isStatusBroadcast ? $statusOb : $kategoriMasalah;
@@ -1948,7 +1947,7 @@ class ManifestController extends Controller
             $isiPesan = str_replace('{estimasi_keterlambatan}', $estimasiKeterlambatan, $isiPesan);
             $isiPesan = str_replace('{daftar_resi}', rtrim($daftarResi), $isiPesan);
 
-            if (!$isAllShips) {
+            if (! $isAllShips) {
                 $isiPesan = str_replace('{nama_kapal}', $namaKapalVal, $isiPesan);
                 $isiPesan = str_replace('{no_voyage}', $noVoyageVal, $isiPesan);
                 $isiPesan = str_replace('{close}', $closeVal, $isiPesan);
@@ -1968,14 +1967,14 @@ class ManifestController extends Controller
             if ($telepon) {
                 $waPhone = preg_replace('/[^0-9]/', '', $telepon);
                 if (str_starts_with($waPhone, '0')) {
-                    $waPhone = '62' . substr($waPhone, 1);
-                } elseif (!str_starts_with($waPhone, '62')) {
-                    $waPhone = '62' . $waPhone;
+                    $waPhone = '62'.substr($waPhone, 1);
+                } elseif (! str_starts_with($waPhone, '62')) {
+                    $waPhone = '62'.$waPhone;
                 }
             }
 
             $waUrl = $waPhone
-                ? "https://web.whatsapp.com/send?phone={$waPhone}&text=" . rawurlencode($isiPesan)
+                ? "https://web.whatsapp.com/send?phone={$waPhone}&text=".rawurlencode($isiPesan)
                 : null;
 
             $broadcastData[] = [
@@ -1985,7 +1984,7 @@ class ManifestController extends Controller
                 'jumlah_kontainer' => $recipient['jumlah_kontainer'],
                 'daftar_kontainer' => $recipient['daftar_kontainer'],
                 'pesan' => $isiPesan,
-                'wa_url' => $waUrl
+                'wa_url' => $waUrl,
             ];
         }
 

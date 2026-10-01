@@ -65,7 +65,7 @@ return new class extends Migration
                 ->join('karyawans', 'users.karyawan_id', '=', 'karyawans.id')
                 ->where(function ($q) {
                     $q->whereRaw('UPPER(karyawans.divisi) = ?', ['HRD'])
-                      ->orWhereRaw('UPPER(karyawans.pekerjaan) = ?', ['HRD']);
+                        ->orWhereRaw('UPPER(karyawans.pekerjaan) = ?', ['HRD']);
                 })
                 ->pluck('users.id');
 

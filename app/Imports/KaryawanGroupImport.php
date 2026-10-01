@@ -10,12 +10,11 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class KaryawanGroupImport implements ToCollection, WithHeadingRow
 {
     public $successCount = 0;
+
     public $failedRows = [];
 
     /**
      * Process imported rows from Excel/CSV.
-     *
-     * @param Collection $rows
      */
     public function collection(Collection $rows)
     {
@@ -24,14 +23,15 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
 
         foreach ($rows as $index => $row) {
             $rowNum = $index + 2; // Row 1 is header
-            $nik = isset($row['nik']) ? trim((string)$row['nik']) : null;
+            $nik = isset($row['nik']) ? trim((string) $row['nik']) : null;
 
             if (empty($nik)) {
                 $this->failedRows[] = [
                     'row' => $rowNum,
                     'nik' => 'KOSONG',
-                    'reason' => 'NIK tidak boleh kosong.'
+                    'reason' => 'NIK tidak boleh kosong.',
                 ];
+
                 continue;
             }
 
@@ -39,17 +39,17 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
             $groupVal = $row['group'] ?? ($row['grup'] ?? null);
             $subGroupVal = $row['sub_group'] ?? ($row['sub_grup'] ?? ($row['subgroup'] ?? null));
 
-            if (!isset($groupedByNik[$nik])) {
+            if (! isset($groupedByNik[$nik])) {
                 $groupedByNik[$nik] = [
                     'rows' => [],
-                    'entries' => []
+                    'entries' => [],
                 ];
             }
 
             $groupedByNik[$nik]['rows'][] = $rowNum;
             $groupedByNik[$nik]['entries'][] = [
                 'group' => $groupVal,
-                'sub_group' => $subGroupVal
+                'sub_group' => $subGroupVal,
             ];
         }
 
@@ -58,12 +58,13 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
             $rowNumbers = implode(', ', $data['rows']);
             $karyawan = Karyawan::where('nik', $nik)->first();
 
-            if (!$karyawan) {
+            if (! $karyawan) {
                 $this->failedRows[] = [
                     'row' => $rowNumbers,
                     'nik' => $nik,
-                    'reason' => 'Karyawan dengan NIK tersebut tidak ditemukan.'
+                    'reason' => 'Karyawan dengan NIK tersebut tidak ditemukan.',
                 ];
+
                 continue;
             }
 
@@ -72,12 +73,13 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
                 $shouldClear = false;
 
                 foreach ($data['entries'] as $entry) {
-                    $rawGroup = $entry['group'] !== null ? trim((string)$entry['group']) : '';
-                    $rawSubGroup = $entry['sub_group'] !== null ? trim((string)$entry['sub_group']) : '';
+                    $rawGroup = $entry['group'] !== null ? trim((string) $entry['group']) : '';
+                    $rawSubGroup = $entry['sub_group'] !== null ? trim((string) $entry['sub_group']) : '';
 
                     // Jika diisi kata kunci khusus untuk mengosongkan grup
                     if (in_array(strtoupper($rawGroup), ['-', 'CLEAR', 'KOSONG', 'NULL', 'HAPUS'])) {
                         $shouldClear = true;
+
                         continue;
                     }
 
@@ -87,27 +89,29 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
 
                     // Cek jika kolom group dipisah pemisah multiple (koma atau titik koma)
                     $groupParts = preg_split('/[;,]/', $rawGroup);
-                    $subGroupParts = !empty($rawSubGroup) ? preg_split('/[;,]/', $rawSubGroup) : [];
+                    $subGroupParts = ! empty($rawSubGroup) ? preg_split('/[;,]/', $rawSubGroup) : [];
 
                     if (count($groupParts) > 1) {
                         foreach ($groupParts as $idx => $gPart) {
                             $gPart = trim($gPart);
-                            if (empty($gPart)) continue;
+                            if (empty($gPart)) {
+                                continue;
+                            }
 
                             // Jika gPart sudah dalam format "GROUP:SUBGROUP"
                             if (strpos($gPart, ':') !== false) {
                                 [$g, $s] = explode(':', $gPart, 2);
                                 $item = strtoupper(trim($g));
                                 $sub = strtoupper(trim($s));
-                                if (!empty($sub)) {
-                                    $item .= ':' . $sub;
+                                if (! empty($sub)) {
+                                    $item .= ':'.$sub;
                                 }
                                 $finalGroups[] = $item;
                             } else {
                                 $sPart = isset($subGroupParts[$idx]) ? strtoupper(trim($subGroupParts[$idx])) : '';
                                 $item = strtoupper($gPart);
-                                if (!empty($sPart)) {
-                                    $item .= ':' . $sPart;
+                                if (! empty($sPart)) {
+                                    $item .= ':'.$sPart;
                                 }
                                 $finalGroups[] = $item;
                             }
@@ -117,18 +121,18 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
                         if (strpos($rawGroup, ':') !== false) {
                             [$g, $s] = explode(':', $rawGroup, 2);
                             $mainG = strtoupper(trim($g));
-                            $subG = !empty($rawSubGroup) ? strtoupper(trim($rawSubGroup)) : strtoupper(trim($s));
+                            $subG = ! empty($rawSubGroup) ? strtoupper(trim($rawSubGroup)) : strtoupper(trim($s));
                             $item = $mainG;
-                            if (!empty($subG)) {
-                                $item .= ':' . $subG;
+                            if (! empty($subG)) {
+                                $item .= ':'.$subG;
                             }
                             $finalGroups[] = $item;
                         } else {
                             $mainG = strtoupper(trim($rawGroup));
                             $subG = strtoupper(trim($rawSubGroup));
                             $item = $mainG;
-                            if (!empty($subG)) {
-                                $item .= ':' . $subG;
+                            if (! empty($subG)) {
+                                $item .= ':'.$subG;
                             }
                             $finalGroups[] = $item;
                         }
@@ -149,7 +153,7 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
                 $this->failedRows[] = [
                     'row' => $rowNumbers,
                     'nik' => $nik,
-                    'reason' => 'Gagal menyimpan data group: ' . $e->getMessage()
+                    'reason' => 'Gagal menyimpan data group: '.$e->getMessage(),
                 ];
             }
         }

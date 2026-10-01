@@ -2,9 +2,8 @@
 
 namespace App\Exports;
 
-use App\Models\PranotaPerbaikanKontainer;
 use App\Models\PerbaikanKontainer;
-use Carbon\Carbon;
+use App\Models\PranotaPerbaikanKontainer;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -16,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings
 {
     protected $pranota;
+
     protected $printType;
 
     public function __construct($pranotaId, $printType = null)
@@ -36,12 +36,16 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
                 $biayaPerbaikanOnly = ($biayaRiil > 0) ? $biayaRiil : $estimasi;
 
                 if ($this->printType === 'cat') {
-                    if ($biayaCat <= 0) continue;
+                    if ($biayaCat <= 0) {
+                        continue;
+                    }
                     $biayaTerpakai = $biayaCat;
                     $bengkelVendor = $item['vendor_cat'] ?? '-';
-                    $keterangan = "Pengecatan " . (isset($item['jenis_cat']) && $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian');
+                    $keterangan = 'Pengecatan '.(isset($item['jenis_cat']) && $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian');
                 } elseif ($this->printType === 'perbaikan') {
-                    if ($biayaPerbaikanOnly <= 0) continue;
+                    if ($biayaPerbaikanOnly <= 0) {
+                        continue;
+                    }
                     $biayaTerpakai = $biayaPerbaikanOnly;
                     $bengkelVendor = $item['bengkel'] ?? '-';
                     $perbaikan = PerbaikanKontainer::find($item['id'] ?? null);
@@ -52,7 +56,7 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
                     $perbaikan = PerbaikanKontainer::find($item['id'] ?? null);
                     $ketKerusakan = $item['keterangan_kerusakan'] ?? ($perbaikan->keterangan_kerusakan ?? '-');
                     $keterangan = $ketKerusakan;
-                    if (!empty($item['is_cat']) && $biayaCat > 0) {
+                    if (! empty($item['is_cat']) && $biayaCat > 0) {
                         $jenisCat = isset($item['jenis_cat']) && $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian';
                         $keterangan .= " ( + Cat $jenisCat)";
                     }
@@ -66,7 +70,7 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
                     'NO. PERBAIKAN' => $item['no_perbaikan'] ?? '-',
                     'TGL. PERBAIKAN' => $tanggalPerbaikan,
                     'NO. KONTAINER' => $item['no_kontainer'] ?? '-',
-                    'UKURAN & TIPE' => ($item['ukuran'] ?? '') . 'FT ' . ($item['tipe'] ?? ''),
+                    'UKURAN & TIPE' => ($item['ukuran'] ?? '').'FT '.($item['tipe'] ?? ''),
                     'BENGKEL/VENDOR' => $bengkelVendor,
                     'KETERANGAN' => $keterangan,
                     'ESTIMASI PERBAIKAN' => $this->printType !== 'cat' ? $estimasi : null,
@@ -77,6 +81,7 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
                 ]);
             }
         }
+
         return $rows;
     }
 

@@ -14,7 +14,7 @@ return new class extends Migration
         // Schema::table('surat_jalans', function (Blueprint $table) {
         //     $table->string('lokasi_gps')->nullable()->after('catatan_checkpoint');
         // });
-        
+
         Schema::table('permohonans', function (Blueprint $table) {
             $table->string('lokasi_gps')->nullable();
         });
@@ -28,7 +28,7 @@ return new class extends Migration
         Schema::table('surat_jalans', function (Blueprint $table) {
             $table->dropColumn('lokasi_gps');
         });
-        
+
         Schema::table('permohonans', function (Blueprint $table) {
             $table->dropColumn('lokasi_gps');
         });

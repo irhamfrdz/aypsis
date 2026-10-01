@@ -7,9 +7,6 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class MasterCustomerBuruhTemplateExport implements FromArray, WithHeadings
 {
-    /**
-     * @return array
-     */
     public function array(): array
     {
         return [
@@ -18,16 +15,13 @@ class MasterCustomerBuruhTemplateExport implements FromArray, WithHeadings
         ];
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return [
             'nama_customer',
             'bank',
             'nomor_rekening',
-            'penerima'
+            'penerima',
         ];
     }
 }

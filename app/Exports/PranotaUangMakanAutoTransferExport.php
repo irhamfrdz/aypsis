@@ -3,19 +3,20 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, ShouldAutoSize, WithStyles
+class PranotaUangMakanAutoTransferExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
     protected $pranota;
+
     protected $rowNumber = 1;
 
     public function __construct($pranota)
@@ -24,20 +25,21 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         $details = $this->pranota->details->sortBy(function ($detail) {
             $karyawan = $detail->karyawan;
+
             return $karyawan ? ($karyawan->atas_nama ?: $karyawan->nama_lengkap) : '';
         })->values();
 
         $totalAmount = $details->sum('total_akhir');
 
-        $details->push((object)[
+        $details->push((object) [
             'is_total_row' => true,
-            'total_amount' => $totalAmount
+            'total_amount' => $totalAmount,
         ]);
 
         return $details;
@@ -63,7 +65,7 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
             'Receiver Cust. Type',
             'Receiver Cust. Residen',
             'Transaction Cd',
-            'Beneficiary Email'
+            'Beneficiary Email',
         ];
     }
 
@@ -93,10 +95,10 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
         }
 
         $karyawan = $detail->karyawan;
-        
+
         $dateStr = $this->pranota->tanggal_pranota ? $this->pranota->tanggal_pranota->format('dmy') : date('dmy');
-        $transactionId = '01' . $dateStr . '-' . str_pad($this->rowNumber, 3, '0', STR_PAD_LEFT);
-        
+        $transactionId = '01'.$dateStr.'-'.str_pad($this->rowNumber, 3, '0', STR_PAD_LEFT);
+
         return [
             $this->rowNumber++,
             $transactionId, // Transaction ID
@@ -147,7 +149,7 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
         ]);
 
         // Memberikan border ke semua cell data
-        $sheet->getStyle('A1:R' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A1:R'.$lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -160,7 +162,7 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
         ]);
 
         // Styling khusus untuk baris TOTAL (Baris terakhir)
-        $sheet->getStyle('A' . $lastRow . ':R' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A'.$lastRow.':R'.$lastRow)->applyFromArray([
             'font' => [
                 'bold' => true,
             ],
@@ -169,11 +171,11 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
                 'startColor' => ['argb' => 'FFF2F2F2'], // Background abu-abu muda
             ],
         ]);
-        
+
         // Styling untuk kolom Beneficiary Email (Kolom R) agar teks berwarna biru & bergaris bawah
         $dataEnd = $lastRow - 1;
         if ($dataEnd >= 2) {
-            $sheet->getStyle('R2:R' . $dataEnd)->applyFromArray([
+            $sheet->getStyle('R2:R'.$dataEnd)->applyFromArray([
                 'font' => [
                     'color' => ['argb' => 'FF0000FF'],
                     'underline' => true,

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('karyawan_id')->references('id')->on('karyawans')->onDelete('cascade');
-            
+
             // Mencegah duplikasi tahun untuk karyawan yang sama
             $table->unique(['karyawan_id', 'tahun']);
         });

@@ -1164,7 +1164,7 @@ class TandaTerimaLclController extends Controller
             'selected_ids' => 'required|string',
             'tanggal_stripping' => 'required|date',
             'status' => 'required|string',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         $ids = json_decode($request->selected_ids, true);
@@ -1176,6 +1176,7 @@ class TandaTerimaLclController extends Controller
                     'message' => 'Tidak ada item yang dipilih.',
                 ], 400);
             }
+
             return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
         }
 
@@ -1186,16 +1187,16 @@ class TandaTerimaLclController extends Controller
                 $tt = TandaTerimaLcl::find($id);
                 if ($tt) {
                     $tt->status = $request->status;
-                    
+
                     if ($request->keterangan) {
-                        $tt->kegiatan = trim($tt->kegiatan . "\nStripping ({$request->tanggal_stripping}): {$request->keterangan}");
+                        $tt->kegiatan = trim($tt->kegiatan."\nStripping ({$request->tanggal_stripping}): {$request->keterangan}");
                     } else {
-                        $tt->kegiatan = trim($tt->kegiatan . "\nStripping pada {$request->tanggal_stripping}");
+                        $tt->kegiatan = trim($tt->kegiatan."\nStripping pada {$request->tanggal_stripping}");
                     }
-                    
+
                     // Lepas nomor kontainer setelah stripping
                     $tt->kontainerPivot()->delete();
-                    
+
                     $tt->save();
                 }
             }
@@ -1205,23 +1206,23 @@ class TandaTerimaLclController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Berhasil memproses stripping untuk ' . count($ids) . ' item.',
+                    'message' => 'Berhasil memproses stripping untuk '.count($ids).' item.',
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Berhasil memproses stripping untuk ' . count($ids) . ' item.');
+            return redirect()->back()->with('success', 'Berhasil memproses stripping untuk '.count($ids).' item.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error in bulkStripping: ' . $e->getMessage());
-            
+            \Log::error('Error in bulkStripping: '.$e->getMessage());
+
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan saat memproses stripping: ' . $e->getMessage(),
+                    'message' => 'Terjadi kesalahan saat memproses stripping: '.$e->getMessage(),
                 ], 500);
             }
-            
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses stripping: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses stripping: '.$e->getMessage());
         }
     }
 
@@ -1522,7 +1523,7 @@ class TandaTerimaLclController extends Controller
 
         // Apply seal status filter before grouping
         $sealStatus = $request->query('seal_status', '');
-        
+
         if ($sealStatus === 'sealed') {
             $groupedQuery->whereNotNull('nomor_seal');
         } elseif ($sealStatus === 'unsealed') {
@@ -1536,7 +1537,7 @@ class TandaTerimaLclController extends Controller
         });
 
         // Pre-load Prospeks to prevent N+1 query in the loop
-        $uniqueContainerNumbers = $groupedPivotData->flatMap(function($items) {
+        $uniqueContainerNumbers = $groupedPivotData->flatMap(function ($items) {
             return $items->pluck('nomor_kontainer');
         })->unique()->filter()->toArray();
 
@@ -1551,7 +1552,9 @@ class TandaTerimaLclController extends Controller
             $nomorSeal = $firstItem->nomor_seal;
 
             $prospek = $allProspeks->first(function ($p) use ($nomorKontainer, $nomorSeal) {
-                if ($p->nomor_kontainer !== $nomorKontainer) return false;
+                if ($p->nomor_kontainer !== $nomorKontainer) {
+                    return false;
+                }
                 if ($nomorSeal) {
                     return $p->no_seal === $nomorSeal;
                 } else {
@@ -1596,7 +1599,7 @@ class TandaTerimaLclController extends Controller
         }
 
         foreach ($stockKontainers as $s) {
-            if ($s->nomor_kontainer && !isset($existingNomor[$s->nomor_kontainer])) {
+            if ($s->nomor_kontainer && ! isset($existingNomor[$s->nomor_kontainer])) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $s->nomor_kontainer,
                     'ukuran' => $s->ukuran ?? null,

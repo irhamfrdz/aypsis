@@ -21,7 +21,7 @@ return new class extends Migration
         foreach ($permissions as $name) {
             Permission::firstOrCreate(
                 ['name' => $name],
-                ['description' => 'Access to ' . $name]
+                ['description' => 'Access to '.$name]
             );
         }
 

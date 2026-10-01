@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pranota_lembur_karyawans', function (Blueprint $table) {
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'pranota_lembur_karyawan_header_id')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'pranota_lembur_karyawan_header_id')) {
                 // Also check if the old column exists and rename it if so, otherwise add new
                 if (Schema::hasColumn('pranota_lembur_karyawans', 'pranota_lembur_id')) {
                     $table->renameColumn('pranota_lembur_id', 'pranota_lembur_karyawan_header_id');
@@ -20,22 +20,22 @@ return new class extends Migration
                     $table->unsignedBigInteger('pranota_lembur_karyawan_header_id')->after('id')->nullable();
                 }
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'karyawan_id')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'karyawan_id')) {
                 $table->unsignedBigInteger('karyawan_id')->nullable();
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'jam_lembur')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'jam_lembur')) {
                 $table->string('jam_lembur')->nullable();
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'nominal_awal')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'nominal_awal')) {
                 $table->decimal('nominal_awal', 15, 2)->default(0);
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'adjustment')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'adjustment')) {
                 $table->decimal('adjustment', 15, 2)->default(0);
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'total_akhir')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'total_akhir')) {
                 $table->decimal('total_akhir', 15, 2)->default(0);
             }
-            if (!Schema::hasColumn('pranota_lembur_karyawans', 'catatan')) {
+            if (! Schema::hasColumn('pranota_lembur_karyawans', 'catatan')) {
                 $table->text('catatan')->nullable();
             }
         });

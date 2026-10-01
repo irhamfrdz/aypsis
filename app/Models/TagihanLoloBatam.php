@@ -19,6 +19,9 @@ class TagihanLoloBatam extends Model
         'nomor_tagihan',
         'tanggal_tagihan',
         'vendor',
+        'tipe_operator',
+        'operator',
+        'operator_karyawan_id',
         'kapal',
         'voyage',
         'status_pembayaran',
@@ -39,6 +42,11 @@ class TagihanLoloBatam extends Model
     public function items(): HasMany
     {
         return $this->hasMany(TagihanLoloBatamItem::class, 'tagihan_lolo_batam_id');
+    }
+
+    public function operatorKaryawan(): BelongsTo
+    {
+        return $this->belongsTo(Karyawan::class, 'operator_karyawan_id');
     }
 
     public function createdBy(): BelongsTo

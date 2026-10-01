@@ -111,13 +111,15 @@ class BiayaKapal extends Model
 
     public function getBuktiArrayAttribute()
     {
-        if (empty($this->bukti)) return [];
-        
+        if (empty($this->bukti)) {
+            return [];
+        }
+
         $decoded = json_decode($this->bukti, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
             return $decoded;
         }
-        
+
         return [$this->bukti];
     }
 

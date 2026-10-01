@@ -27,8 +27,8 @@ class KontainerSearchController extends Controller
 
             if ($ukuran) {
                 $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
-                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
-                
+                $ukuranValues = [$ukuranValue, $ukuranValue.'ft'];
+
                 $kontainerQuery->whereIn('ukuran', $ukuranValues);
             }
 
@@ -54,8 +54,8 @@ class KontainerSearchController extends Controller
 
             if ($ukuran) {
                 $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
-                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
-                
+                $ukuranValues = [$ukuranValue, $ukuranValue.'ft'];
+
                 $stockQuery->whereIn('ukuran', $ukuranValues);
             }
 
@@ -79,8 +79,8 @@ class KontainerSearchController extends Controller
 
             if ($ukuran) {
                 $ukuranValue = str_replace('ft', '', strtolower(trim($ukuran)));
-                $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
-                
+                $ukuranValues = [$ukuranValue, $ukuranValue.'ft'];
+
                 $kontainerQuery->whereIn('ukuran', $ukuranValues);
                 $stockQuery->whereIn('ukuran', $ukuranValues);
             }

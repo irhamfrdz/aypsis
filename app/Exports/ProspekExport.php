@@ -135,13 +135,13 @@ class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithH
                     if ($status === 'sudah_muat') {
                         // Green for sudah naik kapal
                         $sheet->getStyle("A{$rowIndex}:L{$rowIndex}")->getFill()
-                              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                              ->getStartColor()->setARGB('FFC6EFCE');
+                            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                            ->getStartColor()->setARGB('FFC6EFCE');
                     } elseif (in_array($status, ['aktif', ''])) {
                         // Blue for belum naik kapal (aktif)
                         $sheet->getStyle("A{$rowIndex}:L{$rowIndex}")->getFill()
-                              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                              ->getStartColor()->setARGB('FFCCE5FF');
+                            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                            ->getStartColor()->setARGB('FFCCE5FF');
                     }
                 }
             },

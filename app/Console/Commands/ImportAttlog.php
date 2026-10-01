@@ -2,11 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Absensi;
 use App\Models\Karyawan;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ImportAttlog extends Command
 {
@@ -30,24 +28,25 @@ class ImportAttlog extends Command
     public function handle()
     {
         $file = $this->argument('file');
-        
-        if (!file_exists($file)) {
+
+        if (! file_exists($file)) {
             $this->error("File tidak ditemukan: {$file}");
+
             return;
         }
 
         $this->info("Membaca file {$file}...");
-        
+
         $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $total = count($lines);
         $this->info("Total data ditemukan: {$total} baris.");
 
         // Load semua karyawan ke memory untuk mempercepat pencarian ID
         $karyawans = Karyawan::pluck('id', 'nik')->toArray();
-        
+
         $inserted = 0;
         $skipped = 0;
-        
+
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
@@ -56,31 +55,33 @@ class ImportAttlog extends Command
 
         foreach ($lines as $line) {
             $parts = preg_split('/\s+/', trim($line));
-            
+
             // Pastikan format memenuhi standar minimal: NIK, Date, Time, dll.
             if (count($parts) < 4) {
                 $skipped++;
                 $bar->advance();
+
                 continue;
             }
 
             $nik = str_pad($parts[0], 4, '0', STR_PAD_LEFT);
-            $logTime = $parts[1] . ' ' . $parts[2];
-            
+            $logTime = $parts[1].' '.$parts[2];
+
             // Validasi waktu
-            if (!strtotime($logTime)) {
+            if (! strtotime($logTime)) {
                 $skipped++;
                 $bar->advance();
+
                 continue;
             }
 
             // Di file attlog.dat USB, biasanya state ada di index ke-4
             $state = isset($parts[4]) ? (int) $parts[4] : 0;
-            
-            // Terjemahkan state ke tipe (ini tipe standar, tapi karena mesin CLX agak ngaco, 
+
+            // Terjemahkan state ke tipe (ini tipe standar, tapi karena mesin CLX agak ngaco,
             // kita tambahkan logika pintar khusus pagi hari otomatis jadi Masuk)
             $hour = (int) date('H', strtotime($logTime));
-            
+
             if ($hour >= 5 && $hour <= 12) {
                 $type = 'Masuk';
             } elseif ($hour >= 15 && $hour <= 23) {
@@ -111,7 +112,7 @@ class ImportAttlog extends Command
                 'waktu' => $logTime,
                 'tipe' => $type,
                 'karyawan_id' => $karyawan_id,
-                'mesin_id' => null, 
+                'mesin_id' => null,
                 'keterangan' => 'Import Manual attlog.dat',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -123,7 +124,7 @@ class ImportAttlog extends Command
                 $inserted += count($chunk);
                 $chunk = [];
             }
-            
+
             $bar->advance();
         }
 

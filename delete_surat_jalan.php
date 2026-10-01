@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use App\Models\SuratJalanTarikKosongBatam;
 use App\Models\HistoryKontainer;
+use App\Models\SuratJalanTarikKosongBatam;
+use Illuminate\Support\Facades\DB;
 
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
@@ -13,7 +13,7 @@ try {
     DB::beginTransaction();
 
     // 1. Ambil nomor surat jalan yang akan dihapus untuk mencari referensinya (opsional)
-    // Tapi karena kita tahu history nya berdasarkan tanggal dan jenis kegiatan, 
+    // Tapi karena kita tahu history nya berdasarkan tanggal dan jenis kegiatan,
     // kita bisa hapus berdasarkan rentang tanggal.
 
     $startDate = '2026-07-11';
@@ -39,5 +39,5 @@ try {
 
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Gagal menghapus data: " . $e->getMessage() . "\n";
+    echo 'Gagal menghapus data: '.$e->getMessage()."\n";
 }

@@ -23,7 +23,7 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
     {
         $query = SertifikatKapal::query();
 
-        if (!empty($this->filters['search'])) {
+        if (! empty($this->filters['search'])) {
             $search = $this->filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('nama_sertifikat', 'like', '%'.$search.'%')
@@ -32,7 +32,7 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
             });
         }
 
-        if (!empty($this->filters['status']) && $this->filters['status'] !== 'all') {
+        if (! empty($this->filters['status']) && $this->filters['status'] !== 'all') {
             $query->where('status', $this->filters['status']);
         }
 
@@ -72,8 +72,8 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
                 $sheet->getStyle('A1:F1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('A1:F1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:F1')->getFill()
-                      ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                      ->getStartColor()->setARGB('FFE2E8F0'); // Light gray
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFE2E8F0'); // Light gray
             },
         ];
     }

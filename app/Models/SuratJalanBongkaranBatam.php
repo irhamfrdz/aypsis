@@ -147,6 +147,14 @@ class SuratJalanBongkaranBatam extends Model
         return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
     }
 
+    /**
+     * Relationship to Tagihan LOLO Batam Item
+     */
+    public function tagihanLoloItem()
+    {
+        return $this->hasOne(TagihanLoloBatamItem::class, 'surat_jalan_bongkaran_id');
+    }
+
     // Accessors & Mutators
     public function getFormattedTanggalSuratJalanAttribute()
     {

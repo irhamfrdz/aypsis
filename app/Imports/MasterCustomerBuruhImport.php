@@ -9,9 +9,6 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class MasterCustomerBuruhImport implements ToCollection, WithHeadingRow
 {
-    /**
-    * @param Collection $rows
-    */
     public function collection(Collection $rows)
     {
         // Get the last ID to continue numbering
@@ -25,15 +22,15 @@ class MasterCustomerBuruhImport implements ToCollection, WithHeadingRow
             }
 
             $lastId++;
-            $kode = 'CBB-' . str_pad($lastId, 4, '0', STR_PAD_LEFT);
+            $kode = 'CBB-'.str_pad($lastId, 4, '0', STR_PAD_LEFT);
 
             MasterCustomerBuruh::create([
-                'kode'           => $kode,
-                'nama_customer'  => $row['nama_customer'],
-                'bank'           => $row['bank'] ?? null,
+                'kode' => $kode,
+                'nama_customer' => $row['nama_customer'],
+                'bank' => $row['bank'] ?? null,
                 'nomor_rekening' => $row['nomor_rekening'] ?? null,
-                'penerima'       => $row['penerima'] ?? null,
-                'is_active'      => true,
+                'penerima' => $row['penerima'] ?? null,
+                'is_active' => true,
             ]);
         }
     }

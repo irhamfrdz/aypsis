@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Gudang;
 use App\Models\HistoryKontainer;
-use App\Models\Kontainer;
-use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 
 class HistoryKontainerController extends Controller

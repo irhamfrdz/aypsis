@@ -16,10 +16,10 @@ $newRoutes = <<<PHP
 PHP;
 
 $content = str_replace(
-    "Route::get('bl/rekap-bongkaran/select'", 
-    $newRoutes . "    Route::get('bl/rekap-bongkaran/select'", 
+    "Route::get('bl/rekap-bongkaran/select'",
+    $newRoutes."    Route::get('bl/rekap-bongkaran/select'",
     $content
 );
 
 file_put_contents($file, $content);
-echo "Added rekap-bongkaran-kontainer routes to web.php.";
+echo 'Added rekap-bongkaran-kontainer routes to web.php.';

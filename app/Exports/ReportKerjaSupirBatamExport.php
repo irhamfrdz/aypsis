@@ -12,8 +12,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $waybills;
+
     protected $startDate;
+
     protected $endDate;
+
     protected $totalRit;
 
     public function __construct($waybills, $startDate, $endDate, $totalRit)
@@ -34,7 +37,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
     {
         return [
             ['REPORT KERJA SUPIR BATAM'],
-            ['Periode: ' . \Carbon\Carbon::parse($this->startDate)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($this->endDate)->format('d/m/Y')],
+            ['Periode: '.\Carbon\Carbon::parse($this->startDate)->format('d/m/Y').' s/d '.\Carbon\Carbon::parse($this->endDate)->format('d/m/Y')],
             [''],
             [
                 'No',
@@ -77,12 +80,12 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
         $sheet->mergeCells('A2:J2');
 
         $lastRow = $sheet->getHighestRow();
-        
+
         // Add total row at the bottom
-        $sheet->setCellValue('A' . ($lastRow + 1), 'TOTAL PENDAPATAN SUPIR');
-        $sheet->mergeCells('A' . ($lastRow + 1) . ':I' . ($lastRow + 1));
-        $sheet->setCellValue('J' . ($lastRow + 1), (float) $this->totalRit);
-        
+        $sheet->setCellValue('A'.($lastRow + 1), 'TOTAL PENDAPATAN SUPIR');
+        $sheet->mergeCells('A'.($lastRow + 1).':I'.($lastRow + 1));
+        $sheet->setCellValue('J'.($lastRow + 1), (float) $this->totalRit);
+
         $lastRow = $sheet->getHighestRow();
 
         return [
@@ -107,14 +110,14 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             ],
             'J5:J'.$lastRow => [
                 'numberFormat' => [
-                    'formatCode' => '#,##0'
-                ]
+                    'formatCode' => '#,##0',
+                ],
             ],
             'A'.$lastRow => [
                 'alignment' => [
                     'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 }

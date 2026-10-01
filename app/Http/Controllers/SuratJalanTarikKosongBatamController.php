@@ -18,12 +18,12 @@ class SuratJalanTarikKosongBatamController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengambilan', 'like', "%{$search}%");
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengambilan', 'like', "%{$search}%");
             });
         }
 
@@ -36,8 +36,8 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
 
         $items = $query->orderBy('tanggal_surat_jalan', 'desc')
-                      ->orderBy('id', 'desc')
-                      ->paginate(10);
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
             ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
@@ -58,11 +58,11 @@ class SuratJalanTarikKosongBatamController extends Controller
                                     '40_Empty' => $item->tarif_40ft_empty,
                                     '45_F' => $item->tarif_40ft_full, // 45ft usually uses 40ft rate or specific
                                     '45_Empty' => $item->tarif_40ft_empty,
-                                ]
+                                ],
                             ];
                             // Entry with expedition name, e.g. "Bukit Senyum (PB)"
                             $mapped[] = [
-                                'name' => $name . ' (' . $item->expedisi . ')',
+                                'name' => $name.' ('.$item->expedisi.')',
                                 'ring' => $item->ring,
                                 'rates' => [
                                     '20_F' => $item->tarif_20ft_full,
@@ -71,11 +71,12 @@ class SuratJalanTarikKosongBatamController extends Controller
                                     '40_Empty' => $item->tarif_40ft_empty,
                                     '45_F' => $item->tarif_40ft_full,
                                     '45_Empty' => $item->tarif_40ft_empty,
-                                ]
+                                ],
                             ];
                         }
                     }
                 }
+
                 return $mapped;
             })
             ->values();
@@ -138,7 +139,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                                 ],
                             ];
                             $mapped[] = [
-                                'name' => $trimmed . ' (' . $item->expedisi . ')',
+                                'name' => $trimmed.' ('.$item->expedisi.')',
                                 'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
                                 'rates' => [
                                     '20_F' => $item->tarif_20ft_full,
@@ -152,6 +153,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                         }
                     }
                 }
+
                 return $mapped;
             })
             ->unique('name')
@@ -201,7 +203,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
                 ->where('status', '!=', 'inactive')
                 ->first();
-            
+
             if ($stockKontainer) {
                 $asalGudangId = $stockKontainer->gudangs_id;
                 $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
@@ -213,7 +215,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                     'tanggal_kegiatan' => $request->tanggal_surat_jalan,
                     'asal_gudang_id' => $asalGudangId,
                     'gudang_id' => $request->gudang_tujuan_id,
-                    'keterangan' => 'SJ Tarik Kosong Batam: ' . $request->no_surat_jalan,
+                    'keterangan' => 'SJ Tarik Kosong Batam: '.$request->no_surat_jalan,
                     'created_by' => Auth::id(),
                 ]);
             }
@@ -286,7 +288,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                                 ],
                             ];
                             $mapped[] = [
-                                'name' => $trimmed . ' (' . $item->expedisi . ')',
+                                'name' => $trimmed.' ('.$item->expedisi.')',
                                 'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
                                 'rates' => [
                                     '20_F' => $item->tarif_20ft_full,
@@ -300,6 +302,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                         }
                     }
                 }
+
                 return $mapped;
             })
             ->unique('name')
@@ -362,16 +365,16 @@ class SuratJalanTarikKosongBatamController extends Controller
     public function checkContainerSizes(Request $request)
     {
         $no_kontainers = $request->input('no_kontainers', []);
-        
-        if (empty($no_kontainers) || !is_array($no_kontainers)) {
+
+        if (empty($no_kontainers) || ! is_array($no_kontainers)) {
             return response()->json(['success' => true, 'sizes' => []]);
         }
 
         // Clean container numbers
-        $cleanedNumbers = array_map(function($no) {
+        $cleanedNumbers = array_map(function ($no) {
             return preg_replace('/[^A-Za-z0-9]/', '', $no);
         }, $no_kontainers);
-        
+
         $cleanedNumbers = array_filter(array_unique($cleanedNumbers));
 
         // First check in stock_kontainers
@@ -384,7 +387,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         $missingNumbers = array_diff($cleanedNumbers, array_keys($stockSizes));
 
         $kontainerSizes = [];
-        if (!empty($missingNumbers)) {
+        if (! empty($missingNumbers)) {
             // Check in kontainers for the missing ones
             $kontainerSizes = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $missingNumbers)
                 ->whereNotNull('ukuran')
@@ -398,7 +401,9 @@ class SuratJalanTarikKosongBatamController extends Controller
         // Map back to original input strings (ignoring punctuation differences)
         $result = [];
         foreach ($no_kontainers as $original) {
-            if (!$original) continue;
+            if (! $original) {
+                continue;
+            }
             $clean = preg_replace('/[^A-Za-z0-9]/', '', $original);
             if (isset($allSizes[$clean])) {
                 $result[$original] = $allSizes[$clean];
@@ -407,7 +412,7 @@ class SuratJalanTarikKosongBatamController extends Controller
 
         return response()->json([
             'success' => true,
-            'sizes' => $result
+            'sizes' => $result,
         ]);
     }
 
@@ -434,8 +439,12 @@ class SuratJalanTarikKosongBatamController extends Controller
         $supirMap = [];
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['nama_panggilan', 'nama_lengkap']);
         foreach ($karyawanSupirs as $k) {
-            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
-            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+            if ($k->nama_panggilan) {
+                $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            }
+            if ($k->nama_lengkap) {
+                $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+            }
         }
 
         $allKendaraansMap = [];
@@ -455,6 +464,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -462,6 +472,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                 if ($noKontainer === '') {
                     $errors[] = "Baris {$rowNumber}: Nomor kontainer wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -488,32 +499,35 @@ class SuratJalanTarikKosongBatamController extends Controller
                 if (empty($tanggalSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Tanggal wajib diisi.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
                 $tujuanPengambilan = trim($row['tujuan_pengambilan'] ?? '');
                 $gudangTujuanInput = trim($row['gudang_tujuan'] ?? '');
-                
+
                 // Determine the Gudang ID to use
                 // 1. Try to match from row if specified
                 $rowGudangId = null;
-                if (!empty($gudangTujuanInput)) {
+                if (! empty($gudangTujuanInput)) {
                     $matchedGudang = \App\Models\Gudang::where('nama_gudang', 'like', "%{$gudangTujuanInput}%")->first();
                     if ($matchedGudang) {
                         $rowGudangId = $matchedGudang->id;
                     } else {
                         $errors[] = "Baris {$rowNumber}: Gudang Tujuan '{$gudangTujuanInput}' tidak valid atau tidak ditemukan.";
                         $failedRows[] = $row['_original_line'] ?? '';
+
                         continue;
                     }
                 } else {
                     // 2. Fallback to global setting if no row specific setting matched
                     $rowGudangId = $gudang_tujuan_id;
                 }
-                
+
                 if (empty($rowGudangId)) {
                     $errors[] = "Baris {$rowNumber}: Gudang Tujuan wajib diisi atau tidak valid.";
                     $failedRows[] = $row['_original_line'] ?? '';
+
                     continue;
                 }
 
@@ -548,14 +562,14 @@ class SuratJalanTarikKosongBatamController extends Controller
                     'gudang_tujuan_id' => $rowGudangId,
                     'input_by' => Auth::id(),
                     'input_date' => now(),
-                    'lokasi' => 'batam'
+                    'lokasi' => 'batam',
                 ]);
 
-                if (!empty($noKontainer)) {
+                if (! empty($noKontainer)) {
                     $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)
                         ->where('status', '!=', 'inactive')
                         ->first();
-                    
+
                     if ($stockKontainer) {
                         $asalGudangId = $stockKontainer->gudangs_id;
                         $stockKontainer->update(['gudangs_id' => $rowGudangId]);
@@ -567,7 +581,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                             'tanggal_kegiatan' => $tanggalSuratJalan,
                             'asal_gudang_id' => $asalGudangId,
                             'gudang_id' => $rowGudangId,
-                            'keterangan' => 'SJ Tarik Kosong Batam: ' . $nomorSuratJalan,
+                            'keterangan' => 'SJ Tarik Kosong Batam: '.$nomorSuratJalan,
                             'created_by' => Auth::id(),
                         ]);
                     }
@@ -592,14 +606,15 @@ class SuratJalanTarikKosongBatamController extends Controller
                 'createdCount' => $createdCount,
                 'updatedCount' => $updatedCount,
                 'unchangedCount' => $unchangedCount,
-                'hasErrors' => count($errors) > 0
+                'hasErrors' => count($errors) > 0,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan sistem: '.$e->getMessage(),
             ], 500);
         }
     }

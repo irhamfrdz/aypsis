@@ -39,7 +39,7 @@ class BiayaKapalOppOpt extends Model
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
     }
-    
+
     // Relationship to KlasifikasiBiaya
     public function klasifikasiBiaya()
     {
@@ -58,5 +58,4 @@ class BiayaKapalOppOpt extends Model
         return $this->belongsToMany(Manifest::class, 'biaya_kapal_opp_opt_manifest', 'opp_opt_id', 'manifest_id')
             ->withTimestamps();
     }
-
 }

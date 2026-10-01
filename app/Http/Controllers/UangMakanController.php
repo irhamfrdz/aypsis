@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class UangMakanController extends Controller
@@ -10,26 +9,26 @@ class UangMakanController extends Controller
     public function index(Request $request)
     {
         $query = \App\Models\UangMakan::with('karyawan')->latest();
-        
+
         if ($request->filled('penempatan') || $request->filled('search')) {
-            $query->whereHas('karyawan', function($q) use ($request) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
                 if ($request->filled('penempatan')) {
                     $q->where('penempatan', $request->penempatan);
                 }
                 if ($request->filled('search')) {
-                    $q->where(function($sub) use ($request) {
-                        $sub->where('nama_lengkap', 'like', '%' . $request->search . '%')
-                            ->orWhere('nik', 'like', '%' . $request->search . '%');
+                    $q->where(function ($sub) use ($request) {
+                        $sub->where('nama_lengkap', 'like', '%'.$request->search.'%')
+                            ->orWhere('nik', 'like', '%'.$request->search.'%');
                     });
                 }
             });
         }
-        
+
         $uangMakans = $query->paginate(10)->withQueryString();
         $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
         $penempatans2 = \App\Models\KaryawanTidakTetap::whereNotNull('penempatan')->distinct()->pluck('penempatan');
         $penempatans = $penempatans->merge($penempatans2)->unique()->values();
-        
+
         return view('uang-makan.index', compact('uangMakans', 'penempatans'));
     }
 
@@ -38,20 +37,21 @@ class UangMakanController extends Controller
         $karyawans = \App\Models\Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
         $nonKaryawans = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get();
         $penempatans = $karyawans->pluck('penempatan')->merge($nonKaryawans->pluck('penempatan'))->filter()->unique()->values();
+
         return view('uang-makan.create', compact('karyawans', 'nonKaryawans', 'penempatans'));
     }
 
     public function checkExisting(Request $request)
     {
         $tanggal = $request->tanggal;
-        if (!$tanggal) {
+        if (! $tanggal) {
             return response()->json([]);
         }
 
         $existing = \App\Models\UangMakan::whereDate('tanggal', $tanggal)
             ->get(['karyawan_id', 'tipe_karyawan'])
-            ->map(function($u) {
-                return str_replace('\\', '\\\\', $u->tipe_karyawan) . '-' . $u->karyawan_id;
+            ->map(function ($u) {
+                return str_replace('\\', '\\\\', $u->tipe_karyawan).'-'.$u->karyawan_id;
             })
             ->toArray();
 
@@ -69,8 +69,10 @@ class UangMakanController extends Controller
 
         foreach ($validated['karyawan_id'] as $typeAndId) {
             $parts = explode('-', $typeAndId);
-            if (count($parts) != 2) continue;
-            
+            if (count($parts) != 2) {
+                continue;
+            }
+
             $tipe = str_replace('\\\\', '\\', $parts[0]);
             $id = $parts[1];
 
@@ -83,6 +85,7 @@ class UangMakanController extends Controller
                 'keterangan' => $validated['keterangan'],
             ]);
         }
+
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil ditambahkan.');
     }
 
@@ -90,6 +93,7 @@ class UangMakanController extends Controller
     {
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nonKaryawans = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get();
+
         return view('uang-makan.edit', compact('uangMakan', 'karyawans', 'nonKaryawans'));
     }
 
@@ -109,24 +113,27 @@ class UangMakanController extends Controller
         }
 
         $uangMakan->update($validated);
+
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil diupdate.');
     }
 
     public function destroy(\App\Models\UangMakan $uangMakan)
     {
         $uangMakan->delete();
+
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil dihapus.');
     }
+
     public function bulkDelete(Request $request)
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'exists:uang_makans,id'
+            'ids.*' => 'exists:uang_makans,id',
         ]);
 
         \App\Models\UangMakan::whereIn('id', $request->ids)->delete();
 
-        return redirect()->back()->with('success', count($request->ids) . ' Data uang makan berhasil dihapus.');
+        return redirect()->back()->with('success', count($request->ids).' Data uang makan berhasil dihapus.');
     }
 
     public function downloadTemplate()
@@ -137,14 +144,15 @@ class UangMakanController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
         try {
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UangMakanImport, $request->file('file'));
+
             return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil diimpor.');
         } catch (\Exception $e) {
-            return redirect()->route('uang-makan.index')->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+            return redirect()->route('uang-makan.index')->with('error', 'Gagal mengimpor data: '.$e->getMessage());
         }
     }
 }

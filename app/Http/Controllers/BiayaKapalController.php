@@ -11,19 +11,19 @@ use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalPerijinan;
 use App\Models\BiayaKapalPerlengkapan;
 use App\Models\BiayaKapalStuffing;
+use App\Models\BiayaKapalTanggalBayar;
 use App\Models\BiayaKapalTanto;
 use App\Models\BiayaKapalTemas;
 use App\Models\BiayaKapalTemasStage;
-use App\Models\BiayaKapalTanggalBayar;
 use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalTrucking;
 use App\Models\Karyawan;
 use App\Models\KlasifikasiBiaya;
+use App\Models\Manifest;
 use App\Models\MasterKapal;
 use App\Models\MasterPricelistBiayaStorage;
 use App\Models\MasterPricelistFreight;
 use App\Models\MasterPricelistLolo;
-use App\Models\Manifest;
 use App\Models\PricelistBuruh;
 use App\Models\PricelistThc;
 use App\Models\PricelistTkbm;
@@ -310,8 +310,8 @@ class BiayaKapalController extends Controller
                     $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
                 }
 
-                if (isset($section['bank_id']) && !empty($section['bank_id'])) {
-                    if (!is_numeric($section['bank_id'])) {
+                if (isset($section['bank_id']) && ! empty($section['bank_id'])) {
+                    if (! is_numeric($section['bank_id'])) {
                         $bankName = trim($section['bank_id']);
                         $bank = \App\Models\Bank::firstOrCreate(
                             ['name' => $bankName],
@@ -741,7 +741,7 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'kapal_sections.*.kontainer.*.nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.nominal_manual' => 'nullable|numeric|min:0',
-            
+
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.dp' => 'nullable|numeric|min:0',
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
@@ -1159,11 +1159,11 @@ class BiayaKapalController extends Controller
             // and instead put 'penerima', 'nama_vendor', etc. inside the section array.
             $globalFields = ['penerima', 'nama_vendor', 'nomor_rekening', 'bank_id'];
             $sectionTypes = [
-                'kapal_sections', 'trucking_sections', 'stuffing_sections', 
-                'thc_sections', 'dokumen_sections', 'freight_sections', 
-                'lolo_sections', 'storage_sections', 'demurrage_sections', 
+                'kapal_sections', 'trucking_sections', 'stuffing_sections',
+                'thc_sections', 'dokumen_sections', 'freight_sections',
+                'lolo_sections', 'storage_sections', 'demurrage_sections',
                 'nota_retur_sections', 'umum_sections', 'perijinan_sections',
-                'labuh_tambat', 'meratus', 'temas', 'tanto'
+                'labuh_tambat', 'meratus', 'temas', 'tanto',
             ];
 
             foreach ($globalFields as $field) {
@@ -1171,12 +1171,12 @@ class BiayaKapalController extends Controller
                     foreach ($sectionTypes as $secType) {
                         if ($request->has($secType) && is_array($request->$secType)) {
                             $firstSection = collect($request->$secType)->first();
-                            if ($firstSection && !empty($firstSection[$field])) {
+                            if ($firstSection && ! empty($firstSection[$field])) {
                                 $validated[$field] = $firstSection[$field];
                                 break;
                             }
                             // Special case: some sections use 'vendor' instead of 'nama_vendor'
-                            if ($field === 'nama_vendor' && $firstSection && !empty($firstSection['vendor'])) {
+                            if ($field === 'nama_vendor' && $firstSection && ! empty($firstSection['vendor'])) {
                                 $validated[$field] = $firstSection['vendor'];
                                 break;
                             }
@@ -1959,10 +1959,10 @@ class BiayaKapalController extends Controller
 
                     $nominalRaw = $section['nominal'] ?? 0;
                     $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
-                    
+
                     $pphRaw = $section['pph'] ?? 0;
                     $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
-                    
+
                     \App\Models\BiayaKapalUmum::create([
                         'biaya_kapal_id' => $biayaKapal->id,
                         'kapal' => $section['kapal'] ?? null,
@@ -1975,7 +1975,7 @@ class BiayaKapalController extends Controller
                         'nominal' => $nominal,
                         'pph' => $pph,
                     ]);
-                    
+
                     $totalUmum += ($nominal - $pph);
                 }
 
@@ -1990,7 +1990,7 @@ class BiayaKapalController extends Controller
             // NEW STRUCTURE: kapal sections (for multi-kapal biaya buruh)
             if ($request->has('kapal_sections') && ! empty($request->kapal_sections)) {
                 $lokasi = $request->input('lokasi', 'jakarta');
-                
+
                 // Debug log: Log all kapal sections received
                 Log::info('Kapal sections received in store method', [
                     'biaya_kapal_id' => $biayaKapal->id,
@@ -2003,12 +2003,12 @@ class BiayaKapalController extends Controller
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
                         $kapalName = $section['kapal'] ?? null;
                         $voyageName = $section['voyage'] ?? null;
-                        
+
                         // Kumpulkan kontainer ids
                         $kontainerIds = [];
                         if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                             foreach ($section['kontainer'] as $k) {
-                                if (!empty($k['bl_id'])) {
+                                if (! empty($k['bl_id'])) {
                                     $cleanNominalK = function ($val) {
                                         return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                                     };
@@ -2021,20 +2021,20 @@ class BiayaKapalController extends Controller
                                 }
                             }
                         }
-                        
+
                         $cleanNum = function ($val) {
                             return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                         };
-                        
+
                         $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
-                        
+
                         $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
                         $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
-                        
+
                         $totalNominal = ($nominal + $adjustment) - $pphAmount;
-                        
+
                         \App\Models\BiayaKapalBuruhBongkar::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $kapalName,
@@ -2054,22 +2054,22 @@ class BiayaKapalController extends Controller
                             'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         ]);
                     }
-                    
+
                     // Auto calculate total for Buruh Bongkar
                     $totalBongkar = \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
                     $biayaKapal->update(['nominal' => $totalBongkar]);
-                    
+
                 } elseif ($lokasi === 'batam') {
                     // MODE BATAM: Simpan ke tabel biaya_kapal_buruh_batams (tanpa barang/tenaga kerja)
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
                         $kapalName = $section['kapal'] ?? null;
                         $voyageName = $section['voyage'] ?? null;
-                        
+
                         // Kumpulkan kontainer ids
                         $kontainerIds = [];
                         if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                             foreach ($section['kontainer'] as $k) {
-                                if (!empty($k['bl_id'])) {
+                                if (! empty($k['bl_id'])) {
                                     $cleanNominalK = function ($val) {
                                         return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                                     };
@@ -2082,20 +2082,20 @@ class BiayaKapalController extends Controller
                                 }
                             }
                         }
-                        
+
                         $cleanNum = function ($val) {
                             return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                         };
-                        
+
                         $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
-                        
+
                         $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
                         $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
-                        
+
                         $totalNominal = ($nominal + $adjustment) - $pphAmount;
-                        
+
                         \App\Models\BiayaKapalBuruhBatam::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $kapalName,
@@ -2115,11 +2115,11 @@ class BiayaKapalController extends Controller
                             'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         ]);
                     }
-                    
+
                     // Auto calculate total for Batam
                     $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
                     $biayaKapal->update(['nominal' => $totalBatam]);
-                    
+
                 } else {
                     // MODE JAKARTA: Behavior lama
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
@@ -2261,11 +2261,19 @@ class BiayaKapalController extends Controller
                     $firstSection = collect($request->kapal_sections)->first();
                     if ($firstSection) {
                         $updateData = [];
-                        if (!empty($firstSection['nama_vendor'])) $updateData['nama_vendor'] = $firstSection['nama_vendor'];
-                        if (!empty($firstSection['penerima'])) $updateData['penerima'] = $firstSection['penerima'];
-                        if (!empty($firstSection['bank_id'])) $updateData['bank_id'] = $firstSection['bank_id'];
-                        if (!empty($firstSection['nomor_rekening'])) $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
-                        if (!empty($updateData)) {
+                        if (! empty($firstSection['nama_vendor'])) {
+                            $updateData['nama_vendor'] = $firstSection['nama_vendor'];
+                        }
+                        if (! empty($firstSection['penerima'])) {
+                            $updateData['penerima'] = $firstSection['penerima'];
+                        }
+                        if (! empty($firstSection['bank_id'])) {
+                            $updateData['bank_id'] = $firstSection['bank_id'];
+                        }
+                        if (! empty($firstSection['nomor_rekening'])) {
+                            $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
+                        }
+                        if (! empty($updateData)) {
                             $biayaKapal->update($updateData);
                         }
                     }
@@ -2291,26 +2299,26 @@ class BiayaKapalController extends Controller
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
                             $manifestIds = $item['manifest_id'] ?? [];
-                            if (!is_array($manifestIds)) {
+                            if (! is_array($manifestIds)) {
                                 $manifestIds = [$manifestIds];
                             }
                             $manifestIds = array_filter($manifestIds);
-                            
+
                             $jenisUkuran = $item['jenis_ukuran'] ?? null;
                             $tarif = floatval($item['tarif'] ?? 0);
-                            
+
                             $isOpslag = ($section['klasifikasi'] ?? '') === 'opslag';
-                            
+
                             if ($isOpslag) {
                                 $jumlah = floatval($item['jumlah'] ?? 0);
                             } else {
                                 $jumlah = count($manifestIds);
                             }
-                            
+
                             $vendor = $item['vendor'] ?? null;
                             $catatan = $item['catatan'] ?? null;
 
-                            if ((!$isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
+                            if ((! $isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
                                 continue;
                             }
 
@@ -2333,7 +2341,7 @@ class BiayaKapalController extends Controller
                                 'dp' => $sectionDp,
                                 'sisa_pembayaran' => $sectionSisa,
                             ]);
-                            
+
                             $oppOpt->manifests()->sync($manifestIds);
 
                             $sectionHasData = true;
@@ -2841,18 +2849,19 @@ class BiayaKapalController extends Controller
                 'truckingDetails', 'stuffingDetails', 'perlengkapanDetails',
                 'labuhTambatDetails', 'oppOptDetails', 'thcDetails', 'loloDetails',
                 'storageDetails', 'freightDetails', 'perijinanDetails', 'meratusDetails',
-                'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails'
+                'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails',
             ];
 
             foreach ($relationsToFilter as $rel) {
                 if ($biayaKapal->relationLoaded($rel)) {
-                    $filtered = $biayaKapal->{$rel}->filter(function($detail) use ($kapalLower, $voyageLower) {
+                    $filtered = $biayaKapal->{$rel}->filter(function ($detail) use ($kapalLower, $voyageLower) {
                         $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
                         $dVoyage = isset($detail->voyage) ? strtolower(trim($detail->voyage)) : '';
+
                         // Special handling for labuhTambat which stores data a bit differently? Actually it uses kapal/voyage in DB.
                         return $dKapal === $kapalLower && $dVoyage === $voyageLower;
                     })->values();
-                    
+
                     $biayaKapal->setRelation($rel, $filtered);
                 }
             }
@@ -3721,8 +3730,8 @@ class BiayaKapalController extends Controller
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
 
-                if (isset($section['bank_id']) && !empty($section['bank_id'])) {
-                    if (!is_numeric($section['bank_id'])) {
+                if (isset($section['bank_id']) && ! empty($section['bank_id'])) {
+                    if (! is_numeric($section['bank_id'])) {
                         $bankName = trim($section['bank_id']);
                         $bank = \App\Models\Bank::firstOrCreate(
                             ['name' => $bankName],
@@ -4367,7 +4376,7 @@ class BiayaKapalController extends Controller
                         Storage::disk('public')->delete($oldPath);
                     }
                 }
-                
+
                 $paths = [];
                 foreach ($request->file('bukti') as $file) {
                     $fileName = time().'_'.uniqid().'_'.$file->getClientOriginalName();
@@ -4478,7 +4487,7 @@ class BiayaKapalController extends Controller
                                 // Otherwise, if it's the first record, tax only the jasaAir part (Jasa Air Jakarta)
                                 $pphBase = $isTypeTaxable ? $currentSubTotal : $currentJasaAir;
                                 $currentPph = $pphActive ? round($pphBase * 0.02) : 0;
-                                
+
                                 $currentAdjustment = 0;
                                 if ($typeIndex === 0 && isset($section['adjustment'])) {
                                     $currentAdjustment = floatval(preg_replace('/[^0-9-]/', '', $section['adjustment']));
@@ -4530,32 +4539,32 @@ class BiayaKapalController extends Controller
                         $sectionTotalNominal = is_string($section['total_nominal'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['total_nominal'])))) : floatval($section['total_nominal'] ?? 0);
                         $sectionDp = is_string($section['dp'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['dp'])))) : floatval($section['dp'] ?? 0);
                         $sectionSisa = is_string($section['sisa_pembayaran'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['sisa_pembayaran'])))) : floatval($section['sisa_pembayaran'] ?? 0);
-                        
+
                         $sectionHasData = false;
 
                         if (isset($section['barang']) && is_array($section['barang'])) {
                             foreach ($section['barang'] as $item) {
                                 $manifestIds = $item['manifest_id'] ?? [];
-                                if (!is_array($manifestIds)) {
+                                if (! is_array($manifestIds)) {
                                     $manifestIds = [$manifestIds];
                                 }
                                 $manifestIds = array_filter($manifestIds);
-                                
+
                                 $jenisUkuran = $item['jenis_ukuran'] ?? null;
                                 $tarif = floatval($item['tarif'] ?? 0);
-                                
+
                                 $isOpslag = ($section['klasifikasi'] ?? '') === 'opslag';
-                                
+
                                 if ($isOpslag) {
                                     $jumlah = floatval($item['jumlah'] ?? 0);
                                 } else {
                                     $jumlah = count($manifestIds);
                                 }
-                                
+
                                 $vendor = $item['vendor'] ?? null;
                                 $catatan = $item['catatan'] ?? null;
 
-                                if ((!$isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
+                                if ((! $isOpslag && empty($manifestIds)) || $tarif <= 0 || $jumlah <= 0) {
                                     continue;
                                 }
 
@@ -4578,7 +4587,7 @@ class BiayaKapalController extends Controller
                                     'dp' => $sectionDp,
                                     'sisa_pembayaran' => $sectionSisa,
                                 ]);
-                                
+
                                 $oppOpt->manifests()->sync($manifestIds);
 
                                 $sectionHasData = true;
@@ -4602,7 +4611,7 @@ class BiayaKapalController extends Controller
                         }
                     }
                 }
-                
+
                 // AUTO-CALCULATE NOMINAL FOR OPP/OPT
                 $totalGrandTotal = \App\Models\BiayaKapalOppOpt::where('biaya_kapal_id', $biayaKapal->id)
                     ->get()
@@ -5399,10 +5408,10 @@ class BiayaKapalController extends Controller
 
                         $nominalRaw = $section['nominal'] ?? 0;
                         $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
-                        
+
                         $pphRaw = $section['pph'] ?? 0;
                         $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
-                        
+
                         \App\Models\BiayaKapalUmum::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
@@ -5427,7 +5436,7 @@ class BiayaKapalController extends Controller
             if ($request->has('perlengkapan_sections')) {
                 BiayaKapalPerlengkapan::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 $totalPerlengkapan = 0;
-                
+
                 if (! empty($request->perlengkapan_sections)) {
                     foreach ($request->perlengkapan_sections as $section) {
                         if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
@@ -5449,7 +5458,7 @@ class BiayaKapalController extends Controller
                         $totalPerlengkapan += $jumlah;
                     }
                 }
-                
+
                 if ($totalPerlengkapan > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'perlengkapan') !== false)) {
                     $biayaKapal->update(['nominal' => $totalPerlengkapan]);
                 }
@@ -5511,13 +5520,13 @@ class BiayaKapalController extends Controller
             // BURUH UPDATE
             if ($request->has('kapal_sections')) {
                 $lokasi = $request->input('lokasi', 'jakarta');
-                
+
                 BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalTenagaKerja::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 BiayaKapalTanggalBayar::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->delete();
-                
+
                 if (! empty($request->kapal_sections)) {
                     if ($request->jenis_biaya === 'KB054') {
                         // MODE BURUH BONGKAR
@@ -5525,11 +5534,10 @@ class BiayaKapalController extends Controller
                             $kapalName = $section['kapal'] ?? null;
                             $voyageName = $section['voyage'] ?? null;
 
-                            
                             $kontainerIds = [];
                             if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                                 foreach ($section['kontainer'] as $k) {
-                                    if (!empty($k['bl_id'])) {
+                                    if (! empty($k['bl_id'])) {
                                         $cleanNominalK = function ($val) {
                                             return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                                         };
@@ -5542,16 +5550,16 @@ class BiayaKapalController extends Controller
                                     }
                                 }
                             }
-                            
+
                             $cleanNum = function ($val) {
                                 return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                             };
-                            
+
                             $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                             $adjustment = $cleanNum($section['adjustment'] ?? 0);
                             $notesAdjustment = $section['notes_adjustment'] ?? null;
                             $totalNominal = $nominal + $adjustment;
-                            
+
                             \App\Models\BiayaKapalBuruhBongkar::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'kapal' => $kapalName,
@@ -5569,7 +5577,7 @@ class BiayaKapalController extends Controller
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                             ]);
                         }
-                        
+
                         $totalBongkar = \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
                         $biayaKapal->update(['nominal' => $totalBongkar]);
 
@@ -5578,11 +5586,11 @@ class BiayaKapalController extends Controller
                         foreach ($request->kapal_sections as $sectionIndex => $section) {
                             $kapalName = $section['kapal'] ?? null;
                             $voyageName = $section['voyage'] ?? null;
-                            
+
                             $kontainerIds = [];
                             if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                                 foreach ($section['kontainer'] as $k) {
-                                    if (!empty($k['bl_id'])) {
+                                    if (! empty($k['bl_id'])) {
                                         $cleanNominalK = function ($val) {
                                             return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                                         };
@@ -5595,20 +5603,20 @@ class BiayaKapalController extends Controller
                                     }
                                 }
                             }
-                            
+
                             $cleanNum = function ($val) {
                                 return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                             };
-                            
+
                             $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                             $adjustment = $cleanNum($section['adjustment'] ?? 0);
                             $notesAdjustment = $section['notes_adjustment'] ?? null;
-                            
+
                             $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
                             $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
-                            
+
                             $totalNominal = ($nominal + $adjustment) - $pphAmount;
-                            
+
                             \App\Models\BiayaKapalBuruhBatam::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'kapal' => $kapalName,
@@ -5628,10 +5636,10 @@ class BiayaKapalController extends Controller
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                             ]);
                         }
-                        
+
                         $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
                         $biayaKapal->update(['nominal' => $totalBatam]);
-                        
+
                     } else {
                         // MODE JAKARTA
                         foreach ($request->kapal_sections as $sectionIndex => $section) {
@@ -5720,11 +5728,19 @@ class BiayaKapalController extends Controller
                         $firstSection = collect($request->kapal_sections)->first();
                         if ($firstSection) {
                             $updateData = [];
-                            if (!empty($firstSection['nama_vendor'])) $updateData['nama_vendor'] = $firstSection['nama_vendor'];
-                            if (!empty($firstSection['penerima'])) $updateData['penerima'] = $firstSection['penerima'];
-                            if (!empty($firstSection['bank_id'])) $updateData['bank_id'] = $firstSection['bank_id'];
-                            if (!empty($firstSection['nomor_rekening'])) $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
-                            if (!empty($updateData)) {
+                            if (! empty($firstSection['nama_vendor'])) {
+                                $updateData['nama_vendor'] = $firstSection['nama_vendor'];
+                            }
+                            if (! empty($firstSection['penerima'])) {
+                                $updateData['penerima'] = $firstSection['penerima'];
+                            }
+                            if (! empty($firstSection['bank_id'])) {
+                                $updateData['bank_id'] = $firstSection['bank_id'];
+                            }
+                            if (! empty($firstSection['nomor_rekening'])) {
+                                $updateData['nomor_rekening'] = $firstSection['nomor_rekening'];
+                            }
+                            if (! empty($updateData)) {
                                 $biayaKapal->update($updateData);
                             }
                         }
@@ -5766,6 +5782,7 @@ class BiayaKapalController extends Controller
                 ->with('success', 'Data biaya kapal berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()
                 ->back()
                 ->with('error', 'Gagal menghapus data biaya kapal: '.$e->getMessage());
@@ -5863,7 +5880,7 @@ class BiayaKapalController extends Controller
             });
 
             $voyagesFromNaikKapalQuery->select(
-                'no_voyage', 
+                'no_voyage',
                 DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as min_tanggal'),
                 DB::raw('MAX(COALESCE(tanggal_muat, created_at)) as max_tanggal')
             );
@@ -5882,7 +5899,7 @@ class BiayaKapalController extends Controller
             });
 
             $voyagesFromBlsQuery->select(
-                'no_voyage', 
+                'no_voyage',
                 DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as min_tanggal'),
                 DB::raw('MAX(COALESCE(tanggal_berangkat, created_at)) as max_tanggal')
             );
@@ -5893,14 +5910,14 @@ class BiayaKapalController extends Controller
             foreach ($voyagesFromNaikKapal as $row) {
                 $voyageDates[$row->no_voyage] = [
                     'min' => $row->min_tanggal,
-                    'max' => $row->max_tanggal
+                    'max' => $row->max_tanggal,
                 ];
             }
             foreach ($voyagesFromBls as $row) {
                 if (! isset($voyageDates[$row->no_voyage])) {
                     $voyageDates[$row->no_voyage] = [
                         'min' => $row->min_tanggal,
-                        'max' => $row->max_tanggal
+                        'max' => $row->max_tanggal,
                     ];
                 } else {
                     if ($row->min_tanggal < $voyageDates[$row->no_voyage]['min']) {
@@ -5919,7 +5936,7 @@ class BiayaKapalController extends Controller
                 $formattedDate = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('d/M/Y') : '-';
                 $minTanggal = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('Y-m-d') : '';
                 $maxTanggal = $dates['max'] ? \Carbon\Carbon::parse($dates['max'])->format('Y-m-d') : '';
-                
+
                 $voyagesDetailed[] = [
                     'no_voyage' => $no_voyage,
                     'tanggal' => $formattedDate,
@@ -5954,7 +5971,7 @@ class BiayaKapalController extends Controller
             $dariTanggal = $request->input('dari_tanggal');
             $sampaiTanggal = $request->input('sampai_tanggal');
 
-            if (!$dariTanggal || !$sampaiTanggal) {
+            if (! $dariTanggal || ! $sampaiTanggal) {
                 return response()->json(['success' => false, 'message' => 'Tanggal harus diisi']);
             }
 
@@ -5964,8 +5981,8 @@ class BiayaKapalController extends Controller
                 ->where('no_voyage', '!=', '')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) >= ?", [$dariTanggal])
-                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) <= ?", [$sampaiTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_muat, created_at)) >= ?', [$dariTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_muat, created_at)) <= ?', [$sampaiTanggal])
                 ->select(
                     'nama_kapal',
                     'no_voyage',
@@ -5981,8 +5998,8 @@ class BiayaKapalController extends Controller
                 ->where('no_voyage', '!=', '')
                 ->whereNotNull('nama_kapal')
                 ->where('nama_kapal', '!=', '')
-                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) >= ?", [$dariTanggal])
-                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) <= ?", [$sampaiTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_berangkat, created_at)) >= ?', [$dariTanggal])
+                ->whereRaw('DATE(COALESCE(tanggal_berangkat, created_at)) <= ?', [$sampaiTanggal])
                 ->select(
                     'nama_kapal',
                     'no_voyage',
@@ -5994,23 +6011,23 @@ class BiayaKapalController extends Controller
 
             $voyagesMap = [];
             foreach ($naikKapalQuery as $row) {
-                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
+                $key = trim($row->nama_kapal).'|'.trim($row->no_voyage);
                 $voyagesMap[$key] = [
                     'nama_kapal' => $row->nama_kapal,
                     'no_voyage' => $row->no_voyage,
                     'min_tanggal' => $row->min_tanggal,
-                    'max_tanggal' => $row->max_tanggal
+                    'max_tanggal' => $row->max_tanggal,
                 ];
             }
 
             foreach ($blsQuery as $row) {
-                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
-                if (!isset($voyagesMap[$key])) {
+                $key = trim($row->nama_kapal).'|'.trim($row->no_voyage);
+                if (! isset($voyagesMap[$key])) {
                     $voyagesMap[$key] = [
                         'nama_kapal' => $row->nama_kapal,
                         'no_voyage' => $row->no_voyage,
                         'min_tanggal' => $row->min_tanggal,
-                        'max_tanggal' => $row->max_tanggal
+                        'max_tanggal' => $row->max_tanggal,
                     ];
                 } else {
                     if ($row->min_tanggal < $voyagesMap[$key]['min_tanggal']) {
@@ -6035,11 +6052,12 @@ class BiayaKapalController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $results,
             ]);
 
         } catch (\Exception $e) {
             Log::error('getVoyagesByDateRange error', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data voyage: '.$e->getMessage(),
@@ -6055,8 +6073,6 @@ class BiayaKapalController extends Controller
         try {
             $voyages = $request->input('voyages', []);
             $source = $request->input('source');
-
-
 
             if (empty($voyages)) {
                 return response()->json([
@@ -6119,7 +6135,7 @@ class BiayaKapalController extends Controller
             if (empty($kapal) || empty($voyage)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kapal dan voyage wajib diisi'
+                    'message' => 'Kapal dan voyage wajib diisi',
                 ]);
             }
 
@@ -6128,33 +6144,35 @@ class BiayaKapalController extends Controller
                 ->select('id', 'nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer')
                 ->orderBy('nomor_kontainer')
                 ->get()
-                ->map(function($item) {
+                ->map(function ($item) {
                     $label = '';
-                    if (!empty($item->nomor_kontainer)) {
-                        $label .= 'Kontainer: ' . $item->nomor_kontainer;
+                    if (! empty($item->nomor_kontainer)) {
+                        $label .= 'Kontainer: '.$item->nomor_kontainer;
                     }
-                    if (!empty($item->nomor_bl)) {
-                        $label .= ($label ? ' / ' : '') . 'BL: ' . $item->nomor_bl;
+                    if (! empty($item->nomor_bl)) {
+                        $label .= ($label ? ' / ' : '').'BL: '.$item->nomor_bl;
                     }
                     if (empty($label)) {
-                        $label = 'Manifest ID: ' . $item->id;
+                        $label = 'Manifest ID: '.$item->id;
                     }
+
                     return [
                         'id' => $item->id,
                         'nomor_kontainer' => $item->nomor_kontainer,
-                        'label' => $label . ' (' . ($item->size_kontainer ?: '-') . ' ' . ($item->tipe_kontainer ?: '-') . ')'
+                        'label' => $label.' ('.($item->size_kontainer ?: '-').' '.($item->tipe_kontainer ?: '-').')',
                     ];
                 });
 
             return response()->json([
                 'success' => true,
-                'data' => $manifests
+                'data' => $manifests,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching manifests: ' . $e->getMessage());
+            \Log::error('Error fetching manifests: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memuat data kontainer/BL'
+                'message' => 'Terjadi kesalahan saat memuat data kontainer/BL',
             ], 500);
         }
     }
@@ -6659,7 +6677,7 @@ class BiayaKapalController extends Controller
                 ->get()
                 ->map(function ($manifest) {
                     $size = '-';
-                    if (!empty($manifest->size_kontainer)) {
+                    if (! empty($manifest->size_kontainer)) {
                         $size = $manifest->size_kontainer;
                     } elseif (stripos($manifest->tipe_kontainer, '20') !== false) {
                         $size = '20';
@@ -6806,10 +6824,10 @@ class BiayaKapalController extends Controller
             'tenagaKerjaDetails.buruh',
             'bank',
         ])
-        ->where('jenis_biaya', 'KB024')
-        ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
-        ->orderBy('tanggal', 'asc')
-        ->get();
+            ->where('jenis_biaya', 'KB024')
+            ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+            ->orderBy('tanggal', 'asc')
+            ->get();
 
         if ($biayaKapals->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada data Biaya Buruh pada rentang tanggal tersebut.');
@@ -6894,7 +6912,7 @@ class BiayaKapalController extends Controller
     public function searchPengirim(Request $request)
     {
         $search = $request->get('q', '');
-        
+
         $query = \App\Models\Manifest::select('pengirim')
             ->distinct()
             ->whereNotNull('pengirim')
@@ -6923,7 +6941,7 @@ class BiayaKapalController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        if (!$pengirim || !$startDate || !$endDate) {
+        if (! $pengirim || ! $startDate || ! $endDate) {
             return response()->json(['data' => []]);
         }
 
@@ -6952,7 +6970,7 @@ class BiayaKapalController extends Controller
         $data = $manifests->map(function ($manifest) {
             $suratJalan = '-';
             $tipe = null;
-            
+
             if ($manifest->suratJalanBongkaran) {
                 $suratJalan = $manifest->suratJalanBongkaran->nomor_surat_jalan;
                 $tipe = 'regular';
@@ -6982,7 +7000,7 @@ class BiayaKapalController extends Controller
         $request->validate([
             'tanggal_mulai' => 'required|date',
             'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
-            'action' => 'required|in:print,excel'
+            'action' => 'required|in:print,excel',
         ]);
 
         $relationsToFilter = [
@@ -6990,7 +7008,7 @@ class BiayaKapalController extends Controller
             'truckingDetails', 'stuffingDetails', 'perlengkapanDetails',
             'labuhTambatDetails', 'oppOptDetails', 'thcDetails', 'loloDetails',
             'storageDetails', 'freightDetails', 'perijinanDetails', 'meratusDetails',
-            'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails', 'dokumens'
+            'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails', 'dokumens',
         ];
 
         $query = BiayaKapal::with(array_merge(['klasifikasiBiaya', 'vendor'], $relationsToFilter))
@@ -7000,8 +7018,8 @@ class BiayaKapalController extends Controller
             $kapal = $request->kapal;
             $query->where(function ($q) use ($kapal) {
                 $q->whereJsonContains('nama_kapal', $kapal)
-                  ->orWhere('nama_kapal', 'like', "%\"{$kapal}\"%")
-                  ->orWhere('nama_kapal', 'like', "%{$kapal}%");
+                    ->orWhere('nama_kapal', 'like', "%\"{$kapal}\"%")
+                    ->orWhere('nama_kapal', 'like', "%{$kapal}%");
             });
         }
 
@@ -7024,33 +7042,33 @@ class BiayaKapalController extends Controller
         if ($request->filled('kapal') || $isAirTawarOnly) {
             $kapalLower = $request->filled('kapal') ? strtolower(trim($request->kapal)) : null;
             $normalizedRequestKapal = $kapalLower ? preg_replace('/[^a-z0-9]/', '', $kapalLower) : null;
-            
+
             foreach ($biayaKapals as $biaya) {
                 $isJoint = is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1;
-                
+
                 if (($normalizedRequestKapal && $isJoint) || $isAirTawarOnly) {
                     $shipNominal = 0;
                     $shipVendor = null;
                     foreach ($relationsToFilter as $rel) {
                         if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
-                            $filtered = $biaya->{$rel}->filter(function($detail) use ($normalizedRequestKapal, $isAirTawarOnly) {
+                            $filtered = $biaya->{$rel}->filter(function ($detail) use ($normalizedRequestKapal, $isAirTawarOnly) {
                                 $kapalMatch = true;
                                 if ($normalizedRequestKapal) {
                                     $dKapal = isset($detail->kapal) ? preg_replace('/[^a-z0-9]/', '', strtolower(trim($detail->kapal))) : '';
                                     $kapalMatch = ($dKapal === $normalizedRequestKapal || ($dKapal !== '' && $normalizedRequestKapal !== '' && (str_contains($dKapal, $normalizedRequestKapal) || str_contains($normalizedRequestKapal, $dKapal))));
                                 }
-                                
+
                                 $airTawarMatch = true;
                                 if ($isAirTawarOnly) {
                                     $tipe = isset($detail->type_keterangan) ? strtolower(trim($detail->type_keterangan)) : '';
-                                    if (!str_contains($tipe, 'air') && !str_contains($tipe, 'galon')) {
+                                    if (! str_contains($tipe, 'air') && ! str_contains($tipe, 'galon')) {
                                         $airTawarMatch = false;
                                     }
                                 }
-                                
+
                                 return $kapalMatch && $airTawarMatch;
                             });
-                            
+
                             foreach ($filtered as $item) {
                                 if (isset($item->grand_total)) {
                                     $shipNominal += $item->grand_total;
@@ -7077,23 +7095,23 @@ class BiayaKapalController extends Controller
                             }
                         }
                     }
-                    
+
                     if ($isAirTawarOnly && $shipNominal == 0) {
                         $biaya->is_empty_air = true;
                     } else {
                         if ($shipNominal > 0 || $isAirTawarOnly) {
                             $biaya->nominal = $shipNominal;
                         }
-                        if (!empty($shipVendor)) {
+                        if (! empty($shipVendor)) {
                             $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
                         }
                         if ($isAirTawarOnly) {
                             $biaya->jenis_biaya_override = 'Biaya Agen (Khusus Air Tawar)';
                         }
                     }
-                } else if ($normalizedRequestKapal && !$isJoint) {
+                } elseif ($normalizedRequestKapal && ! $isJoint) {
                     // For single ship invoice, also try to find vendor from details if header doesn't have it
-                    if (!$biaya->vendor && !$biaya->nama_vendor) {
+                    if (! $biaya->vendor && ! $biaya->nama_vendor) {
                         $shipVendor = null;
                         foreach ($relationsToFilter as $rel) {
                             if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
@@ -7111,14 +7129,14 @@ class BiayaKapalController extends Controller
                                 }
                             }
                         }
-                        if (!empty($shipVendor)) {
+                        if (! empty($shipVendor)) {
                             $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
                         }
                     }
                 }
             }
         }
-        
+
         $biayaKapals = $biayaKapals->reject(function ($biaya) {
             return isset($biaya->is_empty_air) && $biaya->is_empty_air;
         });
@@ -7129,6 +7147,7 @@ class BiayaKapalController extends Controller
 
         return view('biaya-kapal.valuasi-print', compact('biayaKapals', 'request'));
     }
+
     /**
      * Round PPh once for each ship group, then allocate it to its vendor rows.
      */

@@ -1,9 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Permission;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -18,7 +16,7 @@ return new class extends Migration
             ['name' => 'payroll-create', 'description' => 'Buat Data Payroll'],
             ['name' => 'payroll-edit', 'description' => 'Edit Data Payroll'],
             ['name' => 'payroll-delete', 'description' => 'Hapus Data Payroll'],
-            
+
             // Payroll Uang Karyawan (Master Data Uang Lembur)
             ['name' => 'payroll-uang-karyawan-view', 'description' => 'View Data Uang Karyawan'],
             ['name' => 'payroll-uang-karyawan-create', 'description' => 'Buat Data Uang Karyawan'],

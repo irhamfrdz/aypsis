@@ -3,18 +3,18 @@
 namespace App\Exports;
 
 use App\Models\StockBan;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use DB;
-use Carbon\Carbon;
 
 class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
 {
     protected $bulan;
+
     protected $tahun;
 
     public function __construct($bulan, $tahun)
@@ -36,14 +36,14 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
             ->whereIn('kondisi', ['asli', 'kanisir'])
             ->whereNotNull('tanggal_masuk')
             ->where('tanggal_masuk', '<=', $endDate)
-            ->where(function($query) use ($endDate) {
+            ->where(function ($query) use ($endDate) {
                 $query->whereNull('tanggal_kembali')
-                      ->orWhere('tanggal_kembali', '<=', $endDate);
+                    ->orWhere('tanggal_kembali', '<=', $endDate);
             })
             ->orderBy('lokasi')
             ->orderBy('kondisi')
             ->get();
-            
+
         // Rangkuman hanya menghitung Asli dan Kanisir
         $totalAsli = $stockBans->where('kondisi', 'asli')->count();
         $totalKanisir = $stockBans->where('kondisi', 'kanisir')->count();
@@ -59,13 +59,13 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
 
     public function title(): string
     {
-        return 'Opname ' . $this->bulan . '-' . $this->tahun;
+        return 'Opname '.$this->bulan.'-'.$this->tahun;
     }
 
     public function styles(Worksheet $sheet)
     {
         // Styling is mostly handled by HTML table in blade view, but we can add some global formatting
-        
+
         // Merge cells for titles
         $sheet->mergeCells('A1:I1');
         $sheet->mergeCells('A2:I2');
@@ -73,7 +73,7 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
         // Style the title
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        
+
         $sheet->getStyle('A2')->getFont()->setBold(true);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 

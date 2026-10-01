@@ -1,5 +1,6 @@
 <?php
-$file = __DIR__ . '/images/logo.png';
+
+$file = __DIR__.'/images/logo.png';
 $img = imagecreatefrompng($file);
 imagepalettetotruecolor($img);
 imagealphablending($img, false);
@@ -18,5 +19,5 @@ for ($x = 0; $x < $w; $x++) {
         }
     }
 }
-imagepng($img, __DIR__ . '/images/logo_transparent.png');
+imagepng($img, __DIR__.'/images/logo_transparent.png');
 echo 'OK';

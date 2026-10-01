@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Karyawan;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AbsensiSyncController extends Controller
 {
@@ -27,7 +26,7 @@ class AbsensiSyncController extends Controller
             'logs' => 'required|array',
             'logs.*.nik' => 'required|string',
             'logs.*.waktu' => 'required|date_format:Y-m-d H:i:s',
-            'logs.*.tipe' => 'required|string|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang'
+            'logs.*.tipe' => 'required|string|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang',
         ]);
 
         $mesinId = $request->mesin_id;
@@ -38,10 +37,11 @@ class AbsensiSyncController extends Controller
             ->whereDate('waktu', '>=', Carbon::now()->subMonths(1)) // only check recent to save memory
             ->get()
             ->mapWithKeys(function ($item) {
-                $timeStr = $item->waktu instanceof Carbon 
-                    ? $item->waktu->format('Y-m-d H:i:s') 
+                $timeStr = $item->waktu instanceof Carbon
+                    ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
-                return [$item->nik . '_' . $timeStr . '_' . $item->tipe => true];
+
+                return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
             })
             ->toArray();
 
@@ -53,7 +53,7 @@ class AbsensiSyncController extends Controller
             ->toArray();
 
         $syncedCount = 0;
-        
+
         foreach ($logs as $log) {
             $nik = trim($log['nik']);
             if (is_numeric($nik)) {
@@ -62,7 +62,7 @@ class AbsensiSyncController extends Controller
             $type = $log['tipe'];
             $logTime = Carbon::parse($log['waktu'])->format('Y-m-d H:i:s');
 
-            $key = $nik . '_' . $logTime . '_' . $type;
+            $key = $nik.'_'.$logTime.'_'.$type;
             if (isset($existingLogs[$key])) {
                 continue; // Skip if already exists
             }
@@ -83,7 +83,7 @@ class AbsensiSyncController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Sinkronisasi berhasil! {$syncedCount} data absensi baru telah diimpor.",
-            'synced_count' => $syncedCount
+            'synced_count' => $syncedCount,
         ]);
     }
 
@@ -101,7 +101,7 @@ class AbsensiSyncController extends Controller
         $nik = $request->query('nik');
 
         $query = Absensi::whereDate('waktu', $date);
-        
+
         if ($nik) {
             $query->where('nik', $nik);
         }
@@ -110,7 +110,7 @@ class AbsensiSyncController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $logs
+            'data' => $logs,
         ]);
     }
 }

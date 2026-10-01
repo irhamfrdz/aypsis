@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,14 +15,14 @@ return new class extends Migration
     public function up(): void
     {
         $indexes = [
-            'absensis_karyawan_id_waktu_index' => "ALTER TABLE `absensis` ADD INDEX `absensis_karyawan_id_waktu_index` (`karyawan_id`, `waktu`)",
-            'absensis_waktu_index' => "ALTER TABLE `absensis` ADD INDEX `absensis_waktu_index` (`waktu`)",
-            'absensis_nik_waktu_index' => "ALTER TABLE `absensis` ADD INDEX `absensis_nik_waktu_index` (`nik`, `waktu`)",
+            'absensis_karyawan_id_waktu_index' => 'ALTER TABLE `absensis` ADD INDEX `absensis_karyawan_id_waktu_index` (`karyawan_id`, `waktu`)',
+            'absensis_waktu_index' => 'ALTER TABLE `absensis` ADD INDEX `absensis_waktu_index` (`waktu`)',
+            'absensis_nik_waktu_index' => 'ALTER TABLE `absensis` ADD INDEX `absensis_nik_waktu_index` (`nik`, `waktu`)',
         ];
 
         foreach ($indexes as $name => $sql) {
             try {
-                if (!Schema::hasIndex('absensis', $name)) {
+                if (! Schema::hasIndex('absensis', $name)) {
                     DB::statement($sql);
                 }
             } catch (\Throwable $e) {
@@ -51,4 +50,3 @@ return new class extends Migration
         }
     }
 };
-

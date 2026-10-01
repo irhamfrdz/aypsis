@@ -6,11 +6,11 @@ use App\Models\ShipperConsignee;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShipperConsigneeSheetExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles
+class ShipperConsigneeSheetExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     public function collection()
     {
@@ -80,20 +80,20 @@ class ShipperConsigneeSheetExport implements FromCollection, WithHeadings, WithM
         $sheet->getStyle('A1:T1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
             ->setWrapText(true);
-            
+
         $sheet->getRowDimension(1)->setRowHeight(40);
-        
-        $sheet->getStyle('A1:T' . ($sheet->getHighestRow()))->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        $sheet->getStyle('A1:T'.($sheet->getHighestRow()))->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         // Header Background Colors
         // NPWP SHIPPER (Column H) -> Red
         $sheet->getStyle('H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFFF0000'); // Red
-            
+
         // CONSIGNEE section (Column I, J, K) -> Lime Green
         $sheet->getStyle('I1:K1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FF92D050'); // Lime Green
-            
+
         // NOTIFY PARTY section (Column L, M, N) -> Orange
         $sheet->getStyle('L1:N1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFFFC000'); // Orange/Gold

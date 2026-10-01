@@ -42,8 +42,8 @@ class BiayaBensinController extends Controller
 
         if ($request->filled('nama_supir')) {
             $query->whereHas('supir', function ($q) use ($request) {
-                $q->where('nama_panggilan', 'like', '%' . $request->nama_supir . '%')
-                  ->orWhere('nama_lengkap', 'like', '%' . $request->nama_supir . '%');
+                $q->where('nama_panggilan', 'like', '%'.$request->nama_supir.'%')
+                    ->orWhere('nama_lengkap', 'like', '%'.$request->nama_supir.'%');
             });
         }
 
@@ -124,7 +124,7 @@ class BiayaBensinController extends Controller
 
         $kendaraan_id = $validated['kendaraan_id'];
         unset($validated['kendaraan_id']);
-        
+
         if (strpos($kendaraan_id, 'mobil_') === 0) {
             $validated['mobil_id'] = str_replace('mobil_', '', $kendaraan_id);
             $validated['alat_berat_id'] = null;
@@ -210,7 +210,7 @@ class BiayaBensinController extends Controller
     public function print(string $id)
     {
         $biayaBensin = BiayaBensin::with(['mobil', 'supir', 'creator'])->findOrFail($id);
-        
+
         return view('biaya-bensin.print', compact('biayaBensin'));
     }
 
@@ -255,7 +255,7 @@ class BiayaBensinController extends Controller
 
         $kendaraan_id = $validated['kendaraan_id'];
         unset($validated['kendaraan_id']);
-        
+
         if (strpos($kendaraan_id, 'mobil_') === 0) {
             $validated['mobil_id'] = str_replace('mobil_', '', $kendaraan_id);
             $validated['alat_berat_id'] = null;

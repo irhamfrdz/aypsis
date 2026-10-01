@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PranotaBpjsHeader;
-use App\Models\PranotaBpjsDetail;
 use App\Models\Karyawan;
 use App\Models\KaryawanTidakTetap;
+use App\Models\PranotaBpjsDetail;
+use App\Models\PranotaBpjsHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -50,16 +50,17 @@ class PranotaBpjsController extends Controller
             ->get([
                 'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
-                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup'
+                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup',
             ])
             ->map(function ($k) {
-                $k->unique_id = 'Karyawan_' . $k->id;
+                $k->unique_id = 'Karyawan_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
                 $k->tipe_label = 'Tetap';
                 $k->nik_ktp = $k->ktp ?? '';
                 $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
                 $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
-                $k->group_posisi = !empty($k->grup) ? (is_array($k->grup) ? implode(', ', $k->grup) : $k->grup) : ($k->posisi ?? 'Crew');
+                $k->group_posisi = ! empty($k->grup) ? (is_array($k->grup) ? implode(', ', $k->grup) : $k->grup) : ($k->posisi ?? 'Crew');
+
                 return $k;
             });
 
@@ -67,24 +68,25 @@ class PranotaBpjsController extends Controller
             ->get([
                 'id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
-                'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group'
+                'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group',
             ])
             ->map(function ($k) {
-                $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
+                $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
                 $k->tipe_label = 'Tidak Tetap';
                 $k->tanggal_lahir = null;
                 $k->nik_ktp = $k->nik_ktp ?? '';
                 $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
                 $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
-                $k->group_posisi = !empty($k->group) ? (is_array($k->group) ? implode(', ', $k->group) : $k->group) : ($k->pekerjaan ?? 'Crew');
+                $k->group_posisi = ! empty($k->group) ? (is_array($k->group) ? implode(', ', $k->group) : $k->group) : ($k->pekerjaan ?? 'Crew');
+
                 return $k;
             });
 
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
-            
+
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
-            
+
         return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs'));
     }
 
@@ -97,21 +99,21 @@ class PranotaBpjsController extends Controller
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required',
             'details.*.tipe_karyawan' => 'nullable|string',
-            'details.*.bpjs_kesehatan'      => 'nullable',
+            'details.*.bpjs_kesehatan' => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
-            'details.*.jht_biaya'            => 'nullable',
-            'details.*.jht_hutang'           => 'nullable',
-            'details.*.jkk_tunjangan'        => 'nullable',
-            'details.*.jkk_hutang'           => 'nullable',
-            'details.*.jkm_tunjangan'        => 'nullable',
-            'details.*.bpu_jkk_tunjangan'    => 'nullable',
-            'details.*.bpu_jkm'              => 'nullable',
-            'details.*.noncrew_jht_biaya'    => 'nullable',
-            'details.*.noncrew_jht_hutang'   => 'nullable',
+            'details.*.jht_biaya' => 'nullable',
+            'details.*.jht_hutang' => 'nullable',
+            'details.*.jkk_tunjangan' => 'nullable',
+            'details.*.jkk_hutang' => 'nullable',
+            'details.*.jkm_tunjangan' => 'nullable',
+            'details.*.bpu_jkk_tunjangan' => 'nullable',
+            'details.*.bpu_jkm' => 'nullable',
+            'details.*.noncrew_jht_biaya' => 'nullable',
+            'details.*.noncrew_jht_hutang' => 'nullable',
             'details.*.noncrew_jkk_tunjangan' => 'nullable',
             'details.*.noncrew_jkm_tunjangan' => 'nullable',
-            'details.*.jp_biaya'             => 'nullable',
-            'details.*.jp_hutang'            => 'nullable',
+            'details.*.jp_biaya' => 'nullable',
+            'details.*.jp_hutang' => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -153,9 +155,9 @@ class PranotaBpjsController extends Controller
                                   + $this->parseIndonesianNumber($detail['noncrew_jkm_tunjangan'] ?? 0);
                     $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
                     $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
-                    
+
                     $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
-                    
+
                     $total = $jknTotal + $jamsostekTotal;
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
@@ -190,18 +192,21 @@ class PranotaBpjsController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating Pranota BPJS: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            Log::error('Error creating Pranota BPJS: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
     public function show(PranotaBpjsHeader $pranota_bpj)
     {
         $pranota_bpj->load('details.karyawan', 'createdBy');
+
         return view('pranota-bpjs.show', compact('pranota_bpj'));
     }
 
@@ -212,31 +217,33 @@ class PranotaBpjsController extends Controller
         }
 
         $pranota_bpj->load('details');
-        
+
         $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
             ->get()
             ->map(function ($k) {
-                $k->unique_id = 'Karyawan_' . $k->id;
+                $k->unique_id = 'Karyawan_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
                 $k->tipe_label = 'Tetap';
+
                 return $k;
             });
 
         $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
             ->get()
             ->map(function ($k) {
-                $k->unique_id = 'KaryawanTidakTetap_' . $k->id;
+                $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
                 $k->tipe_label = 'Tidak Tetap';
                 $k->tanggal_lahir = null;
+
                 return $k;
             });
 
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
-            
+
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
-            
+
         return view('pranota-bpjs.edit', compact('pranota_bpj', 'karyawans', 'rumusBpjs'));
     }
 
@@ -253,21 +260,21 @@ class PranotaBpjsController extends Controller
             'details' => 'nullable|array',
             'details.*.karyawan_id' => 'required',
             'details.*.tipe_karyawan' => 'nullable|string',
-            'details.*.bpjs_kesehatan'      => 'nullable',
+            'details.*.bpjs_kesehatan' => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
-            'details.*.jht_biaya'            => 'nullable',
-            'details.*.jht_hutang'           => 'nullable',
-            'details.*.jkk_tunjangan'        => 'nullable',
-            'details.*.jkk_hutang'           => 'nullable',
-            'details.*.jkm_tunjangan'        => 'nullable',
-            'details.*.bpu_jkk_tunjangan'    => 'nullable',
-            'details.*.bpu_jkm'              => 'nullable',
-            'details.*.noncrew_jht_biaya'    => 'nullable',
-            'details.*.noncrew_jht_hutang'   => 'nullable',
+            'details.*.jht_biaya' => 'nullable',
+            'details.*.jht_hutang' => 'nullable',
+            'details.*.jkk_tunjangan' => 'nullable',
+            'details.*.jkk_hutang' => 'nullable',
+            'details.*.jkm_tunjangan' => 'nullable',
+            'details.*.bpu_jkk_tunjangan' => 'nullable',
+            'details.*.bpu_jkm' => 'nullable',
+            'details.*.noncrew_jht_biaya' => 'nullable',
+            'details.*.noncrew_jht_hutang' => 'nullable',
             'details.*.noncrew_jkk_tunjangan' => 'nullable',
             'details.*.noncrew_jkm_tunjangan' => 'nullable',
-            'details.*.jp_biaya'             => 'nullable',
-            'details.*.jp_hutang'            => 'nullable',
+            'details.*.jp_biaya' => 'nullable',
+            'details.*.jp_hutang' => 'nullable',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -308,9 +315,9 @@ class PranotaBpjsController extends Controller
                                   + $this->parseIndonesianNumber($detail['noncrew_jkm_tunjangan'] ?? 0);
                     $jpBiaya = $this->parseIndonesianNumber($detail['jp_biaya'] ?? 0);
                     $jpHutang = $this->parseIndonesianNumber($detail['jp_hutang'] ?? 0);
-                    
+
                     $jamsostekTotal = $jhtBiaya + $jhtHutang + $jkkTunjangan + $jkmTunjangan + $jpBiaya + $jpHutang;
-                    
+
                     $total = $jknTotal + $jamsostekTotal;
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
@@ -345,12 +352,14 @@ class PranotaBpjsController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil diupdate.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating Pranota BPJS: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            Log::error('Error updating Pranota BPJS: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -367,11 +376,13 @@ class PranotaBpjsController extends Controller
             // Hapus permanen header dari database
             $pranota_bpj->forceDelete();
             DB::commit();
+
             return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil dihapus permanen.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting Pranota BPJS: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            Log::error('Error deleting Pranota BPJS: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -389,16 +400,17 @@ class PranotaBpjsController extends Controller
         // Hapus titik pemisah ribuan, ganti koma desimal → titik
         $cleaned = str_replace('.', '', (string) $value);
         $cleaned = str_replace(',', '.', $cleaned);
+
         return floatval($cleaned) ?: 0.0;
     }
 
     private function generateNomorPranota(): string
     {
-        $prefix = 'PBPJS' . date('ym');
+        $prefix = 'PBPJS'.date('ym');
 
         // Ambil nomor terakhir berdasarkan prefix bulan ini
         $lastPranota = PranotaBpjsHeader::withTrashed()
-            ->where('nomor_pranota', 'like', $prefix . '%')
+            ->where('nomor_pranota', 'like', $prefix.'%')
             ->orderBy('nomor_pranota', 'desc')
             ->first();
 
@@ -409,7 +421,7 @@ class PranotaBpjsController extends Controller
         // Loop sampai ketemu nomor yang benar-benar belum ada
         do {
             $lastNumber++;
-            $candidate = $prefix . str_pad($lastNumber, 4, '0', STR_PAD_LEFT);
+            $candidate = $prefix.str_pad($lastNumber, 4, '0', STR_PAD_LEFT);
         } while (PranotaBpjsHeader::withTrashed()->where('nomor_pranota', $candidate)->exists());
 
         return $candidate;

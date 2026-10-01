@@ -4,13 +4,14 @@ namespace App\Imports;
 
 use App\Models\MasterPengirimPenerima;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Facades\Auth;
 
 class MasterPengirimPenerimaUpdateImport implements ToCollection, WithHeadingRow
 {
     public $successCount = 0;
+
     public $errors = [];
 
     public function collection(Collection $rows)
@@ -25,13 +26,15 @@ class MasterPengirimPenerimaUpdateImport implements ToCollection, WithHeadingRow
 
             if (empty($kode)) {
                 $this->errors[] = "Baris {$rowNumber}: Kolom KODE kosong.";
+
                 continue;
             }
 
             $pengirim = MasterPengirimPenerima::where('kode', $kode)->first();
 
-            if (!$pengirim) {
+            if (! $pengirim) {
                 $this->errors[] = "Baris {$rowNumber}: Data dengan KODE {$kode} tidak ditemukan.";
+
                 continue;
             }
 
@@ -39,28 +42,28 @@ class MasterPengirimPenerimaUpdateImport implements ToCollection, WithHeadingRow
 
             // NAMA
             $namaExcel = trim($row['nama'] ?? '');
-            if (empty($pengirim->nama) && !empty($namaExcel)) {
+            if (empty($pengirim->nama) && ! empty($namaExcel)) {
                 $pengirim->nama = $namaExcel;
                 $updated = true;
             }
 
             // PIC
             $picExcel = trim($row['pic'] ?? '');
-            if (empty($pengirim->pic) && !empty($picExcel)) {
+            if (empty($pengirim->pic) && ! empty($picExcel)) {
                 $pengirim->pic = $picExcel;
                 $updated = true;
             }
 
             // TELEPON
             $teleponExcel = trim($row['telepon'] ?? '');
-            if (empty($pengirim->telepon) && !empty($teleponExcel)) {
+            if (empty($pengirim->telepon) && ! empty($teleponExcel)) {
                 $pengirim->telepon = $teleponExcel;
                 $updated = true;
             }
 
             // CONTACT PERSON
             $cpExcel = trim($row['contact_person'] ?? '');
-            if (empty($pengirim->contact_person) && !empty($cpExcel)) {
+            if (empty($pengirim->contact_person) && ! empty($cpExcel)) {
                 $pengirim->contact_person = $cpExcel;
                 $updated = true;
             }
@@ -71,7 +74,7 @@ class MasterPengirimPenerimaUpdateImport implements ToCollection, WithHeadingRow
                     $pengirim->save();
                     $this->successCount++;
                 } catch (\Exception $e) {
-                    $this->errors[] = "Baris {$rowNumber}: Gagal update data {$kode} - " . $e->getMessage();
+                    $this->errors[] = "Baris {$rowNumber}: Gagal update data {$kode} - ".$e->getMessage();
                 }
             }
         }

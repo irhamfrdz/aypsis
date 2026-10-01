@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // First drop the old details table
         Schema::dropIfExists('biaya_kapal_buruh_bongkar_details');
-        
+
         // Drop the old main table
         Schema::dropIfExists('biaya_kapal_buruh_bongkars');
 
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('biaya_kapal_id');
             $table->foreign('biaya_kapal_id', 'fk_bkbb_new_biaya_kapal_id')->references('id')->on('biaya_kapals')->onDelete('cascade');
-            
+
             // New Batam-style fields
             $table->string('kapal')->nullable();
             $table->string('voyage')->nullable();
@@ -34,12 +34,12 @@ return new class extends Migration
             $table->string('nomor_bukti')->nullable();
             $table->string('penerima')->nullable();
             $table->string('nama_vendor')->nullable();
-            
+
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->foreign('bank_id', 'fk_bkbb_new_bank_id')->references('id')->on('banks')->onDelete('set null');
-            
+
             $table->string('nomor_rekening')->nullable();
-            
+
             $table->timestamps();
         });
     }

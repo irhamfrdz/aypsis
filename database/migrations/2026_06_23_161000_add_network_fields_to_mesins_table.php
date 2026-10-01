@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mesins', function (Blueprint $table) {
-            if (!Schema::hasColumn('mesins', 'ip_address')) {
+            if (! Schema::hasColumn('mesins', 'ip_address')) {
                 $table->string('ip_address')->nullable()->after('tipe_mesin');
             }
-            if (!Schema::hasColumn('mesins', 'port')) {
+            if (! Schema::hasColumn('mesins', 'port')) {
                 $table->integer('port')->default(4370)->after('ip_address');
             }
-            if (!Schema::hasColumn('mesins', 'comm_key')) {
+            if (! Schema::hasColumn('mesins', 'comm_key')) {
                 $table->integer('comm_key')->default(0)->after('port');
             }
         });
@@ -40,7 +40,7 @@ return new class extends Migration
             if (Schema::hasColumn('mesins', 'comm_key')) {
                 $columns[] = 'comm_key';
             }
-            if (!empty($columns)) {
+            if (! empty($columns)) {
                 $table->dropColumn($columns);
             }
         });

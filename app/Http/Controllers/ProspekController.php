@@ -867,7 +867,7 @@ class ProspekController extends Controller
             // Handle sinkronisasi jika prospek ini adalah hasil pecahan kontainer
             if (($suratJalan->jumlah_kontainer ?? 1) > 1 || preg_match('/-(\d+)$/', $prospek->no_surat_jalan)) {
                 $kontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer ?? ''));
-                
+
                 // Cari index berdasarkan suffix no_surat_jalan (misal JB1000-1 -> index 0)
                 if (preg_match('/-(\d+)$/', $prospek->no_surat_jalan, $matches)) {
                     $index = intval($matches[1]) - 1;
@@ -877,7 +877,7 @@ class ProspekController extends Controller
                         // Jika tidak ketemu di array baru, pertahankan yang lama
                         $nomorKontainerBaru = $prospek->nomor_kontainer;
                     }
-                    $noSuratJalanBaru = $suratJalan->no_surat_jalan . '-' . ($index + 1);
+                    $noSuratJalanBaru = $suratJalan->no_surat_jalan.'-'.($index + 1);
                 }
             }
 

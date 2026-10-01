@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\SaldoCuti;
-use App\Models\Karyawan;
 use Illuminate\Http\Request;
 
 class SaldoCutiController extends Controller
@@ -16,7 +15,7 @@ class SaldoCutiController extends Controller
             'total_cuti' => 'required|integer|min:0',
             'sisa_cuti' => 'required|integer',
             'cuti_terpakai' => 'required|integer|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         // Cek duplikasi
@@ -25,7 +24,7 @@ class SaldoCutiController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Saldo cuti untuk tahun ' . $request->tahun . ' sudah ada.');
+            return back()->with('error', 'Saldo cuti untuk tahun '.$request->tahun.' sudah ada.');
         }
 
         SaldoCuti::create($validated);
@@ -39,7 +38,7 @@ class SaldoCutiController extends Controller
             'total_cuti' => 'required|integer|min:0',
             'sisa_cuti' => 'required|integer',
             'cuti_terpakai' => 'required|integer|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         $saldoCuti->update($validated);

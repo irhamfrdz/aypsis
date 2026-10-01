@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::table('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
             $table->unsignedBigInteger('bank_id')->nullable()->after('penerima');
             $table->string('virtual_account')->nullable()->after('bank_id');
-            
+
             $table->foreign('bank_id')->references('id')->on('banks')->onDelete('set null');
         });
     }

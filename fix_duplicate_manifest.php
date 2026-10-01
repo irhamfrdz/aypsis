@@ -43,6 +43,7 @@ try {
             if ($first) {
                 $first = false;
                 echo "-> [TETAP] ID: {$record->id} | BL: {$dup->nomor_bl}\n";
+
                 continue;
             }
 
@@ -51,11 +52,11 @@ try {
             $deletedCount++;
         }
     }
-    
+
     DB::commit();
     echo "\nSelesai! Berhasil menghapus {$deletedCount} data double.\n";
-    
+
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "\nTerjadi kesalahan: " . $e->getMessage() . "\n";
+    echo "\nTerjadi kesalahan: ".$e->getMessage()."\n";
 }

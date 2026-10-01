@@ -10,12 +10,12 @@ use App\Models\LangsirBatam;
 $startDate = '2026-07-25';
 $endDate = '2026-08-10';
 $supirs = [
-    'DJUNAEDY', 
-    'FEBRY', 
-    'HENDRIADI', 
-    'RIDWAN', 
-    'MAMAN', 
-    'TAUFIK H'
+    'DJUNAEDY',
+    'FEBRY',
+    'HENDRIADI',
+    'RIDWAN',
+    'MAMAN',
+    'TAUFIK H',
 ];
 
 $query = LangsirBatam::withTrashed()
@@ -28,15 +28,15 @@ echo "Ditemukan {$count} data langsir dari tanggal {$startDate} sampai {$endDate
 
 if ($count > 0) {
     $deletedHistory = 0;
-    
+
     foreach ($langsirs as $langsir) {
         // Menghapus HistoryKontainer yang berkaitan
         $deletedHistory += \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->forceDelete();
     }
-    
+
     // Menghapus data permanen
     $deleted = $query->forceDelete();
-    
+
     echo "Berhasil menghapus permanen {$deleted} data langsir.\n";
     echo "Berhasil menghapus permanen {$deletedHistory} data history/pergerakan kontainer.\n";
 } else {

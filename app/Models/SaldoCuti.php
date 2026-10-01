@@ -8,7 +8,6 @@ class SaldoCuti extends Model
 {
     protected $guarded = [];
 
-
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class);

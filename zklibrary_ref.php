@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(0);
 
 define('CMD_CONNECT', 1000);
@@ -52,13 +53,21 @@ define('LEVEL_SUPERMANAGER', 14); // 0000 1110
 class ZKLibrary
 {
     public $ip = null;
+
     public $port = null;
+
     public $socket = null;
+
     public $session_id = 0;
+
     public $received_data = '';
-    public $user_data = array();
-    public $attendance_data = array();
+
+    public $user_data = [];
+
+    public $attendance_data = [];
+
     public $timeout_sec = 5;
+
     public $timeout_usec = 5000000;
 
     public function __construct($ip = null, $port = null)
@@ -102,7 +111,8 @@ class ZKLibrary
             socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
             if (strlen($this->received_data) > 0) {
                 $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
-                $this->session_id = hexdec($u['h6'] . $u['h5']);
+                $this->session_id = hexdec($u['h6'].$u['h5']);
+
                 return $this->checkValid($this->received_data);
             } else {
                 return false;
@@ -124,11 +134,12 @@ class ZKLibrary
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
         try {
             socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+
             return $this->checkValid($this->received_data);
         } catch (ErrorException $e) {
             return false;
@@ -145,7 +156,7 @@ class ZKLibrary
         if ($usec != 0) {
             $this->timeout_usec = $usec;
         }
-        $timeout = array('sec' => $this->timeout_sec, 'usec' => $this->timeout_usec);
+        $timeout = ['sec' => $this->timeout_sec, 'usec' => $this->timeout_usec];
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeout);
     }
 
@@ -153,11 +164,12 @@ class ZKLibrary
     {
         $time1 = microtime(true);
         $pfile = fsockopen($this->ip, $this->port, $errno, $errstr, $timeout);
-        if (!$pfile) {
+        if (! $pfile) {
             return 'down';
         }
         $time2 = microtime(true);
         fclose($pfile);
+
         return round((($time2 - $time1) * 1000), 0);
     }
 
@@ -168,13 +180,14 @@ class ZKLibrary
             $output .= substr($input, $i, 2);
             $i--;
         }
+
         return $output;
     }
 
     private function encodeTime($time)
     {
-        $str = str_replace(array(":", " "), array("-", "-"), $time);
-        $arr = explode("-", $str);
+        $str = str_replace([':', ' '], ['-', '-'], $time);
+        $arr = explode('-', $str);
         $year = @$arr[0] * 1;
         $month = ltrim(@$arr[1], '0') * 1;
         $day = ltrim(@$arr[2], '0') * 1;
@@ -182,6 +195,7 @@ class ZKLibrary
         $minute = ltrim(@$arr[4], '0') * 1;
         $second = ltrim(@$arr[5], '0') * 1;
         $data = (($year % 100) * 12 * 31 + (($month - 1) * 31) + $day - 1) * (24 * 60 * 60) + ($hour * 60 + $minute) * 60 + $second;
+
         return $data;
     }
 
@@ -198,7 +212,8 @@ class ZKLibrary
         $month = $data % 12 + 1;
         $data = $data / 12;
         $year = floor($data + 2000);
-        $d = date("Y-m-d H:i:s", strtotime($year . '-' . $month . '-' . $day . ' ' . $hour . ':' . $minute . ':' . $second));
+        $d = date('Y-m-d H:i:s', strtotime($year.'-'.$month.'-'.$day.' '.$hour.':'.$minute.':'.$second));
+
         return $d;
     }
 
@@ -210,7 +225,7 @@ class ZKLibrary
         $i = $l;
         $j = 1;
         while ($i > 1) {
-            $u = unpack('S', pack('C2', $p['c' . $j], $p['c' . ($j + 1)]));
+            $u = unpack('S', pack('C2', $p['c'.$j], $p['c'.($j + 1)]));
             $chksum += $u[1];
             if ($chksum > USHRT_MAX) {
                 $chksum -= USHRT_MAX;
@@ -219,7 +234,7 @@ class ZKLibrary
             $j += 2;
         }
         if ($i) {
-            $chksum = $chksum + $p['c' . strval(count($p))];
+            $chksum = $chksum + $p['c'.strval(count($p))];
         }
         while ($chksum > USHRT_MAX) {
             $chksum -= USHRT_MAX;
@@ -233,16 +248,17 @@ class ZKLibrary
         while ($chksum < 0) {
             $chksum += USHRT_MAX;
         }
+
         return pack('S', $chksum);
     }
 
     public function createHeader($command, $chksum, $session_id, $reply_id, $command_string)
     {
-        $buf = pack('SSSS', $command, $chksum, $session_id, $reply_id) . $command_string;
-        $buf = unpack('C' . (8 + strlen($command_string)) . 'c', $buf);
+        $buf = pack('SSSS', $command, $chksum, $session_id, $reply_id).$command_string;
+        $buf = unpack('C'.(8 + strlen($command_string)).'c', $buf);
         $u = unpack('S', $this->checkSum($buf));
         if (is_array($u)) {
-            while (list($key) = each($u)) {
+            while ([$key] = each($u)) {
                 $u = $u[$key];
                 break;
             }
@@ -253,13 +269,14 @@ class ZKLibrary
             $reply_id -= USHRT_MAX;
         }
         $buf = pack('SSSS', $command, $chksum, $session_id, $reply_id);
-        return $buf . $command_string;
+
+        return $buf.$command_string;
     }
 
     private function checkValid($reply)
     {
         $u = unpack('H2h1/H2h2', substr($reply, 0, 8));
-        $command = hexdec($u['h2'] . $u['h1']);
+        $command = hexdec($u['h2'].$u['h1']);
         if ($command == CMD_ACK_OK) {
             return true;
         } else {
@@ -272,13 +289,14 @@ class ZKLibrary
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), MSG_EOR, $this->ip, $this->port);
         try {
             socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
-            $this->session_id =  hexdec($u['h6'] . $u['h5']);
+            $this->session_id = hexdec($u['h6'].$u['h5']);
+
             return substr($this->received_data, $offset_data);
         } catch (ErrorException $e) {
             return false;
@@ -290,10 +308,11 @@ class ZKLibrary
     private function getSizeUser()
     {
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $command = hexdec($u['h2'] . $u['h1']);
+        $command = hexdec($u['h2'].$u['h1']);
         if ($command == CMD_PREPARE_DATA) {
             $u = unpack('H2h1/H2h2/H2h3/H2h4', substr($this->received_data, 8, 4));
-            $size = hexdec($u['h4'] . $u['h3'] . $u['h2'] . $u['h1']);
+            $size = hexdec($u['h4'].$u['h3'].$u['h2'].$u['h1']);
+
             return $size;
         } else {
             return false;
@@ -303,10 +322,11 @@ class ZKLibrary
     private function getSizeAttendance()
     {
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $command = hexdec($u['h2'] . $u['h1']);
+        $command = hexdec($u['h2'].$u['h1']);
         if ($command == CMD_PREPARE_DATA) {
             $u = unpack('H2h1/H2h2/H2h3/H2h4', substr($this->received_data, 8, 4));
-            $size = hexdec($u['h4'] . $u['h3'] . $u['h2'] . $u['h1']);
+            $size = hexdec($u['h4'].$u['h3'].$u['h2'].$u['h1']);
+
             return $size;
         } else {
             return false;
@@ -316,10 +336,11 @@ class ZKLibrary
     private function getSizeTemplate()
     {
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $command = hexdec($u['h2'] . $u['h1']);
+        $command = hexdec($u['h2'].$u['h1']);
         if ($command == CMD_PREPARE_DATA) {
             $u = unpack('H2h1/H2h2/H2h3/H2h4', substr($this->received_data, 8, 4));
-            $size = hexdec($u['h4'] . $u['h3'] . $u['h2'] . $u['h1']);
+            $size = hexdec($u['h4'].$u['h3'].$u['h2'].$u['h1']);
+
             return $size;
         } else {
             return false;
@@ -329,28 +350,32 @@ class ZKLibrary
     public function restartDevice()
     {
         $command = CMD_RESTART;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function shutdownDevice()
     {
         $command = CMD_POWEROFF;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function sleepDevice()
     {
         $command = CMD_SLEEP;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function resumeDevice()
     {
         $command = CMD_RESUME;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -362,6 +387,7 @@ class ZKLibrary
         $command = CMD_CHANGE_SPEED;
         $byte = chr($speed);
         $command_string = $byte;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -371,26 +397,30 @@ class ZKLibrary
         $byte1 = chr((int) ($rank % 256));
         $byte2 = chr((int) ($rank >> 8));
         $byte3 = chr(0);
-        $command_string = $byte1 . $byte2 . $byte3 . ' ' . $text;
+        $command_string = $byte1.$byte2.$byte3.' '.$text;
+
         return $this->execCommand($command, $command_string);
     }
 
     public function clearLCD()
     {
         $command = CMD_CLEAR_LCD;
+
         return $this->execCommand($command);
     }
 
     public function testVoice()
     {
         $command = CMD_TESTVOICE;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function getVersion()
     {
         $command = CMD_VERSION;
+
         return $this->execCommand($command);
     }
 
@@ -400,7 +430,8 @@ class ZKLibrary
         $command_string = '~OS';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -410,7 +441,8 @@ class ZKLibrary
     public function setOSVersion($osVersion)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~OS=' . $osVersion;
+        $command_string = '~OS='.$osVersion;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -420,7 +452,8 @@ class ZKLibrary
         $command_string = '~Platform';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -430,7 +463,8 @@ class ZKLibrary
     public function setPlatform($patform)
     {
         $command = CMD_OPTIONS_RRQ;
-        $command_string = '~Platform=' . $patform;
+        $command_string = '~Platform='.$patform;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -440,7 +474,8 @@ class ZKLibrary
         $command_string = '~ZKFPVersion';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -450,7 +485,8 @@ class ZKLibrary
     public function setFirmwareVersion($firmwareVersion)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~ZKFPVersion=' . $firmwareVersion;
+        $command_string = '~ZKFPVersion='.$firmwareVersion;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -460,7 +496,8 @@ class ZKLibrary
         $command_string = 'WorkCode';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -470,7 +507,8 @@ class ZKLibrary
     public function setWorkCode($workCode)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = 'WorkCode=' . $workCode;
+        $command_string = 'WorkCode='.$workCode;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -480,7 +518,8 @@ class ZKLibrary
         $command_string = '~SSR';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -490,7 +529,8 @@ class ZKLibrary
     public function setSSR($ssr)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~SSR=' . $ssr;
+        $command_string = '~SSR='.$ssr;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -501,7 +541,8 @@ class ZKLibrary
         $command_string = '~PIN2Width';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -511,7 +552,8 @@ class ZKLibrary
     public function setPinWidth($pinWidth)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~PIN2Width=' . $pinWidth;
+        $command_string = '~PIN2Width='.$pinWidth;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -521,7 +563,8 @@ class ZKLibrary
         $command_string = 'FaceFunOn';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -531,7 +574,8 @@ class ZKLibrary
     public function setFaceFunctionOn($faceFunctionOn)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = 'FaceFunOn=' . $faceFunctionOn;
+        $command_string = 'FaceFunOn='.$faceFunctionOn;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -541,7 +585,8 @@ class ZKLibrary
         $command_string = '~SerialNumber';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -551,7 +596,8 @@ class ZKLibrary
     public function setSerialNumber($serialNumber)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~SerialNumber=' . $serialNumber;
+        $command_string = '~SerialNumber='.$serialNumber;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -561,7 +607,8 @@ class ZKLibrary
         $command_string = '~DeviceName';
         $return = $this->execCommand($command, $command_string);
         if ($net) {
-            $arr = explode("=", $return, 2);
+            $arr = explode('=', $return, 2);
+
             return $arr[1];
         } else {
             return $return;
@@ -571,7 +618,8 @@ class ZKLibrary
     public function setDeviceName($deviceName)
     {
         $command = CMD_OPTIONS_WRQ;
-        $command_string = '~DeviceName=' . $deviceName;
+        $command_string = '~DeviceName='.$deviceName;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -579,6 +627,7 @@ class ZKLibrary
     {
         // resolution = 1 minute
         $command = CMD_GET_TIME;
+
         return $this->decodeTime(hexdec($this->reverseHex(bin2hex($this->execCommand($command)))));
     }
 
@@ -587,19 +636,22 @@ class ZKLibrary
         // resolution = 1 second
         $command = CMD_SET_TIME;
         $command_string = pack('I', $this->encodeTime($t));
+
         return $this->execCommand($command, $command_string);
     }
 
     public function enableDevice()
     {
         $command = CMD_ENABLEDEVICE;
+
         return $this->execCommand($command);
     }
 
     public function disableDevice()
     {
         $command = CMD_DISABLEDEVICE;
-        $command_string = chr(0) . chr(0);
+        $command_string = chr(0).chr(0);
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -607,6 +659,7 @@ class ZKLibrary
     {
         $command = CMD_ENABLE_CLOCK;
         $command_string = chr($mode);
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -615,7 +668,8 @@ class ZKLibrary
         $command = CMD_USERTEMP_RRQ;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($finger);
+        $command_string = $byte1.$byte2.chr($finger);
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -626,7 +680,7 @@ class ZKLibrary
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
         try {
@@ -639,10 +693,10 @@ class ZKLibrary
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
-                $this->session_id =  hexdec($u['h6'] . $u['h5']);
+                $this->session_id = hexdec($u['h6'].$u['h5']);
                 socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
             }
-            $users = array();
+            $users = [];
             if (count($this->user_data) > 0) {
                 for ($x = 0; $x < count($this->user_data); $x++) {
                     if ($x > 0) {
@@ -656,23 +710,24 @@ class ZKLibrary
                     $u1 = hexdec(substr($u[1], 2, 2));
                     $u2 = hexdec(substr($u[1], 4, 2));
                     $uid = $u1 + ($u2 * 256);                           // 2 byte
-                    $role = hexdec(substr($u[1], 6, 2)) . ' ';          // 1 byte
-                    $password = hex2bin(substr($u[1], 8, 16)) . ' ';    // 8 byte
-                    $name = hex2bin(substr($u[1], 24, 74)) . ' ';       // 37 byte
-                    $userid = hex2bin(substr($u[1], 98, 72)) . ' ';     // 36 byte
+                    $role = hexdec(substr($u[1], 6, 2)).' ';          // 1 byte
+                    $password = hex2bin(substr($u[1], 8, 16)).' ';    // 8 byte
+                    $name = hex2bin(substr($u[1], 24, 74)).' ';       // 37 byte
+                    $userid = hex2bin(substr($u[1], 98, 72)).' ';     // 36 byte
                     $passwordArr = explode(chr(0), $password, 2);       // explode to array
                     $password = $passwordArr[0];                        // get password
                     $useridArr = explode(chr(0), $userid, 2);           // explode to array
                     $userid = $useridArr[0];                            // get user ID
                     $nameArr = explode(chr(0), $name, 3);               // explode to array
                     $name = $nameArr[0];                                // get name
-                    if ($name == "") {
+                    if ($name == '') {
                         $name = $uid;
                     }
-                    $users[$uid] = array($userid, $name, intval($role), $password);
+                    $users[$uid] = [$userid, $name, intval($role), $password];
                     $user_data = substr($user_data, 72);
                 }
             }
+
             return $users;
         } catch (ErrorException $e) {
             return false;
@@ -683,7 +738,7 @@ class ZKLibrary
 
     public function getUserTemplateAll($uid)
     {
-        $template = array();
+        $template = [];
         $j = 0;
         for ($i = 5; $i < 10; $i++, $j++) {
             $template[$j] = $this->getUserTemplate($uid, $i);
@@ -691,21 +746,22 @@ class ZKLibrary
         for ($i = 4; $i >= 0; $i--, $j++) {
             $template[$j] = $this->getUserTemplate($uid, $i);
         }
+
         return $template;
     }
 
     public function getUserTemplate($uid, $finger)
     {
         $template_data = '';
-        $this->user_data = array();
+        $this->user_data = [];
         $command = CMD_USERTEMP_RRQ;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($finger);
+        $command_string = $byte1.$byte2.chr($finger);
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
         try {
@@ -718,10 +774,10 @@ class ZKLibrary
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
-                $this->session_id =  hexdec($u['h6'] . $u['h5']);
+                $this->session_id = hexdec($u['h6'].$u['h5']);
                 socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
             }
-            $template_data = array();
+            $template_data = [];
             if (count($this->user_data) > 0) {
                 for ($x = 0; $x < count($this->user_data); $x++) {
                     if ($x == 0) {
@@ -732,13 +788,14 @@ class ZKLibrary
                 }
                 $user_data = implode('', $this->user_data);
                 $template_size = strlen($user_data) + 6;
-                $prefix = chr($template_size % 256) . chr(round($template_size / 256)) . $byte1 . $byte2 . chr($finger) . chr(1);
-                $user_data = $prefix . $user_data;
+                $prefix = chr($template_size % 256).chr(round($template_size / 256)).$byte1.$byte2.chr($finger).chr(1);
+                $user_data = $prefix.$user_data;
                 if (strlen($user_data) > 6) {
                     $valid = 1;
-                    $template_data = array($template_size, $uid, $finger, $valid, $user_data);
+                    $template_data = [$template_size, $uid, $finger, $valid, $user_data];
                 }
             }
+
             return $template_data;
         } catch (ErrorException $e) {
             return false;
@@ -755,7 +812,7 @@ class ZKLibrary
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
         try {
@@ -768,11 +825,11 @@ class ZKLibrary
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
-                $this->session_id =  hexdec($u['h6'] . $u['h5']);
+                $this->session_id = hexdec($u['h6'].$u['h5']);
                 socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
             }
-            $users = array();
-            $retdata = "";
+            $users = [];
+            $retdata = '';
             if (count($this->user_data) > 0) {
                 for ($x = 0; $x < count($this->user_data); $x++) {
                     if ($x > 0) {
@@ -785,6 +842,7 @@ class ZKLibrary
                     }
                 }
             }
+
             return $retdata;
         } catch (ErrorException $e) {
             return false;
@@ -807,7 +865,8 @@ class ZKLibrary
         $command = CMD_USER_WRQ;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($role) . str_pad($password, 8, chr(0)) . str_pad($name, 28, chr(0)) . str_pad(chr(1), 9, chr(0)) . str_pad($userid, 8, chr(0)) . str_repeat(chr(0), 16);
+        $command_string = $byte1.$byte2.chr($role).str_pad($password, 8, chr(0)).str_pad($name, 28, chr(0)).str_pad(chr(1), 9, chr(0)).str_pad($userid, 8, chr(0)).str_repeat(chr(0), 16);
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -815,6 +874,7 @@ class ZKLibrary
     {
         $command = CMD_USERTEMP_WRQ;
         $command_string = $data;
+
         // $length = ord(substr($command_string, 0, 1)) + ord(substr($command_string, 1, 1)) * 256;
         return $this->execCommand($command, $command_string);
         /*
@@ -839,12 +899,14 @@ class ZKLibrary
     public function clearData()
     {
         $command = CMD_CLEAR_DATA;
+
         return $this->execCommand($command);
     }
 
     public function clearUser()
     {
         $command = CMD_CLEAR_DATA;
+
         return $this->execCommand($command);
     }
 
@@ -853,7 +915,8 @@ class ZKLibrary
         $command = CMD_DELETE_USER;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2;
+        $command_string = $byte1.$byte2;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -862,13 +925,15 @@ class ZKLibrary
         $command = CMD_DELETE_USERTEMP;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($finger);
+        $command_string = $byte1.$byte2.chr($finger);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function clearAdmin()
     {
         $command = CMD_CLEAR_ADMIN;
+
         return $this->execCommand($command);
     }
 
@@ -877,9 +942,10 @@ class ZKLibrary
         $command = CMD_TEST_TEMP;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($finger);
-        $u =  unpack('H2h1/H2h2', $this->execCommand($command, $command_string));
-        $ret = hexdec($u['h2'] . $u['h1']);
+        $command_string = $byte1.$byte2.chr($finger);
+        $u = unpack('H2h1/H2h2', $this->execCommand($command, $command_string));
+        $ret = hexdec($u['h2'].$u['h1']);
+
         return ($ret == CMD_ACK_OK) ? 1 : 0;
     }
 
@@ -888,7 +954,8 @@ class ZKLibrary
         $command = CMD_STARTVERIFY;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2;
+        $command_string = $byte1.$byte2;
+
         return $this->execCommand($command, $command_string);
     }
 
@@ -897,13 +964,15 @@ class ZKLibrary
         $command = CMD_STARTENROLL;
         $byte1 = chr((int) ($uid % 256));
         $byte2 = chr((int) ($uid >> 8));
-        $command_string = $byte1 . $byte2 . chr($finger);
+        $command_string = $byte1.$byte2.chr($finger);
+
         return $this->execCommand($command, $command_string);
     }
 
     public function cancelCapture()
     {
         $command = CMD_CANCELCAPTURE;
+
         return $this->execCommand($command);
     }
 
@@ -914,7 +983,7 @@ class ZKLibrary
         $chksum = 0;
         $session_id = $this->session_id;
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
-        $reply_id = hexdec($u['h8'] . $u['h7']);
+        $reply_id = hexdec($u['h8'].$u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
         socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
         try {
@@ -926,10 +995,10 @@ class ZKLibrary
                     array_push($this->attendance_data, $received_data);
                     $bytes -= 1024;
                 }
-                $this->session_id = hexdec($u['h6'] . $u['h5']);
+                $this->session_id = hexdec($u['h6'].$u['h5']);
                 socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
             }
-            $attendance = array();
+            $attendance = [];
             if (count($this->attendance_data) > 0) {
                 for ($x = 0; $x < count($this->attendance_data); $x++) {
                     if ($x > 0) {
@@ -946,10 +1015,11 @@ class ZKLibrary
                     $id = str_replace("\0", '', hex2bin(substr($u[1], 8, 16)));
                     $state = hexdec(substr($u[1], 56, 2));
                     $timestamp = $this->decodeTime(hexdec($this->reverseHex(substr($u[1], 58, 8))));
-                    array_push($attendance, array($uid, $id, $state, $timestamp));
+                    array_push($attendance, [$uid, $id, $state, $timestamp]);
                     $attendance_data = substr($attendance_data, 40);
                 }
             }
+
             return $attendance;
         } catch (exception $e) {
             return false;
@@ -959,6 +1029,7 @@ class ZKLibrary
     public function clearAttendance()
     {
         $command = CMD_CLEAR_ATTLOG;
+
         return $this->execCommand($command);
     }
 }

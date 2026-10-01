@@ -2,20 +2,21 @@
 
 namespace App\Exports\Hrd\Sheets;
 
-use App\Models\Karyawan;
 use App\Models\Absensi;
 use App\Models\HariLibur;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RekapLengkapSheet implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class RekapLengkapSheet implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($startDate, $endDate)
@@ -52,11 +53,11 @@ class RekapLengkapSheet implements FromCollection, WithHeadings, WithTitle, With
 
             foreach ($karyawans as $karyawan) {
                 $log = $logsForDay->get($karyawan->id);
-                
+
                 if ($log) {
                     $waktuMasuk = $log->waktu_masuk ? Carbon::parse($log->waktu_masuk)->format('H:i') : '-';
                     $waktuPulang = $log->waktu_pulang ? Carbon::parse($log->waktu_pulang)->format('H:i') : '-';
-                    
+
                     $status = 'Hadir';
                 } else {
                     $waktuMasuk = '-';
@@ -72,7 +73,7 @@ class RekapLengkapSheet implements FromCollection, WithHeadings, WithTitle, With
                     'Divisi' => $karyawan->divisi,
                     'Jam Masuk' => $waktuMasuk,
                     'Jam Pulang' => $waktuPulang,
-                    'Status' => $status
+                    'Status' => $status,
                 ];
             }
         }
@@ -90,7 +91,7 @@ class RekapLengkapSheet implements FromCollection, WithHeadings, WithTitle, With
             'Divisi',
             'Jam Masuk',
             'Jam Pulang',
-            'Status'
+            'Status',
         ];
     }
 
@@ -102,7 +103,7 @@ class RekapLengkapSheet implements FromCollection, WithHeadings, WithTitle, With
     public function styles(Worksheet $sheet)
     {
         return [
-            1    => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F46E5']]],
+            1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F46E5']]],
         ];
     }
 }

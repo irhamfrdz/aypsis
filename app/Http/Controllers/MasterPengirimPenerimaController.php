@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MasterPengirimPenerimaDataExport;
 use App\Exports\MasterPengirimPenerimaTemplateExport;
 use App\Imports\MasterPengirimPenerimaImport;
+use App\Imports\MasterPengirimPenerimaUpdateImport;
 use App\Models\MasterPengirimPenerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Exports\MasterPengirimPenerimaDataExport;
-use App\Imports\MasterPengirimPenerimaUpdateImport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+
 class MasterPengirimPenerimaController extends Controller
 {
     /**
@@ -297,12 +298,14 @@ class MasterPengirimPenerimaController extends Controller
         return redirect()->route('master-pengirim-penerima.index')
             ->with('success', 'Penerima berhasil ditambahkan!');
     }
+
     /**
      * Export data pengirim/penerima ke Excel
      */
     public function exportData()
     {
-        $filename = 'master_pengirim_penerima_data_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'master_pengirim_penerima_data_'.date('Y-m-d_His').'.xlsx';
+
         return Excel::download(new MasterPengirimPenerimaDataExport, $filename);
     }
 
@@ -321,16 +324,16 @@ class MasterPengirimPenerimaController extends Controller
 
             if ($import->successCount > 0) {
                 $message = "Berhasil memperbarui {$import->successCount} data pengirim/penerima";
-                if (!empty($import->errors)) {
-                    $message .= '. Namun ada ' . count($import->errors) . ' error: ' . implode('; ', $import->errors);
+                if (! empty($import->errors)) {
+                    $message .= '. Namun ada '.count($import->errors).' error: '.implode('; ', $import->errors);
                 }
 
                 return redirect()->route('master-pengirim-penerima.index')->with('success', $message);
             } else {
-                return redirect()->route('master-pengirim-penerima.index')->with('error', 'Tidak ada data yang diperbarui. ' . implode('; ', $import->errors));
+                return redirect()->route('master-pengirim-penerima.index')->with('error', 'Tidak ada data yang diperbarui. '.implode('; ', $import->errors));
             }
         } catch (\Exception $e) {
-            return redirect()->route('master-pengirim-penerima.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('master-pengirim-penerima.index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

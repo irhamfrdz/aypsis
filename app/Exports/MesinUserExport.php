@@ -22,6 +22,7 @@ class MesinUserExport implements FromCollection, WithHeadings, WithMapping
         if ($this->sn) {
             $query->where('sn', $this->sn);
         }
+
         return $query->orderBy('sn')->orderBy('pin')->get();
     }
 
@@ -35,7 +36,7 @@ class MesinUserExport implements FromCollection, WithHeadings, WithMapping
             'Privilege (Hak Akses)',
             'Password',
             'Group',
-            'Ditarik Pada'
+            'Ditarik Pada',
         ];
     }
 
@@ -44,7 +45,7 @@ class MesinUserExport implements FromCollection, WithHeadings, WithMapping
         $privilegeMap = [
             '0' => 'User Biasa',
             '2' => 'Enroller',
-            '14' => 'Admin'
+            '14' => 'Admin',
         ];
 
         return [
@@ -55,7 +56,7 @@ class MesinUserExport implements FromCollection, WithHeadings, WithMapping
             isset($privilegeMap[$user->privilege]) ? $privilegeMap[$user->privilege] : $user->privilege,
             $user->password ?: '-',
             $user->group ?: '-',
-            $user->updated_at->format('Y-m-d H:i:s')
+            $user->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 }

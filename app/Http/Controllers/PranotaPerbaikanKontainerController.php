@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PranotaPerbaikanKontainer;
-use App\Models\PerbaikanKontainer;
-use Illuminate\Http\Request;
 use App\Exports\PranotaPerbaikanKontainerSingleExport;
+use App\Models\PerbaikanKontainer;
+use App\Models\PranotaPerbaikanKontainer;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PranotaPerbaikanKontainerController extends Controller
@@ -40,6 +40,7 @@ class PranotaPerbaikanKontainerController extends Controller
         }
         $perPage = $request->input('per_page', 15);
         $pranotaPerbaikanKontainers = $query->paginate($perPage)->appends($request->query());
+
         return view('pranota-perbaikan-kontainer.index', compact('pranotaPerbaikanKontainers'));
     }
 
@@ -70,8 +71,8 @@ class PranotaPerbaikanKontainerController extends Controller
     public function excel($id, Request $request)
     {
         $printType = $request->query('type');
-        $fileName = 'pranota_perbaikan_' . $id . ($printType ? '_' . $printType : '') . '.xlsx';
-        
+        $fileName = 'pranota_perbaikan_'.$id.($printType ? '_'.$printType : '').'.xlsx';
+
         return Excel::download(new PranotaPerbaikanKontainerSingleExport($id, $printType), $fileName);
     }
 
@@ -136,7 +137,7 @@ class PranotaPerbaikanKontainerController extends Controller
                     $item['biaya_cat'] = $data['biaya_cat'] ?? 0;
                     if (array_key_exists('keterangan_kerusakan', $data)) {
                         $item['keterangan_kerusakan'] = $data['keterangan_kerusakan'];
-                        
+
                         $perbaikan = \App\Models\PerbaikanKontainer::find($item['id']);
                         if ($perbaikan) {
                             $perbaikan->keterangan_kerusakan = $data['keterangan_kerusakan'];

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\PembayaranBiayaKapalController;
 use App\Http\Controllers\BiayaKapalController;
+use App\Http\Controllers\PembayaranBiayaKapalController;
 use App\Models\BiayaKapal;
 use App\Models\PembayaranBiayaKapal;
 use App\Services\CoaTransactionService;

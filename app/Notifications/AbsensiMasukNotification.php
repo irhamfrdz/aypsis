@@ -36,18 +36,18 @@ class AbsensiMasukNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        $karyawanNama = $this->absensi->karyawan 
-            ? $this->absensi->karyawan->nama_lengkap 
-            : 'Karyawan NIK: ' . $this->absensi->nik;
+        $karyawanNama = $this->absensi->karyawan
+            ? $this->absensi->karyawan->nama_lengkap
+            : 'Karyawan NIK: '.$this->absensi->nik;
 
-        $waktuFormatted = $this->absensi->waktu instanceof \Carbon\Carbon 
-            ? $this->absensi->waktu->format('H:i:s') 
+        $waktuFormatted = $this->absensi->waktu instanceof \Carbon\Carbon
+            ? $this->absensi->waktu->format('H:i:s')
             : \Carbon\Carbon::parse($this->absensi->waktu)->format('H:i:s');
 
         return [
             'message' => "Absensi Baru: {$karyawanNama} telah melakukan absen {$this->absensi->tipe}.",
-            'notes' => "Waktu Absen: {$waktuFormatted} (Keterangan: " . ($this->absensi->keterangan ?? '-') . ")",
-            'url' => route('absensi.index') . '?nik=' . $this->absensi->nik,
+            'notes' => "Waktu Absen: {$waktuFormatted} (Keterangan: ".($this->absensi->keterangan ?? '-').')',
+            'url' => route('absensi.index').'?nik='.$this->absensi->nik,
         ];
     }
 }

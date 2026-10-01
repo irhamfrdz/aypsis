@@ -25,16 +25,16 @@ class WaBroadcastController extends Controller
                 $q->whereHas('template', function ($t) {
                     $t->where('nama_template', 'like', '%jadwal%');
                 })->orWhere('kategori_masalah', 'like', '%jadwal%')
-                  ->orWhereNull('kategori_masalah')
-                  ->orWhere('kategori_masalah', '');
+                    ->orWhereNull('kategori_masalah')
+                    ->orWhere('kategori_masalah', '');
             });
         } elseif ($type === 'status_pengiriman' || $type === 'status') {
             $query->where(function ($q) {
                 $q->whereHas('template', function ($t) {
                     $t->where('nama_template', 'like', '%status%')
-                      ->orWhere('nama_template', 'like', '%pengiriman%');
+                        ->orWhere('nama_template', 'like', '%pengiriman%');
                 })->orWhere('kategori_masalah', 'like', '%status%')
-                  ->orWhere('kategori_masalah', 'like', '%pengiriman%');
+                    ->orWhere('kategori_masalah', 'like', '%pengiriman%');
             });
         } elseif ($type === 'kendala') {
             $query->whereNotNull('kategori_masalah')
@@ -44,7 +44,7 @@ class WaBroadcastController extends Controller
                 ->where('kategori_masalah', 'not like', '%pengiriman%')
                 ->whereDoesntHave('template', function ($t) {
                     $t->where('nama_template', 'like', '%status%')
-                      ->orWhere('nama_template', 'like', '%pengiriman%');
+                        ->orWhere('nama_template', 'like', '%pengiriman%');
                 });
         }
 
@@ -56,15 +56,15 @@ class WaBroadcastController extends Controller
             $q->whereHas('template', function ($t) {
                 $t->where('nama_template', 'like', '%jadwal%');
             })->orWhere('kategori_masalah', 'like', '%jadwal%')
-              ->orWhereNull('kategori_masalah')
-              ->orWhere('kategori_masalah', '');
+                ->orWhereNull('kategori_masalah')
+                ->orWhere('kategori_masalah', '');
         })->count();
         $totalStatusPengiriman = WaBroadcast::where(function ($q) {
             $q->whereHas('template', function ($t) {
                 $t->where('nama_template', 'like', '%status%')
-                  ->orWhere('nama_template', 'like', '%pengiriman%');
+                    ->orWhere('nama_template', 'like', '%pengiriman%');
             })->orWhere('kategori_masalah', 'like', '%status%')
-              ->orWhere('kategori_masalah', 'like', '%pengiriman%');
+                ->orWhere('kategori_masalah', 'like', '%pengiriman%');
         })->count();
         $totalKendala = WaBroadcast::whereNotNull('kategori_masalah')
             ->where('kategori_masalah', '!=', '')
@@ -73,7 +73,7 @@ class WaBroadcastController extends Controller
             ->where('kategori_masalah', 'not like', '%pengiriman%')
             ->whereDoesntHave('template', function ($t) {
                 $t->where('nama_template', 'like', '%status%')
-                  ->orWhere('nama_template', 'like', '%pengiriman%');
+                    ->orWhere('nama_template', 'like', '%pengiriman%');
             })
             ->count();
         $totalShipper = $broadcasts->sum('total_shipper');
@@ -128,7 +128,7 @@ class WaBroadcastController extends Controller
         $defaultTemplateId = $request->query('template_id', old('template_id'));
 
         // If no template selected, auto-select appropriate template based on type
-        if (!$defaultTemplateId) {
+        if (! $defaultTemplateId) {
             if ($request->query('type') === 'jadwal' || $request->has('pelabuhan')) {
                 $jadwalTemplate = WaTemplate::where('is_active', true)->where('nama_template', 'like', '%jadwal%')->first();
                 if ($jadwalTemplate) {
@@ -138,7 +138,7 @@ class WaBroadcastController extends Controller
                 $statusTemplate = WaTemplate::where('is_active', true)
                     ->where(function ($q) {
                         $q->where('nama_template', 'like', '%status%')
-                          ->orWhere('nama_template', 'like', '%pengiriman%');
+                            ->orWhere('nama_template', 'like', '%pengiriman%');
                     })->first();
                 if ($statusTemplate) {
                     $defaultTemplateId = $statusTemplate->id;
@@ -297,7 +297,7 @@ class WaBroadcastController extends Controller
 
         if ($source === 'status_kapal' || $source === 'kendala_kapal') {
             $source = 'manifest';
-        } elseif (!$request->has('source') && $request->input('type') === 'jadwal') {
+        } elseif (! $request->has('source') && $request->input('type') === 'jadwal') {
             $source = 'all_master_shippers';
         }
 
@@ -347,7 +347,7 @@ class WaBroadcastController extends Controller
         $kegiatanOb = $request->input('kegiatan_ob', 'all');
 
         if ($request->input('jadwal_id') === 'all') {
-            $namaKapal = "Semua Kapal" . ($pelabuhan ? " ({$pelabuhan})" : '');
+            $namaKapal = 'Semua Kapal'.($pelabuhan ? " ({$pelabuhan})" : '');
             $noVoyage = '-';
         } elseif ($request->filled('jadwal_id') && is_numeric($request->input('jadwal_id'))) {
             $jadwal = \App\Models\MasterJadwalKapalBerlabuh::find($request->input('jadwal_id'));
@@ -358,7 +358,7 @@ class WaBroadcastController extends Controller
             }
         }
 
-        if (!$namaKapal) {
+        if (! $namaKapal) {
             $namaKapal = $pelabuhan ? "Jadwal {$pelabuhan}" : 'Semua Master Shipper';
         }
 
@@ -374,14 +374,14 @@ class WaBroadcastController extends Controller
         }
 
         $allRecipients = $recipientService->recipients((string) $namaKapal, (string) $noVoyage, $targetPenerima);
-        if (!empty($selectedShippers)) {
+        if (! empty($selectedShippers)) {
             $allRecipients = $allRecipients->filter(fn ($r) => in_array($r['shipper_name'], $selectedShippers));
         }
         $totalShipper = $allRecipients->count();
 
         $template = WaTemplate::find($request->template_id);
         $kategoriMasalah = $request->input('kategori_masalah');
-        if (!$kategoriMasalah) {
+        if (! $kategoriMasalah) {
             if ($isAllShipper) {
                 $kategoriMasalah = $pelabuhan ? "Jadwal Kapal {$pelabuhan}" : 'Jadwal Kapal Berlabuh';
             } elseif ($request->input('type') === 'status_pengiriman' || ($template && (str_contains(strtolower($template->nama_template), 'status') || str_contains(strtolower($template->nama_template), 'pengiriman')))) {
@@ -477,15 +477,16 @@ class WaBroadcastController extends Controller
     {
         $validated = $request->validate([
             'shipper_name' => 'required|string|max:500',
-            'telepon'      => 'nullable|string|max:30',
+            'telepon' => 'nullable|string|max:30',
         ]);
 
         $shipperName = trim($validated['shipper_name']);
-        $telepon     = isset($validated['telepon']) ? trim($validated['telepon']) : null;
+        $telepon = isset($validated['telepon']) ? trim($validated['telepon']) : null;
 
         if (empty($telepon)) {
             // Hapus override jika nomor dikosongkan
             WaPhoneOverride::where('shipper_name', $shipperName)->delete();
+
             return response()->json(['success' => true, 'action' => 'deleted']);
         }
 

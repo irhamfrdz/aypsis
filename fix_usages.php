@@ -1,4 +1,5 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -20,7 +21,7 @@ if ($total > 58) {
     } else {
         echo "Cannot deduct $diff from a single usage.\n";
     }
-} else if ($total < 58) {
+} elseif ($total < 58) {
     echo "Total is less than 58 ($total). Needs manual checking.\n";
 } else {
     echo "Total usages is already 58.\n";

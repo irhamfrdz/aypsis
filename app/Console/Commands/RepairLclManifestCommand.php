@@ -71,6 +71,7 @@ class RepairLclManifestCommand extends Command
             $tt = $pivot->tandaTerima;
             if (! $tt || ! $tt->nomor_tanda_terima) {
                 $this->warn("Pivot {$pivot->id} dilewati karena tanda terima tidak lengkap.");
+
                 continue;
             }
 
@@ -78,12 +79,14 @@ class RepairLclManifestCommand extends Command
             if ($exists) {
                 $skipped++;
                 $this->line("  SKIP  {$tt->nomor_tanda_terima} (Manifest #{$exists->id})");
+
                 continue;
             }
 
             $this->line("  CREATE {$tt->nomor_tanda_terima}");
             if ($this->option('dry-run')) {
                 $created++;
+
                 continue;
             }
 

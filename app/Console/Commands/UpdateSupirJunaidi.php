@@ -50,7 +50,7 @@ class UpdateSupirJunaidi extends Command
             // Update supir2
             $updated2 = $modelClass::whereRaw('UPPER(supir2) = ?', [strtoupper($oldName)])
                 ->update(['supir2' => $newName]);
-                
+
             $tableTotal = $updated1 + $updated2;
             $totalUpdated += $tableTotal;
 

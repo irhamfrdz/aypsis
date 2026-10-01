@@ -124,14 +124,26 @@
         <tr>
             <td class="label">Tanggal Tagihan:</td>
             <td class="val">{{ $tagihanLoloBatam->tanggal_tagihan ? $tagihanLoloBatam->tanggal_tagihan->format('d/m/Y') : '-' }}</td>
+            <td class="label">Operator LOLO:</td>
+            <td class="val">
+                @if($tagihanLoloBatam->tipe_operator === 'AYP')
+                    AYP - {{ $tagihanLoloBatam->operator ?: ($tagihanLoloBatam->operatorKaryawan->nama_lengkap ?? '-') }}
+                @elseif($tagihanLoloBatam->tipe_operator === 'VENDOR')
+                    Vendor - {{ $tagihanLoloBatam->operator ?: ($tagihanLoloBatam->vendor ?: '-') }}
+                @else
+                    -
+                @endif
+            </td>
+        </tr>
+        <tr>
             <td class="label">Kapal / Voyage:</td>
             <td class="val">{{ $tagihanLoloBatam->kapal ?: '-' }} {{ $tagihanLoloBatam->voyage ? '(' . $tagihanLoloBatam->voyage . ')' : '' }}</td>
+            <td class="label">Tanggal Bayar:</td>
+            <td class="val">{{ $tagihanLoloBatam->tanggal_bayar ? $tagihanLoloBatam->tanggal_bayar->format('d/m/Y') : '-' }}</td>
         </tr>
         <tr>
             <td class="label">Status:</td>
-            <td class="val font-bold">{{ $tagihanLoloBatam->status_pembayaran }}</td>
-            <td class="label">Tanggal Bayar:</td>
-            <td class="val">{{ $tagihanLoloBatam->tanggal_bayar ? $tagihanLoloBatam->tanggal_bayar->format('d/m/Y') : '-' }}</td>
+            <td class="val font-bold" colspan="3">{{ $tagihanLoloBatam->status_pembayaran }}</td>
         </tr>
         @if($tagihanLoloBatam->keterangan)
         <tr>

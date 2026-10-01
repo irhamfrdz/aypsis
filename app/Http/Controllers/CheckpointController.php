@@ -450,7 +450,7 @@ class CheckpointController extends Controller
 
         // Support both "40" and "40ft" formats
         $ukuranValue = str_replace('ft', '', strtolower(trim($suratJalan->size ?? '')));
-        $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+        $ukuranValues = [$ukuranValue, $ukuranValue.'ft'];
 
         // Untuk surat jalan, ambil kontainer dengan status Tersedia
         $kontainerList = Kontainer::whereIn('ukuran', $ukuranValues)
@@ -923,7 +923,7 @@ class CheckpointController extends Controller
 
         // Support both "40" and "40ft" formats
         $ukuranValue = str_replace('ft', '', strtolower(trim($suratJalanBongkaran->size ?? '')));
-        $ukuranValues = [$ukuranValue, $ukuranValue . 'ft'];
+        $ukuranValues = [$ukuranValue, $ukuranValue.'ft'];
 
         // Untuk surat jalan bongkaran, ambil kontainer dengan status Tersedia
         $kontainerList = Kontainer::whereIn('ukuran', $ukuranValues)

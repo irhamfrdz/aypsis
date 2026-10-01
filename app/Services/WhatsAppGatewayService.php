@@ -30,7 +30,7 @@ class WhatsAppGatewayService
                 'isReady' => false,
                 'connection' => 'error',
                 'offline' => true,
-                'message' => 'Gateway server merespon dengan status HTTP ' . $response->status()
+                'message' => 'Gateway server merespon dengan status HTTP '.$response->status(),
             ];
         } catch (\Throwable $e) {
             return [
@@ -38,7 +38,7 @@ class WhatsAppGatewayService
                 'isReady' => false,
                 'connection' => 'offline',
                 'offline' => true,
-                'message' => 'Microservice WA Gateway belum aktif di port 3000: ' . $e->getMessage()
+                'message' => 'Microservice WA Gateway belum aktif di port 3000: '.$e->getMessage(),
             ];
         }
     }
@@ -60,7 +60,7 @@ class WhatsAppGatewayService
 
             return [
                 'status' => false,
-                'error' => 'Gagal terhubung ke Gateway: ' . $e->getMessage()
+                'error' => 'Gagal terhubung ke Gateway: '.$e->getMessage(),
             ];
         }
     }
@@ -75,6 +75,7 @@ class WhatsAppGatewayService
             if ($response->successful()) {
                 $data = $response->json();
                 $data['offline'] = false;
+
                 return $data;
             }
 
@@ -82,14 +83,14 @@ class WhatsAppGatewayService
                 'status' => false,
                 'isReady' => false,
                 'offline' => true,
-                'message' => 'Gagal mengambil QR code dari Gateway (HTTP ' . $response->status() . ')'
+                'message' => 'Gagal mengambil QR code dari Gateway (HTTP '.$response->status().')',
             ];
         } catch (\Throwable $e) {
             return [
                 'status' => false,
                 'isReady' => false,
                 'offline' => true,
-                'message' => 'Microservice WA Gateway belum aktif di server: ' . $e->getMessage()
+                'message' => 'Microservice WA Gateway belum aktif di server: '.$e->getMessage(),
             ];
         }
     }
@@ -107,12 +108,12 @@ class WhatsAppGatewayService
 
             return [
                 'status' => false,
-                'error' => 'Gagal melakukan logout di Gateway'
+                'error' => 'Gagal melakukan logout di Gateway',
             ];
         } catch (\Throwable $e) {
             return [
                 'status' => false,
-                'error' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+                'error' => 'Microservice WA Gateway belum aktif: '.$e->getMessage(),
             ];
         }
     }
@@ -130,12 +131,12 @@ class WhatsAppGatewayService
 
             return [
                 'status' => false,
-                'error' => 'Gagal me-reset gateway'
+                'error' => 'Gagal me-reset gateway',
             ];
         } catch (\Throwable $e) {
             return [
                 'status' => false,
-                'error' => 'Microservice WA Gateway belum aktif: ' . $e->getMessage()
+                'error' => 'Microservice WA Gateway belum aktif: '.$e->getMessage(),
             ];
         }
     }

@@ -12,16 +12,16 @@ class UangLemburController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        
+
         $query = UangLembur::with('rules');
-        
+
         if ($search) {
             $query->where('group', 'like', "%{$search}%")
-                  ->orWhere('sub_group', 'like', "%{$search}%");
+                ->orWhere('sub_group', 'like', "%{$search}%");
         }
-        
+
         $lemburs = $query->paginate(15);
-        
+
         return view('uang-lembur.index', compact('lemburs'));
     }
 
@@ -55,7 +55,7 @@ class UangLemburController extends Controller
 
             foreach ($request->rules as $rule) {
                 $isSampaiSelesai = isset($rule['is_sampai_selesai']) ? 1 : 0;
-                
+
                 UangLemburRule::create([
                     'uang_lembur_id' => $lembur->id,
                     'tipe_hari' => $rule['tipe_hari'],
@@ -68,16 +68,19 @@ class UangLemburController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur dan aturan jam berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
     public function edit(UangLembur $uangLembur)
     {
         $uangLembur->load('rules');
+
         return view('uang-lembur.edit', compact('uangLembur'));
     }
 
@@ -110,7 +113,7 @@ class UangLemburController extends Controller
             // Insert new rules
             foreach ($request->rules as $rule) {
                 $isSampaiSelesai = isset($rule['is_sampai_selesai']) ? 1 : 0;
-                
+
                 UangLemburRule::create([
                     'uang_lembur_id' => $uangLembur->id,
                     'tipe_hari' => $rule['tipe_hari'],
@@ -123,16 +126,19 @@ class UangLemburController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur dan aturan jam berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
     public function destroy(UangLembur $uangLembur)
     {
         $uangLembur->delete(); // Rules will cascade delete
+
         return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur berhasil dihapus.');
     }
 }

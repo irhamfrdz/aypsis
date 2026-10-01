@@ -6,30 +6,37 @@ use App\Models\Karyawan;
 use App\Models\PranotaPuml;
 use App\Models\UangMakan;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTitle, WithEvents, WithCustomValueBinder
+class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCustomValueBinder, WithEvents, WithTitle
 {
     protected PranotaPuml $puml;
-    protected array       $rows         = [];
-    protected int         $dataRowCount = 0;
+
+    protected array $rows = [];
+
+    protected int $dataRowCount = 0;
 
     // Totals computed in array() for use in registerEvents()
-    protected float $sumHadir        = 0;
-    protected float $sumLemburCount  = 0;
-    protected float $sumTotalLembur  = 0;
-    protected float $sumTotalUm      = 0;
+    protected float $sumHadir = 0;
+
+    protected float $sumLemburCount = 0;
+
+    protected float $sumTotalLembur = 0;
+
+    protected float $sumTotalUm = 0;
+
     protected float $sumPotTerlambat = 0;
-    protected float $sumTerima       = 0;
+
+    protected float $sumTerima = 0;
 
     public function __construct(PranotaPuml $puml)
     {
@@ -38,7 +45,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
 
     public function title(): string
     {
-        return 'PUML ' . $this->puml->nomor_pranota;
+        return 'PUML '.$this->puml->nomor_pranota;
     }
 
     /**
@@ -48,6 +55,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
     {
         if (in_array($cell->getColumn(), ['B', 'D']) && $cell->getRow() >= 6) {
             $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+
             return true;
         }
 
@@ -67,7 +75,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
         $potonganMap = [];
         foreach ($puml->potongans as $pot) {
             $tipe = class_basename($pot->tipe_karyawan ?: Karyawan::class);
-            $potonganMap[$tipe . '_' . $pot->karyawan_id] = $pot;
+            $potonganMap[$tipe.'_'.$pot->karyawan_id] = $pot;
         }
 
         // ── Build karyawan rekap ──────────────────────────────────────
@@ -77,20 +85,20 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
         foreach ($puml->uangMakans as $um) {
             foreach ($um->details as $d) {
                 $tipe = class_basename($d->tipe_karyawan ?: Karyawan::class);
-                $kid  = $tipe . '_' . $d->karyawan_id;
-                $pot  = $potonganMap[$kid] ?? null;
+                $kid = $tipe.'_'.$d->karyawan_id;
+                $pot = $potonganMap[$kid] ?? null;
 
                 $kar = $d->karyawan;
-                if (!$kar && $d->karyawan_id) {
+                if (! $kar && $d->karyawan_id) {
                     $kar = Karyawan::find($d->karyawan_id);
                 }
 
-                $hadir       = (float) ($d->kehadiran ?? 0);
+                $hadir = (float) ($d->kehadiran ?? 0);
                 $nominalAwal = (float) ($d->nominal_awal ?? 0);
-                $rate        = ($hadir > 0 && $nominalAwal > 0) ? round($nominalAwal / $hadir) : 0;
-                $totalAkhir  = (float) ($d->total_akhir ?? 0);
+                $rate = ($hadir > 0 && $nominalAwal > 0) ? round($nominalAwal / $hadir) : 0;
+                $totalAkhir = (float) ($d->total_akhir ?? 0);
 
-                if ($rate == 0 && $kar && !empty($kar->nominal_uang_makan)) {
+                if ($rate == 0 && $kar && ! empty($kar->nominal_uang_makan)) {
                     $rate = (float) $kar->nominal_uang_makan;
                 }
                 if ($rate == 0 && $d->karyawan_id) {
@@ -103,20 +111,20 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                     $hadir = round($totalAkhir / $rate);
                 }
 
-                if (!isset($karyawanRekap[$kid])) {
+                if (! isset($karyawanRekap[$kid])) {
                     $karyawanRekap[$kid] = [
-                        'karyawan'         => $kar,
-                        'hadir'            => $hadir,
+                        'karyawan' => $kar,
+                        'hadir' => $hadir,
                         'nominal_per_hari' => $rate,
                         'total_uang_makan' => $totalAkhir,
-                        'total_lembur'     => 0,
-                        'pot_terlambat'    => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
-                        'pot_utang'        => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
-                        'pot_bpjs'         => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
-                        'pot_pph'          => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
+                        'total_lembur' => 0,
+                        'pot_terlambat' => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
+                        'pot_utang' => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
+                        'pot_bpjs' => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
+                        'pot_pph' => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
                     ];
                 } else {
-                    $karyawanRekap[$kid]['hadir']            += $hadir;
+                    $karyawanRekap[$kid]['hadir'] += $hadir;
                     $karyawanRekap[$kid]['total_uang_makan'] += $totalAkhir;
                     if ($rate > 0) {
                         $karyawanRekap[$kid]['nominal_per_hari'] = $rate;
@@ -128,16 +136,16 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
         // From lembur
         foreach ($puml->lemburs as $lm) {
             foreach ($lm->karyawans as $d) {
-                $kid = 'Karyawan_' . $d->karyawan_id;
+                $kid = 'Karyawan_'.$d->karyawan_id;
                 $pot = $potonganMap[$kid] ?? null;
 
                 $kar = $d->karyawan;
-                if (!$kar && $d->karyawan_id) {
+                if (! $kar && $d->karyawan_id) {
                     $kar = Karyawan::find($d->karyawan_id);
                 }
 
-                if (!isset($karyawanRekap[$kid])) {
-                    $rate = ($kar && !empty($kar->nominal_uang_makan)) ? (float) $kar->nominal_uang_makan : 0;
+                if (! isset($karyawanRekap[$kid])) {
+                    $rate = ($kar && ! empty($kar->nominal_uang_makan)) ? (float) $kar->nominal_uang_makan : 0;
                     if ($rate == 0 && $d->karyawan_id) {
                         $latestUm = UangMakan::where('karyawan_id', $d->karyawan_id)->latest('tanggal')->first();
                         if ($latestUm && $latestUm->nominal > 0) {
@@ -146,15 +154,15 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                     }
 
                     $karyawanRekap[$kid] = [
-                        'karyawan'         => $kar,
-                        'hadir'            => 0,
+                        'karyawan' => $kar,
+                        'hadir' => 0,
                         'nominal_per_hari' => $rate,
                         'total_uang_makan' => 0,
-                        'total_lembur'     => (float) ($d->total_akhir ?? 0),
-                        'pot_terlambat'    => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
-                        'pot_utang'        => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
-                        'pot_bpjs'         => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
-                        'pot_pph'          => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
+                        'total_lembur' => (float) ($d->total_akhir ?? 0),
+                        'pot_terlambat' => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
+                        'pot_utang' => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
+                        'pot_bpjs' => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
+                        'pot_pph' => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
                     ];
                 } else {
                     $karyawanRekap[$kid]['total_lembur'] += (float) ($d->total_akhir ?? 0);
@@ -164,9 +172,9 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
 
         // ── Periode string ───────────────────────────────────────────
         if ($puml->periode_start && $puml->periode_end) {
-            $periodeStr = 'TGL ' . $puml->periode_start->format('d/m/Y') . ' S/D ' . $puml->periode_end->format('d/m/Y');
+            $periodeStr = 'TGL '.$puml->periode_start->format('d/m/Y').' S/D '.$puml->periode_end->format('d/m/Y');
         } elseif ($puml->tanggal_pranota) {
-            $periodeStr = 'TGL ' . $puml->tanggal_pranota->format('d/m/Y');
+            $periodeStr = 'TGL '.$puml->tanggal_pranota->format('d/m/Y');
         } else {
             $periodeStr = '-';
         }
@@ -191,7 +199,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
             ];
             $tgl = $puml->tanggal_pranota;
-            $tanggalFormatted = 'JAKARTA, ' . $tgl->day . ' ' . $bulanIndo[(int)$tgl->month] . ' ' . $tgl->year;
+            $tanggalFormatted = 'JAKARTA, '.$tgl->day.' '.$bulanIndo[(int) $tgl->month].' '.$tgl->year;
         }
 
         // ── Build rows ────────────────────────────────────────────────
@@ -202,7 +210,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
         // Row 2: Title (merged in AfterSheet)
         $rows[] = ['PERINCIAN UANG MAKAN', '', '', '', '', '', '', '', '', '', ''];
         // Row 3: Periode (merged in AfterSheet)
-        $rows[] = ['PERIODE ' . $periodeStr, '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = ['PERIODE '.$periodeStr, '', '', '', '', '', '', '', '', '', ''];
         // Row 4: Blank
         $rows[] = ['', '', '', '', '', '', '', '', '', '', ''];
 
@@ -226,17 +234,17 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
         $sumHadir = $sumLemburCount = $sumTotalLembur = $sumTotalUm = $sumPot = $sumTerima = 0.0;
 
         foreach ($karyawanRekap as $data) {
-            $kar   = $data['karyawan'];
-            $nik   = $kar ? trim((string) ($kar->nik ?? '')) : '';
-            $nama  = $kar ? strtoupper(trim((string) ($kar->nama_lengkap ?? ''))) : '-';
+            $kar = $data['karyawan'];
+            $nik = $kar ? trim((string) ($kar->nik ?? '')) : '';
+            $nama = $kar ? strtoupper(trim((string) ($kar->nama_lengkap ?? ''))) : '-';
             $noRek = $kar ? trim((string) ($kar->akun_bank ?: ($kar->no_rekening ?? ''))) : '';
 
-            $hadir          = $data['hadir'] > 0 ? (int) $data['hadir'] : null;
-            $rpHari         = $data['nominal_per_hari'] > 0 ? (float) $data['nominal_per_hari'] : null;
-            $lemburFlag     = $data['total_lembur'] > 0 ? 1 : null;
-            $totalLembur    = $data['total_lembur'] > 0 ? (float) $data['total_lembur'] : null;
+            $hadir = $data['hadir'] > 0 ? (int) $data['hadir'] : null;
+            $rpHari = $data['nominal_per_hari'] > 0 ? (float) $data['nominal_per_hari'] : null;
+            $lemburFlag = $data['total_lembur'] > 0 ? 1 : null;
+            $totalLembur = $data['total_lembur'] > 0 ? (float) $data['total_lembur'] : null;
             $totalUangMakan = $data['total_uang_makan'] > 0 ? (float) $data['total_uang_makan'] : null;
-            $potTerlambat   = $data['pot_terlambat'] > 0 ? (float) $data['pot_terlambat'] : null;
+            $potTerlambat = $data['pot_terlambat'] > 0 ? (float) $data['pot_terlambat'] : null;
 
             $terima = max(0, (float) (
                 $data['total_uang_makan']
@@ -248,12 +256,12 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
             ));
 
             // Accumulate totals
-            $sumHadir        += (float) ($hadir ?? 0);
-            $sumLemburCount  += (float) ($lemburFlag ?? 0);
-            $sumTotalLembur  += (float) ($totalLembur ?? 0);
-            $sumTotalUm      += (float) ($totalUangMakan ?? 0);
-            $sumPot          += (float) ($potTerlambat ?? 0);
-            $sumTerima       += $terima;
+            $sumHadir += (float) ($hadir ?? 0);
+            $sumLemburCount += (float) ($lemburFlag ?? 0);
+            $sumTotalLembur += (float) ($totalLembur ?? 0);
+            $sumTotalUm += (float) ($totalUangMakan ?? 0);
+            $sumPot += (float) ($potTerlambat ?? 0);
+            $sumTerima += $terima;
 
             $rows[] = [
                 $no++,
@@ -295,13 +303,13 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
 
         // Store counters for AfterSheet
         $this->dataRowCount = count($karyawanRekap);
-        $this->sumHadir        = $sumHadir;
-        $this->sumLemburCount  = $sumLemburCount;
-        $this->sumTotalLembur  = $sumTotalLembur;
-        $this->sumTotalUm      = $sumTotalUm;
+        $this->sumHadir = $sumHadir;
+        $this->sumLemburCount = $sumLemburCount;
+        $this->sumTotalLembur = $sumTotalLembur;
+        $this->sumTotalUm = $sumTotalUm;
         $this->sumPotTerlambat = $sumPot;
-        $this->sumTerima       = $sumTerima;
-        $this->rows            = $rows;
+        $this->sumTerima = $sumTerima;
+        $this->rows = $rows;
 
         return $rows;
     }
@@ -310,11 +318,11 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet    = $event->sheet->getDelegate();
+                $sheet = $event->sheet->getDelegate();
                 $dataLast = 5 + $this->dataRowCount; // last data row (row 5 = header)
                 $totalRow = $dataLast + 1;            // TOTAL row
-                $footerKota  = $totalRow + 3;         // 2 spacers then footer
-                $footerNama  = $footerKota + 1;
+                $footerKota = $totalRow + 3;         // 2 spacers then footer
+                $footerNama = $footerKota + 1;
 
                 // ── Column widths ──────────────────────────────────────
                 $sheet->getColumnDimension('A')->setWidth(6);
@@ -330,46 +338,46 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                 $sheet->getColumnDimension('K')->setWidth(16);
 
                 // ── Title / Periode (rows 2 & 3) ──────────────────────
-                $sheet->mergeCells("A2:K2");
-                $sheet->mergeCells("A3:K3");
+                $sheet->mergeCells('A2:K2');
+                $sheet->mergeCells('A3:K3');
 
-                $sheet->getStyle("A2")->applyFromArray([
-                    'font'      => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
+                $sheet->getStyle('A2')->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
-                $sheet->getStyle("A3")->applyFromArray([
-                    'font'      => ['bold' => true, 'size' => 11, 'name' => 'Calibri'],
+                $sheet->getStyle('A3')->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 11, 'name' => 'Calibri'],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
 
                 // ── Column header (row 5) ─────────────────────────────
                 $sheet->getRowDimension(5)->setRowHeight(42);
-                $sheet->getStyle("A5:K5")->applyFromArray([
+                $sheet->getStyle('A5:K5')->applyFromArray([
                     'font' => [
-                        'bold'  => true,
-                        'size'  => 10,
-                        'name'  => 'Calibri',
+                        'bold' => true,
+                        'size' => 10,
+                        'name' => 'Calibri',
                         'color' => ['argb' => 'FF000000'],
                     ],
                     'fill' => [
-                        'fillType'   => Fill::FILL_SOLID,
+                        'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['argb' => 'FFFFFF00'],
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
-                        'wrapText'   => true,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'wrapText' => true,
                     ],
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color'       => ['argb' => 'FF000000'],
+                            'color' => ['argb' => 'FF000000'],
                         ],
                     ],
                 ]);
@@ -384,7 +392,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
-                                'color'       => ['argb' => 'FF000000'],
+                                'color' => ['argb' => 'FF000000'],
                             ],
                         ],
                     ]);
@@ -396,67 +404,67 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
                     // Currency: F, H, I, J, K (data rows)
                     foreach (['F', 'H', 'I', 'J', 'K'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
-                              ->getNumberFormat()->setFormatCode('#,##0');
+                            ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
-                              ->getAlignment()
-                              ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
-                              ->setVertical(Alignment::VERTICAL_CENTER);
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
                     // Left: C, D
                     foreach (['C', 'D'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
-                              ->getAlignment()
-                              ->setHorizontal(Alignment::HORIZONTAL_LEFT)
-                              ->setVertical(Alignment::VERTICAL_CENTER);
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
                     // Center: A, B, E, G
                     foreach (['A', 'B', 'E', 'G'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
-                              ->getAlignment()
-                              ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                              ->setVertical(Alignment::VERTICAL_CENTER);
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
                     // ── TOTAL row ─────────────────────────────────────
                     $sheet->getRowDimension($totalRow)->setRowHeight(22);
                     $sheet->getStyle("A{$totalRow}:K{$totalRow}")->applyFromArray([
                         'font' => [
-                            'bold'  => true,
-                            'size'  => 10,
-                            'name'  => 'Calibri',
+                            'bold' => true,
+                            'size' => 10,
+                            'name' => 'Calibri',
                             'color' => ['argb' => 'FF000000'],
                         ],
                         'fill' => [
-                            'fillType'   => Fill::FILL_SOLID,
+                            'fillType' => Fill::FILL_SOLID,
                             'startColor' => ['argb' => 'FFFFFF00'], // yellow same as header
                         ],
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
-                                'color'       => ['argb' => 'FF000000'],
+                                'color' => ['argb' => 'FF000000'],
                             ],
                         ],
                         'alignment' => [
                             'horizontal' => Alignment::HORIZONTAL_CENTER,
-                            'vertical'   => Alignment::VERTICAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
                         ],
                     ]);
 
                     // Merge A-B for "TOTAL" label text in column C
                     $sheet->mergeCells("A{$totalRow}:B{$totalRow}");
                     $sheet->getStyle("C{$totalRow}")->getAlignment()
-                          ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                     // Currency format for TOTAL row numeric columns
                     foreach (['E', 'G', 'H', 'I', 'J', 'K'] as $col) {
                         $sheet->getStyle("{$col}{$totalRow}")
-                              ->getNumberFormat()->setFormatCode('#,##0');
+                            ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}{$totalRow}")
-                              ->getAlignment()
-                              ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
-                              ->setVertical(Alignment::VERTICAL_CENTER);
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
                     // ── Footer rows ───────────────────────────────────
@@ -466,10 +474,10 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithTit
 
                     foreach ([$footerKota, $footerNama] as $fr) {
                         $sheet->getStyle("H{$fr}")->applyFromArray([
-                            'font'      => ['bold' => true, 'size' => 10, 'name' => 'Calibri'],
+                            'font' => ['bold' => true, 'size' => 10, 'name' => 'Calibri'],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-                                'vertical'   => Alignment::VERTICAL_CENTER,
+                                'vertical' => Alignment::VERTICAL_CENTER,
                             ],
                         ]);
                         $sheet->getRowDimension($fr)->setRowHeight(18);

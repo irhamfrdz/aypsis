@@ -1,1 +1,10 @@
-<?php $adminRole = DB::table('roles')->where('name', 'admin')->first(); if ($adminRole) { $permission = DB::table('permissions')->where('name', 'permohonan-amprahan-approve')->first(); if ($permission) { DB::table('role_has_permissions')->updateOrInsert(['permission_id' => $permission->id, 'role_id' => $adminRole->id]); echo 'Permission attached.'; } }
+<?php
+
+$adminRole = DB::table('roles')->where('name', 'admin')->first();
+if ($adminRole) {
+    $permission = DB::table('permissions')->where('name', 'permohonan-amprahan-approve')->first();
+    if ($permission) {
+        DB::table('role_has_permissions')->updateOrInsert(['permission_id' => $permission->id, 'role_id' => $adminRole->id]);
+        echo 'Permission attached.';
+    }
+}

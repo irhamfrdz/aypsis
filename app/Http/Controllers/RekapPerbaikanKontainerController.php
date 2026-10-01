@@ -15,13 +15,13 @@ class RekapPerbaikanKontainerController extends Controller
             ->get()
             ->map->nomor_kontainer
             ->filter();
-            
+
         // Ambil data kontainer dari kontainers (sewa)
         $kontainers = Kontainer::select('awalan_kontainer', 'nomor_seri_kontainer', 'akhiran_kontainer', 'nomor_seri_gabungan')
             ->get()
             ->map->nomor_kontainer
             ->filter();
-            
+
         // Gabungkan dan ambil yang unik
         $allKontainers = $stockKontainers->concat($kontainers)->unique()->sort()->values();
 
@@ -33,16 +33,16 @@ class RekapPerbaikanKontainerController extends Controller
         $request->validate([
             'nomor_kontainer' => 'required|string',
         ]);
-        
+
         $nomorKontainer = $request->nomor_kontainer;
-        
+
         // Fetch pranota perbaikan kontainer that contains this container number
-        $pranotas = \App\Models\PranotaPerbaikanKontainer::where('items', 'like', '%' . $nomorKontainer . '%')
+        $pranotas = \App\Models\PranotaPerbaikanKontainer::where('items', 'like', '%'.$nomorKontainer.'%')
             ->orderBy('tanggal_pranota', 'desc')
             ->get();
-            
+
         $riwayatPerbaikan = collect();
-        
+
         foreach ($pranotas as $pranota) {
             $items = is_array($pranota->items) ? $pranota->items : json_decode($pranota->items, true);
             if ($items) {
@@ -52,23 +52,23 @@ class RekapPerbaikanKontainerController extends Controller
                         $item['nomor_pranota'] = $pranota->nomor_pranota;
                         $item['tanggal_pranota'] = $pranota->tanggal_pranota;
                         $item['vendor_pranota'] = $pranota->vendor;
-                        
+
                         // Convert to object for easier blade access
-                        $riwayatPerbaikan->push((object)$item);
+                        $riwayatPerbaikan->push((object) $item);
                     }
                 }
             }
         }
-        
+
         // Also fetch from PerbaikanKontainer directly for records not yet in Pranota
         $perbaikans = \App\Models\PerbaikanKontainer::with('bengkel')
             ->where('no_kontainer', $nomorKontainer)
             ->where('status_pranota', '!=', 'Sudah')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         foreach ($perbaikans as $perbaikan) {
-            $riwayatPerbaikan->push((object)[
+            $riwayatPerbaikan->push((object) [
                 'id' => $perbaikan->id,
                 'no_perbaikan' => $perbaikan->no_perbaikan,
                 'bengkel' => $perbaikan->bengkel->nama_bengkel ?? '-',

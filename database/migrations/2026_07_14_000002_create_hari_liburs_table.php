@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('hari_liburs')) {
+        if (! Schema::hasTable('hari_liburs')) {
             Schema::create('hari_liburs', function (Blueprint $table) {
                 $table->id();
                 $table->date('tanggal')->unique();

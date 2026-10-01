@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\LangsirBatam;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class DeleteLangsirJuli extends Command
@@ -30,17 +30,18 @@ class DeleteLangsirJuli extends Command
         $year = $this->option('year');
         $startDate = "$year-07-11";
         $endDate = "$year-07-24";
-        
+
         $this->info("Akan menghapus data Langsir Batam dari tanggal $startDate sampai $endDate...");
-        
+
         if ($this->confirm('Apakah Anda yakin ingin menghapus data ini?')) {
             $count = LangsirBatam::whereBetween('tanggal', [$startDate, $endDate])->count();
-            
+
             if ($count === 0) {
-                $this->info("Tidak ada data yang ditemukan pada range tanggal tersebut.");
+                $this->info('Tidak ada data yang ditemukan pada range tanggal tersebut.');
+
                 return;
             }
-            
+
             DB::beginTransaction();
             try {
                 LangsirBatam::whereBetween('tanggal', [$startDate, $endDate])->delete();
@@ -48,7 +49,7 @@ class DeleteLangsirJuli extends Command
                 $this->info("Berhasil menghapus $count baris data.");
             } catch (\Exception $e) {
                 DB::rollBack();
-                $this->error("Gagal menghapus data: " . $e->getMessage());
+                $this->error('Gagal menghapus data: '.$e->getMessage());
             }
         } else {
             $this->info('Dibatalkan.');

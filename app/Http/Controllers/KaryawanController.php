@@ -107,8 +107,8 @@ class KaryawanController extends Controller
             $grups = (array) $request->grup;
             $query->where(function ($q) use ($grups) {
                 foreach ($grups as $g) {
-                    $q->orWhere('grup', 'LIKE', '%"' . $g . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $g . '"%');
+                    $q->orWhere('grup', 'LIKE', '%"'.$g.':%')
+                        ->orWhere('grup', 'LIKE', '%"'.$g.'"%');
                 }
             });
         }
@@ -117,7 +117,7 @@ class KaryawanController extends Controller
             $query->where(function ($q) use ($subGrups) {
                 foreach ($subGrups as $sg) {
                     // Match format "GROUP:SUB_GROUP"
-                    $q->orWhere('grup', 'LIKE', '%:' . $sg . '"%');
+                    $q->orWhere('grup', 'LIKE', '%:'.$sg.'"%');
                 }
             });
         }
@@ -180,7 +180,7 @@ class KaryawanController extends Controller
             $searchNama = $request->search_nama;
             $query->where(function ($q) use ($searchNama) {
                 $q->where('nama_lengkap', 'LIKE', "%{$searchNama}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
             });
         }
 
@@ -327,7 +327,7 @@ class KaryawanController extends Controller
             $searchNama = $request->search_nama;
             $query->where(function ($q) use ($searchNama) {
                 $q->where('nama_lengkap', 'LIKE', "%{$searchNama}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$searchNama}%");
             });
         }
 
@@ -514,15 +514,15 @@ class KaryawanController extends Controller
                                     $decoded = json_decode($rawGrup, true);
                                     if (is_array($decoded)) {
                                         $grupList = $decoded;
-                                    } elseif (!empty(trim($rawGrup))) {
+                                    } elseif (! empty(trim($rawGrup))) {
                                         $grupList = [$rawGrup];
                                     }
                                 }
                                 $grupFormatted = [];
                                 foreach ($grupList as $g) {
-                                    if (is_string($g) && !empty(trim($g))) {
+                                    if (is_string($g) && ! empty(trim($g))) {
                                         $parts = explode(':', $g, 2);
-                                        $grupFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                                        $grupFormatted[] = $parts[0].(isset($parts[1]) && trim($parts[1]) !== '' ? ' ('.trim($parts[1]).')' : '');
                                     }
                                 }
                                 $val = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
@@ -850,17 +850,17 @@ class KaryawanController extends Controller
 
         $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Write header only with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns)."\r\n");
-            
+
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
             fwrite($out, implode(';', $emptyRow)."\r\n");
-            
+
             fclose($out);
         };
 
@@ -877,17 +877,17 @@ class KaryawanController extends Controller
 
         $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Write header only with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns)."\r\n");
-            
+
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
             fwrite($out, implode(';', $emptyRow)."\r\n");
-            
+
             fclose($out);
         };
 
@@ -907,18 +907,18 @@ class KaryawanController extends Controller
 
         $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Write header with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns)."\r\n");
-            
+
             // Contoh baris: multiple group per karyawan bisa menggunakan multi-baris dengan NIK sama
             fwrite($out, "1001;CONTOH NAMA KARYAWAN 1;GAJI;TUNAI\r\n");
             fwrite($out, "1001;CONTOH NAMA KARYAWAN 1;UANG MAKAN;KANTOR JAKARTA\r\n");
             fwrite($out, "1002;CONTOH NAMA KARYAWAN 2;GAJI;TRANSFER\r\n");
-            
+
             fclose($out);
         };
 
@@ -981,15 +981,15 @@ class KaryawanController extends Controller
                                     $decoded = json_decode($rawGrup, true);
                                     if (is_array($decoded)) {
                                         $grupList = $decoded;
-                                    } elseif (!empty(trim($rawGrup))) {
+                                    } elseif (! empty(trim($rawGrup))) {
                                         $grupList = [$rawGrup];
                                     }
                                 }
                                 $grupFormatted = [];
                                 foreach ($grupList as $g) {
-                                    if (is_string($g) && !empty(trim($g))) {
+                                    if (is_string($g) && ! empty(trim($g))) {
                                         $parts = explode(':', $g, 2);
-                                        $grupFormatted[] = $parts[0] . (isset($parts[1]) && trim($parts[1]) !== '' ? ' (' . trim($parts[1]) . ')' : '');
+                                        $grupFormatted[] = $parts[0].(isset($parts[1]) && trim($parts[1]) !== '' ? ' ('.trim($parts[1]).')' : '');
                                     }
                                 }
                                 $val = empty($grupFormatted) ? '-' : implode(', ', $grupFormatted);
@@ -1052,14 +1052,14 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'NIK'            => 'nik',
-            'NAMA'           => 'nama_lengkap',
-            'TANGGAL LAHIR'  => 'tanggal_lahir',
-            'TANGGAL MASUK'  => 'tanggal_masuk',
+            'NIK' => 'nik',
+            'NAMA' => 'nama_lengkap',
+            'TANGGAL LAHIR' => 'tanggal_lahir',
+            'TANGGAL MASUK' => 'tanggal_masuk',
         ];
 
         $penempatan = $request->input('penempatan');
-        $cabang     = $request->input('cabang');
+        $cabang = $request->input('cabang');
 
         $fileName = 'karyawan_simple_'.date('Ymd_His').'.csv';
 
@@ -1091,7 +1091,8 @@ class KaryawanController extends Controller
                                 try {
                                     $ts = strtotime((string) $val);
                                     $val = $ts ? date('d/m/Y', $ts) : (string) $val;
-                                } catch (\Exception $e) {}
+                                } catch (\Exception $e) {
+                                }
                             }
                             // Escape semicolon di dalam nilai agar tidak merusak kolom
                             $val = str_replace(';', ',', (string) $val);
@@ -1106,16 +1107,14 @@ class KaryawanController extends Controller
         };
 
         return response()->stream($callback, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            'Cache-Control'       => 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma'              => 'no-cache',
-            'Expires'             => 'Thu, 01 Jan 1970 00:00:00 GMT',
-            'Last-Modified'       => gmdate('D, d M Y H:i:s').' GMT',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+            'Last-Modified' => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
-
-
 
     /**
      * Menampilkan formulir untuk membuat karyawan baru.
@@ -1156,11 +1155,11 @@ class KaryawanController extends Controller
     public function store(Request $request)
     {
         if ($request->has('grup')) {
-            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $grup = array_filter($request->grup ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
         }
         if ($request->has('grup_bpjs')) {
-            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
         }
 
@@ -1238,7 +1237,7 @@ class KaryawanController extends Controller
         $familyMembers = $validated['family_members'] ?? [];
         unset($validated['family_members']); // Remove from main data
         foreach ($validated as $key => $value) {
-            if ($value !== null && $key !== 'email' && !is_array($value)) {
+            if ($value !== null && $key !== 'email' && ! is_array($value)) {
                 $validated[$key] = strtoupper($value);
             }
         }
@@ -1274,25 +1273,25 @@ class KaryawanController extends Controller
     {
         $term = $request->get('q');
         $query = Karyawan::whereNotNull('nik');
-        
+
         if ($term) {
-            $query->where(function($q) use ($term) {
+            $query->where(function ($q) use ($term) {
                 $q->where('nik', 'like', "%{$term}%")
-                  ->orWhere('nama_lengkap', 'like', "%{$term}%");
+                    ->orWhere('nama_lengkap', 'like', "%{$term}%");
             });
         }
-        
+
         $karyawans = $query->take(20)->get(['nik', 'nama_lengkap']);
-        
+
         $results = [];
         foreach ($karyawans as $k) {
             $results[] = [
                 'id' => $k->nik,
-                'text' => $k->nik . ' - ' . $k->nama_lengkap,
-                'nama_lengkap' => $k->nama_lengkap
+                'text' => $k->nik.' - '.$k->nama_lengkap,
+                'nama_lengkap' => $k->nama_lengkap,
             ];
         }
-        
+
         return response()->json(['results' => $results]);
     }
 
@@ -1391,11 +1390,11 @@ class KaryawanController extends Controller
         }
 
         if ($request->has('grup')) {
-            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $grup = array_filter($request->grup ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
         }
         if ($request->has('grup_bpjs')) {
-            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
         }
 
@@ -1479,7 +1478,7 @@ class KaryawanController extends Controller
 
         // Convert data to uppercase except email
         foreach ($validated as $key => $value) {
-            if ($value !== null && $key !== 'email' && !is_array($value)) {
+            if ($value !== null && $key !== 'email' && ! is_array($value)) {
                 $validated[$key] = strtoupper($value);
             }
         }
@@ -1599,11 +1598,11 @@ class KaryawanController extends Controller
     public function onboardingUpdate(Request $request, Karyawan $karyawan)
     {
         if ($request->has('grup')) {
-            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $grup = array_filter($request->grup ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
         }
         if ($request->has('grup_bpjs')) {
-            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
         }
 
@@ -2307,7 +2306,7 @@ class KaryawanController extends Controller
     public function downloadUpdateTemplate()
     {
         $columns = [
-            'nik', 'nama_lengkap', 'kantor_cabang_ayp', 'pekerjaan', 'penempatan', 'group', 'sub_group'
+            'nik', 'nama_lengkap', 'kantor_cabang_ayp', 'pekerjaan', 'penempatan', 'group', 'sub_group',
         ];
 
         $fileName = 'template_import_update_karyawan.csv';
@@ -2357,7 +2356,7 @@ class KaryawanController extends Controller
         try {
             $import = new \App\Imports\KaryawanUpdateImport;
             \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file'));
-            
+
             $messages = [];
             $hasErrors = count($import->failedRows) > 0;
             $hasSuccess = $import->successCount > 0;
@@ -2365,7 +2364,7 @@ class KaryawanController extends Controller
             if ($hasSuccess) {
                 $messages[] = "✅ {$import->successCount} data karyawan berhasil diperbarui.";
                 if (count($import->successRows) > 0) {
-                    $messages[] = "Data berhasil: " . implode(', ', $import->successRows) . 
+                    $messages[] = 'Data berhasil: '.implode(', ', $import->successRows).
                                   ($import->successCount > 5 ? ' dan lainnya.' : '');
                 }
             }
@@ -2374,13 +2373,13 @@ class KaryawanController extends Controller
                 $totalFailed = count($import->failedRows);
                 $messages[] = "⚠️ {$totalFailed} data gagal diproses.";
                 $failedPreview = array_slice($import->failedRows, 0, 10);
-                $messages[] = "Data gagal:\n- " . implode("\n- ", $failedPreview);
+                $messages[] = "Data gagal:\n- ".implode("\n- ", $failedPreview);
                 if ($totalFailed > 10) {
-                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                    $messages[] = '... dan '.($totalFailed - 10).' error lainnya.';
                 }
             }
 
-            if ($hasErrors && !$hasSuccess) {
+            if ($hasErrors && ! $hasSuccess) {
                 return redirect()->back()->with('error', implode("\n", $messages));
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
@@ -2389,7 +2388,7 @@ class KaryawanController extends Controller
             }
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel: '.$e->getMessage());
         }
     }
 
@@ -2405,7 +2404,7 @@ class KaryawanController extends Controller
         try {
             $import = new \App\Imports\KaryawanDppImport;
             \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file_dpp'));
-            
+
             $messages = [];
             $hasErrors = count($import->failedRows) > 0;
             $hasSuccess = $import->successCount > 0;
@@ -2417,18 +2416,18 @@ class KaryawanController extends Controller
             if ($hasErrors) {
                 $totalFailed = count($import->failedRows);
                 $messages[] = "⚠️ {$totalFailed} baris data gagal diproses:";
-                
+
                 $failedPreview = array_slice($import->failedRows, 0, 10);
                 foreach ($failedPreview as $fail) {
                     $messages[] = "- Baris {$fail['row']} (NIK: {$fail['nik']}): {$fail['reason']}";
                 }
-                
+
                 if ($totalFailed > 10) {
-                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                    $messages[] = '... dan '.($totalFailed - 10).' error lainnya.';
                 }
             }
 
-            if ($hasErrors && !$hasSuccess) {
+            if ($hasErrors && ! $hasSuccess) {
                 return redirect()->back()->with('error', implode("\n", $messages));
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
@@ -2437,7 +2436,7 @@ class KaryawanController extends Controller
             }
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel DPP & Group BPJS: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel DPP & Group BPJS: '.$e->getMessage());
         }
     }
 
@@ -2450,7 +2449,7 @@ class KaryawanController extends Controller
         try {
             $import = new \App\Imports\KaryawanSupervisorImport;
             \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file_supervisor'));
-            
+
             $messages = [];
             $hasErrors = count($import->failedRows) > 0;
             $hasSuccess = $import->successCount > 0;
@@ -2462,18 +2461,18 @@ class KaryawanController extends Controller
             if ($hasErrors) {
                 $totalFailed = count($import->failedRows);
                 $messages[] = "⚠️ {$totalFailed} baris data gagal diproses:";
-                
+
                 $failedPreview = array_slice($import->failedRows, 0, 10);
                 foreach ($failedPreview as $fail) {
                     $messages[] = "- Baris {$fail['row']} (NIK: {$fail['nik']}): {$fail['reason']}";
                 }
-                
+
                 if ($totalFailed > 10) {
-                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                    $messages[] = '... dan '.($totalFailed - 10).' error lainnya.';
                 }
             }
 
-            if ($hasErrors && !$hasSuccess) {
+            if ($hasErrors && ! $hasSuccess) {
                 return redirect()->back()->with('error', implode("\n", $messages));
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
@@ -2482,7 +2481,7 @@ class KaryawanController extends Controller
             }
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel Supervisor: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel Supervisor: '.$e->getMessage());
         }
     }
 
@@ -2498,7 +2497,7 @@ class KaryawanController extends Controller
         try {
             $import = new \App\Imports\KaryawanGroupImport;
             \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file_group'));
-            
+
             $messages = [];
             $hasErrors = count($import->failedRows) > 0;
             $hasSuccess = $import->successCount > 0;
@@ -2510,18 +2509,18 @@ class KaryawanController extends Controller
             if ($hasErrors) {
                 $totalFailed = count($import->failedRows);
                 $messages[] = "⚠️ {$totalFailed} data gagal diproses:";
-                
+
                 $failedPreview = array_slice($import->failedRows, 0, 10);
                 foreach ($failedPreview as $fail) {
                     $messages[] = "- Baris {$fail['row']} (NIK: {$fail['nik']}): {$fail['reason']}";
                 }
-                
+
                 if ($totalFailed > 10) {
-                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                    $messages[] = '... dan '.($totalFailed - 10).' error lainnya.';
                 }
             }
 
-            if ($hasErrors && !$hasSuccess) {
+            if ($hasErrors && ! $hasSuccess) {
                 return redirect()->back()->with('error', implode("\n", $messages));
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
@@ -2530,7 +2529,7 @@ class KaryawanController extends Controller
             }
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel Group & Sub Group: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel Group & Sub Group: '.$e->getMessage());
         }
     }
 

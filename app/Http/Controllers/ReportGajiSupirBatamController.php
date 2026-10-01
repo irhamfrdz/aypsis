@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportGajiSupirBatamExport;
 use App\Models\GajiSupirBatam;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ReportGajiSupirBatamExport;
 
 class ReportGajiSupirBatamController extends Controller
 {
@@ -52,11 +52,11 @@ class ReportGajiSupirBatamController extends Controller
         $gajiList = $query->paginate(20)->appends($request->all());
 
         return view('report-gaji-supir-batam.index', compact(
-            'gajiList', 
-            'supirList', 
-            'karyawanId', 
-            'statusPembayaran', 
-            'startDate', 
+            'gajiList',
+            'supirList',
+            'karyawanId',
+            'statusPembayaran',
+            'startDate',
             'endDate'
         ));
     }
@@ -71,7 +71,7 @@ class ReportGajiSupirBatamController extends Controller
         $karyawanId = $request->get('karyawan_id', '');
         $statusPembayaran = $request->get('status_pembayaran', '');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return back()->with('error', 'Silakan pilih rentang tanggal terlebih dahulu untuk export.');
         }
 
@@ -98,7 +98,7 @@ class ReportGajiSupirBatamController extends Controller
 
         return Excel::download(
             new ReportGajiSupirBatamExport($gajiList, $startDate, $endDate),
-            'Report_Gaji_Supir_Batam_' . $startDate . '_sd_' . $endDate . '.xlsx'
+            'Report_Gaji_Supir_Batam_'.$startDate.'_sd_'.$endDate.'.xlsx'
         );
     }
 }

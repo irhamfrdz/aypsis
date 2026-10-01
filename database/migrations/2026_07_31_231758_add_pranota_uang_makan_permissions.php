@@ -31,7 +31,7 @@ return new class extends Migration
             'pranota-uang-makan-create',
             'pranota-uang-makan-edit',
             'pranota-uang-makan-delete',
-            'pranota-uang-makan-print'
+            'pranota-uang-makan-print',
         ];
 
         DB::table('permissions')->whereIn('name', $names)->delete();

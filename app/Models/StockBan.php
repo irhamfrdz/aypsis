@@ -135,20 +135,20 @@ class StockBan extends Model
      */
     public static function generateNextNomorBuktiJual()
     {
-        $prefix = 'J' . date('ym');
-        
-        $lastRecord = self::where('nomor_bukti_jual', 'like', $prefix . '%')
+        $prefix = 'J'.date('ym');
+
+        $lastRecord = self::where('nomor_bukti_jual', 'like', $prefix.'%')
             ->orderBy('nomor_bukti_jual', 'desc')
             ->first();
-            
-        if (!$lastRecord) {
-            return $prefix . '00001';
+
+        if (! $lastRecord) {
+            return $prefix.'00001';
         }
-        
+
         $lastSeq = (int) substr($lastRecord->nomor_bukti_jual, -5);
         $nextSeq = $lastSeq + 1;
-        
-        return $prefix . str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -156,20 +156,20 @@ class StockBan extends Model
      */
     public static function generateNextNomorBuktiKirim()
     {
-        $prefix = 'B' . date('ym');
-        
-        $lastRecord = self::where('nomor_kirim', 'like', $prefix . '%')
+        $prefix = 'B'.date('ym');
+
+        $lastRecord = self::where('nomor_kirim', 'like', $prefix.'%')
             ->orderBy('nomor_kirim', 'desc')
             ->first();
-            
-        if (!$lastRecord) {
-            return $prefix . '00001';
+
+        if (! $lastRecord) {
+            return $prefix.'00001';
         }
-        
+
         $lastSeq = (int) substr($lastRecord->nomor_kirim, -5);
         $nextSeq = $lastSeq + 1;
-        
-        return $prefix . str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -177,19 +177,19 @@ class StockBan extends Model
      */
     public static function generateNextNomorBuktiKembali()
     {
-        $prefix = 'M' . date('ym');
-        
-        $lastRecord = self::where('nomor_bukti_kembali', 'like', $prefix . '%')
+        $prefix = 'M'.date('ym');
+
+        $lastRecord = self::where('nomor_bukti_kembali', 'like', $prefix.'%')
             ->orderBy('nomor_bukti_kembali', 'desc')
             ->first();
-            
-        if (!$lastRecord) {
-            return $prefix . '00001';
+
+        if (! $lastRecord) {
+            return $prefix.'00001';
         }
-        
+
         $lastSeq = (int) substr($lastRecord->nomor_bukti_kembali, -5);
         $nextSeq = $lastSeq + 1;
-        
-        return $prefix . str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($nextSeq, 5, '0', STR_PAD_LEFT);
     }
 }

@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::table('absensis', function (Blueprint $table) {
             $table->string('admin_lampiran')->nullable()->after('keterangan');
         });
-        
+
         Schema::table('permohonan_izins', function (Blueprint $table) {
             $table->string('admin_lampiran')->nullable()->after('lampiran');
         });
-        
+
         Schema::table('cutis', function (Blueprint $table) {
             $table->string('admin_lampiran')->nullable()->after('keterangan');
         });
@@ -32,11 +32,11 @@ return new class extends Migration
         Schema::table('absensis', function (Blueprint $table) {
             $table->dropColumn('admin_lampiran');
         });
-        
+
         Schema::table('permohonan_izins', function (Blueprint $table) {
             $table->dropColumn('admin_lampiran');
         });
-        
+
         Schema::table('cutis', function (Blueprint $table) {
             $table->dropColumn('admin_lampiran');
         });

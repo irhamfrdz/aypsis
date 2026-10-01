@@ -4,10 +4,10 @@ namespace App\Exports;
 
 use App\Models\ShipperConsignee;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class ShipperContactExport implements FromCollection, WithHeadings, ShouldAutoSize
+class ShipperContactExport implements FromCollection, ShouldAutoSize, WithHeadings
 {
     public function collection()
     {
@@ -15,8 +15,8 @@ class ShipperContactExport implements FromCollection, WithHeadings, ShouldAutoSi
         $shippers = ShipperConsignee::whereNotNull('shipper')
             ->where('shipper', '!=', '')
             ->get(['shipper', 'contact_person']);
-            
-        return $shippers->unique('shipper')->map(function($item) {
+
+        return $shippers->unique('shipper')->map(function ($item) {
             return [
                 'Shipper' => $item->shipper,
                 'Contact Person' => $item->contact_person,

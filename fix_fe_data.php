@@ -36,4 +36,4 @@ $updatedF = DB::table('surat_jalan_tarik_kosong_batams')
 
 echo "Updated {$updatedF} records: 'F' -> 'Full'\n\n";
 
-echo "=== Selesai! Total {$updatedE} + {$updatedF} = " . ($updatedE + $updatedF) . " records diperbaiki ===\n";
+echo "=== Selesai! Total {$updatedE} + {$updatedF} = ".($updatedE + $updatedF)." records diperbaiki ===\n";

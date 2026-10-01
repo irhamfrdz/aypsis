@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaBensin;
-use App\Models\PranotaBiayaBensin;
 use App\Models\NomorTerakhir;
-use Carbon\Carbon;
+use App\Models\PranotaBiayaBensin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +22,7 @@ class PranotaBiayaBensinController extends Controller
     public function create(Request $request)
     {
         $selectedIds = $request->input('biaya_bensin_ids', []);
-        
+
         if (empty($selectedIds)) {
             return redirect()->route('biaya-bensin.index')
                 ->with('error', 'Silakan pilih setidaknya satu biaya bensin untuk dibuatkan pranota.');
@@ -75,8 +74,8 @@ class PranotaBiayaBensinController extends Controller
                 ['nomor_terakhir' => 0, 'keterangan' => 'Pranota Biaya Bensin']
             );
             $kode->increment('nomor_terakhir');
-            
-            $nomorPranota = 'PBB-' . date('Ym') . '-' . str_pad($kode->nomor_terakhir, 4, '0', STR_PAD_LEFT);
+
+            $nomorPranota = 'PBB-'.date('Ym').'-'.str_pad($kode->nomor_terakhir, 4, '0', STR_PAD_LEFT);
 
             $totalBiaya = $biayaBensins->sum('biaya');
 
@@ -99,23 +98,24 @@ class PranotaBiayaBensinController extends Controller
                 ->with('success', 'Pranota Biaya Bensin berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $pranota = PranotaBiayaBensin::with(['biayaBensins.mobil', 'biayaBensins.alatBerat', 'biayaBensins.supir', 'creator', 'approver'])->findOrFail($id);
-        
+
         return view('pranota-biaya-bensin.show', compact('pranota'));
     }
 
     public function print($id)
     {
         $pranota = PranotaBiayaBensin::with(['biayaBensins.mobil', 'biayaBensins.alatBerat', 'biayaBensins.supir', 'creator', 'approver'])->findOrFail($id);
-        
+
         return view('pranota-biaya-bensin.print', compact('pranota'));
     }
 
@@ -142,7 +142,8 @@ class PranotaBiayaBensinController extends Controller
                 ->with('success', 'Pranota berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus pranota: '.$e->getMessage());
         }
     }
 }

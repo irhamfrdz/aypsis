@@ -5,20 +5,22 @@ namespace App\Exports;
 use App\Models\Karyawan;
 use App\Models\PranotaPuml;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, ShouldAutoSize, WithStyles
+class PranotaPumlAutoTransferExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
     protected PranotaPuml $puml;
+
     protected int $rowNumber = 1;
+
     protected int $dataCount = 0;
 
     public function __construct(PranotaPuml $puml)
@@ -27,8 +29,8 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         $puml = $this->puml->load([
@@ -40,7 +42,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
         $potonganMap = [];
         foreach ($puml->potongans as $pot) {
             $tipe = class_basename($pot->tipe_karyawan ?: Karyawan::class);
-            $potonganMap[$tipe . '_' . $pot->karyawan_id] = $pot;
+            $potonganMap[$tipe.'_'.$pot->karyawan_id] = $pot;
         }
 
         $karyawanRekap = [];
@@ -49,23 +51,23 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
         foreach ($puml->uangMakans as $um) {
             foreach ($um->details as $d) {
                 $tipe = class_basename($d->tipe_karyawan ?: Karyawan::class);
-                $kid = $tipe . '_' . $d->karyawan_id;
+                $kid = $tipe.'_'.$d->karyawan_id;
                 $pot = $potonganMap[$kid] ?? null;
 
                 $kar = $d->karyawan;
-                if (!$kar && $d->karyawan_id) {
+                if (! $kar && $d->karyawan_id) {
                     $kar = Karyawan::find($d->karyawan_id);
                 }
 
-                if (!isset($karyawanRekap[$kid])) {
+                if (! isset($karyawanRekap[$kid])) {
                     $karyawanRekap[$kid] = [
-                        'karyawan'         => $kar,
+                        'karyawan' => $kar,
                         'total_uang_makan' => 0,
-                        'total_lembur'     => 0,
-                        'pot_utang'        => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
-                        'pot_bpjs'         => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
-                        'pot_pph'          => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
-                        'pot_terlambat'    => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
+                        'pot_bpjs' => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
+                        'pot_pph' => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
+                        'pot_terlambat' => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
                     ];
                 }
                 $karyawanRekap[$kid]['total_uang_makan'] += (float) ($d->total_akhir ?? 0);
@@ -77,23 +79,23 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
             foreach ($lm->karyawans as $d) {
                 $tipe_karyawan = $d->tipe_karyawan ?? 'App\\Models\\Karyawan';
                 $tipe = class_basename($tipe_karyawan);
-                $kid = $tipe . '_' . $d->karyawan_id;
+                $kid = $tipe.'_'.$d->karyawan_id;
                 $pot = $potonganMap[$kid] ?? null;
 
                 $kar = $d->karyawan;
-                if (!$kar && $d->karyawan_id) {
+                if (! $kar && $d->karyawan_id) {
                     $kar = Karyawan::find($d->karyawan_id);
                 }
 
-                if (!isset($karyawanRekap[$kid])) {
+                if (! isset($karyawanRekap[$kid])) {
                     $karyawanRekap[$kid] = [
-                        'karyawan'         => $kar,
+                        'karyawan' => $kar,
                         'total_uang_makan' => 0,
-                        'total_lembur'     => 0,
-                        'pot_utang'        => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
-                        'pot_bpjs'         => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
-                        'pot_pph'          => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
-                        'pot_terlambat'    => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? (float) ($pot->pot_utang ?? 0) : 0,
+                        'pot_bpjs' => $pot ? (float) ($pot->pot_bpjs ?? 0) : 0,
+                        'pot_pph' => $pot ? (float) ($pot->pot_pph ?? 0) : 0,
+                        'pot_terlambat' => $pot ? (float) ($pot->pot_terlambat ?? 0) : 0,
                     ];
                 }
                 $karyawanRekap[$kid]['total_lembur'] += (float) ($d->total_akhir ?? 0);
@@ -102,9 +104,9 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
 
         $items = collect();
         foreach ($karyawanRekap as $data) {
-            $hasUangMakan = (float)($data['total_uang_makan'] ?? 0) > 0;
-            $hasLembur = (float)($data['total_lembur'] ?? 0) > 0;
-            $hasPotTerlambat = (float)($data['pot_terlambat'] ?? 0) > 0;
+            $hasUangMakan = (float) ($data['total_uang_makan'] ?? 0) > 0;
+            $hasLembur = (float) ($data['total_lembur'] ?? 0) > 0;
+            $hasPotTerlambat = (float) ($data['pot_terlambat'] ?? 0) > 0;
 
             if ($hasUangMakan && $hasLembur && $hasPotTerlambat) {
                 $remark = 'UANG MAKAN & LEMBUR POT TERLAMBAT';
@@ -129,23 +131,24 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
                 - $data['pot_pph']
             ));
 
-            $items->push((object)[
+            $items->push((object) [
                 'karyawan' => $data['karyawan'],
-                'amount'   => $terima,
-                'remark'   => $remark,
+                'amount' => $terima,
+                'remark' => $remark,
             ]);
         }
 
         // Urutkan berdasarkan nama penerima (atas_nama atau nama_lengkap)
         $items = $items->sortBy(function ($item) {
             $karyawan = $item->karyawan;
+
             return $karyawan ? ($karyawan->atas_nama ?: $karyawan->nama_lengkap) : '';
         })->values();
 
         $this->dataCount = $items->count();
         $totalAmount = $items->sum('amount');
 
-        $items->push((object)[
+        $items->push((object) [
             'is_total_row' => true,
             'total_amount' => $totalAmount,
         ]);
@@ -173,7 +176,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
             'Receiver Cust. Type',
             'Receiver Cust. Residen',
             'Transaction Cd',
-            'Beneficiary Email'
+            'Beneficiary Email',
         ];
     }
 
@@ -203,11 +206,11 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
         }
 
         $karyawan = $detail->karyawan;
-        
+
         $dateStr = $this->puml->tanggal_pranota ? $this->puml->tanggal_pranota->format('dmy') : date('dmy');
-        $transactionId = '01' . $dateStr . '-' . str_pad($this->rowNumber, 3, '0', STR_PAD_LEFT);
-        
-        $creditedAcc = $karyawan ? trim((string)($karyawan->akun_bank ?: ($karyawan->no_rekening ?? ''))) : '';
+        $transactionId = '01'.$dateStr.'-'.str_pad($this->rowNumber, 3, '0', STR_PAD_LEFT);
+
+        $creditedAcc = $karyawan ? trim((string) ($karyawan->akun_bank ?: ($karyawan->no_rekening ?? ''))) : '';
 
         return [
             $this->rowNumber++,
@@ -259,7 +262,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Memberikan border ke semua cell data
-        $sheet->getStyle('A1:R' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A1:R'.$lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -272,7 +275,7 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Styling khusus untuk baris TOTAL (Baris terakhir)
-        $sheet->getStyle('A' . $lastRow . ':R' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A'.$lastRow.':R'.$lastRow)->applyFromArray([
             'font' => [
                 'bold' => true,
             ],
@@ -281,11 +284,11 @@ class PranotaPumlAutoTransferExport implements FromCollection, WithHeadings, Wit
                 'startColor' => ['argb' => 'FFF2F2F2'], // Background abu-abu muda
             ],
         ]);
-        
+
         // Styling untuk kolom Beneficiary Email (Kolom R) agar teks berwarna biru & bergaris bawah
         $dataEnd = $lastRow - 1;
         if ($dataEnd >= 2) {
-            $sheet->getStyle('R2:R' . $dataEnd)->applyFromArray([
+            $sheet->getStyle('R2:R'.$dataEnd)->applyFromArray([
                 'font' => [
                     'color' => ['argb' => 'FF0000FF'],
                     'underline' => true,

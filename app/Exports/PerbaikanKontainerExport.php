@@ -16,9 +16,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class PerbaikanKontainerExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings
 {
-    public function __construct(private readonly array $filters = [])
-    {
-    }
+    public function __construct(private readonly array $filters = []) {}
 
     public function collection(): Collection
     {

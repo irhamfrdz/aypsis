@@ -16,7 +16,7 @@ class BiayaKapalDokumen extends Model
         'vendor_id',
         'nominal',
         'pph',
-        'total_biaya'
+        'total_biaya',
     ];
 
     public function biayaKapal()
@@ -34,6 +34,7 @@ class BiayaKapalDokumen extends Model
         if (empty($this->nomor_bl)) {
             return [];
         }
+
         return array_map('trim', explode(',', $this->nomor_bl));
     }
 }
