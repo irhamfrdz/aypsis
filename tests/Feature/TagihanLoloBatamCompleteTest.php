@@ -246,11 +246,12 @@ class TagihanLoloBatamCompleteTest extends TestCase
         $editResponse->assertStatus(200);
 
         // 4. Update
-        $updateResponse = $this->put(route('master.pricelist-lolo-batam.update', $pricelist->id), [
+        $updateData = [
             'size' => '20',
             'tarif' => 375000,
             'status' => 'aktif',
-        ]);
+        ];
+        $updateResponse = $this->put(route('master.pricelist-lolo-batam.update', $pricelist->id), $updateData);
         $updateResponse->assertRedirect(route('master.pricelist-lolo-batam.index'));
 
         $this->assertDatabaseHas('master_pricelist_lolo_batams', [
