@@ -1028,11 +1028,53 @@ class AbsensiController extends Controller
             $tempDate->addDay();
         }
 
-        // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries)
-        $attendance = Absensi::workDates($startDate, $endDate)
-            ->select('absensis.*')->selectRaw(Absensi::workDateSql().' as tanggal_kerja')
-            ->get()
-            ->groupBy('karyawan_id');
+        // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries).
+        // Performance optimisation: avoid the heavy correlated subquery in workDates() by
+        // fetching with a simple waktu range (+/-1 day buffer for overnight / lembur sessions)
+        // and resolving the tanggal_kerja in PHP.
+        $fetchStart = $startDate->copy()->subDay()->setTime(6, 0, 0);
+        $fetchEnd   = $endDate->copy()->addDay()->setTime(5, 59, 59);
+
+        $rawLogs = Absensi::select('id', 'karyawan_id', 'nik', 'tipe', 'waktu')
+            ->whereBetween('waktu', [$fetchStart, $fetchEnd])
+            ->orderBy('karyawan_id')
+            ->orderBy('waktu')
+            ->get();
+
+        // Pre-group lembur-start logs by employee for fast lookup (used to pin lembur-end dates)
+        $lemburStarts = ['lembur masuk', 'mulai lembur', 'lembur'];
+        $lemburEnds   = ['lembur pulang', 'selesai lembur', 'lembur keluar'];
+
+        $lemburStartByEmp = $rawLogs->filter(function ($r) use ($lemburStarts) {
+            return in_array(strtolower(str_replace('_', ' ', $r->tipe)), $lemburStarts);
+        })->groupBy('karyawan_id');
+
+        $attendance = $rawLogs->map(function ($r) use ($lemburStarts, $lemburEnds, $lemburStartByEmp, $startDate, $endDate) {
+            $tipe = strtolower(str_replace('_', ' ', $r->tipe));
+            if (in_array($tipe, $lemburStarts)) {
+                $tanggal_kerja = Carbon::parse($r->waktu)->toDateString();
+            } elseif (in_array($tipe, $lemburEnds)) {
+                // Find the nearest preceding lembur-start for this employee
+                $empStarts = $lemburStartByEmp->get($r->karyawan_id ?? $r->nik, collect());
+                $window = Carbon::parse($r->waktu)->subHours(24);
+                $matched = $empStarts->filter(function ($s) use ($r, $window) {
+                    return $s->waktu <= $r->waktu && $s->waktu >= $window;
+                })->sortByDesc('waktu')->first();
+                $tanggal_kerja = $matched
+                    ? Carbon::parse($matched->waktu)->toDateString()
+                    : Carbon::parse($r->waktu)->subHours(6)->toDateString();
+            } else {
+                $tanggal_kerja = Carbon::parse($r->waktu)->subHours(6)->toDateString();
+            }
+            $r->tanggal_kerja = $tanggal_kerja;
+            return $r;
+        })
+        // Filter to only records whose resolved work-date falls within the requested range
+        ->filter(function ($r) use ($startDate, $endDate) {
+            return $r->tanggal_kerja >= $startDate->toDateString()
+                && $r->tanggal_kerja <= $endDate->toDateString();
+        })
+        ->groupBy('karyawan_id');
 
         // Fetch all approved permissions/leaves in the selected month
         $cutis = \Illuminate\Support\Facades\DB::table('cutis')

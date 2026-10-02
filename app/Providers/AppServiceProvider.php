@@ -55,7 +55,21 @@ class AppServiceProvider extends ServiceProvider
                 foreach ($permissions as $permission) {
                     // Definisikan Gate secara dinamis
                     Gate::define($permission->name, function (User $user) use ($permission) {
-                        return $user->permissions()->where('name', $permission->name)->exists();
+                        if ($user->permissions()->where('name', $permission->name)->exists()) {
+                            return true;
+                        }
+
+                        // Interoperabilitas antara pranota-lolo-batam dan tagihan-lolo-batam
+                        if (str_starts_with($permission->name, 'pranota-lolo-batam-')) {
+                            $alt = str_replace('pranota-lolo-batam-', 'tagihan-lolo-batam-', $permission->name);
+                            return $user->permissions()->where('name', $alt)->exists();
+                        }
+                        if (str_starts_with($permission->name, 'tagihan-lolo-batam-')) {
+                            $alt = str_replace('tagihan-lolo-batam-', 'pranota-lolo-batam-', $permission->name);
+                            return $user->permissions()->where('name', $alt)->exists();
+                        }
+
+                        return false;
                     });
                 }
             }

@@ -551,9 +551,11 @@
         let grandTotal = 0;
         let detectedKapal = '';
         let detectedVoyage = '';
-        let firstOperatorTipe = 'AYP';
+        let hasAyp = false;
+        let hasVendor = false;
+        let firstOperatorTipe = '';
         let firstOperatorKaryawanId = '';
-        let firstOperatorVendor = '';
+        let firstOperatorName = '';
 
         selectedCheckboxes.forEach((cb, idx) => {
             const sumber = cb.getAttribute('data-sumber');
@@ -579,30 +581,32 @@
             let opKaryawanName = '';
             let opVendorName = '';
             let opDisplayText = '';
+            let itemOperatorName = '';
 
             if (opTipe === 'AYP') {
+                hasAyp = true;
                 const sel = document.querySelector(`select[name="operators[${sumber}][${id}][karyawan_id]"]`);
                 if (sel && sel.value) {
                     opKaryawanId = sel.value;
                     opKaryawanName = sel.options[sel.selectedIndex].text;
+                    itemOperatorName = opKaryawanName;
                     opDisplayText = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200"><i class="fas fa-user-tie mr-1 text-blue-500"></i> ${opKaryawanName}</span>`;
-                    if (!firstOperatorKaryawanId) {
-                        firstOperatorTipe = 'AYP';
-                        firstOperatorKaryawanId = opKaryawanId;
-                        firstOperatorVendor = '';
-                    }
                 } else {
+                    itemOperatorName = 'Operator AYP';
                     opDisplayText = `<span class="text-xs text-gray-500 font-medium">Operator AYP</span>`;
                 }
             } else {
+                hasVendor = true;
                 const inp = document.querySelector(`input[name="operators[${sumber}][${id}][vendor_nama]"]`);
                 opVendorName = inp ? inp.value.trim() : '';
-                opDisplayText = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200"><i class="fas fa-building mr-1 text-purple-500"></i> ${opVendorName || 'Vendor'}</span>`;
-                if (!firstOperatorVendor && opVendorName) {
-                    firstOperatorTipe = 'VENDOR';
-                    firstOperatorVendor = opVendorName;
-                    firstOperatorKaryawanId = '';
-                }
+                itemOperatorName = opVendorName || 'Vendor';
+                opDisplayText = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200"><i class="fas fa-building mr-1 text-purple-500"></i> ${itemOperatorName}</span>`;
+            }
+
+            if (!firstOperatorTipe) {
+                firstOperatorTipe = opTipe;
+                firstOperatorKaryawanId = opKaryawanId;
+                firstOperatorName = itemOperatorName;
             }
 
             const rowHtml = `
@@ -619,6 +623,9 @@
                         <input type="hidden" name="items[${idx}][kegiatan]" value="LOLO ${sumber === 'bongkaran' ? 'Bongkaran' : 'Langsir'} Batam (${sj})">
                         <input type="hidden" name="items[${idx}][keterangan]" value="${kapal ? 'Kapal: ' + kapal : ''} ${voyage ? 'Voy: ' + voyage : ''}">
                         <input type="hidden" name="items[${idx}][jumlah]" value="1">
+                        <input type="hidden" name="items[${idx}][tipe_operator]" value="${opTipe}">
+                        <input type="hidden" name="items[${idx}][operator_karyawan_id]" value="${opKaryawanId}">
+                        <input type="hidden" name="items[${idx}][operator]" value="${itemOperatorName}">
                     </td>
                     <td class="px-3 py-3 text-center font-semibold text-gray-700">${size}'</td>
                     <td class="px-4 py-3 text-gray-600 text-xs">
@@ -652,9 +659,19 @@
         if (detectedKapal) document.getElementById('modal_kapal').value = detectedKapal;
         if (detectedVoyage) document.getElementById('modal_voyage').value = detectedVoyage;
 
-        document.getElementById('modal_tipe_operator').value = firstOperatorTipe;
-        document.getElementById('modal_operator_karyawan_id').value = firstOperatorKaryawanId;
-        document.getElementById('modal_operator').value = firstOperatorVendor;
+        if (hasAyp && hasVendor) {
+            document.getElementById('modal_tipe_operator').value = 'CAMPURAN';
+            document.getElementById('modal_operator_karyawan_id').value = '';
+            document.getElementById('modal_operator').value = 'Campuran (AYP & Vendor)';
+        } else if (hasAyp) {
+            document.getElementById('modal_tipe_operator').value = 'AYP';
+            document.getElementById('modal_operator_karyawan_id').value = firstOperatorKaryawanId;
+            document.getElementById('modal_operator').value = firstOperatorName;
+        } else {
+            document.getElementById('modal_tipe_operator').value = 'VENDOR';
+            document.getElementById('modal_operator_karyawan_id').value = '';
+            document.getElementById('modal_operator').value = firstOperatorName || 'Vendor';
+        }
 
         // Show modal
         document.getElementById('createPranotaModal').classList.remove('hidden');

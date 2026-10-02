@@ -199,6 +199,20 @@ return [
                 'tagihan-lolo-batam-export' => 'Export Tagihan LOLO Batam',
             ],
         ],
+        'pranota-lolo-batam' => [
+            'name' => 'Pranota LOLO Batam',
+            'description' => 'Menu pranota LOLO Batam',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-lolo-batam-view' => 'View Pranota LOLO Batam',
+                'pranota-lolo-batam-create' => 'Buat Pranota LOLO Batam',
+                'pranota-lolo-batam-update' => 'Edit Pranota LOLO Batam',
+                'pranota-lolo-batam-delete' => 'Hapus Pranota LOLO Batam',
+                'pranota-lolo-batam-approve' => 'Approve Pranota LOLO Batam',
+                'pranota-lolo-batam-print' => 'Cetak Pranota LOLO Batam',
+                'pranota-lolo-batam-export' => 'Export Pranota LOLO Batam',
+            ],
+        ],
         'pembelian-bbm-batam' => [
             'name' => 'Pembelian BBM Batam',
             'description' => 'Menu pembelian BBM Batam',
@@ -380,6 +394,9 @@ return [
 
         // Tagihan LOLO Batam - butuh tagihan-lolo-batam-view
         'tagihan-lolo-batam' => ['tagihan-lolo-batam-view'],
+
+        // Pranota LOLO Batam - butuh pranota-lolo-batam-view
+        'pranota-lolo-batam' => ['pranota-lolo-batam-view'],
 
         // Pembelian BBM Batam - butuh pembelian-bbm-batam-view
         'pembelian-bbm-batam' => ['pembelian-bbm-batam-view'],

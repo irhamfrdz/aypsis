@@ -772,6 +772,7 @@ class UserController extends Controller
                 'permohonan-memo' => 'permohonan-memo',
                 'pranota-cat' => 'pranota-cat',
                 'pranota-kontainer-sewa' => 'pranota-kontainer-sewa',
+                'pranota-lolo-batam' => 'pranota-lolo-batam',
                 'pranota-ob' => 'pranota-ob',
                 'pranota-perbaikan-kontainer' => 'pranota-perbaikan-kontainer',
                 'pranota-rit-kenek' => 'pranota-rit-kenek',
@@ -4729,6 +4730,28 @@ class UserController extends Controller
                             'approve' => 'tagihan-lolo-batam-approve',
                             'print' => 'tagihan-lolo-batam-print',
                             'export' => 'tagihan-lolo-batam-export',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-lolo-batam permissions explicitly
+                    if ($module === 'pranota-lolo-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-lolo-batam-view',
+                            'create' => 'pranota-lolo-batam-create',
+                            'update' => 'pranota-lolo-batam-update',
+                            'delete' => 'pranota-lolo-batam-delete',
+                            'approve' => 'pranota-lolo-batam-approve',
+                            'print' => 'pranota-lolo-batam-print',
+                            'export' => 'pranota-lolo-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {

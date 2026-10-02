@@ -92,12 +92,12 @@ class TagihanLoloBatamController extends Controller
             });
         };
 
-        $billedBongkarans = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan'])
+        $billedBongkarans = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan', 'operatorKaryawan'])
             ->whereNotNull('surat_jalan_bongkaran_id')
             ->get()
             ->keyBy('surat_jalan_bongkaran_id');
 
-        $billedLangsirs = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan'])
+        $billedLangsirs = TagihanLoloBatamItem::with(['tagihanLoloBatam.operatorKaryawan', 'operatorKaryawan'])
             ->whereNotNull('langsir_batam_id')
             ->get()
             ->keyBy('langsir_batam_id');
@@ -141,10 +141,16 @@ class TagihanLoloBatamController extends Controller
 
                 $operatorName = null;
                 $tipeOperator = null;
-                if ($tagihanItem && $tagihanItem->tagihanLoloBatam) {
+                if ($tagihanItem) {
                     $tlb = $tagihanItem->tagihanLoloBatam;
-                    $tipeOperator = $tlb->tipe_operator;
-                    $operatorName = $tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? ($tipeOperator === 'VENDOR' ? $tlb->vendor : null));
+                    $tipeOperator = $tagihanItem->tipe_operator ?: ($tlb->tipe_operator ?? null);
+                    if ($tipeOperator === 'AYP') {
+                        $operatorName = $tagihanItem->operator ?: ($tagihanItem->operatorKaryawan->nama_lengkap ?? ($tlb ? ($tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? null)) : null));
+                    } elseif ($tipeOperator === 'VENDOR') {
+                        $operatorName = $tagihanItem->operator ?: ($tlb ? ($tlb->operator ?: ($tlb->vendor ?: 'Vendor')) : 'Vendor');
+                    } else {
+                        $operatorName = $tagihanItem->operator ?: ($tlb ? $tlb->operator : null);
+                    }
                 }
 
                 $size = $b->size ?? '20';
@@ -215,10 +221,16 @@ class TagihanLoloBatamController extends Controller
 
                 $operatorName = null;
                 $tipeOperator = null;
-                if ($tagihanItem && $tagihanItem->tagihanLoloBatam) {
+                if ($tagihanItem) {
                     $tlb = $tagihanItem->tagihanLoloBatam;
-                    $tipeOperator = $tlb->tipe_operator;
-                    $operatorName = $tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? ($tipeOperator === 'VENDOR' ? $tlb->vendor : null));
+                    $tipeOperator = $tagihanItem->tipe_operator ?: ($tlb->tipe_operator ?? null);
+                    if ($tipeOperator === 'AYP') {
+                        $operatorName = $tagihanItem->operator ?: ($tagihanItem->operatorKaryawan->nama_lengkap ?? ($tlb ? ($tlb->operator ?: ($tlb->operatorKaryawan->nama_lengkap ?? null)) : null));
+                    } elseif ($tipeOperator === 'VENDOR') {
+                        $operatorName = $tagihanItem->operator ?: ($tlb ? ($tlb->operator ?: ($tlb->vendor ?: 'Vendor')) : 'Vendor');
+                    } else {
+                        $operatorName = $tagihanItem->operator ?: ($tlb ? $tlb->operator : null);
+                    }
                 }
 
                 $size = $l->size ?? '20';
@@ -550,7 +562,7 @@ class TagihanLoloBatamController extends Controller
             'nomor_tagihan' => 'required|string|unique:tagihan_lolo_batams,nomor_tagihan',
             'tanggal_tagihan' => 'required|date',
             'vendor' => 'nullable|string|max:255',
-            'tipe_operator' => 'nullable|in:AYP,VENDOR',
+            'tipe_operator' => 'nullable|in:AYP,VENDOR,CAMPURAN',
             'operator_karyawan_id' => 'nullable|exists:karyawans,id',
             'operator' => 'nullable|string|max:255',
             'kapal' => 'nullable|string|max:255',
@@ -568,6 +580,9 @@ class TagihanLoloBatamController extends Controller
             'items.*.langsir_batam_id' => 'nullable|integer',
             'items.*.master_pricelist_lolo_batam_id' => 'nullable|integer',
             'items.*.nomor_surat_jalan' => 'nullable|string|max:255',
+            'items.*.tipe_operator' => 'nullable|string|in:AYP,VENDOR',
+            'items.*.operator_karyawan_id' => 'nullable',
+            'items.*.operator' => 'nullable|string|max:255',
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
             'items.*.keterangan' => 'nullable|string|max:255',
@@ -582,27 +597,53 @@ class TagihanLoloBatamController extends Controller
             $totalTagihan = 0;
             $itemsData = [];
 
-            $tipeOperator = $request->tipe_operator ?: 'AYP';
-            $operatorKaryawanId = $request->operator_karyawan_id;
-            $operatorName = $request->operator;
+            $headerTipeOperator = $request->tipe_operator ?: 'AYP';
+            $headerOperatorKaryawanId = $request->operator_karyawan_id;
+            $headerOperatorName = $request->operator;
 
-            if ($tipeOperator === 'AYP') {
-                if ($operatorKaryawanId) {
-                    $karyawan = \App\Models\Karyawan::find($operatorKaryawanId);
+            if ($headerTipeOperator === 'AYP') {
+                if ($headerOperatorKaryawanId) {
+                    $karyawan = \App\Models\Karyawan::find($headerOperatorKaryawanId);
                     if ($karyawan) {
-                        $operatorName = $karyawan->nama_lengkap;
+                        $headerOperatorName = $karyawan->nama_lengkap;
                     }
                 }
-            } else {
-                $operatorKaryawanId = null;
-                if (empty($operatorName)) {
-                    $operatorName = $request->vendor ?: 'Vendor';
+            } elseif ($headerTipeOperator === 'VENDOR') {
+                $headerOperatorKaryawanId = null;
+                if (empty($headerOperatorName)) {
+                    $headerOperatorName = $request->vendor ?: 'Vendor';
                 }
             }
+
+            $hasAyp = false;
+            $hasVendor = false;
 
             foreach ($request->items as $item) {
                 $subtotal = (float) $item['tarif'] * (int) $item['jumlah'];
                 $totalTagihan += $subtotal;
+
+                $itemTipeOp = ! empty($item['tipe_operator']) ? $item['tipe_operator'] : ($headerTipeOperator !== 'CAMPURAN' ? $headerTipeOperator : 'AYP');
+                $itemOpKaryawanId = ! empty($item['operator_karyawan_id']) ? $item['operator_karyawan_id'] : null;
+                $itemOpName = $item['operator'] ?? null;
+
+                if ($itemTipeOp === 'AYP') {
+                    $hasAyp = true;
+                    if ($itemOpKaryawanId) {
+                        $karyawan = \App\Models\Karyawan::find($itemOpKaryawanId);
+                        if ($karyawan) {
+                            $itemOpName = $karyawan->nama_lengkap;
+                        }
+                    } elseif ($headerTipeOperator === 'AYP' && $headerOperatorKaryawanId) {
+                        $itemOpKaryawanId = $headerOperatorKaryawanId;
+                        $itemOpName = $headerOperatorName;
+                    }
+                } elseif ($itemTipeOp === 'VENDOR') {
+                    $hasVendor = true;
+                    $itemOpKaryawanId = null;
+                    if (empty($itemOpName)) {
+                        $itemOpName = $request->vendor ?: 'Vendor';
+                    }
+                }
 
                 $itemsData[] = [
                     'sumber_data' => $item['sumber_data'] ?? 'manual',
@@ -614,9 +655,9 @@ class TagihanLoloBatamController extends Controller
                     'size' => $item['size'] ?? '20',
                     'tipe_kontainer' => $item['tipe_kontainer'] ?? 'FULL',
                     'kegiatan' => $item['kegiatan'] ?? 'LOLO Batam',
-                    'tipe_operator' => $tipeOperator,
-                    'operator' => $operatorName,
-                    'operator_karyawan_id' => $operatorKaryawanId,
+                    'tipe_operator' => $itemTipeOp,
+                    'operator' => $itemOpName,
+                    'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
                     'total' => $subtotal,
@@ -626,13 +667,31 @@ class TagihanLoloBatamController extends Controller
                 ];
             }
 
+            if ($hasAyp && $hasVendor) {
+                $headerTipeOperator = 'CAMPURAN';
+                $headerOperatorName = 'Campuran (AYP & Vendor)';
+                $headerOperatorKaryawanId = null;
+            } elseif ($hasAyp && ! $hasVendor) {
+                $headerTipeOperator = 'AYP';
+                if (! $headerOperatorName && ! empty($itemsData[0]['operator'])) {
+                    $headerOperatorName = $itemsData[0]['operator'];
+                    $headerOperatorKaryawanId = $itemsData[0]['operator_karyawan_id'];
+                }
+            } elseif ($hasVendor && ! $hasAyp) {
+                $headerTipeOperator = 'VENDOR';
+                $headerOperatorKaryawanId = null;
+                if (! $headerOperatorName && ! empty($itemsData[0]['operator'])) {
+                    $headerOperatorName = $itemsData[0]['operator'];
+                }
+            }
+
             $tagihan = TagihanLoloBatam::create([
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
                 'vendor' => $request->vendor,
-                'tipe_operator' => $tipeOperator,
-                'operator' => $operatorName,
-                'operator_karyawan_id' => $operatorKaryawanId,
+                'tipe_operator' => $headerTipeOperator,
+                'operator' => $headerOperatorName,
+                'operator_karyawan_id' => $headerOperatorKaryawanId,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,
@@ -664,7 +723,7 @@ class TagihanLoloBatamController extends Controller
 
     public function show(TagihanLoloBatam $tagihanLoloBatam)
     {
-        $tagihanLoloBatam->load(['items.pricelistLoloBatam', 'createdBy', 'updatedBy', 'operatorKaryawan']);
+        $tagihanLoloBatam->load(['items.pricelistLoloBatam', 'items.operatorKaryawan', 'createdBy', 'updatedBy', 'operatorKaryawan']);
 
         return view('tagihan-lolo-batam.show', compact('tagihanLoloBatam'));
     }
@@ -696,7 +755,7 @@ class TagihanLoloBatamController extends Controller
             'nomor_tagihan' => 'required|string|unique:tagihan_lolo_batams,nomor_tagihan,'.$tagihanLoloBatam->id,
             'tanggal_tagihan' => 'required|date',
             'vendor' => 'nullable|string|max:255',
-            'tipe_operator' => 'nullable|in:AYP,VENDOR',
+            'tipe_operator' => 'nullable|in:AYP,VENDOR,CAMPURAN',
             'operator_karyawan_id' => 'nullable|exists:karyawans,id',
             'operator' => 'nullable|string|max:255',
             'kapal' => 'nullable|string|max:255',
@@ -714,6 +773,9 @@ class TagihanLoloBatamController extends Controller
             'items.*.langsir_batam_id' => 'nullable|integer',
             'items.*.master_pricelist_lolo_batam_id' => 'nullable|integer',
             'items.*.nomor_surat_jalan' => 'nullable|string|max:255',
+            'items.*.tipe_operator' => 'nullable|string|in:AYP,VENDOR',
+            'items.*.operator_karyawan_id' => 'nullable',
+            'items.*.operator' => 'nullable|string|max:255',
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
             'items.*.keterangan' => 'nullable|string|max:255',
@@ -728,27 +790,53 @@ class TagihanLoloBatamController extends Controller
             $totalTagihan = 0;
             $itemsData = [];
 
-            $tipeOperator = $request->tipe_operator ?: 'AYP';
-            $operatorKaryawanId = $request->operator_karyawan_id;
-            $operatorName = $request->operator;
+            $headerTipeOperator = $request->tipe_operator ?: 'AYP';
+            $headerOperatorKaryawanId = $request->operator_karyawan_id;
+            $headerOperatorName = $request->operator;
 
-            if ($tipeOperator === 'AYP') {
-                if ($operatorKaryawanId) {
-                    $karyawan = \App\Models\Karyawan::find($operatorKaryawanId);
+            if ($headerTipeOperator === 'AYP') {
+                if ($headerOperatorKaryawanId) {
+                    $karyawan = \App\Models\Karyawan::find($headerOperatorKaryawanId);
                     if ($karyawan) {
-                        $operatorName = $karyawan->nama_lengkap;
+                        $headerOperatorName = $karyawan->nama_lengkap;
                     }
                 }
-            } else {
-                $operatorKaryawanId = null;
-                if (empty($operatorName)) {
-                    $operatorName = $request->vendor ?: 'Vendor';
+            } elseif ($headerTipeOperator === 'VENDOR') {
+                $headerOperatorKaryawanId = null;
+                if (empty($headerOperatorName)) {
+                    $headerOperatorName = $request->vendor ?: 'Vendor';
                 }
             }
+
+            $hasAyp = false;
+            $hasVendor = false;
 
             foreach ($request->items as $item) {
                 $subtotal = (float) $item['tarif'] * (int) $item['jumlah'];
                 $totalTagihan += $subtotal;
+
+                $itemTipeOp = ! empty($item['tipe_operator']) ? $item['tipe_operator'] : ($headerTipeOperator !== 'CAMPURAN' ? $headerTipeOperator : 'AYP');
+                $itemOpKaryawanId = ! empty($item['operator_karyawan_id']) ? $item['operator_karyawan_id'] : null;
+                $itemOpName = $item['operator'] ?? null;
+
+                if ($itemTipeOp === 'AYP') {
+                    $hasAyp = true;
+                    if ($itemOpKaryawanId) {
+                        $karyawan = \App\Models\Karyawan::find($itemOpKaryawanId);
+                        if ($karyawan) {
+                            $itemOpName = $karyawan->nama_lengkap;
+                        }
+                    } elseif ($headerTipeOperator === 'AYP' && $headerOperatorKaryawanId) {
+                        $itemOpKaryawanId = $headerOperatorKaryawanId;
+                        $itemOpName = $headerOperatorName;
+                    }
+                } elseif ($itemTipeOp === 'VENDOR') {
+                    $hasVendor = true;
+                    $itemOpKaryawanId = null;
+                    if (empty($itemOpName)) {
+                        $itemOpName = $request->vendor ?: 'Vendor';
+                    }
+                }
 
                 $itemsData[] = [
                     'tagihan_lolo_batam_id' => $tagihanLoloBatam->id,
@@ -761,9 +849,9 @@ class TagihanLoloBatamController extends Controller
                     'size' => $item['size'] ?? '20',
                     'tipe_kontainer' => $item['tipe_kontainer'] ?? 'FULL',
                     'kegiatan' => $item['kegiatan'] ?? 'LOLO Batam',
-                    'tipe_operator' => $tipeOperator,
-                    'operator' => $operatorName,
-                    'operator_karyawan_id' => $operatorKaryawanId,
+                    'tipe_operator' => $itemTipeOp,
+                    'operator' => $itemOpName,
+                    'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
                     'total' => $subtotal,
@@ -773,13 +861,31 @@ class TagihanLoloBatamController extends Controller
                 ];
             }
 
+            if ($hasAyp && $hasVendor) {
+                $headerTipeOperator = 'CAMPURAN';
+                $headerOperatorName = 'Campuran (AYP & Vendor)';
+                $headerOperatorKaryawanId = null;
+            } elseif ($hasAyp && ! $hasVendor) {
+                $headerTipeOperator = 'AYP';
+                if (! $headerOperatorName && ! empty($itemsData[0]['operator'])) {
+                    $headerOperatorName = $itemsData[0]['operator'];
+                    $headerOperatorKaryawanId = $itemsData[0]['operator_karyawan_id'];
+                }
+            } elseif ($hasVendor && ! $hasAyp) {
+                $headerTipeOperator = 'VENDOR';
+                $headerOperatorKaryawanId = null;
+                if (! $headerOperatorName && ! empty($itemsData[0]['operator'])) {
+                    $headerOperatorName = $itemsData[0]['operator'];
+                }
+            }
+
             $tagihanLoloBatam->update([
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
                 'vendor' => $request->vendor,
-                'tipe_operator' => $tipeOperator,
-                'operator' => $operatorName,
-                'operator_karyawan_id' => $operatorKaryawanId,
+                'tipe_operator' => $headerTipeOperator,
+                'operator' => $headerOperatorName,
+                'operator_karyawan_id' => $headerOperatorKaryawanId,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,

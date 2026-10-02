@@ -259,7 +259,7 @@ class PranotaLoloBatamController extends Controller
 
     public function print(TagihanLoloBatam $pranotaLoloBatam)
     {
-        $pranotaLoloBatam->load(['createdBy', 'updatedBy', 'operatorKaryawan', 'items']);
+        $pranotaLoloBatam->load(['createdBy', 'updatedBy', 'operatorKaryawan', 'items.operatorKaryawan']);
 
         return view('pranota-lolo-batam.print', [
             'pranota' => $pranotaLoloBatam,

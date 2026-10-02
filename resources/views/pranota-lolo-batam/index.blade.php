@@ -46,52 +46,6 @@
     </div>
     @endif
 
-    {{-- Statistics Summary Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Pranota</p>
-                <h3 class="text-2xl font-black text-gray-900 mt-1">{{ number_format($totalPranotaCount, 0, ',', '.') }}</h3>
-                <p class="text-xs text-gray-400 mt-1">Keseluruhan faktur</p>
-            </div>
-            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl border border-blue-100">
-                <i class="fas fa-file-invoice"></i>
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Belum Lunas</p>
-                <h3 class="text-2xl font-black text-amber-600 mt-1">{{ number_format($countBelumLunas, 0, ',', '.') }}</h3>
-                <p class="text-xs text-amber-600 font-bold mt-1">Rp {{ number_format($totalBelumLunas, 0, ',', '.') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl border border-amber-100">
-                <i class="fas fa-clock"></i>
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Lunas</p>
-                <h3 class="text-2xl font-black text-emerald-600 mt-1">{{ number_format($countLunas, 0, ',', '.') }}</h3>
-                <p class="text-xs text-emerald-600 font-bold mt-1">Rp {{ number_format($totalLunas, 0, ',', '.') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl border border-emerald-100">
-                <i class="fas fa-check-double"></i>
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Nominal</p>
-                <h3 class="text-2xl font-black text-indigo-700 mt-1">Rp {{ number_format($totalNominal, 0, ',', '.') }}</h3>
-                <p class="text-xs text-gray-400 mt-1">Akumulasi tagihan</p>
-            </div>
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl border border-indigo-100">
-                <i class="fas fa-money-bill-wave"></i>
-            </div>
-        </div>
-    </div>
 
     {{-- Filter Section --}}
     <div class="mb-6 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">

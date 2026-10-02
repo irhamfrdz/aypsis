@@ -607,7 +607,7 @@ class TagihanLoloBatamCompleteTest extends TestCase
         // 4. Print Pranota
         $printResponse = $this->get(route('pranota-lolo-batam.print', $pranota->id));
         $printResponse->assertStatus(200);
-        $printResponse->assertSee('PRANOTA BIAYA LOLO');
+        $printResponse->assertSee('PERMOHONAN TRANSFER');
         $printResponse->assertSee('PLB/10/26/000001');
 
         // 5. Edit Pranota

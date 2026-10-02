@@ -70,6 +70,10 @@
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
                                 <i class="fas fa-building mr-1 text-purple-600"></i> Vendor: {{ $tagihanLoloBatam->operator ?: ($tagihanLoloBatam->vendor ?: '-') }}
                             </span>
+                        @elseif($tagihanLoloBatam->tipe_operator === 'CAMPURAN')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                <i class="fas fa-layer-group mr-1 text-indigo-600"></i> Campuran (Lihat Rincian Kontainer)
+                            </span>
                         @else
                             <span class="text-gray-400">-</span>
                         @endif
@@ -112,6 +116,7 @@
                             <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-20">Size</th>
                             <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-24">Tipe</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Sumber / Dokumen</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase min-w-[170px]">Operator</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kegiatan</th>
                             <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase w-32">Tarif (Rp)</th>
                             <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-16">Qty</th>
@@ -139,6 +144,19 @@
                                 </span>
                                 <span class="text-xs">{{ $item->nomor_surat_jalan ?: '-' }}</span>
                             </td>
+                            <td class="px-4 py-3.5 text-sm">
+                                @if($item->tipe_operator === 'AYP')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                        <i class="fas fa-user-tie mr-1 text-blue-500"></i> AYP: {{ $item->operator ?: ($item->operatorKaryawan->nama_lengkap ?? 'Operator AYP') }}
+                                    </span>
+                                @elseif($item->tipe_operator === 'VENDOR')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                        <i class="fas fa-building mr-1 text-purple-500"></i> Vendor: {{ $item->operator ?: 'Vendor' }}
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">{{ $item->operator ?: '-' }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3.5 text-sm text-gray-700">
                                 {{ $item->kegiatan ?: 'LOLO Batam' }}
                             </td>
@@ -156,7 +174,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50/75 border-t-2 border-gray-200">
                         <tr>
-                            <td colspan="7" class="px-4 py-3.5 text-right font-bold text-gray-700 text-sm">TOTAL ITEM & TAGIHAN:</td>
+                            <td colspan="8" class="px-4 py-3.5 text-right font-bold text-gray-700 text-sm">TOTAL ITEM & TAGIHAN:</td>
                             <td class="px-4 py-3.5 text-center font-bold text-gray-800 text-sm">{{ $tagihanLoloBatam->items->sum('jumlah') }}</td>
                             <td class="px-4 py-3.5 text-right font-bold text-emerald-800 text-base">{{ $tagihanLoloBatam->formatted_total_tagihan }}</td>
                         </tr>
