@@ -880,11 +880,10 @@ class AbsensiController extends Controller
             $kehadiran = $request->kehadiran;
             $startObj = $startDate->copy()->setTime(6, 0, 0);
             $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
+            $driver = \DB::connection()->getDriverName();
+            $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
 
             if ($kehadiran === 'tidak_absen_masuk') {
-                $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
-
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
                         ->whereBetween('waktu', [$startObj, $endObj])
@@ -892,9 +891,6 @@ class AbsensiController extends Controller
                         ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0');
                 });
             } elseif ($kehadiran === 'tidak_absen_pulang') {
-                $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
-
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
                         ->whereBetween('waktu', [$startObj, $endObj])
@@ -902,14 +898,18 @@ class AbsensiController extends Controller
                         ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0');
                 });
             } elseif ($kehadiran === 'tidak_absen_istirahat') {
-                $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
-
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
                         ->whereBetween('waktu', [$startObj, $endObj])
                         ->groupBy(\DB::raw($dateExpr))
                         ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
+                });
+            } elseif ($kehadiran === 'tidak_lengkap') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\DB::raw($dateExpr))
+                        ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
                 });
             }
         }
@@ -1188,8 +1188,59 @@ class AbsensiController extends Controller
                     $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
 
+                    // Normalisasi scan Masuk (mencakup 'Masuk', 'Check In', 'in')
+                    $masukLog = $dayLogs->first(function ($val) {
+                        $t = strtolower(trim(str_replace('_', ' ', $val->tipe ?? '')));
+
+                        return in_array($t, ['masuk', 'check in', 'in']);
+                    });
+
+                    // Normalisasi scan Pulang (mencakup 'Pulang', 'keluar', 'check out', 'out')
+                    $pulangLog = $dayLogs->first(function ($val) {
+                        $t = strtolower(trim(str_replace('_', ' ', $val->tipe ?? '')));
+
+                        return in_array($t, ['pulang', 'keluar', 'check out', 'out']);
+                    });
+
+                    // Fallback cerdas: Jika tidak ada log bertipe 'Pulang', tapi ada scan lain di sore hari (>= 12:00) yang berbeda dari scan masuk pagi
+                    if (! $pulangLog && $masukLog && $dayLogs->count() > 1) {
+                        $latestLog = $dayLogs->sortByDesc('waktu')->first();
+                        if ($latestLog && $latestLog->id !== $masukLog->id && Carbon::parse($latestLog->waktu)->hour >= 12) {
+                            $pulangLog = $latestLog;
+                        }
+                    }
+
+                    // Normalisasi scan Istirahat (Keluar & Masuk)
+                    $istirahatKeluar = $dayLogs->first(function ($val) {
+                        $t = strtolower(trim(str_replace('_', ' ', $val->tipe ?? '')));
+
+                        return str_contains($t, 'istirahat') && (str_contains($t, 'keluar') || str_contains($t, 'mulai'));
+                    });
+                    $istirahatMasuk = $dayLogs->first(function ($val) {
+                        $t = strtolower(trim(str_replace('_', ' ', $val->tipe ?? '')));
+
+                        return str_contains($t, 'istirahat') && (str_contains($t, 'masuk') || str_contains($t, 'selesai'));
+                    });
+                    $istirahatLog = $istirahatKeluar || $istirahatMasuk || $dayLogs->first(function ($val) {
+                        return str_contains(strtolower($val->tipe ?? ''), 'istirahat');
+                    });
+
+                    $jamIstirahatStr = null;
+                    if ($istirahatLog) {
+                        $ik = $istirahatKeluar ? Carbon::parse($istirahatKeluar->waktu)->format('H:i') : null;
+                        $im = $istirahatMasuk ? Carbon::parse($istirahatMasuk->waktu)->format('H:i') : null;
+                        if ($ik && $im) {
+                            $jamIstirahatStr = $ik.' - '.$im;
+                        } elseif ($ik) {
+                            $jamIstirahatStr = 'Keluar: '.$ik;
+                        } elseif ($im) {
+                            $jamIstirahatStr = 'Masuk: '.$im;
+                        } else {
+                            $jamIstirahatStr = Carbon::parse($istirahatLog->waktu)->format('H:i');
+                        }
+                    }
+
                     // Lateness
-                    $masukLog = $dayLogs->where('tipe', 'Masuk')->first();
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
                         $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
@@ -1211,11 +1262,19 @@ class AbsensiController extends Controller
                         }
                     } else {
                         $tidakAbsenMasukKali++;
-                        $detail_tidak_absen_masuk[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        $detail_tidak_absen_masuk[] = [
+                            'tanggal' => \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y'),
+                            'hari' => \Carbon\Carbon::parse($dateStr)->isoFormat('dddd'),
+                            'date_raw' => $dateStr,
+                            'karyawan_id' => $karyawan->id,
+                            'nama' => $karyawan->nama_lengkap,
+                            'jam_masuk' => null,
+                            'jam_pulang' => $pulangLog ? Carbon::parse($pulangLog->waktu)->format('H:i') : null,
+                            'jam_istirahat' => $jamIstirahatStr,
+                        ];
                     }
 
                     // Early leave
-                    $pulangLog = $dayLogs->where('tipe', 'Pulang')->first();
                     if ($pulangLog) {
                         $waktuPulang = Carbon::parse($pulangLog->waktu);
                         $jamPulangNormal = Carbon::parse($dateStr.' 17:00:00');
@@ -1236,16 +1295,32 @@ class AbsensiController extends Controller
                         }
                     } else {
                         $tidakAbsenPulangKali++;
-                        $detail_tidak_absen_pulang[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        $detail_tidak_absen_pulang[] = [
+                            'tanggal' => \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y'),
+                            'hari' => \Carbon\Carbon::parse($dateStr)->isoFormat('dddd'),
+                            'date_raw' => $dateStr,
+                            'karyawan_id' => $karyawan->id,
+                            'nama' => $karyawan->nama_lengkap,
+                            'jam_masuk' => $masukLog ? Carbon::parse($masukLog->waktu)->format('H:i') : null,
+                            'jam_pulang' => null,
+                            'jam_istirahat' => $jamIstirahatStr,
+                        ];
                     }
 
                     // Istirahat
-                    $istirahatLog = $dayLogs->first(function ($val) {
-                        return strpos(strtolower($val->tipe), 'istirahat') !== false;
-                    });
-                    if (! $istirahatLog) {
+                    $isSundayOrHoliday = $tempDate->isSunday() || in_array($dateStr, $hariLiburs);
+                    if (! $istirahatLog && ! $isSundayOrHoliday) {
                         $tidakAbsenIstirahatKali++;
-                        $detail_tidak_absen_istirahat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        $detail_tidak_absen_istirahat[] = [
+                            'tanggal' => \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y'),
+                            'hari' => \Carbon\Carbon::parse($dateStr)->isoFormat('dddd'),
+                            'date_raw' => $dateStr,
+                            'karyawan_id' => $karyawan->id,
+                            'nama' => $karyawan->nama_lengkap,
+                            'jam_masuk' => $masukLog ? Carbon::parse($masukLog->waktu)->format('H:i') : null,
+                            'jam_pulang' => $pulangLog ? Carbon::parse($pulangLog->waktu)->format('H:i') : null,
+                            'jam_istirahat' => null,
+                        ];
                     }
 
                     // Overtime (Lembur)
@@ -1400,7 +1475,8 @@ class AbsensiController extends Controller
         $pekerjaan = $request->input('pekerjaan');
         $divisi = $request->input('divisi');
         $cabang = $request->input('cabang');
-        $tempat = $request->input('tempat');
+        // 'penempatan' is what the filter form sends; also accept legacy 'tempat' param
+        $tempat = $request->input('penempatan') ?: $request->input('tempat');
         $grup = $request->input('grup');
         $subGrup = $request->input('sub_grup');
         $statusKaryawan = $request->input('status_karyawan', 'aktif');

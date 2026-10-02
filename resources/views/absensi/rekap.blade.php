@@ -164,6 +164,7 @@
                         <select name="kehadiran" id="kehadiran"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                             <option value="">Semua Karyawan</option>
+                            <option value="tidak_lengkap" {{ request('kehadiran') == 'tidak_lengkap' ? 'selected' : '' }}>⚠️ Tidak Lengkap (Masuk/Pulang)</option>
                             <option value="tidak_absen_masuk" {{ request('kehadiran') == 'tidak_absen_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
                             <option value="tidak_absen_pulang" {{ request('kehadiran') == 'tidak_absen_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
                             <option value="tidak_absen_istirahat" {{ request('kehadiran') == 'tidak_absen_istirahat' ? 'selected' : '' }}>Tidak Absen Istirahat</option>
@@ -228,7 +229,7 @@
                         </svg>
                         Ekspor PDF
                     </button>
-                    <button type="button" onclick="document.getElementById('exportModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                    <button type="button" onclick="eksporRekapExcel()" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -239,6 +240,31 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Ekspor Laporan Izin (Excel)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Filter Bar Status Absensi -->
+            <div class="px-6 py-2.5 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="font-bold text-gray-600 mr-1 flex items-center gap-1 text-[11px]">
+                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        Filter Cepat:
+                    </span>
+                    <button type="button" onclick="setKehadiranFilter('')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ !request('kehadiran') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                        Semua Karyawan
+                    </button>
+                    <button type="button" onclick="setKehadiranFilter('tidak_lengkap')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_lengkap' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' }}">
+                        ⚠️ Tidak Lengkap (Masuk/Pulang)
+                    </button>
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_masuk')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_masuk' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' }}">
+                        🔴 Tidak Absen Masuk
+                    </button>
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_pulang')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_pulang' ? 'bg-orange-600 text-white shadow-xs' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' }}">
+                        🟠 Tidak Absen Pulang
+                    </button>
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_istirahat')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_istirahat' ? 'bg-yellow-600 text-white shadow-xs' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200' }}">
+                        🟡 Tidak Absen Istirahat
                     </button>
                 </div>
             </div>
@@ -684,7 +710,7 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailLupaAbsen()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
                 <div class="sm:flex sm:items-start">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -693,10 +719,11 @@
                         </svg>
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailLupaAbsenTitle">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="detailLupaAbsenTitle">
                             Detail Lupa Absen
                         </h3>
-                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailLupaAbsenContent">
+                        <p class="text-xs text-gray-500 mt-0.5">Rincian tanggal dan status scan absensi pada hari kerja terkait.</p>
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-1" id="detailLupaAbsenContent">
                             <!-- Content will be injected here -->
                         </div>
                     </div>
@@ -1331,23 +1358,74 @@
     function showDetailLupaAbsen(nama, dates, typeLabel) {
         let html = '';
         if (!dates || dates.length === 0) {
-            html = `<p class="text-sm text-gray-500 text-center py-4">Tidak ada data ${typeLabel}.</p>`;
+            html = `<div class="text-center py-6 text-gray-500">
+                <svg class="w-10 h-10 mx-auto text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-sm font-medium">Tidak ada data ${typeLabel}.</p>
+            </div>`;
         } else {
-            html = '<ul class="space-y-2">';
-            dates.forEach((date, index) => {
-                html += `
-                    <li class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
-                        <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
-                        ${date}
-                    </li>
-                `;
+            html = '<div class="space-y-3">';
+            dates.forEach((item, index) => {
+                if (typeof item === 'string') {
+                    html += `
+                        <div class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                            <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
+                            ${item}
+                        </div>
+                    `;
+                } else {
+                    let tipeAction = typeLabel.includes('Masuk') ? 'Masuk' : (typeLabel.includes('Pulang') ? 'Pulang' : '');
+                    let ajukanUrl = '';
+                    if (item.karyawan_id && item.date_raw && tipeAction) {
+                        ajukanUrl = `{{ route('master.persetujuan-absensi-lupa.create') }}?karyawan_id=${item.karyawan_id}&tanggal=${item.date_raw}&tipe_absen=${tipeAction}`;
+                    }
+
+                    html += `
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs hover:border-indigo-300 transition-colors">
+                            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-bold shrink-0">${index + 1}</span>
+                                    <span class="font-bold text-gray-800 text-sm">${item.tanggal}</span>
+                                    ${item.hari ? `<span class="text-gray-500 font-medium">(${item.hari})</span>` : ''}
+                                </div>
+                                ${ajukanUrl ? `
+                                    <a href="${ajukanUrl}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors shadow-2xs">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        Ajukan Lupa ${tipeAction}
+                                    </a>
+                                ` : ''}
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+                                <div class="bg-white p-2 rounded-lg border ${typeLabel.includes('Masuk') ? 'border-red-200 bg-red-50/40' : 'border-gray-100'}">
+                                    <span class="block text-[10px] text-gray-500 font-semibold mb-0.5">Scan Masuk</span>
+                                    ${item.jam_masuk ? `<span class="font-bold text-emerald-700 font-mono">${item.jam_masuk}</span>` : `<span class="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded text-[10px]">❌ Kosong</span>`}
+                                </div>
+                                <div class="bg-white p-2 rounded-lg border ${typeLabel.includes('Istirahat') ? 'border-yellow-200 bg-yellow-50/40' : 'border-gray-100'}">
+                                    <span class="block text-[10px] text-gray-500 font-semibold mb-0.5">Scan Istirahat</span>
+                                    ${item.jam_istirahat ? `<span class="font-bold text-gray-800 font-mono">${item.jam_istirahat}</span>` : `<span class="text-gray-400 text-[10px]">-</span>`}
+                                </div>
+                                <div class="bg-white p-2 rounded-lg border ${typeLabel.includes('Pulang') ? 'border-orange-200 bg-orange-50/40' : 'border-gray-100'}">
+                                    <span class="block text-[10px] text-gray-500 font-semibold mb-0.5">Scan Pulang</span>
+                                    ${item.jam_pulang ? `<span class="font-bold text-emerald-700 font-mono">${item.jam_pulang}</span>` : `<span class="font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-[10px]">❌ Kosong</span>`}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
             });
-            html += '</ul>';
+            html += '</div>';
         }
         
         document.getElementById('detailLupaAbsenTitle').innerText = `Detail ${typeLabel}: ${nama}`;
         document.getElementById('detailLupaAbsenContent').innerHTML = html;
         document.getElementById('detailLupaAbsenModal').classList.remove('hidden');
+    }
+
+    function setKehadiranFilter(val) {
+        const select = document.getElementById('kehadiran');
+        if (select) {
+            select.value = val;
+            document.getElementById('filterForm').submit();
+        }
     }
 
     function showDetailIzinCuti(nama, data, typeLabel, colorPrefix) {
@@ -1382,6 +1460,27 @@
 
     function closeDetailLupaAbsen() {
         document.getElementById('detailLupaAbsenModal').classList.add('hidden');
+    }
+
+    function eksporRekapExcel() {
+        // Baca semua nilai filter dari form dan kirim ke route ekspor sebagai GET params
+        const baseUrl = '{{ route("absensi.rekap.export") }}';
+        const params = new URLSearchParams();
+
+        const fields = [
+            'search', 'penempatan', 'pekerjaan', 'grup', 'sub_grup',
+            'grup_bpjs', 'sub_grup_bpjs', 'kehadiran', 'status_karyawan',
+            'start_date', 'end_date'
+        ];
+
+        fields.forEach(function(name) {
+            const el = document.querySelector(`#filterForm [name="${name}"]`);
+            if (el && el.value) {
+                params.set(name, el.value);
+            }
+        });
+
+        window.location.href = baseUrl + (params.toString() ? '?' + params.toString() : '');
     }
 </script>
 @endpush

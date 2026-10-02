@@ -245,6 +245,25 @@ class ADMSController extends Controller
 
                 if (in_array($state, [0, 3, 4])) {
                     $type = 'Masuk';
+
+                    // Auto-detect cerdas:
+                    // Jika scan terjadi pada jam 12:00 ke atas (siang/sore) dan karyawan sudah memiliki scan Masuk hari ini,
+                    // maka scan ini otomatis adalah scan Pulang (mengatasi karyawan tidak menekan tombol 'Pulang' di mesin).
+                    if ($parsedTime->hour >= 12) {
+                        $startOfDay = $parsedTime->copy()->subHours(6)->startOfDay()->addHours(6)->format('Y-m-d H:i:s');
+                        $hasMorningScan = Absensi::where('nik', $nik)
+                            ->where('waktu', '>=', $startOfDay)
+                            ->where('waktu', '<', $logTime)
+                            ->where(function ($q) {
+                                $q->where('tipe', 'Masuk')
+                                    ->orWhere('tipe', 'Check In');
+                            })
+                            ->exists();
+
+                        if ($hasMorningScan) {
+                            $type = 'Pulang';
+                        }
+                    }
                 } else {
                     $type = 'Pulang';
                 }

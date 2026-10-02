@@ -27,7 +27,7 @@
                         <select name="karyawan_id" id="karyawan_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
                             <option value="">-- Pilih Karyawan --</option>
                             @foreach($karyawans as $karyawan)
-                                <option value="{{ $karyawan->id }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
+                                <option value="{{ $karyawan->id }}" {{ old('karyawan_id', request('karyawan_id')) == $karyawan->id ? 'selected' : '' }}>
                                     {{ $karyawan->nik }} - {{ $karyawan->nama }}
                                 </option>
                             @endforeach
@@ -39,7 +39,7 @@
 
                     <div>
                         <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal <span class="text-red-500">*</span></label>
-                        <input type="date" name="tanggal" id="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        <input type="date" name="tanggal" id="tanggal" value="{{ old('tanggal', request('tanggal', date('Y-m-d'))) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
                         @error('tanggal')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -56,8 +56,10 @@
                     <div class="col-span-1 md:col-span-2">
                         <label for="tipe_absen" class="block text-sm font-medium text-gray-700 mb-1">Tipe Absen <span class="text-red-500">*</span></label>
                         <select name="tipe_absen" id="tipe_absen" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                            <option value="Masuk" {{ old('tipe_absen') == 'Masuk' ? 'selected' : '' }}>Masuk</option>
-                            <option value="Pulang" {{ old('tipe_absen') == 'Pulang' ? 'selected' : '' }}>Pulang</option>
+                            <option value="Masuk" {{ old('tipe_absen', request('tipe_absen', 'Masuk')) == 'Masuk' ? 'selected' : '' }}>Masuk</option>
+                            <option value="Pulang" {{ old('tipe_absen', request('tipe_absen')) == 'Pulang' ? 'selected' : '' }}>Pulang</option>
+                            <option value="Istirahat Keluar" {{ old('tipe_absen', request('tipe_absen')) == 'Istirahat Keluar' ? 'selected' : '' }}>Istirahat Keluar</option>
+                            <option value="Istirahat Masuk" {{ old('tipe_absen', request('tipe_absen')) == 'Istirahat Masuk' ? 'selected' : '' }}>Istirahat Masuk</option>
                         </select>
                         @error('tipe_absen')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

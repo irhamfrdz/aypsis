@@ -164,6 +164,13 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
                         ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
                 });
+            } elseif ($kehadiran === 'tidak_lengkap') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
+                });
             }
         }
 
