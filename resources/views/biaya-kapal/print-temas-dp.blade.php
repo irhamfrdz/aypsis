@@ -8,7 +8,7 @@
         * { box-sizing: border-box; }
         @page { size: 165mm 215mm; margin: 0; }
         html, body { margin: 0; padding: 0; color: #111; font: 14px/1.7 Arial, sans-serif; }
-        .page { width: 165mm; min-height: 215mm; margin: 0; padding: 10mm 12mm; }
+        .page { width: 100%; margin: 0; padding: 10mm 12mm; }
         .toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
         button, .back { border: 0; border-radius: 4px; padding: 7px 12px; color: #fff; cursor: pointer; text-decoration: none; font-size: 12px; }
         button { background: #2563eb; }
@@ -23,12 +23,12 @@
         .account td:first-child { width: 145px; }
         @media screen {
             body { background: #e2e8f0; padding: 20px; }
-            .page { margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(15, 23, 42, .15); }
+            .page { width: 165mm; min-height: 215mm; margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(15, 23, 42, .15); }
         }
         @media print {
-            html, body { width: 165mm; height: 215mm; background: #fff; }
+            html, body { width: 100%; min-height: 0; background: #fff; }
             body { padding: 0; }
-            .page { margin: 0; page-break-after: avoid; }
+            .page { width: 100%; min-height: 0; margin: 0; page-break-after: avoid; }
             .no-print { display: none !important; }
         }
     </style>
