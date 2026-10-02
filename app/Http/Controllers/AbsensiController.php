@@ -1267,7 +1267,14 @@ class AbsensiController extends Controller
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
                         $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
-                        if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
+                        $batasToleransi = $jamMasukNormal->copy()->addMinutes(5);
+
+                        // Pastikan tidak ada scan pagi sebelum 09:05 (misal scan pagi yang salah tipe jadi Pulang)
+                        $hadMorningScanOnTime = $dayLogs->contains(function ($val) use ($batasToleransi) {
+                            return Carbon::parse($val->waktu)->lte($batasToleransi);
+                        });
+
+                        if ($waktuMasuk->gt($batasToleransi) && ! $hadMorningScanOnTime && $waktuMasuk->hour < 14) {
                             // Cek apakah penempatan kebal terlambat (Jakarta Pelabuhan, Garasi Jakarta, Jakarta Pelabuhan 1, dll)
                             $isExempt = $karyawan->isExemptFromTerlambat();
 
@@ -1278,9 +1285,10 @@ class AbsensiController extends Controller
                             });
 
                             if (! $hasLatePermission && ! $isExempt) {
+                                $menit = (int) round($jamMasukNormal->diffInMinutes($waktuMasuk));
                                 $terlambatKali++;
-                                $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
-                                $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$jamMasukNormal->diffInMinutes($waktuMasuk).' mnt)';
+                                $terlambatMenit += $menit;
+                                $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$menit.' mnt)';
                             }
                         }
                     } else {
@@ -1311,9 +1319,10 @@ class AbsensiController extends Controller
                             });
 
                             if (! $hasEarlyPermission) {
+                                $menitPulang = (int) round($waktuPulang->diffInMinutes($jamPulangNormal));
                                 $pulangCepatKali++;
-                                $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
-                                $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$waktuPulang->diffInMinutes($jamPulangNormal).' mnt)';
+                                $pulangCepatMenit += $menitPulang;
+                                $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$menitPulang.' mnt)';
                             }
                         }
                     } else {

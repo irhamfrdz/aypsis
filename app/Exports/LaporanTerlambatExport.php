@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -214,13 +215,22 @@ class LaporanTerlambatExport implements WithMultipleSheets
                     $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
                     $batasToleransi = $jamMasukNormal->copy()->addMinutes(5);
 
-                    if ($waktuMasuk->gt($batasToleransi)) {
+                    // Pastikan tidak ada scan pagi sebelum 09:05 (misal scan pagi yang salah tipe jadi Pulang)
+                    $hadMorningScanOnTime = $dayLogs->contains(function ($val) use ($batasToleransi) {
+                        return Carbon::parse($val->waktu)->lte($batasToleransi);
+                    });
+
+                    // Hanya dihitung terlambat jika:
+                    // 1. Scan masuk setelah batas toleransi 09:05
+                    // 2. Karyawan memang belum melakukan scan apapun di pagi hari <= 09:05
+                    // 3. Scan masuk bukan scan sore hari (misal jam >= 14:00 yang salah tipe)
+                    if ($waktuMasuk->gt($batasToleransi) && ! $hadMorningScanOnTime && $waktuMasuk->hour < 14) {
                         $hasPerm = $empPerms->contains(function ($perm) use ($dateStr) {
                             return $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
                         });
 
                         if (! $hasPerm) {
-                            $menit = $jamMasukNormal->diffInMinutes($waktuMasuk);
+                            $menit = (int) round($jamMasukNormal->diffInMinutes($waktuMasuk));
                             $totalKali++;
                             $totalMenit += $menit;
 
@@ -299,7 +309,7 @@ class LaporanTerlambatExport implements WithMultipleSheets
 /**
  * Sheet 1: Rekap Keterlambatan Per Karyawan
  */
-class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithEvents, WithTitle
+class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomStartCell, WithEvents, WithTitle
 {
     protected $data;
 
@@ -309,6 +319,11 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithEvents,
     {
         $this->data = $data;
         $this->meta = $meta;
+    }
+
+    public function startCell(): string
+    {
+        return 'A6';
     }
 
     public function collection()
@@ -404,6 +419,8 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithEvents,
                     $sheet->getStyle("A{$startRow}:A{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("B{$startRow}:B{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("G{$startRow}:I{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("G{$startRow}:H{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("I{$startRow}:I{$endRow}")->getNumberFormat()->setFormatCode('#,##0.0');
 
                     // Total Row
                     $totalRow = $endRow + 1;
@@ -420,6 +437,8 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithEvents,
                     ];
                     $sheet->getStyle("A{$totalRow}:I{$totalRow}")->applyFromArray($totalStyle);
                     $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("G{$totalRow}:H{$totalRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("I{$totalRow}")->getNumberFormat()->setFormatCode('#,##0.0');
                     $sheet->getStyle("G{$totalRow}:I{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 } else {
                     $sheet->setCellValue('A6', 'Tidak ada data keterlambatan pada periode ini.');
@@ -437,7 +456,7 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithEvents,
 /**
  * Sheet 2: Detail Kejadian Terlambat
  */
-class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithEvents, WithTitle
+class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustomStartCell, WithEvents, WithTitle
 {
     protected $data;
 
@@ -447,6 +466,11 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithEvents
     {
         $this->data = $data;
         $this->meta = $meta;
+    }
+
+    public function startCell(): string
+    {
+        return 'A6';
     }
 
     public function collection()
@@ -548,6 +572,7 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithEvents
                     $sheet->getStyle("B{$startRow}:D{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("I{$startRow}:J{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("K{$startRow}:K{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("K{$startRow}:K{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
                 } else {
                     $sheet->setCellValue('A6', 'Tidak ada data rincian keterlambatan pada periode ini.');
                     $sheet->mergeCells('A6:L6');
