@@ -871,6 +871,10 @@ class AbsensiController extends Controller
             $karyawansQuery->where('penempatan', $request->penempatan);
         }
 
+        if ($request->filled('cabang')) {
+            $karyawansQuery->where('cabang', $request->cabang);
+        }
+
         if ($request->filled('pekerjaan')) {
             $karyawansQuery->where('pekerjaan', $request->pekerjaan);
         }
@@ -1515,8 +1519,9 @@ class AbsensiController extends Controller
         $statusKaryawan = $request->input('status_karyawan', 'aktif');
         $selectedKaryawan = $request->input('selected_karyawan', []);
 
+        $cabangSlug = $cabang ? \Illuminate\Support\Str::slug($cabang).'-' : '';
         $tempatSlug = $penempatan ? \Illuminate\Support\Str::slug($penempatan).'-' : '';
-        $fileName = 'laporan-terlambat-'.$tempatSlug.$startDate.'-sd-'.$endDate.'.xlsx';
+        $fileName = 'laporan-terlambat-'.$cabangSlug.$tempatSlug.$startDate.'-sd-'.$endDate.'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\LaporanTerlambatExport(

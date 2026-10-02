@@ -196,6 +196,7 @@ class LaporanTerlambatExport implements WithMultipleSheets
 
             $totalKali = 0;
             $totalMenit = 0;
+            $empLateDates = [];
 
             $tempDate = Carbon::parse($this->startDate);
             $lastDate = Carbon::parse($this->endDate);
@@ -234,12 +235,15 @@ class LaporanTerlambatExport implements WithMultipleSheets
                             $totalKali++;
                             $totalMenit += $menit;
 
+                            $empLateDates[] = $tempDate->translatedFormat('d M Y').' ('.$menit.'m)';
+
                             $detailRows[] = [
                                 'tanggal_raw' => $dateStr,
                                 'tanggal' => $tempDate->translatedFormat('d M Y'),
                                 'hari' => $tempDate->translatedFormat('l'),
                                 'nik' => $karyawan->nik,
                                 'nama' => $karyawan->nama_lengkap,
+                                'cabang' => $karyawan->cabang ?: '-',
                                 'penempatan' => $karyawan->penempatan ?: '-',
                                 'divisi' => $karyawan->divisi ?: '-',
                                 'pekerjaan' => $karyawan->pekerjaan ?: '-',
@@ -259,9 +263,11 @@ class LaporanTerlambatExport implements WithMultipleSheets
                 $summaryRows[] = [
                     'nik' => $karyawan->nik,
                     'nama' => $karyawan->nama_lengkap,
+                    'cabang' => $karyawan->cabang ?: '-',
                     'penempatan' => $karyawan->penempatan ?: '-',
                     'divisi' => $karyawan->divisi ?: '-',
                     'pekerjaan' => $karyawan->pekerjaan ?: '-',
+                    'tanggal_terlambat' => implode(', ', $empLateDates),
                     'total_kali' => $totalKali,
                     'total_menit' => $totalMenit,
                     'rata_rata_menit' => round($totalMenit / $totalKali, 1),
@@ -296,6 +302,7 @@ class LaporanTerlambatExport implements WithMultipleSheets
         $meta = [
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
+            'cabang' => $this->cabang,
             'penempatan' => $this->penempatan,
         ];
 
@@ -335,9 +342,11 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomS
                 $no++,
                 $item['nik'],
                 $item['nama'],
+                $item['cabang'],
                 $item['penempatan'],
                 $item['divisi'],
                 $item['pekerjaan'],
+                $item['tanggal_terlambat'],
                 $item['total_kali'],
                 $item['total_menit'],
                 $item['rata_rata_menit'],
@@ -361,19 +370,22 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomS
 
                 // Header Titles
                 $sheet->setCellValue('A2', 'REKAPITULASI KETERLAMBATAN KARYAWAN');
-                $sheet->mergeCells('A2:I2');
+                $sheet->mergeCells('A2:K2');
                 $sheet->getStyle('A2')->applyFromArray([
                     'font' => ['name' => 'Calibri', 'size' => 14, 'bold' => true, 'color' => ['rgb' => '1E293B']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 ]);
 
                 $periodeText = 'Periode: '.Carbon::parse($this->meta['startDate'])->translatedFormat('d M Y').' s/d '.Carbon::parse($this->meta['endDate'])->translatedFormat('d M Y');
+                if (! empty($this->meta['cabang'])) {
+                    $periodeText .= ' | Cabang: '.strtoupper($this->meta['cabang']);
+                }
                 if (! empty($this->meta['penempatan'])) {
                     $periodeText .= ' | Penempatan: '.strtoupper($this->meta['penempatan']);
                 }
 
                 $sheet->setCellValue('A3', $periodeText);
-                $sheet->mergeCells('A3:I3');
+                $sheet->mergeCells('A3:K3');
                 $sheet->getStyle('A3')->applyFromArray([
                     'font' => ['name' => 'Calibri', 'size' => 11, 'color' => ['rgb' => '64748B']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -384,12 +396,14 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomS
                     'A5' => 'No',
                     'B5' => 'NIK',
                     'C5' => 'Nama Lengkap',
-                    'D5' => 'Penempatan',
-                    'E5' => 'Divisi',
-                    'F5' => 'Pekerjaan',
-                    'G5' => 'Frekuensi (Kali)',
-                    'H5' => 'Total Terlambat (Menit)',
-                    'I5' => 'Rata-rata (Menit)',
+                    'D5' => 'Cabang',
+                    'E5' => 'Penempatan',
+                    'F5' => 'Divisi',
+                    'G5' => 'Pekerjaan',
+                    'H5' => 'Tanggal Keterlambatan',
+                    'I5' => 'Frekuensi (Kali)',
+                    'J5' => 'Total Terlambat (Menit)',
+                    'K5' => 'Rata-rata (Menit)',
                 ];
 
                 foreach ($headers as $cell => $text) {
@@ -402,7 +416,7 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomS
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
                     'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'C2410C']]],
                 ];
-                $sheet->getStyle('A5:I5')->applyFromArray($headerStyle);
+                $sheet->getStyle('A5:K5')->applyFromArray($headerStyle);
                 $sheet->getRowDimension(5)->setRowHeight(28);
 
                 $rowCount = count($this->data);
@@ -411,38 +425,39 @@ class TerlambatRekapSheet implements FromCollection, ShouldAutoSize, WithCustomS
 
                 if ($rowCount > 0) {
                     // Body styling
-                    $sheet->getStyle("A{$startRow}:I{$endRow}")->applyFromArray([
+                    $sheet->getStyle("A{$startRow}:K{$endRow}")->applyFromArray([
                         'font' => ['name' => 'Calibri', 'size' => 10],
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CBD5E1']]],
                     ]);
 
-                    $sheet->getStyle("A{$startRow}:A{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("B{$startRow}:B{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("G{$startRow}:I{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                    $sheet->getStyle("G{$startRow}:H{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
-                    $sheet->getStyle("I{$startRow}:I{$endRow}")->getNumberFormat()->setFormatCode('#,##0.0');
+                    $sheet->getStyle("A{$startRow}:B{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("D{$startRow}:D{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("H{$startRow}:H{$endRow}")->getAlignment()->setWrapText(true);
+                    $sheet->getStyle("I{$startRow}:K{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("I{$startRow}:J{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("K{$startRow}:K{$endRow}")->getNumberFormat()->setFormatCode('#,##0.0');
 
                     // Total Row
                     $totalRow = $endRow + 1;
                     $sheet->setCellValue("A{$totalRow}", 'TOTAL');
-                    $sheet->mergeCells("A{$totalRow}:F{$totalRow}");
-                    $sheet->setCellValue("G{$totalRow}", "=SUM(G{$startRow}:G{$endRow})");
-                    $sheet->setCellValue("H{$totalRow}", "=SUM(H{$startRow}:H{$endRow})");
-                    $sheet->setCellValue("I{$totalRow}", "=AVERAGE(I{$startRow}:I{$endRow})");
+                    $sheet->mergeCells("A{$totalRow}:H{$totalRow}");
+                    $sheet->setCellValue("I{$totalRow}", "=SUM(I{$startRow}:I{$endRow})");
+                    $sheet->setCellValue("J{$totalRow}", "=SUM(J{$startRow}:J{$endRow})");
+                    $sheet->setCellValue("K{$totalRow}", "=AVERAGE(K{$startRow}:K{$endRow})");
 
                     $totalStyle = [
                         'font' => ['name' => 'Calibri', 'size' => 10, 'bold' => true],
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F1F5F9']],
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '94A3B8']]],
                     ];
-                    $sheet->getStyle("A{$totalRow}:I{$totalRow}")->applyFromArray($totalStyle);
+                    $sheet->getStyle("A{$totalRow}:K{$totalRow}")->applyFromArray($totalStyle);
                     $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("G{$totalRow}:H{$totalRow}")->getNumberFormat()->setFormatCode('#,##0');
-                    $sheet->getStyle("I{$totalRow}")->getNumberFormat()->setFormatCode('#,##0.0');
-                    $sheet->getStyle("G{$totalRow}:I{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("I{$totalRow}:J{$totalRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("K{$totalRow}")->getNumberFormat()->setFormatCode('#,##0.0');
+                    $sheet->getStyle("I{$totalRow}:K{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 } else {
                     $sheet->setCellValue('A6', 'Tidak ada data keterlambatan pada periode ini.');
-                    $sheet->mergeCells('A6:I6');
+                    $sheet->mergeCells('A6:K6');
                     $sheet->getStyle('A6')->applyFromArray([
                         'font' => ['name' => 'Calibri', 'size' => 11, 'italic' => true, 'color' => ['rgb' => '64748B']],
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
@@ -484,6 +499,7 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustom
                 $item['hari'],
                 $item['nik'],
                 $item['nama'],
+                $item['cabang'],
                 $item['penempatan'],
                 $item['divisi'],
                 $item['pekerjaan'],
@@ -511,19 +527,22 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustom
 
                 // Header Titles
                 $sheet->setCellValue('A2', 'RINCIAN LOG KETERLAMBATAN KARYAWAN');
-                $sheet->mergeCells('A2:L2');
+                $sheet->mergeCells('A2:M2');
                 $sheet->getStyle('A2')->applyFromArray([
                     'font' => ['name' => 'Calibri', 'size' => 14, 'bold' => true, 'color' => ['rgb' => '1E293B']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 ]);
 
                 $periodeText = 'Periode: '.Carbon::parse($this->meta['startDate'])->translatedFormat('d M Y').' s/d '.Carbon::parse($this->meta['endDate'])->translatedFormat('d M Y');
+                if (! empty($this->meta['cabang'])) {
+                    $periodeText .= ' | Cabang: '.strtoupper($this->meta['cabang']);
+                }
                 if (! empty($this->meta['penempatan'])) {
                     $periodeText .= ' | Penempatan: '.strtoupper($this->meta['penempatan']);
                 }
 
                 $sheet->setCellValue('A3', $periodeText);
-                $sheet->mergeCells('A3:L3');
+                $sheet->mergeCells('A3:M3');
                 $sheet->getStyle('A3')->applyFromArray([
                     'font' => ['name' => 'Calibri', 'size' => 11, 'color' => ['rgb' => '64748B']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -536,13 +555,14 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustom
                     'C5' => 'Hari',
                     'D5' => 'NIK',
                     'E5' => 'Nama Lengkap',
-                    'F5' => 'Penempatan',
-                    'G5' => 'Divisi',
-                    'H5' => 'Pekerjaan',
-                    'I5' => 'Jam Standar',
-                    'J5' => 'Jam Masuk',
-                    'K5' => 'Terlambat (Menit)',
-                    'L5' => 'Keterangan',
+                    'F5' => 'Cabang',
+                    'G5' => 'Penempatan',
+                    'H5' => 'Divisi',
+                    'I5' => 'Pekerjaan',
+                    'J5' => 'Jam Standar',
+                    'K5' => 'Jam Masuk',
+                    'L5' => 'Terlambat (Menit)',
+                    'M5' => 'Keterangan',
                 ];
 
                 foreach ($headers as $cell => $text) {
@@ -555,7 +575,7 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustom
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
                     'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9A3412']]],
                 ];
-                $sheet->getStyle('A5:L5')->applyFromArray($headerStyle);
+                $sheet->getStyle('A5:M5')->applyFromArray($headerStyle);
                 $sheet->getRowDimension(5)->setRowHeight(28);
 
                 $rowCount = count($this->data);
@@ -563,19 +583,20 @@ class TerlambatDetailSheet implements FromCollection, ShouldAutoSize, WithCustom
                 $endRow = $startRow + $rowCount - 1;
 
                 if ($rowCount > 0) {
-                    $sheet->getStyle("A{$startRow}:L{$endRow}")->applyFromArray([
+                    $sheet->getStyle("A{$startRow}:M{$endRow}")->applyFromArray([
                         'font' => ['name' => 'Calibri', 'size' => 10],
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CBD5E1']]],
                     ]);
 
                     $sheet->getStyle("A{$startRow}:A{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("B{$startRow}:D{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("I{$startRow}:J{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("K{$startRow}:K{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                    $sheet->getStyle("K{$startRow}:K{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("F{$startRow}:F{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("J{$startRow}:K{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("L{$startRow}:L{$endRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle("L{$startRow}:L{$endRow}")->getNumberFormat()->setFormatCode('#,##0');
                 } else {
                     $sheet->setCellValue('A6', 'Tidak ada data rincian keterlambatan pada periode ini.');
-                    $sheet->mergeCells('A6:L6');
+                    $sheet->mergeCells('A6:M6');
                     $sheet->getStyle('A6')->applyFromArray([
                         'font' => ['name' => 'Calibri', 'size' => 11, 'italic' => true, 'color' => ['rgb' => '64748B']],
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
