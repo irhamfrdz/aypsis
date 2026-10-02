@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\UangJalanBongkaran;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -25,8 +26,9 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
         ];
 
         foreach ($this->uangJalans as $index => $uangJalan) {
-            $suratJalan = $uangJalan->suratJalan;
-            $order = $suratJalan?->order;
+            $isBongkaran = $uangJalan instanceof UangJalanBongkaran;
+            $suratJalan = $isBongkaran ? $uangJalan->suratJalanBongkaran : $uangJalan->suratJalan;
+            $order = $isBongkaran ? null : $suratJalan?->order;
             $namaBarang = $suratJalan?->jenis_barang ?: $order?->nama_barang;
             if (is_array($namaBarang)) {
                 $namaBarang = implode(', ', array_filter($namaBarang));
@@ -38,12 +40,12 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
                 Carbon::parse($this->tanggal)->format('d M y'),
                 $suratJalan?->supir ?: '-',
                 $suratJalan?->no_plat ?: '-',
-                $suratJalan?->no_surat_jalan ?: '-',
+                $suratJalan?->no_surat_jalan ?: $suratJalan?->nomor_surat_jalan ?: '-',
                 'Uang Jalan',
                 $namaBarang ?: '-',
                 $suratJalan?->tujuan_pengambilan ?: $suratJalan?->tujuanPengambilanRelation?->ke ?: '-',
                 $suratJalan?->pengirim ?: '-',
-                $order?->nomor_order ?: $suratJalan?->no_pemesanan ?: '-',
+                '',
             ];
         }
 
