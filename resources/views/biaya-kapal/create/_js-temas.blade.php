@@ -46,6 +46,9 @@
                     <label class="block text-sm">Tanggal DP
                         <input type="date" name="temas[${sectionIndex}][tanggal_dp]" class="temas-dp-date ${temasInputClass} mt-1" disabled>
                     </label>
+                    <label class="block text-sm">Nama Bank
+                        <input type="text" name="temas[${sectionIndex}][nama_bank]" class="temas-dp-bank ${temasInputClass} mt-1" placeholder="Contoh: BCA, Mandiri" disabled>
+                    </label>
                     <label class="block text-sm md:col-span-2">Keterangan DP
                         <textarea name="temas[${sectionIndex}][keterangan_dp]" class="temas-dp-description ${temasInputClass} mt-1" rows="2" placeholder="Keterangan pembayaran DP (opsional)" disabled></textarea>
                     </label>

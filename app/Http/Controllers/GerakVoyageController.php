@@ -36,17 +36,20 @@ class GerakVoyageController extends Controller
             ->values()
             ->all();
 
+        $normalizedShipSql = "UPPER(REPLACE(REPLACE(TRIM(nama_kapal), '.', ''), '  ', ' '))";
+
         $grouped = Manifest::query()
-            ->select('nama_kapal', 'no_voyage')
+            ->select('no_voyage')
+            ->selectRaw("{$normalizedShipSql} as nama_kapal")
             ->selectRaw('COUNT(*) as jumlah_manifest')
             ->selectRaw('MAX(COALESCE(tanggal_berangkat, tanggal_muat, DATE(created_at))) as tanggal_voyage')
             ->selectRaw('MAX(id) as manifest_terakhir_id')
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '<>', '')
-            ->whereIn(DB::raw("UPPER(REPLACE(REPLACE(TRIM(nama_kapal), '.', ''), '  ', ' '))"), $alexindoShips)
+            ->whereIn(DB::raw($normalizedShipSql), $alexindoShips)
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '<>', '')
-            ->groupBy('nama_kapal', 'no_voyage');
+            ->groupBy(DB::raw($normalizedShipSql), 'no_voyage');
 
         foreach ($tanggalFields as $field) {
             $grouped->selectRaw("MAX({$field}) as {$field}");

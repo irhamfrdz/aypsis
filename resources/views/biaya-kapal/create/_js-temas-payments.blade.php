@@ -11,6 +11,8 @@
         section.querySelector('.temas-dp-metadata').classList.toggle('hidden', !isDp);
         section.querySelector('.temas-dp-date').disabled = !isDp;
         section.querySelector('.temas-dp-date').required = isDp;
+        section.querySelector('.temas-dp-bank').disabled = !isDp;
+        section.querySelector('.temas-dp-bank').required = isDp;
         section.querySelector('.temas-dp-description').disabled = !isDp;
         section.querySelector('.temas-dp-amount').disabled = !isDp;
         section.querySelector('.temas-dp-amount').required = isDp;
@@ -83,6 +85,7 @@
         section.querySelector('.temas-payment-mode').value = data.payment_mode || 'lunas';
         section.querySelector('.temas-dp-amount').value = data.nominal_dibayar || '';
         section.querySelector('.temas-dp-date').value = data.tanggal_dp || '';
+        section.querySelector('.temas-dp-bank').value = data.nama_bank || '';
         section.querySelector('.temas-dp-description').value = data.keterangan_dp || '';
         section.dataset.dpAmount = data.dp_diperhitungkan || 0;
         if (data.dp_stage_id) {

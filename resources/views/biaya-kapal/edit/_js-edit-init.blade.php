@@ -404,6 +404,7 @@
                          'dp_stage_id' => $firstItem->stage?->dp_stage_id,
                          'dp_diperhitungkan' => $firstItem->stage?->dp_diperhitungkan ?? 0,
                          'tanggal_dp' => $firstItem->stage?->tanggal_dp?->format('Y-m-d'),
+                         'nama_bank' => $firstItem->stage?->nama_bank,
                          'keterangan_dp' => $firstItem->stage?->keterangan_dp,
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],

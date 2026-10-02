@@ -95,6 +95,7 @@ class TemasBillingService
             'payment_mode' => 'sometimes|in:lunas,dp,pelunasan_dp',
             'nominal_dibayar' => 'required_if:payment_mode,dp|nullable|numeric|decimal:0,2|gt:0',
             'tanggal_dp' => 'nullable|required_if:payment_mode,dp|date',
+            'nama_bank' => 'nullable|required_if:payment_mode,dp|string|max:255',
             'keterangan_dp' => 'nullable|string|max:5000',
             'dp_stage_id' => 'required_if:payment_mode,pelunasan_dp|nullable|integer',
         ])->validate();
@@ -217,6 +218,7 @@ class TemasBillingService
             'biaya_kapal_id' => $invoice->id, 'kapal' => $section['kapal'], 'voyage' => $section['voyage'],
             'payment_mode' => $mode, 'dp_stage_id' => $dp?->id,
             'tanggal_dp' => $mode === 'dp' ? ($section['tanggal_dp'] ?? null) : null,
+            'nama_bank' => $mode === 'dp' ? ($section['nama_bank'] ?? null) : null,
             'keterangan_dp' => $mode === 'dp' ? ($section['keterangan_dp'] ?? null) : null,
             'nilai_tagihan' => $total / 100, 'nominal_dibayar' => $cash / 100,
             'dp_diperhitungkan' => $dp?->nominal_dibayar ?? 0,

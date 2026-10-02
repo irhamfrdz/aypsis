@@ -29,13 +29,13 @@
     @php
         $invoice = $stage->biayaKapal;
         $detail = $stage->details->first();
-        $date = $invoice->tanggal ?? $stage->created_at;
+        $date = $stage->tanggal_dp ?? $invoice->tanggal ?? $stage->created_at;
         $ship = $stage->kapal ?: $invoice->display_nama_kapal;
         $voyage = $stage->voyage ?: $invoice->display_no_voyage;
         $recipient = $detail?->penerima ?: ($invoice->penerima ?: $invoice->nama_vendor ?: '-');
         $reference = $detail?->nomor_referensi ?: ($invoice->nomor_referensi ?: '-');
         $virtualAccount = $detail?->nomor_rekening ?: ($invoice->nomor_rekening ?: '-');
-        $bankName = $invoice->bank?->name ?: '-';
+        $bankName = $stage->nama_bank ?: ($invoice->bank?->name ?: '-');
         $amount = (float) $stage->nominal_dibayar;
         $amountWords = ucwords(trim(\App\Helpers\Terbilang::make((int) round($amount))));
     @endphp

@@ -1066,6 +1066,7 @@ class BiayaKapalController extends Controller
             'temas.*.tanggal_invoice_vendor' => 'nullable|date',
             'temas.*.keterangan' => 'nullable|string',
             'temas.*.tanggal_dp' => 'nullable|required_if:temas.*.payment_mode,dp|date',
+            'temas.*.nama_bank' => 'nullable|required_if:temas.*.payment_mode,dp|string|max:255',
             'temas.*.keterangan_dp' => 'nullable|string|max:5000',
 
             // Biaya Tanto sections validation
@@ -4312,6 +4313,7 @@ class BiayaKapalController extends Controller
             'temas.*.tanggal_invoice_vendor' => 'nullable|date',
             'temas.*.keterangan' => 'nullable|string',
             'temas.*.tanggal_dp' => 'nullable|required_if:temas.*.payment_mode,dp|date',
+            'temas.*.nama_bank' => 'nullable|required_if:temas.*.payment_mode,dp|string|max:255',
             'temas.*.keterangan_dp' => 'nullable|string|max:5000',
 
             // Biaya Tanto sections validation
