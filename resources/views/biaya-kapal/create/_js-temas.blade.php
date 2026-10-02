@@ -56,7 +56,11 @@
                     </label>
                     <button type="button" class="temas-reload-dp text-sm text-blue-700 mt-1">Muat ulang daftar DP</button>
                     <p class="temas-dp-status text-sm text-gray-600" role="status"></p>
-                    <p class="text-sm mt-2">DP sudah dibayar: <strong class="temas-dp-paid">Rp 0</strong></p>
+                    <div class="temas-dp-summary hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                        <p class="text-xs font-medium uppercase tracking-wide text-amber-700">DP sudah dibayar</p>
+                        <p class="temas-dp-paid mt-1 text-lg font-bold text-amber-900">Rp 0</p>
+                        <p class="text-xs text-amber-700 mt-1">Nominal ini akan dikurangkan dari total tagihan akhir.</p>
+                    </div>
                 </div>
             </div>
             <h5 class="font-semibold text-gray-800 mb-3">1. Pilih perjalanan kapal</h5>
@@ -189,7 +193,7 @@
         section.querySelector('.temas-reload-dp').addEventListener('click', () => loadTemasDps(section));
         section.querySelector('.temas-dp-reference').addEventListener('change', () => {
             const option = section.querySelector('.temas-dp-reference').selectedOptions[0];
-            section.dataset.dpAmount = option?.dataset.amount || '0';
+            section.dataset.dpAmount = option?.value ? (option.dataset.amount || '0') : '0';
             if (option?.value) {
                 if (![...kapalSelect.options].some(o => o.value === option.dataset.kapal)) kapalSelect.add(new Option(option.dataset.kapal, option.dataset.kapal));
                 kapalSelect.value = option.dataset.kapal;

@@ -32,7 +32,9 @@
         voyageSelect.disabled = isSettlement || !voyageInput.classList.contains('hidden') || !section.querySelector('.kapal-select-temas').value;
         voyageInput.disabled = isSettlement || voyageInput.classList.contains('hidden');
         section.querySelector('.voyage-manual-btn-temas').disabled = isSettlement;
-        section.querySelector('.temas-dp-paid').textContent = temasMoney(isSettlement ? section.dataset.dpAmount : 0);
+        const selectedDp = isSettlement && Boolean(section.querySelector('.temas-dp-reference').value);
+        section.querySelector('.temas-dp-summary').classList.toggle('hidden', !selectedDp);
+        section.querySelector('.temas-dp-paid').textContent = temasMoney(selectedDp ? section.dataset.dpAmount : 0);
         calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
     }
 
@@ -59,6 +61,9 @@
                 if (![...select.options].some(o => o.value === selected.value)) select.add(selected);
                 select.value = selected.value;
             }
+            const selectedOption = select.selectedOptions[0];
+            section.dataset.dpAmount = selectedOption?.value ? (selectedOption.dataset.amount || '0') : '0';
+            updateTemasPaymentMode(section);
             status.textContent = data.data?.length ? 'Pilih DP sesuai kapal dan voyage.' : 'Tidak ada DP yang belum dilunasi.';
         } catch (error) {
             if (section.isConnected && request === section.dpRequest) status.textContent = 'Daftar DP gagal dimuat. Klik Muat ulang daftar DP.';
