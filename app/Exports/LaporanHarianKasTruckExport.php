@@ -26,7 +26,7 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
         ];
 
         foreach ($this->uangJalans as $index => $uangJalan) {
-            $isBongkaran = $uangJalan instanceof UangJalanBongkaran;
+            $isBongkaran = $uangJalan instanceof UangJalanBongkaran || $uangJalan->surat_jalan_bongkaran_id;
             $suratJalan = $isBongkaran ? $uangJalan->suratJalanBongkaran : $uangJalan->suratJalan;
             $order = $isBongkaran ? null : $suratJalan?->order;
             $namaBarang = $suratJalan?->jenis_barang ?: $order?->nama_barang;
