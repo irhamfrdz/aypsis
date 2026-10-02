@@ -139,8 +139,18 @@
                 </div>
             </div>
             </fieldset>
-            <div class="bg-emerald-50 rounded-lg p-4 mb-4 flex justify-between gap-3">
-                <span>Nominal transaksi ini</span><strong class="temas-cash-display">Rp 0</strong>
+            <div class="bg-emerald-50 rounded-lg p-4 mb-4">
+                <div class="temas-settlement-breakdown hidden space-y-2 mb-3 pb-3 border-b border-emerald-200">
+                    <div class="flex justify-between gap-3 text-sm">
+                        <span>Total tagihan</span><span class="temas-settlement-total">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between gap-3 text-sm font-medium text-red-700">
+                        <span>Potongan DP</span><span class="temas-settlement-dp">- Rp 0</span>
+                    </div>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <span>Nominal transaksi ini</span><strong class="temas-cash-display">Rp 0</strong>
+                </div>
                 <input type="hidden" class="temas-cash-value" value="0">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -657,6 +667,10 @@
         section.querySelector('.grand-total-display-temas').value = temasMoney(grandTotal);
         section.querySelector('.grand-total-value-temas').value = grandTotal;
         const advance = mode === 'pelunasan_dp' ? Number(section.dataset.dpAmount || 0) : 0;
+        const settlementBreakdown = section.querySelector('.temas-settlement-breakdown');
+        settlementBreakdown.classList.toggle('hidden', mode !== 'pelunasan_dp');
+        section.querySelector('.temas-settlement-total').textContent = temasMoney(grandTotal);
+        section.querySelector('.temas-settlement-dp').textContent = '- ' + temasMoney(advance);
         const dpSelect = section.querySelector('.temas-dp-reference');
         if (dpSelect) dpSelect.setCustomValidity(mode === 'pelunasan_dp' && grandTotal < advance ? 'Tagihan akhir tidak boleh lebih kecil dari DP.' : '');
         const cashInput = section.querySelector('.temas-cash-value');

@@ -35,6 +35,7 @@
         const selectedDp = isSettlement && Boolean(section.querySelector('.temas-dp-reference').value);
         section.querySelector('.temas-dp-summary').classList.toggle('hidden', !selectedDp);
         section.querySelector('.temas-dp-paid').textContent = temasMoney(selectedDp ? section.dataset.dpAmount : 0);
+        section.querySelector('.temas-settlement-breakdown').classList.toggle('hidden', !isSettlement);
         calculateTemasSectionTotal(Number(section.dataset.sectionIndex));
     }
 
