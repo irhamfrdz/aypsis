@@ -184,10 +184,12 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                                 ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabuhan%"')
                                 ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabhuhan%"');
                         });
-                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $timeExpr) {
-                    $q->whereBetween('waktu', [$startObj, $endObj])
-                        ->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), ['masuk', 'check in', 'in'])
-                        ->whereRaw("{$timeExpr} > '09:05:00'");
+                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr, $timeExpr) {
+                    $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) > '09:05:00'")
+                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) < '14:00:00'");
                 });
             }
         }
