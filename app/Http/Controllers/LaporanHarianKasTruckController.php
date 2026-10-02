@@ -39,7 +39,6 @@ class LaporanHarianKasTruckController extends Controller
     {
         return UangJalan::query()
             ->with([
-                'suratJalan.order.recipient',
                 'suratJalan.order.jenisBarang',
                 'suratJalan.jenisBarangRelation',
                 'suratJalan.tujuanPengirimanRelation',

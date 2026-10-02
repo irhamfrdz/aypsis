@@ -27,7 +27,7 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
         foreach ($this->uangJalans as $index => $uangJalan) {
             $suratJalan = $uangJalan->suratJalan;
             $order = $suratJalan?->order;
-            $namaBarang = $order?->nama_barang;
+            $namaBarang = $suratJalan?->jenis_barang ?: $order?->nama_barang;
             if (is_array($namaBarang)) {
                 $namaBarang = implode(', ', array_filter($namaBarang));
             }
@@ -41,8 +41,8 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
                 $suratJalan?->no_surat_jalan ?: '-',
                 'Uang Jalan',
                 $namaBarang ?: '-',
-                $suratJalan?->tujuanPengirimanRelation?->ke ?: $suratJalan?->tujuan_pengiriman ?: '-',
-                $order?->recipient?->nama_penerima ?: $order?->penerima ?: '-',
+                $suratJalan?->tujuan_pengiriman ?: $suratJalan?->tujuanPengirimanRelation?->ke ?: '-',
+                $suratJalan?->pengirim ?: '-',
                 $order?->nomor_order ?: $suratJalan?->no_pemesanan ?: '-',
             ];
         }
