@@ -3,31 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuitansi DP TEMAS - {{ $stage->biayaKapal->nomor_invoice }}</title>
+    <title>Memo DP TEMAS - {{ $stage->biayaKapal->nomor_invoice }}</title>
     <style>
         * { box-sizing: border-box; }
         @page { size: 165.1mm 215.9mm; margin: 8mm; }
-        html, body { margin: 0; padding: 0; color: #111; font: 12px/1.4 Arial, sans-serif; }
+        html, body { margin: 0; padding: 0; color: #111; font: 14px/1.7 Arial, sans-serif; }
         .page { width: 100%; max-width: 155mm; margin: 0 auto; }
         .toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
         button, .back { border: 0; border-radius: 4px; padding: 7px 12px; color: #fff; cursor: pointer; text-decoration: none; font-size: 12px; }
         button { background: #2563eb; }
         .back { background: #6b7280; }
-        .header { border-bottom: 2px solid #111; padding-bottom: 8px; text-align: center; }
-        .header h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
-        .header p { margin: 3px 0 0; color: #555; font-size: 11px; }
-        .badge { display: inline-block; margin-top: 10px; padding: 4px 14px; border: 1px solid #1d4ed8; border-radius: 999px; color: #1d4ed8; font-weight: bold; }
-        .info { width: 100%; margin: 18px 0 12px; border-collapse: collapse; }
-        .info td { padding: 4px 0; vertical-align: top; }
-        .info td:first-child { width: 35%; color: #555; }
-        .info td:nth-child(2) { font-weight: bold; }
-        .amount { margin: 18px 0; border: 2px solid #111; padding: 14px; text-align: center; }
-        .amount .label { color: #555; font-size: 11px; text-transform: uppercase; }
-        .amount .value { margin-top: 4px; font-size: 24px; font-weight: bold; }
-        .note { margin-top: 14px; padding: 10px; border: 1px solid #aaa; background: #f8fafc; }
-        .signatures { width: 100%; margin-top: 46px; border-collapse: collapse; text-align: center; }
-        .signatures td { width: 50%; padding: 4px; }
-        .signatures .space { height: 48px; }
+        .memo-date { margin-top: 18px; text-align: right; }
+        .memo-title { margin: 18px 0 28px; text-align: center; font-size: 20px; font-weight: bold; text-decoration: underline; }
+        .memo-line { margin: 8px 0; }
+        .amount-words { margin: 14px 0 24px; font-style: italic; }
+        .account { margin: 10px 0 22px 24px; border-collapse: collapse; }
+        .account td { padding: 2px 6px 2px 0; vertical-align: top; }
+        .account td:first-child { width: 145px; }
+        .meta { margin-top: 34px; padding-top: 10px; border-top: 1px solid #bbb; font-size: 10px; color: #555; }
         .small { color: #666; font-size: 10px; }
         @media print { .no-print { display: none !important; } }
     </style>
@@ -41,6 +34,10 @@
         $voyage = $stage->voyage ?: $invoice->display_no_voyage;
         $recipient = $detail?->penerima ?: ($invoice->penerima ?: $invoice->nama_vendor ?: '-');
         $reference = $detail?->nomor_referensi ?: ($invoice->nomor_referensi ?: '-');
+        $virtualAccount = $detail?->nomor_rekening ?: ($invoice->nomor_rekening ?: '-');
+        $bankName = $invoice->bank?->name ?: '-';
+        $amount = (float) $stage->nominal_dibayar;
+        $amountWords = ucwords(trim(\App\Helpers\Terbilang::make((int) round($amount))));
     @endphp
 
     <div class="page">
@@ -49,39 +46,30 @@
             <a class="back" href="{{ route('biaya-kapal.print-temas', $invoice->id) }}">Kembali</a>
         </div>
 
-        <div class="header">
-            <h1>BUKTI PEMBAYARAN</h1>
-            <p>Biaya Kapal TEMAS</p>
-            <span class="badge">DP / UANG MUKA</span>
-        </div>
+        <div class="memo-date">{{ $date ? $date->locale('id')->translatedFormat('d F Y') : '-' }}</div>
+        <div class="memo-title">Memo</div>
 
-        <table class="info">
-            <tr><td>Nomor invoice</td><td>{{ $invoice->nomor_invoice ?: '-' }}</td></tr>
-            <tr><td>Tanggal pembayaran</td><td>{{ $date ? $date->format('d/m/Y') : '-' }}</td></tr>
-            <tr><td>Kapal / voyage</td><td>{{ $ship ?: '-' }} / {{ $voyage ?: '-' }}</td></tr>
-            <tr><td>Dibayarkan kepada</td><td>{{ $recipient }}</td></tr>
-            <tr><td>Nomor referensi</td><td>{{ $reference }}</td></tr>
+        <p class="memo-line">
+            DP biaya kapal TEMAS {{ $ship ?: '-' }} voyage {{ $voyage ?: '-' }} sebesar
+            <strong>Rp {{ number_format($amount, 0, ',', '.') }},-</strong>
+        </p>
+        <p class="amount-words">{{ $amountWords }} Rupiah</p>
+
+        <p class="memo-line">Dikirim ke rekening sebagai berikut:</p>
+        <table class="account">
+            <tr><td>Nama bank</td><td>: {{ $bankName }}</td></tr>
+            <tr><td>Virtual Account</td><td>: <strong>{{ $virtualAccount }}</strong></td></tr>
+            <tr><td>Atas nama</td><td>: {{ $recipient }}</td></tr>
         </table>
 
-        <div class="amount">
-            <div class="label">Nominal DP yang dibayarkan</div>
-            <div class="value">Rp {{ number_format((float) $stage->nominal_dibayar, 0, ',', '.') }}</div>
-        </div>
+        @if($stage->keterangan_dp || $invoice->keterangan)
+            <p class="memo-line">{{ $stage->keterangan_dp ?: $invoice->keterangan }}</p>
+        @endif
 
-        <div class="note">
-            <strong>Keterangan</strong><br>
-            Pembayaran ini dicatat sebagai uang muka biaya TEMAS. Nilai tagihan akhir dan pelunasan akan dihitung pada transaksi berikutnya.
-            @if($invoice->keterangan)
-                <br><br>{{ $invoice->keterangan }}
-            @endif
+        <div class="meta">
+            Nomor invoice: {{ $invoice->nomor_invoice ?: '-' }} &nbsp;|&nbsp;
+            Nomor referensi: {{ $reference }}
         </div>
-
-        <table class="signatures">
-            <tr><td>Pembayar</td><td>Penerima</td></tr>
-            <tr class="space"><td></td><td></td></tr>
-            <tr><td>( __________________ )</td><td>( __________________ )</td></tr>
-        </table>
-        <p class="small" style="text-align:center; margin-top:18px;">Dokumen ini dicetak dari sistem AYPSIS.</p>
     </div>
 </body>
 </html>

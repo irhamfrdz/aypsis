@@ -2,6 +2,8 @@
         const mode = section.querySelector('.temas-payment-mode').value;
         const isDp = mode === 'dp';
         const isSettlement = mode === 'pelunasan_dp';
+        section.querySelector('.temas-account-label').textContent = isDp ? 'Nomor Virtual Account' : 'Nomor Rekening';
+        section.querySelector('.temas-account-input').placeholder = isDp ? 'Masukkan nomor virtual account' : 'Masukkan nomor rekening';
         const details = section.querySelector('.temas-billing-details');
         details.disabled = isDp;
         details.classList.toggle('hidden', isDp);

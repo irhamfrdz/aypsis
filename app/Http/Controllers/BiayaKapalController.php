@@ -3370,7 +3370,7 @@ class BiayaKapalController extends Controller
     {
         abort_unless($stage->payment_mode === 'dp', 404);
 
-        $stage->load(['biayaKapal', 'details']);
+        $stage->load(['biayaKapal.bank', 'details']);
 
         return view('biaya-kapal.print-temas-dp', compact('stage'));
     }
