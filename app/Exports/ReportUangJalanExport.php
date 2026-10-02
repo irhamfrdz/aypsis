@@ -4,11 +4,14 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
+class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithStyles
 {
     protected $uangJalans;
 
@@ -67,7 +70,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
 
             $rows[] = [
                 $index,
-                $uj->tanggal_uang_jalan->format('d/m/Y'),
+                Date::dateTimeToExcel($uj->tanggal_uang_jalan),
                 $uj->nomor_uang_jalan,
                 $noBukti,
                 $sjNumber,
@@ -105,7 +108,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
 
                     $rows[] = [
                         '',  // No
-                        $adjDate ? \Carbon\Carbon::parse($adjDate)->format('d/m/Y') : '-', // Tanggal
+                        $adjDate ? Date::dateTimeToExcel(\Carbon\Carbon::parse($adjDate)) : '-', // Tanggal
                         $adjNomorInvoice, // Nomor UJ -> shows invoice number
                         $adjNomorBukti, // No. Bukti (Accurate)
                         '', // No. Surat Jalan
@@ -165,6 +168,13 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithHeadings, 
                 'Keterangan Adj.',
                 'Dibuat Oleh',
             ],
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => NumberFormat::FORMAT_DATE_DDMMYYYY,
         ];
     }
 
