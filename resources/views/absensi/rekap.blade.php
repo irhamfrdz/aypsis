@@ -228,11 +228,17 @@
                         </svg>
                         Ekspor PDF
                     </button>
-                    <button type="button" onclick="document.getElementById('exportModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
+                    <button type="button" onclick="document.getElementById('exportModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        Ekspor Excel
+                        Ekspor Rekap Excel
+                    </button>
+                    <button type="submit" form="filterForm" name="export" value="izin_excel" class="inline-flex items-center justify-center px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer" title="Ekspor Rekap Izin, Telat & Cuti sesuai template Excel">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Ekspor Laporan Izin (Excel)
                     </button>
                 </div>
             </div>
@@ -418,7 +424,7 @@
     </div>
 </div>
 
-<!-- Modal Export Excel -->
+<!-- Modal Export Excel (diperbaiki) -->
 <div id="exportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
@@ -444,49 +450,100 @@
                         </p>
                         
                         <form action="{{ route('absensi.rekap') }}" method="GET" id="modalExportForm">
-                            <input type="hidden" name="export" value="1">
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                            <input type="hidden" name="pekerjaan" value="{{ request('pekerjaan') }}">
-                            <input type="hidden" name="grup" value="{{ request('grup') }}">
-                            <input type="hidden" name="sub_grup" value="{{ request('sub_grup') }}">
-                            <input type="hidden" name="grup_bpjs" value="{{ request('grup_bpjs') }}">
-                            <input type="hidden" name="sub_grup_bpjs" value="{{ request('sub_grup_bpjs') }}">
-                            <input type="hidden" name="kehadiran" value="{{ request('kehadiran') }}">
+
+                            {{-- ===== SEMUA FILTER AKTIF DARI HALAMAN (diteruskan ke ekspor) ===== --}}
+                            <input type="hidden" name="search"          value="{{ request('search') }}">
+                            <input type="hidden" name="penempatan"      value="{{ request('penempatan') }}">
+                            <input type="hidden" name="pekerjaan"       value="{{ request('pekerjaan') }}">
+                            <input type="hidden" name="divisi"          value="{{ request('divisi') }}">
+                            <input type="hidden" name="cabang"          value="{{ request('cabang') }}">
+                            <input type="hidden" name="grup"            value="{{ request('grup') }}">
+                            <input type="hidden" name="sub_grup"        value="{{ request('sub_grup') }}">
+                            <input type="hidden" name="grup_bpjs"       value="{{ request('grup_bpjs') }}">
+                            <input type="hidden" name="sub_grup_bpjs"   value="{{ request('sub_grup_bpjs') }}">
+                            <input type="hidden" name="kehadiran"       value="{{ request('kehadiran') }}">
+                            <input type="hidden" name="status_karyawan" value="{{ request('status_karyawan', 'aktif') }}">
 
                             <div class="space-y-4">
 
+                                {{-- Jenis Laporan — SATU-SATUNYA select name=export, tidak ada hidden export lain --}}
                                 <div>
-                                    <label for="export_tempat" class="block text-xs font-semibold text-gray-700 mb-1">Filter Tempat</label>
-                                    <select name="tempat" id="export_tempat"
+                                    <label for="export_type_modal" class="block text-xs font-semibold text-gray-700 mb-1">Jenis Laporan <span class="text-red-500">*</span></label>
+                                    <select name="export" id="export_type_modal"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                        <option value="">Semua Tempat</option>
-                                        @foreach($penempatans as $penempatan)
-                                            <option value="{{ $penempatan }}" {{ request('tempat') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
+                                        <option value="1">Rekapitulasi Absensi Lengkap (Standar)</option>
+                                        <option value="izin_excel">Laporan Ijin &amp; Cuti Karyawan (Template Lampiran)</option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-400"><strong>Standar:</strong> rekap lengkap per karyawan per hari. <strong>Template Lampiran:</strong> format NIK, Nama, Bagian, Tgl, Dari, Sampai, Lama, Keterangan.</p>
+                                </div>
+
+                                {{-- Ringkasan filter yang akan ikut diekspor --}}
+                                @php
+                                    $activeFilters = [];
+                                    if (request('search'))          $activeFilters[] = 'Cari: "'.request('search').'"';
+                                    if (request('penempatan'))      $activeFilters[] = 'Penempatan: '.strtoupper(request('penempatan'));
+                                    if (request('pekerjaan'))       $activeFilters[] = 'Pekerjaan: '.strtoupper(request('pekerjaan'));
+                                    if (request('divisi'))          $activeFilters[] = 'Divisi: '.strtoupper(request('divisi'));
+                                    if (request('grup'))            $activeFilters[] = 'Group: '.request('grup').(request('sub_grup') ? ' / '.request('sub_grup') : '');
+                                    if (request('grup_bpjs'))       $activeFilters[] = 'BPJS: '.request('grup_bpjs').(request('sub_grup_bpjs') ? ' / '.request('sub_grup_bpjs') : '');
+                                    if (request('kehadiran'))       $activeFilters[] = 'Kehadiran: '.request('kehadiran');
+                                    $statusLabel = match(request('status_karyawan', 'aktif')) { 'berhenti' => 'Berhenti', 'semua' => 'Semua', default => 'Aktif' };
+                                    $activeFilters[] = 'Status: '.$statusLabel;
+                                @endphp
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                    <p class="text-xs text-blue-700">
+                                        <span class="font-semibold">Filter yang akan diterapkan:</span>
+                                        {{ count($activeFilters) ? implode(', ', $activeFilters) : 'Tidak ada filter tambahan (semua karyawan)' }}
+                                    </p>
+                                </div>
+
+                                {{-- Tanggal --}}
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="start_date_export" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Awal <span class="text-red-500">*</span></label>
+                                        <input type="date" name="start_date" id="start_date_export" required
+                                               value="{{ $startDateStr }}"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="end_date_export" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Akhir <span class="text-red-500">*</span></label>
+                                        <input type="date" name="end_date" id="end_date_export" required
+                                               value="{{ $endDateStr }}"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+                                    </div>
+                                </div>
+
+                                {{-- Override Penempatan (khusus Rekap Standar) --}}
+                                <div>
+                                    <label for="export_tempat_modal" class="block text-xs font-semibold text-gray-700 mb-1">
+                                        Override Penempatan
+                                        <span class="font-normal text-gray-400">(opsional, khusus Rekap Standar)</span>
+                                    </label>
+                                    <select name="tempat" id="export_tempat_modal"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+                                        <option value="">— Ikuti filter halaman —</option>
+                                        @foreach($penempatans as $p)
+                                            <option value="{{ $p }}">{{ strtoupper($p) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div>
-                                    <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Awal</label>
-                                    <input type="date" name="start_date" id="start_date_export" required
-                                           value="{{ $startDateStr }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                </div>
-                                <div>
-                                    <label for="end_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Akhir</label>
-                                    <input type="date" name="end_date" id="end_date_export" required
-                                           value="{{ $endDateStr }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                </div>
+
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                <button type="submit" form="modalExportForm" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+            <div class="mt-5 flex flex-row-reverse gap-2">
+                <button type="submit" form="modalExportForm"
+                        class="inline-flex items-center justify-center px-5 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
                     Ekspor Sekarang
                 </button>
-                <button type="button" onclick="document.getElementById('exportModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                <button type="button" onclick="document.getElementById('exportModal').classList.add('hidden')"
+                        class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
                     Batal
                 </button>
             </div>
@@ -713,6 +770,20 @@
                         <div>
                             <label for="tanggal_selesai_izin" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai <span class="text-red-500">*</span></label>
                             <input type="date" name="tanggal_selesai" id="tanggal_selesai_izin" required value="{{ date('Y-m-d') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Jam / Waktu (Khusus Izin Jam / Datang Telat / Pulang Cepat) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="jam_mulai_izin" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai (Dari) <span class="text-gray-400 font-normal text-xs">(Opsional)</span></label>
+                            <input type="time" name="jam_mulai" id="jam_mulai_izin"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="jam_selesai_izin" class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai (Sampai) <span class="text-gray-400 font-normal text-xs">(Opsional)</span></label>
+                            <input type="time" name="jam_selesai" id="jam_selesai_izin"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                         </div>
                     </div>

@@ -829,6 +829,9 @@ class AbsensiController extends Controller
             if ($request->export === 'pdf') {
                 return $this->exportRekapPdf($request);
             }
+            if ($request->export === 'izin_excel' || $request->export === 'laporan_izin') {
+                return $this->exportLaporanIzin($request);
+            }
 
             return $this->exportRekap($request);
         }
@@ -1033,7 +1036,7 @@ class AbsensiController extends Controller
         // fetching with a simple waktu range (+/-1 day buffer for overnight / lembur sessions)
         // and resolving the tanggal_kerja in PHP.
         $fetchStart = $startDate->copy()->subDay()->setTime(6, 0, 0);
-        $fetchEnd   = $endDate->copy()->addDay()->setTime(5, 59, 59);
+        $fetchEnd = $endDate->copy()->addDay()->setTime(5, 59, 59);
 
         $rawLogs = Absensi::select('id', 'karyawan_id', 'nik', 'tipe', 'waktu')
             ->whereBetween('waktu', [$fetchStart, $fetchEnd])
@@ -1043,13 +1046,13 @@ class AbsensiController extends Controller
 
         // Pre-group lembur-start logs by employee for fast lookup (used to pin lembur-end dates)
         $lemburStarts = ['lembur masuk', 'mulai lembur', 'lembur'];
-        $lemburEnds   = ['lembur pulang', 'selesai lembur', 'lembur keluar'];
+        $lemburEnds = ['lembur pulang', 'selesai lembur', 'lembur keluar'];
 
         $lemburStartByEmp = $rawLogs->filter(function ($r) use ($lemburStarts) {
             return in_array(strtolower(str_replace('_', ' ', $r->tipe)), $lemburStarts);
         })->groupBy('karyawan_id');
 
-        $attendance = $rawLogs->map(function ($r) use ($lemburStarts, $lemburEnds, $lemburStartByEmp, $startDate, $endDate) {
+        $attendance = $rawLogs->map(function ($r) use ($lemburStarts, $lemburEnds, $lemburStartByEmp) {
             $tipe = strtolower(str_replace('_', ' ', $r->tipe));
             if (in_array($tipe, $lemburStarts)) {
                 $tanggal_kerja = Carbon::parse($r->waktu)->toDateString();
@@ -1067,14 +1070,15 @@ class AbsensiController extends Controller
                 $tanggal_kerja = Carbon::parse($r->waktu)->subHours(6)->toDateString();
             }
             $r->tanggal_kerja = $tanggal_kerja;
+
             return $r;
         })
         // Filter to only records whose resolved work-date falls within the requested range
-        ->filter(function ($r) use ($startDate, $endDate) {
-            return $r->tanggal_kerja >= $startDate->toDateString()
-                && $r->tanggal_kerja <= $endDate->toDateString();
-        })
-        ->groupBy('karyawan_id');
+            ->filter(function ($r) use ($startDate, $endDate) {
+                return $r->tanggal_kerja >= $startDate->toDateString()
+                    && $r->tanggal_kerja <= $endDate->toDateString();
+            })
+            ->groupBy('karyawan_id');
 
         // Fetch all approved permissions/leaves in the selected month
         $cutis = \Illuminate\Support\Facades\DB::table('cutis')
@@ -1316,12 +1320,15 @@ class AbsensiController extends Controller
     public function storeIzin(Request $request)
     {
         $request->validate([
-            'karyawan_id'     => 'required|exists:karyawans,id',
-            'jenis_izin'      => 'required|string',
-            'tanggal_mulai'   => 'required|date',
+            'karyawan_id' => 'required|exists:karyawans,id',
+            'jenis_izin' => 'required|string',
+            'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'alasan'          => 'required|string',
-            'lampiran'        => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'jam_mulai' => 'nullable|string',
+            'jam_selesai' => 'nullable|string',
+            'waktu' => 'nullable|string',
+            'alasan' => 'required|string',
+            'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $karyawan = Karyawan::findOrFail($request->karyawan_id);
@@ -1331,23 +1338,55 @@ class AbsensiController extends Controller
             $lampiranPath = $request->file('lampiran')->store('izin-lampiran', 'public');
         }
 
+        $waktu = $request->waktu;
+        if (empty($waktu)) {
+            if ($request->filled('jam_mulai') && $request->filled('jam_selesai')) {
+                $waktu = $request->jam_mulai.' - '.$request->jam_selesai;
+            } elseif ($request->filled('jam_mulai')) {
+                $waktu = $request->jam_mulai;
+            } elseif ($request->filled('jam_selesai')) {
+                $waktu = $request->jam_selesai;
+            }
+        }
+
         \Illuminate\Support\Facades\DB::table('permohonan_izins')->insert([
-            'karyawan_id'    => $karyawan->id,
-            'nik'            => $karyawan->nik,
-            'nama'           => $karyawan->nama_lengkap,
-            'divisi'         => $karyawan->divisi ?? '-',
-            'jenis_izin'     => $request->jenis_izin,
-            'tanggal_mulai'  => $request->tanggal_mulai,
-            'tanggal_selesai'=> $request->tanggal_selesai,
-            'waktu'          => null,
-            'alasan'         => $request->alasan,
-            'lampiran'       => $lampiranPath,
-            'status'         => 'APPROVED',
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'karyawan_id' => $karyawan->id,
+            'nik' => $karyawan->nik,
+            'nama' => $karyawan->nama_lengkap,
+            'divisi' => $karyawan->divisi ?? '-',
+            'jenis_izin' => $request->jenis_izin,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'waktu' => $waktu,
+            'alasan' => $request->alasan,
+            'lampiran' => $lampiranPath,
+            'status' => 'APPROVED',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Izin karyawan berhasil ditambahkan.');
+    }
+
+    /**
+     * Export Laporan Ijin Karyawan to Excel based on custom template.
+     */
+    public function exportLaporanIzin(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+        $search = $request->input('search');
+        $pekerjaan = $request->input('pekerjaan');
+        $divisi = $request->input('divisi');
+        $penempatan = $request->input('tempat') ?? $request->input('penempatan');
+        $statusKaryawan = $request->input('status_karyawan', 'aktif');
+
+        $fileName = 'laporan-ijin-karyawan-'.$startDate.'-sd-'.$endDate.'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanIjinKaryawanExport($startDate, $endDate, $search, $pekerjaan, $divisi, $penempatan, $statusKaryawan),
+            $fileName
+        );
     }
 
     /**

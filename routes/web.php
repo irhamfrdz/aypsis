@@ -2685,6 +2685,10 @@ Route::middleware([
             ->name('absensi.rekap.export')
             ->middleware('can:absensi-rekap');
 
+        Route::get('absensi/laporan-izin/export', [AbsensiController::class, 'exportLaporanIzin'])
+            ->name('absensi.laporan-izin.export')
+            ->middleware('can:absensi-rekap');
+
         Route::get('absensi/{nik}/{tanggal}', [AbsensiController::class, 'show'])
             ->name('absensi.show')
             ->middleware('can:absensi-view');
