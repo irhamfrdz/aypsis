@@ -7153,6 +7153,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::resource('perincians', App\Http\Controllers\PerincianController::class);
 });
 
+Route::middleware(['auth', 'can:uang-jalan-view'])->prefix('laporan-harian-kas-truck')->name('laporan-harian-kas-truck.')->group(function () {
+    Route::get('/', [App\Http\Controllers\LaporanHarianKasTruckController::class, 'index'])->name('index');
+    Route::get('/export', [App\Http\Controllers\LaporanHarianKasTruckController::class, 'export'])->name('export');
+});
+
 // API Routes for AJAX calls (no middleware needed for these specific routes)
 Route::get('/api/manifests/search-shippers', [App\Http\Controllers\ManifestController::class, 'searchShippers']);
 Route::get('/api/manifests/search-consignees', [App\Http\Controllers\ManifestController::class, 'searchConsignees']);

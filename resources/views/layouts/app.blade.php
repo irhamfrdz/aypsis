@@ -2819,7 +2819,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.tanda-terima-jakarta.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.uang-jalan.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('report-history-cuti.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.tanda-terima-jakarta.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.uang-jalan.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
     // Check if user has view permissions for tagihan, pranota, or pembayaran modules
     $hasReportPermission = $user && (
         $isAdmin ||
@@ -2827,6 +2827,7 @@
         $user->can('pranota-tagihan-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
         $user->can('surat-jalan-view') ||
+        $user->can('uang-jalan-view') ||
         $user->can('pranota-uang-jalan-view') ||
         $user->can('manifest-view') ||
         $user->can('perincian-view')
@@ -2928,6 +2929,13 @@
             </svg>
             Report Uang Jalan
         </a>
+
+        @if($user && ($isAdmin || $user->can('uang-jalan-view')))
+        <a href="{{ route('laporan-harian-kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('laporan-harian-kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            <i class="fas fa-file-excel mr-2 text-emerald-600"></i>
+            Laporan Harian Kas Truck
+        </a>
+        @endif
 
         {{-- Report Pranota Uang Jalan --}}
         <a href="{{ route('report.pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota-uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
