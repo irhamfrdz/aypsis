@@ -17,7 +17,21 @@
         clearAllTemasSections();
         addTemasSection();
     }
-    if (addTemasSectionBtn) addTemasSectionBtn.addEventListener('click', () => addTemasSection());
+    if (addTemasSectionBtn) addTemasSectionBtn.addEventListener('click', () => {
+        const source = temasSectionsContainer?.querySelector('.temas-section:last-child');
+        const section = addTemasSection();
+        if (!source || source.querySelector('.temas-payment-mode').value !== 'dp') return;
+
+        section.querySelector('.temas-payment-mode').value = 'dp';
+        section.querySelector('.temas-dp-date').value = source.querySelector('.temas-dp-date').value;
+        section.querySelector('.temas-dp-bank').value = source.querySelector('.temas-dp-bank').value;
+        section.querySelector('.temas-dp-description').value = source.querySelector('.temas-dp-description').value;
+        section.querySelector('.temas-account-input').value = source.querySelector('.temas-account-input').value;
+        const sourceRecipient = source.querySelector('[name$="[penerima]"]');
+        const targetRecipient = section.querySelector('[name$="[penerima]"]');
+        if (sourceRecipient && targetRecipient) targetRecipient.value = sourceRecipient.value;
+        updateTemasPaymentMode(section);
+    });
 
     function addTemasSection(data = null) {
         const sectionIndex = ++temasSectionCounter;
