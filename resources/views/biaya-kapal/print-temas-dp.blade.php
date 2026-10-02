@@ -21,8 +21,6 @@
         .account { margin: 10px 0 22px 24px; border-collapse: collapse; }
         .account td { padding: 2px 6px 2px 0; vertical-align: top; }
         .account td:first-child { width: 145px; }
-        .meta { margin-top: 34px; padding-top: 10px; border-top: 1px solid #bbb; font-size: 10px; color: #555; }
-        .small { color: #666; font-size: 10px; }
         @media screen {
             body { background: #e2e8f0; padding: 20px; }
             .page { margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(15, 23, 42, .15); }
@@ -43,7 +41,6 @@
         $ship = $stage->kapal ?: $invoice->display_nama_kapal;
         $voyage = $stage->voyage ?: $invoice->display_no_voyage;
         $recipient = $detail?->penerima ?: ($invoice->penerima ?: $invoice->nama_vendor ?: '-');
-        $reference = $detail?->nomor_referensi ?: ($invoice->nomor_referensi ?: '-');
         $virtualAccount = $detail?->nomor_rekening ?: ($invoice->nomor_rekening ?: '-');
         $bankName = $stage->nama_bank ?: ($invoice->bank?->name ?: '-');
         $amount = (float) $stage->nominal_dibayar;
@@ -77,10 +74,6 @@
             <p class="memo-line">{{ $stage->keterangan_dp ?: $invoice->keterangan }}</p>
         @endif
 
-        <div class="meta">
-            Nomor invoice: {{ $invoice->nomor_invoice ?: '-' }} &nbsp;|&nbsp;
-            Nomor referensi: {{ $reference }}
-        </div>
     </div>
 </body>
 </html>
