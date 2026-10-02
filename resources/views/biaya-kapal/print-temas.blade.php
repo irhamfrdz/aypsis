@@ -152,6 +152,30 @@
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
+        .compact-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1px 5px;
+            align-items: start;
+            font-size: 0.92em;
+            line-height: 1.15;
+        }
+
+        .compact-list.columns-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            font-size: 0.86em;
+            gap: 1px 3px;
+        }
+
+        .compact-list span {
+            white-space: nowrap;
+        }
+
+        .bl-main-number {
+            display: block;
+            margin-bottom: 2px;
+        }
+
         .total-row td {
             background-color: #f0f0f0 !important;
             font-weight: bold !important;
@@ -335,9 +359,13 @@
                     </td>
                     <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
                     <td class="text-center">
-                        {{ $blInduk }}
+                        <span class="bl-main-number">{{ $blInduk }}</span>
                         @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
-                            <br><small>({{ $blVariants->implode(', ') }})</small>
+                            <div class="compact-list {{ $blVariants->count() > 10 ? 'columns-3' : '' }}">
+                                @foreach($blVariants as $variant)
+                                    <span>{{ $variant }}</span>
+                                @endforeach
+                            </div>
                         @endif
                     </td>
                     <td class="text-right">Rp {{ number_format($sectionGrandTotal, 0, ',', '.') }}</td>
@@ -421,12 +449,26 @@
                             @if($loop->first)
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
                                 <td class="text-center" rowspan="{{ $rowspan }}">
-                                    {{ $blInduk }}
+                                    <span class="bl-main-number">{{ $blInduk }}</span>
                                     @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
-                                        <br><small>({{ $blVariants->implode(', ') }})</small>
+                                        <div class="compact-list {{ $blVariants->count() > 10 ? 'columns-3' : '' }}">
+                                            @foreach($blVariants as $variant)
+                                                <span>{{ $variant }}</span>
+                                            @endforeach
+                                        </div>
                                     @endif
                                 </td>
-                                <td rowspan="{{ $rowspan }}">{!! $containers->isNotEmpty() ? $containers->map(fn ($container) => e($container))->implode('<br>') : '-' !!}</td>
+                                <td rowspan="{{ $rowspan }}">
+                                    @if($containers->isNotEmpty())
+                                        <div class="compact-list {{ $containers->count() > 16 ? 'columns-3' : '' }}">
+                                            @foreach($containers as $container)
+                                                <span>{{ $container }}</span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                             @endif
                             <td>{{ strtoupper(($detail->jenis_biaya ?? 'BIAYA TEMAS').$status) }}</td>
                             <td class="text-center">{{ rtrim(rtrim(number_format($detail->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
