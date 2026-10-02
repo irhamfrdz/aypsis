@@ -164,6 +164,7 @@
                         <select name="kehadiran" id="kehadiran"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                             <option value="">Semua Karyawan</option>
+                            <option value="terlambat" {{ request('kehadiran') == 'terlambat' ? 'selected' : '' }}>⏰ Karyawan Terlambat</option>
                             <option value="tidak_lengkap" {{ request('kehadiran') == 'tidak_lengkap' ? 'selected' : '' }}>⚠️ Tidak Lengkap (Masuk/Pulang)</option>
                             <option value="tidak_absen_masuk" {{ request('kehadiran') == 'tidak_absen_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
                             <option value="tidak_absen_pulang" {{ request('kehadiran') == 'tidak_absen_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
@@ -222,14 +223,14 @@
                         <span class="ml-2 text-xs font-normal text-gray-500">({{ $normalWorkdays }} Hari Kerja)</span>
                     </h3>
                 </div>
-                <div>
-                    <button type="submit" form="filterForm" name="export" value="pdf" class="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                <div class="flex items-center flex-wrap gap-2">
+                    <button type="submit" form="filterForm" name="export" value="pdf" class="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer" title="Ekspor Rekap Absensi (PDF)">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
                         Ekspor PDF
                     </button>
-                    <button type="button" onclick="eksporRekapExcel()" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                    <button type="button" onclick="eksporRekapExcel()" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer" title="Ekspor Matriks Rekap Absensi (Excel)">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -240,6 +241,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Ekspor Laporan Izin (Excel)
+                    </button>
+                    <button type="submit" form="filterForm" name="export" value="terlambat_excel" class="inline-flex items-center justify-center px-3 py-1.5 bg-rose-600 text-white text-xs font-semibold rounded-lg hover:bg-rose-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer" title="Ekspor Data Karyawan yang Terlambat dari Hasil Filter (Excel)">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Ekspor Terlambat (Excel)
                     </button>
                 </div>
             </div>
@@ -253,6 +260,9 @@
                     </span>
                     <button type="button" onclick="setKehadiranFilter('')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ !request('kehadiran') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
                         Semua Karyawan
+                    </button>
+                    <button type="button" onclick="setKehadiranFilter('terlambat')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'terlambat' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' }}">
+                        ⏰ Karyawan Terlambat
                     </button>
                     <button type="button" onclick="setKehadiranFilter('tidak_lengkap')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_lengkap' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' }}">
                         ⚠️ Tidak Lengkap (Masuk/Pulang)

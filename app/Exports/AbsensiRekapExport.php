@@ -171,6 +171,24 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
                         ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
                 });
+            } elseif ($kehadiran === 'terlambat') {
+                $timeExpr = $driver === 'sqlite' ? 'time(waktu)' : 'TIME(waktu)';
+                $karyawansQuery->where(function ($q) {
+                    $q->whereNull('penempatan')
+                        ->orWhere(function ($sq) {
+                            $sq->whereNotIn(\Illuminate\Support\Facades\DB::raw('LOWER(penempatan)'), [
+                                'jakarta pelabuhan', 'jakarta pelabhuhan', 'garasi jakarta',
+                                'garasai jakarta', 'jakarta pelabuhan 1', 'pelabuhan',
+                                'garasi', 'pelabuhan 1', '1',
+                            ])
+                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabuhan%"')
+                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabhuhan%"');
+                        });
+                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $timeExpr) {
+                    $q->whereBetween('waktu', [$startObj, $endObj])
+                        ->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), ['masuk', 'check in', 'in'])
+                        ->whereRaw("{$timeExpr} > '09:05:00'");
+                });
             }
         }
 

@@ -832,6 +832,9 @@ class AbsensiController extends Controller
             if ($request->export === 'izin_excel' || $request->export === 'laporan_izin') {
                 return $this->exportLaporanIzin($request);
             }
+            if ($request->export === 'terlambat_excel' || $request->export === 'terlambat') {
+                return $this->exportTerlambat($request);
+            }
 
             return $this->exportRekap($request);
         }
@@ -910,6 +913,24 @@ class AbsensiController extends Controller
                         ->whereBetween('waktu', [$startObj, $endObj])
                         ->groupBy(\DB::raw($dateExpr))
                         ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
+                });
+            } elseif ($kehadiran === 'terlambat') {
+                $timeExpr = $driver === 'sqlite' ? 'time(waktu)' : 'TIME(waktu)';
+                $karyawansQuery->where(function ($q) {
+                    $q->whereNull('penempatan')
+                        ->orWhere(function ($sq) {
+                            $sq->whereNotIn(\DB::raw('LOWER(penempatan)'), [
+                                'jakarta pelabuhan', 'jakarta pelabhuhan', 'garasi jakarta',
+                                'garasai jakarta', 'jakarta pelabuhan 1', 'pelabuhan',
+                                'garasi', 'pelabuhan 1', '1',
+                            ])
+                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabuhan%"')
+                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabhuhan%"');
+                        });
+                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $timeExpr) {
+                    $q->whereBetween('waktu', [$startObj, $endObj])
+                        ->whereIn(\DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), ['masuk', 'check in', 'in'])
+                        ->whereRaw("{$timeExpr} > '09:05:00'");
                 });
             }
         }
@@ -1460,6 +1481,48 @@ class AbsensiController extends Controller
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\LaporanIjinKaryawanExport($startDate, $endDate, $search, $pekerjaan, $divisi, $penempatan, $statusKaryawan),
+            $fileName
+        );
+    }
+
+    /**
+     * Export laporan keterlambatan karyawan to Excel.
+     */
+    public function exportTerlambat(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+        $search = $request->input('search');
+        $pekerjaan = $request->input('pekerjaan');
+        $divisi = $request->input('divisi');
+        $cabang = $request->input('cabang');
+        $penempatan = $request->input('penempatan') ?: $request->input('tempat');
+        $grup = $request->input('grup');
+        $subGrup = $request->input('sub_grup');
+        $grupBpjs = $request->input('grup_bpjs');
+        $subGrupBpjs = $request->input('sub_grup_bpjs');
+        $statusKaryawan = $request->input('status_karyawan', 'aktif');
+        $selectedKaryawan = $request->input('selected_karyawan', []);
+
+        $tempatSlug = $penempatan ? \Illuminate\Support\Str::slug($penempatan).'-' : '';
+        $fileName = 'laporan-terlambat-'.$tempatSlug.$startDate.'-sd-'.$endDate.'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanTerlambatExport(
+                $startDate,
+                $endDate,
+                $search,
+                $pekerjaan,
+                $divisi,
+                $cabang,
+                $penempatan,
+                $grup,
+                $subGrup,
+                $grupBpjs,
+                $subGrupBpjs,
+                $statusKaryawan,
+                $selectedKaryawan
+            ),
             $fileName
         );
     }
