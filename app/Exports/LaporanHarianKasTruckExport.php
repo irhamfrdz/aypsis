@@ -41,7 +41,7 @@ class LaporanHarianKasTruckExport implements FromArray, WithEvents, WithTitle
                 $suratJalan?->no_surat_jalan ?: '-',
                 'Uang Jalan',
                 $namaBarang ?: '-',
-                $suratJalan?->tujuan_pengiriman ?: $suratJalan?->tujuanPengirimanRelation?->ke ?: '-',
+                $suratJalan?->tujuan_pengambilan ?: $suratJalan?->tujuanPengambilanRelation?->ke ?: '-',
                 $suratJalan?->pengirim ?: '-',
                 $order?->nomor_order ?: $suratJalan?->no_pemesanan ?: '-',
             ];

@@ -41,7 +41,7 @@ class LaporanHarianKasTruckController extends Controller
             ->with([
                 'suratJalan.order.jenisBarang',
                 'suratJalan.jenisBarangRelation',
-                'suratJalan.tujuanPengirimanRelation',
+                'suratJalan.tujuanPengambilanRelation',
             ])
             ->whereNotNull('surat_jalan_id')
             ->whereHas('pranotaUangJalan.pembayaranPranotaUangJalans', function ($query) use ($tanggal) {
