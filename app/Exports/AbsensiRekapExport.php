@@ -38,6 +38,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
     protected $statusKaryawan;
 
+    protected $kehadiran;
+
     protected $totalDays;
 
     protected $dayHeaders;
@@ -48,7 +50,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
     protected $styleRanges = [];
 
-    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null, $statusKaryawan = 'aktif')
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null, $grup = null, $subGrup = null, $statusKaryawan = 'aktif', $kehadiran = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
@@ -60,6 +62,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->grup = $grup;
         $this->subGrup = $subGrup;
         $this->statusKaryawan = $statusKaryawan;
+        $this->kehadiran = $kehadiran;
 
         $this->styleRanges = [
             'sakit' => [],
@@ -132,6 +135,38 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $subGrupReq = $this->subGrup;
             $karyawansQuery->where('grup', 'LIKE', '%:'.$subGrupReq.'"%');
         }
+        // Filter kehadiran (Lupa Absen)
+        if (! empty($this->kehadiran)) {
+            $kehadiran = $this->kehadiran;
+            $startObj = $startDate->copy()->setTime(6, 0, 0);
+            $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
+            $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+            $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
+
+            if ($kehadiran === 'tidak_absen_masuk') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0');
+                });
+            } elseif ($kehadiran === 'tidak_absen_pulang') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0');
+                });
+            } elseif ($kehadiran === 'tidak_absen_istirahat') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->whereBetween('waktu', [$startObj, $endObj])
+                        ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
+                        ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
+                });
+            }
+        }
+
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
         $allLogs = Absensi::whereBetween('waktu', [

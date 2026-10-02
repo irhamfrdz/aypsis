@@ -1404,12 +1404,13 @@ class AbsensiController extends Controller
         $grup = $request->input('grup');
         $subGrup = $request->input('sub_grup');
         $statusKaryawan = $request->input('status_karyawan', 'aktif');
+        $kehadiran = $request->input('kehadiran');
 
         $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat).'-' : '';
         $fileName = 'rekap-absensi-'.$tempatSlug.$startDate.'-sd-'.$endDate.'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup, $statusKaryawan),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat, $grup, $subGrup, $statusKaryawan, $kehadiran),
             $fileName
         );
     }
