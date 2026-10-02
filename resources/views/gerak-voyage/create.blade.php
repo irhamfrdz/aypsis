@@ -88,9 +88,15 @@
                                 </div>
                                 <div>
                                     <label for="{{ $jamField }}" class="mb-1 block text-xs font-semibold text-gray-600">Jam</label>
-                                    <input type="time" id="{{ $jamField }}" name="{{ $jamField }}"
+                                    <input type="text" id="{{ $jamField }}" name="{{ $jamField }}"
                                         value="{{ old($jamField, $jamValue ? substr($jamValue, 0, 5) : '') }}"
-                                        class="w-full rounded-lg border-gray-300 bg-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                        class="js-24-hour-time w-full rounded-lg border-gray-300 bg-white text-sm focus:border-blue-500 focus:ring-blue-500"
+                                        inputmode="numeric" maxlength="5" placeholder="HH:mm"
+                                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                        title="Masukkan jam dalam format 24 jam, misalnya 14:30"
+                                        autocomplete="off"
+                                    >
+                                    <p class="mt-1 text-[10px] text-gray-500">Format 24 jam (00:00–23:59)</p>
                                 </div>
                             </div>
                             @if($tanggalField === 'tanggal_muat')
@@ -115,4 +121,42 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.js-24-hour-time').forEach(function (input) {
+            input.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9:]/g, '').slice(0, 5);
+                this.setCustomValidity('');
+            });
+
+            input.addEventListener('blur', function () {
+                const rawValue = this.value.trim();
+                if (!rawValue) {
+                    this.setCustomValidity('');
+                    return;
+                }
+
+                let normalizedValue = rawValue;
+                const digitsOnly = rawValue.replace(/\D/g, '');
+
+                if (/^\d{3,4}$/.test(digitsOnly)) {
+                    const paddedValue = digitsOnly.padStart(4, '0');
+                    normalizedValue = paddedValue.slice(0, 2) + ':' + paddedValue.slice(2);
+                } else {
+                    const parts = rawValue.split(':');
+                    if (parts.length === 2 && /^\d{1,2}$/.test(parts[0]) && /^\d{1,2}$/.test(parts[1])) {
+                        normalizedValue = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+                    }
+                }
+
+                this.value = normalizedValue;
+                const isValid = /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(normalizedValue);
+                this.setCustomValidity(isValid ? '' : 'Masukkan jam dalam format 24 jam antara 00:00 sampai 23:59.');
+            });
+        });
+    });
+</script>
+@endpush
 @endsection
