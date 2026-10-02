@@ -1316,28 +1316,35 @@ class AbsensiController extends Controller
     public function storeIzin(Request $request)
     {
         $request->validate([
-            'karyawan_id' => 'required|exists:karyawans,id',
-            'jenis_izin' => 'required|string',
-            'tanggal_mulai' => 'required|date',
+            'karyawan_id'     => 'required|exists:karyawans,id',
+            'jenis_izin'      => 'required|string',
+            'tanggal_mulai'   => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'alasan' => 'required|string',
+            'alasan'          => 'required|string',
+            'lampiran'        => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $karyawan = Karyawan::findOrFail($request->karyawan_id);
 
+        $lampiranPath = null;
+        if ($request->hasFile('lampiran')) {
+            $lampiranPath = $request->file('lampiran')->store('izin-lampiran', 'public');
+        }
+
         \Illuminate\Support\Facades\DB::table('permohonan_izins')->insert([
-            'karyawan_id' => $karyawan->id,
-            'nik' => $karyawan->nik,
-            'nama' => $karyawan->nama_lengkap,
-            'divisi' => $karyawan->divisi ?? '-',
-            'jenis_izin' => $request->jenis_izin,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            'waktu' => null,
-            'alasan' => $request->alasan,
-            'status' => 'APPROVED',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'karyawan_id'    => $karyawan->id,
+            'nik'            => $karyawan->nik,
+            'nama'           => $karyawan->nama_lengkap,
+            'divisi'         => $karyawan->divisi ?? '-',
+            'jenis_izin'     => $request->jenis_izin,
+            'tanggal_mulai'  => $request->tanggal_mulai,
+            'tanggal_selesai'=> $request->tanggal_selesai,
+            'waktu'          => null,
+            'alasan'         => $request->alasan,
+            'lampiran'       => $lampiranPath,
+            'status'         => 'APPROVED',
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         return redirect()->back()->with('success', 'Izin karyawan berhasil ditambahkan.');

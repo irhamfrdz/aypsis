@@ -674,7 +674,7 @@
                 </div>
             </div>
             
-            <form action="{{ route('absensi.izin.store') }}" method="POST" id="izinForm">
+            <form action="{{ route('absensi.izin.store') }}" method="POST" id="izinForm" enctype="multipart/form-data">
                 @csrf
                 <div class="px-4 py-5 sm:p-6 space-y-4">
                     <!-- Karyawan -->
@@ -722,6 +722,46 @@
                         <label for="alasan_izin" class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Alasan <span class="text-red-500">*</span></label>
                         <textarea name="alasan" id="alasan_izin" rows="2" required
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Tulis alasan izin..."></textarea>
+                    </div>
+
+                    <!-- Bukti Pendukung -->
+                    <div>
+                        <label for="lampiran_izin" class="block text-sm font-medium text-gray-700 mb-1">Bukti Pendukung <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                        <div class="relative">
+                            <input type="file" name="lampiran" id="lampiran_izin"
+                                   accept="image/*,.pdf"
+                                   class="sr-only"
+                                   onchange="updateLampiranLabel(this)">
+                            <label for="lampiran_izin"
+                                   class="flex items-center gap-3 w-full px-3 py-2.5 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors duration-200 group">
+                                <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span id="lampiran_label" class="block text-sm text-gray-500 group-hover:text-indigo-600 truncate">Klik untuk upload foto / PDF...</span>
+                                    <span class="text-xs text-gray-400">JPG, PNG, PDF — Maks. 5 MB</span>
+                                </div>
+                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                            </label>
+                            <!-- Preview -->
+                            <div id="lampiran_preview" class="hidden mt-2">
+                                <div class="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                                    <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span id="lampiran_filename" class="text-xs text-green-700 font-medium truncate flex-1"></span>
+                                    <button type="button" onclick="clearLampiran()" class="text-red-400 hover:text-red-600 flex-shrink-0" title="Hapus">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
@@ -1070,7 +1110,40 @@
     
     function closeIzinModal() {
         document.getElementById('izinModal').classList.add('hidden');
+        clearLampiran();
     }
+
+    function updateLampiranLabel(input) {
+        const preview = document.getElementById('lampiran_preview');
+        const filename = document.getElementById('lampiran_filename');
+        const label   = document.getElementById('lampiran_label');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const maxSize = 5 * 1024 * 1024; // 5 MB
+            if (file.size > maxSize) {
+                alert('Ukuran file terlalu besar. Maksimum 5 MB.');
+                clearLampiran();
+                return;
+            }
+            filename.textContent = file.name;
+            label.textContent    = file.name;
+            preview.classList.remove('hidden');
+        } else {
+            clearLampiran();
+        }
+    }
+
+    function clearLampiran() {
+        const input    = document.getElementById('lampiran_izin');
+        const preview  = document.getElementById('lampiran_preview');
+        const filename = document.getElementById('lampiran_filename');
+        const label    = document.getElementById('lampiran_label');
+        if (input) input.value = '';
+        if (preview) preview.classList.add('hidden');
+        if (filename) filename.textContent = '';
+        if (label) label.textContent = 'Klik untuk upload foto / PDF...';
+    }
+
 
     function openHariLiburModal() {
         document.getElementById('hariLiburModal').classList.remove('hidden');
