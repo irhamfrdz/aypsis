@@ -6,15 +6,16 @@
     <title>Memo DP TEMAS - {{ $stage->biayaKapal->nomor_invoice }}</title>
     <style>
         * { box-sizing: border-box; }
-        @page { size: 165.1mm 215.9mm; margin: 8mm; }
+        @page { size: 165mm 215mm; margin: 0; }
         html, body { margin: 0; padding: 0; color: #111; font: 14px/1.7 Arial, sans-serif; }
-        .page { width: 100%; max-width: 155mm; margin: 0 auto; }
+        .page { width: 165mm; min-height: 215mm; margin: 0; padding: 10mm 12mm; }
         .toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
         button, .back { border: 0; border-radius: 4px; padding: 7px 12px; color: #fff; cursor: pointer; text-decoration: none; font-size: 12px; }
         button { background: #2563eb; }
         .back { background: #6b7280; }
-        .memo-date { margin-top: 18px; text-align: right; }
-        .memo-title { margin: 18px 0 28px; text-align: center; font-size: 20px; font-weight: bold; text-decoration: underline; }
+        .paper-info { margin-right: auto; color: #475569; font-size: 12px; align-self: center; }
+        .memo-date { margin: 0; text-align: right; }
+        .memo-title { margin: 12px 0 22px; text-align: center; font-size: 20px; font-weight: bold; text-decoration: underline; }
         .memo-line { margin: 8px 0; }
         .amount-words { margin: 14px 0 24px; font-style: italic; }
         .account { margin: 10px 0 22px 24px; border-collapse: collapse; }
@@ -22,7 +23,16 @@
         .account td:first-child { width: 145px; }
         .meta { margin-top: 34px; padding-top: 10px; border-top: 1px solid #bbb; font-size: 10px; color: #555; }
         .small { color: #666; font-size: 10px; }
-        @media print { .no-print { display: none !important; } }
+        @media screen {
+            body { background: #e2e8f0; padding: 20px; }
+            .page { margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(15, 23, 42, .15); }
+        }
+        @media print {
+            html, body { width: 165mm; height: 215mm; background: #fff; }
+            body { padding: 0; }
+            .page { margin: 0; page-break-after: avoid; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -42,7 +52,8 @@
 
     <div class="page">
         <div class="toolbar no-print">
-            <button onclick="window.print()">🖨 Cetak</button>
+            <span class="paper-info">Ukuran cetak: Setengah Folio (165 × 215 mm)</span>
+            <button onclick="window.print()">Cetak</button>
             <a class="back" href="{{ route('biaya-kapal.print-temas', $invoice->id) }}">Kembali</a>
         </div>
 
