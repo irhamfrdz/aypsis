@@ -63,6 +63,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hari & Tanggal Lembur</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Jam Lembur</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Adjustment</th>
@@ -79,6 +80,43 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-900">{{ $detail->karyawan->nama_lengkap ?? 'Karyawan tidak ditemukan' }}</div>
                                 <div class="text-xs text-gray-500">{{ $detail->karyawan->nik ?? '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @php
+                                    $tglLembur = $detail->tanggal_lembur;
+                                    if (is_string($tglLembur)) {
+                                        $tglLembur = json_decode($tglLembur, true);
+                                    }
+                                    $datesList = is_array($tglLembur) ? array_filter($tglLembur) : [];
+                                    sort($datesList);
+                                    $totalHari = count($datesList);
+                                @endphp
+                                @if($totalHari > 0)
+                                    <div class="flex flex-col gap-1.5 min-w-[220px] max-w-sm">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs">
+                                                <i class="far fa-calendar-alt mr-1.5"></i> {{ $totalHari }} Hari Lembur
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($datesList as $tgl)
+                                                @php
+                                                    $c = \Carbon\Carbon::parse($tgl)->locale('id');
+                                                    $hari = $c->isoFormat('ddd');
+                                                    $tglFmt = $c->isoFormat('D MMM');
+                                                    $fullFmt = $c->isoFormat('dddd, D MMMM Y');
+                                                @endphp
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-gray-100 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 border border-gray-200 transition-colors" title="{{ $fullFmt }}">
+                                                    <span class="font-semibold mr-1">{{ $hari }},</span> {{ $tglFmt }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">
+                                        {{ $pranota->periode_mulai ? $pranota->periode_mulai->format('d/m/Y').' - '.$pranota->periode_selesai?->format('d/m/Y') : '-' }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -102,7 +140,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t border-gray-200">
                         <tr>
-                            <td colspan="3" class="px-6 py-4 text-right text-sm font-bold text-gray-900">TOTAL KESELURUHAN</td>
+                            <td colspan="4" class="px-6 py-4 text-right text-sm font-bold text-gray-900">TOTAL KESELURUHAN</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">Rp {{ number_format($pranota->total_biaya, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-orange-600">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">Rp {{ number_format($pranota->total_setelah_adjustment, 0, ',', '.') }}</td>

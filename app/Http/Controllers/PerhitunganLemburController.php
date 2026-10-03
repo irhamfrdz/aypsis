@@ -378,8 +378,18 @@ class PerhitunganLemburController extends Controller
                     $isInPranota = ! empty($pranotaInfo);
                     $pranotaNomor = $pranotaInfo['nomor'] ?? null;
 
+                    $cDate = \Carbon\Carbon::parse($dateStr)->locale('id');
+                    $hari = $cDate->isoFormat('dddd');
+                    $hariSingkat = $cDate->isoFormat('ddd');
+                    $tanggalFormatted = $cDate->isoFormat('D MMM Y');
+                    $hariTanggal = $cDate->isoFormat('dddd, D MMMM Y');
+
                     $detailPerhitungan[] = [
                         'tanggal' => $dateStr,
+                        'hari' => $hari,
+                        'hari_singkat' => $hariSingkat,
+                        'tanggal_format' => $tanggalFormatted,
+                        'hari_tanggal' => $hariTanggal,
                         'tipe_hari' => $tipeHari,
                         'durasi_jam' => $durasiJam,
                         'jam_masuk' => $jamMasukTime,
@@ -427,6 +437,24 @@ class PerhitunganLemburController extends Controller
                 $isAllInPranota = ($totalDates > 0 && $pranotaDatesCount >= $totalDates);
                 $isPartialInPranota = ($pranotaDatesCount > 0 && $pranotaDatesCount < $totalDates);
 
+                $daftarHariLembur = array_map(function ($dp) {
+                    $cDate = \Carbon\Carbon::parse($dp['tanggal'])->locale('id');
+
+                    return [
+                        'tanggal' => $dp['tanggal'],
+                        'hari' => $dp['hari'] ?? $cDate->isoFormat('dddd'),
+                        'hari_singkat' => $dp['hari_singkat'] ?? $cDate->isoFormat('ddd'),
+                        'label' => $cDate->isoFormat('ddd, D MMM'),
+                        'label_lengkap' => $cDate->isoFormat('dddd, D MMMM Y'),
+                        'tipe_hari' => $dp['tipe_hari'],
+                        'durasi_jam' => $dp['durasi_jam'],
+                        'is_in_pranota' => $dp['is_in_pranota'],
+                        'pranota_nomor' => $dp['pranota_nomor'],
+                    ];
+                }, $detailPerhitungan);
+
+                $daftarHariLemburUnpranota = array_values(array_filter($daftarHariLembur, fn ($d) => ! $d['is_in_pranota']));
+
                 $rekapData[$karyawan->id] = [
                     'karyawan' => $karyawan,
                     'nominal_uang_makan' => $nominalUangMakan,
@@ -435,6 +463,12 @@ class PerhitunganLemburController extends Controller
                     'total_nominal' => $totalNominal,
                     'total_uang_makan_lembur' => $totalUangMakanLembur,
                     'detail' => $detailPerhitungan,
+                    'daftar_hari_lembur' => $daftarHariLembur,
+                    'daftar_tanggal_lembur' => array_column($detailPerhitungan, 'tanggal'),
+                    'daftar_hari_lembur_str' => implode(', ', array_column($daftarHariLembur, 'label')),
+                    'total_hari_lembur' => count($detailPerhitungan),
+                    'daftar_hari_lembur_unpranota' => $daftarHariLemburUnpranota,
+                    'total_hari_unpranota' => count($daftarHariLemburUnpranota),
                     'is_all_in_pranota' => $isAllInPranota,
                     'is_partial_in_pranota' => $isPartialInPranota,
                     'pranota_dates_count' => $pranotaDatesCount,

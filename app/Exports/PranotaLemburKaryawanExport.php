@@ -26,12 +26,27 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
         return $this->pranota->karyawans->map(function ($d, $index) {
             $karyawan = $d->karyawan;
 
+            $dates = $d->tanggal_lembur;
+            if (is_string($dates)) {
+                $dates = json_decode($dates, true);
+            }
+            $hariLemburStr = '-';
+            if (is_array($dates) && count($dates) > 0) {
+                $formatted = array_map(function ($tgl) {
+                    $c = \Carbon\Carbon::parse($tgl)->locale('id');
+
+                    return $c->isoFormat('ddd, D/M');
+                }, $dates);
+                $hariLemburStr = count($dates).' Hari: '.implode(', ', $formatted);
+            }
+
             return [
                 'no' => $index + 1,
                 'nik' => $karyawan->nik ?? '-',
                 'nama' => $karyawan->nama_lengkap ?? ($karyawan->nama_panggilan ?? '-'),
                 'penempatan' => $karyawan->penempatan ?? '-',
                 'divisi' => $karyawan->divisi ?? '-',
+                'hari_lembur' => $hariLemburStr,
                 'jam_lembur' => $d->jam_lembur,
                 'nominal_awal' => (float) $d->nominal_awal,
                 'adjustment' => (float) $d->adjustment,
@@ -49,6 +64,7 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
             'Nama Karyawan',
             'Penempatan',
             'Divisi',
+            'Hari Lembur',
             'Jam Lembur',
             'Nominal Awal',
             'Adjustment',
@@ -60,9 +76,9 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
     public function columnFormats(): array
     {
         return [
-            'G' => '#,##0',
             'H' => '#,##0',
             'I' => '#,##0',
+            'J' => '#,##0',
         ];
     }
 
@@ -71,7 +87,7 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastCol = 'J';
+                $lastCol = 'K';
                 $headerRow = 6;
                 $dataStartRow = 7;
 
@@ -110,34 +126,34 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal row
-                $sheet->setCellValue('F'.$currentRow, 'Subtotal:');
-                $sheet->setCellValue('G'.$currentRow, "=SUM(G{$dataStartRow}:G{$lastDataRow})");
+                $sheet->setCellValue('G'.$currentRow, 'Subtotal:');
                 $sheet->setCellValue('H'.$currentRow, "=SUM(H{$dataStartRow}:H{$lastDataRow})");
                 $sheet->setCellValue('I'.$currentRow, "=SUM(I{$dataStartRow}:I{$lastDataRow})");
-                $sheet->getStyle("F{$currentRow}:J{$currentRow}")->getFont()->setBold(true);
-                $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->setCellValue('J'.$currentRow, "=SUM(J{$dataStartRow}:J{$lastDataRow})");
+                $sheet->getStyle("G{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
+                $sheet->getStyle("G{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 $currentRow++;
 
                 // Adjustment Row (if any)
                 if ((float) $this->pranota->adjustment != 0) {
-                    $sheet->setCellValue('F'.$currentRow, 'Adjustment:');
-                    $sheet->setCellValue('I'.$currentRow, (float) $this->pranota->adjustment);
-                    $sheet->getStyle("F{$currentRow}:J{$currentRow}")->getFont()->setBold(true);
-                    $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->setCellValue('G'.$currentRow, 'Adjustment:');
+                    $sheet->setCellValue('J'.$currentRow, (float) $this->pranota->adjustment);
+                    $sheet->getStyle("G{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
+                    $sheet->getStyle("G{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                     $currentRow++;
                 }
 
                 // Total Row
-                $sheet->setCellValue('F'.$currentRow, 'TOTAL:');
-                $sheet->setCellValue('I'.$currentRow, (float) $this->pranota->total_setelah_adjustment);
-                $sheet->getStyle("F{$currentRow}:J{$currentRow}")->applyFromArray([
+                $sheet->setCellValue('G'.$currentRow, 'TOTAL:');
+                $sheet->setCellValue('J'.$currentRow, (float) $this->pranota->total_setelah_adjustment);
+                $sheet->getStyle("G{$currentRow}:K{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['rgb' => 'FEF08A'], // Yellow 200
                     ],
                 ]);
-                $sheet->getStyle("F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("G{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
                 // Table Borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$currentRow}")->applyFromArray([
@@ -149,8 +165,8 @@ class PranotaLemburKaryawanExport implements FromCollection, ShouldAutoSize, Wit
                 // Alignments
                 $sheet->getStyle("A{$dataStartRow}:A{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle("B{$dataStartRow}:B{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("F{$dataStartRow}:F{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("G{$dataStartRow}:I{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("G{$dataStartRow}:G{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("H{$dataStartRow}:J{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             },
         ];
     }

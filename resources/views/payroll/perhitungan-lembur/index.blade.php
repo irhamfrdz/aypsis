@@ -253,6 +253,23 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     <div class="font-bold">{{ $data['karyawan']->nama_lengkap }}</div>
                                     <div class="text-xs text-gray-500 mt-0.5">{{ $data['karyawan']->penempatan ?? '-' }}</div>
+                                    @php
+                                        $daftarHari = $data['daftar_hari_lembur'] ?? [];
+                                        $totalHariLembur = count($daftarHari);
+                                        $hariLabels = array_column($daftarHari, 'label');
+                                        $allHariFull = array_map(fn($d) => ($d['hari'] ?? '') . ', ' . ($d['tanggal'] ?? '') . ' (' . ($d['durasi_jam'] ?? '') . ' jam)', $daftarHari);
+                                        $fullTooltip = implode(" \n", $allHariFull);
+                                    @endphp
+                                    @if($totalHariLembur > 0)
+                                        <div class="mt-1 flex items-center gap-1.5 flex-wrap" title="{{ $fullTooltip }}">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                <i class="far fa-calendar-alt mr-1 text-indigo-500"></i> {{ $totalHariLembur }} Hari Lembur
+                                            </span>
+                                            <span class="text-[11px] text-gray-500 max-w-[200px] truncate">
+                                                ({{ implode(', ', array_slice($hariLabels, 0, 3)) }}{{ $totalHariLembur > 3 ? ' +' . ($totalHariLembur - 3) . ' hr' : '' }})
+                                            </span>
+                                        </div>
+                                    @endif
                                     @if($isAllInPranota)
                                         <div class="mt-1">
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Pranota: {{ $pranotaNomorsStr }}">
@@ -862,7 +879,7 @@
                                 <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''} title="${isPranota ? 'Sudah pernah masuk ke ' + (row.pranota_nomor || 'Pranota') + ' dan dapat dipilih kembali' : ''}">
                             </td>
                             <td class="px-3 py-2.5 text-sm text-gray-900 font-medium whitespace-nowrap">
-                                <div>${row.tanggal}</div>
+                                <div><span class="font-semibold text-gray-800">${row.hari ? row.hari + ', ' : ''}</span>${row.tanggal}</div>
                                 ${isPranota ? `<div class="mt-0.5"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Sudah masuk pranota"><i class="fas fa-check-circle mr-1 text-emerald-600"></i> Masuk ${row.pranota_nomor || 'Pranota'}</span></div>` : ''}
                             </td>
                             <td class="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">
@@ -1215,6 +1232,11 @@
                 <td class="px-3 py-2 whitespace-nowrap">
                     <div class="font-bold text-gray-900">${karyawanName}</div>
                     <div class="text-[10px] text-gray-500 font-mono">${karyawanNik}</div>
+                    ${(item.selectedDates && item.selectedDates.length > 0) ? `
+                        <div class="mt-0.5 text-[10px] text-indigo-600 font-semibold" title="${item.selectedDates.join(', ')}">
+                            <i class="far fa-calendar-alt mr-0.5"></i> ${item.selectedDates.length} Hari Lembur
+                        </div>
+                    ` : ''}
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-600">${penempatan}</td>
                 <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
