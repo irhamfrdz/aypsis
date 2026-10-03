@@ -273,6 +273,7 @@
                 'voyage' => $truck->voyage,
                 'nama_vendor' => $truck->nama_vendor,
                 'no_bl_ids' => $truck->no_bl ?? [], 
+                'container_adjustments' => $truck->container_adjustments ?? [],
                 'total_biaya_20ft' => $truck->total_biaya_20ft,
                 'total_biaya_40ft' => $truck->total_biaya_40ft,
                 'adjustment' => $truck->adjustment,
@@ -1166,7 +1167,7 @@
                         if (myData.no_bl_ids && myData.no_bl_ids.length > 0) {
                             const blDropdown = section.querySelector('.trucking-bl-dropdown');
                             myData.no_bl_ids.forEach(blId => {
-                                addBlChipToTruckingSection(sectionIndex, blId);
+                                addBlChipToTruckingSection(sectionIndex, blId, myData.container_adjustments?.[blId] || 0);
                                 if (blDropdown) {
                                     const opt = blDropdown.querySelector(`.trucking-bl-option[data-id="${blId}"]`);
                                     if (opt) {

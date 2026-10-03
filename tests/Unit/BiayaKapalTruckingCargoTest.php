@@ -18,6 +18,11 @@ class BiayaKapalTruckingCargoTest extends TestCase
             'subtotal' => 1500000,
         ]);
 
-        $this->assertSame(['20ft' => 0, '40ft' => 0], $totals);
+        $this->assertSame([
+            '20ft' => 0,
+            '40ft' => 0,
+            'subtotal' => 0,
+            'adjustments' => [],
+        ], $totals);
     }
 }

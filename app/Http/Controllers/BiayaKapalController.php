@@ -438,6 +438,13 @@ class BiayaKapalController extends Controller
                         $section['adjustment'] = 0;
                     }
                 }
+                if (isset($section['container_adjustments']) && is_array($section['container_adjustments'])) {
+                    foreach ($section['container_adjustments'] as &$containerAdjustment) {
+                        $containerAdjustment = str_replace(',', '.', str_replace('.', '', (string) $containerAdjustment));
+                        $containerAdjustment = is_numeric($containerAdjustment) ? (float) $containerAdjustment : 0;
+                    }
+                    unset($containerAdjustment);
+                }
                 if (isset($section['total_biaya'])) {
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
@@ -834,6 +841,8 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
             'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.container_adjustments' => 'nullable|array',
+            'trucking_sections.*.container_adjustments.*' => 'nullable|numeric',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
@@ -1248,6 +1257,7 @@ class BiayaKapalController extends Controller
                         'voyage' => $section['voyage'] ?? null,
                         'nama_vendor' => $section['nama_vendor'] ?? null,
                         'no_bl' => $section['no_bl'] ?? [],
+                        'container_adjustments' => $containerTotals['adjustments'],
                         'total_biaya_20ft' => $containerTotals['20ft'],
                         'total_biaya_40ft' => $containerTotals['40ft'],
                         'subtotal' => $subtotal,
@@ -3949,6 +3959,13 @@ class BiayaKapalController extends Controller
                         $section['adjustment'] = 0;
                     }
                 }
+                if (isset($section['container_adjustments']) && is_array($section['container_adjustments'])) {
+                    foreach ($section['container_adjustments'] as &$containerAdjustment) {
+                        $containerAdjustment = str_replace(',', '.', str_replace('.', '', (string) $containerAdjustment));
+                        $containerAdjustment = is_numeric($containerAdjustment) ? (float) $containerAdjustment : 0;
+                    }
+                    unset($containerAdjustment);
+                }
                 if (isset($section['total_biaya'])) {
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
@@ -4271,6 +4288,8 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
             'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.container_adjustments' => 'nullable|array',
+            'trucking_sections.*.container_adjustments.*' => 'nullable|numeric',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
@@ -4880,6 +4899,7 @@ class BiayaKapalController extends Controller
                             'voyage' => $section['voyage'] ?? null,
                             'nama_vendor' => $section['nama_vendor'] ?? null,
                             'no_bl' => $section['no_bl'] ?? [],
+                            'container_adjustments' => $containerTotals['adjustments'],
                             'total_biaya_20ft' => $containerTotals['20ft'],
                             'total_biaya_40ft' => $containerTotals['40ft'],
                             'subtotal' => $subtotal,
@@ -7448,7 +7468,7 @@ class BiayaKapalController extends Controller
     private function calculateTruckingContainerTotals(array $section): array
     {
         if (strtoupper(trim((string) ($section['nama_vendor'] ?? ''))) === 'CARGO') {
-            return ['20ft' => 0, '40ft' => 0];
+            return ['20ft' => 0, '40ft' => 0, 'subtotal' => 0, 'adjustments' => []];
         }
 
         $containerIds = collect($section['no_bl'] ?? [])
@@ -7458,7 +7478,7 @@ class BiayaKapalController extends Controller
             ->values();
 
         if ($containerIds->isEmpty() || empty($section['nama_vendor'])) {
-            return ['20ft' => 0, '40ft' => 0];
+            return ['20ft' => 0, '40ft' => 0, 'subtotal' => 0, 'adjustments' => []];
         }
 
         $prices = \App\Models\MasterPricelistBiayaTrucking::query()
@@ -7467,18 +7487,31 @@ class BiayaKapalController extends Controller
             ->get()
             ->keyBy(fn ($price) => $this->truckingTariffKey($price->size));
 
-        $totals = ['20ft' => 0, '40ft' => 0];
+        $adjustments = collect($section['container_adjustments'] ?? [])
+            ->mapWithKeys(fn ($value, $id) => [(string) $id => is_numeric($value) ? (float) $value : 0]);
+        $totals = ['20ft' => 0, '40ft' => 0, 'subtotal' => 0, 'adjustments' => []];
         DB::table('manifests')
             ->whereIn('id', $containerIds)
-            ->get(['size_kontainer', 'tipe_kontainer'])
-            ->each(function ($manifest) use (&$totals, $prices) {
+            ->get(['id', 'size_kontainer', 'tipe_kontainer'])
+            ->each(function ($manifest) use (&$totals, $prices, $adjustments) {
                 $size = preg_replace('/\\D/', '', (string) $manifest->size_kontainer);
                 $tariffKey = $this->truckingTariffKey($manifest->size_kontainer, $manifest->tipe_kontainer);
+                $baseCost = isset($prices[$tariffKey])
+                    ? (float) $prices[$tariffKey]->biaya
+                    : ($tariffKey === 'lcl' ? 500000 : 0);
+                $adjustment = (float) ($adjustments[(string) $manifest->id] ?? 0);
+                $cost = max(0, $baseCost + $adjustment);
 
-                if ($size === '20' && isset($prices[$tariffKey])) {
-                    $totals['20ft'] += (float) $prices[$tariffKey]->biaya;
-                } elseif ($size === '40' && isset($prices[$tariffKey])) {
-                    $totals['40ft'] += (float) $prices[$tariffKey]->biaya;
+                if ($adjustment !== 0.0) {
+                    $totals['adjustments'][(string) $manifest->id] = $adjustment;
+                }
+
+                $totals['subtotal'] += $cost;
+
+                if ($size === '20') {
+                    $totals['20ft'] += $cost;
+                } elseif ($size === '40') {
+                    $totals['40ft'] += $cost;
                 }
             });
 

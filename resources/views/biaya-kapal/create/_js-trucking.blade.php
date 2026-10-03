@@ -102,6 +102,11 @@
                 <div class="flex items-center justify-between mt-2">
                     <div class="text-xs text-blue-600 font-medium trucking-bl-count">Terpilih: 0 kontainer</div>
                 </div>
+                <div class="trucking-container-adjustments mt-3 hidden rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                    <div class="mb-2 text-sm font-semibold text-yellow-900">Adjustment biaya per kontainer</div>
+                    <p class="mb-3 text-xs text-yellow-700">Gunakan nilai positif untuk tambahan atau nilai negatif untuk pengurangan.</p>
+                    <div class="trucking-container-adjustment-list space-y-2"></div>
+                </div>
             </div>
 
             <div class="hidden">
@@ -206,6 +211,7 @@
         vendorSelect.addEventListener('change', function() {
             toggleTruckingCargoCost(sectionIndex);
             updateTruckingDropdownPrices(sectionIndex);
+            refreshTruckingContainerAdjustments(sectionIndex);
             calculateTruckingTotals(sectionIndex);
         });
         section.querySelector('.trucking-cargo-cost-input').addEventListener('input', function() {
@@ -249,6 +255,9 @@
                     return;
                 }
                 input.value = value.replace(/\./g, '').replace(',', '.');
+            });
+            document.querySelectorAll('.trucking-container-adjustment-input').forEach(input => {
+                input.value = parseTruckingAdjustment(input.value);
             });
         }, { once: true });
 
@@ -321,6 +330,8 @@
         // Clear previous
         hiddenInputsContainer.innerHTML = '';
         chipsContainer.innerHTML = '';
+        section.querySelector('.trucking-container-adjustment-list').innerHTML = '';
+        section.querySelector('.trucking-container-adjustments').classList.add('hidden');
         countDisplay.textContent = 'Terpilih: 0 kontainer';
         placeholder.classList.remove('hidden');
 
@@ -459,7 +470,8 @@
                             // Remove
                             this.classList.remove('selected');
                             section.querySelector(`.trucking-chip[data-id="${id}"]`).remove();
-                            section.querySelector(`input[value="${id}"]`).remove();
+                            hiddenInputsContainer.querySelector(`input[name="trucking_sections[${sectionIndex}][no_bl][]"][value="${id}"]`)?.remove();
+                            section.querySelector(`.trucking-container-adjustment-row[data-id="${id}"]`)?.remove();
                         } else {
                             // Add
                             this.classList.add('selected');
@@ -480,11 +492,13 @@
                             input.name = `trucking_sections[${sectionIndex}][no_bl][]`;
                             input.value = id;
                             hiddenInputsContainer.appendChild(input);
+                            addTruckingContainerAdjustmentRow(sectionIndex, this);
                         }
 
                         const count = chipsContainer.children.length;
                         countDisplay.textContent = `Terpilih: ${count} kontainer`;
                         if (count === 0) placeholder.classList.remove('hidden');
+                        section.querySelector('.trucking-container-adjustments').classList.toggle('hidden', count === 0);
 
                         // RECALCULATE
                         calculateTruckingTotals(sectionIndex);
@@ -505,6 +519,84 @@
         if (type.includes('cargo') || size.includes('cargo')) return 'cargo';
 
         return size.replace(/\D/g, '');
+    }
+
+    function parseTruckingAdjustment(value) {
+        const text = String(value || '').trim();
+        const amount = parseFloat(text.replace(/[^0-9]/g, '')) || 0;
+        return text.startsWith('-') ? -amount : amount;
+    }
+
+    function getTruckingAdjustedContainerPrice(section, option) {
+        const baseCost = getTruckingContainerPrice(
+            section.querySelector('.trucking-vendor-select').value,
+            option.getAttribute('data-size'),
+            option.getAttribute('data-tipe')
+        ) || 0;
+        const input = section.querySelector(`.trucking-container-adjustment-row[data-id="${option.getAttribute('data-id')}"] .trucking-container-adjustment-input`);
+        return Math.max(0, baseCost + parseTruckingAdjustment(input?.value));
+    }
+
+    function addTruckingContainerAdjustmentRow(sectionIndex, option, adjustment = 0) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        const id = option.getAttribute('data-id');
+        const list = section.querySelector('.trucking-container-adjustment-list');
+        if (list.querySelector(`.trucking-container-adjustment-row[data-id="${id}"]`)) return;
+
+        const row = document.createElement('div');
+        row.className = 'trucking-container-adjustment-row grid grid-cols-1 items-center gap-2 rounded-md border border-yellow-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_180px_180px]';
+        row.setAttribute('data-id', id);
+        row.innerHTML = `
+            <div class="min-w-0">
+                <div class="truncate text-sm font-medium text-gray-800"></div>
+                <div class="trucking-container-base-price text-xs text-gray-500"></div>
+            </div>
+            <label class="text-xs font-medium text-gray-600">Adjustment
+                <input type="text" inputmode="numeric" name="trucking_sections[${sectionIndex}][container_adjustments][${id}]"
+                       class="trucking-container-adjustment-input mt-1 w-full rounded-md border border-yellow-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-yellow-500">
+            </label>
+            <div class="text-xs text-gray-600">Tarif akhir
+                <strong class="trucking-container-final-price mt-1 block text-sm text-emerald-700"></strong>
+            </div>`;
+        row.querySelector('.text-sm.font-medium').textContent = option.getAttribute('data-kontainer') || `Manifest ${id}`;
+        const input = row.querySelector('.trucking-container-adjustment-input');
+        input.value = adjustment ? Number(adjustment).toLocaleString('id-ID') : '0';
+        input.addEventListener('click', event => event.stopPropagation());
+        input.addEventListener('input', function() {
+            if (this.value.trim() === '-') {
+                refreshTruckingContainerAdjustments(sectionIndex);
+                calculateTruckingTotals(sectionIndex);
+                return;
+            }
+            const amount = parseTruckingAdjustment(this.value);
+            this.value = amount ? `${amount < 0 ? '-' : ''}${Math.abs(amount).toLocaleString('id-ID')}` : '0';
+            refreshTruckingContainerAdjustments(sectionIndex);
+            calculateTruckingTotals(sectionIndex);
+        });
+        list.appendChild(row);
+        section.querySelector('.trucking-container-adjustments').classList.remove('hidden');
+        refreshTruckingContainerAdjustments(sectionIndex);
+    }
+
+    function refreshTruckingContainerAdjustments(sectionIndex) {
+        const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const vendor = section.querySelector('.trucking-vendor-select').value;
+        section.querySelectorAll('.trucking-container-adjustment-row').forEach(row => {
+            const option = section.querySelector(`.trucking-bl-option[data-id="${row.getAttribute('data-id')}"]`);
+            if (!option) return;
+            const baseCost = getTruckingContainerPrice(vendor, option.getAttribute('data-size'), option.getAttribute('data-tipe')) || 0;
+            const adjustedCost = getTruckingAdjustedContainerPrice(section, option);
+            const adjustment = parseTruckingAdjustment(row.querySelector('.trucking-container-adjustment-input').value);
+            row.querySelector('.trucking-container-base-price').textContent = `Tarif dasar: Rp ${Math.round(baseCost).toLocaleString('id-ID')}`;
+            row.querySelector('.trucking-container-final-price').textContent = `Rp ${Math.round(adjustedCost).toLocaleString('id-ID')}`;
+            const chipPrice = section.querySelector(`.trucking-chip[data-id="${row.getAttribute('data-id')}"] .trucking-chip-price`);
+            if (chipPrice && adjustment !== 0) {
+                chipPrice.textContent = `(Setelah adjustment: Rp ${Math.round(adjustedCost).toLocaleString('id-ID')})`;
+            } else if (chipPrice) {
+                chipPrice.textContent = `(${getTruckingContainerPriceLabel(vendor, option.getAttribute('data-size'), option.getAttribute('data-tipe'))})`;
+            }
+        });
     }
 
     function getTruckingContainerPrice(vendor, rawSize, rawType = '') {
@@ -542,6 +634,7 @@
             const chipPrice = section.querySelector(`.trucking-chip[data-id="${option.getAttribute('data-id')}"] .trucking-chip-price`);
             if (chipPrice) chipPrice.textContent = `(${priceText})`;
         });
+        refreshTruckingContainerAdjustments(sectionIndex);
     }
 
     function calculateTruckingTotals(sectionIndex) {
@@ -577,7 +670,9 @@
                 const rawSize = opt.getAttribute('data-size');
                 const rawType = opt.getAttribute('data-tipe');
                 const size = String(rawSize).replace(/\D/g, '');
-                const cost = getTruckingContainerPrice(vendor, rawSize, rawType);
+                const baseCost = getTruckingContainerPrice(vendor, rawSize, rawType);
+                const adjustmentRow = section.querySelector(`.trucking-container-adjustment-row[data-id="${opt.getAttribute('data-id')}"]`);
+                const cost = adjustmentRow ? getTruckingAdjustedContainerPrice(section, opt) : baseCost;
                 if (cost !== null) {
                     if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
                     if (size === '40') { total40 += cost; count40++; unitPrice40 = cost; }

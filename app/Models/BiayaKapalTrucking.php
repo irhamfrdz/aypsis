@@ -14,6 +14,7 @@ class BiayaKapalTrucking extends Model
         'voyage',
         'nama_vendor',
         'no_bl',
+        'container_adjustments',
         'total_biaya_20ft',
         'total_biaya_40ft',
         'subtotal',
@@ -26,6 +27,7 @@ class BiayaKapalTrucking extends Model
 
     protected $casts = [
         'no_bl' => 'array',
+        'container_adjustments' => 'array',
         'total_biaya_20ft' => 'decimal:2',
         'total_biaya_40ft' => 'decimal:2',
         'subtotal' => 'decimal:2',
