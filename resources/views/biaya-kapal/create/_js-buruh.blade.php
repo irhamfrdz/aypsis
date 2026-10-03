@@ -58,9 +58,9 @@
                     <thead>
                         <tr class="bg-indigo-600 text-white">
                             <th class="px-3 py-2.5 text-left font-semibold text-xs w-10">#</th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[200px]">Nama Kapal <span class="text-red-300">*</span></th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[200px]">No. Voyage <span class="text-red-300">*</span></th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs">Detail Kontainer <span class="text-indigo-200 font-normal text-[11px]">(Pilih Kontainer)</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[180px]">Nama Kapal <span class="text-red-300">*</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[180px]">No. Voyage <span class="text-red-300">*</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[340px]">Detail Kontainer <span class="text-indigo-200 font-normal text-[11px]">(No. Kontainer &amp; Nominal)</span></th>
                             <th class="px-3 py-2.5 text-center font-semibold text-xs w-16">Aksi</th>
                         </tr>
                     </thead>
@@ -1316,6 +1316,10 @@
             <span class="kontainer-info-badge flex-shrink-0 text-xs bg-white text-indigo-700 border border-indigo-200 font-medium rounded px-2 py-1 hidden">
                 <i class="fas fa-box mr-1 text-indigo-400"></i><span class="badge-size-text"></span>
             </span>
+            <div class="w-32 flex-shrink-0 relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">Rp</span>
+                <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full pl-7 pr-2 py-1.5 border border-indigo-300 rounded-lg text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-indigo-400 bg-white" placeholder="Nominal">
+            </div>
             <button type="button" onclick="removeKontainerFromSection(this)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-red-100 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition" title="Hapus kontainer ini">
                 <i class="fas fa-times text-xs"></i>
             </button>
@@ -1326,6 +1330,17 @@
         const kontainerSelect = inputGroup.querySelector('.kontainer-select-item');
         const nomorHidden = inputGroup.querySelector('.kontainer-nomor-hidden');
         const sizeHidden = inputGroup.querySelector('.kontainer-size-hidden');
+        const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
+
+        if (nominalInput) {
+            nominalInput.addEventListener('input', function() {
+                let val = this.value.replace(/\D/g, '');
+                if (val !== '') {
+                    this.value = parseInt(val).toLocaleString('id-ID');
+                }
+                syncBatamSharedNominalFromContainers();
+            });
+        }
         
         if (typeof jQuery !== 'undefined' && $.fn.select2) {
             $(kontainerSelect).select2({
@@ -1384,10 +1399,29 @@
         }
     };
     
+    function syncBatamSharedNominalFromContainers() {
+        if (currentLokasi !== 'batam') return;
+        const kontainerNominals = document.querySelectorAll('#batam_kapal_tbody .kontainer-nominal-item');
+        let total = 0;
+        let hasAnyNominal = false;
+        kontainerNominals.forEach(input => {
+            const val = parseFloat((input.value || '0').replace(/\./g, '').replace(',', '.')) || 0;
+            if (val > 0) hasAnyNominal = true;
+            total += val;
+        });
+
+        const sharedNominalInput = document.getElementById('batam_shared_nominal');
+        if (sharedNominalInput && hasAnyNominal) {
+            sharedNominalInput.value = Math.round(total).toLocaleString('id-ID');
+        }
+        calculateTotalFromAllSections();
+    }
+
     window.removeKontainerFromSection = function(button) {
         const container = button.closest('.kontainer-container-section');
         button.closest('.kontainer-row').remove();
         reindexKontainerInputs(container);
+        syncBatamSharedNominalFromContainers();
     };
 
     function reindexKontainerInputs(container) {
@@ -1404,5 +1438,8 @@
             
             const size = group.querySelector('.kontainer-size-hidden');
             if (size) size.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][size]`;
+
+            const nominal = group.querySelector('.kontainer-nominal-item');
+            if (nominal) nominal.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nominal]`;
         });
     }

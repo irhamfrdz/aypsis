@@ -2174,12 +2174,25 @@ class BiayaKapalController extends Controller
                                 }
                             }
 
+                            $sectionKontainerSum = 0;
+                            foreach ($kontainerIds as $itemK) {
+                                $sectionKontainerSum += (float) ($itemK['nominal'] ?? 0);
+                            }
+
                             if ($sectionsCount <= 1) {
-                                $nominal = $sharedNominal;
+                                $nominal = $sectionKontainerSum > 0 ? $sectionKontainerSum : $sharedNominal;
                                 $adjustment = $sharedAdjustment;
                                 $pphAmount = $sharedPphAmountTotal;
+                            } elseif ($sectionKontainerSum > 0) {
+                                $nominal = $sectionKontainerSum;
+                                $sectionRatio = $grandSubtotal > 0 ? ($nominal / $grandSubtotal) : (1 / $sectionsCount);
+                                $adjustment = round($sharedAdjustment * $sectionRatio);
+                                $pphAmount = round($sharedPphAmountTotal * $sectionRatio);
+                                $allocatedNominalSum += $nominal;
+                                $allocatedAdjSum += $adjustment;
+                                $allocatedPphSum += $pphAmount;
                             } elseif ($isLast) {
-                                $nominal = $sharedNominal - $allocatedNominalSum;
+                                $nominal = max(0, $sharedNominal - $allocatedNominalSum);
                                 $adjustment = $sharedAdjustment - $allocatedAdjSum;
                                 $pphAmount = $sharedPphAmountTotal - $allocatedPphSum;
                             } else {
