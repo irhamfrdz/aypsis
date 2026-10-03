@@ -594,7 +594,7 @@ class BiayaKapalController extends Controller
         // Perijinan Sections Cleaning
         if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
             foreach ($data['perijinan_sections'] as &$section) {
-                $numericPerijinan = ['jumlah_biaya', 'sub_total', 'grand_total'];
+                $numericPerijinan = ['jumlah_biaya', 'sub_total', 'grand_total', 'karantina_nominal'];
                 foreach ($numericPerijinan as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -966,6 +966,7 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.mode' => 'nullable|in:perijinan,karantina',
             'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
             'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
+            'perijinan_sections.*.karantina_nominal' => 'nullable|numeric|min:0',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.dari_tanggal' => 'nullable|date',
@@ -3935,8 +3936,10 @@ class BiayaKapalController extends Controller
         // Perijinan Sections Cleaning
         if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
             foreach ($data['perijinan_sections'] as &$section) {
-                if (isset($section['jumlah_biaya'])) {
-                    $section['jumlah_biaya'] = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya']));
+                foreach (['jumlah_biaya', 'sub_total', 'grand_total', 'karantina_nominal'] as $field) {
+                    if (isset($section[$field])) {
+                        $section[$field] = str_replace(',', '.', str_replace('.', '', $section[$field]));
+                    }
                 }
                 if (isset($section['items']) && is_array($section['items'])) {
                     foreach ($section['items'] as &$item) {
@@ -4360,6 +4363,7 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.mode' => 'nullable|in:perijinan,karantina',
             'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
             'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
+            'perijinan_sections.*.karantina_nominal' => 'nullable|numeric|min:0',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.nomor_referensi' => 'nullable|string|max:255',
@@ -6540,9 +6544,20 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
+            $nominalKarantina = (float) ($section['karantina_nominal'] ?? 0);
+            if ($nominalKarantina <= 0) {
+                throw ValidationException::withMessages([
+                    "perijinan_sections.{$index}.karantina_nominal" => 'Nominal Biaya Karantina wajib diisi dan harus lebih dari 0.',
+                ]);
+            }
+
             $section['karantina_nomor_dokumen'] = $nomorDokumen;
             $section['nama_kapal'] = null;
             $section['no_voyage'] = null;
+            $section['jumlah_biaya'] = $nominalKarantina;
+            $section['sub_total'] = $nominalKarantina;
+            $section['grand_total'] = $nominalKarantina;
+            $section['items'] = [];
         }
         unset($section);
 

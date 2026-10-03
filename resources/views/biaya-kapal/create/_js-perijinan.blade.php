@@ -117,6 +117,18 @@
                     <input type="hidden" name="perijinan_sections[${idx}][karantina_source_type]" class="perijinan-karantina-source-type">
                     <input type="hidden" name="perijinan_sections[${idx}][karantina_source_id]" class="perijinan-karantina-source-id">
                     <p class="mt-2 text-xs text-gray-500">Tersedia: surat jalan, tanda terima tanpa surat jalan, dan tanda terima LCL.</p>
+
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nominal Biaya Karantina <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-600">Rp</span>
+                            <input type="text"
+                                   name="perijinan_sections[${idx}][karantina_nominal]"
+                                   class="perijinan-karantina-nominal w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
+                                   placeholder="0"
+                                   inputmode="numeric">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Hidden Date Fields -->
@@ -147,7 +159,7 @@
                 </div>
 
                 <!-- Row: Detail Perijinan -->
-                <div class="md:col-span-2 space-y-2 mt-2">
+                <div class="perijinan-detail-field md:col-span-2 space-y-2 mt-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Detail Perijinan</label>
                     <div id="perijinan_items_container_${idx}" class="space-y-2 perijinan-items-container">
                         <!-- Items will be added here -->
@@ -275,6 +287,7 @@
                     display_text: initialData.karantina_nomor_dokumen
                 });
             }
+            section.querySelector('.perijinan-karantina-nominal').value = parseInt(initialData.karantina_nominal || initialData.jumlah_biaya || 0).toLocaleString('id-ID');
             
             // Populate items
             if (initialData.items && initialData.items.length > 0) {
@@ -311,9 +324,17 @@
         const voyageToggleBtn = section.querySelector('.perijinan-voyage-toggle-btn');
 
         section.querySelector('.perijinan-mode-select').addEventListener('change', function () {
-            applyPerijinanMode(section, idx, true);
+            applyPerijinanMode(section, idx);
         });
-        applyPerijinanMode(section, idx, false);
+        section.querySelector('.perijinan-karantina-nominal').addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '');
+            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
+
+            const jumlahInput = document.getElementById(`perijinan_jumlah_${idx}`);
+            jumlahInput.value = this.value;
+            formatPerijinanBiaya(jumlahInput);
+        });
+        applyPerijinanMode(section, idx);
 
         // Toggle Manual Voyage logic (similar to air)
         voyageToggleBtn.addEventListener('click', function() {
@@ -400,27 +421,32 @@
         section.querySelector('.perijinan-karantina-search').focus();
     }
 
-    function applyPerijinanMode(section, idx, userInitiated) {
+    function applyPerijinanMode(section, idx) {
         const isKarantina = section.querySelector('.perijinan-mode-select').value === 'karantina';
         section.querySelectorAll('.perijinan-standard-field').forEach(field => field.classList.toggle('hidden', isKarantina));
         section.querySelector('.perijinan-karantina-field').classList.toggle('hidden', !isKarantina);
+        const detailField = section.querySelector('.perijinan-detail-field');
+        detailField.classList.toggle('hidden', isKarantina);
+        detailField.querySelectorAll('input, select, button').forEach(element => {
+            element.disabled = isKarantina;
+        });
 
         const kapalInput = section.querySelector('.perijinan-kapal-hidden');
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
+        const karantinaNominal = section.querySelector('.perijinan-karantina-nominal');
         kapalInput.required = !isKarantina;
         voyageSelect.required = !isKarantina;
+        karantinaNominal.required = isKarantina;
 
         const title = section.querySelector('h4');
         if (title) title.textContent = `${isKarantina ? 'Karantina' : 'Perijinan'} ${idx}`;
 
-        if (isKarantina && userInitiated) {
-            const firstItemSelect = section.querySelector('.perijinan-item-select');
-            if (firstItemSelect && !firstItemSelect.value) {
-                firstItemSelect.value = 'MANUAL';
-                handlePerijinanItemChange(firstItemSelect, idx);
-                const manualName = section.querySelector('.perijinan-item-manual-name');
-                if (manualName) manualName.value = 'Biaya Karantina';
-            }
+        if (isKarantina) {
+            const jumlahInput = document.getElementById(`perijinan_jumlah_${idx}`);
+            jumlahInput.value = karantinaNominal.value;
+            formatPerijinanBiaya(jumlahInput);
+        } else {
+            calculatePerijinanSectionTotalFromItems(idx);
         }
     }
 
