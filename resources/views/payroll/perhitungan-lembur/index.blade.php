@@ -133,6 +133,17 @@
                         </select>
                     </div>
 
+                    <!-- Status Pranota -->
+                    <div class="md:col-span-1">
+                        <label for="status_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Status Pranota</label>
+                        <select name="status_pranota" id="status_pranota"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Status</option>
+                            <option value="belum" {{ request('status_pranota') == 'belum' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                            <option value="sudah" {{ request('status_pranota') == 'sudah' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        </select>
+                    </div>
+
                     <!-- Dari Tanggal -->
                     <div class="md:col-span-1">
                         <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
@@ -151,7 +162,7 @@
 
                     <!-- Action Buttons -->
                     <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
-                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran']))
+                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran', 'status_pranota']))
                             <a href="{{ route('payroll.perhitungan-lembur') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
@@ -219,15 +230,24 @@
                                 $umlTotal = $data['total_uang_makan_lembur'] ?? 0;
                                 $grandTotal = $data['total_nominal'] + $umlTotal;
                                 $totalJamKaryawan = $data['total_jam_biasa'] + $data['total_jam_libur'];
+                                $isAllInPranota = !empty($data['is_all_in_pranota']);
+                                $isPartialInPranota = !empty($data['is_partial_in_pranota']);
+                                $pranotaNomorsStr = implode(', ', $data['pranota_nomors'] ?? []);
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <tr class="hover:bg-gray-50 transition-colors duration-150 {{ $isAllInPranota ? 'bg-emerald-50/25' : ($isPartialInPranota ? 'bg-amber-50/20' : '') }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" 
-                                        data-jam-lembur="{{ $totalJamKaryawan }}" 
-                                        data-nominal-lembur="{{ $data['total_nominal'] }}" 
-                                        data-uang-makan-lembur="{{ $umlTotal }}" 
-                                        data-nominal-awal="{{ $grandTotal }}" 
-                                        class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    @if($isAllInPranota)
+                                        <input type="checkbox" disabled value="{{ $data['karyawan']->id }}"
+                                            class="row-checkbox rounded border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            title="Semua lembur karyawan ini dalam periode filter sudah masuk ke pranota: {{ $pranotaNomorsStr }}">
+                                    @else
+                                        <input type="checkbox" value="{{ $data['karyawan']->id }}" 
+                                            data-jam-lembur="{{ $data['unpranota_jam'] ?? $totalJamKaryawan }}" 
+                                            data-nominal-lembur="{{ $data['unpranota_nominal'] ?? $data['total_nominal'] }}" 
+                                            data-uang-makan-lembur="{{ $data['unpranota_uml'] ?? $umlTotal }}" 
+                                            data-nominal-awal="{{ $data['unpranota_grand_total'] ?? $grandTotal }}" 
+                                            class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $loop->iteration }}
@@ -236,8 +256,21 @@
                                     {{ $data['karyawan']->nik }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ $data['karyawan']->nama_lengkap }}
-                                    <div class="text-xs text-gray-500 mt-1">{{ $data['karyawan']->penempatan ?? '-' }}</div>
+                                    <div class="font-bold">{{ $data['karyawan']->nama_lengkap }}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">{{ $data['karyawan']->penempatan ?? '-' }}</div>
+                                    @if($isAllInPranota)
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Pranota: {{ $pranotaNomorsStr }}">
+                                                <i class="fas fa-check-circle text-emerald-600"></i> Sudah Masuk Pranota ({{ $pranotaNomorsStr }})
+                                            </span>
+                                        </div>
+                                    @elseif($isPartialInPranota)
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200" title="Pranota: {{ $pranotaNomorsStr }}">
+                                                <i class="fas fa-exclamation-circle text-amber-600"></i> Sebagian di Pranota ({{ $data['pranota_dates_count'] }}/{{ $data['total_dates_count'] }} hari)
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     @if($data['total_jam_biasa'] > 0)
@@ -266,8 +299,11 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $totalJamKaryawan }}" data-nominal-lembur="{{ $data['total_nominal'] }}" data-nominal-awal="{{ $grandTotal }}" data-uang-makan-lembur="{{ $umlTotal }}" data-adjustment="0">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold total-payout-text {{ $isAllInPranota ? 'text-gray-400 line-through' : 'text-emerald-600' }}" data-jam-lembur="{{ $data['unpranota_jam'] ?? $totalJamKaryawan }}" data-nominal-lembur="{{ $data['unpranota_nominal'] ?? $data['total_nominal'] }}" data-nominal-awal="{{ $data['unpranota_grand_total'] ?? $grandTotal }}" data-uang-makan-lembur="{{ $data['unpranota_uml'] ?? $umlTotal }}" data-adjustment="0">
                                     Rp {{ number_format($grandTotal, 0, ',', '.') }}
+                                    @if($isPartialInPranota)
+                                        <div class="text-[10px] text-emerald-600 font-semibold no-underline">Sisa: Rp {{ number_format($data['unpranota_grand_total'], 0, ',', '.') }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     <button type="button" data-nama="{{ $data['karyawan']->nama_lengkap }}" data-detail="{{ json_encode($data['detail']) }}" class="btn-detail text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors font-medium">
@@ -305,6 +341,8 @@
         <!-- Modal panel -->
         <form action="{{ route('pranota-lembur-karyawan.store') }}" method="POST" id="form-payout" class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
             @csrf
+            <input type="hidden" name="periode_mulai" value="{{ $startDateStr }}">
+            <input type="hidden" name="periode_selesai" value="{{ $endDateStr }}">
             <!-- Header -->
             <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
@@ -675,7 +713,10 @@
                 // Cek apakah data sudah pernah diinisialisasi (sudah ada properti selected)
                 let hasInitialized = details.some(r => r.hasOwnProperty('selected'));
                 if (!hasInitialized) {
-                    details.forEach(r => r.selected = true); // Default terceklis semua
+                    details.forEach(r => {
+                        // Jangan centang tanggal yang sudah masuk pranota
+                        r.selected = !r.is_in_pranota;
+                    });
                     this.setAttribute('data-detail', JSON.stringify(details));
                 }
             } catch (e) {
@@ -728,8 +769,8 @@
                         if (newBtn) {
                             let newDetails = JSON.parse(newBtn.getAttribute('data-detail'));
                             
-                            // Kembalikan ke default (terceklis semua)
-                            newDetails.forEach(r => r.selected = true);
+                            // Kembalikan ke default (hanya yang belum masuk pranota)
+                            newDetails.forEach(r => r.selected = !r.is_in_pranota);
                             
                             // Update current button's attribute and details array
                             btnEl.setAttribute('data-detail', JSON.stringify(newDetails));
@@ -770,14 +811,22 @@
                 let totalLibur = 0;
                 let totalNominalLembur = 0;
                 let totalUangMakanLembur = 0;
-                let allChecked = true;
+                let unpranotaCount = 0;
+                let unpranotaCheckedCount = 0;
                 let rowCount = 0;
                 
                 // Hitung total dari SEMUA data (tidak terpengaruh filter pencarian)
                 if (details.length > 0) {
                     details.forEach((row) => {
-                        let isChecked = (row.selected !== false);
-                        if (!isChecked) allChecked = false;
+                        let isPranota = Boolean(row.is_in_pranota);
+                        if (!isPranota) {
+                            unpranotaCount++;
+                            if (row.selected !== false) {
+                                unpranotaCheckedCount++;
+                            }
+                        }
+                        
+                        let isChecked = (row.selected !== false && !isPranota);
                         
                         if (isChecked) {
                             let rowNominal = Number(row.nominal) || 0;
@@ -795,6 +844,7 @@
                         }
                     });
                 }
+                let allChecked = (unpranotaCount > 0 && unpranotaCheckedCount === unpranotaCount);
                 total = totalNominalAwal + totalAdjustment;
                 
                 if (details.length > 0) {
@@ -805,16 +855,23 @@
                         }
                         
                         rowCount++;
-                        let isChecked = (row.selected !== false);
+                        let isPranota = Boolean(row.is_in_pranota);
+                        let isChecked = !isPranota && (row.selected !== false);
+                        let isDisabled = isPranota;
                         
                         let adjVal = Number(row.adjustment) || 0;
                         let adjColor = adjVal > 0 ? 'text-blue-600' : (adjVal < 0 ? 'text-red-600' : 'text-gray-400');
                         let umlVal = Number(row.uang_makan_lembur) || 0;
-                        html += `<tr class="hover:bg-gray-50/80 transition-colors">
+                        let rowBg = isPranota ? 'bg-emerald-50/30' : 'hover:bg-gray-50/80';
+
+                        html += `<tr class="${rowBg} transition-colors">
                             <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                                <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''}>
+                                <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${isDisabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''}" data-idx="${i}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} title="${isDisabled ? 'Sudah masuk ke ' + (row.pranota_nomor || 'Pranota') : ''}">
                             </td>
-                            <td class="px-3 py-2.5 text-sm text-gray-900 font-medium whitespace-nowrap">${row.tanggal}</td>
+                            <td class="px-3 py-2.5 text-sm text-gray-900 font-medium whitespace-nowrap">
+                                <div>${row.tanggal}</div>
+                                ${isPranota ? `<div class="mt-0.5"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Sudah masuk pranota"><i class="fas fa-check-circle mr-1 text-emerald-600"></i> Masuk ${row.pranota_nomor || 'Pranota'}</span></div>` : ''}
+                            </td>
                             <td class="px-3 py-2.5 text-sm text-gray-600 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${row.tipe_hari === 'Hari Libur' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-700'}">${row.tipe_hari}</span>
                             </td>
@@ -825,7 +882,7 @@
                             <td class="px-3 py-2.5 text-sm text-right font-bold text-emerald-600 whitespace-nowrap">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
                             <td class="px-3 py-2.5 text-sm text-right whitespace-nowrap ${umlVal > 0 ? 'font-bold text-orange-600' : 'text-gray-400'}">${umlVal > 0 ? 'Rp ' + umlVal.toLocaleString('id-ID') : '-'}</td>
                             <td class="px-3 py-2.5 text-sm text-center whitespace-nowrap">
-                                <input type="number" class="detail-adj-input w-28 px-2 py-1 border border-gray-300 rounded-md text-xs text-right font-mono focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 ${adjColor}" data-idx="${i}" value="${adjVal}" placeholder="0" step="1000">
+                                <input type="number" class="detail-adj-input w-28 px-2 py-1 border border-gray-300 rounded-md text-xs text-right font-mono focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 ${adjColor} ${isDisabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''}" data-idx="${i}" value="${adjVal}" placeholder="0" step="1000" ${isDisabled ? 'disabled' : ''}>
                                 ${adjVal !== 0 ? `<div class="text-xs mt-0.5 font-semibold ${adjColor}">${adjVal > 0 ? '+' : ''}${adjVal.toLocaleString('id-ID')}</div>` : ''}
                             </td>
                         </tr>`;
@@ -833,7 +890,7 @@
                     
                     if (rowCount > 0) {
                         html += `<tr class="bg-gray-50 border-t-2 border-gray-200 font-semibold">
-                            <td colspan="9" class="px-4 py-3 text-right text-sm font-bold text-gray-900 tracking-wide">TOTAL TERPILIH KESELURUHAN</td>
+                            <td colspan="9" class="px-4 py-3 text-right text-sm font-bold text-gray-900 tracking-wide">TOTAL TERPILIH (BELUM MASUK PRANOTA)</td>
                             <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700 whitespace-nowrap">Rp ${total.toLocaleString('id-ID')}</td>
                         </tr>`;
                     } else {
@@ -848,10 +905,15 @@
                 
                 const checkAllCb = document.getElementById('detail-check-all');
                 if (checkAllCb) {
-                    checkAllCb.checked = allChecked && details.length > 0;
+                    checkAllCb.checked = allChecked && unpranotaCount > 0;
+                    checkAllCb.disabled = (unpranotaCount === 0);
                     checkAllCb.addEventListener('change', function() {
                         const checked = this.checked;
-                        details.forEach(r => r.selected = checked);
+                        details.forEach(r => {
+                            if (!r.is_in_pranota) {
+                                r.selected = checked;
+                            }
+                        });
                         btnEl.setAttribute('data-detail', JSON.stringify(details));
                         renderDetail(); 
                     });
@@ -860,9 +922,11 @@
                 document.querySelectorAll('.detail-row-cb').forEach(cb => {
                     cb.addEventListener('change', function() {
                         const idx = this.getAttribute('data-idx');
-                        details[idx].selected = this.checked;
-                        btnEl.setAttribute('data-detail', JSON.stringify(details));
-                        renderDetail();
+                        if (!details[idx].is_in_pranota) {
+                            details[idx].selected = this.checked;
+                            btnEl.setAttribute('data-detail', JSON.stringify(details));
+                            renderDetail();
+                        }
                     });
                 });
 
@@ -979,6 +1043,7 @@
                 details = JSON.parse(btnDetail ? btnDetail.getAttribute('data-detail') : '[]');
             } catch(e) {}
             
+            let selectedDates = [];
             if (Array.isArray(details) && details.length > 0) {
                 let hasInitialized = details.some(d => d.hasOwnProperty('selected'));
                 if (hasInitialized) {
@@ -988,7 +1053,7 @@
                     let sumAdj = 0;
                     let sumJam = 0;
                     details.forEach(d => {
-                        if (d.selected !== false) {
+                        if (d.selected !== false && !d.is_in_pranota) {
                             let n = Number(d.nominal) || 0;
                             let u = Number(d.uang_makan_lembur) || 0;
                             sumLembur += n;
@@ -996,6 +1061,7 @@
                             sumAwal += n + u;
                             sumAdj += Number(d.adjustment) || 0;
                             sumJam += Number(d.durasi_jam) || 0;
+                            selectedDates.push(d.tanggal);
                         }
                     });
                     nominalLembur = sumLembur;
@@ -1003,6 +1069,12 @@
                     uangMakanLembur = sumUml;
                     adjustment = sumAdj;
                     totalJam = sumJam;
+                } else {
+                    details.forEach(d => {
+                        if (!d.is_in_pranota) {
+                            selectedDates.push(d.tanggal);
+                        }
+                    });
                 }
             }
 
@@ -1021,7 +1093,8 @@
                 uangMakanLembur: uangMakanLembur,
                 nominalAwal: nominalAwal,
                 adjustment: adjustment,
-                basePayoutVal: nominalAwal + adjustment
+                basePayoutVal: nominalAwal + adjustment,
+                selectedDates: selectedDates
             };
         } else {
             delete pranotaCart[karyawanId];
@@ -1048,9 +1121,13 @@
 
         document.addEventListener('cartUpdated', togglePranotaButton);
 
+        const getEnabledCheckboxes = () => Array.from(rowCheckboxes).filter(cb => !cb.disabled);
+
         // Restore checkboxes state on load dan sinkronkan ulang isi data
         rowCheckboxes.forEach(cb => {
-            if (pranotaCart[cb.value]) {
+            if (cb.disabled) {
+                delete pranotaCart[cb.value];
+            } else if (pranotaCart[cb.value]) {
                 cb.checked = true;
                 updateCartFromRow(cb);
             }
@@ -1058,8 +1135,8 @@
         saveCart();
 
         // Update check-all state initially
-        if (checkAll && rowCheckboxes.length > 0) {
-            checkAll.checked = Array.from(rowCheckboxes).every(cb => cb.checked);
+        if (checkAll && getEnabledCheckboxes().length > 0) {
+            checkAll.checked = getEnabledCheckboxes().every(cb => cb.checked);
         }
         
         togglePranotaButton();
@@ -1068,17 +1145,21 @@
             checkAll.addEventListener('change', function() {
                 const isChecked = this.checked;
                 rowCheckboxes.forEach(cb => {
-                    cb.checked = isChecked;
-                    updateCartFromRow(cb);
+                    if (!cb.disabled) {
+                        cb.checked = isChecked;
+                        updateCartFromRow(cb);
+                    }
                 });
             });
         }
 
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
+                if (this.disabled) return;
                 updateCartFromRow(this);
+                const enabled = getEnabledCheckboxes();
                 if (!this.checked && checkAll) checkAll.checked = false;
-                if (Array.from(rowCheckboxes).every(c => c.checked) && checkAll) checkAll.checked = true;
+                if (enabled.length > 0 && enabled.every(c => c.checked) && checkAll) checkAll.checked = true;
             });
         });
 
@@ -1166,6 +1247,7 @@
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right">
                     <input type="number" name="karyawans[${karyawanId}][adjustment]" class="modal-adjustment-input w-28 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right font-semibold ${adjustment > 0 ? 'text-blue-600' : (adjustment < 0 ? 'text-red-600' : '')}" value="${adjustment}" data-base-payout="${nominalAwal}">
+                    <input type="hidden" name="karyawans[${karyawanId}][tanggal_lembur]" value='${JSON.stringify(item.selectedDates || [])}'>
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${totalAkhir}">Rp ${new Intl.NumberFormat('id-ID').format(totalAkhir)}</td>
                 <td class="px-3 py-2 whitespace-nowrap">

@@ -16,6 +16,8 @@ class PranotaLemburKaryawanHeader extends Model
         'nomor_pranota',
         'nomor_cetakan',
         'tanggal_pranota',
+        'periode_mulai',
+        'periode_selesai',
         'total_biaya',
         'adjustment',
         'total_setelah_adjustment',
@@ -29,6 +31,8 @@ class PranotaLemburKaryawanHeader extends Model
 
     protected $casts = [
         'tanggal_pranota' => 'date',
+        'periode_mulai' => 'date',
+        'periode_selesai' => 'date',
         'total_biaya' => 'decimal:2',
         'adjustment' => 'decimal:2',
         'total_setelah_adjustment' => 'decimal:2',

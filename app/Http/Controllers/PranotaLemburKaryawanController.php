@@ -54,6 +54,8 @@ class PranotaLemburKaryawanController extends Controller
     {
         $validated = $request->validate([
             'tanggal_pranota' => 'required|date',
+            'periode_mulai' => 'nullable|date',
+            'periode_selesai' => 'nullable|date',
             'karyawans' => 'required|array',
             'karyawans.*.kehadiran' => 'required|string',
             'karyawans.*.nominal_awal' => 'required|numeric',
@@ -62,7 +64,50 @@ class PranotaLemburKaryawanController extends Controller
             'karyawans.*.uang_makan_lembur' => 'nullable|numeric',
             'karyawans.*.nominal_per_hari' => 'nullable|numeric',
             'karyawans.*.catatan' => 'nullable|string',
+            'karyawans.*.tanggal_lembur' => 'nullable',
         ]);
+
+        $periodeMulai = $validated['periode_mulai'] ?? null;
+        $periodeSelesai = $validated['periode_selesai'] ?? null;
+
+        // Fallback periode dari tanggal_pranota jika kosong
+        if (! $periodeMulai || ! $periodeSelesai) {
+            $parsedDate = \Carbon\Carbon::parse($validated['tanggal_pranota']);
+            $periodeMulai = $periodeMulai ?: $parsedDate->copy()->startOfMonth()->toDateString();
+            $periodeSelesai = $periodeSelesai ?: $parsedDate->copy()->endOfMonth()->toDateString();
+        }
+
+        // Cek duplikasi tanggal lembur yang sudah masuk pranota aktif
+        foreach ($validated['karyawans'] as $karyawanId => $data) {
+            $tanggalLembur = null;
+            if (! empty($data['tanggal_lembur'])) {
+                $tanggalLembur = is_array($data['tanggal_lembur'])
+                    ? $data['tanggal_lembur']
+                    : json_decode($data['tanggal_lembur'], true);
+            }
+
+            if (! empty($tanggalLembur) && is_array($tanggalLembur)) {
+                $existingItems = \App\Models\PranotaLemburKaryawan::whereHas('pranotaLemburKaryawanHeader', function ($q) {
+                    $q->whereNull('deleted_at');
+                })
+                ->where('karyawan_id', $karyawanId)
+                ->with('pranotaLemburKaryawanHeader')
+                ->get();
+
+                foreach ($existingItems as $ex) {
+                    $exDates = $ex->tanggal_lembur;
+                    if (is_array($exDates)) {
+                        $overlap = array_intersect($tanggalLembur, $exDates);
+                        if (! empty($overlap)) {
+                            $kName = \App\Models\Karyawan::find($karyawanId)?->nama_lengkap ?? "Karyawan #{$karyawanId}";
+                            $nomorPranota = $ex->pranotaLemburKaryawanHeader?->nomor_pranota ?? 'Pranota lain';
+
+                            return back()->with('error', "Gagal: Data lembur {$kName} untuk tanggal ".implode(', ', $overlap)." sudah pernah dimasukkan ke {$nomorPranota}.");
+                        }
+                    }
+                }
+            }
+        }
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
@@ -98,6 +143,8 @@ class PranotaLemburKaryawanController extends Controller
                 'nomor_pranota' => $nomorPranota,
                 'nomor_cetakan' => $nomorCetakan,
                 'tanggal_pranota' => $validated['tanggal_pranota'],
+                'periode_mulai' => $periodeMulai,
+                'periode_selesai' => $periodeSelesai,
                 'total_biaya' => $totalBiaya,
                 'adjustment' => $totalAdjustment,
                 'total_setelah_adjustment' => $totalSetelahAdjustment,
@@ -111,9 +158,19 @@ class PranotaLemburKaryawanController extends Controller
                 $adj = $data['adjustment'] ?? 0;
                 $totalAkhir = $nominalAwal + $adj;
 
+                $tanggalLembur = null;
+                if (! empty($data['tanggal_lembur'])) {
+                    $tanggalLembur = is_array($data['tanggal_lembur'])
+                        ? $data['tanggal_lembur']
+                        : json_decode($data['tanggal_lembur'], true);
+                }
+
                 \App\Models\PranotaLemburKaryawan::create([
                     'pranota_lembur_karyawan_header_id' => $pranota->id,
                     'karyawan_id' => $karyawanId,
+                    'periode_mulai' => $periodeMulai,
+                    'periode_selesai' => $periodeSelesai,
+                    'tanggal_lembur' => $tanggalLembur,
                     'jam_lembur' => $data['kehadiran'],
                     'nominal_awal' => $nominalAwal,
                     'adjustment' => $adj,

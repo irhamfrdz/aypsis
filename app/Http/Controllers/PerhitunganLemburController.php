@@ -172,6 +172,54 @@ class PerhitunganLemburController extends Controller
             ->map(fn ($t) => \Carbon\Carbon::parse($t)->toDateString())
             ->toArray();
 
+        // Ambil data Pranota Lembur yang aktif (belum dihapus) pada rentang periode ini
+        $activePranotas = \App\Models\PranotaLemburKaryawanHeader::whereNull('deleted_at')
+            ->where(function ($q) use ($startDateStr, $endDateStr) {
+                $q->where(function ($sub) use ($startDateStr, $endDateStr) {
+                    $sub->whereNotNull('periode_mulai')
+                        ->whereNotNull('periode_selesai')
+                        ->where('periode_mulai', '<=', $endDateStr)
+                        ->where('periode_selesai', '>=', $startDateStr);
+                })->orWhere(function ($sub) use ($startDateStr, $endDateStr) {
+                    $sub->whereNull('periode_mulai')
+                        ->whereBetween('tanggal_pranota', [$startDateStr, $endDateStr]);
+                });
+            })
+            ->with(['karyawans'])
+            ->get();
+
+        // Index pranota per karyawan dan tanggal
+        $pranotaDateMap = []; // [karyawan_id][Y-m-d] => ['nomor' => nomor_pranota, 'id' => header_id]
+
+        foreach ($activePranotas as $header) {
+            foreach ($header->karyawans as $item) {
+                $kId = $item->karyawan_id;
+                $dates = $item->tanggal_lembur;
+                if (is_array($dates) && count($dates) > 0) {
+                    foreach ($dates as $tgl) {
+                        $pranotaDateMap[$kId][$tgl] = [
+                            'nomor' => $header->nomor_pranota,
+                            'id' => $header->id,
+                        ];
+                    }
+                } else {
+                    // Legacy: lembur karyawan di seluruh periode pranota dianggap masuk pranota
+                    $pMulai = $item->periode_mulai ? $item->periode_mulai->toDateString() : ($header->periode_mulai ? $header->periode_mulai->toDateString() : $header->tanggal_pranota->copy()->startOfMonth()->toDateString());
+                    $pSelesai = $item->periode_selesai ? $item->periode_selesai->toDateString() : ($header->periode_selesai ? $header->periode_selesai->toDateString() : $header->tanggal_pranota->copy()->endOfMonth()->toDateString());
+
+                    $curDate = \Carbon\Carbon::parse($pMulai);
+                    $endCurDate = \Carbon\Carbon::parse($pSelesai);
+                    while ($curDate->lte($endCurDate)) {
+                        $pranotaDateMap[$kId][$curDate->toDateString()] = [
+                            'nomor' => $header->nomor_pranota,
+                            'id' => $header->id,
+                        ];
+                        $curDate->addDay();
+                    }
+                }
+            }
+        }
+
         $rekapData = [];
 
         foreach ($karyawans as $karyawan) {
@@ -258,8 +306,6 @@ class PerhitunganLemburController extends Controller
 
                                 if ($tipeHari === 'Hari Libur' && ! $isPelabuhan1) {
                                     // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
-                                    // Asumsi rule 18:00 - Selesai (is_sampai_selesai = 1) untuk > 10 jam
-                                    // Asumsi rule 08:00 - 18:00 (is_sampai_selesai = 0) untuk <= 10 jam
                                     if ($rule->is_sampai_selesai) {
                                         if ($durasiJam > 10) {
                                             $matchesTime = true;
@@ -274,7 +320,6 @@ class PerhitunganLemburController extends Controller
                                         // Build Carbon boundaries for the rule
                                         $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
 
-                                        // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
                                         if ($ruleMulai->copy()->addHours(6) < $lm) {
                                             $ruleMulai->addDay();
                                         }
@@ -285,7 +330,6 @@ class PerhitunganLemburController extends Controller
                                             }
                                         } elseif ($rule->jam_selesai) {
                                             $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d').' '.$rule->jam_selesai);
-                                            // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
                                             if ($ruleSelesai < $ruleMulai) {
                                                 $ruleSelesai->addDay();
                                             }
@@ -330,6 +374,10 @@ class PerhitunganLemburController extends Controller
 
                     $totalNominal += $nominalHariIni;
 
+                    $pranotaInfo = $pranotaDateMap[$karyawan->id][$dateStr] ?? null;
+                    $isInPranota = ! empty($pranotaInfo);
+                    $pranotaNomor = $pranotaInfo['nomor'] ?? null;
+
                     $detailPerhitungan[] = [
                         'tanggal' => $dateStr,
                         'tipe_hari' => $tipeHari,
@@ -339,6 +387,8 @@ class PerhitunganLemburController extends Controller
                         'nominal' => $nominalHariIni,
                         'uang_makan_lembur' => $nominalUangMakanLembur ?? 0,
                         'rule' => $ruleApplied ? $ruleApplied->satuan.' x '.number_format($ruleApplied->nominal, 0, ',', '.') : 'Tidak ada rumus',
+                        'is_in_pranota' => $isInPranota,
+                        'pranota_nomor' => $pranotaNomor,
                     ];
                 }
 
@@ -349,6 +399,34 @@ class PerhitunganLemburController extends Controller
                 // Tentukan uang makan dari tabel uang_makans, fallback ke nominal_uang_makan karyawan
                 $nominalUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
 
+                $totalDates = count($detailPerhitungan);
+                $pranotaDatesCount = 0;
+                $pranotaNomors = [];
+                $unpranotaJamBiasa = 0;
+                $unpranotaJamLibur = 0;
+                $unpranotaNominal = 0;
+                $unpranotaUml = 0;
+
+                foreach ($detailPerhitungan as $dp) {
+                    if ($dp['is_in_pranota']) {
+                        $pranotaDatesCount++;
+                        if (! empty($dp['pranota_nomor']) && ! in_array($dp['pranota_nomor'], $pranotaNomors)) {
+                            $pranotaNomors[] = $dp['pranota_nomor'];
+                        }
+                    } else {
+                        if ($dp['tipe_hari'] === 'Hari Biasa') {
+                            $unpranotaJamBiasa += $dp['durasi_jam'];
+                        } else {
+                            $unpranotaJamLibur += $dp['durasi_jam'];
+                        }
+                        $unpranotaNominal += $dp['nominal'];
+                        $unpranotaUml += $dp['uang_makan_lembur'];
+                    }
+                }
+
+                $isAllInPranota = ($totalDates > 0 && $pranotaDatesCount >= $totalDates);
+                $isPartialInPranota = ($pranotaDatesCount > 0 && $pranotaDatesCount < $totalDates);
+
                 $rekapData[$karyawan->id] = [
                     'karyawan' => $karyawan,
                     'nominal_uang_makan' => $nominalUangMakan,
@@ -357,7 +435,28 @@ class PerhitunganLemburController extends Controller
                     'total_nominal' => $totalNominal,
                     'total_uang_makan_lembur' => $totalUangMakanLembur,
                     'detail' => $detailPerhitungan,
+                    'is_all_in_pranota' => $isAllInPranota,
+                    'is_partial_in_pranota' => $isPartialInPranota,
+                    'pranota_dates_count' => $pranotaDatesCount,
+                    'total_dates_count' => $totalDates,
+                    'pranota_nomors' => $pranotaNomors,
+                    'unpranota_jam' => $unpranotaJamBiasa + $unpranotaJamLibur,
+                    'unpranota_jam_biasa' => $unpranotaJamBiasa,
+                    'unpranota_jam_libur' => $unpranotaJamLibur,
+                    'unpranota_nominal' => $unpranotaNominal,
+                    'unpranota_uml' => $unpranotaUml,
+                    'unpranota_grand_total' => $unpranotaNominal + $unpranotaUml,
                 ];
+            }
+        }
+
+        // Filter berdasarkan status_pranota (semua, belum, sudah)
+        if ($request->filled('status_pranota')) {
+            $statusPranotaFilter = $request->status_pranota;
+            if ($statusPranotaFilter === 'belum') {
+                $rekapData = array_filter($rekapData, fn ($item) => ! $item['is_all_in_pranota']);
+            } elseif ($statusPranotaFilter === 'sudah') {
+                $rekapData = array_filter($rekapData, fn ($item) => $item['is_all_in_pranota'] || $item['is_partial_in_pranota']);
             }
         }
 
