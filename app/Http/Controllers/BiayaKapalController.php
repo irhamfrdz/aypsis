@@ -34,6 +34,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class BiayaKapalController extends Controller
 {
@@ -962,6 +963,9 @@ class BiayaKapalController extends Controller
 
             // Perijinan sections
             'perijinan_sections' => 'nullable|array',
+            'perijinan_sections.*.mode' => 'nullable|in:perijinan,karantina',
+            'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
+            'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.dari_tanggal' => 'nullable|date',
@@ -1098,6 +1102,10 @@ class BiayaKapalController extends Controller
             'tanto.*.tanggal_invoice_vendor' => 'nullable|date',
             'tanto.*.keterangan' => 'nullable|string',
         ]);
+
+        $validated['perijinan_sections'] = $this->resolvePerijinanKarantinaSections(
+            $validated['perijinan_sections'] ?? []
+        );
 
         try {
             DB::beginTransaction();
@@ -2742,7 +2750,7 @@ class BiayaKapalController extends Controller
                 $perijinanTotal = 0;
 
                 foreach ($validated['perijinan_sections'] as $section) {
-                    if (empty($section['nama_kapal']) && empty($section['grand_total']) && empty($section['jumlah_biaya'])) {
+                    if (empty($section['nama_kapal']) && empty($section['grand_total']) && empty($section['jumlah_biaya']) && empty($section['karantina_source_id'])) {
                         continue;
                     }
 
@@ -2757,6 +2765,10 @@ class BiayaKapalController extends Controller
 
                     $perijinan = BiayaKapalPerijinan::create([
                         'biaya_kapal_id' => $biayaKapal->id,
+                        'mode' => $section['mode'] ?? 'perijinan',
+                        'karantina_source_type' => $section['karantina_source_type'] ?? null,
+                        'karantina_source_id' => $section['karantina_source_id'] ?? null,
+                        'karantina_nomor_dokumen' => $section['karantina_nomor_dokumen'] ?? null,
                         'nama_kapal' => $section['nama_kapal'] ?? null,
                         'no_voyage' => $section['no_voyage'] ?? null,
                         'dari_tanggal' => ! empty($section['dari_tanggal']) ? $section['dari_tanggal'] : null,
@@ -4345,6 +4357,9 @@ class BiayaKapalController extends Controller
 
             // Perijinan sections
             'perijinan_sections' => 'nullable|array',
+            'perijinan_sections.*.mode' => 'nullable|in:perijinan,karantina',
+            'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
+            'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.nomor_referensi' => 'nullable|string|max:255',
@@ -4363,6 +4378,10 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.items.*.nama_perijinan' => 'nullable|string',
             'perijinan_sections.*.items.*.tarif' => 'nullable|numeric|min:0',
         ]);
+
+        $validated['perijinan_sections'] = $this->resolvePerijinanKarantinaSections(
+            $validated['perijinan_sections'] ?? []
+        );
 
         try {
             DB::beginTransaction();
@@ -5471,7 +5490,7 @@ class BiayaKapalController extends Controller
                 BiayaKapalPerijinan::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 $totalPerijinan = 0;
                 foreach ($validated['perijinan_sections'] as $section) {
-                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya']) && empty($section['karantina_source_id'])) {
                         continue;
                     }
 
@@ -5481,6 +5500,10 @@ class BiayaKapalController extends Controller
 
                     $perijinan = BiayaKapalPerijinan::create([
                         'biaya_kapal_id' => $biayaKapal->id,
+                        'mode' => $section['mode'] ?? 'perijinan',
+                        'karantina_source_type' => $section['karantina_source_type'] ?? null,
+                        'karantina_source_id' => $section['karantina_source_id'] ?? null,
+                        'karantina_nomor_dokumen' => $section['karantina_nomor_dokumen'] ?? null,
                         'nama_kapal' => $section['nama_kapal'] ?? null,
                         'no_voyage' => $section['no_voyage'] ?? null,
                         'dari_tanggal' => ! empty($section['dari_tanggal']) ? $section['dari_tanggal'] : null,
@@ -6478,8 +6501,56 @@ class BiayaKapalController extends Controller
         }
     }
 
+    private function resolvePerijinanKarantinaSections(array $sections): array
+    {
+        foreach ($sections as $index => &$section) {
+            $section['mode'] = $section['mode'] ?? 'perijinan';
+
+            if ($section['mode'] !== 'karantina') {
+                $section['karantina_source_type'] = null;
+                $section['karantina_source_id'] = null;
+                $section['karantina_nomor_dokumen'] = null;
+
+                continue;
+            }
+
+            $sourceType = $section['karantina_source_type'] ?? null;
+            $sourceId = (int) ($section['karantina_source_id'] ?? 0);
+
+            if (! $sourceType || ! $sourceId) {
+                throw ValidationException::withMessages([
+                    "perijinan_sections.{$index}.karantina_source_id" => 'Pilih satu surat jalan atau tanda terima untuk mode Karantina.',
+                ]);
+            }
+
+            $nomorDokumen = match ($sourceType) {
+                'surat_jalan' => TandaTerima::find($sourceId)?->no_surat_jalan,
+                'tanda_terima_tanpa_surat_jalan' => (function () use ($sourceId) {
+                    $tandaTerima = TandaTerimaTanpaSuratJalan::find($sourceId);
+
+                    return $tandaTerima?->no_tanda_terima ?: $tandaTerima?->nomor_tanda_terima;
+                })(),
+                'tanda_terima_lcl' => TandaTerimaLcl::find($sourceId)?->nomor_tanda_terima,
+                default => null,
+            };
+
+            if (! $nomorDokumen) {
+                throw ValidationException::withMessages([
+                    "perijinan_sections.{$index}.karantina_source_id" => 'Dokumen Karantina yang dipilih tidak ditemukan atau sudah tidak tersedia.',
+                ]);
+            }
+
+            $section['karantina_nomor_dokumen'] = $nomorDokumen;
+            $section['nama_kapal'] = null;
+            $section['no_voyage'] = null;
+        }
+        unset($section);
+
+        return $sections;
+    }
+
     /**
-     * Search tanda terima for Biaya Stuffing search dropdown
+     * Search tanda terima for Biaya Stuffing and Perijinan mode Karantina dropdowns.
      */
     public function searchTandaTerima(Request $request)
     {

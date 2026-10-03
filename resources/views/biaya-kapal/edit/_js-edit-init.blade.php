@@ -319,6 +319,10 @@
         if($biayaKapal->perijinanDetails->count() > 0) {
             foreach($biayaKapal->perijinanDetails as $p) {
                 $editPerijinanSections[] = [
+                    'mode' => $p->mode ?? 'perijinan',
+                    'karantina_source_type' => $p->karantina_source_type,
+                    'karantina_source_id' => $p->karantina_source_id,
+                    'karantina_nomor_dokumen' => $p->karantina_nomor_dokumen,
                     'nama_kapal' => $p->nama_kapal,
                     'no_voyage' => $p->no_voyage,
                     'nomor_referensi' => $p->nomor_referensi,
@@ -329,6 +333,7 @@
                     'grand_total' => $p->grand_total,
                     'penerima' => $p->penerima,
                     'nomor_rekening' => $p->nomor_rekening,
+                    'bank_id' => $p->bank_id,
                     'tanggal_invoice_vendor' => $p->tanggal_invoice_vendor ? \Carbon\Carbon::parse($p->tanggal_invoice_vendor)->format('Y-m-d') : null,
                     'keterangan' => $p->keterangan,
                     'items' => $p->details->map(function($d) {

@@ -4,6 +4,8 @@
     // perijinanWrapper, perijinanSectionsContainer, addPerijinanSectionBtn, addPerijinanSectionBottomBtn
 
     const banksData = {!! json_encode($banks->map(function($b) { return ['id' => $b->id, 'name' => $b->name]; })->toArray()) !!};
+    const perijinanDocumentSearchUrl = @json(route('biaya-kapal.search-tanda-terima'));
+    const oldPerijinanSectionsData = @json(array_values(old('perijinan_sections', [])));
 
 
     function initializePerijinanSections() {
@@ -34,8 +36,18 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2 space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Mode Input <span class="text-red-500">*</span></label>
+                    <select name="perijinan_sections[${idx}][mode]"
+                            class="perijinan-mode-select w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="perijinan">Perijinan Kapal</option>
+                        <option value="karantina">Karantina</option>
+                    </select>
+                    <p class="text-xs text-gray-500">Mode Karantina menggunakan referensi surat jalan atau tanda terima.</p>
+                </div>
+
                 <!-- Row 1: Kapal & Voyage -->
-                <div class="space-y-1 searchable-kapal-container" data-section-index="${idx}">
+                <div class="space-y-1 searchable-kapal-container perijinan-standard-field" data-section-index="${idx}">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                     <div class="relative perijinan-kapal-wrapper">
                         <input type="hidden" name="perijinan_sections[${idx}][nama_kapal]" class="perijinan-kapal-hidden" required>
@@ -58,7 +70,7 @@
                     </div>
                 </div>
                 
-                <div class="space-y-1">
+                <div class="space-y-1 perijinan-standard-field">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Voyage <span class="text-red-500">*</span></label>
                     <div class="flex gap-2">
                         <div class="flex-grow relative perijinan-select-container">
@@ -80,6 +92,31 @@
                             <i class="fas fa-keyboard text-xs"></i>
                         </button>
                     </div>
+                </div>
+
+                <div class="perijinan-karantina-field md:col-span-2 hidden rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Referensi Dokumen Karantina <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input type="text"
+                               class="perijinan-karantina-search w-full px-3 py-2 pr-10 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
+                               placeholder="Cari nomor surat jalan / tanda terima..."
+                               autocomplete="off">
+                        <i class="perijinan-karantina-spinner fas fa-spinner fa-spin absolute right-3 top-3 hidden text-emerald-600"></i>
+                        <div class="perijinan-karantina-results hidden absolute z-[70] w-full mt-1 bg-white border border-emerald-100 rounded-lg shadow-xl max-h-72 overflow-y-auto"></div>
+                    </div>
+                    <div class="perijinan-karantina-selected hidden mt-3 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white p-3">
+                        <div class="min-w-0">
+                            <span class="perijinan-karantina-type rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"></span>
+                            <div class="perijinan-karantina-number mt-1 font-medium text-gray-900"></div>
+                            <div class="perijinan-karantina-detail mt-1 truncate text-xs text-gray-500"></div>
+                        </div>
+                        <button type="button" class="perijinan-karantina-clear shrink-0 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded">
+                            <i class="fas fa-times mr-1"></i>Ganti
+                        </button>
+                    </div>
+                    <input type="hidden" name="perijinan_sections[${idx}][karantina_source_type]" class="perijinan-karantina-source-type">
+                    <input type="hidden" name="perijinan_sections[${idx}][karantina_source_id]" class="perijinan-karantina-source-id">
+                    <p class="mt-2 text-xs text-gray-500">Tersedia: surat jalan, tanda terima tanpa surat jalan, dan tanda terima LCL.</p>
                 </div>
 
                 <!-- Hidden Date Fields -->
@@ -198,8 +235,11 @@
         
         // Initialize searchable kapal for this section
         initSearchableKapalForPerijinan(section, idx);
+        initKarantinaPickerForPerijinan(section, idx);
 
         if (initialData) {
+            section.querySelector('.perijinan-mode-select').value = initialData.mode || 'perijinan';
+
             // Populate basic fields
             if (initialData.nama_kapal) {
                 const hiddenInput = section.querySelector('.perijinan-kapal-hidden');
@@ -226,6 +266,15 @@
             section.querySelector(`[name="perijinan_sections[${idx}][bank_id]"]`).value = initialData.bank_id || '';
             section.querySelector(`[name="perijinan_sections[${idx}][tanggal_invoice_vendor]"]`).value = initialData.tanggal_invoice_vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][keterangan]"]`).value = initialData.keterangan || '';
+
+            if (initialData.karantina_source_type && initialData.karantina_source_id) {
+                setPerijinanKarantinaReference(section, {
+                    type: initialData.karantina_source_type,
+                    id: initialData.karantina_source_id,
+                    no_surat_jalan: initialData.karantina_nomor_dokumen,
+                    display_text: initialData.karantina_nomor_dokumen
+                });
+            }
             
             // Populate items
             if (initialData.items && initialData.items.length > 0) {
@@ -260,6 +309,11 @@
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
         const voyageManualInput = section.querySelector('.perijinan-voyage-manual-input');
         const voyageToggleBtn = section.querySelector('.perijinan-voyage-toggle-btn');
+
+        section.querySelector('.perijinan-mode-select').addEventListener('change', function () {
+            applyPerijinanMode(section, idx, true);
+        });
+        applyPerijinanMode(section, idx, false);
 
         // Toggle Manual Voyage logic (similar to air)
         voyageToggleBtn.addEventListener('click', function() {
@@ -306,6 +360,134 @@
                     sampaiTanggal.value = selectedOption.dataset.max;
                 }
             }
+        });
+    }
+
+    function escapePerijinanHtml(value) {
+        const element = document.createElement('div');
+        element.textContent = value == null ? '' : String(value);
+        return element.innerHTML;
+    }
+
+    function perijinanKarantinaSourceType(type) {
+        return type === 'tanda_terima' ? 'surat_jalan' : type;
+    }
+
+    function perijinanKarantinaTypeLabel(type) {
+        return {
+            surat_jalan: 'Surat Jalan',
+            tanda_terima_tanpa_surat_jalan: 'Tanda Terima Tanpa SJ',
+            tanda_terima_lcl: 'Tanda Terima LCL'
+        }[type] || type;
+    }
+
+    function setPerijinanKarantinaReference(section, item) {
+        const sourceType = perijinanKarantinaSourceType(item.type);
+        section.querySelector('.perijinan-karantina-source-type').value = sourceType;
+        section.querySelector('.perijinan-karantina-source-id').value = item.id;
+        section.querySelector('.perijinan-karantina-type').textContent = perijinanKarantinaTypeLabel(sourceType);
+        section.querySelector('.perijinan-karantina-number').textContent = item.no_surat_jalan || '-';
+        section.querySelector('.perijinan-karantina-detail').textContent = item.display_text || '';
+        section.querySelector('.perijinan-karantina-selected').classList.remove('hidden');
+        section.querySelector('.perijinan-karantina-search').value = '';
+        section.querySelector('.perijinan-karantina-results').classList.add('hidden');
+    }
+
+    function clearPerijinanKarantinaReference(section) {
+        section.querySelector('.perijinan-karantina-source-type').value = '';
+        section.querySelector('.perijinan-karantina-source-id').value = '';
+        section.querySelector('.perijinan-karantina-selected').classList.add('hidden');
+        section.querySelector('.perijinan-karantina-search').focus();
+    }
+
+    function applyPerijinanMode(section, idx, userInitiated) {
+        const isKarantina = section.querySelector('.perijinan-mode-select').value === 'karantina';
+        section.querySelectorAll('.perijinan-standard-field').forEach(field => field.classList.toggle('hidden', isKarantina));
+        section.querySelector('.perijinan-karantina-field').classList.toggle('hidden', !isKarantina);
+
+        const kapalInput = section.querySelector('.perijinan-kapal-hidden');
+        const voyageSelect = section.querySelector('.perijinan-voyage-select');
+        kapalInput.required = !isKarantina;
+        voyageSelect.required = !isKarantina;
+
+        const title = section.querySelector('h4');
+        if (title) title.textContent = `${isKarantina ? 'Karantina' : 'Perijinan'} ${idx}`;
+
+        if (isKarantina && userInitiated) {
+            const firstItemSelect = section.querySelector('.perijinan-item-select');
+            if (firstItemSelect && !firstItemSelect.value) {
+                firstItemSelect.value = 'MANUAL';
+                handlePerijinanItemChange(firstItemSelect, idx);
+                const manualName = section.querySelector('.perijinan-item-manual-name');
+                if (manualName) manualName.value = 'Biaya Karantina';
+            }
+        }
+    }
+
+    function initKarantinaPickerForPerijinan(section) {
+        const searchInput = section.querySelector('.perijinan-karantina-search');
+        const resultsContainer = section.querySelector('.perijinan-karantina-results');
+        const spinner = section.querySelector('.perijinan-karantina-spinner');
+        const clearButton = section.querySelector('.perijinan-karantina-clear');
+        let searchTimer = null;
+        let requestController = null;
+
+        clearButton.addEventListener('click', () => clearPerijinanKarantinaReference(section));
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            const query = this.value.trim();
+            if (query.length < 2) {
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+
+            searchTimer = setTimeout(async function () {
+                if (requestController) requestController.abort();
+                requestController = new AbortController();
+                spinner.classList.remove('hidden');
+
+                try {
+                    const response = await fetch(`${perijinanDocumentSearchUrl}?search=${encodeURIComponent(query)}`, {
+                        headers: { 'Accept': 'application/json' },
+                        signal: requestController.signal
+                    });
+                    if (!response.ok) throw new Error('Gagal mencari dokumen.');
+                    const results = await response.json();
+                    resultsContainer.innerHTML = '';
+
+                    if (!results.length) {
+                        resultsContainer.innerHTML = '<div class="p-3 text-sm text-gray-500">Dokumen tidak ditemukan.</div>';
+                    } else {
+                        results.forEach(item => {
+                            const sourceType = perijinanKarantinaSourceType(item.type);
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.className = 'block w-full border-b border-gray-100 px-3 py-3 text-left last:border-0 hover:bg-emerald-50';
+                            button.innerHTML = `
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-medium text-gray-900">${escapePerijinanHtml(item.no_surat_jalan)}</span>
+                                    <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">${escapePerijinanHtml(perijinanKarantinaTypeLabel(sourceType))}</span>
+                                </div>
+                                <div class="mt-1 text-xs text-gray-500">${escapePerijinanHtml(item.no_kontainer || '-')} · ${escapePerijinanHtml(item.pengirim || '-')} · ${escapePerijinanHtml(item.tanggal || '-')}</div>`;
+                            button.addEventListener('click', () => setPerijinanKarantinaReference(section, item));
+                            resultsContainer.appendChild(button);
+                        });
+                    }
+                    resultsContainer.classList.remove('hidden');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        resultsContainer.innerHTML = `<div class="p-3 text-sm text-red-600">${escapePerijinanHtml(error.message)}</div>`;
+                        resultsContainer.classList.remove('hidden');
+                    }
+                } finally {
+                    spinner.classList.add('hidden');
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.perijinan-karantina-field')) resultsContainer.classList.add('hidden');
         });
     }
 
@@ -654,6 +836,11 @@
     }
     if (addPerijinanSectionBottomBtn) {
         addPerijinanSectionBottomBtn.addEventListener('click', () => addPerijinanSection());
+    }
+
+    if (oldPerijinanSectionsData.length > 0) {
+        clearAllPerijinanSections();
+        oldPerijinanSectionsData.forEach(section => addPerijinanSection(section));
     }
 
     const generatePerijinanBtn = document.getElementById('generate_perijinan_by_date_btn');

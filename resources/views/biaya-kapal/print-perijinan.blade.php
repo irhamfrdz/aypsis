@@ -243,8 +243,8 @@
                 <tr>
                     <th style="width: 5%;">No</th>
                     <th style="width: 15%;">Tanggal Ref.</th>
-                    <th style="width: 35%;">Nomor Referensi</th>
-                    <th style="width: 25%;">Nomor Voyage</th>
+                    <th style="width: 35%;">Nomor Referensi / Dokumen</th>
+                    <th style="width: 25%;">Voyage / Mode</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
@@ -257,9 +257,13 @@
                             {{ $detail->tanggal_invoice_vendor ? $detail->tanggal_invoice_vendor->format('d/m/Y') : '-' }}
                         </td>
                         <td class="text-center">
-                            {{ $detail->nomor_referensi ?: '-' }}
+                            @if(($detail->mode ?? 'perijinan') === 'karantina')
+                                {{ $detail->karantina_nomor_dokumen ?: '-' }}
+                            @else
+                                {{ $detail->nomor_referensi ?: '-' }}
+                            @endif
                         </td>
-                        <td class="text-center">{{ $detail->no_voyage }}</td>
+                        <td class="text-center">{{ ($detail->mode ?? 'perijinan') === 'karantina' ? 'Karantina' : $detail->no_voyage }}</td>
                         <td class="text-right font-bold">
                             Rp {{ number_format($detail->grand_total, 0, ',', '.') }}
                         </td>

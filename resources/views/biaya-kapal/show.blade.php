@@ -1071,7 +1071,7 @@
                 <table class="min-w-full divide-y divide-indigo-100">
                     <thead class="bg-indigo-50/50">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Kapal / Voyage</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Kapal / Dokumen</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">No. Ref / Vendor</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Rincian Biaya</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Keterangan</th>
@@ -1082,8 +1082,14 @@
                         @foreach($biayaKapal->perijinanDetails as $detail)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-gray-900">{{ $detail->nama_kapal }}</div>
-                                <div class="text-xs text-indigo-600 font-medium">Voyage: {{ $detail->no_voyage }}</div>
+                                @if(($detail->mode ?? 'perijinan') === 'karantina')
+                                    <div class="text-xs font-semibold uppercase text-emerald-600">Karantina</div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $detail->karantina_nomor_dokumen ?: '-' }}</div>
+                                    <div class="text-xs text-gray-500">{{ str($detail->karantina_source_type)->replace('_', ' ')->title() }}</div>
+                                @else
+                                    <div class="text-sm font-bold text-gray-900">{{ $detail->nama_kapal }}</div>
+                                    <div class="text-xs text-indigo-600 font-medium">Voyage: {{ $detail->no_voyage }}</div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm font-semibold text-gray-800">{{ $detail->nomor_referensi ?: '-' }}</div>

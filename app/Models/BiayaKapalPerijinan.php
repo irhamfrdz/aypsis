@@ -13,6 +13,10 @@ class BiayaKapalPerijinan extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
+        'mode',
+        'karantina_source_type',
+        'karantina_source_id',
+        'karantina_nomor_dokumen',
         'nama_kapal',
         'no_voyage',
         'dari_tanggal',
