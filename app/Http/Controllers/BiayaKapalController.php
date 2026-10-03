@@ -9,6 +9,7 @@ use App\Models\BiayaKapalLabuhTambat;
 use App\Models\BiayaKapalMeratus;
 use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalPerijinan;
+use App\Models\BiayaKapalPerijinanKarantina;
 use App\Models\BiayaKapalPerlengkapan;
 use App\Models\BiayaKapalStuffing;
 use App\Models\BiayaKapalTanggalBayar;
@@ -608,6 +609,14 @@ class BiayaKapalController extends Controller
                     }
                     unset($item);
                 }
+                if (isset($section['karantina_items']) && is_array($section['karantina_items'])) {
+                    foreach ($section['karantina_items'] as &$item) {
+                        if (isset($item['nominal'])) {
+                            $item['nominal'] = str_replace(',', '.', str_replace('.', '', $item['nominal']));
+                        }
+                    }
+                    unset($item);
+                }
             }
             unset($section);
         }
@@ -967,6 +976,10 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
             'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
             'perijinan_sections.*.karantina_nominal' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.karantina_items' => 'nullable|array',
+            'perijinan_sections.*.karantina_items.*.source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
+            'perijinan_sections.*.karantina_items.*.source_id' => 'nullable|integer|min:1',
+            'perijinan_sections.*.karantina_items.*.nominal' => 'nullable|numeric|min:0',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.dari_tanggal' => 'nullable|date',
@@ -2802,6 +2815,16 @@ class BiayaKapalController extends Controller
                         }
                     }
 
+                    foreach ($section['karantina_items'] ?? [] as $karantinaItem) {
+                        BiayaKapalPerijinanKarantina::create([
+                            'biaya_kapal_perijinan_id' => $perijinan->id,
+                            'source_type' => $karantinaItem['source_type'],
+                            'source_id' => $karantinaItem['source_id'],
+                            'nomor_dokumen' => $karantinaItem['nomor_dokumen'],
+                            'nominal' => $karantinaItem['nominal'],
+                        ]);
+                    }
+
                     $perijinanTotal += $grandTotal;
                 }
 
@@ -2844,7 +2867,7 @@ class BiayaKapalController extends Controller
             'loloDetails',
             'storageDetails',
             'freightDetails',
-            'perijinanDetails',
+            'perijinanDetails.karantinaItems',
             'meratusDetails',
             'demurrageDetails',
             'notaReturDetails',
@@ -2957,7 +2980,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank', 'buruhBatamDetails', 'tanggalBayarDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'perijinanDetails.karantinaItems', 'tenagaKerjaDetails.buruh', 'bank', 'buruhBatamDetails', 'tanggalBayarDetails']);
 
         // Check if it's Biaya Buruh Batam
         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->buruhBatamDetails && $biayaKapal->buruhBatamDetails->count() > 0) {
@@ -3156,7 +3179,7 @@ class BiayaKapalController extends Controller
         // Check if it's Biaya Perijinan and use specific print template
         if ($biayaKapal->klasifikasiBiaya &&
             stripos($biayaKapal->klasifikasiBiaya->nama, 'perijinan') !== false) {
-            $biayaKapal->load(['perijinanDetails.details', 'perijinanDetails.bank']);
+            $biayaKapal->load(['perijinanDetails.details', 'perijinanDetails.karantinaItems', 'perijinanDetails.bank']);
 
             return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
         }
@@ -3513,7 +3536,7 @@ class BiayaKapalController extends Controller
      */
     public function printPerijinan(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details', 'perijinanDetails.bank']);
+        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details', 'perijinanDetails.karantinaItems', 'perijinanDetails.bank']);
 
         return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
     }
@@ -3540,6 +3563,7 @@ class BiayaKapalController extends Controller
             'loloDetails',
             'storageDetails',
             'perijinanDetails.details',
+            'perijinanDetails.karantinaItems',
             'meratusDetails',
             'buruhBongkar.details',
             'temasDetails',
@@ -3945,6 +3969,14 @@ class BiayaKapalController extends Controller
                     foreach ($section['items'] as &$item) {
                         if (isset($item['tarif'])) {
                             $item['tarif'] = str_replace(',', '.', str_replace('.', '', $item['tarif']));
+                        }
+                    }
+                    unset($item);
+                }
+                if (isset($section['karantina_items']) && is_array($section['karantina_items'])) {
+                    foreach ($section['karantina_items'] as &$item) {
+                        if (isset($item['nominal'])) {
+                            $item['nominal'] = str_replace(',', '.', str_replace('.', '', $item['nominal']));
                         }
                     }
                     unset($item);
@@ -4364,6 +4396,10 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.karantina_source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
             'perijinan_sections.*.karantina_source_id' => 'nullable|integer|min:1',
             'perijinan_sections.*.karantina_nominal' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.karantina_items' => 'nullable|array',
+            'perijinan_sections.*.karantina_items.*.source_type' => 'nullable|in:surat_jalan,tanda_terima_tanpa_surat_jalan,tanda_terima_lcl',
+            'perijinan_sections.*.karantina_items.*.source_id' => 'nullable|integer|min:1',
+            'perijinan_sections.*.karantina_items.*.nominal' => 'nullable|numeric|min:0',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perijinan_sections.*.nomor_referensi' => 'nullable|string|max:255',
@@ -5539,6 +5575,15 @@ class BiayaKapalController extends Controller
                             ]);
                         }
                     }
+                    foreach ($section['karantina_items'] ?? [] as $karantinaItem) {
+                        BiayaKapalPerijinanKarantina::create([
+                            'biaya_kapal_perijinan_id' => $perijinan->id,
+                            'source_type' => $karantinaItem['source_type'],
+                            'source_id' => $karantinaItem['source_id'],
+                            'nomor_dokumen' => $karantinaItem['nomor_dokumen'],
+                            'nominal' => $karantinaItem['nominal'],
+                        ]);
+                    }
                     $totalPerijinan += $grandTotal;
                 }
                 if ($totalPerijinan > 0) {
@@ -6514,54 +6559,99 @@ class BiayaKapalController extends Controller
                 $section['karantina_source_type'] = null;
                 $section['karantina_source_id'] = null;
                 $section['karantina_nomor_dokumen'] = null;
+                $section['karantina_items'] = [];
 
                 continue;
             }
 
-            $sourceType = $section['karantina_source_type'] ?? null;
-            $sourceId = (int) ($section['karantina_source_id'] ?? 0);
+            $karantinaItems = $section['karantina_items'] ?? [];
+            if (empty($karantinaItems) && ! empty($section['karantina_source_id'])) {
+                $karantinaItems[] = [
+                    'source_type' => $section['karantina_source_type'] ?? null,
+                    'source_id' => $section['karantina_source_id'],
+                    'nominal' => $section['karantina_nominal'] ?? 0,
+                ];
+            }
 
-            if (! $sourceType || ! $sourceId) {
+            if (empty($karantinaItems)) {
                 throw ValidationException::withMessages([
-                    "perijinan_sections.{$index}.karantina_source_id" => 'Pilih satu surat jalan atau tanda terima untuk mode Karantina.',
+                    "perijinan_sections.{$index}.karantina_items" => 'Tambahkan minimal satu surat jalan atau tanda terima untuk mode Karantina.',
                 ]);
             }
 
-            $nomorDokumen = match ($sourceType) {
-                'surat_jalan' => TandaTerima::find($sourceId)?->no_surat_jalan,
-                'tanda_terima_tanpa_surat_jalan' => (function () use ($sourceId) {
-                    $tandaTerima = TandaTerimaTanpaSuratJalan::find($sourceId);
+            $resolvedItems = [];
+            $seenReferences = [];
+            $totalKarantina = 0;
 
-                    return $tandaTerima?->no_tanda_terima ?: $tandaTerima?->nomor_tanda_terima;
-                })(),
-                'tanda_terima_lcl' => TandaTerimaLcl::find($sourceId)?->nomor_tanda_terima,
-                default => null,
-            };
+            foreach ($karantinaItems as $itemIndex => $item) {
+                $sourceType = $item['source_type'] ?? null;
+                $sourceId = (int) ($item['source_id'] ?? 0);
+                $referenceKey = $sourceType.':'.$sourceId;
 
-            if (! $nomorDokumen) {
-                throw ValidationException::withMessages([
-                    "perijinan_sections.{$index}.karantina_source_id" => 'Dokumen Karantina yang dipilih tidak ditemukan atau sudah tidak tersedia.',
-                ]);
+                if (! $sourceType || ! $sourceId) {
+                    throw ValidationException::withMessages([
+                        "perijinan_sections.{$index}.karantina_items.{$itemIndex}.source_id" => 'Pilih surat jalan atau tanda terima pada setiap baris Karantina.',
+                    ]);
+                }
+                if (isset($seenReferences[$referenceKey])) {
+                    throw ValidationException::withMessages([
+                        "perijinan_sections.{$index}.karantina_items.{$itemIndex}.source_id" => 'Dokumen Karantina yang sama tidak boleh dipilih dua kali.',
+                    ]);
+                }
+
+                $nomorDokumen = $this->resolveKarantinaNomorDokumen($sourceType, $sourceId);
+                if (! $nomorDokumen) {
+                    throw ValidationException::withMessages([
+                        "perijinan_sections.{$index}.karantina_items.{$itemIndex}.source_id" => 'Dokumen Karantina yang dipilih tidak ditemukan atau sudah tidak tersedia.',
+                    ]);
+                }
+
+                $nominal = (float) ($item['nominal'] ?? 0);
+                if ($nominal <= 0) {
+                    throw ValidationException::withMessages([
+                        "perijinan_sections.{$index}.karantina_items.{$itemIndex}.nominal" => 'Nominal setiap Biaya Karantina wajib lebih dari 0.',
+                    ]);
+                }
+
+                $seenReferences[$referenceKey] = true;
+                $totalKarantina += $nominal;
+                $resolvedItems[] = [
+                    'source_type' => $sourceType,
+                    'source_id' => $sourceId,
+                    'nomor_dokumen' => $nomorDokumen,
+                    'nominal' => $nominal,
+                ];
             }
 
-            $nominalKarantina = (float) ($section['karantina_nominal'] ?? 0);
-            if ($nominalKarantina <= 0) {
-                throw ValidationException::withMessages([
-                    "perijinan_sections.{$index}.karantina_nominal" => 'Nominal Biaya Karantina wajib diisi dan harus lebih dari 0.',
-                ]);
-            }
-
-            $section['karantina_nomor_dokumen'] = $nomorDokumen;
+            $firstItem = $resolvedItems[0];
+            $section['karantina_items'] = $resolvedItems;
+            $section['karantina_source_type'] = $firstItem['source_type'];
+            $section['karantina_source_id'] = $firstItem['source_id'];
+            $section['karantina_nomor_dokumen'] = $firstItem['nomor_dokumen'];
             $section['nama_kapal'] = null;
             $section['no_voyage'] = null;
-            $section['jumlah_biaya'] = $nominalKarantina;
-            $section['sub_total'] = $nominalKarantina;
-            $section['grand_total'] = $nominalKarantina;
+            $section['jumlah_biaya'] = $totalKarantina;
+            $section['sub_total'] = $totalKarantina;
+            $section['grand_total'] = $totalKarantina;
             $section['items'] = [];
         }
         unset($section);
 
         return $sections;
+    }
+
+    private function resolveKarantinaNomorDokumen(string $sourceType, int $sourceId): ?string
+    {
+        return match ($sourceType) {
+            'surat_jalan' => TandaTerima::find($sourceId)?->no_surat_jalan,
+            'tanda_terima_tanpa_surat_jalan' => (function () use ($sourceId) {
+                $tandaTerima = TandaTerimaTanpaSuratJalan::find($sourceId);
+
+                return $tandaTerima?->no_tanda_terima ?: $tandaTerima?->nomor_tanda_terima;
+            })(),
+            'tanda_terima_lcl' => TandaTerimaLcl::find($sourceId)?->nomor_tanda_terima,
+            default => null,
+        };
     }
 
     /**

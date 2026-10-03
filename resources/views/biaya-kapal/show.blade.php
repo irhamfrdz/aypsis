@@ -1084,8 +1084,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if(($detail->mode ?? 'perijinan') === 'karantina')
                                     <div class="text-xs font-semibold uppercase text-emerald-600">Karantina</div>
-                                    <div class="text-sm font-bold text-gray-900">{{ $detail->karantina_nomor_dokumen ?: '-' }}</div>
-                                    <div class="text-xs text-gray-500">{{ str($detail->karantina_source_type)->replace('_', ' ')->title() }}</div>
+                                    @forelse($detail->karantinaItems as $karantinaItem)
+                                        <div class="mt-1 text-sm font-bold text-gray-900">{{ $karantinaItem->nomor_dokumen }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ str($karantinaItem->source_type)->replace('_', ' ')->title() }} ·
+                                            Rp {{ number_format($karantinaItem->nominal, 0, ',', '.') }}
+                                        </div>
+                                    @empty
+                                        <div class="text-sm font-bold text-gray-900">{{ $detail->karantina_nomor_dokumen ?: '-' }}</div>
+                                    @endforelse
                                 @else
                                     <div class="text-sm font-bold text-gray-900">{{ $detail->nama_kapal }}</div>
                                     <div class="text-xs text-indigo-600 font-medium">Voyage: {{ $detail->no_voyage }}</div>

@@ -258,7 +258,11 @@
                         </td>
                         <td class="text-center">
                             @if(($detail->mode ?? 'perijinan') === 'karantina')
-                                {{ $detail->karantina_nomor_dokumen ?: '-' }}
+                                @forelse($detail->karantinaItems as $karantinaItem)
+                                    <div>{{ $karantinaItem->nomor_dokumen }} — Rp {{ number_format($karantinaItem->nominal, 0, ',', '.') }}</div>
+                                @empty
+                                    {{ $detail->karantina_nomor_dokumen ?: '-' }}
+                                @endforelse
                             @else
                                 {{ $detail->nomor_referensi ?: '-' }}
                             @endif

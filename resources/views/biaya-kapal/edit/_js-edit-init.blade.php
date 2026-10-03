@@ -323,6 +323,14 @@
                     'karantina_source_type' => $p->karantina_source_type,
                     'karantina_source_id' => $p->karantina_source_id,
                     'karantina_nomor_dokumen' => $p->karantina_nomor_dokumen,
+                    'karantina_items' => $p->karantinaItems->map(function($item) {
+                        return [
+                            'source_type' => $item->source_type,
+                            'source_id' => $item->source_id,
+                            'nomor_dokumen' => $item->nomor_dokumen,
+                            'nominal' => $item->nominal,
+                        ];
+                    })->toArray(),
                     'nama_kapal' => $p->nama_kapal,
                     'no_voyage' => $p->no_voyage,
                     'nomor_referensi' => $p->nomor_referensi,

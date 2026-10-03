@@ -51,6 +51,11 @@ class BiayaKapalPerijinan extends Model
         return $this->hasMany(BiayaKapalPerijinanDetail::class, 'biaya_kapal_perijinan_id');
     }
 
+    public function karantinaItems()
+    {
+        return $this->hasMany(BiayaKapalPerijinanKarantina::class, 'biaya_kapal_perijinan_id');
+    }
+
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');

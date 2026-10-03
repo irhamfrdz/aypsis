@@ -95,40 +95,16 @@
                 </div>
 
                 <div class="perijinan-karantina-field md:col-span-2 hidden rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Referensi Dokumen Karantina <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="text"
-                               class="perijinan-karantina-search w-full px-3 py-2 pr-10 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
-                               placeholder="Cari nomor surat jalan / tanda terima..."
-                               autocomplete="off">
-                        <i class="perijinan-karantina-spinner fas fa-spinner fa-spin absolute right-3 top-3 hidden text-emerald-600"></i>
-                        <div class="perijinan-karantina-results hidden absolute z-[70] w-full mt-1 bg-white border border-emerald-100 rounded-lg shadow-xl max-h-72 overflow-y-auto"></div>
-                    </div>
-                    <div class="perijinan-karantina-selected hidden mt-3 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white p-3">
-                        <div class="min-w-0">
-                            <span class="perijinan-karantina-type rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"></span>
-                            <div class="perijinan-karantina-number mt-1 font-medium text-gray-900"></div>
-                            <div class="perijinan-karantina-detail mt-1 truncate text-xs text-gray-500"></div>
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h5 class="text-sm font-semibold text-gray-800">Daftar Dokumen Karantina</h5>
+                            <p class="text-xs text-gray-500">Setiap dokumen memiliki nominal biaya masing-masing.</p>
                         </div>
-                        <button type="button" class="perijinan-karantina-clear shrink-0 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded">
-                            <i class="fas fa-times mr-1"></i>Ganti
+                        <button type="button" class="perijinan-karantina-add px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg transition">
+                            <i class="fas fa-plus mr-1"></i>Tambah Referensi
                         </button>
                     </div>
-                    <input type="hidden" name="perijinan_sections[${idx}][karantina_source_type]" class="perijinan-karantina-source-type">
-                    <input type="hidden" name="perijinan_sections[${idx}][karantina_source_id]" class="perijinan-karantina-source-id">
-                    <p class="mt-2 text-xs text-gray-500">Tersedia: surat jalan, tanda terima tanpa surat jalan, dan tanda terima LCL.</p>
-
-                    <div class="mt-4">
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Nominal Biaya Karantina <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-600">Rp</span>
-                            <input type="text"
-                                   name="perijinan_sections[${idx}][karantina_nominal]"
-                                   class="perijinan-karantina-nominal w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
-                                   placeholder="0"
-                                   inputmode="numeric">
-                        </div>
-                    </div>
+                    <div class="perijinan-karantina-items-container space-y-3"></div>
                 </div>
 
                 <!-- Hidden Date Fields -->
@@ -231,7 +207,7 @@
             <!-- Nominal Per Kapal Display (Matched with Buruh style) -->
             <div class="mt-4 p-3 bg-white border border-blue-300 rounded-lg shadow-inner">
                 <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-gray-700 uppercase tracking-widest">Nominal Perijinan ${idx}:</span>
+                    <span class="perijinan-total-label text-sm font-semibold text-gray-700 uppercase tracking-widest">Nominal Perijinan ${idx}:</span>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-blue-400">Rp</span>
                         <span id="perijinan_jumlah_display_${idx}" class="text-lg font-bold text-blue-600">0</span>
@@ -247,7 +223,7 @@
         
         // Initialize searchable kapal for this section
         initSearchableKapalForPerijinan(section, idx);
-        initKarantinaPickerForPerijinan(section, idx);
+        section._karantinaItemCounter = 0;
 
         if (initialData) {
             section.querySelector('.perijinan-mode-select').value = initialData.mode || 'perijinan';
@@ -279,15 +255,19 @@
             section.querySelector(`[name="perijinan_sections[${idx}][tanggal_invoice_vendor]"]`).value = initialData.tanggal_invoice_vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][keterangan]"]`).value = initialData.keterangan || '';
 
-            if (initialData.karantina_source_type && initialData.karantina_source_id) {
-                setPerijinanKarantinaReference(section, {
-                    type: initialData.karantina_source_type,
-                    id: initialData.karantina_source_id,
-                    no_surat_jalan: initialData.karantina_nomor_dokumen,
-                    display_text: initialData.karantina_nomor_dokumen
+            const initialKarantinaItems = initialData.karantina_items || [];
+            if (initialKarantinaItems.length > 0) {
+                initialKarantinaItems.forEach(item => addPerijinanKarantinaItem(section, idx, item));
+            } else if (initialData.karantina_source_type && initialData.karantina_source_id) {
+                addPerijinanKarantinaItem(section, idx, {
+                    source_type: initialData.karantina_source_type,
+                    source_id: initialData.karantina_source_id,
+                    nomor_dokumen: initialData.karantina_nomor_dokumen,
+                    nominal: initialData.karantina_nominal || initialData.jumlah_biaya
                 });
+            } else {
+                addPerijinanKarantinaItem(section, idx);
             }
-            section.querySelector('.perijinan-karantina-nominal').value = parseInt(initialData.karantina_nominal || initialData.jumlah_biaya || 0).toLocaleString('id-ID');
             
             // Populate items
             if (initialData.items && initialData.items.length > 0) {
@@ -298,6 +278,7 @@
                 addPerijinanItemToSection(idx);
             }
         } else {
+            addPerijinanKarantinaItem(section, idx);
             // Add first perijinan item automatically for new section
             addPerijinanItemToSection(idx);
 
@@ -326,14 +307,7 @@
         section.querySelector('.perijinan-mode-select').addEventListener('change', function () {
             applyPerijinanMode(section, idx);
         });
-        section.querySelector('.perijinan-karantina-nominal').addEventListener('input', function () {
-            let value = this.value.replace(/\D/g, '');
-            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
-
-            const jumlahInput = document.getElementById(`perijinan_jumlah_${idx}`);
-            jumlahInput.value = this.value;
-            formatPerijinanBiaya(jumlahInput);
-        });
+        section.querySelector('.perijinan-karantina-add').addEventListener('click', () => addPerijinanKarantinaItem(section, idx));
         applyPerijinanMode(section, idx);
 
         // Toggle Manual Voyage logic (similar to air)
@@ -402,23 +376,104 @@
         }[type] || type;
     }
 
-    function setPerijinanKarantinaReference(section, item) {
+    function setPerijinanKarantinaReference(itemRow, item) {
         const sourceType = perijinanKarantinaSourceType(item.type);
-        section.querySelector('.perijinan-karantina-source-type').value = sourceType;
-        section.querySelector('.perijinan-karantina-source-id').value = item.id;
-        section.querySelector('.perijinan-karantina-type').textContent = perijinanKarantinaTypeLabel(sourceType);
-        section.querySelector('.perijinan-karantina-number').textContent = item.no_surat_jalan || '-';
-        section.querySelector('.perijinan-karantina-detail').textContent = item.display_text || '';
-        section.querySelector('.perijinan-karantina-selected').classList.remove('hidden');
-        section.querySelector('.perijinan-karantina-search').value = '';
-        section.querySelector('.perijinan-karantina-results').classList.add('hidden');
+        itemRow.querySelector('.perijinan-karantina-source-type').value = sourceType;
+        itemRow.querySelector('.perijinan-karantina-source-id').value = item.id;
+        itemRow.querySelector('.perijinan-karantina-document-number').value = item.no_surat_jalan || item.nomor_dokumen || '';
+        itemRow.querySelector('.perijinan-karantina-type').textContent = perijinanKarantinaTypeLabel(sourceType);
+        itemRow.querySelector('.perijinan-karantina-number').textContent = item.no_surat_jalan || item.nomor_dokumen || '-';
+        itemRow.querySelector('.perijinan-karantina-detail').textContent = item.display_text || item.nomor_dokumen || '';
+        itemRow.querySelector('.perijinan-karantina-selected').classList.remove('hidden');
+        itemRow.querySelector('.perijinan-karantina-search').value = '';
+        itemRow.querySelector('.perijinan-karantina-results').classList.add('hidden');
     }
 
-    function clearPerijinanKarantinaReference(section) {
-        section.querySelector('.perijinan-karantina-source-type').value = '';
-        section.querySelector('.perijinan-karantina-source-id').value = '';
-        section.querySelector('.perijinan-karantina-selected').classList.add('hidden');
-        section.querySelector('.perijinan-karantina-search').focus();
+    function clearPerijinanKarantinaReference(itemRow) {
+        itemRow.querySelector('.perijinan-karantina-source-type').value = '';
+        itemRow.querySelector('.perijinan-karantina-source-id').value = '';
+        itemRow.querySelector('.perijinan-karantina-document-number').value = '';
+        itemRow.querySelector('.perijinan-karantina-selected').classList.add('hidden');
+        itemRow.querySelector('.perijinan-karantina-search').focus();
+    }
+
+    function calculatePerijinanKarantinaTotal(section, sectionIndex) {
+        let total = 0;
+        section.querySelectorAll('.perijinan-karantina-nominal').forEach(input => {
+            total += parseInt(input.value.replace(/\D/g, '') || 0);
+        });
+
+        const jumlahInput = document.getElementById(`perijinan_jumlah_${sectionIndex}`);
+        jumlahInput.value = total ? total.toLocaleString('id-ID') : '0';
+        formatPerijinanBiaya(jumlahInput);
+    }
+
+    function addPerijinanKarantinaItem(section, sectionIndex, initialItem = null) {
+        const itemIndex = section._karantinaItemCounter++;
+        const container = section.querySelector('.perijinan-karantina-items-container');
+        const itemRow = document.createElement('div');
+        itemRow.className = 'perijinan-karantina-item rounded-lg border border-emerald-200 bg-white p-4 shadow-sm';
+        itemRow.dataset.itemIndex = itemIndex;
+        itemRow.innerHTML = `
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Referensi Karantina</span>
+                <button type="button" class="perijinan-karantina-remove rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50">
+                    <i class="fas fa-trash-alt mr-1"></i>Hapus
+                </button>
+            </div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Surat Jalan / Tanda Terima <span class="text-red-500">*</span></label>
+            <div class="relative">
+                <input type="text" class="perijinan-karantina-search w-full px-3 py-2 pr-10 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="Cari nomor surat jalan / tanda terima..." autocomplete="off">
+                <i class="perijinan-karantina-spinner fas fa-spinner fa-spin absolute right-3 top-3 hidden text-emerald-600"></i>
+                <div class="perijinan-karantina-results hidden absolute z-[70] w-full mt-1 bg-white border border-emerald-100 rounded-lg shadow-xl max-h-72 overflow-y-auto"></div>
+            </div>
+            <div class="perijinan-karantina-selected hidden mt-3 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                <div class="min-w-0">
+                    <span class="perijinan-karantina-type rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"></span>
+                    <div class="perijinan-karantina-number mt-1 font-medium text-gray-900"></div>
+                    <div class="perijinan-karantina-detail mt-1 truncate text-xs text-gray-500"></div>
+                </div>
+                <button type="button" class="perijinan-karantina-clear shrink-0 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded"><i class="fas fa-times mr-1"></i>Ganti</button>
+            </div>
+            <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][source_type]" class="perijinan-karantina-source-type">
+            <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][source_id]" class="perijinan-karantina-source-id">
+            <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][nomor_dokumen]" class="perijinan-karantina-document-number">
+            <div class="mt-3">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nominal Biaya <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-600">Rp</span>
+                    <input type="text" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][nominal]" class="perijinan-karantina-nominal w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="0" inputmode="numeric">
+                </div>
+            </div>`;
+        container.appendChild(itemRow);
+
+        initKarantinaPickerForPerijinan(itemRow);
+        itemRow.querySelector('.perijinan-karantina-remove').addEventListener('click', function () {
+            itemRow.remove();
+            calculatePerijinanKarantinaTotal(section, sectionIndex);
+        });
+        itemRow.querySelector('.perijinan-karantina-nominal').addEventListener('input', function () {
+            const value = this.value.replace(/\D/g, '');
+            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
+            calculatePerijinanKarantinaTotal(section, sectionIndex);
+        });
+
+        if (initialItem) {
+            if (initialItem.source_type && initialItem.source_id) {
+                setPerijinanKarantinaReference(itemRow, {
+                    type: initialItem.source_type,
+                    id: initialItem.source_id,
+                    nomor_dokumen: initialItem.nomor_dokumen,
+                    no_surat_jalan: initialItem.nomor_dokumen,
+                    display_text: initialItem.nomor_dokumen
+                });
+            }
+            const nominal = parseInt(initialItem.nominal || 0);
+            itemRow.querySelector('.perijinan-karantina-nominal').value = nominal ? nominal.toLocaleString('id-ID') : '';
+            calculatePerijinanKarantinaTotal(section, sectionIndex);
+        }
+
+        return itemRow;
     }
 
     function applyPerijinanMode(section, idx) {
@@ -433,32 +488,31 @@
 
         const kapalInput = section.querySelector('.perijinan-kapal-hidden');
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
-        const karantinaNominal = section.querySelector('.perijinan-karantina-nominal');
         kapalInput.required = !isKarantina;
         voyageSelect.required = !isKarantina;
-        karantinaNominal.required = isKarantina;
+        section.querySelectorAll('.perijinan-karantina-nominal').forEach(input => input.required = isKarantina);
 
         const title = section.querySelector('h4');
         if (title) title.textContent = `${isKarantina ? 'Karantina' : 'Perijinan'} ${idx}`;
+        const totalLabel = section.querySelector('.perijinan-total-label');
+        if (totalLabel) totalLabel.textContent = `${isKarantina ? 'Total Karantina' : 'Nominal Perijinan'} ${idx}:`;
 
         if (isKarantina) {
-            const jumlahInput = document.getElementById(`perijinan_jumlah_${idx}`);
-            jumlahInput.value = karantinaNominal.value;
-            formatPerijinanBiaya(jumlahInput);
+            calculatePerijinanKarantinaTotal(section, idx);
         } else {
             calculatePerijinanSectionTotalFromItems(idx);
         }
     }
 
-    function initKarantinaPickerForPerijinan(section) {
-        const searchInput = section.querySelector('.perijinan-karantina-search');
-        const resultsContainer = section.querySelector('.perijinan-karantina-results');
-        const spinner = section.querySelector('.perijinan-karantina-spinner');
-        const clearButton = section.querySelector('.perijinan-karantina-clear');
+    function initKarantinaPickerForPerijinan(itemRow) {
+        const searchInput = itemRow.querySelector('.perijinan-karantina-search');
+        const resultsContainer = itemRow.querySelector('.perijinan-karantina-results');
+        const spinner = itemRow.querySelector('.perijinan-karantina-spinner');
+        const clearButton = itemRow.querySelector('.perijinan-karantina-clear');
         let searchTimer = null;
         let requestController = null;
 
-        clearButton.addEventListener('click', () => clearPerijinanKarantinaReference(section));
+        clearButton.addEventListener('click', () => clearPerijinanKarantinaReference(itemRow));
 
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimer);
@@ -496,7 +550,7 @@
                                     <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">${escapePerijinanHtml(perijinanKarantinaTypeLabel(sourceType))}</span>
                                 </div>
                                 <div class="mt-1 text-xs text-gray-500">${escapePerijinanHtml(item.no_kontainer || '-')} · ${escapePerijinanHtml(item.pengirim || '-')} · ${escapePerijinanHtml(item.tanggal || '-')}</div>`;
-                            button.addEventListener('click', () => setPerijinanKarantinaReference(section, item));
+                            button.addEventListener('click', () => setPerijinanKarantinaReference(itemRow, item));
                             resultsContainer.appendChild(button);
                         });
                     }
