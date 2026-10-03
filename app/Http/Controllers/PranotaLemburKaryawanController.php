@@ -77,38 +77,6 @@ class PranotaLemburKaryawanController extends Controller
             $periodeSelesai = $periodeSelesai ?: $parsedDate->copy()->endOfMonth()->toDateString();
         }
 
-        // Cek duplikasi tanggal lembur yang sudah masuk pranota aktif
-        foreach ($validated['karyawans'] as $karyawanId => $data) {
-            $tanggalLembur = null;
-            if (! empty($data['tanggal_lembur'])) {
-                $tanggalLembur = is_array($data['tanggal_lembur'])
-                    ? $data['tanggal_lembur']
-                    : json_decode($data['tanggal_lembur'], true);
-            }
-
-            if (! empty($tanggalLembur) && is_array($tanggalLembur)) {
-                $existingItems = \App\Models\PranotaLemburKaryawan::whereHas('pranotaLemburKaryawanHeader', function ($q) {
-                    $q->whereNull('deleted_at');
-                })
-                ->where('karyawan_id', $karyawanId)
-                ->with('pranotaLemburKaryawanHeader')
-                ->get();
-
-                foreach ($existingItems as $ex) {
-                    $exDates = $ex->tanggal_lembur;
-                    if (is_array($exDates)) {
-                        $overlap = array_intersect($tanggalLembur, $exDates);
-                        if (! empty($overlap)) {
-                            $kName = \App\Models\Karyawan::find($karyawanId)?->nama_lengkap ?? "Karyawan #{$karyawanId}";
-                            $nomorPranota = $ex->pranotaLemburKaryawanHeader?->nomor_pranota ?? 'Pranota lain';
-
-                            return back()->with('error', "Gagal: Data lembur {$kName} untuk tanggal ".implode(', ', $overlap)." sudah pernah dimasukkan ke {$nomorPranota}.");
-                        }
-                    }
-                }
-            }
-        }
-
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
