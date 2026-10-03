@@ -513,7 +513,13 @@
             if (item.nama_vendor !== vendor) return false;
             return getTruckingTariffKey(item.size) === tariffKey;
         });
-        return priceItem ? parseFloat(priceItem.biaya) || 0 : null;
+
+        if (priceItem) return parseFloat(priceItem.biaya) || 0;
+
+        // Tarif trucking LCL berlaku flat ketika master vendor belum memiliki baris LCL.
+        if (tariffKey === 'lcl') return 500000;
+
+        return null;
     }
 
     function getTruckingContainerPriceLabel(vendor, rawSize, rawType = '') {
