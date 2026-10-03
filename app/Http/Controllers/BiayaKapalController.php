@@ -7429,6 +7429,22 @@ class BiayaKapalController extends Controller
      * Calculate trucking costs by container size from the selected manifests.
      * The values from the browser are intentionally not used as the source of truth.
      */
+    private function truckingTariffKey(?string $size, ?string $type = null): string
+    {
+        $normalizedType = strtolower(trim((string) $type));
+        $normalizedSize = strtolower(trim((string) $size));
+
+        if (str_contains($normalizedType, 'lcl') || str_contains($normalizedSize, 'lcl')) {
+            return 'lcl';
+        }
+
+        if (str_contains($normalizedType, 'cargo') || str_contains($normalizedSize, 'cargo')) {
+            return 'cargo';
+        }
+
+        return preg_replace('/\D/', '', $normalizedSize) ?? '';
+    }
+
     private function calculateTruckingContainerTotals(array $section): array
     {
         if (strtoupper(trim((string) ($section['nama_vendor'] ?? ''))) === 'CARGO') {
@@ -7449,18 +7465,20 @@ class BiayaKapalController extends Controller
             ->where('status', 'aktif')
             ->where('nama_vendor', $section['nama_vendor'])
             ->get()
-            ->keyBy(fn ($price) => preg_replace('/\\D/', '', (string) $price->size));
+            ->keyBy(fn ($price) => $this->truckingTariffKey($price->size));
 
         $totals = ['20ft' => 0, '40ft' => 0];
         DB::table('manifests')
             ->whereIn('id', $containerIds)
-            ->get(['size_kontainer'])
+            ->get(['size_kontainer', 'tipe_kontainer'])
             ->each(function ($manifest) use (&$totals, $prices) {
                 $size = preg_replace('/\\D/', '', (string) $manifest->size_kontainer);
-                if ($size === '20' && isset($prices['20'])) {
-                    $totals['20ft'] += (float) $prices['20']->biaya;
-                } elseif ($size === '40' && isset($prices['40'])) {
-                    $totals['40ft'] += (float) $prices['40']->biaya;
+                $tariffKey = $this->truckingTariffKey($manifest->size_kontainer, $manifest->tipe_kontainer);
+
+                if ($size === '20' && isset($prices[$tariffKey])) {
+                    $totals['20ft'] += (float) $prices[$tariffKey]->biaya;
+                } elseif ($size === '40' && isset($prices[$tariffKey])) {
+                    $totals['40ft'] += (float) $prices[$tariffKey]->biaya;
                 }
             });
 

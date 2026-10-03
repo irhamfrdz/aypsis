@@ -383,7 +383,7 @@
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                              data-id="${blData.id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}" data-pengirim="${blData.pengirim || ''}" data-nama-barang="${blData.nama_barang || ''}" data-tipe="${blData.tipe || ''}">
                             <div class="font-medium text-gray-900">${displayName} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${isCargo ? 'Cargo' : `${blData.size}'`}</span></div>
-                            <div class="trucking-bl-price mt-1 text-sm font-semibold text-emerald-700">${getTruckingContainerPriceLabel(selectedVendor, blData.size, isCargo)}</div>
+                            <div class="trucking-bl-price mt-1 text-sm font-semibold text-emerald-700">${getTruckingContainerPriceLabel(selectedVendor, blData.size, blData.tipe)}</div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
                                 ${isCargo
                                     ? `<span><i class="fas fa-user text-gray-400 mr-1"></i> Pengirim: ${blData.pengirim || '-'}</span><span><i class="fas fa-box text-gray-400 mr-1"></i> Barang: ${blData.nama_barang || '-'}</span>`
@@ -468,7 +468,7 @@
                             const chip = document.createElement('span');
                             chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
                             chip.setAttribute('data-id', id);
-                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <span class="trucking-chip-price">(${getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, this.getAttribute('data-size'), isCargo)})</span> <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
+                            chip.innerHTML = `${isCargo ? `CARGO - ${namaBarang} (${pengirim})` : kontainer} <span class="trucking-chip-price">(${getTruckingContainerPriceLabel(section.querySelector('.trucking-vendor-select').value, this.getAttribute('data-size'), this.getAttribute('data-tipe'))})</span> <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
                             chip.querySelector('i').onclick = (e) => {
                                 e.stopPropagation();
                                 opt.click();
@@ -497,22 +497,29 @@
         });
     }
 
-    function getTruckingContainerPrice(vendor, rawSize, isCargo) {
-        const size = isCargo ? 'cargo' : String(rawSize || '').replace(/\D/g, '');
+    function getTruckingTariffKey(rawSize, rawType = '') {
+        const type = String(rawType || '').toLowerCase().trim();
+        const size = String(rawSize || '').toLowerCase().trim();
+
+        if (type.includes('lcl') || size.includes('lcl')) return 'lcl';
+        if (type.includes('cargo') || size.includes('cargo')) return 'cargo';
+
+        return size.replace(/\D/g, '');
+    }
+
+    function getTruckingContainerPrice(vendor, rawSize, rawType = '') {
+        const tariffKey = getTruckingTariffKey(rawSize, rawType);
         const priceItem = pricelistBiayaTruckingData.find(item => {
             if (item.nama_vendor !== vendor) return false;
-            const itemSize = isCargo
-                ? String(item.size).toLowerCase().trim()
-                : String(item.size).replace(/\D/g, '');
-            return itemSize === size;
+            return getTruckingTariffKey(item.size) === tariffKey;
         });
         return priceItem ? parseFloat(priceItem.biaya) || 0 : null;
     }
 
-    function getTruckingContainerPriceLabel(vendor, rawSize, isCargo) {
+    function getTruckingContainerPriceLabel(vendor, rawSize, rawType = '') {
         if (!vendor) return 'Pilih vendor untuk melihat biaya';
         if (vendor === 'CARGO') return 'Biaya cargo diisi manual';
-        const cost = getTruckingContainerPrice(vendor, rawSize, isCargo);
+        const cost = getTruckingContainerPrice(vendor, rawSize, rawType);
         return cost === null
             ? 'Tarif belum tersedia'
             : `Biaya per kontainer: Rp ${Math.round(cost).toLocaleString('id-ID')}`;
@@ -524,8 +531,7 @@
         const vendor = section.querySelector('.trucking-vendor-select').value;
         section.querySelectorAll('.trucking-bl-option').forEach(option => {
             const priceLabel = option.querySelector('.trucking-bl-price');
-            const isCargo = (option.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
-            const priceText = getTruckingContainerPriceLabel(vendor, option.getAttribute('data-size'), isCargo);
+            const priceText = getTruckingContainerPriceLabel(vendor, option.getAttribute('data-size'), option.getAttribute('data-tipe'));
             priceLabel.textContent = priceText;
             const chipPrice = section.querySelector(`.trucking-chip[data-id="${option.getAttribute('data-id')}"] .trucking-chip-price`);
             if (chipPrice) chipPrice.textContent = `(${priceText})`;
@@ -563,9 +569,9 @@
         } else if (vendor && selectedOptions.length > 0) {
             selectedOptions.forEach(opt => {
                 const rawSize = opt.getAttribute('data-size');
-                const isCargo = (opt.getAttribute('data-tipe') || '').toLowerCase() === 'cargo';
-                const size = isCargo ? 'cargo' : String(rawSize).replace(/\D/g, '');
-                const cost = getTruckingContainerPrice(vendor, rawSize, isCargo);
+                const rawType = opt.getAttribute('data-tipe');
+                const size = String(rawSize).replace(/\D/g, '');
+                const cost = getTruckingContainerPrice(vendor, rawSize, rawType);
                 if (cost !== null) {
                     if (size === '20') { total20 += cost; count20++; unitPrice20 = cost; }
                     if (size === '40') { total40 += cost; count40++; unitPrice40 = cost; }
