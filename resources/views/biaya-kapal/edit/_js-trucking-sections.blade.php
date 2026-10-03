@@ -500,7 +500,7 @@
     function parseTruckingAdjustment(value) {
         const text = String(value || '').trim();
         const amount = parseFloat(text.replace(/[^0-9]/g, '')) || 0;
-        return text.startsWith('-') ? -amount : amount;
+        return text.includes('-') ? -amount : amount;
     }
 
     function getTruckingAdjustedContainerPrice(section, option) {
@@ -538,9 +538,20 @@
         const input = row.querySelector('.trucking-container-adjustment-input');
         input.value = adjustment ? Number(adjustment).toLocaleString('id-ID') : '0';
         input.addEventListener('click', event => event.stopPropagation());
+        input.addEventListener('keydown', function(event) {
+            if (event.key !== '-') return;
+            event.preventDefault();
+            delete section.dataset.truckingUseSavedTotals;
+            const amount = Math.abs(parseTruckingAdjustment(this.value));
+            this.value = amount ? `-${amount.toLocaleString('id-ID')}` : '-';
+            this.setSelectionRange(this.value.length, this.value.length);
+            refreshTruckingContainerAdjustments(sectionIndex);
+            calculateTruckingTotals(sectionIndex);
+        });
         input.addEventListener('input', function() {
             delete section.dataset.truckingUseSavedTotals;
-            if (this.value.trim() === '-') {
+            if (this.value.includes('-') && !this.value.replace(/[^0-9]/g, '')) {
+                this.value = '-';
                 refreshTruckingContainerAdjustments(sectionIndex);
                 calculateTruckingTotals(sectionIndex);
                 return;
