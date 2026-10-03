@@ -9,11 +9,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MySQL may leave this table behind when a previous CREATE TABLE
+        // succeeds but adding its foreign key fails before the migration is recorded.
+        Schema::dropIfExists('biaya_kapal_perijinan_karantinas');
+
         Schema::create('biaya_kapal_perijinan_karantinas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('biaya_kapal_perijinan_id')
-                ->constrained('biaya_kapal_perijinan')
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('biaya_kapal_perijinan_id');
             $table->string('source_type', 50);
             $table->unsignedBigInteger('source_id');
             $table->string('nomor_dokumen');
@@ -24,7 +26,11 @@ return new class extends Migration
                 ['biaya_kapal_perijinan_id', 'source_type', 'source_id'],
                 'perijinan_karantina_source_unique'
             );
-            $table->index(['source_type', 'source_id']);
+            $table->index(['source_type', 'source_id'], 'perijinan_karantina_source_idx');
+            $table->foreign('biaya_kapal_perijinan_id', 'perijinan_karantina_parent_fk')
+                ->references('id')
+                ->on('biaya_kapal_perijinan')
+                ->cascadeOnDelete();
         });
 
         DB::table('biaya_kapal_perijinan')
