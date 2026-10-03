@@ -58,21 +58,73 @@
                     <thead>
                         <tr class="bg-indigo-600 text-white">
                             <th class="px-3 py-2.5 text-left font-semibold text-xs w-10">#</th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[180px]">Nama Kapal <span class="text-red-300">*</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[200px]">Nama Kapal <span class="text-red-300">*</span></th>
                             <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[200px]">No. Voyage <span class="text-red-300">*</span></th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[300px]">Detail Kontainer <span class="text-indigo-300 font-normal normal-case">(No. Kontainer &amp; Nominal)</span></th>
-                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[160px]">Nominal <span class="text-red-300">*</span> &amp; Adjustment</th>
-                            <th class="px-3 py-2.5 text-center font-semibold text-xs w-14">Aksi</th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs">Detail Kontainer <span class="text-indigo-200 font-normal text-[11px]">(Pilih Kontainer)</span></th>
+                            <th class="px-3 py-2.5 text-center font-semibold text-xs w-16">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="batam_kapal_tbody"></tbody>
                 </table>
             </div>
 
-            <!-- TOTAL PER BARIS -->
-            <div id="batam_row_totals" class="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg hidden">
-                <div class="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wider">Total Per Kapal</div>
-                <div id="batam_row_totals_list" class="space-y-1"></div>
+            <!-- RINCIAN TOTAL BIAYA BURUH BATAM (1 NOMINAL TOTAL UNTUK SEMUA KAPAL) -->
+            <div class="mt-4 p-4 bg-white border border-indigo-200 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between border-b border-indigo-100 pb-2 mb-3">
+                    <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-coins text-indigo-600"></i> Total Biaya Buruh Batam (Gabungan Semua Kapal)
+                    </h4>
+                    <span id="batam_kapal_count_badge" class="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">
+                        1 Kapal Terdaftar
+                    </span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Biaya Buruh <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
+                            <input type="text" name="batam_shared[nominal]" id="batam_shared_nominal" class="w-full pl-9 pr-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-base font-bold text-gray-900" placeholder="0" required>
+                        </div>
+                        <span class="text-[10px] text-gray-400">1 nominal total untuk semua kapal yang dipilih</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Adjustment</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
+                            <input type="text" name="batam_shared[adjustment]" id="batam_shared_adjustment" class="w-full pl-9 pr-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-semibold text-gray-800" placeholder="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan Adjustment</label>
+                        <input type="text" name="batam_shared[notes_adjustment]" id="batam_shared_notes_adjustment" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment (opsional)...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-gray-100 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">PPh</label>
+                        <select name="batam_shared[pph_percent]" id="batam_pph_percent" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm font-medium">
+                            <option value="0">0% (Tanpa PPh)</option>
+                            <option value="0.5">0.5%</option>
+                            <option value="2">2%</option>
+                            <option value="2.5">2.5%</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal PPh</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">Rp</span>
+                            <input type="text" id="batam_pph_amount" class="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-red-600 font-bold cursor-not-allowed" placeholder="0" readonly>
+                        </div>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-emerald-800 uppercase tracking-wide block">Grand Total</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">Nominal + Adj - PPh</span>
+                        </div>
+                        <div id="batam_grand_total_display" class="text-lg font-extrabold text-emerald-700">Rp 0</div>
+                    </div>
+                </div>
             </div>
 
             <!-- DETAIL PEMBAYARAN & DOKUMEN (SHARED) -->
@@ -112,28 +164,28 @@
                         <input type="text" name="batam_shared[nomor_rekening]" id="batam_nomor_rekening" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Rekening">
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">PPh</label>
-                        <select name="batam_shared[pph_percent]" id="batam_pph_percent" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                            <option value="0">0%</option>
-                            <option value="0.5">0.5%</option>
-                            <option value="2">2%</option>
-                            <option value="2.5">2.5%</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
-                        <input type="text" id="batam_pph_amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-100" placeholder="0" readonly>
-                    </div>
-                </div>
             </div>
         `;
         kapalSectionsContainer.appendChild(wrapper);
         batamTableInitialized = true;
 
-        // Listen to PPh change
+        // Listen to Nominal, Adjustment & PPh changes
+        const sharedNominalInput = document.getElementById('batam_shared_nominal');
+        const sharedAdjInput = document.getElementById('batam_shared_adjustment');
         const pphSelect = document.getElementById('batam_pph_percent');
+
+        [sharedNominalInput, sharedAdjInput].forEach(inp => {
+            if (inp) {
+                inp.addEventListener('input', function() {
+                    let val = this.value.replace(/\D/g, '');
+                    if (val !== '') {
+                        this.value = parseInt(val).toLocaleString('id-ID');
+                    }
+                    calculateTotalFromAllSections();
+                });
+            }
+        });
+
         if (pphSelect) {
             pphSelect.addEventListener('change', calculateTotalFromAllSections);
         }
@@ -207,23 +259,6 @@
                         </button>
                         <span class="info-kontainer text-xs text-gray-400 italic"><i class="fas fa-info-circle mr-0.5"></i>Pilih Voyage dulu</span>
                     </div>
-                </td>
-                <!-- Nominal & Adjustment (digabung dalam 1 kolom secara vertikal) -->
-                <td class="px-3 py-3 align-top">
-                    <div class="mb-2">
-                        <label class="block text-xs text-gray-500 mb-0.5">Nominal <span class="text-red-500">*</span></label>
-                        <input type="text" name="kapal_sections[${sectionIndex}][nominal_manual]" class="nominal-manual-input w-full px-2 py-1.5 border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm font-semibold" placeholder="0" required>
-                    </div>
-                    <div class="mb-2">
-                        <label class="block text-xs text-gray-500 mb-0.5">Adjustment</label>
-                        <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-2 py-1.5 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-0.5">Catatan Adj.</label>
-                        <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-2 py-1.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs" placeholder="Keterangan...">
-                    </div>
-                    <div class="mt-1 text-xs text-blue-600 font-semibold section-nominal-display hidden"></div>
-                </td>
                 <!-- Aksi -->
                 <td class="px-3 py-3 text-center align-top">
                     ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition" title="Hapus baris ini"><i class="fas fa-trash"></i></button>` : '<span class="text-gray-300 text-xs">—</span>'}
@@ -1068,6 +1103,41 @@
     }
     
     function calculateTotalFromAllSections() {
+        if (currentLokasi === 'batam') {
+            const sharedNominalInput = document.getElementById('batam_shared_nominal');
+            const sharedAdjInput = document.getElementById('batam_shared_adjustment');
+            const pphSelect = document.getElementById('batam_pph_percent');
+            const pphAmountInput = document.getElementById('batam_pph_amount');
+            const grandTotalDisplay = document.getElementById('batam_grand_total_display');
+            const badgeCount = document.getElementById('batam_kapal_count_badge');
+
+            const sections = document.querySelectorAll('#batam_kapal_tbody .kapal-section');
+            if (badgeCount) {
+                badgeCount.textContent = `${sections.length} Kapal Terdaftar`;
+            }
+
+            const nominalVal = parseFloat((sharedNominalInput ? sharedNominalInput.value : '0').replace(/\./g, '').replace(',', '.')) || 0;
+            const adjVal = parseFloat((sharedAdjInput ? sharedAdjInput.value : '0').replace(/\./g, '').replace(',', '.')) || 0;
+            const pphPercent = parseFloat(pphSelect ? pphSelect.value : '0') || 0;
+
+            const subtotal = nominalVal + adjVal;
+            const pphAmount = Math.round(subtotal * (pphPercent / 100));
+            const grandTotalBatam = subtotal - pphAmount;
+
+            if (pphAmountInput) {
+                pphAmountInput.value = pphAmount > 0 ? pphAmount.toLocaleString('id-ID') : '0';
+            }
+            if (grandTotalDisplay) {
+                grandTotalDisplay.textContent = 'Rp ' + Math.max(0, Math.round(grandTotalBatam)).toLocaleString('id-ID');
+            }
+
+            if (typeof nominalInput !== 'undefined' && nominalInput) {
+                nominalInput.value = grandTotalBatam > 0 ? Math.round(grandTotalBatam).toLocaleString('id-ID') : '';
+                calculateSisaPembayaran();
+            }
+            return;
+        }
+
         let grandTotal = 0;
         
         document.querySelectorAll('.kapal-section').forEach(section => {
@@ -1147,16 +1217,6 @@
             
             grandTotal += sectionTotal;
         });
-
-        // PPh shared untuk mode Batam
-        const batamPphSelect = document.getElementById('batam_pph_percent');
-        const batamPphAmount = document.getElementById('batam_pph_amount');
-        if (batamPphSelect && batamPphAmount) {
-            const pphPercent = parseFloat(batamPphSelect.value) || 0;
-            const pphAmount = grandTotal * (pphPercent / 100);
-            batamPphAmount.value = pphAmount > 0 ? Math.round(pphAmount).toLocaleString('id-ID') : '0';
-            grandTotal -= pphAmount;
-        }
         
         if (grandTotal > 0) {
             nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
@@ -1244,30 +1304,21 @@
         }
         
         const inputGroup = document.createElement('div');
-        inputGroup.className = 'kontainer-row mb-2 p-2 bg-white border border-indigo-100 rounded-lg shadow-sm animate-fade-in';
+        inputGroup.className = 'kontainer-row mb-1.5 p-2 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 rounded-lg transition animate-fade-in flex items-center gap-2';
         inputGroup.innerHTML = `
-            <!-- Baris 1: Nomor Kontainer (full width) -->
-            <div class="flex items-center gap-1.5 mb-1.5">
-                <div class="flex-1 min-w-0">
-                    <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400 bg-white" required>
-                        ${kontainerOptions}
-                    </select>
-                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
-                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
-                </div>
-                <button type="button" onclick="removeKontainerFromSection(this)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-red-100 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition" title="Hapus kontainer ini">
-                    <i class="fas fa-times text-xs"></i>
-                </button>
+            <div class="flex-1 min-w-0">
+                <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400 bg-white" required>
+                    ${kontainerOptions}
+                </select>
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
+                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
             </div>
-            <!-- Baris 2: Info badge + Nominal -->
-            <div class="flex items-center gap-2">
-                <span class="kontainer-info-badge flex-shrink-0 text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 rounded px-1.5 py-0.5 hidden">
-                    <i class="fas fa-box mr-0.5"></i><span class="badge-size-text"></span>
-                </span>
-                <div class="flex-1">
-                    <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400" placeholder="Nominal (Rp)" required>
-                </div>
-            </div>
+            <span class="kontainer-info-badge flex-shrink-0 text-xs bg-white text-indigo-700 border border-indigo-200 font-medium rounded px-2 py-1 hidden">
+                <i class="fas fa-box mr-1 text-indigo-400"></i><span class="badge-size-text"></span>
+            </span>
+            <button type="button" onclick="removeKontainerFromSection(this)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-red-100 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition" title="Hapus kontainer ini">
+                <i class="fas fa-times text-xs"></i>
+            </button>
         `;
         
         container.appendChild(inputGroup);
@@ -1303,22 +1354,6 @@
                 nomorHidden.value = nomor;
                 sizeHidden.value = size;
                 updateBadge(nomor, size);
-
-                // Auto-fill nominal for Buruh Bongkar
-                if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
-                    if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
-                        const cleanCSize = String(size).replace(/[^0-9]/g, '');
-                        const pricelist = pricelistBuruhBongkarData.find(p => {
-                            const cleanPSize = String(p.size).replace(/[^0-9]/g, '');
-                            return cleanPSize === cleanCSize;
-                        });
-                        if (pricelist) {
-                            const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
-                            nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
-                            calculateTotalFromAllSections();
-                        }
-                    }
-                }
             });
             
             $(kontainerSelect).on('select2:unselect select2:clear', function (e) {
@@ -1345,48 +1380,22 @@
                         badge.classList.add('hidden');
                     }
                 }
-
-                // Auto-fill nominal for Buruh Bongkar
-                if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
-                    if (typeof pricelistBuruhBongkarData !== 'undefined' && size) {
-                        const cleanCSize = String(size).replace(/[^0-9]/g, '');
-                        const pricelist = pricelistBuruhBongkarData.find(p => {
-                            const cleanPSize = String(p.size).replace(/[^0-9]/g, '');
-                            return cleanPSize === cleanCSize;
-                        });
-                        if (pricelist) {
-                            const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
-                            nominalInput.value = parseInt(pricelist.nominal).toLocaleString('id-ID');
-                            calculateTotalFromAllSections();
-                        }
-                    }
-                }
             });
         }
-        
-        const nominalInput = inputGroup.querySelector('.kontainer-nominal-item');
-        nominalInput.addEventListener('input', function() {
-            let val = this.value.replace(/\D/g, '');
-            if (val !== '') {
-                this.value = parseInt(val).toLocaleString('id-ID');
-            }
-            calculateTotalFromAllSections();
-        });
     };
     
     window.removeKontainerFromSection = function(button) {
         const container = button.closest('.kontainer-container-section');
-        button.closest('.flex').remove();
+        button.closest('.kontainer-row').remove();
         reindexKontainerInputs(container);
-        calculateTotalFromAllSections();
     };
 
     function reindexKontainerInputs(container) {
         const section = container.closest('.kapal-section');
         const sectionIndex = section.getAttribute('data-section-index');
-        const inputGroups = container.querySelectorAll('.flex');
+        const rows = container.querySelectorAll('.kontainer-row');
         
-        inputGroups.forEach((group, newIndex) => {
+        rows.forEach((group, newIndex) => {
             const select = group.querySelector('.kontainer-select-item');
             if (select) select.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][bl_id]`;
             
@@ -1395,8 +1404,5 @@
             
             const size = group.querySelector('.kontainer-size-hidden');
             if (size) size.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][size]`;
-            
-            const nominal = group.querySelector('.kontainer-nominal-item');
-            if (nominal) nominal.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nominal]`;
         });
     }

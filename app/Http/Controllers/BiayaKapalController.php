@@ -291,6 +291,16 @@ class BiayaKapalController extends Controller
             }
         }
 
+        // Batam Shared fields
+        if (isset($data['batam_shared']) && is_array($data['batam_shared'])) {
+            if (isset($data['batam_shared']['nominal']) && $data['batam_shared']['nominal'] !== null) {
+                $data['batam_shared']['nominal'] = str_replace(',', '.', str_replace('.', '', $data['batam_shared']['nominal']));
+            }
+            if (isset($data['batam_shared']['adjustment']) && $data['batam_shared']['adjustment'] !== null) {
+                $data['batam_shared']['adjustment'] = str_replace(',', '.', str_replace('.', '', $data['batam_shared']['adjustment']));
+            }
+        }
+
         // Kapal Sections (Buruh)
         if (isset($data['kapal_sections']) && is_array($data['kapal_sections'])) {
             foreach ($data['kapal_sections'] as &$section) {
@@ -776,8 +786,11 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
             'kapal_sections.*.pph_percent' => 'nullable|numeric',
             'kapal_sections.*.pph_amount' => 'nullable|numeric',
-            // Batam shared fields (UI baru: 1 tabel bersama)
+            // Batam shared fields (UI baru: 1 tabel bersama & 1 nominal total)
             'batam_shared' => 'nullable|array',
+            'batam_shared.nominal' => 'nullable|numeric|min:0',
+            'batam_shared.adjustment' => 'nullable|numeric',
+            'batam_shared.notes_adjustment' => 'nullable|string|max:255',
             'batam_shared.nomor_bukti' => 'nullable|string|max:255',
             'batam_shared.penerima' => 'nullable|string|max:255',
             'batam_shared.nama_vendor' => 'nullable|string|max:255',
@@ -2109,7 +2122,7 @@ class BiayaKapalController extends Controller
 
                 } elseif ($lokasi === 'batam') {
                     // MODE BATAM: Simpan ke tabel biaya_kapal_buruh_batams (tanpa barang/tenaga kerja)
-                    // Ambil shared fields dari batam_shared jika ada (UI baru menggunakan 1 tabel)
+                    // Ambil shared fields dari batam_shared (UI baru menggunakan 1 tabel bersama & 1 total nominal)
                     $batamShared = $request->input('batam_shared', []);
                     $cleanNumShared = function ($val) {
                         return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
@@ -2121,95 +2134,170 @@ class BiayaKapalController extends Controller
                     $sharedBankId = $batamShared['bank_id'] ?? null;
                     $sharedNomorRekening = $batamShared['nomor_rekening'] ?? null;
 
-                    // Hitung total semua section dulu untuk PPh shared
-                    $allSectionNominals = [];
-                    foreach ($request->kapal_sections as $sectionIndex => $section) {
-                        $cleanNum = function ($val) {
-                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
-                        };
-                        $nominal = $cleanNum($section['nominal_manual'] ?? 0);
-                        $adjustment = $cleanNum($section['adjustment'] ?? 0);
-                        $allSectionNominals[$sectionIndex] = $nominal + $adjustment;
-                    }
-                    $grandSubtotal = array_sum($allSectionNominals);
+                    $sections = array_values($request->kapal_sections ?? []);
+                    $sectionsCount = count($sections);
 
-                    // PPh dihitung dari grand subtotal jika menggunakan shared
-                    $useBatamShared = !empty($batamShared);
-                    $sharedPphAmountTotal = $useBatamShared ? round($grandSubtotal * $sharedPphPercent / 100) : 0;
+                    if (isset($batamShared['nominal'])) {
+                        // UNIFIED 1 NOMINAL TOTAL MODE (Seluruh transaksi Batam dijadikan 1 nominal)
+                        $sharedNominal = $cleanNumShared($batamShared['nominal'] ?? 0);
+                        $sharedAdjustment = $cleanNumShared($batamShared['adjustment'] ?? 0);
+                        $sharedNotesAdjustment = $batamShared['notes_adjustment'] ?? null;
 
-                    foreach ($request->kapal_sections as $sectionIndex => $section) {
-                        $kapalName = $section['kapal'] ?? null;
-                        $voyageName = $section['voyage'] ?? null;
+                        $grandSubtotal = $sharedNominal + $sharedAdjustment;
+                        $sharedPphAmountTotal = round($grandSubtotal * $sharedPphPercent / 100);
+                        $grandTotalAll = $grandSubtotal - $sharedPphAmountTotal;
 
-                        // Kumpulkan kontainer ids
-                        $kontainerIds = [];
-                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
-                            foreach ($section['kontainer'] as $k) {
-                                if (! empty($k['bl_id'])) {
-                                    $cleanNominalK = function ($val) {
-                                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
-                                    };
-                                    $kontainerIds[] = [
-                                        'bl_id' => $k['bl_id'],
-                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
-                                        'size' => $k['size'] ?? null,
-                                        'nominal' => $cleanNominalK($k['nominal'] ?? 0),
-                                    ];
+                        $allocatedNominalSum = 0;
+                        $allocatedAdjSum = 0;
+                        $allocatedPphSum = 0;
+
+                        foreach ($sections as $index => $section) {
+                            $isLast = ($index === $sectionsCount - 1);
+                            $kapalName = $section['kapal'] ?? null;
+                            $voyageName = $section['voyage'] ?? null;
+
+                            // Kumpulkan kontainer ids
+                            $kontainerIds = [];
+                            if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                                foreach ($section['kontainer'] as $k) {
+                                    if (! empty($k['bl_id'])) {
+                                        $cleanNominalK = function ($val) {
+                                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                        };
+                                        $kontainerIds[] = [
+                                            'bl_id' => $k['bl_id'],
+                                            'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                            'size' => $k['size'] ?? null,
+                                            'nominal' => $cleanNominalK($k['nominal'] ?? 0),
+                                        ];
+                                    }
                                 }
                             }
+
+                            if ($sectionsCount <= 1) {
+                                $nominal = $sharedNominal;
+                                $adjustment = $sharedAdjustment;
+                                $pphAmount = $sharedPphAmountTotal;
+                            } elseif ($isLast) {
+                                $nominal = $sharedNominal - $allocatedNominalSum;
+                                $adjustment = $sharedAdjustment - $allocatedAdjSum;
+                                $pphAmount = $sharedPphAmountTotal - $allocatedPphSum;
+                            } else {
+                                $nominal = round($sharedNominal / $sectionsCount);
+                                $adjustment = round($sharedAdjustment / $sectionsCount);
+                                $pphAmount = round($sharedPphAmountTotal / $sectionsCount);
+
+                                $allocatedNominalSum += $nominal;
+                                $allocatedAdjSum += $adjustment;
+                                $allocatedPphSum += $pphAmount;
+                            }
+
+                            $totalNominal = ($nominal + $adjustment) - $pphAmount;
+
+                            \App\Models\BiayaKapalBuruhBatam::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'kontainer_ids' => $kontainerIds,
+                                'nominal' => $nominal,
+                                'adjustment' => $adjustment,
+                                'notes_adjustment' => $sharedNotesAdjustment,
+                                'pph_percent' => $sharedPphPercent,
+                                'pph_amount' => $pphAmount,
+                                'total_nominal' => $totalNominal,
+                                'nomor_bukti' => $sharedNomorBukti,
+                                'penerima' => $sharedPenerima,
+                                'nama_vendor' => $sharedNamaVendor,
+                                'bank_id' => $sharedBankId,
+                                'nomor_rekening' => $sharedNomorRekening,
+                            ]);
                         }
 
-                        $cleanNum = function ($val) {
-                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
-                        };
+                        $biayaKapal->update(['nominal' => $grandTotalAll]);
+                    } else {
+                        // Fallback behavior lama jika bukan sharedNominal
+                        $allSectionNominals = [];
+                        foreach ($sections as $sectionIndex => $section) {
+                            $cleanNum = function ($val) {
+                                return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                            };
+                            $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                            $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                            $allSectionNominals[$sectionIndex] = $nominal + $adjustment;
+                        }
+                        $grandSubtotal = array_sum($allSectionNominals);
+                        $useBatamShared = !empty($batamShared);
+                        $sharedPphAmountTotal = $useBatamShared ? round($grandSubtotal * $sharedPphPercent / 100) : 0;
 
-                        $nominal = $cleanNum($section['nominal_manual'] ?? 0);
-                        $adjustment = $cleanNum($section['adjustment'] ?? 0);
-                        $notesAdjustment = $section['notes_adjustment'] ?? null;
+                        foreach ($sections as $sectionIndex => $section) {
+                            $kapalName = $section['kapal'] ?? null;
+                            $voyageName = $section['voyage'] ?? null;
 
-                        // PPh: gunakan shared jika ada, fallback ke per-section (backward compat)
-                        if ($useBatamShared) {
-                            // Proporsional: alokasikan PPh ke section ini
-                            $sectionSubtotal = $nominal + $adjustment;
-                            $pphPercent = $sharedPphPercent;
-                            $pphAmount = $grandSubtotal > 0 ? round($sharedPphAmountTotal * ($sectionSubtotal / $grandSubtotal)) : 0;
-                        } else {
-                            $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
-                            $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                            $kontainerIds = [];
+                            if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                                foreach ($section['kontainer'] as $k) {
+                                    if (! empty($k['bl_id'])) {
+                                        $cleanNominalK = function ($val) {
+                                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                                        };
+                                        $kontainerIds[] = [
+                                            'bl_id' => $k['bl_id'],
+                                            'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                            'size' => $k['size'] ?? null,
+                                            'nominal' => $cleanNominalK($k['nominal'] ?? 0),
+                                        ];
+                                    }
+                                }
+                            }
+
+                            $cleanNum = function ($val) {
+                                return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                            };
+
+                            $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                            $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                            $notesAdjustment = $section['notes_adjustment'] ?? null;
+
+                            if ($useBatamShared) {
+                                $sectionSubtotal = $nominal + $adjustment;
+                                $pphPercent = $sharedPphPercent;
+                                $pphAmount = $grandSubtotal > 0 ? round($sharedPphAmountTotal * ($sectionSubtotal / $grandSubtotal)) : 0;
+                            } else {
+                                $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                                $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                            }
+
+                            $totalNominal = ($nominal + $adjustment) - $pphAmount;
+
+                            $nomorBukti = $useBatamShared ? $sharedNomorBukti : ($section['nomor_bukti'] ?? null);
+                            $penerima = $useBatamShared ? $sharedPenerima : ($section['penerima'] ?? null);
+                            $namaVendor = $useBatamShared ? $sharedNamaVendor : ($section['nama_vendor'] ?? null);
+                            $bankId = $useBatamShared ? $sharedBankId : ($section['bank_id'] ?? null);
+                            $nomorRekening = $useBatamShared ? $sharedNomorRekening : ($section['nomor_rekening'] ?? null);
+
+                            \App\Models\BiayaKapalBuruhBatam::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'kontainer_ids' => $kontainerIds,
+                                'nominal' => $nominal,
+                                'adjustment' => $adjustment,
+                                'notes_adjustment' => $notesAdjustment,
+                                'pph_percent' => $pphPercent,
+                                'pph_amount' => $pphAmount,
+                                'total_nominal' => $totalNominal,
+                                'nomor_bukti' => $nomorBukti,
+                                'penerima' => $penerima,
+                                'master_customer_buruh_id' => $section['master_customer_buruh_id'] ?? null,
+                                'nama_vendor' => $namaVendor,
+                                'bank_id' => $bankId,
+                                'nomor_rekening' => $nomorRekening,
+                            ]);
                         }
 
-                        $totalNominal = ($nominal + $adjustment) - $pphAmount;
-
-                        // Field pembayaran: shared > per-section fallback
-                        $nomorBukti = $useBatamShared ? $sharedNomorBukti : ($section['nomor_bukti'] ?? null);
-                        $penerima = $useBatamShared ? $sharedPenerima : ($section['penerima'] ?? null);
-                        $namaVendor = $useBatamShared ? $sharedNamaVendor : ($section['nama_vendor'] ?? null);
-                        $bankId = $useBatamShared ? $sharedBankId : ($section['bank_id'] ?? null);
-                        $nomorRekening = $useBatamShared ? $sharedNomorRekening : ($section['nomor_rekening'] ?? null);
-
-                        \App\Models\BiayaKapalBuruhBatam::create([
-                            'biaya_kapal_id' => $biayaKapal->id,
-                            'kapal' => $kapalName,
-                            'voyage' => $voyageName,
-                            'kontainer_ids' => $kontainerIds,
-                            'nominal' => $nominal,
-                            'adjustment' => $adjustment,
-                            'notes_adjustment' => $notesAdjustment,
-                            'pph_percent' => $pphPercent,
-                            'pph_amount' => $pphAmount,
-                            'total_nominal' => $totalNominal,
-                            'nomor_bukti' => $nomorBukti,
-                            'penerima' => $penerima,
-                            'master_customer_buruh_id' => $section['master_customer_buruh_id'] ?? null,
-                            'nama_vendor' => $namaVendor,
-                            'bank_id' => $bankId,
-                            'nomor_rekening' => $nomorRekening,
-                        ]);
+                        $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
+                        $biayaKapal->update(['nominal' => $totalBatam]);
                     }
-
-                    // Auto calculate total for Batam
-                    $totalBatam = \App\Models\BiayaKapalBuruhBatam::where('biaya_kapal_id', $biayaKapal->id)->sum('total_nominal');
-                    $biayaKapal->update(['nominal' => $totalBatam]);
 
                 } else {
                     // MODE JAKARTA: Behavior lama

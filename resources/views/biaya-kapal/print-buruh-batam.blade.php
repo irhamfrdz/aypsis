@@ -294,7 +294,9 @@
                                     @if(!empty($kontainerList))
                                         <ul style="list-style-type: none; padding-left: 0; margin: 0;">
                                             @foreach($kontainerList as $k)
-                                                <li>{{ $k['nomor_kontainer'] ?? 'Unknown' }} {{ isset($k['size']) ? '('.$k['size'].')' : '' }}: Rp {{ number_format((float)($k['nominal'] ?? 0), 0, ',', '.') }}</li>
+                                                <li>
+                                                    {{ $k['nomor_kontainer'] ?? 'Unknown' }} {{ isset($k['size']) && $k['size'] !== '-' ? '('.$k['size'].')' : '' }}@if(!empty($k['nominal']) && (float)$k['nominal'] > 0): Rp {{ number_format((float)$k['nominal'], 0, ',', '.') }}@endif
+                                                </li>
                                             @endforeach
                                         </ul>
                                     @else
