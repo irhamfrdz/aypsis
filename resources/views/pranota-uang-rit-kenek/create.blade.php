@@ -42,7 +42,7 @@
             @csrf
             <input type="hidden" name="start_date" value="{{ request('start_date') }}">
             <input type="hidden" name="end_date" value="{{ request('end_date') }}">
-            <input type="hidden" name="rit_filter_hidden" value="{{ $ritFilter ?? 'semua' }}">
+            <input type="hidden" name="rit_filter_hidden" value="{{ $ritFilter ?? 'menggunakan_rit' }}">
 
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
             <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md flex flex-wrap items-center justify-between gap-2">
@@ -53,9 +53,9 @@
                 <div class="flex items-center gap-2">
                     <label for="rit_filter" class="text-xs font-medium text-gray-700">Filter Status Rit:</label>
                     <select id="rit_filter" name="rit_filter" class="text-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1 px-2" onchange="applyRitFilter()">
-                        <option value="semua" {{ ($ritFilter ?? 'semua') == 'semua' ? 'selected' : '' }}>Semua</option>
-                        <option value="menggunakan_rit" {{ ($ritFilter ?? 'semua') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
-                        <option value="tanpa_rit" {{ ($ritFilter ?? 'semua') == 'tanpa_rit' ? 'selected' : '' }}>Tanpa Rit</option>
+                        <option value="semua" {{ ($ritFilter ?? 'menggunakan_rit') == 'semua' ? 'selected' : '' }}>Semua</option>
+                        <option value="menggunakan_rit" {{ ($ritFilter ?? 'menggunakan_rit') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="tanpa_rit" {{ ($ritFilter ?? 'menggunakan_rit') == 'tanpa_rit' ? 'selected' : '' }}>Tanpa Rit</option>
                     </select>
                 </div>
             </div>

@@ -116,8 +116,8 @@ class PranotaUangRitKenekController extends Controller
             }
         }
 
-        // Get rit filter from request (default: semua)
-        $ritFilter = request()->input('rit_filter', 'semua');
+        // Selaraskan default dengan Report Rit: hanya surat jalan yang menggunakan rit.
+        $ritFilter = request()->input('rit_filter', 'menggunakan_rit');
 
         // Get available surat jalans that haven't been processed for Pranota Uang Rit Kenek
         $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
@@ -137,7 +137,7 @@ class PranotaUangRitKenekController extends Controller
             $baseQuery->where('rit', 'menggunakan_rit');
         } elseif ($ritFilter === 'tanpa_rit') {
             $baseQuery->where(function ($q) {
-                $q->where('rit', 'tanpa_rit')
+                $q->whereIn('rit', ['tanpa_rit', 'tidak_menggunakan_rit'])
                     ->orWhereNull('rit')
                     ->orWhere('rit', '');
             });
@@ -231,7 +231,7 @@ class PranotaUangRitKenekController extends Controller
             $baseQueryBeforeDate->where('rit', 'menggunakan_rit');
         } elseif ($ritFilter === 'tanpa_rit') {
             $baseQueryBeforeDate->where(function ($q) {
-                $q->where('rit', 'tanpa_rit')
+                $q->whereIn('rit', ['tanpa_rit', 'tidak_menggunakan_rit'])
                     ->orWhereNull('rit')
                     ->orWhere('rit', '');
             });
@@ -341,7 +341,9 @@ class PranotaUangRitKenekController extends Controller
                         $q->where('rit', 'menggunakan_rit')
                             ->orWhereNull('rit');
                     } elseif ($ritFilter === 'tanpa_rit') {
-                        $q->where('rit', 'tanpa_rit');
+                        $q->whereIn('rit', ['tanpa_rit', 'tidak_menggunakan_rit'])
+                            ->orWhereNull('rit')
+                            ->orWhere('rit', '');
                     } else {
                         // 'semua' - include all
                         $q->whereNotNull('id'); // always true, include all
