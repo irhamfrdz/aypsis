@@ -768,6 +768,14 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
             'kapal_sections.*.pph_percent' => 'nullable|numeric',
             'kapal_sections.*.pph_amount' => 'nullable|numeric',
+            // Batam shared fields (UI baru: 1 tabel bersama)
+            'batam_shared' => 'nullable|array',
+            'batam_shared.nomor_bukti' => 'nullable|string|max:255',
+            'batam_shared.penerima' => 'nullable|string|max:255',
+            'batam_shared.nama_vendor' => 'nullable|string|max:255',
+            'batam_shared.bank_id' => 'nullable|exists:banks,id',
+            'batam_shared.nomor_rekening' => 'nullable|string|max:100',
+            'batam_shared.pph_percent' => 'nullable|numeric',
             // Biaya Air sections structure
             'air' => 'nullable|array',
             'air.*.kapal' => 'nullable|string|max:255',
@@ -1191,6 +1199,12 @@ class BiayaKapalController extends Controller
 
             foreach ($globalFields as $field) {
                 if (empty($validated[$field])) {
+                    // Cek batam_shared terlebih dahulu (UI baru)
+                    $batamSharedFallback = $request->input('batam_shared', []);
+                    if (!empty($batamSharedFallback[$field])) {
+                        $validated[$field] = $batamSharedFallback[$field];
+                        continue;
+                    }
                     foreach ($sectionTypes as $secType) {
                         if ($request->has($secType) && is_array($request->$secType)) {
                             $firstSection = collect($request->$secType)->first();
@@ -2084,6 +2098,34 @@ class BiayaKapalController extends Controller
 
                 } elseif ($lokasi === 'batam') {
                     // MODE BATAM: Simpan ke tabel biaya_kapal_buruh_batams (tanpa barang/tenaga kerja)
+                    // Ambil shared fields dari batam_shared jika ada (UI baru menggunakan 1 tabel)
+                    $batamShared = $request->input('batam_shared', []);
+                    $cleanNumShared = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                    };
+                    $sharedPphPercent = $cleanNumShared($batamShared['pph_percent'] ?? null);
+                    $sharedNomorBukti = $batamShared['nomor_bukti'] ?? null;
+                    $sharedPenerima = $batamShared['penerima'] ?? null;
+                    $sharedNamaVendor = $batamShared['nama_vendor'] ?? null;
+                    $sharedBankId = $batamShared['bank_id'] ?? null;
+                    $sharedNomorRekening = $batamShared['nomor_rekening'] ?? null;
+
+                    // Hitung total semua section dulu untuk PPh shared
+                    $allSectionNominals = [];
+                    foreach ($request->kapal_sections as $sectionIndex => $section) {
+                        $cleanNum = function ($val) {
+                            return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                        };
+                        $nominal = $cleanNum($section['nominal_manual'] ?? 0);
+                        $adjustment = $cleanNum($section['adjustment'] ?? 0);
+                        $allSectionNominals[$sectionIndex] = $nominal + $adjustment;
+                    }
+                    $grandSubtotal = array_sum($allSectionNominals);
+
+                    // PPh dihitung dari grand subtotal jika menggunakan shared
+                    $useBatamShared = !empty($batamShared);
+                    $sharedPphAmountTotal = $useBatamShared ? round($grandSubtotal * $sharedPphPercent / 100) : 0;
+
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
                         $kapalName = $section['kapal'] ?? null;
                         $voyageName = $section['voyage'] ?? null;
@@ -2114,10 +2156,25 @@ class BiayaKapalController extends Controller
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
 
-                        $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
-                        $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                        // PPh: gunakan shared jika ada, fallback ke per-section (backward compat)
+                        if ($useBatamShared) {
+                            // Proporsional: alokasikan PPh ke section ini
+                            $sectionSubtotal = $nominal + $adjustment;
+                            $pphPercent = $sharedPphPercent;
+                            $pphAmount = $grandSubtotal > 0 ? round($sharedPphAmountTotal * ($sectionSubtotal / $grandSubtotal)) : 0;
+                        } else {
+                            $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                            $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                        }
 
                         $totalNominal = ($nominal + $adjustment) - $pphAmount;
+
+                        // Field pembayaran: shared > per-section fallback
+                        $nomorBukti = $useBatamShared ? $sharedNomorBukti : ($section['nomor_bukti'] ?? null);
+                        $penerima = $useBatamShared ? $sharedPenerima : ($section['penerima'] ?? null);
+                        $namaVendor = $useBatamShared ? $sharedNamaVendor : ($section['nama_vendor'] ?? null);
+                        $bankId = $useBatamShared ? $sharedBankId : ($section['bank_id'] ?? null);
+                        $nomorRekening = $useBatamShared ? $sharedNomorRekening : ($section['nomor_rekening'] ?? null);
 
                         \App\Models\BiayaKapalBuruhBatam::create([
                             'biaya_kapal_id' => $biayaKapal->id,
@@ -2130,12 +2187,12 @@ class BiayaKapalController extends Controller
                             'pph_percent' => $pphPercent,
                             'pph_amount' => $pphAmount,
                             'total_nominal' => $totalNominal,
-                            'nomor_bukti' => $section['nomor_bukti'] ?? null,
-                            'penerima' => $section['penerima'] ?? null,
+                            'nomor_bukti' => $nomorBukti,
+                            'penerima' => $penerima,
                             'master_customer_buruh_id' => $section['master_customer_buruh_id'] ?? null,
-                            'nama_vendor' => $section['nama_vendor'] ?? null,
-                            'bank_id' => $section['bank_id'] ?? null,
-                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                            'nama_vendor' => $namaVendor,
+                            'bank_id' => $bankId,
+                            'nomor_rekening' => $nomorRekening,
                         ]);
                     }
 

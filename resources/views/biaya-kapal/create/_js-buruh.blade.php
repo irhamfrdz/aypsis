@@ -22,6 +22,7 @@
         if (!kapalSectionsContainer) return;
         kapalSectionsContainer.innerHTML = '';
         kapalSectionCounter = 0;
+        batamTableInitialized = false;
         addKapalSection();
     }
     
@@ -30,154 +31,216 @@
             kapalSectionsContainer.innerHTML = '';
         }
         kapalSectionCounter = 0;
+        batamTableInitialized = false;
     }
     
     addKapalSectionBtn.addEventListener('click', function() {
         addKapalSection();
     });
     
+    // ==========================================
+    // BATAM TABLE MANAGEMENT (Shared 1 Table)
+    // ==========================================
+    let batamTableInitialized = false;
+
+    function ensureBatamTableExists() {
+        if (batamTableInitialized && document.getElementById('batam_kapal_table_wrapper')) return;
+
+        kapalSectionsContainer.innerHTML = '';
+        batamTableInitialized = false;
+
+        const wrapper = document.createElement('div');
+        wrapper.id = 'batam_kapal_table_wrapper';
+        wrapper.className = 'mb-4';
+        wrapper.innerHTML = `
+            <div class="overflow-x-auto rounded-xl border border-indigo-200 shadow-sm">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-600 text-white">
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs w-10">#</th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[180px]">Nama Kapal <span class="text-red-300">*</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[200px]">No. Voyage <span class="text-red-300">*</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[300px]">Detail Kontainer <span class="text-indigo-300 font-normal normal-case">(No. Kontainer &amp; Nominal)</span></th>
+                            <th class="px-3 py-2.5 text-left font-semibold text-xs min-w-[160px]">Nominal <span class="text-red-300">*</span> &amp; Adjustment</th>
+                            <th class="px-3 py-2.5 text-center font-semibold text-xs w-14">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batam_kapal_tbody"></tbody>
+                </table>
+            </div>
+
+            <!-- TOTAL PER BARIS -->
+            <div id="batam_row_totals" class="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg hidden">
+                <div class="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wider">Total Per Kapal</div>
+                <div id="batam_row_totals_list" class="space-y-1"></div>
+            </div>
+
+            <!-- DETAIL PEMBAYARAN & DOKUMEN (SHARED) -->
+            <div class="mt-4 p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                <h4 class="text-xs font-bold text-gray-700 mb-3 uppercase tracking-wider border-b border-gray-100 pb-2">
+                    <i class="fas fa-file-invoice mr-1 text-emerald-500"></i> Detail Pembayaran & Dokumen
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Bukti</label>
+                        <input type="text" name="batam_shared[nomor_bukti]" id="batam_nomor_bukti" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Bukti">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Vendor (Ketik Manual)</label>
+                        <input type="text" name="batam_shared[nama_vendor]" id="batam_nama_vendor" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
+                        <select name="batam_shared[penerima]" id="batam_penerima" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <option value="">-- Pilih Penerima --</option>
+                            @foreach($karyawans as $karyawan)
+                                <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
+                        <select name="batam_shared[bank_id]" id="batam_bank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <option value="">-- Pilih Bank --</option>
+                            @foreach($banks as $bank)
+                                <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                        <input type="text" name="batam_shared[nomor_rekening]" id="batam_nomor_rekening" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Rekening">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">PPh</label>
+                        <select name="batam_shared[pph_percent]" id="batam_pph_percent" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <option value="0">0%</option>
+                            <option value="0.5">0.5%</option>
+                            <option value="2">2%</option>
+                            <option value="2.5">2.5%</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
+                        <input type="text" id="batam_pph_amount" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-100" placeholder="0" readonly>
+                    </div>
+                </div>
+            </div>
+        `;
+        kapalSectionsContainer.appendChild(wrapper);
+        batamTableInitialized = true;
+
+        // Listen to PPh change
+        const pphSelect = document.getElementById('batam_pph_percent');
+        if (pphSelect) {
+            pphSelect.addEventListener('change', calculateTotalFromAllSections);
+        }
+
+        // Init Select2 for penerima & bank
+        setTimeout(() => {
+            const penerimaEl = document.getElementById('batam_penerima');
+            const bankEl = document.getElementById('batam_bank');
+            if (penerimaEl && typeof jQuery !== 'undefined' && $.fn.select2) {
+                $(penerimaEl).select2({ tags: true, placeholder: '-- Pilih atau Ketik Penerima --', allowClear: true, width: '100%' });
+            }
+            if (bankEl && typeof jQuery !== 'undefined' && $.fn.select2) {
+                $(bankEl).select2({ tags: true, placeholder: '-- Pilih atau Ketik Bank --', allowClear: true, width: '100%' });
+            }
+        }, 100);
+    }
+
     function addKapalSection() {
         kapalSectionCounter++;
         const sectionIndex = kapalSectionCounter;
-        
-        const section = document.createElement('div');
-        section.className = 'kapal-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
-        section.setAttribute('data-section-index', sectionIndex);
         
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
         allKapalsData.forEach(kapal => {
             kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
 
+        // section dideklarasikan di luar agar bisa diakses oleh event listener di bawah
+        let section;
+
         if (currentLokasi === 'batam') {
             // ========================================
-            // LAYOUT BATAM (Kontainer/BL + Nominal Manual)
+            // LAYOUT BATAM — Tambahkan baris ke tabel bersama
             // ========================================
-            section.innerHTML = `
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Mode Batam</span></h3>
-                    ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
-                        <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required>
-                            ${kapalOptions}
+            ensureBatamTableExists();
+
+            const tbody = document.getElementById('batam_kapal_tbody');
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-section-index', sectionIndex);
+            tr.className = 'kapal-section border-b border-gray-100 hover:bg-indigo-50 transition-colors align-top';
+            tr.innerHTML = `
+                <!-- No -->
+                <td class="px-3 py-3 text-center align-top">
+                    <span class="row-number inline-flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">${sectionIndex}</span>
+                </td>
+                <!-- Nama Kapal -->
+                <td class="px-3 py-3 align-top">
+                    <select name="kapal_sections[${sectionIndex}][kapal]" class="kapal-select w-full px-2 py-1.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                        ${kapalOptions}
+                    </select>
+                </td>
+                <!-- No. Voyage -->
+                <td class="px-3 py-3 align-top">
+                    <div class="flex gap-1">
+                        <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-2 py-1.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm" required disabled>
+                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                         </select>
+                        <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-2 py-1.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm hidden" disabled placeholder="Ketik Voyage">
+                        <button type="button" class="voyage-manual-btn flex-shrink-0 px-2 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition text-xs" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
+                    </div>
+                </td>
+                <!-- Detail Kontainer -->
+                <td class="px-3 py-3 align-top">
+                    <div class="kontainer-loading hidden py-1.5 text-gray-500 text-xs italic text-center"><i class="fas fa-spinner fa-spin mr-1"></i>Memuat kontainer...</div>
+                    <div class="kontainer-empty hidden py-1.5 text-red-500 text-xs italic text-center"><i class="fas fa-inbox mr-1"></i>Tidak ada kontainer untuk voyage ini</div>
+                    <div class="kontainer-container-section space-y-2" data-section="${sectionIndex}"></div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <button type="button" onclick="addKontainerToSection(${sectionIndex})" class="btn-tambah-kontainer inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium rounded-lg transition shadow-sm" disabled>
+                            <i class="fas fa-plus text-xs"></i> Tambah Kontainer
+                        </button>
+                        <span class="info-kontainer text-xs text-gray-400 italic"><i class="fas fa-info-circle mr-0.5"></i>Pilih Voyage dulu</span>
+                    </div>
+                </td>
+                <!-- Nominal & Adjustment (digabung dalam 1 kolom secara vertikal) -->
+                <td class="px-3 py-3 align-top">
+                    <div class="mb-2">
+                        <label class="block text-xs text-gray-500 mb-0.5">Nominal <span class="text-red-500">*</span></label>
+                        <input type="text" name="kapal_sections[${sectionIndex}][nominal_manual]" class="nominal-manual-input w-full px-2 py-1.5 border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm font-semibold" placeholder="0" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-xs text-gray-500 mb-0.5">Adjustment</label>
+                        <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-2 py-1.5 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <select name="kapal_sections[${sectionIndex}][voyage]" class="voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500" required disabled>
-                                <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                            </select>
-                            <input type="text" name="kapal_sections[${sectionIndex}][voyage]" class="voyage-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 hidden" disabled placeholder="Ketik No. Voyage">
-                            <button type="button" class="voyage-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
-                                <i class="fas fa-keyboard"></i>
-                            </button>
-                        </div>
+                        <label class="block text-xs text-gray-500 mb-0.5">Catatan Adj.</label>
+                        <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-2 py-1.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs" placeholder="Keterangan...">
                     </div>
-                </div>
-
-                <!-- Kontainer Selection -->
-                <div class="mb-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Detail Kontainer <span class="text-xs text-gray-500 font-normal normal-case">(Opsional)</span></label>
-                    <div class="kontainer-loading hidden py-2 text-center text-gray-500 text-xs italic"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat kontainer...</div>
-                    <div class="kontainer-empty hidden py-2 text-center text-red-500 text-xs italic">Tidak ada kontainer untuk voyage ini</div>
-                    <div class="kontainer-container-section" data-section="${sectionIndex}"></div>
-                    <div class="mt-2 flex items-center gap-2">
-                        <button type="button" onclick="addKontainerToSection(${sectionIndex})" class="btn-tambah-kontainer px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs rounded-lg transition shadow-sm" disabled>
-                            <i class="fas fa-plus mr-1"></i> Tambah Kontainer
-                        </button>
-                        <span class="info-kontainer text-xs text-gray-500"><i class="fas fa-info-circle mr-1"></i>Pilih No. Voyage terlebih dahulu</span>
-                    </div>
-                </div>
-
-                <!-- Nominal Per Kapal Display -->
-                <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Nominal <span class="text-red-500">*</span></label>
-                            <input type="text" name="kapal_sections[${sectionIndex}][nominal_manual]" class="nominal-manual-input w-full px-3 py-2 border border-indigo-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 text-sm font-semibold" placeholder="0" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
-                            <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan Adjustment</label>
-                            <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
-                        </div>
-                    </div>
-                    
-                    <!-- Detail Pembayaran Tambahan (Batam) -->
-                    <div class="mt-4 pt-3 border-t border-gray-200">
-                        <h4 class="text-xs font-bold text-gray-700 mb-2 uppercase">Detail Pembayaran & Dokumen</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Bukti</label>
-                                <input type="text" name="kapal_sections[${sectionIndex}][nomor_bukti]" class="nomor-bukti-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Bukti">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Vendor (Ketik Manual)</label>
-                                <input type="text" name="kapal_sections[${sectionIndex}][nama_vendor]" class="nama-vendor-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nama Vendor">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Penerima</label>
-                                <select name="kapal_sections[${sectionIndex}][penerima]" class="penerima-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                                    <option value="">-- Pilih Penerima --</option>
-                                    @foreach($karyawans as $karyawan)
-                                        <option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Bank</label>
-                                <select name="kapal_sections[${sectionIndex}][bank_id]" class="bank-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                                    <option value="">-- Pilih Bank --</option>
-                                    @foreach($banks as $bank)
-                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Rekening</label>
-                                <input type="text" name="kapal_sections[${sectionIndex}][nomor_rekening]" class="nomor-rekening-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Nomor Rekening">
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                    
-                    <!-- PPh Section -->
-                    <div class="mt-4 pt-3 border-t border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">PPh</label>
-                                <select name="kapal_sections[${sectionIndex}][pph_percent]" class="pph-percent-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm">
-                                    <option value="0">0%</option>
-                                    <option value="0.5">0.5%</option>
-                                    <option value="2">2%</option>
-                                    <option value="2.5">2.5%</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
-                                <input type="text" name="kapal_sections[${sectionIndex}][pph_amount]" class="pph-amount-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm bg-gray-100" placeholder="0" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center border-t border-blue-100 pt-2 mt-2">
-                        <span class="text-sm font-semibold text-gray-700">Total Nominal Kapal ${sectionIndex}:</span>
-                        <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
-                    </div>
-                </div>
+                    <div class="mt-1 text-xs text-blue-600 font-semibold section-nominal-display hidden"></div>
+                </td>
+                <!-- Aksi -->
+                <td class="px-3 py-3 text-center align-top">
+                    ${sectionIndex > 1 ? `<button type="button" onclick="removeKapalSection(${sectionIndex})" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition" title="Hapus baris ini"><i class="fas fa-trash"></i></button>` : '<span class="text-gray-300 text-xs">—</span>'}
+                </td>
             `;
+
+            tbody.appendChild(tr);
+
+            // Assign section agar event listener di bawah bisa mengaksesnya
+            section = tr;
         } else {
             // ========================================
             // LAYOUT JAKARTA (Default Lama)
             // ========================================
+            section = document.createElement('div');
+            section.className = 'kapal-section mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50';
+            section.setAttribute('data-section-index', sectionIndex);
             section.innerHTML = `
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex}</h3>
@@ -289,7 +352,10 @@
             `;
         }
         
-        kapalSectionsContainer.appendChild(section);
+        // Untuk Jakarta, append section ke container (Batam sudah append row ke tbody)
+        if (currentLokasi !== 'batam') {
+            kapalSectionsContainer.appendChild(section);
+        }
         
         // Setup kapal change listener - use data attribute to get correct section
         const kapalSelect = section.querySelector('.kapal-select');
@@ -380,133 +446,137 @@
             }
         });
         
-        // --- AUTO-COPY PAYMENT DETAILS FROM KAPAL 1 ---
-        const namaVendorInput = section.querySelector('.nama-vendor-input');
-        const penerimaSelect = section.querySelector('.penerima-select');
-        const bankSelect = section.querySelector('.bank-select');
-        const nomorRekeningInput = section.querySelector('.nomor-rekening-input');
+        // --- AUTO-COPY PAYMENT DETAILS FROM KAPAL 1 (hanya untuk Jakarta) ---
+        if (currentLokasi !== 'batam') {
+            const namaVendorInput = section.querySelector('.nama-vendor-input');
+            const penerimaSelect = section.querySelector('.penerima-select');
+            const bankSelect = section.querySelector('.bank-select');
+            const nomorRekeningInput = section.querySelector('.nomor-rekening-input');
 
-        // Copy values from Kapal 1 if this is a new section (> 1)
-        if (sectionIndex > 1) {
-            const firstSection = document.querySelector('[data-section-index="1"]');
-            if (firstSection) {
-                const firstVendor = firstSection.querySelector('.nama-vendor-input');
-                const firstPenerima = firstSection.querySelector('.penerima-select');
-                const firstBank = firstSection.querySelector('.bank-select');
-                const firstRekening = firstSection.querySelector('.nomor-rekening-input');
+            // Copy values from Kapal 1 if this is a new section (> 1)
+            if (sectionIndex > 1) {
+                const firstSection = document.querySelector('[data-section-index="1"]');
+                if (firstSection) {
+                    const firstVendor = firstSection.querySelector('.nama-vendor-input');
+                    const firstPenerima = firstSection.querySelector('.penerima-select');
+                    const firstBank = firstSection.querySelector('.bank-select');
+                    const firstRekening = firstSection.querySelector('.nomor-rekening-input');
 
-                if (namaVendorInput && firstVendor && firstVendor.value) namaVendorInput.value = firstVendor.value;
-                if (penerimaSelect && firstPenerima && firstPenerima.value) {
-                    const pVal = $(firstPenerima).val() || firstPenerima.value;
-                    if (pVal && !$(penerimaSelect).find("option[value='" + pVal + "']").length) {
-                        $(penerimaSelect).append(new Option(pVal, pVal, true, true));
+                    if (namaVendorInput && firstVendor && firstVendor.value) namaVendorInput.value = firstVendor.value;
+                    if (penerimaSelect && firstPenerima && firstPenerima.value) {
+                        const pVal = $(firstPenerima).val() || firstPenerima.value;
+                        if (pVal && !$(penerimaSelect).find("option[value='" + pVal + "']").length) {
+                            $(penerimaSelect).append(new Option(pVal, pVal, true, true));
+                        }
+                        penerimaSelect.value = pVal;
                     }
-                    penerimaSelect.value = pVal;
+                    if (bankSelect && firstBank && firstBank.value) {
+                        const bVal = $(firstBank).val() || firstBank.value;
+                        if (bVal && !$(bankSelect).find("option[value='" + bVal + "']").length) {
+                            $(bankSelect).append(new Option(bVal, bVal, true, true));
+                        }
+                        bankSelect.value = bVal;
+                    }
+                    if (nomorRekeningInput && firstRekening && firstRekening.value) nomorRekeningInput.value = firstRekening.value;
                 }
-                if (bankSelect && firstBank && firstBank.value) {
-                    const bVal = $(firstBank).val() || firstBank.value;
-                    if (bVal && !$(bankSelect).find("option[value='" + bVal + "']").length) {
-                        $(bankSelect).append(new Option(bVal, bVal, true, true));
-                    }
-                    bankSelect.value = bVal;
+            }
+
+            // Auto-update other sections when Kapal 1 changes
+            if (sectionIndex === 1) {
+                const updateOtherSections = (selector, value) => {
+                    document.querySelectorAll('.kapal-section').forEach(sec => {
+                        const idx = parseInt(sec.getAttribute('data-section-index'));
+                        if (idx > 1) {
+                            const input = sec.querySelector(selector);
+                            if (input) input.value = value;
+                        }
+                    });
+                };
+
+                if (namaVendorInput) {
+                    namaVendorInput.addEventListener('input', function() {
+                        updateOtherSections('.nama-vendor-input', this.value);
+                    });
                 }
-                if (nomorRekeningInput && firstRekening && firstRekening.value) nomorRekeningInput.value = firstRekening.value;
-            }
-        }
-
-        // Auto-update other sections when Kapal 1 changes
-        if (sectionIndex === 1) {
-            const updateOtherSections = (selector, value) => {
-                document.querySelectorAll('.kapal-section').forEach(sec => {
-                    const idx = parseInt(sec.getAttribute('data-section-index'));
-                    if (idx > 1) {
-                        const input = sec.querySelector(selector);
-                        if (input) input.value = value;
-                    }
-                });
-            };
-
-            if (namaVendorInput) {
-                namaVendorInput.addEventListener('input', function() {
-                    updateOtherSections('.nama-vendor-input', this.value);
-                });
-            }
-            if (penerimaSelect) {
-                penerimaSelect.addEventListener('change', function() {
-                    updateOtherSections('.penerima-select', this.value);
-                });
-            }
-            if (bankSelect) {
-                bankSelect.addEventListener('change', function() {
-                    updateOtherSections('.bank-select', this.value);
-                });
-            }
-            if (nomorRekeningInput) {
-                nomorRekeningInput.addEventListener('input', function() {
-                    updateOtherSections('.nomor-rekening-input', this.value);
-                });
+                if (penerimaSelect) {
+                    penerimaSelect.addEventListener('change', function() {
+                        updateOtherSections('.penerima-select', this.value);
+                    });
+                }
+                if (bankSelect) {
+                    bankSelect.addEventListener('change', function() {
+                        updateOtherSections('.bank-select', this.value);
+                    });
+                }
+                if (nomorRekeningInput) {
+                    nomorRekeningInput.addEventListener('input', function() {
+                        updateOtherSections('.nomor-rekening-input', this.value);
+                    });
+                }
             }
         }
         
-        // Initialize Select2 for Penerima
-        if (penerimaSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
-            $(penerimaSelect).select2({
-                tags: true,
-                placeholder: "-- Pilih atau Ketik Penerima --",
-                allowClear: true,
-                width: '100%'
-            });
-            
-            // Sync with other sections if this is section 1
-            if (sectionIndex === 1) {
-                $(penerimaSelect).on('select2:select select2:unselect', function(e) {
-                    const value = $(this).val();
-                    document.querySelectorAll('.kapal-section').forEach(sec => {
-                        const idx = parseInt(sec.getAttribute('data-section-index'));
-                        if (idx > 1) {
-                            const $sel = $(sec.querySelector('.penerima-select'));
-                            if ($sel.length) {
-                                // Add option if it doesn't exist
-                                if (value && !$sel.find("option[value='" + value + "']").length) {
-                                    const newOption = new Option(value, value, true, true);
-                                    $sel.append(newOption);
-                                }
-                                $sel.val(value).trigger('change.select2');
-                            }
-                        }
-                    });
-                });
-            }
-        }
+        // Initialize Select2 for Penerima & Bank (hanya untuk Jakarta)
+        if (currentLokasi !== 'batam') {
+            const penerimaSelect = section.querySelector('.penerima-select');
+            const bankSelect = section.querySelector('.bank-select');
 
-        // Initialize Select2 for Bank (Pilih atau Input Manual)
-        if (bankSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
-            $(bankSelect).select2({
-                tags: true,
-                placeholder: "-- Pilih atau Ketik Bank --",
-                allowClear: true,
-                width: '100%'
-            });
-            
-            // Sync with other sections if this is section 1
-            if (sectionIndex === 1) {
-                $(bankSelect).on('select2:select select2:unselect', function(e) {
-                    const value = $(this).val();
-                    document.querySelectorAll('.kapal-section').forEach(sec => {
-                        const idx = parseInt(sec.getAttribute('data-section-index'));
-                        if (idx > 1) {
-                            const $sel = $(sec.querySelector('.bank-select'));
-                            if ($sel.length) {
-                                // Add option if it doesn't exist
-                                if (value && !$sel.find("option[value='" + value + "']").length) {
-                                    const newOption = new Option(value, value, true, true);
-                                    $sel.append(newOption);
-                                }
-                                $sel.val(value).trigger('change.select2');
-                            }
-                        }
-                    });
+            if (penerimaSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+                $(penerimaSelect).select2({
+                    tags: true,
+                    placeholder: "-- Pilih atau Ketik Penerima --",
+                    allowClear: true,
+                    width: '100%'
                 });
+                
+                // Sync with other sections if this is section 1
+                if (sectionIndex === 1) {
+                    $(penerimaSelect).on('select2:select select2:unselect', function(e) {
+                        const value = $(this).val();
+                        document.querySelectorAll('.kapal-section').forEach(sec => {
+                            const idx = parseInt(sec.getAttribute('data-section-index'));
+                            if (idx > 1) {
+                                const $sel = $(sec.querySelector('.penerima-select'));
+                                if ($sel.length) {
+                                    if (value && !$sel.find("option[value='" + value + "']").length) {
+                                        const newOption = new Option(value, value, true, true);
+                                        $sel.append(newOption);
+                                    }
+                                    $sel.val(value).trigger('change.select2');
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+
+            if (bankSelect && typeof jQuery !== 'undefined' && $.fn.select2) {
+                $(bankSelect).select2({
+                    tags: true,
+                    placeholder: "-- Pilih atau Ketik Bank --",
+                    allowClear: true,
+                    width: '100%'
+                });
+                
+                // Sync with other sections if this is section 1
+                if (sectionIndex === 1) {
+                    $(bankSelect).on('select2:select select2:unselect', function(e) {
+                        const value = $(this).val();
+                        document.querySelectorAll('.kapal-section').forEach(sec => {
+                            const idx = parseInt(sec.getAttribute('data-section-index'));
+                            if (idx > 1) {
+                                const $sel = $(sec.querySelector('.bank-select'));
+                                if ($sel.length) {
+                                    if (value && !$sel.find("option[value='" + value + "']").length) {
+                                        const newOption = new Option(value, value, true, true);
+                                        $sel.append(newOption);
+                                    }
+                                    $sel.val(value).trigger('change.select2');
+                                }
+                            }
+                        });
+                    });
+                }
             }
         }
         
@@ -666,16 +736,22 @@
         if (section) {
             section.remove();
             
-            // Re-index titles so it doesn't jump numbers
+            // Re-index
             const sections = document.querySelectorAll('.kapal-section');
             sections.forEach((sec, index) => {
+                const newNum = index + 1;
+                // Mode Batam: renumber badge di kolom pertama tabel
+                const badge = sec.querySelector('.row-number');
+                if (badge) {
+                    badge.textContent = newNum;
+                }
+                // Mode Jakarta: renumber judul h3
                 const title = sec.querySelector('h3');
                 if (title) {
-                    // Cek mode batam atau bukan
                     if (title.innerHTML.includes('Mode Batam')) {
-                        title.innerHTML = `Kapal ${index + 1} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Mode Batam</span>`;
+                        title.innerHTML = `Kapal ${newNum} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-2">Mode Batam</span>`;
                     } else {
-                        title.innerHTML = `Kapal ${index + 1}`;
+                        title.innerHTML = `Kapal ${newNum}`;
                     }
                 }
             });
@@ -1042,7 +1118,7 @@
                 sectionTotal += adjustment;
             }
             
-            // Calculate PPh
+            // Calculate PPh (hanya untuk mode Jakarta — per section)
             const pphPercentSelect = section.querySelector('.pph-percent-select');
             const pphAmountInput = section.querySelector('.pph-amount-input');
             if (pphPercentSelect && pphAmountInput) {
@@ -1056,7 +1132,12 @@
             
             // Update section nominal display
             if (nominalDisplay) {
-                nominalDisplay.textContent = sectionTotal > 0 ? `Rp ${Math.round(sectionTotal).toLocaleString('id-ID')}` : 'Rp 0';
+                if (sectionTotal > 0) {
+                    nominalDisplay.textContent = `Rp ${Math.round(sectionTotal).toLocaleString('id-ID')}`;
+                    nominalDisplay.classList.remove('hidden');
+                } else {
+                    nominalDisplay.classList.add('hidden');
+                }
             }
 
             // Update hidden input for section total
@@ -1066,6 +1147,16 @@
             
             grandTotal += sectionTotal;
         });
+
+        // PPh shared untuk mode Batam
+        const batamPphSelect = document.getElementById('batam_pph_percent');
+        const batamPphAmount = document.getElementById('batam_pph_amount');
+        if (batamPphSelect && batamPphAmount) {
+            const pphPercent = parseFloat(batamPphSelect.value) || 0;
+            const pphAmount = grandTotal * (pphPercent / 100);
+            batamPphAmount.value = pphAmount > 0 ? Math.round(pphAmount).toLocaleString('id-ID') : '0';
+            grandTotal -= pphAmount;
+        }
         
         if (grandTotal > 0) {
             nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
@@ -1153,21 +1244,30 @@
         }
         
         const inputGroup = document.createElement('div');
-        inputGroup.className = 'flex items-end gap-2 mb-2 animate-fade-in';
+        inputGroup.className = 'kontainer-row mb-2 p-2 bg-white border border-indigo-100 rounded-lg shadow-sm animate-fade-in';
         inputGroup.innerHTML = `
-            <div class="flex-1">
-                <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" required>
-                    ${kontainerOptions}
-                </select>
-                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
-                <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
+            <!-- Baris 1: Nomor Kontainer (full width) -->
+            <div class="flex items-center gap-1.5 mb-1.5">
+                <div class="flex-1 min-w-0">
+                    <select name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][bl_id]" class="kontainer-select-item w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400 bg-white" required>
+                        ${kontainerOptions}
+                    </select>
+                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nomor_kontainer]" class="kontainer-nomor-hidden">
+                    <input type="hidden" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][size]" class="kontainer-size-hidden">
+                </div>
+                <button type="button" onclick="removeKontainerFromSection(this)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-red-100 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition" title="Hapus kontainer ini">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
             </div>
-            <div class="w-32">
-                <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Rp 0" required>
+            <!-- Baris 2: Info badge + Nominal -->
+            <div class="flex items-center gap-2">
+                <span class="kontainer-info-badge flex-shrink-0 text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 rounded px-1.5 py-0.5 hidden">
+                    <i class="fas fa-box mr-0.5"></i><span class="badge-size-text"></span>
+                </span>
+                <div class="flex-1">
+                    <input type="text" name="kapal_sections[${sectionIndex}][kontainer][${kontainerIndex}][nominal]" class="kontainer-nominal-item w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400" placeholder="Nominal (Rp)" required>
+                </div>
             </div>
-            <button type="button" onclick="removeKontainerFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
-                <i class="fas fa-trash text-xs"></i>
-            </button>
         `;
         
         container.appendChild(inputGroup);
@@ -1182,12 +1282,27 @@
                 allowClear: true,
                 width: '100%'
             });
+
+            const updateBadge = (nomor, size) => {
+                const badge = inputGroup.querySelector('.kontainer-info-badge');
+                const badgeText = inputGroup.querySelector('.badge-size-text');
+                if (badge && badgeText) {
+                    if (nomor || size) {
+                        badgeText.textContent = [size, nomor].filter(Boolean).join(' — ');
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            };
             
             $(kontainerSelect).on('select2:select', function (e) {
                 const selectedOption = $(this).find(':selected');
-                nomorHidden.value = selectedOption.attr('data-nomor') || '';
+                const nomor = selectedOption.attr('data-nomor') || '';
                 const size = selectedOption.attr('data-size') || '';
+                nomorHidden.value = nomor;
                 sizeHidden.value = size;
+                updateBadge(nomor, size);
 
                 // Auto-fill nominal for Buruh Bongkar
                 if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
@@ -1206,16 +1321,30 @@
                 }
             });
             
-            $(kontainerSelect).on('select2:unselect', function (e) {
+            $(kontainerSelect).on('select2:unselect select2:clear', function (e) {
                 nomorHidden.value = '';
                 sizeHidden.value = '';
+                updateBadge('', '');
             });
         } else {
             kontainerSelect.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
-                nomorHidden.value = selectedOption.getAttribute('data-nomor') || '';
+                const nomor = selectedOption.getAttribute('data-nomor') || '';
                 const size = selectedOption.getAttribute('data-size') || '';
+                nomorHidden.value = nomor;
                 sizeHidden.value = size;
+
+                // Update badge
+                const badge = inputGroup.querySelector('.kontainer-info-badge');
+                const badgeText = inputGroup.querySelector('.badge-size-text');
+                if (badge && badgeText) {
+                    if (nomor || size) {
+                        badgeText.textContent = [size, nomor].filter(Boolean).join(' — ');
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
 
                 // Auto-fill nominal for Buruh Bongkar
                 if (typeof selectedJenisBiaya !== 'undefined' && selectedJenisBiaya && selectedJenisBiaya.kode === 'KB054') {
