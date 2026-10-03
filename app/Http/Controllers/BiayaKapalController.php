@@ -28,6 +28,7 @@ use App\Models\MasterPricelistLolo;
 use App\Models\PricelistBuruh;
 use App\Models\PricelistThc;
 use App\Models\PricelistTkbm;
+use App\Models\SuratJalan;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
@@ -6700,7 +6701,7 @@ class BiayaKapalController extends Controller
     private function resolveKarantinaNomorDokumen(string $sourceType, int $sourceId): ?string
     {
         return match ($sourceType) {
-            'surat_jalan' => TandaTerima::find($sourceId)?->no_surat_jalan,
+            'surat_jalan' => SuratJalan::find($sourceId)?->no_surat_jalan,
             'tanda_terima_tanpa_surat_jalan' => (function () use ($sourceId) {
                 $tandaTerima = TandaTerimaTanpaSuratJalan::find($sourceId);
 
@@ -6721,6 +6722,9 @@ class BiayaKapalController extends Controller
 
         // Search TandaTerima (with surat jalan)
         $query1 = TandaTerima::query();
+        if ($request->get('context') === 'karantina') {
+            $query1->whereNotNull('surat_jalan_id');
+        }
         if ($search) {
             $query1->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
@@ -6730,7 +6734,7 @@ class BiayaKapalController extends Controller
                     ->orWhere('no_plat', 'like', "%{$search}%");
             });
         }
-        $tts = $query1->select('id', 'no_surat_jalan', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_surat_jalan')
+        $tts = $query1->select('id', 'surat_jalan_id', 'no_surat_jalan', 'no_kontainer', 'pengirim', 'penerima', 'tanggal_surat_jalan')
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->limit(15)
             ->get()
@@ -6738,6 +6742,8 @@ class BiayaKapalController extends Controller
                 return [
                     'id' => $item->id,
                     'type' => 'tanda_terima',
+                    'karantina_source_type' => 'surat_jalan',
+                    'karantina_source_id' => $item->surat_jalan_id,
                     'no_surat_jalan' => $item->no_surat_jalan,
                     'no_kontainer' => $item->no_kontainer,
                     'pengirim' => $item->pengirim,

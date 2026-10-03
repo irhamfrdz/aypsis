@@ -116,6 +116,12 @@ class SuratJalan extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function biayaKarantinaItems()
+    {
+        return $this->hasMany(BiayaKapalPerijinanKarantina::class, 'source_id')
+            ->where('source_type', 'surat_jalan');
+    }
+
     public function pengirimRelation()
     {
         return $this->belongsTo(Pengirim::class, 'pengirim', 'id');

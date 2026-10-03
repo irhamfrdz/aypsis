@@ -17,6 +17,12 @@ class TandaTerimaTanpaSuratJalan extends Model
         return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
     }
 
+    public function biayaKarantinaItems()
+    {
+        return $this->hasMany(BiayaKapalPerijinanKarantina::class, 'source_id')
+            ->where('source_type', 'tanda_terima_tanpa_surat_jalan');
+    }
+
     protected $fillable = [
         'no_tanda_terima',
         'shipper_jb_id',

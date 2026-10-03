@@ -377,14 +377,16 @@
     }
 
     function setPerijinanKarantinaReference(itemRow, item) {
-        const sourceType = perijinanKarantinaSourceType(item.type);
+        const sourceType = item.karantina_source_type || perijinanKarantinaSourceType(item.type);
+        const sourceId = item.karantina_source_id || item.id;
         itemRow.querySelector('.perijinan-karantina-source-type').value = sourceType;
-        itemRow.querySelector('.perijinan-karantina-source-id').value = item.id;
+        itemRow.querySelector('.perijinan-karantina-source-id').value = sourceId;
         itemRow.querySelector('.perijinan-karantina-document-number').value = item.no_surat_jalan || item.nomor_dokumen || '';
         itemRow.querySelector('.perijinan-karantina-type').textContent = perijinanKarantinaTypeLabel(sourceType);
         itemRow.querySelector('.perijinan-karantina-number').textContent = item.no_surat_jalan || item.nomor_dokumen || '-';
         itemRow.querySelector('.perijinan-karantina-detail').textContent = item.display_text || item.nomor_dokumen || '';
         itemRow.querySelector('.perijinan-karantina-selected').classList.remove('hidden');
+        itemRow.querySelector('.perijinan-karantina-search-wrapper').classList.add('hidden');
         itemRow.querySelector('.perijinan-karantina-search').value = '';
         itemRow.querySelector('.perijinan-karantina-results').classList.add('hidden');
     }
@@ -394,6 +396,7 @@
         itemRow.querySelector('.perijinan-karantina-source-id').value = '';
         itemRow.querySelector('.perijinan-karantina-document-number').value = '';
         itemRow.querySelector('.perijinan-karantina-selected').classList.add('hidden');
+        itemRow.querySelector('.perijinan-karantina-search-wrapper').classList.remove('hidden');
         itemRow.querySelector('.perijinan-karantina-search').focus();
     }
 
@@ -422,29 +425,30 @@
                 </button>
             </div>
             <label class="block text-xs font-medium text-gray-700 mb-1">Surat Jalan / Tanda Terima <span class="text-red-500">*</span></label>
-            <div class="relative">
+            <div class="perijinan-karantina-search-wrapper relative">
                 <input type="text" class="perijinan-karantina-search w-full px-3 py-2 pr-10 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="Cari nomor surat jalan / tanda terima..." autocomplete="off">
                 <i class="perijinan-karantina-spinner fas fa-spinner fa-spin absolute right-3 top-3 hidden text-emerald-600"></i>
                 <div class="perijinan-karantina-results hidden absolute z-[70] w-full mt-1 bg-white border border-emerald-100 rounded-lg shadow-xl max-h-72 overflow-y-auto"></div>
             </div>
-            <div class="perijinan-karantina-selected hidden mt-3 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                <div class="min-w-0">
+            <div class="perijinan-karantina-selected hidden mt-3 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_280px_auto] items-end gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                <div class="min-w-0 self-center">
                     <span class="perijinan-karantina-type rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"></span>
                     <div class="perijinan-karantina-number mt-1 font-medium text-gray-900"></div>
                     <div class="perijinan-karantina-detail mt-1 truncate text-xs text-gray-500"></div>
                 </div>
-                <button type="button" class="perijinan-karantina-clear shrink-0 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded"><i class="fas fa-times mr-1"></i>Ganti</button>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nominal Biaya <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-600">Rp</span>
+                        <input type="text" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][nominal]" class="perijinan-karantina-nominal w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="0" inputmode="numeric">
+                    </div>
+                </div>
+                <button type="button" class="perijinan-karantina-clear shrink-0 px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded"><i class="fas fa-times mr-1"></i>Ganti</button>
             </div>
             <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][source_type]" class="perijinan-karantina-source-type">
             <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][source_id]" class="perijinan-karantina-source-id">
             <input type="hidden" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][nomor_dokumen]" class="perijinan-karantina-document-number">
-            <div class="mt-3">
-                <label class="block text-xs font-medium text-gray-700 mb-1">Nominal Biaya <span class="text-red-500">*</span></label>
-                <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-600">Rp</span>
-                    <input type="text" name="perijinan_sections[${sectionIndex}][karantina_items][${itemIndex}][nominal]" class="perijinan-karantina-nominal w-full pl-10 pr-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white" placeholder="0" inputmode="numeric">
-                </div>
-            </div>`;
+            `;
         container.appendChild(itemRow);
 
         initKarantinaPickerForPerijinan(itemRow);
@@ -528,7 +532,7 @@
                 spinner.classList.remove('hidden');
 
                 try {
-                    const response = await fetch(`${perijinanDocumentSearchUrl}?search=${encodeURIComponent(query)}`, {
+                    const response = await fetch(`${perijinanDocumentSearchUrl}?context=karantina&search=${encodeURIComponent(query)}`, {
                         headers: { 'Accept': 'application/json' },
                         signal: requestController.signal
                     });

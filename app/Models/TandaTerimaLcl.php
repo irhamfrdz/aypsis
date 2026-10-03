@@ -88,6 +88,12 @@ class TandaTerimaLcl extends Model
         return $this->belongsTo(Term::class);
     }
 
+    public function biayaKarantinaItems(): HasMany
+    {
+        return $this->hasMany(BiayaKapalPerijinanKarantina::class, 'source_id')
+            ->where('source_type', 'tanda_terima_lcl');
+    }
+
     public function tujuanPengiriman(): BelongsTo
     {
         return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman_id');
