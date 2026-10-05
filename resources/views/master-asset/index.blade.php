@@ -14,7 +14,7 @@
                 </svg>
                 Master Data Asset
             </h1>
-            <p class="text-sm text-gray-500 mt-1">Kelola inventaris, spesifikasi, nilai perolehan, dan kondisi asset perusahaan.</p>
+            <p class="text-sm text-gray-500 mt-1">Kelola inventaris, spesifikasi, dan kondisi asset perusahaan.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('asset.export', request()->query()) }}" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-all duration-150">
@@ -91,33 +91,33 @@
             <div>
                 <p class="text-xs text-gray-500 font-medium">Total Asset</p>
                 <h3 class="text-xl font-bold text-gray-800">{{ number_format($stats['total']) }}</h3>
-                <span class="text-[11px] text-gray-400">{{ $stats['total_tersedia'] }} Tersedia, {{ $stats['total_digunakan'] }} Digunakan</span>
+                <span class="text-[11px] text-gray-400">Total Unit Terdaftar</span>
             </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-gray-500 font-medium">Total Nilai Perolehan</p>
-                <h3 class="text-lg font-bold text-gray-800">Rp {{ number_format($stats['total_nilai_perolehan'], 0, ',', '.') }}</h3>
-                <span class="text-[11px] text-emerald-600 font-medium">Nilai Investasi Awal</span>
+                <p class="text-xs text-gray-500 font-medium">Asset Tersedia</p>
+                <h3 class="text-xl font-bold text-gray-800">{{ number_format($stats['total_tersedia']) }}</h3>
+                <span class="text-[11px] text-emerald-600 font-medium">Siap Digunakan</span>
             </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-gray-500 font-medium">Total Nilai Buku</p>
-                <h3 class="text-lg font-bold text-gray-800">Rp {{ number_format($stats['total_nilai_buku'], 0, ',', '.') }}</h3>
-                <span class="text-[11px] text-indigo-600 font-medium">Estimasi Nilai Sekarang</span>
+                <p class="text-xs text-gray-500 font-medium">Asset Digunakan</p>
+                <h3 class="text-xl font-bold text-gray-800">{{ number_format($stats['total_digunakan']) }}</h3>
+                <span class="text-[11px] text-indigo-600 font-medium">Sedang Beroperasi</span>
             </div>
         </div>
 
@@ -144,7 +144,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama, merk, serial, lokasi, PIC..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama, merk, serial..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
 
@@ -193,9 +193,6 @@
                         <th scope="col" class="py-3 px-4 text-left">Kode & Nama Asset</th>
                         <th scope="col" class="py-3 px-4 text-left">Kategori</th>
                         <th scope="col" class="py-3 px-4 text-left">Merk / Model</th>
-                        <th scope="col" class="py-3 px-4 text-left">Lokasi & PIC</th>
-                        <th scope="col" class="py-3 px-4 text-right">Nilai Perolehan</th>
-                        <th scope="col" class="py-3 px-4 text-right">Nilai Buku</th>
                         <th scope="col" class="py-3 px-4 text-center">Kondisi</th>
                         <th scope="col" class="py-3 px-4 text-center">Status</th>
                         <th scope="col" class="py-3 px-4 text-center w-28">Aksi</th>
@@ -234,21 +231,6 @@
                                 <div class="font-medium">{{ $asset->merk ?: '-' }}</div>
                                 <div class="text-[11px] text-gray-500">{{ $asset->tipe_model ?: '-' }}</div>
                             </td>
-                            <td class="py-3 px-4 text-gray-700">
-                                <div class="flex items-center gap-1 font-medium">
-                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                                    {{ $asset->lokasi ?: '-' }}
-                                </div>
-                                <div class="text-[11px] text-gray-500 pl-4.5">
-                                    PIC: {{ $asset->pic_name }}
-                                </div>
-                            </td>
-                            <td class="py-3 px-4 text-right font-medium text-gray-800">
-                                Rp {{ number_format($asset->nilai_perolehan, 0, ',', '.') }}
-                            </td>
-                            <td class="py-3 px-4 text-right font-semibold text-emerald-700">
-                                Rp {{ number_format($asset->nilai_buku, 0, ',', '.') }}
-                            </td>
                             <td class="py-3 px-4 text-center">
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $asset->kondisi_badge_class }}">
                                     {{ $asset->kondisi }}
@@ -279,7 +261,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="py-12 text-center text-gray-400">
+                            <td colspan="8" class="py-12 text-center text-gray-400">
                                 <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                                 </svg>

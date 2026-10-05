@@ -6,7 +6,6 @@ use App\Exports\AssetExport;
 use App\Exports\AssetTemplateExport;
 use App\Imports\AssetImport;
 use App\Models\Asset;
-use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -19,7 +18,7 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Asset::with(['karyawan', 'creator']);
+        $query = Asset::with(['creator']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -28,9 +27,7 @@ class AssetController extends Controller
                     ->orWhere('nama_asset', 'like', "%{$search}%")
                     ->orWhere('merk', 'like', "%{$search}%")
                     ->orWhere('tipe_model', 'like', "%{$search}%")
-                    ->orWhere('nomor_seri', 'like', "%{$search}%")
-                    ->orWhere('lokasi', 'like', "%{$search}%")
-                    ->orWhere('penanggung_jawab', 'like', "%{$search}%");
+                    ->orWhere('nomor_seri', 'like', "%{$search}%");
             });
         }
 
@@ -49,8 +46,6 @@ class AssetController extends Controller
         // Summary Statistics (calculated over full dataset)
         $stats = [
             'total' => Asset::count(),
-            'total_nilai_perolehan' => Asset::sum('nilai_perolehan'),
-            'total_nilai_buku' => Asset::sum('nilai_buku'),
             'total_tersedia' => Asset::where('status', 'Tersedia')->count(),
             'total_digunakan' => Asset::where('status', 'Digunakan')->count(),
             'total_maintenance' => Asset::where('status', 'Dalam Pemeliharaan')->count(),
@@ -75,12 +70,8 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
-        $karyawans = Karyawan::where('status', 'aktif')
-            ->orWhereNull('status')
-            ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap', 'nik', 'posisi']);
 
-        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
+        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis'));
     }
 
     /**
@@ -95,35 +86,17 @@ class AssetController extends Controller
             'merk' => 'nullable|string|max:100',
             'tipe_model' => 'nullable|string|max:100',
             'nomor_seri' => 'nullable|string|max:100',
-            'lokasi' => 'nullable|string|max:150',
             'tanggal_perolehan' => 'nullable|date',
-            'nilai_perolehan' => 'nullable|numeric|min:0',
             'masa_manfaat_bulan' => 'nullable|integer|min:0',
             'nilai_residu' => 'nullable|numeric|min:0',
-            'nilai_buku' => 'nullable|numeric|min:0',
             'kondisi' => 'required|string|max:50',
             'status' => 'required|string|max:50',
-            'penanggung_jawab' => 'nullable|string|max:150',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'lampiran' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip,rar,doc,docx|max:10240',
             'keterangan' => 'nullable|string',
         ]);
-
-        // Fallback nilai buku
-        if (! isset($validated['nilai_buku']) || $validated['nilai_buku'] === null || $validated['nilai_buku'] == 0) {
-            $validated['nilai_buku'] = $validated['nilai_perolehan'] ?? 0;
-        }
-
-        // PIC name fallback
-        if (empty($validated['penanggung_jawab']) && ! empty($validated['karyawan_id'])) {
-            $karyawan = Karyawan::find($validated['karyawan_id']);
-            if ($karyawan) {
-                $validated['penanggung_jawab'] = $karyawan->nama_lengkap ?? $karyawan->nama;
-            }
-        }
 
         // Handle Foto upload
         if ($request->hasFile('foto')) {
@@ -161,7 +134,7 @@ class AssetController extends Controller
      */
     public function show(Asset $asset)
     {
-        $asset->load(['karyawan', 'creator', 'updater']);
+        $asset->load(['creator', 'updater']);
 
         return view('master-asset.show', compact('asset'));
     }
@@ -174,12 +147,8 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
-        $karyawans = Karyawan::where('status', 'aktif')
-            ->orWhereNull('status')
-            ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap', 'nik', 'posisi']);
 
-        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
+        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis'));
     }
 
     /**
@@ -194,30 +163,17 @@ class AssetController extends Controller
             'merk' => 'nullable|string|max:100',
             'tipe_model' => 'nullable|string|max:100',
             'nomor_seri' => 'nullable|string|max:100',
-            'lokasi' => 'nullable|string|max:150',
             'tanggal_perolehan' => 'nullable|date',
-            'nilai_perolehan' => 'nullable|numeric|min:0',
             'masa_manfaat_bulan' => 'nullable|integer|min:0',
             'nilai_residu' => 'nullable|numeric|min:0',
-            'nilai_buku' => 'nullable|numeric|min:0',
             'kondisi' => 'required|string|max:50',
             'status' => 'required|string|max:50',
-            'penanggung_jawab' => 'nullable|string|max:150',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'lampiran' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip,rar,doc,docx|max:10240',
             'keterangan' => 'nullable|string',
         ]);
-
-        // PIC name fallback
-        if (empty($validated['penanggung_jawab']) && ! empty($validated['karyawan_id'])) {
-            $karyawan = Karyawan::find($validated['karyawan_id']);
-            if ($karyawan) {
-                $validated['penanggung_jawab'] = $karyawan->nama_lengkap ?? $karyawan->nama;
-            }
-        }
 
         // Handle Foto upload & replacement
         if ($request->hasFile('foto')) {

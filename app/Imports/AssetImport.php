@@ -37,9 +37,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 }
             }
 
-            $nilaiPerolehan = isset($row['nilai_perolehan']) && is_numeric($row['nilai_perolehan']) ? (float) $row['nilai_perolehan'] : 0;
             $nilaiResidu = isset($row['nilai_residu']) && is_numeric($row['nilai_residu']) ? (float) $row['nilai_residu'] : 0;
-            $nilaiBuku = $nilaiPerolehan; // default to perolehan on import if not yet depreciated
 
             $status = ! empty($row['status']) ? ucwords(strtolower(trim((string) $row['status']))) : 'Tersedia';
             if (! in_array($status, Asset::STATUS_OPTIONS)) {
@@ -60,15 +58,11 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 'merk' => $row['merk'] ?? null,
                 'tipe_model' => $row['tipe_model'] ?? null,
                 'nomor_seri' => $row['nomor_seri'] ?? null,
-                'lokasi' => $row['lokasi'] ?? null,
                 'tanggal_perolehan' => $tanggalPerolehan,
-                'nilai_perolehan' => $nilaiPerolehan,
                 'masa_manfaat_bulan' => isset($row['masa_manfaat_bulan']) && is_numeric($row['masa_manfaat_bulan']) ? (int) $row['masa_manfaat_bulan'] : null,
                 'nilai_residu' => $nilaiResidu,
-                'nilai_buku' => $nilaiBuku,
                 'kondisi' => $kondisi,
                 'status' => $status,
-                'penanggung_jawab' => $row['penanggung_jawab'] ?? null,
                 'vendor' => $row['vendor'] ?? null,
                 'nomor_faktur' => $row['nomor_faktur'] ?? null,
                 'keterangan' => $row['keterangan'] ?? null,
@@ -81,7 +75,6 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
     {
         return [
             'nama_asset' => 'required|string',
-            'nilai_perolehan' => 'nullable|numeric|min:0',
             'masa_manfaat_bulan' => 'nullable|numeric|min:0',
         ];
     }

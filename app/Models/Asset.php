@@ -21,16 +21,11 @@ class Asset extends Model
         'merk',
         'tipe_model',
         'nomor_seri',
-        'lokasi',
         'tanggal_perolehan',
-        'nilai_perolehan',
         'masa_manfaat_bulan',
         'nilai_residu',
-        'nilai_buku',
         'kondisi',
         'status',
-        'penanggung_jawab',
-        'karyawan_id',
         'vendor',
         'nomor_faktur',
         'foto',
@@ -42,9 +37,7 @@ class Asset extends Model
 
     protected $casts = [
         'tanggal_perolehan' => 'date',
-        'nilai_perolehan' => 'decimal:2',
         'nilai_residu' => 'decimal:2',
-        'nilai_buku' => 'decimal:2',
         'masa_manfaat_bulan' => 'integer',
     ];
 
@@ -73,14 +66,6 @@ class Asset extends Model
         'Dijual',
         'Dihapuskan',
     ];
-
-    /**
-     * Relationship to PIC Karyawan
-     */
-    public function karyawan(): BelongsTo
-    {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
-    }
 
     /**
      * Relationship to User creator
@@ -149,17 +134,5 @@ class Asset extends Model
             'Afkir' => 'bg-zinc-100 text-zinc-800 border-zinc-200',
             default => 'bg-gray-100 text-gray-800 border-gray-200',
         };
-    }
-
-    /**
-     * PIC name fallback
-     */
-    public function getPicNameAttribute(): string
-    {
-        if ($this->karyawan) {
-            return $this->karyawan->nama_lengkap ?? $this->karyawan->nama ?? $this->penanggung_jawab ?? '-';
-        }
-
-        return $this->penanggung_jawab ?? '-';
     }
 }

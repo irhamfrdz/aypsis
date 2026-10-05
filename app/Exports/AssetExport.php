@@ -21,7 +21,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 
     public function collection()
     {
-        $query = Asset::with(['karyawan', 'creator']);
+        $query = Asset::with(['creator']);
 
         if ($this->request) {
             if ($this->request->filled('search')) {
@@ -31,9 +31,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
                         ->orWhere('nama_asset', 'like', "%{$search}%")
                         ->orWhere('merk', 'like', "%{$search}%")
                         ->orWhere('tipe_model', 'like', "%{$search}%")
-                        ->orWhere('nomor_seri', 'like', "%{$search}%")
-                        ->orWhere('lokasi', 'like', "%{$search}%")
-                        ->orWhere('penanggung_jawab', 'like', "%{$search}%");
+                        ->orWhere('nomor_seri', 'like', "%{$search}%");
                 });
             }
 
@@ -63,13 +61,9 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             'Merk',
             'Model / Tipe',
             'No. Seri',
-            'Lokasi',
             'Tanggal Perolehan',
-            'Nilai Perolehan (Rp)',
-            'Nilai Buku (Rp)',
             'Kondisi',
             'Status',
-            'Penanggung Jawab',
             'Vendor / Supplier',
             'No. Faktur',
             'Keterangan',
@@ -92,13 +86,9 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $asset->merk ?? '-',
             $asset->tipe_model ?? '-',
             $asset->nomor_seri ?? '-',
-            $asset->lokasi ?? '-',
             $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('Y-m-d') : '-',
-            (float) $asset->nilai_perolehan,
-            (float) $asset->nilai_buku,
             $asset->kondisi,
             $asset->status,
-            $asset->pic_name,
             $asset->vendor ?? '-',
             $asset->nomor_faktur ?? '-',
             $asset->keterangan ?? '-',
