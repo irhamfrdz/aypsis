@@ -165,11 +165,17 @@ class PranotaLemburKaryawanController extends Controller
         $pranota = \App\Models\PranotaLemburKaryawanHeader::findOrFail($id);
 
         if ($pranota->pranota_puml_id) {
-            return back()->with('error', 'Pranota tidak dapat dihapus karena sudah digabungkan ke Pranota PUML.');
-        }
+            $puml = \App\Models\PranotaPuml::find($pranota->pranota_puml_id);
+            if ($puml && in_array($puml->status, ['approved', 'paid'])) {
+                return back()->with('error', 'Pranota tidak dapat dihapus karena PUML induk sudah '.$puml->status.'.');
+            }
 
-        if ($pranota->created_by != auth()->id() && ! auth()->user()->can('payroll-delete')) {
-            return back()->with('error', 'Anda hanya dapat menghapus pranota yang Anda buat sendiri.');
+            if ($puml) {
+                $puml->update([
+                    'total_lembur' => max(0, $puml->total_lembur - $pranota->total_setelah_adjustment),
+                    'grand_total' => max(0, $puml->grand_total - $pranota->total_setelah_adjustment),
+                ]);
+            }
         }
 
         try {

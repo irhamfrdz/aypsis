@@ -132,15 +132,13 @@
                                     <a href="{{ route('pranota-lembur-karyawan.export', $pranota->id) }}" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-md transition-colors" title="Download Excel">
                                         <i class="fas fa-file-excel mr-1"></i> Excel
                                     </a>
-                                    @if(!$pranota->pranota_puml_id && ($pranota->created_by == auth()->id() || auth()->user()->can('payroll-delete')))
-                                        <form action="{{ route('pranota-lembur-karyawan.destroy', $pranota->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota {{ $pranota->nomor_pranota }}?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors" title="Hapus Pranota">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    @endif
+                                    <form action="{{ route('pranota-lembur-karyawan.destroy', $pranota->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota {{ $pranota->nomor_pranota }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors" title="Hapus Pranota">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

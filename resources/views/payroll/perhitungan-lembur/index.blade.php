@@ -17,7 +17,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <button type="button" onclick="openRiwayatPranotaModal()" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm">
                         <i class="fas fa-history text-blue-600 mr-2"></i>
-                        Riwayat Pranota Saya
+                        Riwayat Pranota
                         @if(isset($riwayatPranotaUser) && $riwayatPranotaUser->count() > 0)
                             <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
                                 {{ $riwayatPranotaUser->count() }}
@@ -502,8 +502,8 @@
                         <i class="fas fa-clock-rotate-left text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Lembur Saya</h3>
-                        <p class="text-xs text-gray-500">Daftar pranota lembur karyawan yang telah Anda buat dari sistem ini</p>
+                        <h3 class="text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Lembur</h3>
+                        <p class="text-xs text-gray-500">Daftar semua pranota lembur karyawan yang telah dibuat di sistem</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -521,9 +521,9 @@
             <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
                 <!-- Summary Stats Bar -->
                 @php
-                    $totalPranotaSaya = isset($riwayatPranotaUser) ? $riwayatPranotaUser->count() : 0;
-                    $totalNominalSaya = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('total_setelah_adjustment') : 0;
-                    $totalKaryawanSaya = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('karyawans_count') : 0;
+                    $totalPranota = isset($riwayatPranotaUser) ? $riwayatPranotaUser->count() : 0;
+                    $totalNominal = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('total_setelah_adjustment') : 0;
+                    $totalKaryawan = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('karyawans_count') : 0;
                 @endphp
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
@@ -532,7 +532,7 @@
                         </div>
                         <div>
                             <div class="text-xs text-gray-500 font-medium">Total Pranota Dibuat</div>
-                            <div class="text-lg font-bold text-gray-900">{{ $totalPranotaSaya }} Pranota</div>
+                            <div class="text-lg font-bold text-gray-900">{{ $totalPranota }} Pranota</div>
                         </div>
                     </div>
                     <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
@@ -541,7 +541,7 @@
                         </div>
                         <div>
                             <div class="text-xs text-gray-500 font-medium">Total Akumulasi Nominal</div>
-                            <div class="text-lg font-bold text-emerald-600">Rp {{ number_format($totalNominalSaya, 0, ',', '.') }}</div>
+                            <div class="text-lg font-bold text-emerald-600">Rp {{ number_format($totalNominal, 0, ',', '.') }}</div>
                         </div>
                     </div>
                     <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
@@ -550,7 +550,7 @@
                         </div>
                         <div>
                             <div class="text-xs text-gray-500 font-medium">Total Karyawan Terekam</div>
-                            <div class="text-lg font-bold text-gray-900">{{ $totalKaryawanSaya }} Data Karyawan</div>
+                            <div class="text-lg font-bold text-gray-900">{{ $totalKaryawan }} Data Karyawan</div>
                         </div>
                     </div>
                 </div>
@@ -558,13 +558,13 @@
                 <!-- Search Filter & Actions inside modal -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                     <div class="relative flex-1 max-w-sm">
-                        <input type="text" id="riwayat-search-input" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota / tanggal..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="riwayat-search-input" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota / tanggal / pembuat..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-search text-xs"></i>
                         </div>
                     </div>
                     <span class="text-xs text-gray-500" id="riwayat-count-info">
-                        Menampilkan {{ $totalPranotaSaya }} data
+                        Menampilkan {{ $totalPranota }} data
                     </span>
                 </div>
 
@@ -577,6 +577,7 @@
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">No</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Pranota</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                                     <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan</th>
                                     <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
                                     <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Adjustment</th>
@@ -587,7 +588,7 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 text-xs">
                                 @forelse($riwayatPranotaUser ?? [] as $index => $item)
-                                    <tr class="hover:bg-blue-50/50 transition-colors riwayat-row" data-nomor="{{ strtolower($item->nomor_pranota) }}" data-tanggal="{{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '' }}">
+                                    <tr class="hover:bg-blue-50/50 transition-colors riwayat-row" data-nomor="{{ strtolower($item->nomor_pranota) }}" data-tanggal="{{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '' }}" data-pembuat="{{ strtolower($item->creator->name ?? 'system') }}">
                                         <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $index + 1 }}</td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <a href="{{ route('pranota-lembur-karyawan.show', $item->id) }}" target="_blank" class="font-mono font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5" title="Buka Detail">
@@ -598,6 +599,12 @@
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-gray-700">
                                             {{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">
+                                            <div class="flex items-center gap-1.5">
+                                                <i class="fas fa-user-circle text-gray-400"></i>
+                                                <span class="font-medium text-xs">{{ $item->creator->name ?? 'System' }}</span>
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
                                             <button type="button" onclick="toggleKaryawanRow({{ $item->id }})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer" title="Klik untuk lihat daftar karyawan">
@@ -638,21 +645,19 @@
                                                 <a href="{{ route('pranota-lembur-karyawan.export', $item->id) }}" class="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-100 transition-colors" title="Export Excel">
                                                     <i class="fas fa-file-excel"></i>
                                                 </a>
-                                                @if(!$item->pranota_puml_id)
-                                                    <form action="{{ route('pranota-lembur-karyawan.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota lembur {{ $item->nomor_pranota }}? Data detail karyawan di dalamnya akan ikut terhapus.')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="p-1.5 rounded-md text-red-600 hover:bg-red-100 transition-colors cursor-pointer" title="Hapus Pranota">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                <form action="{{ route('pranota-lembur-karyawan.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota lembur {{ $item->nomor_pranota }}? Data detail karyawan di dalamnya akan ikut terhapus.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="p-1.5 rounded-md text-red-600 hover:bg-red-100 transition-colors cursor-pointer" title="Hapus Pranota">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
                                     <!-- Collapsible Sub-Row: Employee List -->
                                     <tr id="karyawan-row-{{ $item->id }}" class="hidden bg-slate-50/90 border-b border-gray-200">
-                                        <td colspan="9" class="px-6 py-3">
+                                        <td colspan="10" class="px-6 py-3">
                                             <div class="text-xs">
                                                 <div class="font-bold text-gray-700 mb-2 flex items-center justify-between">
                                                     <div class="flex items-center gap-1.5">
@@ -682,13 +687,13 @@
                                     </tr>
                                 @empty
                                     <tr id="empty-riwayat-row">
-                                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                        <td colspan="10" class="px-6 py-12 text-center text-gray-500">
                                             <div class="flex flex-col items-center justify-center">
                                                 <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400">
                                                     <i class="fas fa-file-invoice text-xl"></i>
                                                 </div>
-                                                <p class="font-semibold text-gray-700 text-sm">Belum Ada Riwayat Pranota yang Anda Buat</p>
-                                                <p class="text-xs text-gray-500 mt-1 max-w-sm">Pilih karyawan dari hasil kalkulasi lembur, lalu klik tombol "Masukkan Pranota" untuk membuat pranota lembur pertama Anda.</p>
+                                                <p class="font-semibold text-gray-700 text-sm">Belum Ada Riwayat Pranota</p>
+                                                <p class="text-xs text-gray-500 mt-1 max-w-sm">Pilih karyawan dari hasil kalkulasi lembur, lalu klik tombol "Masukkan Pranota" untuk membuat pranota lembur.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -1349,7 +1354,8 @@
         rows.forEach(row => {
             const nomor = (row.getAttribute('data-nomor') || '').toLowerCase();
             const tanggal = (row.getAttribute('data-tanggal') || '').toLowerCase();
-            const isMatch = nomor.includes(input) || tanggal.includes(input);
+            const pembuat = (row.getAttribute('data-pembuat') || '').toLowerCase();
+            const isMatch = nomor.includes(input) || tanggal.includes(input) || pembuat.includes(input);
             
             row.style.display = isMatch ? '' : 'none';
             if (isMatch) visibleCount++;

@@ -566,11 +566,12 @@ class PerhitunganLemburController extends Controller
 
         unset($allActiveKaryawans); // bebaskan memory setelah digunakan
 
-        // Riwayat Pranota Lembur Karyawan yang dibuat oleh user yang sedang login
+        // Riwayat Pranota Lembur Karyawan yang dibuat di sistem
         // Dibatasi 50 terbaru untuk menghindari eager load berlebihan
-        $userId = auth()->id();
-        $riwayatPranotaUser = \App\Models\PranotaLemburKaryawanHeader::where('created_by', $userId)
-            ->with(['karyawans.karyawan:id,nama_lengkap,nama_panggilan,nik'])
+        $riwayatPranotaUser = \App\Models\PranotaLemburKaryawanHeader::with([
+            'creator.karyawan:id,nama_lengkap',
+            'karyawans.karyawan:id,nama_lengkap,nama_panggilan,nik',
+        ])
             ->withCount('karyawans')
             ->orderBy('created_at', 'desc')
             ->limit(50)
