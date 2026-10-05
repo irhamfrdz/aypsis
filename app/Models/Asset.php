@@ -22,6 +22,7 @@ class Asset extends Model
         'kondisi',
         'status',
         'karyawan_id',
+        'tanggal_tanda_terima',
         'vendor',
         'nomor_faktur',
         'foto',
@@ -33,6 +34,7 @@ class Asset extends Model
 
     protected $casts = [
         'tanggal_perolehan' => 'date',
+        'tanggal_tanda_terima' => 'date',
     ];
 
     public const KATEGORI_OPTIONS = [

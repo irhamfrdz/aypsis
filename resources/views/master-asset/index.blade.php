@@ -238,8 +238,15 @@
                                 @if($asset->karyawan)
                                     <span class="font-semibold text-gray-800 block">{{ $asset->karyawan->nama_lengkap }}</span>
                                     <span class="text-[11px] text-gray-500 block">{{ $asset->karyawan->nik ? 'NIK: ' . $asset->karyawan->nik : ($asset->karyawan->divisi ?? '-') }}</span>
+                                    @if($asset->tanggal_tanda_terima)
+                                        <span class="text-[10px] text-blue-600 font-medium block">Terima: {{ $asset->tanggal_tanda_terima->format('d/m/Y') }}</span>
+                                    @endif
                                 @else
-                                    <span class="text-gray-400 italic text-[11px]">-</span>
+                                    @if($asset->tanggal_tanda_terima)
+                                        <span class="text-[10px] text-gray-600 block">Terima: {{ $asset->tanggal_tanda_terima->format('d/m/Y') }}</span>
+                                    @else
+                                        <span class="text-gray-400 italic text-[11px]">-</span>
+                                    @endif
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-center">

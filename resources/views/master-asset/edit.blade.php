@@ -122,7 +122,7 @@
                     </select>
                 </div>
 
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Pemegang Asset (Karyawan)</label>
                     <select name="karyawan_id" id="karyawan_id" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-karyawan">
                         <option value="">-- Pilih Karyawan Pemegang Asset (Opsional) --</option>
@@ -133,6 +133,12 @@
                         @endforeach
                     </select>
                     <span class="text-[10px] text-gray-400 mt-1 block">Pilih karyawan yang saat ini memegang / bertanggung jawab atas asset ini</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Tanda Terima</label>
+                    <input type="date" name="tanggal_tanda_terima" value="{{ old('tanggal_tanda_terima', $asset->tanggal_tanda_terima ? $asset->tanggal_tanda_terima->format('Y-m-d') : '') }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <span class="text-[10px] text-gray-400 mt-1 block">Tanggal penyerahan / serah terima asset</span>
                 </div>
             </div>
         </div>

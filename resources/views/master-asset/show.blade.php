@@ -103,8 +103,17 @@
                                         {{ $asset->karyawan->divisi ?? '' }} {{ ($asset->karyawan->divisi && $asset->karyawan->posisi) ? '•' : '' }} {{ $asset->karyawan->posisi ?? '' }}
                                     </span>
                                 @endif
+                                @if($asset->tanggal_tanda_terima)
+                                    <div class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-lg bg-blue-100/70 text-blue-800 text-xs font-semibold">
+                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        Tanda Terima: {{ $asset->tanggal_tanda_terima->format('d M Y') }}
+                                    </div>
+                                @endif
                             @else
                                 <span class="text-xs text-gray-500 italic mt-0.5 block">Belum ada karyawan yang memegang asset ini</span>
+                                @if($asset->tanggal_tanda_terima)
+                                    <span class="text-[11px] text-gray-500 block mt-1">Tanggal Tanda Terima: {{ $asset->tanggal_tanda_terima->format('d M Y') }}</span>
+                                @endif
                             @endif
                         </div>
                         @if($asset->karyawan)
