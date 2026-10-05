@@ -144,7 +144,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama, merk, serial..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama asset..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
 
@@ -192,7 +192,6 @@
                         <th scope="col" class="py-3 px-4 text-left">Foto</th>
                         <th scope="col" class="py-3 px-4 text-left">Kode & Nama Asset</th>
                         <th scope="col" class="py-3 px-4 text-left">Kategori</th>
-                        <th scope="col" class="py-3 px-4 text-left">Merk / Model</th>
                         <th scope="col" class="py-3 px-4 text-center">Kondisi</th>
                         <th scope="col" class="py-3 px-4 text-center">Status</th>
                         <th scope="col" class="py-3 px-4 text-center w-28">Aksi</th>
@@ -218,18 +217,11 @@
                                     {{ $asset->kode_asset }}
                                 </a>
                                 <span class="font-semibold text-gray-800 block">{{ $asset->nama_asset }}</span>
-                                @if($asset->nomor_seri)
-                                    <span class="text-[11px] text-gray-400 font-mono">SN: {{ $asset->nomor_seri }}</span>
-                                @endif
                             </td>
                             <td class="py-3 px-4">
                                 <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 font-medium">
                                     {{ $asset->kategori }}
                                 </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-700">
-                                <div class="font-medium">{{ $asset->merk ?: '-' }}</div>
-                                <div class="text-[11px] text-gray-500">{{ $asset->tipe_model ?: '-' }}</div>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $asset->kondisi_badge_class }}">
@@ -261,7 +253,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-gray-400">
+                            <td colspan="7" class="py-12 text-center text-gray-400">
                                 <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                                 </svg>

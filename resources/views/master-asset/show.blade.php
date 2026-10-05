@@ -91,40 +91,18 @@
             @endif
         </div>
 
-        <!-- Right Column: Detail Specifications -->
+        <!-- Right Column: Detail Information -->
         <div class="md:col-span-2 space-y-6">
-            <!-- Specifications Card -->
+            <!-- Asset & Procurement Details Card -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">Spesifikasi & Identifikasi</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">Informasi Asset & Pengadaan</h3>
 
-                <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
                     <div>
                         <span class="text-gray-400 block font-medium">Kategori</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->kategori }}</span>
                     </div>
 
-                    <div>
-                        <span class="text-gray-400 block font-medium">Merk / Brand</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->merk ?: '-' }}</span>
-                    </div>
-
-                    <div>
-                        <span class="text-gray-400 block font-medium">Tipe / Model</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->tipe_model ?: '-' }}</span>
-                    </div>
-
-                    <div>
-                        <span class="text-gray-400 block font-medium">Nomor Seri</span>
-                        <span class="font-mono font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_seri ?: '-' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Financial Details Card -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">Data Perolehan & Supplier</h3>
-
-                <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
                     <div>
                         <span class="text-gray-400 block font-medium">Tanggal Perolehan</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('d M Y') : '-' }}</span>
@@ -140,7 +118,7 @@
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->vendor ?: '-' }}</span>
                     </div>
 
-                    <div>
+                    <div class="sm:col-span-2">
                         <span class="text-gray-400 block font-medium">No. Faktur / Invoice</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_faktur ?: '-' }}</span>
                     </div>

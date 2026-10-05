@@ -24,10 +24,7 @@ class AssetController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('kode_asset', 'like', "%{$search}%")
-                    ->orWhere('nama_asset', 'like', "%{$search}%")
-                    ->orWhere('merk', 'like', "%{$search}%")
-                    ->orWhere('tipe_model', 'like', "%{$search}%")
-                    ->orWhere('nomor_seri', 'like', "%{$search}%");
+                    ->orWhere('nama_asset', 'like', "%{$search}%");
             });
         }
 
@@ -83,9 +80,6 @@ class AssetController extends Controller
             'kode_asset' => 'required|string|max:50|unique:assets,kode_asset',
             'nama_asset' => 'required|string|max:255',
             'kategori' => 'required|string|max:100',
-            'merk' => 'nullable|string|max:100',
-            'tipe_model' => 'nullable|string|max:100',
-            'nomor_seri' => 'nullable|string|max:100',
             'tanggal_perolehan' => 'nullable|date',
             'masa_manfaat_bulan' => 'nullable|integer|min:0',
             'nilai_residu' => 'nullable|numeric|min:0',
@@ -160,9 +154,6 @@ class AssetController extends Controller
             'kode_asset' => 'required|string|max:50|unique:assets,kode_asset,'.$asset->id,
             'nama_asset' => 'required|string|max:255',
             'kategori' => 'required|string|max:100',
-            'merk' => 'nullable|string|max:100',
-            'tipe_model' => 'nullable|string|max:100',
-            'nomor_seri' => 'nullable|string|max:100',
             'tanggal_perolehan' => 'nullable|date',
             'masa_manfaat_bulan' => 'nullable|integer|min:0',
             'nilai_residu' => 'nullable|numeric|min:0',

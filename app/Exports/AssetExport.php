@@ -28,10 +28,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
                 $search = $this->request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('kode_asset', 'like', "%{$search}%")
-                        ->orWhere('nama_asset', 'like', "%{$search}%")
-                        ->orWhere('merk', 'like', "%{$search}%")
-                        ->orWhere('tipe_model', 'like', "%{$search}%")
-                        ->orWhere('nomor_seri', 'like', "%{$search}%");
+                        ->orWhere('nama_asset', 'like', "%{$search}%");
                 });
             }
 
@@ -58,9 +55,6 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             'Kode Asset',
             'Nama Asset',
             'Kategori',
-            'Merk',
-            'Model / Tipe',
-            'No. Seri',
             'Tanggal Perolehan',
             'Kondisi',
             'Status',
@@ -83,9 +77,6 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $asset->kode_asset,
             $asset->nama_asset,
             $asset->kategori,
-            $asset->merk ?? '-',
-            $asset->tipe_model ?? '-',
-            $asset->nomor_seri ?? '-',
             $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('Y-m-d') : '-',
             $asset->kondisi,
             $asset->status,

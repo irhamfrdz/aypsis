@@ -88,35 +88,10 @@
             </div>
         </div>
 
-        <!-- Section 2: Spesifikasi & Identitas -->
+        <!-- Section 2: Informasi Pengadaan & Finansial -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
             <div class="flex items-center gap-2 pb-3 border-b border-gray-100">
-                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">2</div>
-                <h2 class="text-sm font-bold text-gray-800">Spesifikasi & Identifikasi Teknis</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Merk / Brand</label>
-                    <input type="text" name="merk" value="{{ old('merk', $asset->merk) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Model / Tipe</label>
-                    <input type="text" name="tipe_model" value="{{ old('tipe_model', $asset->tipe_model) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Seri / No. Rangka</label>
-                    <input type="text" name="nomor_seri" value="{{ old('nomor_seri', $asset->nomor_seri) }}" class="w-full px-3 py-2 text-xs font-mono border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 3: Informasi Pengadaan & Finansial -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-gray-100">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">3</div>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">2</div>
                 <h2 class="text-sm font-bold text-gray-800">Informasi Pengadaan & Penyusutan</h2>
             </div>
 
@@ -148,10 +123,10 @@
             </div>
         </div>
 
-        <!-- Section 4: Dokumen & Keterangan -->
+        <!-- Section 3: Dokumen & Keterangan -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
             <div class="flex items-center gap-2 pb-3 border-b border-gray-100">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">4</div>
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">3</div>
                 <h2 class="text-sm font-bold text-gray-800">Dokumen & Keterangan</h2>
             </div>
 
