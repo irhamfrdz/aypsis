@@ -1318,17 +1318,37 @@ class SuratJalanController extends Controller
     public function updateStatus(Request $request, $id)
     {
         try {
-            $suratJalan = SuratJalan::findOrFail($id);
+            $suratJalan = ($id instanceof SuratJalan) ? $id : SuratJalan::findOrFail($id);
 
-            $request->validate([
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
                 'status' => 'required|in:draft,active,completed,cancelled,sudah_dibayar,sudah dibayar',
             ]);
 
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal: '.implode(', ', $validator->errors()->all()),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
             if (in_array($request->status, ['sudah_dibayar', 'sudah dibayar'])) {
-                $suratJalan->status = 'sudah_dibayar';
                 $suratJalan->status_pembayaran = 'sudah_dibayar';
                 $suratJalan->status_pembayaran_uang_jalan = 'dibayar';
-                $suratJalan->save();
+
+                // Coba simpan status operasional menjadi sudah_dibayar jika didukung kolom DB
+                try {
+                    $suratJalan->status = 'sudah_dibayar';
+                    $suratJalan->save();
+                } catch (\Throwable $statusErr) {
+                    Log::warning('Kolom status tidak menerima sudah_dibayar: '.$statusErr->getMessage());
+                    $suratJalan->status = in_array($suratJalan->getOriginal('status'), ['active', 'completed', 'belum masuk checkpoint'])
+                        ? $suratJalan->getOriginal('status')
+                        : 'active';
+                    $suratJalan->status_pembayaran = 'sudah_dibayar';
+                    $suratJalan->status_pembayaran_uang_jalan = 'dibayar';
+                    $suratJalan->save();
+                }
 
                 // Sinkronkan atau buat data Prospek seperti pada alur normal Pembayaran Pranota Uang Jalan
                 $existingProspeks = Prospek::where('surat_jalan_id', $suratJalan->id)->get();
@@ -1352,22 +1372,33 @@ class SuratJalanController extends Controller
                         $noSealArray = array_map('trim', explode(',', $suratJalan->no_seal));
                     }
 
+                    // Tentukan ukuran standar
+                    $rawSize = $suratJalan->size ?? '';
+                    $ukuran = null;
+                    if (str_contains($rawSize, '40')) {
+                        $ukuran = '40';
+                    } elseif (str_contains($rawSize, '20')) {
+                        $ukuran = '20';
+                    } else {
+                        $ukuran = $rawSize ?: null;
+                    }
+
                     for ($i = 1; $i <= max(1, (int) $jumlahKontainer); $i++) {
                         $nomorKontainerIni = isset($nomorKontainerArray[$i - 1]) ? $nomorKontainerArray[$i - 1] : null;
                         $noSealIni = isset($noSealArray[$i - 1]) ? $noSealArray[$i - 1] : null;
 
                         $prospekData = [
                             'tanggal' => now(),
-                            'nama_supir' => $uangJalan->supir ?? $suratJalan->supir ?? null,
-                            'barang' => $suratJalan->jenis_barang ?? null,
-                            'pt_pengirim' => $suratJalan->pengirim ?? null,
-                            'ukuran' => $suratJalan->size ?? null,
-                            'tipe' => $suratJalan->tipe_kontainer ?? null,
+                            'nama_supir' => $uangJalan->supir ?? $suratJalan->supir ?? 'Tidak ada supir',
+                            'barang' => $suratJalan->jenis_barang ?? 'CARGO',
+                            'pt_pengirim' => $suratJalan->pengirim ?? '-',
+                            'ukuran' => $ukuran,
+                            'tipe' => $suratJalan->tipe_kontainer ?? 'CARGO',
                             'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan.'-'.$i : $suratJalan->no_surat_jalan) : null,
                             'surat_jalan_id' => $suratJalan->id,
                             'nomor_kontainer' => $nomorKontainerIni ?: null,
                             'no_seal' => $noSealIni,
-                            'tujuan_pengiriman' => $uangJalan->tujuan ?? $suratJalan->tujuan_pengiriman ?? null,
+                            'tujuan_pengiriman' => $uangJalan->tujuan ?? $suratJalan->tujuan_pengiriman ?? '-',
                             'nama_kapal' => null,
                             'keterangan' => 'Auto generated dari Surat Jalan: '.($suratJalan->no_surat_jalan ?? '-').' (Status: Sudah Dibayar)'.($jumlahKontainer > 1 ? " | Kontainer #$i dari $jumlahKontainer" : ''),
                             'status' => Prospek::STATUS_AKTIF,
@@ -1392,15 +1423,22 @@ class SuratJalanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Status berhasil diubah',
+                'message' => 'Status berhasil diubah menjadi sudah dibayar',
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Error updating surat jalan status: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Error updating surat jalan status: '.$e->getMessage(), [
+                'surat_jalan_id' => is_object($id) ? ($id->id ?? null) : $id,
+                'status' => $request->status ?? null,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengubah status',
+                'message' => 'Gagal mengubah status: '.$e->getMessage(),
+                'detail' => $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine(),
             ], 500);
         }
     }

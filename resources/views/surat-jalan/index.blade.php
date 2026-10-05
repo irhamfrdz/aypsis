@@ -633,25 +633,48 @@ function updateStatus(suratJalanId, status) {
     }
 
     if (confirm(confirmMsg)) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
         fetch(`/surat-jalan/${suratJalanId}/update-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({ status: status })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
+        .then(async response => {
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
             } else {
-                alert('Gagal mengubah status: ' + data.message);
+                const text = await response.text();
+                throw new Error(`Server Error (${response.status}): ` + text.substring(0, 150));
+            }
+
+            if (!response.ok || !data.success) {
+                let errorMsg = data.message || `Gagal dengan status HTTP ${response.status}`;
+                if (data.errors) {
+                    const validationErrors = Object.values(data.errors).flat().join(', ');
+                    errorMsg += `\nValidasi: ${validationErrors}`;
+                }
+                if (data.detail && !errorMsg.includes(data.detail)) {
+                    errorMsg += `\nDetail: ${data.detail}`;
+                }
+                if (data.file && data.line) {
+                    errorMsg += `\nLokasi: ${data.file}:${data.line}`;
+                }
+                alert('Gagal mengubah status:\n' + errorMsg);
+            } else {
+                location.reload();
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengubah status');
+            console.error('Error updateStatus:', error);
+            alert('Terjadi kesalahan saat mengubah status:\n' + (error.message || error));
         });
     }
 }
