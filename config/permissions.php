@@ -55,6 +55,7 @@ return [
                 'master-wa-broadcast' => 'Manajemen WA Broadcast',
                 'master-type-bon-amprahan' => 'Manajemen Type Bon Amprahan',
                 'master-jadwal-kapal-berlabuh' => 'Manajemen Jadwal Kapal Berlabuh',
+                'master-asset' => 'Manajemen Asset',
             ],
         ],
         'user-approval' => [
@@ -427,5 +428,8 @@ return [
 
         // Permintaan Amprahan
         'permohonan-amprahan' => ['permohonan-amprahan-view'],
+
+        // Master Asset
+        'master-asset' => ['master-asset-view', 'master-asset-create', 'master-asset-update', 'master-asset-delete', 'asset-view', 'asset-create', 'asset-update', 'asset-delete'],
     ],
 ];

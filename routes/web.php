@@ -3254,6 +3254,13 @@ Route::middleware([
             ->name('rekap-pemakaian-barang.index')
             ->middleware('can:rekap-pemakaian-barang-view');
 
+        // 🏢 Master Asset Management
+        Route::get('master-asset/export', [\App\Http\Controllers\AssetController::class, 'export'])->name('asset.export');
+        Route::get('master-asset/template', [\App\Http\Controllers\AssetController::class, 'downloadTemplate'])->name('asset.template');
+        Route::post('master-asset/import', [\App\Http\Controllers\AssetController::class, 'import'])->name('asset.import');
+        Route::resource('master-asset', \App\Http\Controllers\AssetController::class)->names('asset');
+        Route::get('master/asset', fn () => redirect()->route('asset.index'))->name('master.asset.index');
+
         // 🏢 Master Gudang (Warehouse Master) Management with permissions
         // Import & Template routes (must be before resource routes)
         Route::get('master-gudang/template/download', [\App\Http\Controllers\MasterGudangController::class, 'template'])
