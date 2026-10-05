@@ -27,6 +27,11 @@ class MobilController extends Controller
             $query->where('lokasi', $request->lokasi);
         }
 
+        // Roda filter
+        if ($request->filled('roda')) {
+            $query->where('roda', $request->roda);
+        }
+
         // Date range filter for jatuh tempo
         if ($request->filled('jenis_tanggal')) {
             $fieldMap = [
@@ -59,6 +64,7 @@ class MobilController extends Controller
                     ->orWhere('no_kir', 'like', "%{$search}%")
                     ->orWhere('merek', 'like', "%{$search}%")
                     ->orWhere('jenis', 'like', "%{$search}%")
+                    ->orWhere('roda', 'like', "%{$search}%")
                     ->orWhere('lokasi', 'like', "%{$search}%")
                     ->orWhere('no_mesin', 'like', "%{$search}%")
                     ->orWhere('nomor_rangka', 'like', "%{$search}%")
@@ -88,7 +94,13 @@ class MobilController extends Controller
             ->orderBy('lokasi')
             ->pluck('lokasi');
 
-        return view('master-mobil.index', compact('mobils', 'locations'));
+        // Get distinct roda values for filter dropdown
+        $rodas = Mobil::whereNotNull('roda')
+            ->distinct()
+            ->orderBy('roda')
+            ->pluck('roda');
+
+        return view('master-mobil.index', compact('mobils', 'locations', 'rodas'));
     }
 
     /**
@@ -129,6 +141,7 @@ class MobilController extends Controller
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
+            'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
             'no_mesin' => 'nullable|string|max:50',
@@ -265,6 +278,7 @@ class MobilController extends Controller
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
+            'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
             'no_mesin' => 'nullable|string|max:50',

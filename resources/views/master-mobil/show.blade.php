@@ -177,6 +177,18 @@
                         <p class="text-sm bg-white p-3 rounded border">{{ $mobil->jenis ?? '-' }}</p>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Roda</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->roda)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300">
+                                    Roda {{ $mobil->roda }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Tahun Pembuatan</label>
                         <p class="text-sm bg-white p-3 rounded border">{{ $mobil->tahun_pembuatan ?? '-' }}</p>
                     </div>

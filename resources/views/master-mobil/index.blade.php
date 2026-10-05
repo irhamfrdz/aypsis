@@ -15,7 +15,7 @@
                     <input type="text" 
                            name="search" 
                            value="{{ request('search') }}" 
-                           placeholder="Cari kode aktiva, nomor polisi, nickname, nomor KIR, merek, jenis, atau nama karyawan..." 
+                           placeholder="Cari kode aktiva, nomor polisi, nickname, nomor KIR, merek, jenis, roda, atau nama karyawan..." 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                            autocomplete="off">
                 </div>
@@ -30,6 +30,20 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="w-full sm:w-36">
+                    <select name="roda" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Semua Roda</option>
+                        @php
+                            $availableRodas = (isset($rodas) && $rodas->isNotEmpty()) ? $rodas : collect([2, 4, 6, 8, 10, 12, 14, 16]);
+                        @endphp
+                        @foreach($availableRodas as $r)
+                            <option value="{{ $r }}" {{ request('roda') == $r ? 'selected' : '' }}>
+                                Roda {{ $r }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="flex gap-2">
                     <button type="submit" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +51,7 @@
                         </svg>
                         Cari
                     </button>
-                    @if(request('search') || request('lokasi') || request('jenis_tanggal') || request('tanggal_dari') || request('tanggal_sampai'))
+                    @if(request('search') || request('lokasi') || request('roda') || request('jenis_tanggal') || request('tanggal_dari') || request('tanggal_sampai'))
                         <a href="{{ route('master.mobil.index') }}" class="inline-flex items-center bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6m0 0l6-6m-6 6l6 6"/>
@@ -236,7 +250,7 @@
     @endif
 
     <!-- Search Result Info & Data Summary -->
-    @if(request('search') || request('jenis_tanggal'))
+    @if(request('search') || request('jenis_tanggal') || request('roda'))
         <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
             <div class="flex items-center">
                 <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,6 +260,9 @@
                     Menampilkan <strong>{{ $mobils->total() }}</strong> hasil
                     @if(request('search'))
                         pencarian untuk "<strong>{{ request('search') }}</strong>"
+                    @endif
+                    @if(request('roda'))
+                        dengan <strong>Roda {{ request('roda') }}</strong>
                     @endif
                     @if(request('jenis_tanggal'))
                         @php
@@ -313,6 +330,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                    <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Roda</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jatuh Tempo Asuransi</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
@@ -348,6 +366,15 @@
                         </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->jenis ?? '-' }}</td>
+                        <td class="py-2 px-3 text-center">
+                            @if($mobil->roda)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300">
+                                    Roda {{ $mobil->roda }}
+                                </span>
+                            @else
+                                <span class="text-gray-400 text-xs">-</span>
+                            @endif
+                        </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->tahun_pembuatan ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">
                             @if($mobil->tanggal_jatuh_tempo_asuransi)
@@ -422,7 +449,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="py-6 px-3 text-center text-gray-500">
+                        <td colspan="11" class="py-6 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center py-4">
                                 <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

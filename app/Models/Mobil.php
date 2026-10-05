@@ -30,6 +30,7 @@ class Mobil extends Model
         'lokasi',
         'merek',
         'jenis',
+        'roda',
         'tahun_pembuatan',
         'bpkb',
         'no_mesin',
@@ -59,6 +60,7 @@ class Mobil extends Model
         'pajak_kir' => 'date',
         'tanggal_jatuh_tempo_asuransi' => 'date',
         'tahun_pembuatan' => 'integer',
+        'roda' => 'integer',
     ];
 
     /**

@@ -114,6 +114,16 @@
                     @enderror
                 </div>
 
+                <!-- Roda -->
+                <div>
+                    <label for="roda" class="block text-sm font-medium text-gray-700">Roda (Jumlah Roda)</label>
+                    <input type="number" name="roda" id="roda" value="{{ old('roda') }}" class="{{ $inputClasses }}" min="1" max="50" placeholder="Contoh: 4, 6, 10">
+                    <p class="mt-1 text-xs text-gray-500">Tentukan jumlah roda yang digunakan kendaraan (misal: 4, 6, 10, dll)</p>
+                    @error('roda')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Tahun Pembuatan -->
                 <div>
                     <label for="tahun_pembuatan" class="block text-sm font-medium text-gray-700">Tahun Pembuatan</label>
