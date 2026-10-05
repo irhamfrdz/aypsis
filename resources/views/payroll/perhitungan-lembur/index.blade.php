@@ -4,6 +4,22 @@
 @section('page_title', 'Perhitungan Lembur Karyawan')
 
 @section('content')
+<style>
+    /* Paksa modal payroll lembur berada di layer teratas di atas sidebar fixed z-50 */
+    #edit-pranota-modal,
+    #riwayat-pranota-modal,
+    #pranota-modal,
+    #detailModal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999999 !important;
+    }
+</style>
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -505,14 +521,14 @@
 </div>
 
 <!-- Modal Riwayat Pranota Lembur Saya -->
-<div id="riwayat-pranota-modal" class="fixed inset-0 z-[99999] hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div id="riwayat-pranota-modal" class="fixed inset-0 hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important;">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999989 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
 
+    <!-- Center Container -->
+    <div class="fixed inset-0 overflow-y-auto flex items-center justify-center p-3 sm:p-6" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 9999990 !important; pointer-events: none;">
         <!-- Modal panel -->
-        <div class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl xl:max-w-6xl sm:w-full border border-gray-200 max-h-[90vh]">
+        <div class="relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 max-h-[92vh] w-full max-w-5xl xl:max-w-6xl" style="position: relative !important; z-index: 9999990 !important; pointer-events: auto;">
             <!-- Header -->
             <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
@@ -749,14 +765,14 @@
 </div>
 
 <!-- Modal Edit Pranota Lembur -->
-<div id="edit-pranota-modal" class="fixed inset-0 z-[100000] hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div id="edit-pranota-modal" class="fixed inset-0 hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important;">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999998 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
 
+    <!-- Center Container -->
+    <div class="fixed inset-0 overflow-y-auto flex items-center justify-center p-3 sm:p-6" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 9999999 !important; pointer-events: none;">
         <!-- Modal panel -->
-        <form id="form-edit-pranota" method="POST" action="" class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-200 max-h-[90vh]">
+        <form id="form-edit-pranota" method="POST" action="" class="relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 w-full max-w-6xl xl:max-w-7xl max-h-[92vh]" style="position: relative !important; z-index: 9999999 !important; pointer-events: auto;">
             @csrf
             @method('PUT')
             <input type="hidden" name="periode_mulai" id="edit_periode_mulai" value="">
@@ -1512,8 +1528,18 @@
     function ensureModalsInBody() {
         ['pranota-modal', 'detailModal', 'riwayat-pranota-modal', 'edit-pranota-modal'].forEach(function(modalId) {
             const modal = document.getElementById(modalId);
-            if (modal && modal.parentElement !== document.body) {
-                document.body.appendChild(modal);
+            if (modal) {
+                modal.style.setProperty('position', 'fixed', 'important');
+                modal.style.setProperty('top', '0', 'important');
+                modal.style.setProperty('left', '0', 'important');
+                modal.style.setProperty('right', '0', 'important');
+                modal.style.setProperty('bottom', '0', 'important');
+                modal.style.setProperty('width', '100vw', 'important');
+                modal.style.setProperty('height', '100vh', 'important');
+                modal.style.setProperty('z-index', modalId === 'edit-pranota-modal' ? '9999999' : '9999990', 'important');
+                if (modal.parentElement !== document.body) {
+                    document.body.appendChild(modal);
+                }
             }
         });
     }
