@@ -37,8 +37,6 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 }
             }
 
-            $nilaiResidu = isset($row['nilai_residu']) && is_numeric($row['nilai_residu']) ? (float) $row['nilai_residu'] : 0;
-
             $status = ! empty($row['status']) ? ucwords(strtolower(trim((string) $row['status']))) : 'Tersedia';
             if (! in_array($status, Asset::STATUS_OPTIONS)) {
                 $status = 'Tersedia';
@@ -56,8 +54,6 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 'nama_asset' => $row['nama_asset'],
                 'kategori' => $kategori,
                 'tanggal_perolehan' => $tanggalPerolehan,
-                'masa_manfaat_bulan' => isset($row['masa_manfaat_bulan']) && is_numeric($row['masa_manfaat_bulan']) ? (int) $row['masa_manfaat_bulan'] : null,
-                'nilai_residu' => $nilaiResidu,
                 'kondisi' => $kondisi,
                 'status' => $status,
                 'vendor' => $row['vendor'] ?? null,
@@ -72,7 +68,6 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
     {
         return [
             'nama_asset' => 'required|string',
-            'masa_manfaat_bulan' => 'nullable|numeric|min:0',
         ];
     }
 }

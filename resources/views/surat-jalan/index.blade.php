@@ -67,6 +67,7 @@ use Illuminate\Support\Str;
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            <option value="sudah_dibayar" {{ request('status') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                         </select>
                     </div>
 
@@ -209,7 +210,7 @@ use Illuminate\Support\Str;
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Status<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Pembayaran<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Pranota Vendor<div class="resize-handle"></div></th>
-                            <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Aksi</th>
+                            <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -234,6 +235,17 @@ use Illuminate\Support\Str;
                                                 </svg>
                                                 Edit
                                             </a>
+
+                                            {{-- Tombol Ubah Status Menjadi Sudah Dibayar --}}
+                                            @if($suratJalan->status !== 'sudah_dibayar' && $suratJalan->status_pembayaran !== 'sudah_dibayar' && $suratJalan->overall_status_pembayaran !== 'sudah_dibayar')
+                                                <button onclick="event.stopPropagation(); updateStatus('{{ $suratJalan->id }}', 'sudah_dibayar')"
+                                                        class="group flex items-center w-full px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 whitespace-nowrap">
+                                                    <svg class="mr-2 h-4 w-4 text-emerald-500 group-hover:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    Sudah Dibayar
+                                                </button>
+                                            @endif
 
                                             {{-- Tombol Cancel - untuk membatalkan surat jalan --}}
                                             <button onclick="event.stopPropagation(); updateStatus('{{ $suratJalan->id }}', 'cancelled')"
@@ -369,7 +381,7 @@ use Illuminate\Support\Str;
                             </td> 
                             <td class="px-2 py-2 whitespace-nowrap">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $suratJalan->status_badge }}">
-                                    {{ ucfirst($suratJalan->status) }}
+                                    {{ str_replace('_', ' ', ucwords($suratJalan->status, '_')) }}
                                 </span>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap">
@@ -426,7 +438,7 @@ use Illuminate\Support\Str;
                                     {{-- Tombol Detail --}}
                                                 <a href="{{ route('surat-jalan.show', $suratJalan->id) }}"
                                                     class="text-blue-600 hover:text-blue-900 transition-colors duration-200 whitespace-nowrap"
-                                       title="Lihat Detail">
+                                        title="Lihat Detail">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -436,7 +448,7 @@ use Illuminate\Support\Str;
                                     {{-- Tombol Edit --}}
                                                 <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200 whitespace-nowrap"
-                                       title="Edit Surat Jalan">
+                                        title="Edit Surat Jalan">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -445,12 +457,30 @@ use Illuminate\Support\Str;
                                     {{-- Tombol Print --}}
                                                 <a href="{{ route('surat-jalan.print', $suratJalan->id) }}"
                                                     class="text-green-600 hover:text-green-900 transition-colors duration-200 whitespace-nowrap"
-                                       title="Print Surat Jalan"
-                                       target="_blank">
+                                        title="Print Surat Jalan"
+                                        target="_blank">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
+
+                                    {{-- Tombol Ubah Status Menjadi Sudah Dibayar --}}
+                                    @if($suratJalan->status === 'sudah_dibayar' || $suratJalan->status_pembayaran === 'sudah_dibayar' || $suratJalan->overall_status_pembayaran === 'sudah_dibayar')
+                                        <span class="text-emerald-500 cursor-default opacity-80 whitespace-nowrap" title="Status: Sudah Dibayar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </span>
+                                    @else
+                                        <button type="button"
+                                            onclick="updateStatus('{{ $suratJalan->id }}', 'sudah_dibayar')"
+                                            class="text-emerald-600 hover:text-emerald-900 transition-colors duration-200 whitespace-nowrap"
+                                            title="Ubah Status Menjadi Sudah Dibayar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </button>
+                                    @endif
 
                                     {{-- Tombol Audit (hanya untuk user dengan permission) --}}
                                     @can('audit-log-view')
@@ -595,7 +625,14 @@ use Illuminate\Support\Str;
 
 // Update status function
 function updateStatus(suratJalanId, status) {
-    if (confirm('Yakin ingin mengubah status surat jalan ini?')) {
+    let confirmMsg = 'Yakin ingin mengubah status surat jalan ini?';
+    if (status === 'sudah_dibayar') {
+        confirmMsg = 'Yakin ingin mengubah status surat jalan ini menjadi Sudah Dibayar?';
+    } else if (status === 'cancelled') {
+        confirmMsg = 'Yakin ingin membatalkan surat jalan ini?';
+    }
+
+    if (confirm(confirmMsg)) {
         fetch(`/surat-jalan/${suratJalanId}/update-status`, {
             method: 'POST',
             headers: {

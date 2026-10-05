@@ -56,24 +56,6 @@
                 @endif
             </div>
 
-            <!-- Quick Info Box -->
-            <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-5 rounded-2xl shadow-md space-y-3">
-                <div>
-                    <span class="text-xs text-blue-200 font-medium">Masa Manfaat</span>
-                    <h2 class="text-2xl font-bold mt-0.5">{{ $asset->masa_manfaat_bulan ? $asset->masa_manfaat_bulan . ' Bulan' : '-' }}</h2>
-                </div>
-                <div class="pt-3 border-t border-blue-700/60 grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                        <span class="text-blue-300 block">Tanggal Perolehan</span>
-                        <span class="font-semibold text-white">{{ $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('d/m/Y') : '-' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-blue-300 block">Nilai Residu</span>
-                        <span class="font-semibold text-white">Rp {{ number_format($asset->nilai_residu, 0, ',', '.') }}</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Lampiran Box -->
             @if($asset->lampiran && file_exists(public_path($asset->lampiran)))
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
@@ -97,7 +79,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">Informasi Asset & Pengadaan</h3>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
                     <div>
                         <span class="text-gray-400 block font-medium">Kategori</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->kategori }}</span>
@@ -109,16 +91,11 @@
                     </div>
 
                     <div>
-                        <span class="text-gray-400 block font-medium">Nilai Residu</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block">Rp {{ number_format($asset->nilai_residu, 0, ',', '.') }}</span>
-                    </div>
-
-                    <div>
                         <span class="text-gray-400 block font-medium">Vendor / Supplier</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->vendor ?: '-' }}</span>
                     </div>
 
-                    <div class="sm:col-span-2">
+                    <div>
                         <span class="text-gray-400 block font-medium">No. Faktur / Invoice</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_faktur ?: '-' }}</span>
                     </div>

@@ -423,6 +423,8 @@ class SuratJalan extends Model
             'cancelled' => 'bg-red-100 text-red-800',
             'belum masuk checkpoint' => 'bg-yellow-100 text-yellow-800',
             'sudah_checkpoint' => 'bg-purple-100 text-purple-800',
+            'sudah_dibayar' => 'bg-emerald-100 text-emerald-800',
+            'sudah dibayar' => 'bg-emerald-100 text-emerald-800',
         ];
 
         return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';

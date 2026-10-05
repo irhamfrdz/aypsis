@@ -88,11 +88,11 @@
             </div>
         </div>
 
-        <!-- Section 2: Informasi Pengadaan & Finansial -->
+        <!-- Section 2: Informasi Pengadaan -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
             <div class="flex items-center gap-2 pb-3 border-b border-gray-100">
                 <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">2</div>
-                <h2 class="text-sm font-bold text-gray-800">Informasi Pengadaan & Penyusutan</h2>
+                <h2 class="text-sm font-bold text-gray-800">Informasi Pengadaan</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -102,21 +102,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Masa Manfaat (Bulan)</label>
-                    <input type="number" name="masa_manfaat_bulan" value="{{ old('masa_manfaat_bulan', $asset->masa_manfaat_bulan) }}" min="0" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nilai Residu (Rp)</label>
-                    <input type="number" step="any" name="nilai_residu" value="{{ old('nilai_residu', $asset->nilai_residu) }}" min="0" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right">
-                </div>
-
-                <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Vendor / Supplier</label>
                     <input type="text" name="vendor" value="{{ old('vendor', $asset->vendor) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
 
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">No. Faktur / Invoice / PO</label>
                     <input type="text" name="nomor_faktur" value="{{ old('nomor_faktur', $asset->nomor_faktur) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>

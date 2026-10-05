@@ -19,8 +19,6 @@ class Asset extends Model
         'nama_asset',
         'kategori',
         'tanggal_perolehan',
-        'masa_manfaat_bulan',
-        'nilai_residu',
         'kondisi',
         'status',
         'vendor',
@@ -34,8 +32,6 @@ class Asset extends Model
 
     protected $casts = [
         'tanggal_perolehan' => 'date',
-        'nilai_residu' => 'decimal:2',
-        'masa_manfaat_bulan' => 'integer',
     ];
 
     public const KATEGORI_OPTIONS = [

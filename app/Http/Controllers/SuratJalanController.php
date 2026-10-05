@@ -1321,11 +1321,67 @@ class SuratJalanController extends Controller
             $suratJalan = SuratJalan::findOrFail($id);
 
             $request->validate([
-                'status' => 'required|in:draft,active,completed,cancelled',
+                'status' => 'required|in:draft,active,completed,cancelled,sudah_dibayar,sudah dibayar',
             ]);
 
-            $suratJalan->status = $request->status;
-            $suratJalan->save();
+            if (in_array($request->status, ['sudah_dibayar', 'sudah dibayar'])) {
+                $suratJalan->status = 'sudah_dibayar';
+                $suratJalan->status_pembayaran = 'sudah_dibayar';
+                $suratJalan->status_pembayaran_uang_jalan = 'dibayar';
+                $suratJalan->save();
+
+                // Sinkronkan atau buat data Prospek seperti pada alur normal Pembayaran Pranota Uang Jalan
+                $existingProspeks = Prospek::where('surat_jalan_id', $suratJalan->id)->get();
+                if ($existingProspeks->isNotEmpty()) {
+                    // Jika prospek sudah ada tetapi berstatus batal, aktifkan kembali
+                    Prospek::where('surat_jalan_id', $suratJalan->id)
+                        ->where('status', Prospek::STATUS_BATAL)
+                        ->update(['status' => Prospek::STATUS_AKTIF]);
+                } else {
+                    $uangJalan = $suratJalan->uangJalan;
+                    $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
+
+                    $nomorKontainerArray = [];
+                    $noSealArray = [];
+
+                    if (! empty($suratJalan->no_kontainer)) {
+                        $nomorKontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer));
+                    }
+
+                    if (! empty($suratJalan->no_seal)) {
+                        $noSealArray = array_map('trim', explode(',', $suratJalan->no_seal));
+                    }
+
+                    for ($i = 1; $i <= max(1, (int) $jumlahKontainer); $i++) {
+                        $nomorKontainerIni = isset($nomorKontainerArray[$i - 1]) ? $nomorKontainerArray[$i - 1] : null;
+                        $noSealIni = isset($noSealArray[$i - 1]) ? $noSealArray[$i - 1] : null;
+
+                        $prospekData = [
+                            'tanggal' => now(),
+                            'nama_supir' => $uangJalan->supir ?? $suratJalan->supir ?? null,
+                            'barang' => $suratJalan->jenis_barang ?? null,
+                            'pt_pengirim' => $suratJalan->pengirim ?? null,
+                            'ukuran' => $suratJalan->size ?? null,
+                            'tipe' => $suratJalan->tipe_kontainer ?? null,
+                            'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan.'-'.$i : $suratJalan->no_surat_jalan) : null,
+                            'surat_jalan_id' => $suratJalan->id,
+                            'nomor_kontainer' => $nomorKontainerIni ?: null,
+                            'no_seal' => $noSealIni,
+                            'tujuan_pengiriman' => $uangJalan->tujuan ?? $suratJalan->tujuan_pengiriman ?? null,
+                            'nama_kapal' => null,
+                            'keterangan' => 'Auto generated dari Surat Jalan: '.($suratJalan->no_surat_jalan ?? '-').' (Status: Sudah Dibayar)'.($jumlahKontainer > 1 ? " | Kontainer #$i dari $jumlahKontainer" : ''),
+                            'status' => Prospek::STATUS_AKTIF,
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id(),
+                        ];
+
+                        Prospek::create($prospekData);
+                    }
+                }
+            } else {
+                $suratJalan->status = $request->status;
+                $suratJalan->save();
+            }
 
             // Cancel linked prospeks if status is cancelled
             if ($request->status === 'cancelled') {
