@@ -1058,6 +1058,31 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for asset permissions (asset-view, asset-create, etc.) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'asset-') === 0) {
+                $module = 'master-asset';
+                $action = str_replace('asset-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (! isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'export' => 'export',
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+
+                continue; // Skip other patterns
+            }
+
             // Special handling for BL (Bill of Lading) permissions (bl-view, bl-create, etc.) - MUST BE BEFORE Pattern 3
             if (strpos($permissionName, 'bl-') === 0) {
                 $module = 'bl';
@@ -1337,6 +1362,12 @@ class UserController extends Controller
                             // For master-pricelist-biaya-storage-view, extract the action
                             $action = str_replace('pricelist-biaya-storage-', '', $action);
                             $module = 'master-pricelist-biaya-storage';
+                        }
+                        // Special handling for master-asset permissions
+                        elseif (strpos($action, 'asset-') === 0) {
+                            // For master-asset-view, extract the action
+                            $action = str_replace('asset-', '', $action);
+                            $module = 'master-asset';
                         }
                         // Special handling for master-pricelist-meratus permissions
                         elseif (strpos($action, 'pricelist-meratus-') === 0) {
@@ -2516,6 +2547,30 @@ class UserController extends Controller
 
                                         continue; // Skip to next action
                                     }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-asset permissions explicitly
+                            if ($module === 'master-asset' && in_array($action, ['view', 'create', 'update', 'delete', 'export'])) {
+                                $actionMap = [
+                                    'view' => ['master-asset-view', 'asset-view'],
+                                    'create' => ['master-asset-create', 'asset-create'],
+                                    'update' => ['master-asset-update', 'asset-update'],
+                                    'delete' => ['master-asset-delete', 'asset-delete'],
+                                    'export' => ['master-asset-export', 'asset-export'],
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $candidates = (array) $actionMap[$action];
+                                    foreach ($candidates as $candidateName) {
+                                        $directPermission = Permission::where('name', $candidateName)->first();
+                                        if ($directPermission) {
+                                            $permissionIds[] = $directPermission->id;
+                                        }
+                                    }
+                                    $found = true;
+
+                                    continue; // Skip to next action
                                 }
                             }
 

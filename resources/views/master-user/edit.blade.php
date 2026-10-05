@@ -2887,6 +2887,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Asset --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Asset</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-asset][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-asset']['view']) && $userMatrixPermissions['master-asset']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-asset][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-asset']['create']) && $userMatrixPermissions['master-asset']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-asset][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-asset']['update']) && $userMatrixPermissions['master-asset']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-asset][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-asset']['delete']) && $userMatrixPermissions['master-asset']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-asset][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-asset']['export']) && $userMatrixPermissions['master-asset']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Pricelist Sewa Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
