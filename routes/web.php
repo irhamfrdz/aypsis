@@ -8116,3 +8116,16 @@ Route::middleware(['auth',
     Route::post('berita/{berita}/toggle-active', [\App\Http\Controllers\BeritaController::class, 'toggleActive']);
     Route::resource('berita', \App\Http\Controllers\BeritaController::class)->parameters(['berita' => 'berita']);
 });
+
+// Route alias payroll pranota lembur tanpa prefix master
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payroll/perhitungan-lembur', [\App\Http\Controllers\PerhitunganLemburController::class, 'index'])->middleware('can:payroll-perhitungan-lembur-view');
+    Route::get('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'index'])->middleware('can:payroll-view');
+    Route::post('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'store'])->middleware('can:payroll-perhitungan-lembur-create');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'show'])->middleware('can:payroll-view');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}/edit', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'edit'])->middleware('can:payroll-view');
+    Route::put('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'update'])->middleware('can:payroll-view');
+    Route::post('/payroll/pranota-lembur-karyawan/{id}/refresh-attendance', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'refreshAttendance'])->middleware('can:payroll-view');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}/export', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'export'])->middleware('can:payroll-view');
+    Route::delete('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'destroy'])->middleware('can:payroll-view');
+});

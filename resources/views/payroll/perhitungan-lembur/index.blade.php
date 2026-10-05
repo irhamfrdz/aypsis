@@ -1666,13 +1666,21 @@
 
         // Form action
         const form = document.getElementById('form-edit-pranota');
-        form.action = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id;
+        let updateActionUrl = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id;
+        if (window.location.pathname.includes('/master/')) {
+            updateActionUrl = "{{ url('/master/payroll/pranota-lembur-karyawan') }}/" + id;
+        }
+        form.action = updateActionUrl;
 
         // Header info
         document.getElementById('edit-badge-nomor-pranota').innerText = item.nomor_pranota;
         const fullpageLink = document.getElementById('btn-edit-fullpage');
         if (fullpageLink) {
-            fullpageLink.href = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id + "/edit";
+            let fullpageUrl = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id + "/edit";
+            if (window.location.pathname.includes('/master/')) {
+                fullpageUrl = "{{ url('/master/payroll/pranota-lembur-karyawan') }}/" + id + "/edit";
+            }
+            fullpageLink.href = fullpageUrl;
         }
 
         // Inputs
@@ -1791,8 +1799,13 @@
         if (btn) btn.disabled = true;
         if (icon) icon.classList.add('fa-spin');
 
+        let targetUrl = `{{ url('/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`;
+        if (window.location.pathname.includes('/master/')) {
+            targetUrl = `{{ url('/master/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`;
+        }
+
         try {
-            const response = await fetch(`{{ url('/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`, {
+            let response = await fetch(targetUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1800,6 +1813,22 @@
                     'Accept': 'application/json'
                 }
             });
+
+            // Jika rute pertama 404, coba rute alternatif (fallback)
+            if (response.status === 404) {
+                const altUrl = targetUrl.includes('/master/') 
+                    ? `{{ url('/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`
+                    : `{{ url('/master/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`;
+                
+                response = await fetch(altUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+            }
 
             const result = await response.json();
 
