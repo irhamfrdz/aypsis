@@ -276,4 +276,40 @@ class AssetController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
+
+    /**
+     * Update asset tanda terima details.
+     */
+    public function updateTandaTerima(Request $request, Asset $asset)
+    {
+        $validated = $request->validate([
+            'karyawan_id' => 'required|exists:karyawans,id',
+            'tanggal_tanda_terima' => 'required|date',
+            'status' => 'nullable|string|max:50',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $validated['status'] = $validated['status'] ?: 'Digunakan';
+        $validated['updated_by'] = Auth::id();
+
+        $asset->update($validated);
+
+        if ($request->filled('print_after_save')) {
+            return redirect()->route('asset.index')
+                ->with('success', 'Form tanda terima asset berhasil disimpan')
+                ->with('print_asset_id', $asset->id);
+        }
+
+        return redirect()->route('asset.index')->with('success', 'Form tanda terima asset berhasil disimpan');
+    }
+
+    /**
+     * Print form tanda terima / berita acara serah terima asset.
+     */
+    public function printTandaTerima(Asset $asset)
+    {
+        $asset->load(['karyawan', 'creator']);
+
+        return view('master-asset.print-tanda-terima', compact('asset'));
+    }
 }
