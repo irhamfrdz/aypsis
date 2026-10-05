@@ -3260,7 +3260,9 @@ Route::middleware([
         Route::post('master-asset/import', [\App\Http\Controllers\AssetController::class, 'import'])->name('asset.import');
         Route::get('master-asset/{asset}/print-tanda-terima', [\App\Http\Controllers\AssetController::class, 'printTandaTerima'])->name('asset.print-tanda-terima');
         Route::post('master-asset/{asset}/tanda-terima', [\App\Http\Controllers\AssetController::class, 'updateTandaTerima'])->name('asset.update-tanda-terima');
-        Route::resource('master-asset', \App\Http\Controllers\AssetController::class)->names('asset');
+        Route::resource('master-asset', \App\Http\Controllers\AssetController::class)
+            ->names('asset')
+            ->parameters(['master-asset' => 'asset']);
         Route::get('master/asset', fn () => redirect()->route('asset.index'))->name('master.asset.index');
 
         // 🏢 Master Gudang (Warehouse Master) Management with permissions
