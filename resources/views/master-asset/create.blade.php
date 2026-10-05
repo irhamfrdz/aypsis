@@ -3,6 +3,42 @@
 @section('title', 'Tambah Asset Baru')
 @section('page_title', 'Tambah Asset')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        border-color: #d1d5db;
+        border-radius: 0.75rem;
+        height: 38px;
+        padding: 4px 6px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+        right: 8px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #374151;
+        padding-left: 4px;
+    }
+    .select2-dropdown {
+        border-radius: 0.75rem;
+        border-color: #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        font-size: 0.75rem;
+        overflow: hidden;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border-radius: 0.5rem;
+        border-color: #d1d5db;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-5xl mx-auto space-y-6">
     <!-- Header -->
@@ -80,6 +116,19 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pemegang Asset (Karyawan)</label>
+                    <select name="karyawan_id" id="karyawan_id" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-karyawan">
+                        <option value="">-- Pilih Karyawan Pemegang Asset (Opsional) --</option>
+                        @foreach($karyawans as $kry)
+                            <option value="{{ $kry->id }}" {{ old('karyawan_id') == $kry->id ? 'selected' : '' }}>
+                                {{ $kry->nama_lengkap }} ({{ $kry->nik ?? '-' }})@if($kry->divisi) - {{ $kry->divisi }}@endif
+                            </option>
+                        @endforeach
+                    </select>
+                    <span class="text-[10px] text-gray-400 mt-1 block">Pilih karyawan yang saat ini memegang / bertanggung jawab atas asset ini</span>
+                </div>
             </div>
         </div>
 
@@ -147,3 +196,18 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+            $('#karyawan_id').select2({
+                placeholder: '-- Pilih Karyawan Pemegang Asset (Opsional) --',
+                allowClear: true,
+                width: '100%'
+            });
+        }
+    });
+</script>
+@endpush

@@ -137,14 +137,14 @@
 
     <!-- Filter & Search Section -->
     <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-        <form method="GET" action="{{ route('asset.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <form method="GET" action="{{ route('asset.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div class="md:col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">Cari Kata Kunci</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama asset..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kode, nama, pemegang asset..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
 
@@ -168,12 +168,22 @@
                 </select>
             </div>
 
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Pemegang</label>
+                <select name="karyawan_id" class="w-full py-2 px-3 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Semua Pemegang</option>
+                    @foreach($karyawans as $kry)
+                        <option value="{{ $kry->id }}" {{ request('karyawan_id') == $kry->id ? 'selected' : '' }}>{{ $kry->nama_lengkap }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div class="flex items-end gap-2">
                 <button type="submit" class="flex-1 py-2 px-4 text-xs font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150 flex items-center justify-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                     Filter
                 </button>
-                @if(request()->hasAny(['search', 'kategori', 'status', 'kondisi']))
+                @if(request()->hasAny(['search', 'kategori', 'status', 'kondisi', 'karyawan_id']))
                     <a href="{{ route('asset.index') }}" class="py-2 px-3 text-xs font-semibold rounded-xl text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all duration-150" title="Reset Filter">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     </a>
@@ -192,6 +202,7 @@
                         <th scope="col" class="py-3 px-4 text-left">Foto</th>
                         <th scope="col" class="py-3 px-4 text-left">Kode & Nama Asset</th>
                         <th scope="col" class="py-3 px-4 text-left">Kategori</th>
+                        <th scope="col" class="py-3 px-4 text-left">Pemegang</th>
                         <th scope="col" class="py-3 px-4 text-center">Kondisi</th>
                         <th scope="col" class="py-3 px-4 text-center">Status</th>
                         <th scope="col" class="py-3 px-4 text-center w-28">Aksi</th>
@@ -223,6 +234,14 @@
                                     {{ $asset->kategori }}
                                 </span>
                             </td>
+                            <td class="py-3 px-4">
+                                @if($asset->karyawan)
+                                    <span class="font-semibold text-gray-800 block">{{ $asset->karyawan->nama_lengkap }}</span>
+                                    <span class="text-[11px] text-gray-500 block">{{ $asset->karyawan->nik ? 'NIK: ' . $asset->karyawan->nik : ($asset->karyawan->divisi ?? '-') }}</span>
+                                @else
+                                    <span class="text-gray-400 italic text-[11px]">-</span>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 text-center">
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $asset->kondisi_badge_class }}">
                                     {{ $asset->kondisi }}
@@ -253,7 +272,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-gray-400">
+                            <td colspan="8" class="py-12 text-center text-gray-400">
                                 <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                                 </svg>

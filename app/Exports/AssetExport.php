@@ -21,15 +21,24 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 
     public function collection()
     {
-        $query = Asset::with(['creator']);
+        $query = Asset::with(['creator', 'karyawan']);
 
         if ($this->request) {
             if ($this->request->filled('search')) {
                 $search = $this->request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('kode_asset', 'like', "%{$search}%")
-                        ->orWhere('nama_asset', 'like', "%{$search}%");
+                        ->orWhere('nama_asset', 'like', "%{$search}%")
+                        ->orWhereHas('karyawan', function ($kq) use ($search) {
+                            $kq->where('nama_lengkap', 'like', "%{$search}%")
+                                ->orWhere('nama_panggilan', 'like', "%{$search}%")
+                                ->orWhere('nik', 'like', "%{$search}%");
+                        });
                 });
+            }
+
+            if ($this->request->filled('karyawan_id')) {
+                $query->where('karyawan_id', $this->request->karyawan_id);
             }
 
             if ($this->request->filled('kategori')) {
@@ -58,6 +67,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             'Tanggal Perolehan',
             'Kondisi',
             'Status',
+            'Pemegang Asset',
             'Vendor / Supplier',
             'No. Faktur',
             'Keterangan',
@@ -80,6 +90,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('Y-m-d') : '-',
             $asset->kondisi,
             $asset->status,
+            $asset->karyawan ? ($asset->karyawan->nama_lengkap.($asset->karyawan->nik ? ' ('.$asset->karyawan->nik.')' : '')) : '-',
             $asset->vendor ?? '-',
             $asset->nomor_faktur ?? '-',
             $asset->keterangan ?? '-',

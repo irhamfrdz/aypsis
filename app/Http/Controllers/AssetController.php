@@ -6,6 +6,7 @@ use App\Exports\AssetExport;
 use App\Exports\AssetTemplateExport;
 use App\Imports\AssetImport;
 use App\Models\Asset;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -18,14 +19,23 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Asset::with(['creator']);
+        $query = Asset::with(['creator', 'karyawan']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('kode_asset', 'like', "%{$search}%")
-                    ->orWhere('nama_asset', 'like', "%{$search}%");
+                    ->orWhere('nama_asset', 'like', "%{$search}%")
+                    ->orWhereHas('karyawan', function ($kq) use ($search) {
+                        $kq->where('nama_lengkap', 'like', "%{$search}%")
+                            ->orWhere('nama_panggilan', 'like', "%{$search}%")
+                            ->orWhere('nik', 'like', "%{$search}%");
+                    });
             });
+        }
+
+        if ($request->filled('karyawan_id')) {
+            $query->where('karyawan_id', $request->karyawan_id);
         }
 
         if ($request->filled('kategori')) {
@@ -54,8 +64,11 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
+        $karyawans = Karyawan::whereNull('tanggal_berhenti')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'nik']);
 
-        return view('master-asset.index', compact('assets', 'stats', 'kategoris', 'statuses', 'kondisis'));
+        return view('master-asset.index', compact('assets', 'stats', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
     }
 
     /**
@@ -67,8 +80,11 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
+        $karyawans = Karyawan::whereNull('tanggal_berhenti')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
 
-        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis'));
+        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
     }
 
     /**
@@ -83,6 +99,7 @@ class AssetController extends Controller
             'tanggal_perolehan' => 'nullable|date',
             'kondisi' => 'required|string|max:50',
             'status' => 'required|string|max:50',
+            'karyawan_id' => 'nullable|exists:karyawans,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -126,7 +143,7 @@ class AssetController extends Controller
      */
     public function show(Asset $asset)
     {
-        $asset->load(['creator', 'updater']);
+        $asset->load(['creator', 'updater', 'karyawan']);
 
         return view('master-asset.show', compact('asset'));
     }
@@ -139,8 +156,12 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
+        $karyawans = Karyawan::whereNull('tanggal_berhenti')
+            ->orWhere('id', $asset->karyawan_id)
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
 
-        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis'));
+        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
     }
 
     /**
@@ -155,6 +176,7 @@ class AssetController extends Controller
             'tanggal_perolehan' => 'nullable|date',
             'kondisi' => 'required|string|max:50',
             'status' => 'required|string|max:50',
+            'karyawan_id' => 'nullable|exists:karyawans,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',

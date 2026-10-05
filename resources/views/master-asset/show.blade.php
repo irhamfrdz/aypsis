@@ -90,6 +90,30 @@
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('d M Y') : '-' }}</span>
                     </div>
 
+                    <div class="col-span-2 p-3.5 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-blue-800 uppercase tracking-wider block">Pemegang Asset (Karyawan)</span>
+                            @if($asset->karyawan)
+                                <span class="font-bold text-gray-900 text-sm block mt-0.5">
+                                    {{ $asset->karyawan->nama_lengkap }}
+                                    <span class="text-xs font-normal text-gray-500">({{ $asset->karyawan->nik ?? '-' }})</span>
+                                </span>
+                                @if($asset->karyawan->divisi || $asset->karyawan->posisi)
+                                    <span class="text-xs text-gray-600 block mt-0.5">
+                                        {{ $asset->karyawan->divisi ?? '' }} {{ ($asset->karyawan->divisi && $asset->karyawan->posisi) ? '•' : '' }} {{ $asset->karyawan->posisi ?? '' }}
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-xs text-gray-500 italic mt-0.5 block">Belum ada karyawan yang memegang asset ini</span>
+                            @endif
+                        </div>
+                        @if($asset->karyawan)
+                        <div class="w-10 h-10 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs">
+                            {{ strtoupper(substr($asset->karyawan->nama_lengkap, 0, 2)) }}
+                        </div>
+                        @endif
+                    </div>
+
                     <div>
                         <span class="text-gray-400 block font-medium">Vendor / Supplier</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->vendor ?: '-' }}</span>

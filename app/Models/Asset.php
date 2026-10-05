@@ -21,6 +21,7 @@ class Asset extends Model
         'tanggal_perolehan',
         'kondisi',
         'status',
+        'karyawan_id',
         'vendor',
         'nomor_faktur',
         'foto',
@@ -59,6 +60,14 @@ class Asset extends Model
         'Dijual',
         'Dihapuskan',
     ];
+
+    /**
+     * Relationship to Karyawan pemegang asset
+     */
+    public function karyawan(): BelongsTo
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
 
     /**
      * Relationship to User creator
