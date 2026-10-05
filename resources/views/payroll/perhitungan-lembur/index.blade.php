@@ -178,12 +178,18 @@
         <!-- Data Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             @if(count($rekapData) > 0)
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 class="text-sm font-bold text-gray-900">Hasil Kalkulasi</h3>
-                    <p class="text-xs text-gray-500 mt-1">Ditemukan {{ count($rekapData) }} karyawan.</p>
+                    <p class="text-xs text-gray-500 mt-1" id="karyawan-count-text">Ditemukan {{ count($rekapData) }} karyawan.</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <div class="relative w-48 sm:w-64">
+                        <input type="text" id="quick-karyawan-search" placeholder="Cari cepat nama/NIK di tabel..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                    </div>
                     <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
                         <i class="fas fa-file-invoice mr-1.5"></i>
                         Masukkan Pranota
@@ -234,7 +240,10 @@
                                 $isPartialInPranota = !empty($data['is_partial_in_pranota']);
                                 $pranotaNomorsStr = implode(', ', $data['pranota_nomors'] ?? []);
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors duration-150 {{ $isAllInPranota ? 'bg-emerald-50/25' : ($isPartialInPranota ? 'bg-amber-50/20' : '') }}">
+                            <tr class="hover:bg-gray-50 transition-colors duration-150 data-row-karyawan {{ $isAllInPranota ? 'bg-emerald-50/25' : ($isPartialInPranota ? 'bg-amber-50/20' : '') }}"
+                                data-nama="{{ strtolower($data['karyawan']->nama_lengkap ?? '') }}"
+                                data-nik="{{ strtolower($data['karyawan']->nik ?? '') }}"
+                                data-panggilan="{{ strtolower($data['karyawan']->nama_panggilan ?? '') }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <input type="checkbox" value="{{ $data['karyawan']->id }}"
                                         data-jam-lembur="{{ $isAllInPranota ? $totalJamKaryawan : ($data['unpranota_jam'] ?? $totalJamKaryawan) }}"
@@ -583,7 +592,7 @@
                                     <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Adjustment</th>
                                     <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total Akhir</th>
                                     <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-28">Aksi</th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-36">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 text-xs">
@@ -642,6 +651,18 @@
                                                 <a href="{{ route('pranota-lembur-karyawan.show', $item->id) }}" target="_blank" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors" title="Lihat Rincian">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
+                                                @php
+                                                    $isPumlLocked = $item->pranota_puml_id && in_array(optional($item->pranotaPuml)->status, ['approved', 'paid']);
+                                                @endphp
+                                                @if(!$isPumlLocked)
+                                                    <button type="button" onclick="openEditPranotaModal({{ $item->id }})" class="p-1.5 rounded-md text-amber-600 hover:bg-amber-100 transition-colors cursor-pointer" title="Edit Pranota">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                @else
+                                                    <button type="button" disabled class="p-1.5 rounded-md text-gray-300 cursor-not-allowed" title="Pranota terkunci (PUML {{ optional($item->pranotaPuml)->status ?? 'terkunci' }})">
+                                                        <i class="fas fa-lock"></i>
+                                                    </button>
+                                                @endif
                                                 <a href="{{ route('pranota-lembur-karyawan.export', $item->id) }}" class="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-100 transition-colors" title="Export Excel">
                                                     <i class="fas fa-file-excel"></i>
                                                 </a>
@@ -715,6 +736,137 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal Edit Pranota Lembur -->
+<div id="edit-pranota-modal" class="fixed inset-0 z-[110] hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <form id="form-edit-pranota" method="POST" action="" class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-200 max-h-[90vh]">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="periode_mulai" id="edit_periode_mulai" value="">
+            <input type="hidden" name="periode_selesai" id="edit_periode_selesai" value="">
+
+            <!-- Header -->
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-50 p-2.5 rounded-xl text-amber-600">
+                        <i class="fas fa-edit text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-bold text-gray-900" id="modal-edit-title">Edit Pranota Lembur</h3>
+                            <span id="edit-badge-nomor-pranota" class="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200"></span>
+                        </div>
+                        <p class="text-xs text-gray-500">Perbarui tanggal pranota, nilai adjustment karyawan, catatan, atau hapus karyawan dari pranota ini</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="btn-edit-fullpage" href="#" target="_blank" class="inline-flex items-center text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors border border-amber-200">
+                        <i class="fas fa-external-link-alt mr-1.5"></i>
+                        Halaman Lengkap
+                    </a>
+                    <button type="button" onclick="closeEditPranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                            Tanggal Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="tanggal_pranota" id="edit_tanggal_pranota" required
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 shadow-xs">
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Periode Perhitungan</label>
+                        <div class="text-xs font-semibold text-gray-800 flex items-center gap-1.5 mt-1" id="edit-periode-text">
+                            -
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status Pranota</label>
+                        <div class="mt-1" id="edit-status-badge">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Draft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Header & Search -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                    <div class="flex items-center gap-2">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Daftar Karyawan di Pranota Ini</h4>
+                        <span class="text-xs text-gray-500" id="edit-karyawan-count-info">(0 Karyawan)</span>
+                    </div>
+                    <div class="relative flex-1 max-w-xs">
+                        <input type="text" id="edit-table-search-input" onkeyup="filterEditModalTable()" placeholder="Cari nama atau NIK..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto max-h-[46vh]">
+                        <table class="min-w-full divide-y divide-gray-200" id="table-edit-modal-items">
+                            <thead class="bg-gray-50 sticky top-0 z-10 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                                <tr>
+                                    <th scope="col" class="px-3 py-2 text-left w-10">No</th>
+                                    <th scope="col" class="px-3 py-2 text-left">Karyawan</th>
+                                    <th scope="col" class="px-3 py-2 text-center">Jam Lembur</th>
+                                    <th scope="col" class="px-3 py-2 text-right">Nominal Awal</th>
+                                    <th scope="col" class="px-3 py-2 text-right w-32">Adjustment (+/-)</th>
+                                    <th scope="col" class="px-3 py-2 text-right">Total Akhir</th>
+                                    <th scope="col" class="px-3 py-2 text-left">Catatan</th>
+                                    <th scope="col" class="px-3 py-2 text-center w-12">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200 text-xs" id="edit-modal-items-tbody">
+                                <!-- Populated dynamically by openEditPranotaModal(id) -->
+                            </tbody>
+                            <tfoot class="bg-gray-50 border-t border-gray-200 font-bold text-xs text-gray-900 sticky bottom-0">
+                                <tr>
+                                    <td colspan="3" class="px-3 py-2.5 text-right">TOTAL:</td>
+                                    <td class="px-3 py-2.5 text-right" id="edit-tfoot-nominal-awal">Rp 0</td>
+                                    <td class="px-3 py-2.5 text-right text-orange-600" id="edit-tfoot-adjustment">Rp 0</td>
+                                    <td class="px-3 py-2.5 text-right text-emerald-700" id="edit-tfoot-total-akhir">Rp 0</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                <div class="text-xs text-gray-500 flex items-center gap-1.5">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <span>Karyawan yang dihapus akan kembali berstatus belum pranota.</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button type="button" onclick="closeEditPranotaModal()" class="w-full sm:w-auto px-5 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-save-edit-pranota" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors cursor-pointer">
+                        <i class="fas fa-save mr-1.5"></i>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1392,6 +1544,290 @@
 
     // --- END LOGIKA PRANOTA MODAL ---
 
+    // --- LOGIKA EDIT PRANOTA MODAL ---
+    @php
+        $riwayatPranotaMap = ($riwayatPranotaUser ?? collect())->mapWithKeys(function($item) {
+            return [$item->id => [
+                'id' => $item->id,
+                'nomor_pranota' => $item->nomor_pranota,
+                'tanggal_pranota' => $item->tanggal_pranota ? $item->tanggal_pranota->format('Y-m-d') : '',
+                'periode_mulai' => $item->periode_mulai ? $item->periode_mulai->format('Y-m-d') : '',
+                'periode_selesai' => $item->periode_selesai ? $item->periode_selesai->format('Y-m-d') : '',
+                'periode_mulai_fmt' => $item->periode_mulai ? $item->periode_mulai->format('d/m/Y') : '',
+                'periode_selesai_fmt' => $item->periode_selesai ? $item->periode_selesai->format('d/m/Y') : '',
+                'total_biaya' => (float) $item->total_biaya,
+                'adjustment' => (float) $item->adjustment,
+                'total_setelah_adjustment' => (float) $item->total_setelah_adjustment,
+                'status' => $item->status,
+                'pranota_puml_id' => $item->pranota_puml_id,
+                'karyawans' => $item->karyawans->map(function($d) {
+                    $tglLembur = $d->tanggal_lembur;
+                    if (is_string($tglLembur)) {
+                        $tglLembur = json_decode($tglLembur, true);
+                    }
+                    $datesList = is_array($tglLembur) ? array_values(array_filter($tglLembur)) : [];
+                    return [
+                        'detail_id' => $d->id,
+                        'karyawan_id' => $d->karyawan_id,
+                        'nama_lengkap' => $d->karyawan->nama_lengkap ?? 'Karyawan',
+                        'nik' => $d->karyawan->nik ?? '-',
+                        'jam_lembur' => $d->jam_lembur ?? '0 Jam',
+                        'nominal_awal' => (float) $d->nominal_awal,
+                        'adjustment' => (float) $d->adjustment,
+                        'total_akhir' => (float) $d->total_akhir,
+                        'catatan' => $d->catatan ?? '',
+                        'total_hari' => count($datesList),
+                    ];
+                })->values(),
+            ]];
+        });
+    @endphp
+
+    const riwayatPranotaData = @json($riwayatPranotaMap);
+
+    function formatRupiahModal(val) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(val));
+    }
+
+    function openEditPranotaModal(id) {
+        const item = riwayatPranotaData[id];
+        if (!item) {
+            alert('Data pranota tidak ditemukan.');
+            return;
+        }
+
+        // Form action
+        const form = document.getElementById('form-edit-pranota');
+        form.action = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id;
+
+        // Header info
+        document.getElementById('edit-badge-nomor-pranota').innerText = item.nomor_pranota;
+        const fullpageLink = document.getElementById('btn-edit-fullpage');
+        if (fullpageLink) {
+            fullpageLink.href = "{{ url('/payroll/pranota-lembur-karyawan') }}/" + id + "/edit";
+        }
+
+        // Inputs
+        document.getElementById('edit_tanggal_pranota').value = item.tanggal_pranota || '';
+        document.getElementById('edit_periode_mulai').value = item.periode_mulai || '';
+        document.getElementById('edit_periode_selesai').value = item.periode_selesai || '';
+
+        const periodeText = document.getElementById('edit-periode-text');
+        if (periodeText) {
+            if (item.periode_mulai_fmt && item.periode_selesai_fmt) {
+                periodeText.innerHTML = `<i class="far fa-calendar-alt text-blue-500 mr-1"></i> ${item.periode_mulai_fmt} &ndash; ${item.periode_selesai_fmt}`;
+            } else {
+                periodeText.innerHTML = '<span class="text-gray-400 italic">-</span>';
+            }
+        }
+
+        // Status badge
+        const statusBadge = document.getElementById('edit-status-badge');
+        if (statusBadge) {
+            if (item.pranota_puml_id) {
+                statusBadge.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">Masuk PUML</span>';
+            } else if (item.status === 'draft') {
+                statusBadge.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Draft</span>';
+            } else {
+                statusBadge.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">${item.status}</span>`;
+            }
+        }
+
+        // Reset search input
+        const searchInput = document.getElementById('edit-table-search-input');
+        if (searchInput) searchInput.value = '';
+
+        // Populate table
+        const tbody = document.getElementById('edit-modal-items-tbody');
+        tbody.innerHTML = '';
+
+        item.karyawans.forEach((k, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-amber-50/20 transition-colors row-item-edit';
+            tr.setAttribute('data-nama', (k.nama_lengkap || '').toLowerCase());
+            tr.setAttribute('data-nik', (k.nik || '').toLowerCase());
+
+            const adjClass = k.adjustment > 0 ? 'text-blue-600' : (k.adjustment < 0 ? 'text-rose-600' : 'text-gray-700');
+
+            tr.innerHTML = `
+                <td class="px-3 py-2 whitespace-nowrap text-gray-500 row-edit-num">${idx + 1}
+                    <input type="hidden" name="karyawans[${idx}][detail_id]" value="${k.detail_id}">
+                    <input type="hidden" name="karyawans[${idx}][karyawan_id]" value="${k.karyawan_id}">
+                    <input type="hidden" name="karyawans[${idx}][jam_lembur]" value="${k.jam_lembur}">
+                    <input type="hidden" name="karyawans[${idx}][nominal_awal]" class="item-nominal-awal-hidden" value="${k.nominal_awal}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <div class="font-bold text-gray-900">${k.nama_lengkap}</div>
+                    <div class="text-[10px] text-gray-500 font-mono flex items-center gap-1.5">
+                        <span>${k.nik}</span>
+                        ${k.total_hari > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">${k.total_hari} Hari</span>` : ''}
+                    </div>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-center">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">
+                        ${k.jam_lembur}
+                    </span>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700 item-nominal-awal" data-val="${k.nominal_awal}">
+                    ${formatRupiahModal(k.nominal_awal)}
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="number" 
+                           name="karyawans[${idx}][adjustment]" 
+                           class="edit-modal-adj-input w-28 px-2 py-1 text-xs border border-gray-300 rounded shadow-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-right font-semibold ${adjClass}" 
+                           value="${Math.round(k.adjustment)}" 
+                           step="1000">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-emerald-600 item-total-akhir" data-val="${k.total_akhir}">
+                    ${formatRupiahModal(k.total_akhir)}
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <input type="text" 
+                           name="karyawans[${idx}][catatan]" 
+                           class="w-full min-w-[120px] px-2 py-1 text-xs border border-gray-300 rounded shadow-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500" 
+                           placeholder="Catatan..." 
+                           value="${k.catatan || ''}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-center">
+                    <button type="button" 
+                            onclick="removeEditModalKaryawan(this)" 
+                            class="p-1 rounded text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors" 
+                            title="Keluarkan Karyawan dari Pranota Ini">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Attach listeners for adjustment inputs
+        attachEditAdjListeners();
+        updateEditModalTotals();
+
+        // Switch modal: hide riwayat, show edit
+        document.getElementById('riwayat-pranota-modal').classList.add('hidden');
+        document.getElementById('edit-pranota-modal').classList.remove('hidden');
+    }
+
+    function attachEditAdjListeners() {
+        document.querySelectorAll('.edit-modal-adj-input').forEach(input => {
+            input.addEventListener('input', function() {
+                const tr = this.closest('tr');
+                const awalTd = tr.querySelector('.item-nominal-awal');
+                const awal = parseFloat(awalTd?.getAttribute('data-val') || 0);
+                const adj = parseFloat(this.value || 0);
+                const akhir = awal + adj;
+
+                const akhirTd = tr.querySelector('.item-total-akhir');
+                if (akhirTd) {
+                    akhirTd.setAttribute('data-val', akhir);
+                    akhirTd.innerText = formatRupiahModal(akhir);
+                }
+
+                this.classList.remove('text-blue-600', 'text-rose-600', 'text-gray-700');
+                if (adj > 0) this.classList.add('text-blue-600');
+                else if (adj < 0) this.classList.add('text-rose-600');
+                else this.classList.add('text-gray-700');
+
+                updateEditModalTotals();
+            });
+        });
+    }
+
+    function updateEditModalTotals() {
+        const rows = document.querySelectorAll('#edit-modal-items-tbody tr.row-item-edit');
+        let totalAwal = 0;
+        let totalAdj = 0;
+        let totalAkhir = 0;
+        let count = 0;
+
+        rows.forEach((row, idx) => {
+            count++;
+            const numCell = row.querySelector('.row-edit-num');
+            if (numCell) {
+                numCell.childNodes[0].nodeValue = (count) + ' ';
+                const inputs = numCell.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.name = input.name.replace(/karyawans\[\d+\]/, `karyawans[${idx}]`);
+                });
+            }
+
+            const adjInput = row.querySelector('.edit-modal-adj-input');
+            if (adjInput) {
+                adjInput.name = `karyawans[${idx}][adjustment]`;
+            }
+
+            const catatanInput = row.querySelector('input[name*="[catatan]"]');
+            if (catatanInput) {
+                catatanInput.name = `karyawans[${idx}][catatan]`;
+            }
+
+            const awal = parseFloat(row.querySelector('.item-nominal-awal')?.getAttribute('data-val') || 0);
+            const adj = parseFloat(adjInput?.value || 0);
+            const akhir = awal + adj;
+
+            totalAwal += awal;
+            totalAdj += adj;
+            totalAkhir += akhir;
+        });
+
+        // Update tfoot
+        const tfootAwal = document.getElementById('edit-tfoot-nominal-awal');
+        if (tfootAwal) tfootAwal.innerText = formatRupiahModal(totalAwal);
+
+        const tfootAdj = document.getElementById('edit-tfoot-adjustment');
+        if (tfootAdj) tfootAdj.innerText = (totalAdj > 0 ? '+' : '') + formatRupiahModal(totalAdj);
+
+        const tfootAkhir = document.getElementById('edit-tfoot-total-akhir');
+        if (tfootAkhir) tfootAkhir.innerText = formatRupiahModal(totalAkhir);
+
+        // Update count header
+        const countInfo = document.getElementById('edit-karyawan-count-info');
+        if (countInfo) countInfo.innerText = `(${count} Karyawan)`;
+
+        // Disable save button if empty
+        const saveBtn = document.getElementById('btn-save-edit-pranota');
+        if (saveBtn) {
+            saveBtn.disabled = count === 0;
+            if (count === 0) {
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    }
+
+    function removeEditModalKaryawan(btn) {
+        const rows = document.querySelectorAll('#edit-modal-items-tbody tr.row-item-edit');
+        if (rows.length <= 1) {
+            alert('Pranota minimal harus memiliki 1 karyawan. Jika ingin menghapus seluruh pranota, gunakan tombol Hapus Pranota di tabel riwayat.');
+            return;
+        }
+
+        const tr = btn.closest('tr');
+        const nama = tr.querySelector('td:nth-child(2) .font-bold')?.innerText || 'karyawan ini';
+        if (confirm(`Apakah Anda yakin ingin mengeluarkan ${nama} dari pranota ini?`)) {
+            tr.remove();
+            updateEditModalTotals();
+        }
+    }
+
+    function filterEditModalTable() {
+        const q = (document.getElementById('edit-table-search-input').value || '').toLowerCase().trim();
+        const rows = document.querySelectorAll('#edit-modal-items-tbody tr.row-item-edit');
+        rows.forEach(row => {
+            const nama = row.getAttribute('data-nama') || '';
+            const nik = row.getAttribute('data-nik') || '';
+            row.style.display = (!q || nama.includes(q) || nik.includes(q)) ? '' : 'none';
+        });
+    }
+
+    function closeEditPranotaModal() {
+        document.getElementById('edit-pranota-modal').classList.add('hidden');
+        document.getElementById('riwayat-pranota-modal').classList.remove('hidden');
+    }
+    // --- END LOGIKA EDIT PRANOTA MODAL ---
+
     const grupMap = @json($grupMap ?? []);
     const oldSubGrup = '{{ request('sub_grup') }}';
     const oldGrup = '{{ request('grup') }}';
@@ -1448,6 +1884,36 @@
         if (oldSubGrupBpjs) {
             document.getElementById('sub_grup_bpjs').value = oldSubGrupBpjs;
         }
+
+        // Live instant table search
+        const quickKaryawanInput = document.getElementById('quick-karyawan-search');
+        function filterTableKaryawan(val) {
+            const query = (val || '').toLowerCase().trim();
+            const rows = document.querySelectorAll('.data-row-karyawan');
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const nama = row.getAttribute('data-nama') || '';
+                const nik = row.getAttribute('data-nik') || '';
+                const panggilan = row.getAttribute('data-panggilan') || '';
+                const isMatch = !query || nama.includes(query) || nik.includes(query) || panggilan.includes(query);
+                row.style.display = isMatch ? '' : 'none';
+                if (isMatch) visibleCount++;
+            });
+            const countText = document.getElementById('karyawan-count-text');
+            if (countText) {
+                countText.innerText = query ? `Menampilkan ${visibleCount} dari ${rows.length} karyawan.` : `Ditemukan ${rows.length} karyawan.`;
+            }
+        }
+
+        if (quickKaryawanInput) {
+            quickKaryawanInput.addEventListener('input', function() {
+                filterTableKaryawan(this.value);
+            });
+        }
+
+        @if(session('open_riwayat') || request('open_riwayat'))
+            openRiwayatPranotaModal();
+        @endif
     });
 </script>
 @endpush

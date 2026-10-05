@@ -39,6 +39,19 @@ class PranotaLemburKaryawanController extends Controller
         return view('pranota-lembur-karyawan.show', compact('pranota'));
     }
 
+    public function edit($id)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::with(['karyawans.karyawan', 'pranotaPuml'])
+            ->findOrFail($id);
+
+        if ($pranota->pranota_puml_id && in_array(optional($pranota->pranotaPuml)->status, ['approved', 'paid'])) {
+            return redirect()->route('pranota-lembur-karyawan.show', $id)
+                ->with('error', 'Pranota tidak dapat diedit karena PUML induk sudah ' . $pranota->pranotaPuml->status . '.');
+        }
+
+        return view('pranota-lembur-karyawan.edit', compact('pranota'));
+    }
+
     public function export($id)
     {
         $pranota = \App\Models\PranotaLemburKaryawanHeader::with(['creator', 'karyawans.karyawan'])
@@ -157,6 +170,126 @@ class PranotaLemburKaryawanController extends Controller
             \Illuminate\Support\Facades\DB::rollBack();
 
             return back()->with('error', 'Gagal menyimpan Pranota Lembur: '.$e->getMessage());
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::findOrFail($id);
+
+        if ($pranota->pranota_puml_id) {
+            $puml = \App\Models\PranotaPuml::find($pranota->pranota_puml_id);
+            if ($puml && in_array($puml->status, ['approved', 'paid'])) {
+                return back()->with('error', 'Pranota tidak dapat diedit karena PUML induk sudah '.$puml->status.'.');
+            }
+        }
+
+        $validated = $request->validate([
+            'tanggal_pranota' => 'required|date',
+            'periode_mulai' => 'nullable|date',
+            'periode_selesai' => 'nullable|date',
+            'karyawans' => 'required|array|min:1',
+            'karyawans.*.detail_id' => 'nullable',
+            'karyawans.*.karyawan_id' => 'required|integer',
+            'karyawans.*.jam_lembur' => 'nullable|string',
+            'karyawans.*.nominal_awal' => 'required|numeric',
+            'karyawans.*.adjustment' => 'nullable|numeric',
+            'karyawans.*.catatan' => 'nullable|string',
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $submittedDetailIds = [];
+            $totalBiaya = 0;
+            $totalAdjustment = 0;
+
+            foreach ($validated['karyawans'] as $itemData) {
+                $detailId = $itemData['detail_id'] ?? null;
+                $nominalAwal = (float) ($itemData['nominal_awal'] ?? 0);
+                $adj = (float) ($itemData['adjustment'] ?? 0);
+                $totalAkhir = $nominalAwal + $adj;
+
+                $totalBiaya += $nominalAwal;
+                $totalAdjustment += $adj;
+
+                if ($detailId) {
+                    $detail = \App\Models\PranotaLemburKaryawan::where('pranota_lembur_karyawan_header_id', $pranota->id)
+                        ->where('id', $detailId)
+                        ->first();
+                    if ($detail) {
+                        $detail->update([
+                            'nominal_awal' => $nominalAwal,
+                            'adjustment' => $adj,
+                            'total_akhir' => $totalAkhir,
+                            'catatan' => $itemData['catatan'] ?? null,
+                        ]);
+                        $submittedDetailIds[] = $detail->id;
+                    }
+                } else {
+                    $newDetail = \App\Models\PranotaLemburKaryawan::create([
+                        'pranota_lembur_karyawan_header_id' => $pranota->id,
+                        'karyawan_id' => $itemData['karyawan_id'],
+                        'periode_mulai' => $validated['periode_mulai'] ?? $pranota->periode_mulai,
+                        'periode_selesai' => $validated['periode_selesai'] ?? $pranota->periode_selesai,
+                        'jam_lembur' => $itemData['jam_lembur'] ?? '0 Jam',
+                        'nominal_awal' => $nominalAwal,
+                        'adjustment' => $adj,
+                        'total_akhir' => $totalAkhir,
+                        'catatan' => $itemData['catatan'] ?? null,
+                    ]);
+                    $submittedDetailIds[] = $newDetail->id;
+                }
+            }
+
+            // Hapus karyawan yang dikeluarkan dari pranota
+            if (!empty($submittedDetailIds)) {
+                \App\Models\PranotaLemburKaryawan::where('pranota_lembur_karyawan_header_id', $pranota->id)
+                    ->whereNotIn('id', $submittedDetailIds)
+                    ->delete();
+            }
+
+            $totalSetelahAdjustment = $totalBiaya + $totalAdjustment;
+
+            $pranota->update([
+                'tanggal_pranota' => $validated['tanggal_pranota'],
+                'periode_mulai' => $validated['periode_mulai'] ?? $pranota->periode_mulai,
+                'periode_selesai' => $validated['periode_selesai'] ?? $pranota->periode_selesai,
+                'total_biaya' => $totalBiaya,
+                'adjustment' => $totalAdjustment,
+                'total_setelah_adjustment' => $totalSetelahAdjustment,
+                'updated_by' => auth()->id(),
+            ]);
+
+            // Sync PUML jika terhubung
+            if ($pranota->pranota_puml_id) {
+                $puml = \App\Models\PranotaPuml::find($pranota->pranota_puml_id);
+                if ($puml) {
+                    $sumLembur = \App\Models\PranotaLemburKaryawanHeader::where('pranota_puml_id', $puml->id)->sum('total_setelah_adjustment');
+                    $puml->update([
+                        'total_lembur' => $sumLembur,
+                        'grand_total' => $puml->total_uang_makan + $sumLembur,
+                    ]);
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            if ($request->input('_redirect_to') === 'show') {
+                return redirect()->route('pranota-lembur-karyawan.show', $pranota->id)
+                    ->with('success', 'Pranota lembur '.$pranota->nomor_pranota.' berhasil diperbarui.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Pranota lembur '.$pranota->nomor_pranota.' berhasil diperbarui.')
+                ->with('open_riwayat', true);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui pranota lembur: '.$e->getMessage())
+                ->with('open_riwayat', true);
         }
     }
 

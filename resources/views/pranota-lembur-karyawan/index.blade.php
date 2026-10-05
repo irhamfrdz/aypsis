@@ -129,6 +129,9 @@
                                     <a href="{{ route('pranota-lembur-karyawan.show', $pranota->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors" title="Lihat Detail">
                                         <i class="fas fa-eye mr-1"></i> Detail
                                     </a>
+                                    <a href="{{ route('pranota-lembur-karyawan.edit', $pranota->id) }}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-md transition-colors" title="Edit Pranota">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </a>
                                     <a href="{{ route('pranota-lembur-karyawan.export', $pranota->id) }}" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-md transition-colors" title="Download Excel">
                                         <i class="fas fa-file-excel mr-1"></i> Excel
                                     </a>

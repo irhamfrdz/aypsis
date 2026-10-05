@@ -8043,6 +8043,8 @@ Route::middleware(['auth',
     Route::get('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'index'])->name('pranota-lembur-karyawan.index')->middleware('can:payroll-view');
     Route::post('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'store'])->name('pranota-lembur-karyawan.store')->middleware('can:payroll-perhitungan-lembur-create');
     Route::get('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'show'])->name('pranota-lembur-karyawan.show')->middleware('can:payroll-view');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}/edit', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'edit'])->name('pranota-lembur-karyawan.edit')->middleware('can:payroll-view');
+    Route::put('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'update'])->name('pranota-lembur-karyawan.update')->middleware('can:payroll-view');
     Route::get('/payroll/pranota-lembur-karyawan/{id}/export', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'export'])->name('pranota-lembur-karyawan.export')->middleware('can:payroll-view');
     Route::delete('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'destroy'])->name('pranota-lembur-karyawan.destroy')->middleware('can:payroll-view');
 
