@@ -18,6 +18,80 @@
         width: 100vw !important;
         height: 100vh !important;
         z-index: 9999999 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Modal center containers - memastikan modal selalu berada di dalam viewport */
+    .modal-viewport-wrapper {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }
+
+    /* Modal card / panel yang dibatasi tinggi viewport agar tidak terpotong */
+    #form-edit-pranota,
+    .modal-bounded-card {
+        position: relative !important;
+        pointer-events: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 1250px !important;
+        height: calc(100vh - 32px) !important;
+        max-height: calc(100vh - 32px) !important;
+        margin: auto !important;
+        background-color: #ffffff !important;
+        border-radius: 1rem !important;
+        overflow: hidden !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border: 1px solid #e5e7eb !important;
+    }
+
+    /* Header & Footer Pinned (tidak boleh menyusut / terdorong) */
+    .modal-pinned-header,
+    .modal-pinned-footer {
+        flex-shrink: 0 !important;
+    }
+
+    /* Body scrollable (hanya bagian dalam yang discroll) */
+    .modal-scrollable-body {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Scrollable table container di dalam modal */
+    .modal-table-scroll-container {
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        max-height: 48vh !important;
+        min-height: 160px !important;
+    }
+
+    #table-edit-modal-items thead {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+        background-color: #f9fafb !important;
+    }
+
+    #table-edit-modal-items tfoot {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 10 !important;
+        background-color: #f9fafb !important;
     }
 </style>
 <div class="min-h-screen bg-gray-50 py-6">
@@ -521,22 +595,22 @@
 </div>
 
 <!-- Modal Riwayat Pranota Lembur Saya -->
-<div id="riwayat-pranota-modal" class="fixed inset-0 hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important;">
+<div id="riwayat-pranota-modal" class="fixed inset-0 hidden" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important;">
     <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999989 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
 
-    <!-- Center Container -->
-    <div class="fixed inset-0 overflow-y-auto flex items-center justify-center p-3 sm:p-6" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 9999990 !important; pointer-events: none;">
+    <!-- Center Container (Strictly Viewport-Bounded) -->
+    <div class="modal-viewport-wrapper fixed inset-0 flex items-center justify-center p-2 sm:p-4" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important; pointer-events: none; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; box-sizing: border-box !important;">
         <!-- Modal panel -->
-        <div class="relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 max-h-[92vh] w-full max-w-5xl xl:max-w-6xl" style="position: relative !important; z-index: 9999990 !important; pointer-events: auto;">
-            <!-- Header -->
-            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <div class="modal-bounded-card relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 w-full" style="position: relative !important; z-index: 9999990 !important; pointer-events: auto !important; width: 100% !important; max-width: 1250px !important; height: calc(100vh - 32px) !important; max-height: calc(100vh - 32px) !important; display: flex !important; flex-direction: column !important; margin: auto !important;">
+            <!-- Header (Pinned at Top) -->
+            <div class="modal-pinned-header bg-white px-5 sm:px-6 py-3.5 border-b border-gray-100 flex justify-between items-center shrink-0" style="flex-shrink: 0 !important;">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-50 p-2.5 rounded-xl text-blue-600">
                         <i class="fas fa-clock-rotate-left text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Lembur</h3>
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Lembur</h3>
                         <p class="text-xs text-gray-500">Daftar semua pranota lembur karyawan yang telah dibuat di sistem</p>
                     </div>
                 </div>
@@ -551,8 +625,8 @@
                 </div>
             </div>
 
-            <!-- Body -->
-            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+            <!-- Body (Scrollable Middle Section) -->
+            <div class="modal-scrollable-body bg-white px-5 sm:px-6 py-4 flex-1 overflow-y-auto space-y-4" style="flex: 1 1 0% !important; min-height: 0 !important; overflow-y: auto !important;">
                 <!-- Summary Stats Bar -->
                 @php
                     $totalPranota = isset($riwayatPranotaUser) ? $riwayatPranotaUser->count() : 0;
@@ -603,8 +677,8 @@
                 </div>
 
                 <!-- Table -->
-                <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto max-h-[50vh]">
+                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
+                    <div class="modal-table-scroll-container overflow-x-auto overflow-y-auto" style="overflow-x: auto !important; overflow-y: auto !important; max-height: 48vh !important; min-height: 160px !important;">
                         <table class="min-w-full divide-y divide-gray-200" id="table-riwayat-pranota">
                             <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
@@ -750,8 +824,8 @@
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+            <!-- Footer (Pinned at Bottom) -->
+            <div class="modal-pinned-footer bg-gray-50 px-5 sm:px-6 py-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0" style="flex-shrink: 0 !important;">
                 <a href="{{ route('pranota-lembur-karyawan.index') }}" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium">
                     <i class="fas fa-list-ul"></i>
                     <span>Buka Semua Data Pranota Lembur</span>
@@ -765,28 +839,28 @@
 </div>
 
 <!-- Modal Edit Pranota Lembur -->
-<div id="edit-pranota-modal" class="fixed inset-0 hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important;">
+<div id="edit-pranota-modal" class="fixed inset-0 hidden" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important;">
     <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999998 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
 
-    <!-- Center Container -->
-    <div class="fixed inset-0 overflow-y-auto flex items-center justify-center p-3 sm:p-6" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 9999999 !important; pointer-events: none;">
+    <!-- Center Container (Strictly Viewport-Bounded) -->
+    <div class="modal-viewport-wrapper fixed inset-0 flex items-center justify-center p-2 sm:p-4" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important; pointer-events: none; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; box-sizing: border-box !important;">
         <!-- Modal panel -->
-        <form id="form-edit-pranota" method="POST" action="" class="relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 w-full max-w-6xl xl:max-w-7xl max-h-[92vh]" style="position: relative !important; z-index: 9999999 !important; pointer-events: auto;">
+        <form id="form-edit-pranota" method="POST" action="" class="modal-bounded-card relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 w-full" style="position: relative !important; z-index: 9999999 !important; pointer-events: auto !important; width: 100% !important; max-width: 1250px !important; height: calc(100vh - 32px) !important; max-height: calc(100vh - 32px) !important; display: flex !important; flex-direction: column !important; margin: auto !important;">
             @csrf
             @method('PUT')
             <input type="hidden" name="periode_mulai" id="edit_periode_mulai" value="">
             <input type="hidden" name="periode_selesai" id="edit_periode_selesai" value="">
 
-            <!-- Header -->
-            <div class="bg-white px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shrink-0">
+            <!-- Header (Pinned at Top) -->
+            <div class="modal-pinned-header bg-white px-5 sm:px-6 py-3.5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shrink-0" style="flex-shrink: 0 !important;">
                 <div class="flex items-center gap-3">
                     <div class="bg-amber-50 p-2.5 rounded-xl text-amber-600 shadow-2xs">
                         <i class="fas fa-edit text-xl"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-lg font-bold text-gray-900" id="modal-edit-title">Edit Pranota Lembur</h3>
+                            <h3 class="text-base sm:text-lg font-bold text-gray-900" id="modal-edit-title">Edit Pranota Lembur</h3>
                             <span id="edit-badge-nomor-pranota" class="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200"></span>
                         </div>
                         <p class="text-xs text-gray-500">Perbarui tanggal pranota, nilai adjustment karyawan, catatan, atau sinkronkan jam absensi terkini</p>
@@ -811,26 +885,26 @@
                 </div>
             </div>
 
-            <!-- Body -->
-            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+            <!-- Body (Scrollable Middle Section) -->
+            <div class="modal-scrollable-body bg-white px-5 sm:px-6 py-4 flex-1 overflow-y-auto space-y-4" style="flex: 1 1 0% !important; min-height: 0 !important; overflow-y: auto !important;">
                 <!-- Notification / Alert Box untuk Sinkronisasi Jam Absensi -->
                 <div id="edit-modal-refresh-alert" class="hidden p-3.5 rounded-xl text-xs flex items-center justify-between transition-all"></div>
                 <!-- Info Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                         <label class="block text-xs font-semibold text-gray-700 mb-1">
                             Tanggal Pranota <span class="text-red-500">*</span>
                         </label>
                         <input type="date" name="tanggal_pranota" id="edit_tanggal_pranota" required
                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 shadow-xs">
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                         <label class="block text-xs font-semibold text-gray-500 mb-1">Periode Perhitungan</label>
                         <div class="text-xs font-semibold text-gray-800 flex items-center gap-1.5 mt-1" id="edit-periode-text">
                             -
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                         <label class="block text-xs font-semibold text-gray-500 mb-1">Status Pranota</label>
                         <div class="mt-1" id="edit-status-badge">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Draft</span>
@@ -839,7 +913,7 @@
                 </div>
 
                 <!-- Table Header & Search -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                     <div class="flex items-center gap-2">
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Daftar Karyawan di Pranota Ini</h4>
                         <span class="text-xs text-gray-500" id="edit-karyawan-count-info">(0 Karyawan)</span>
@@ -853,10 +927,10 @@
                 </div>
 
                 <!-- Items Table -->
-                <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto max-h-[46vh]">
+                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
+                    <div class="modal-table-scroll-container overflow-x-auto overflow-y-auto" style="overflow-x: auto !important; overflow-y: auto !important; max-height: 48vh !important; min-height: 160px !important;">
                         <table class="min-w-full divide-y divide-gray-200" id="table-edit-modal-items">
-                            <thead class="bg-gray-50 sticky top-0 z-10 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            <thead class="bg-gray-50 sticky top-0 z-10 text-[11px] font-bold text-gray-500 uppercase tracking-wider shadow-xs" style="position: sticky !important; top: 0 !important; z-index: 10 !important; background-color: #f9fafb !important;">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-left w-10">No</th>
                                     <th scope="col" class="px-3 py-2 text-left">Karyawan</th>
@@ -871,7 +945,7 @@
                             <tbody class="bg-white divide-y divide-gray-200 text-xs" id="edit-modal-items-tbody">
                                 <!-- Populated dynamically by openEditPranotaModal(id) -->
                             </tbody>
-                            <tfoot class="bg-gray-50 border-t border-gray-200 font-bold text-xs text-gray-900 sticky bottom-0">
+                            <tfoot class="bg-gray-50 border-t-2 border-gray-200 font-bold text-xs text-gray-900 sticky bottom-0 z-10 shadow-xs" style="position: sticky !important; bottom: 0 !important; z-index: 10 !important; background-color: #f9fafb !important;">
                                 <tr>
                                     <td colspan="3" class="px-3 py-2.5 text-right">TOTAL:</td>
                                     <td class="px-3 py-2.5 text-right" id="edit-tfoot-nominal-awal">Rp 0</td>
@@ -885,8 +959,8 @@
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+            <!-- Footer (Pinned at Bottom) -->
+            <div class="modal-pinned-footer bg-gray-50 px-5 sm:px-6 py-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0" style="flex-shrink: 0 !important;">
                 <div class="text-xs text-gray-500 flex items-center gap-1.5">
                     <i class="fas fa-info-circle text-blue-500"></i>
                     <span>Karyawan yang dihapus akan kembali berstatus belum pranota.</span>
