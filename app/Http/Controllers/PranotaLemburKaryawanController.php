@@ -219,6 +219,7 @@ class PranotaLemburKaryawanController extends Controller
                         ->first();
                     if ($detail) {
                         $detail->update([
+                            'jam_lembur' => $itemData['jam_lembur'] ?? $detail->jam_lembur,
                             'nominal_awal' => $nominalAwal,
                             'adjustment' => $adj,
                             'total_akhir' => $totalAkhir,
@@ -291,6 +292,61 @@ class PranotaLemburKaryawanController extends Controller
                 ->with('error', 'Gagal memperbarui pranota lembur: '.$e->getMessage())
                 ->with('open_riwayat', true);
         }
+    }
+
+    public function refreshAttendance(Request $request, $id)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::with(['karyawans.karyawan'])->findOrFail($id);
+
+        $startDateStr = $pranota->periode_mulai ? $pranota->periode_mulai->toDateString() : $pranota->tanggal_pranota->copy()->startOfMonth()->toDateString();
+        $endDateStr = $pranota->periode_selesai ? $pranota->periode_selesai->toDateString() : $pranota->tanggal_pranota->copy()->endOfMonth()->toDateString();
+
+        $karyawanIds = $pranota->karyawans->pluck('karyawan_id')->unique()->filter()->values()->toArray();
+
+        $recalculated = \App\Http\Controllers\PerhitunganLemburController::calculateAttendanceForKaryawans(
+            $karyawanIds,
+            $startDateStr,
+            $endDateStr
+        );
+
+        $results = [];
+        foreach ($pranota->karyawans as $detail) {
+            $kId = $detail->karyawan_id;
+            $calc = $recalculated[$kId] ?? null;
+
+            if ($calc) {
+                $results[] = [
+                    'detail_id' => $detail->id,
+                    'karyawan_id' => $kId,
+                    'jam_lembur' => $calc['jam_lembur'],
+                    'total_jam' => $calc['total_jam'],
+                    'nominal_awal' => $calc['nominal_awal'],
+                    'nominal_lembur' => $calc['nominal_lembur'],
+                    'uang_makan_lembur' => $calc['uang_makan_lembur'],
+                    'total_hari' => $calc['total_hari'],
+                    'tanggal_lembur' => $calc['tanggal_lembur'],
+                ];
+            } else {
+                $results[] = [
+                    'detail_id' => $detail->id,
+                    'karyawan_id' => $kId,
+                    'jam_lembur' => '0 Jam',
+                    'total_jam' => 0,
+                    'nominal_awal' => 0,
+                    'nominal_lembur' => 0,
+                    'uang_makan_lembur' => 0,
+                    'total_hari' => 0,
+                    'tanggal_lembur' => [],
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil menyinkronkan data absensi untuk '.count($results).' karyawan.',
+            'periode' => $startDateStr.' s/d '.$endDateStr,
+            'data' => $results,
+        ]);
     }
 
     public function destroy($id)

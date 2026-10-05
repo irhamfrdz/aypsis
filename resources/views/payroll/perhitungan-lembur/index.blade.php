@@ -167,7 +167,12 @@
                                 Reset
                             </a>
                         @endif
-                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                        <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm cursor-pointer" title="Refresh & sinkronkan ulang perhitungan absensi terkini">
+                            <i class="fas fa-sync-alt mr-1.5"></i>
+                            Refresh Data
+                        </button>
+                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm cursor-pointer">
+                            <i class="fas fa-filter mr-1.5"></i>
                             Filter Rekap
                         </button>
                     </div>
@@ -184,6 +189,10 @@
                     <p class="text-xs text-gray-500 mt-1" id="karyawan-count-text">Ditemukan {{ count($rekapData) }} karyawan.</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 text-xs font-semibold rounded-lg transition-colors duration-200 shadow-2xs cursor-pointer" title="Muat ulang kalkulasi data absensi">
+                        <i class="fas fa-sync-alt text-xs mr-1 text-emerald-600"></i>
+                        Refresh
+                    </button>
                     <div class="relative w-48 sm:w-64">
                         <input type="text" id="quick-karyawan-search" placeholder="Cari cepat nama/NIK di tabel..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
@@ -353,14 +362,14 @@
 </div>
 
 {{-- Modal Masukkan Pranota --}}
-<div id="pranota-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div id="pranota-modal" class="fixed inset-0 z-[99999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closePranotaModal()"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closePranotaModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <!-- Modal panel -->
-        <form action="{{ route('pranota-lembur-karyawan.store') }}" method="POST" id="form-payout" class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+        <form action="{{ route('pranota-lembur-karyawan.store') }}" method="POST" id="form-payout" class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
             @csrf
             <input type="hidden" name="periode_mulai" value="{{ $startDateStr }}">
             <input type="hidden" name="periode_selesai" value="{{ $endDateStr }}">
@@ -455,11 +464,11 @@
 </div>
 
 <!-- Modal Detail -->
-<div id="detailModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div id="detailModal" class="fixed inset-0 z-[99999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+        <div class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
             <div class="bg-white px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-indigo-100 text-indigo-600">
@@ -496,14 +505,14 @@
 </div>
 
 <!-- Modal Riwayat Pranota Lembur Saya -->
-<div id="riwayat-pranota-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
+<div id="riwayat-pranota-modal" class="fixed inset-0 z-[99999] hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
         <!-- Modal panel -->
-        <div class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl xl:max-w-6xl sm:w-full border border-gray-200 max-h-[90vh]">
+        <div class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl xl:max-w-6xl sm:w-full border border-gray-200 max-h-[90vh]">
             <!-- Header -->
             <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
@@ -740,23 +749,23 @@
 </div>
 
 <!-- Modal Edit Pranota Lembur -->
-<div id="edit-pranota-modal" class="fixed inset-0 z-[110] hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true">
+<div id="edit-pranota-modal" class="fixed inset-0 z-[100000] hidden overflow-y-auto" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" aria-hidden="true" onclick="closeEditPranotaModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
         <!-- Modal panel -->
-        <form id="form-edit-pranota" method="POST" action="" class="inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-200 max-h-[90vh]">
+        <form id="form-edit-pranota" method="POST" action="" class="relative z-10 inline-flex flex-col align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-200 max-h-[90vh]">
             @csrf
             @method('PUT')
             <input type="hidden" name="periode_mulai" id="edit_periode_mulai" value="">
             <input type="hidden" name="periode_selesai" id="edit_periode_selesai" value="">
 
             <!-- Header -->
-            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-50 p-2.5 rounded-xl text-amber-600">
+                    <div class="bg-amber-50 p-2.5 rounded-xl text-amber-600 shadow-2xs">
                         <i class="fas fa-edit text-xl"></i>
                     </div>
                     <div>
@@ -764,10 +773,18 @@
                             <h3 class="text-lg font-bold text-gray-900" id="modal-edit-title">Edit Pranota Lembur</h3>
                             <span id="edit-badge-nomor-pranota" class="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200"></span>
                         </div>
-                        <p class="text-xs text-gray-500">Perbarui tanggal pranota, nilai adjustment karyawan, catatan, atau hapus karyawan dari pranota ini</p>
+                        <p class="text-xs text-gray-500">Perbarui tanggal pranota, nilai adjustment karyawan, catatan, atau sinkronkan jam absensi terkini</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end">
+                    <button type="button" 
+                            id="btn-refresh-edit-absensi" 
+                            onclick="refreshAbsensiInEditModal()" 
+                            class="inline-flex items-center text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg transition-all shadow-2xs cursor-pointer active:scale-95" 
+                            title="Sinkronkan ulang jam absensi & nominal awal karyawan dengan data absensi terkini">
+                        <i class="fas fa-sync-alt mr-1.5" id="icon-refresh-edit"></i>
+                        <span>Sinkronkan Jam Absensi</span>
+                    </button>
                     <a id="btn-edit-fullpage" href="#" target="_blank" class="inline-flex items-center text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors border border-amber-200">
                         <i class="fas fa-external-link-alt mr-1.5"></i>
                         Halaman Lengkap
@@ -780,6 +797,8 @@
 
             <!-- Body -->
             <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+                <!-- Notification / Alert Box untuk Sinkronisasi Jam Absensi -->
+                <div id="edit-modal-refresh-alert" class="hidden p-3.5 rounded-xl text-xs flex items-center justify-between transition-all"></div>
                 <!-- Info Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
@@ -1473,6 +1492,7 @@
         const searchInput = document.getElementById('modal-search-input');
         if (searchInput) searchInput.value = '';
 
+        ensureModalsInBody();
         document.getElementById('pranota-modal').classList.remove('hidden');
     }
 
@@ -1489,8 +1509,18 @@
         document.getElementById('pranota-modal').classList.add('hidden');
     }
 
+    function ensureModalsInBody() {
+        ['pranota-modal', 'detailModal', 'riwayat-pranota-modal', 'edit-pranota-modal'].forEach(function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
+    }
+
     // --- LOGIKA RIWAYAT PRANOTA MODAL ---
     function openRiwayatPranotaModal() {
+        ensureModalsInBody();
         document.getElementById('riwayat-pranota-modal').classList.remove('hidden');
     }
 
@@ -1589,11 +1619,23 @@
         return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(val));
     }
 
+    window.currentEditingPranotaId = null;
+
     function openEditPranotaModal(id) {
+        ensureModalsInBody();
         const item = riwayatPranotaData[id];
         if (!item) {
             alert('Data pranota tidak ditemukan.');
             return;
+        }
+
+        window.currentEditingPranotaId = id;
+
+        // Reset alert box
+        const alertBox = document.getElementById('edit-modal-refresh-alert');
+        if (alertBox) {
+            alertBox.classList.add('hidden');
+            alertBox.innerHTML = '';
         }
 
         // Form action
@@ -1644,6 +1686,7 @@
         item.karyawans.forEach((k, idx) => {
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-amber-50/20 transition-colors row-item-edit';
+            tr.setAttribute('data-karyawan-id', k.karyawan_id);
             tr.setAttribute('data-nama', (k.nama_lengkap || '').toLowerCase());
             tr.setAttribute('data-nik', (k.nik || '').toLowerCase());
 
@@ -1653,7 +1696,7 @@
                 <td class="px-3 py-2 whitespace-nowrap text-gray-500 row-edit-num">${idx + 1}
                     <input type="hidden" name="karyawans[${idx}][detail_id]" value="${k.detail_id}">
                     <input type="hidden" name="karyawans[${idx}][karyawan_id]" value="${k.karyawan_id}">
-                    <input type="hidden" name="karyawans[${idx}][jam_lembur]" value="${k.jam_lembur}">
+                    <input type="hidden" name="karyawans[${idx}][jam_lembur]" class="item-jam-lembur-input" value="${k.jam_lembur}">
                     <input type="hidden" name="karyawans[${idx}][nominal_awal]" class="item-nominal-awal-hidden" value="${k.nominal_awal}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap">
@@ -1663,8 +1706,8 @@
                         ${k.total_hari > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">${k.total_hari} Hari</span>` : ''}
                     </div>
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap text-center">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">
+                <td class="px-3 py-2 whitespace-nowrap text-center item-jam-cell">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 badge-jam-lembur">
                         ${k.jam_lembur}
                     </span>
                 </td>
@@ -1691,7 +1734,7 @@
                 <td class="px-3 py-2 whitespace-nowrap text-center">
                     <button type="button" 
                             onclick="removeEditModalKaryawan(this)" 
-                            class="p-1 rounded text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors" 
+                            class="p-1 rounded text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer" 
                             title="Keluarkan Karyawan dari Pranota Ini">
                         <i class="fas fa-trash-alt text-xs"></i>
                     </button>
@@ -1707,6 +1750,142 @@
         // Switch modal: hide riwayat, show edit
         document.getElementById('riwayat-pranota-modal').classList.add('hidden');
         document.getElementById('edit-pranota-modal').classList.remove('hidden');
+    }
+
+    async function refreshAbsensiInEditModal() {
+        if (!window.currentEditingPranotaId) {
+            alert('ID Pranota tidak ditemukan.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-refresh-edit-absensi');
+        const icon = document.getElementById('icon-refresh-edit');
+        const alertBox = document.getElementById('edit-modal-refresh-alert');
+
+        if (btn) btn.disabled = true;
+        if (icon) icon.classList.add('fa-spin');
+
+        try {
+            const response = await fetch(`{{ url('/payroll/pranota-lembur-karyawan') }}/${window.currentEditingPranotaId}/refresh-attendance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Gagal menyinkronkan data absensi.');
+            }
+
+            const dataList = result.data || [];
+            const mapUpdated = {};
+            dataList.forEach(item => {
+                mapUpdated[item.karyawan_id] = item;
+            });
+
+            const rows = document.querySelectorAll('#edit-modal-items-tbody tr.row-item-edit');
+            let changedCount = 0;
+
+            rows.forEach(row => {
+                const kId = parseInt(row.getAttribute('data-karyawan-id') || 0);
+                const updated = mapUpdated[kId];
+
+                if (updated) {
+                    const currentJamInput = row.querySelector('.item-jam-lembur-input');
+                    const currentNominalTd = row.querySelector('.item-nominal-awal');
+                    const currentNominalHidden = row.querySelector('.item-nominal-awal-hidden');
+                    const badgeJam = row.querySelector('.badge-jam-lembur');
+                    const adjInput = row.querySelector('.edit-modal-adj-input');
+                    const totalAkhirTd = row.querySelector('.item-total-akhir');
+
+                    const oldJam = currentJamInput ? currentJamInput.value : '';
+                    const oldNominal = parseFloat(currentNominalTd?.getAttribute('data-val') || 0);
+
+                    const newJam = updated.jam_lembur;
+                    const newNominal = parseFloat(updated.nominal_awal || 0);
+                    const adj = parseFloat(adjInput?.value || 0);
+                    const newTotalAkhir = newNominal + adj;
+
+                    const isChanged = (oldJam !== newJam || Math.round(oldNominal) !== Math.round(newNominal));
+
+                    // Update values
+                    if (badgeJam) badgeJam.innerText = newJam;
+                    if (currentJamInput) currentJamInput.value = newJam;
+
+                    if (currentNominalTd) {
+                        currentNominalTd.setAttribute('data-val', newNominal);
+                        currentNominalTd.innerText = formatRupiahModal(newNominal);
+                    }
+                    if (currentNominalHidden) currentNominalHidden.value = newNominal;
+
+                    if (totalAkhirTd) {
+                        totalAkhirTd.setAttribute('data-val', newTotalAkhir);
+                        totalAkhirTd.innerText = formatRupiahModal(newTotalAkhir);
+                    }
+
+                    if (isChanged) {
+                        changedCount++;
+                        row.classList.add('bg-emerald-100/70', 'transition-colors', 'duration-700');
+                        setTimeout(() => {
+                            row.classList.remove('bg-emerald-100/70');
+                        }, 2500);
+                    }
+                }
+            });
+
+            updateEditModalTotals();
+
+            if (alertBox) {
+                alertBox.className = 'p-3.5 rounded-xl text-xs flex items-center justify-between bg-emerald-50 border border-emerald-200 text-emerald-800 transition-all';
+                alertBox.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Sinkronisasi Absensi Berhasil</div>
+                            <div class="text-[11px] text-emerald-700 mt-0.5">
+                                ${result.message} ${changedCount > 0 ? `<strong>${changedCount} karyawan</strong> mengalami pembaruan jumlah jam/nominal.` : 'Semua jam absensi sudah sesuai dengan data terkini.'}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-500 hover:text-emerald-700 p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                alertBox.classList.remove('hidden');
+            }
+
+        } catch (err) {
+            console.error('Error sinkronisasi absensi:', err);
+            if (alertBox) {
+                alertBox.className = 'p-3.5 rounded-xl text-xs flex items-center justify-between bg-rose-50 border border-rose-200 text-rose-800 transition-all';
+                alertBox.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                            <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Gagal Menyinkronkan Absensi</div>
+                            <div class="text-[11px] text-rose-700 mt-0.5">${err.message}</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-rose-500 hover:text-rose-700 p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                alertBox.classList.remove('hidden');
+            } else {
+                alert('Gagal menyinkronkan jam absensi: ' + err.message);
+            }
+        } finally {
+            if (btn) btn.disabled = false;
+            if (icon) icon.classList.remove('fa-spin');
+        }
     }
 
     function attachEditAdjListeners() {
@@ -1875,6 +2054,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        ensureModalsInBody();
         handleGrupFilterChange();
         if (oldSubGrup) {
             document.getElementById('sub_grup').value = oldSubGrup;

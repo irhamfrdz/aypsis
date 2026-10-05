@@ -628,4 +628,257 @@ class PerhitunganLemburController extends Controller
             'riwayatPranotaUser'
         ));
     }
+
+    public static function calculateAttendanceForKaryawans($karyawanIds, $startDateStr, $endDateStr)
+    {
+        $startDate = Carbon::parse($startDateStr);
+        $endDate = Carbon::parse($endDateStr);
+
+        $karyawanIds = is_array($karyawanIds) ? array_values(array_filter($karyawanIds)) : $karyawanIds->values()->toArray();
+        if (empty($karyawanIds)) {
+            return [];
+        }
+
+        $karyawans = Karyawan::whereIn('id', $karyawanIds)->get();
+
+        $uangMakanMap = \App\Models\UangMakan::whereIn('karyawan_id', $karyawanIds)
+            ->where(function ($q) {
+                $q->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
+                    ->orWhereNull('tipe_karyawan');
+            })
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('karyawan_id')
+            ->map(fn ($items) => (float) $items->first()->nominal);
+
+        $driver = \DB::connection()->getDriverName();
+        $workDateExprAlias = \App\Helpers\AttendanceWorkDate::sql($driver, 'a');
+
+        $lemburStartsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEndsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+        $lemburStartsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEndsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+
+        $workStart = $startDate->copy()->startOfDay();
+        $workEnd = $endDate->copy()->addDays(2)->startOfDay();
+
+        $inner = \DB::table(\DB::raw('absensis a'))
+            ->selectRaw("a.karyawan_id, a.tipe, a.waktu, ($workDateExprAlias) as tanggal")
+            ->whereIn('a.karyawan_id', $karyawanIds)
+            ->where('a.waktu', '>=', $workStart)
+            ->where('a.waktu', '<', $workEnd)
+            ->whereRaw("($lemburStartsSub OR $lemburEndsSub)");
+
+        $attendance = \DB::table(\DB::raw("({$inner->toSql()}) as sub"))
+            ->mergeBindings($inner)
+            ->selectRaw("
+                sub.karyawan_id,
+                sub.tanggal,
+                MIN(CASE WHEN $lemburStartsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_masuk,
+                MAX(CASE WHEN $lemburEndsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_pulang
+            ")
+            ->whereBetween('sub.tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->groupBy('sub.karyawan_id', 'sub.tanggal')
+            ->get()
+            ->groupBy('karyawan_id');
+
+        $uangLemburs = \Illuminate\Support\Facades\Cache::remember('uang_lemburs_with_rules', 600, function () {
+            return UangLembur::with('rules')->get();
+        });
+
+        $hariLiburDates = HariLibur::whereBetween('tanggal', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ])
+            ->pluck('tanggal')
+            ->map(fn ($t) => \Carbon\Carbon::parse($t)->toDateString())
+            ->toArray();
+
+        $dateMetadata = [];
+        $tempCursor = $startDate->copy();
+        while ($tempCursor->lte($endDate)) {
+            $dStr = $tempCursor->toDateString();
+            $isHoliday = $tempCursor->isSunday() || in_array($dStr, $hariLiburDates);
+
+            $dateMetadata[$dStr] = [
+                'date' => $dStr,
+                'is_holiday' => $isHoliday,
+                'is_saturday' => $tempCursor->isSaturday(),
+                'tipe_hari' => $isHoliday ? 'Hari Libur' : 'Hari Biasa',
+            ];
+            $tempCursor->addDay();
+        }
+
+        $results = [];
+
+        foreach ($karyawans as $karyawan) {
+            $logs = $attendance->get($karyawan->id);
+            if (! $logs || $logs->isEmpty()) {
+                $results[$karyawan->id] = [
+                    'karyawan_id' => $karyawan->id,
+                    'total_jam' => 0,
+                    'jam_lembur' => '0 Jam',
+                    'nominal_lembur' => 0,
+                    'uang_makan_lembur' => 0,
+                    'nominal_awal' => 0,
+                    'total_hari' => 0,
+                    'tanggal_lembur' => [],
+                ];
+                continue;
+            }
+
+            $matchingUangLemburs = [];
+            if (is_array($karyawan->grup)) {
+                foreach ($karyawan->grup as $grupStr) {
+                    $parts = explode(':', $grupStr);
+                    if (count($parts) >= 2 && trim(strtoupper($parts[0])) === 'LEMBUR') {
+                        $group = trim(strtoupper($parts[0]));
+                        $sub_group = trim(strtoupper($parts[1]));
+
+                        $ul = $uangLemburs->first(function ($item) use ($group, $sub_group) {
+                            return strtoupper($item->group) === $group && strtoupper($item->sub_group) === $sub_group;
+                        });
+
+                        if ($ul) {
+                            $matchingUangLemburs[] = $ul;
+                        }
+                    }
+                }
+            }
+
+            $totalJamHariBiasa = 0;
+            $totalJamHariLibur = 0;
+            $totalNominal = 0;
+            $totalUangMakanLembur = 0;
+            $datesList = [];
+
+            $sortedLogs = $logs->sortBy('tanggal');
+
+            foreach ($sortedLogs as $dayLog) {
+                $dateStr = $dayLog->tanggal;
+                if (! isset($dateMetadata[$dateStr])) {
+                    continue;
+                }
+
+                if (! $dayLog->waktu_lembur_masuk || ! $dayLog->waktu_lembur_pulang) {
+                    continue;
+                }
+
+                $meta = $dateMetadata[$dateStr];
+                $isHoliday = $meta['is_holiday'];
+                $tipeHari = $meta['tipe_hari'];
+
+                $lm = Carbon::parse($dayLog->waktu_lembur_masuk);
+                $lp = Carbon::parse($dayLog->waktu_lembur_pulang);
+
+                if ($lp < $lm) {
+                    $lp->addDay();
+                }
+
+                $durationMinutes = $lm->diffInMinutes($lp);
+                $durasiJam = (int) ceil($durationMinutes / 60);
+
+                if ($durasiJam > 24) {
+                    $durasiJam = 24;
+                }
+
+                $lpEvaluation = $lp->copy();
+                if ($meta['is_saturday'] && ! $isHoliday && $lpEvaluation->hour == 17) {
+                    $lpEvaluation->setTime(18, 0, 0);
+                }
+
+                $nominalHariIni = 0;
+
+                foreach ($matchingUangLemburs as $ul) {
+                    $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
+
+                    foreach ($ul->rules as $rule) {
+                        if ($rule->tipe_hari === $tipeHari) {
+                            $matchesTime = false;
+
+                            if ($tipeHari === 'Hari Libur' && ! $isPelabuhan1) {
+                                if ($rule->is_sampai_selesai) {
+                                    if ($durasiJam > 10) {
+                                        $matchesTime = true;
+                                    }
+                                } else {
+                                    if ($durasiJam <= 10) {
+                                        $matchesTime = true;
+                                    }
+                                }
+                            } else {
+                                if ($rule->jam_mulai) {
+                                    $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
+
+                                    if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                        $ruleMulai->addDay();
+                                    }
+
+                                    if ($rule->is_sampai_selesai) {
+                                        if ($lpEvaluation >= $ruleMulai) {
+                                            $matchesTime = true;
+                                        }
+                                    } elseif ($rule->jam_selesai) {
+                                        $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d').' '.$rule->jam_selesai);
+                                        if ($ruleSelesai < $ruleMulai) {
+                                            $ruleSelesai->addDay();
+                                        }
+
+                                        if ($lpEvaluation >= $ruleMulai && $lpEvaluation <= $ruleSelesai) {
+                                            $matchesTime = true;
+                                        }
+                                    }
+                                } else {
+                                    $matchesTime = true;
+                                }
+                            }
+
+                            if ($matchesTime) {
+                                if (strtolower(trim($rule->satuan)) === 'jam' || strtolower(trim($rule->satuan)) === 'per jam') {
+                                    $nominalHariIni = $durasiJam * $rule->nominal;
+                                } else {
+                                    $nominalHariIni = $rule->nominal;
+                                }
+                                break 2;
+                            }
+                        }
+                    }
+                }
+
+                if ($isHoliday) {
+                    $totalJamHariLibur += $durasiJam;
+                    $baseUangMakan = $uangMakanMap->get($karyawan->id) ?? (float) ($karyawan->nominal_uang_makan ?? 0);
+                    $pengaliUangMakan = 1.0;
+                    if (! empty($matchingUangLemburs)) {
+                        $pengaliUangMakan = (float) ($matchingUangLemburs[0]->pengali_uang_makan_hari_libur ?? 1);
+                    }
+                    $nominalUangMakanLembur = $baseUangMakan * $pengaliUangMakan;
+                    $totalUangMakanLembur += $nominalUangMakanLembur;
+                } else {
+                    $totalJamHariBiasa += $durasiJam;
+                    $nominalUangMakanLembur = 0;
+                }
+
+                $totalNominal += $nominalHariIni;
+                $datesList[] = $dateStr;
+            }
+
+            $totalJam = $totalJamHariBiasa + $totalJamHariLibur;
+            $grandTotal = $totalNominal + $totalUangMakanLembur;
+
+            $results[$karyawan->id] = [
+                'karyawan_id' => $karyawan->id,
+                'total_jam' => $totalJam,
+                'jam_lembur' => $totalJam . ' Jam',
+                'nominal_lembur' => $totalNominal,
+                'uang_makan_lembur' => $totalUangMakanLembur,
+                'nominal_awal' => $grandTotal,
+                'total_hari' => count($datesList),
+                'tanggal_lembur' => array_values(array_unique($datesList)),
+            ];
+        }
+
+        return $results;
+    }
 }
