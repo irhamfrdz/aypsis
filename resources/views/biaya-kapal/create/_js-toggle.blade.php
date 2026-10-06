@@ -1746,20 +1746,16 @@
             voyageWrapper.classList.add('hidden');
             blWrapper.classList.add('hidden');
 
-            if (penerimaWrapper) penerimaWrapper.classList.add('hidden');
-            if (penerimaInput) {
-                penerimaInput.removeAttribute('required');
-                penerimaInput.value = '';
+            if (penerimaWrapper) {
+                penerimaWrapper.classList.remove('hidden');
+                if (penerimaInput) penerimaInput.setAttribute('required', 'required');
             }
+            if (nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if (bankIdWrapper) bankIdWrapper.classList.remove('hidden');
             if (namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
                 const vendorInput = document.getElementById('nama_vendor');
                 if (vendorInput) vendorInput.value = '';
-            }
-            if (nomorRekeningWrapper) {
-                nomorRekeningWrapper.classList.add('hidden');
-                const rekInput = document.getElementById('nomor_rekening');
-                if (rekInput) rekInput.value = '';
             }
 
             // Set nominal input readonly as it will be auto-calculated from klaim
