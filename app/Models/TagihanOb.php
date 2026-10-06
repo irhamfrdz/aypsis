@@ -23,6 +23,7 @@ class TagihanOb extends Model
         'status_kontainer', // full atau empty
         'is_combo',
         'is_ckls_mobil_panjang',
+        'is_zona_mobil_panjang',
         'biaya',
         'dp',
         'size_kontainer',
@@ -37,6 +38,7 @@ class TagihanOb extends Model
         'dp' => 'float',
         'is_combo' => 'boolean',
         'is_ckls_mobil_panjang' => 'boolean',
+        'is_zona_mobil_panjang' => 'boolean',
     ];
 
     /**

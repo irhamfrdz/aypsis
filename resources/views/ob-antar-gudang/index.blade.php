@@ -482,7 +482,7 @@
                                     <select name="gudang_id" id="modal_gudang_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Asal--</option>
                                         @foreach($gudangs as $g)
-                                            <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            <option value="{{ $g->id }}" data-is-zona="{{ str_contains(mb_strtolower($g->nama_gudang), 'zona') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -523,6 +523,14 @@
                                         <span>CKLS menggunakan mobil panjang</span>
                                     </label>
                                     <p class="mt-1 pl-6 text-[10px] text-blue-700">Jika dicentang, nominal OB menjadi Rp 250.000.</p>
+                                </div>
+
+                                <div id="modal_zona_mobil_panjang_wrapper" class="hidden rounded-md border border-indigo-200 bg-indigo-50 p-3">
+                                    <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-indigo-900">
+                                        <input type="checkbox" name="is_zona_mobil_panjang" id="modal_zona_mobil_panjang" value="1" class="h-4 w-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500">
+                                        <span>Memakai mobil panjang</span>
+                                    </label>
+                                    <p class="mt-1 pl-6 text-[10px] text-indigo-700">Jika dicentang, nominal OB menjadi Rp 150.000.</p>
                                 </div>
 
                                 <div id="modal_status_kontainer_wrapper">
@@ -594,6 +602,7 @@
         document.getElementById('modal_status_kontainer').value = '';
         document.getElementById('modal_combo').checked = false;
         document.getElementById('modal_ckls_mobil_panjang').checked = false;
+        document.getElementById('modal_zona_mobil_panjang').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
@@ -693,20 +702,33 @@
         const isService = document.getElementById('modal_status_service').value === 'service';
         const destinationOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
         const isTemasJkt = destinationOption?.dataset.isTemasJkt === '1';
+        const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
+        const isDepoZona = originOption?.dataset.isZona === '1';
+
         const isServiceComboEligible = isTwentyFt
             && isService;
         const isCklsEligible = isTwentyFt && isTemasJkt;
+        const isZonaEligible = isDepoZona;
+
         const comboWrapper = document.getElementById('modal_combo_wrapper');
         const comboCheckbox = document.getElementById('modal_combo');
         const cklsWrapper = document.getElementById('modal_ckls_mobil_panjang_wrapper');
         const cklsCheckbox = document.getElementById('modal_ckls_mobil_panjang');
+        const zonaWrapper = document.getElementById('modal_zona_mobil_panjang_wrapper');
+        const zonaCheckbox = document.getElementById('modal_zona_mobil_panjang');
 
         comboWrapper.classList.toggle('hidden', !isServiceComboEligible);
         comboCheckbox.disabled = !isServiceComboEligible;
         if (!isServiceComboEligible) comboCheckbox.checked = false;
+
         cklsWrapper.classList.toggle('hidden', !isCklsEligible);
         cklsCheckbox.disabled = !isCklsEligible;
         if (!isCklsEligible) cklsCheckbox.checked = false;
+
+        zonaWrapper.classList.toggle('hidden', !isZonaEligible);
+        zonaCheckbox.disabled = !isZonaEligible;
+        if (!isZonaEligible) zonaCheckbox.checked = false;
+
         updateNominalFromSelection();
     }
 
@@ -717,11 +739,24 @@
         updateComboVisibility();
     });
     document.getElementById('modal_combo').addEventListener('change', function() {
-        if (this.checked) document.getElementById('modal_ckls_mobil_panjang').checked = false;
+        if (this.checked) {
+            document.getElementById('modal_ckls_mobil_panjang').checked = false;
+            document.getElementById('modal_zona_mobil_panjang').checked = false;
+        }
         updateNominalFromSelection();
     });
     document.getElementById('modal_ckls_mobil_panjang').addEventListener('change', function() {
-        if (this.checked) document.getElementById('modal_combo').checked = false;
+        if (this.checked) {
+            document.getElementById('modal_combo').checked = false;
+            document.getElementById('modal_zona_mobil_panjang').checked = false;
+        }
+        updateNominalFromSelection();
+    });
+    document.getElementById('modal_zona_mobil_panjang').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('modal_combo').checked = false;
+            document.getElementById('modal_ckls_mobil_panjang').checked = false;
+        }
         updateNominalFromSelection();
     });
 
@@ -758,6 +793,8 @@
             option.style.display = '';
             option.disabled = false;
         });
+
+        updateComboVisibility();
     });
 
     // Update nominal input when selecting Harga OB
@@ -766,6 +803,11 @@
     });
 
     function updateNominalFromSelection() {
+        if (document.getElementById('modal_zona_mobil_panjang').checked) {
+            document.getElementById('nominal').value = '150000';
+            return;
+        }
+
         if (document.getElementById('modal_ckls_mobil_panjang').checked) {
             document.getElementById('nominal').value = '250000';
             return;
