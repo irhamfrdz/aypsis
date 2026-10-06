@@ -86,12 +86,6 @@
         section.className = 'klaim-section p-4 border-2 border-rose-200 rounded-xl bg-white shadow-sm transition-all hover:border-rose-300';
         section.setAttribute('data-klaim-section-index', sectionIndex);
 
-        let defaultPenerima = '';
-        const prevPenerimaInput = document.querySelector('.klaim-penerima-input');
-        if (prevPenerimaInput && prevPenerimaInput.value.trim() !== '') {
-            defaultPenerima = prevPenerimaInput.value.trim();
-        }
-
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
         if (typeof allKapalsData !== 'undefined' && Array.isArray(allKapalsData)) {
             allKapalsData.forEach(kapal => {
@@ -103,22 +97,22 @@
             <div class="flex items-center justify-between mb-3 border-b border-rose-100 pb-2.5">
                 <div class="flex items-center gap-2">
                     <span class="w-6 h-6 bg-rose-600 text-white rounded-full flex items-center justify-center text-xs font-bold">${sectionIndex}</span>
-                    <h4 class="text-sm font-bold text-gray-800">Kapal &amp; Voyage (Klaim)</h4>
+                    <h4 class="text-sm font-bold text-gray-800">Kapal #${sectionIndex}</h4>
                 </div>
                 <button type="button" onclick="removeKlaimSection(${sectionIndex})" class="klaim-remove-btn px-2.5 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs rounded-lg transition flex items-center gap-1 font-medium">
                     <i class="fas fa-trash-alt"></i> Hapus Kapal
                 </button>
             </div>
 
-            <!-- Grid Info Kapal, Voyage & Penerima (3 Kolom Sesuai Tampilan Section) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <div>
+            <!-- Grid Info Kapal & Voyage -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3">
+                <div class="md:col-span-4">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
                     <select name="klaim_sections[${sectionIndex}][kapal]" class="klaim-kapal-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm" required>
                         ${kapalOptions}
                     </select>
                 </div>
-                <div>
+                <div class="md:col-span-3">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">No. Voyage <span class="text-red-500">*</span></label>
                     <div class="flex gap-1.5">
                         <select name="klaim_sections[${sectionIndex}][voyage]" class="klaim-voyage-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm" required disabled>
@@ -130,19 +124,11 @@
                         </button>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima <span class="text-red-500">*</span></label>
-                    <input type="text" name="klaim_sections[${sectionIndex}][penerima]" class="klaim-penerima-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm" placeholder="Nama Penerima..." value="${defaultPenerima}" required>
-                </div>
-            </div>
-
-            <!-- Grid Baris 2: Keterangan / No. Surat & Tanggal -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <div class="md:col-span-2">
+                <div class="md:col-span-3">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan / No. Surat</label>
                     <input type="text" name="klaim_sections[${sectionIndex}][keterangan]" class="klaim-keterangan-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm" placeholder="Contoh: 139/09/26/jts">
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
                     <input type="date" name="klaim_sections[${sectionIndex}][tanggal]" class="klaim-tanggal-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm">
                 </div>
@@ -654,3 +640,29 @@
             }
         }
     }
+
+    // Sync input Penerima, Nomor Rekening, dan Bank tunggal klaim ke main form
+    const klaimPenerimaInput = document.getElementById('klaim_penerima');
+    if (klaimPenerimaInput) {
+        klaimPenerimaInput.addEventListener('input', function() {
+            const mainPenerima = document.getElementById('penerima');
+            if (mainPenerima) mainPenerima.value = this.value;
+        });
+    }
+
+    const klaimRekeningInput = document.getElementById('klaim_nomor_rekening');
+    if (klaimRekeningInput) {
+        klaimRekeningInput.addEventListener('input', function() {
+            const mainRek = document.getElementById('nomor_rekening');
+            if (mainRek) mainRek.value = this.value;
+        });
+    }
+
+    const klaimBankInput = document.getElementById('klaim_bank_id');
+    if (klaimBankInput) {
+        klaimBankInput.addEventListener('change', function() {
+            const mainBank = document.getElementById('bank_id');
+            if (mainBank) mainBank.value = this.value;
+        });
+    }
+

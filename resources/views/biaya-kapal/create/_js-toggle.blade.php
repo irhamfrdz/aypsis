@@ -33,9 +33,10 @@
             dokumenDetailWrapper.classList.add('hidden');
             clearAllDokumenSections();
         }
-        if(buruhBongkarWrapper) buruhBongkarWrapper.classList.add('hidden');
         if(typeof klaimWrapper !== 'undefined' && klaimWrapper) {
             klaimWrapper.classList.add('hidden');
+            const kpInput = document.getElementById('klaim_penerima');
+            if (kpInput) kpInput.removeAttribute('required');
             if (typeof clearAllKlaimSections === 'function') clearAllKlaimSections();
         }
         
@@ -1736,6 +1737,8 @@
             // Show Klaim wrapper
             if (typeof klaimWrapper !== 'undefined' && klaimWrapper) {
                 klaimWrapper.classList.remove('hidden');
+                const kpInput = document.getElementById('klaim_penerima');
+                if (kpInput) kpInput.setAttribute('required', 'required');
                 if (document.querySelectorAll('.klaim-section').length === 0 && typeof addKlaimSection === 'function') {
                     addKlaimSection();
                 }

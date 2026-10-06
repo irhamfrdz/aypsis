@@ -1789,12 +1789,15 @@ class BiayaKapalController extends Controller
                         return (float) str_replace(['.', ','], ['', '.'], $val ?? 0);
                     };
 
+                    $klaimPenerima = $request->input('klaim_penerima')
+                        ?: ($section['penerima'] ?? ($validated['penerima'] ?? null));
+
                     \App\Models\BiayaKapalKlaim::create([
                         'biaya_kapal_id' => $biayaKapal->id,
                         'kapal' => $section['kapal'] ?? null,
                         'voyage' => $section['voyage'] ?? null,
                         'vendor' => $section['vendor'] ?? null,
-                        'penerima' => $section['penerima'] ?? ($validated['penerima'] ?? null),
+                        'penerima' => $klaimPenerima,
                         'kontainer_ids' => $kontainerIds,
                         'subtotal' => $cleanNum($section['subtotal'] ?? 0),
                         'total_biaya' => $cleanNum($section['total_biaya'] ?? 0),
@@ -1802,14 +1805,19 @@ class BiayaKapalController extends Controller
                     ]);
                 }
 
-                // Auto-calculate nominal for KLAIM from section totals & sync root penerima
+                // Auto-calculate nominal for KLAIM from section totals & sync root penerima/rekening/bank
                 $totalKlaim = \App\Models\BiayaKapalKlaim::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $updatePayload = ['nominal' => $totalKlaim];
-                if (empty($biayaKapal->penerima)) {
-                    $firstPenerima = collect($request->klaim_sections)->pluck('penerima')->filter()->first();
-                    if ($firstPenerima) {
-                        $updatePayload['penerima'] = $firstPenerima;
-                    }
+                $finalPenerima = $request->input('klaim_penerima')
+                    ?: ($biayaKapal->penerima ?: collect($request->klaim_sections)->pluck('penerima')->filter()->first());
+                if ($finalPenerima) {
+                    $updatePayload['penerima'] = $finalPenerima;
+                }
+                if ($request->filled('klaim_nomor_rekening')) {
+                    $updatePayload['nomor_rekening'] = $request->input('klaim_nomor_rekening');
+                }
+                if ($request->filled('klaim_bank_id')) {
+                    $updatePayload['bank_id'] = $request->input('klaim_bank_id');
                 }
                 $biayaKapal->update($updatePayload);
             }
@@ -5499,12 +5507,15 @@ class BiayaKapalController extends Controller
                         $cleanSubtotal = (float) str_replace(['.', ','], ['', '.'], $section['subtotal'] ?? '0');
                         $cleanTotal = (float) str_replace(['.', ','], ['', '.'], $section['total_biaya'] ?? '0');
 
+                        $klaimPenerima = $request->input('klaim_penerima')
+                            ?: ($section['penerima'] ?? ($validated['penerima'] ?? null));
+
                         \App\Models\BiayaKapalKlaim::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
                             'voyage' => $section['voyage'] ?? null,
                             'vendor' => $section['vendor'] ?? null,
-                            'penerima' => $section['penerima'] ?? ($validated['penerima'] ?? null),
+                            'penerima' => $klaimPenerima,
                             'kontainer_ids' => $kontainerIds,
                             'subtotal' => $cleanSubtotal,
                             'total_biaya' => $cleanTotal,
@@ -5518,11 +5529,16 @@ class BiayaKapalController extends Controller
                 if ($totalKlaim > 0) {
                     $updatePayload['nominal'] = $totalKlaim;
                 }
-                if (empty($biayaKapal->penerima)) {
-                    $firstPenerima = collect($request->klaim_sections)->pluck('penerima')->filter()->first();
-                    if ($firstPenerima) {
-                        $updatePayload['penerima'] = $firstPenerima;
-                    }
+                $finalPenerima = $request->input('klaim_penerima')
+                    ?: ($biayaKapal->penerima ?: collect($request->klaim_sections)->pluck('penerima')->filter()->first());
+                if ($finalPenerima) {
+                    $updatePayload['penerima'] = $finalPenerima;
+                }
+                if ($request->filled('klaim_nomor_rekening')) {
+                    $updatePayload['nomor_rekening'] = $request->input('klaim_nomor_rekening');
+                }
+                if ($request->filled('klaim_bank_id')) {
+                    $updatePayload['bank_id'] = $request->input('klaim_bank_id');
                 }
                 if (! empty($updatePayload)) {
                     $biayaKapal->update($updatePayload);

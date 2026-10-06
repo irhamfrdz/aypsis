@@ -31,6 +31,53 @@
                     <span>+ Tambah Kapal</span>
                 </button>
             </div>
+    <!-- Informasi Penerima Klaim (Hanya 1 Penerima untuk seluruh pengajuan klaim multi-kapal) -->
+    <div class="mb-4 p-4 bg-white border border-rose-200 rounded-xl shadow-sm">
+        <div class="flex items-center gap-2 mb-3 border-b border-rose-100 pb-2">
+            <i class="fas fa-user-check text-rose-600"></i>
+            <h4 class="text-sm font-bold text-gray-800">Informasi Penerima Transfer Klaim</h4>
+            <span class="text-xs text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full font-semibold ml-auto">Berlaku untuk seluruh kapal di bawah</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+                <label for="klaim_penerima" class="block text-xs font-semibold text-gray-700 mb-1">
+                    Penerima / Pemilik Rekening <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       id="klaim_penerima" 
+                       name="klaim_penerima" 
+                       value="{{ old('klaim_penerima', old('penerima')) }}"
+                       class="w-full px-3 py-2 border border-rose-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm font-medium" 
+                       placeholder="Nama Penerima (misal: MUHAMMAD SYAMSUL MAARIF)...">
+            </div>
+            <div>
+                <label for="klaim_nomor_rekening" class="block text-xs font-semibold text-gray-700 mb-1">
+                    Nomor Rekening
+                </label>
+                <input type="text" 
+                       id="klaim_nomor_rekening" 
+                       name="klaim_nomor_rekening" 
+                       value="{{ old('klaim_nomor_rekening', old('nomor_rekening')) }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm" 
+                       placeholder="Contoh: 3980173100">
+            </div>
+            <div>
+                <label for="klaim_bank_id" class="block text-xs font-semibold text-gray-700 mb-1">
+                    Bank
+                </label>
+                <select id="klaim_bank_id" 
+                        name="klaim_bank_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-500 text-sm">
+                    <option value="">-- Pilih Bank --</option>
+                    @if(isset($banks))
+                        @foreach($banks as $bank)
+                            <option value="{{ $bank->id }}" {{ (old('klaim_bank_id', old('bank_id')) == $bank->id) ? 'selected' : '' }}>
+                                {{ $bank->nama_bank ?? ($bank->name ?? 'Bank '.$bank->id) }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
         </div>
     </div>
 
