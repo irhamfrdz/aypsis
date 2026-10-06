@@ -221,7 +221,15 @@ class ObAntarGudangController extends Controller
         $validated['is_ckls_mobil_panjang'] = $request->boolean('is_ckls_mobil_panjang');
         $validated['is_zona_mobil_panjang'] = $request->boolean('is_zona_mobil_panjang');
         $validated['is_sekalian_antar'] = $request->boolean('is_sekalian_antar');
-        $gudangAsalInput = Gudang::find($validated['gudang_id']);
+        $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
+            ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
+            ->whereNotNull('gudang_id')
+            ->orderByDesc('tanggal_kegiatan')
+            ->orderByDesc('id')
+            ->value('gudang_id');
+
+        $effectiveGudangId = $historyGudangId ?: $validated['gudang_id'];
+        $gudangAsalInput = Gudang::find($effectiveGudangId);
         $isDepoZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
         $namaGudangTujuan = mb_strtolower($gudangTujuan->nama_gudang);
@@ -264,9 +272,27 @@ class ObAntarGudangController extends Controller
 
         $pricelist = null;
         if (! empty($validated['pricelist_id'])) {
-            $destinationPricelists = (clone $pricelistDimensions)
-                ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
-                ->pluck('id');
+            if ($isDepoZona) {
+                $destinationPricelists = (clone $pricelistDimensions)
+                    ->where(function ($q) use ($gudangAsalInput) {
+                        $q->where('gudang_tujuan_id', $gudangAsalInput->id)
+                            ->orWhereHas('gudangTujuan', function ($gq) {
+                                $gq->where('nama_gudang', 'like', '%zona%');
+                            });
+                    })
+                    ->pluck('id');
+
+                if ($destinationPricelists->isEmpty()) {
+                    $destinationPricelists = (clone $pricelistDimensions)
+                        ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+                        ->pluck('id');
+                }
+            } else {
+                $destinationPricelists = (clone $pricelistDimensions)
+                    ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+                    ->pluck('id');
+            }
+
             $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
                 ->where('size_kontainer', $ukuran.'ft')
                 ->where('status_service', $validated['status_service']);
@@ -276,7 +302,7 @@ class ObAntarGudangController extends Controller
                 $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
             }
             if ($destinationPricelists->isNotEmpty()) {
-                $pricelistQuery->where('gudang_tujuan_id', $validated['gudang_tujuan_id']);
+                $pricelistQuery->whereIn('id', $destinationPricelists);
             } else {
                 $pricelistQuery->whereNull('gudang_tujuan_id');
             }
@@ -290,19 +316,8 @@ class ObAntarGudangController extends Controller
         try {
             DB::beginTransaction();
 
-            $gudangAsal = Gudang::find($validated['gudang_id']);
-            // The origin must be the container's historical position on the OB date.
-            $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
-                ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
-                ->whereNotNull('gudang_id')
-                ->orderByDesc('tanggal_kegiatan')
-                ->orderByDesc('id')
-                ->value('gudang_id');
-
-            if ($historyGudangId) {
-                $validated['gudang_id'] = $historyGudangId;
-                $gudangAsal = Gudang::find($historyGudangId);
-            }
+            $validated['gudang_id'] = $effectiveGudangId;
+            $gudangAsal = $gudangAsalInput;
 
             $tagihan = new TagihanOb;
             $tagihan->tanggal_ob = $validated['tanggal_ob'];

@@ -557,12 +557,12 @@
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-biaya="{{ $pl->biaya }}">
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-is-zona="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'zona') ? '1' : '0' }}" data-biaya="{{ $pl->biaya }}">
                                                 {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - {{ $pl->gudangTujuan?->nama_gudang ?? 'Semua Gudang' }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Jika gudang asal Depo ZONA, menggunakan tarif Depo ZONA. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -663,6 +663,8 @@
         const normalizedUkuran = document.getElementById('display_ukuran').innerText;
         const gudangTujuanId = document.getElementById('gudang_tujuan_id').value;
         const gudangTujuanOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
+        const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
+        const isDepoZona = originOption?.dataset.isZona === '1';
         const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
 
         const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
@@ -671,17 +673,39 @@
                 && option.getAttribute('data-status-service') === statusService
                 && (statusService === 'service' || abaikanStatusKontainer || option.getAttribute('data-status-kontainer') === statusKontainer);
         });
-        const hasDestinationRate = gudangTujuanId && eligibleOptions.some(option =>
-            option.getAttribute('data-gudang-tujuan-id') === gudangTujuanId
-        );
+
+        let hasSpecificRate = false;
+        let isMatchingSpecificOption = () => false;
+
+        if (isDepoZona) {
+            const hasZonaRate = eligibleOptions.some(option =>
+                option.getAttribute('data-is-zona') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value)
+            );
+            if (hasZonaRate) {
+                hasSpecificRate = true;
+                isMatchingSpecificOption = (option) =>
+                    option.getAttribute('data-is-zona') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value);
+            }
+        }
+
+        if (!hasSpecificRate && gudangTujuanId) {
+            const hasDestinationRate = eligibleOptions.some(option =>
+                option.getAttribute('data-gudang-tujuan-id') === gudangTujuanId
+            );
+            if (hasDestinationRate) {
+                hasSpecificRate = true;
+                isMatchingSpecificOption = (option) =>
+                    option.getAttribute('data-gudang-tujuan-id') === gudangTujuanId;
+            }
+        }
 
         Array.from(pricelistSelect.options).forEach(option => {
             if (option.value === '') return;
 
             const destinationId = option.getAttribute('data-gudang-tujuan-id');
             const matchesDimensions = eligibleOptions.includes(option);
-            const matchesDestination = hasDestinationRate
-                ? destinationId === gudangTujuanId
+            const matchesDestination = hasSpecificRate
+                ? isMatchingSpecificOption(option)
                 : destinationId === '';
             const matches = matchesDimensions && matchesDestination;
 
@@ -691,7 +715,12 @@
 
         const selected = pricelistSelect.options[pricelistSelect.selectedIndex];
         if (!selected || selected.disabled || !selected.value) {
-            pricelistSelect.value = '';
+            const validOptions = Array.from(pricelistSelect.options).filter(o => o.value && !o.disabled && o.style.display !== 'none');
+            if (validOptions.length === 1) {
+                pricelistSelect.value = validOptions[0].value;
+            } else {
+                pricelistSelect.value = '';
+            }
             updateNominalFromSelection();
         }
     }
@@ -821,6 +850,7 @@
         });
 
         updateComboVisibility();
+        updatePricelistOptions();
     });
 
     // Update nominal input when selecting Harga OB
