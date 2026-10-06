@@ -221,6 +221,9 @@ class ObAntarGudangController extends Controller
         $validated['is_ckls_mobil_panjang'] = $request->boolean('is_ckls_mobil_panjang');
         $validated['is_zona_mobil_panjang'] = $request->boolean('is_zona_mobil_panjang');
         $validated['is_sekalian_antar'] = $request->boolean('is_sekalian_antar');
+        $gudangAsalInput = Gudang::find($validated['gudang_id']);
+        $isInputZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
+
         $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
             ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
             ->whereNotNull('gudang_id')
@@ -228,9 +231,19 @@ class ObAntarGudangController extends Controller
             ->orderByDesc('id')
             ->value('gudang_id');
 
-        $effectiveGudangId = $historyGudangId ?: $validated['gudang_id'];
-        $gudangAsalInput = Gudang::find($effectiveGudangId);
-        $isDepoZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
+        $historyGudang = $historyGudangId ? Gudang::find($historyGudangId) : null;
+        $isHistoryZona = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'zona');
+
+        $isDepoZona = $isInputZona || $isHistoryZona;
+
+        if ($isInputZona) {
+            $effectiveGudangId = $validated['gudang_id'];
+        } elseif ($isHistoryZona && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'])) {
+            $effectiveGudangId = $historyGudangId;
+            $gudangAsalInput = $historyGudang;
+        } else {
+            $effectiveGudangId = $validated['gudang_id'] ?: $historyGudangId;
+        }
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
         $namaGudangTujuan = mb_strtolower($gudangTujuan->nama_gudang);
         $isTemasJkt = str_contains($namaGudangTujuan, 'temas jkt');

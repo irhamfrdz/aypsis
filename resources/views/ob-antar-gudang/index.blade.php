@@ -614,6 +614,7 @@
         document.getElementById('modal_sekalian_antar').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
+        document.getElementById('modal_gudang_id').dataset.userModified = 'false';
         document.getElementById('display_nomor_kontainer').innerText = nomor;
         document.getElementById('display_ukuran').innerText = ukuran.replace('ft', '').trim();
         
@@ -821,6 +822,7 @@
         const gudangAsalSelect = document.getElementById('modal_gudang_id');
 
         if (!nomor || !tanggal) return;
+        if (gudangAsalSelect.dataset.userModified === 'true') return;
 
         fetch('{{ route('ob-antar-gudang.gudang-asal') }}?' + new URLSearchParams({
             nomor_kontainer: nomor,
@@ -828,7 +830,7 @@
         }), { headers: { 'Accept': 'application/json' } })
             .then(response => response.ok ? response.json() : Promise.reject(response))
             .then(data => {
-                if (data.gudang_id) {
+                if (data.gudang_id && gudangAsalSelect.dataset.userModified !== 'true') {
                     gudangAsalSelect.value = String(data.gudang_id);
                     gudangAsalSelect.dispatchEvent(new Event('change'));
                 }
@@ -841,7 +843,10 @@
     document.getElementById('tanggal_ob').addEventListener('change', updateGudangAsalFromHistory);
 
     // Semua gudang tetap bisa dipilih sebagai tujuan, termasuk gudang yang sama dengan asal.
-    document.getElementById('modal_gudang_id').addEventListener('change', function() {
+    document.getElementById('modal_gudang_id').addEventListener('change', function(e) {
+        if (e && e.isTrusted) {
+            this.dataset.userModified = 'true';
+        }
         const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
 
         Array.from(gudangTujuanSelect.options).forEach(option => {
