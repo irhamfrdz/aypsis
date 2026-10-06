@@ -6327,6 +6327,24 @@ class BiayaKapalController extends Controller
             );
             $voyagesFromBls = $voyagesFromBlsQuery->groupBy('no_voyage')->get();
 
+            // Query voyages from manifests table
+            $voyagesFromManifestsQuery = DB::table('manifests')
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '');
+
+            $voyagesFromManifestsQuery->where(function ($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+
+            $voyagesFromManifestsQuery->select(
+                'no_voyage',
+                DB::raw('MIN(COALESCE(tanggal_berangkat, tanggal_muat, created_at)) as min_tanggal'),
+                DB::raw('MAX(COALESCE(tanggal_berangkat, tanggal_muat, created_at)) as max_tanggal')
+            );
+            $voyagesFromManifests = $voyagesFromManifestsQuery->groupBy('no_voyage')->get();
+
             // Merge and get unique voyages with dates
             $voyageDates = [];
             foreach ($voyagesFromNaikKapal as $row) {
@@ -6342,10 +6360,25 @@ class BiayaKapalController extends Controller
                         'max' => $row->max_tanggal,
                     ];
                 } else {
-                    if ($row->min_tanggal < $voyageDates[$row->no_voyage]['min']) {
+                    if ($row->min_tanggal && (! $voyageDates[$row->no_voyage]['min'] || $row->min_tanggal < $voyageDates[$row->no_voyage]['min'])) {
                         $voyageDates[$row->no_voyage]['min'] = $row->min_tanggal;
                     }
-                    if ($row->max_tanggal > $voyageDates[$row->no_voyage]['max']) {
+                    if ($row->max_tanggal && (! $voyageDates[$row->no_voyage]['max'] || $row->max_tanggal > $voyageDates[$row->no_voyage]['max'])) {
+                        $voyageDates[$row->no_voyage]['max'] = $row->max_tanggal;
+                    }
+                }
+            }
+            foreach ($voyagesFromManifests as $row) {
+                if (! isset($voyageDates[$row->no_voyage])) {
+                    $voyageDates[$row->no_voyage] = [
+                        'min' => $row->min_tanggal,
+                        'max' => $row->max_tanggal,
+                    ];
+                } else {
+                    if ($row->min_tanggal && (! $voyageDates[$row->no_voyage]['min'] || $row->min_tanggal < $voyageDates[$row->no_voyage]['min'])) {
+                        $voyageDates[$row->no_voyage]['min'] = $row->min_tanggal;
+                    }
+                    if ($row->max_tanggal && (! $voyageDates[$row->no_voyage]['max'] || $row->max_tanggal > $voyageDates[$row->no_voyage]['max'])) {
                         $voyageDates[$row->no_voyage]['max'] = $row->max_tanggal;
                     }
                 }
@@ -7191,7 +7224,7 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            $containers = DB::table('manifests')
+            $query = DB::table('manifests')
                 ->select(
                     'id',
                     'nomor_bl',
@@ -7199,38 +7232,85 @@ class BiayaKapalController extends Controller
                     'no_seal',
                     'tipe_kontainer',
                     'size_kontainer',
-                    'nama_barang'
+                    'nama_barang',
+                    'pengirim',
+                    'penerima',
+                    'nama_kapal',
+                    'no_voyage'
                 )
                 ->where('no_voyage', $voyage)
                 ->whereNotNull('nomor_kontainer')
-                ->where('nomor_kontainer', '!=', '')
-                ->orderBy('nomor_kontainer')
-                ->get()
-                ->map(function ($manifest) {
-                    $size = '-';
-                    if (! empty($manifest->size_kontainer)) {
-                        $size = $manifest->size_kontainer;
-                    } elseif (stripos($manifest->tipe_kontainer, '20') !== false) {
-                        $size = '20';
-                    } elseif (stripos($manifest->tipe_kontainer, '40') !== false) {
-                        $size = '40';
-                    }
+                ->where('nomor_kontainer', '!=', '');
 
-                    return [
-                        'id' => $manifest->id,
-                        'bl_id' => $manifest->id,
-                        'no_bl' => $manifest->nomor_bl ?? '-',
-                        'nomor_kontainer' => $manifest->nomor_kontainer,
-                        'no_seal' => $manifest->no_seal ?? '-',
-                        'tipe_kontainer' => $manifest->tipe_kontainer ?? '-',
-                        'size' => $size,
-                        'size_kontainer' => $size,
-                        'nama_barang' => $manifest->nama_barang ?? '-',
-                        'pengirim' => '-',
-                        'penerima' => '-',
-                        'display_text' => $manifest->nomor_kontainer.($size !== '-' ? ' ('.$size.')' : ''),
-                    ];
-                });
+            $kapal = $request->input('kapal');
+            if (! empty($kapal)) {
+                $query->where('nama_kapal', 'like', "%{$kapal}%");
+            }
+
+            $manifests = $query->orderBy('nomor_kontainer')->get();
+
+            // Group by nomor_kontainer to eliminate duplicates for LCL shipments
+            $grouped = $manifests->groupBy(function ($item) {
+                return trim(strtoupper($item->nomor_kontainer));
+            });
+
+            $containers = $grouped->map(function ($items, $containerNo) {
+                $first = $items->first();
+
+                // Collect unique BL numbers
+                $bls = $items->pluck('nomor_bl')->filter()->unique()->values()->all();
+                $blText = ! empty($bls) ? implode(', ', $bls) : ($first->nomor_bl ?? '-');
+
+                // Determine container size
+                $size = '-';
+                foreach ($items as $item) {
+                    if (! empty($item->size_kontainer)) {
+                        $size = $item->size_kontainer;
+                        break;
+                    } elseif (stripos($item->tipe_kontainer, '20') !== false) {
+                        $size = '20';
+                        break;
+                    } elseif (stripos($item->tipe_kontainer, '40') !== false) {
+                        $size = '40';
+                        break;
+                    }
+                }
+
+                // Collect unique seals
+                $seals = $items->pluck('no_seal')->filter()->unique()->values()->all();
+                $sealText = ! empty($seals) ? implode(', ', $seals) : ($first->no_seal ?? '-');
+
+                // Collect goods descriptions
+                $barangs = $items->pluck('nama_barang')->filter()->unique()->values()->all();
+                $barangText = ! empty($barangs) ? implode(', ', $barangs) : ($first->nama_barang ?? '-');
+
+                // Collect shippers and receivers
+                $pengirims = $items->pluck('pengirim')->filter()->unique()->values()->all();
+                $pengirimText = ! empty($pengirims) ? implode(', ', $pengirims) : ($first->pengirim ?? '-');
+
+                $penerimas = $items->pluck('penerima')->filter()->unique()->values()->all();
+                $penerimaText = ! empty($penerimas) ? implode(', ', $penerimas) : ($first->penerima ?? '-');
+
+                $isLcl = count($items) > 1 || stripos($first->tipe_kontainer ?? '', 'lcl') !== false;
+
+                return [
+                    'id' => $first->id,
+                    'bl_id' => $first->id,
+                    'manifest_ids' => $items->pluck('id')->all(),
+                    'no_bl' => $blText,
+                    'nomor_kontainer' => $containerNo,
+                    'no_seal' => $sealText,
+                    'tipe_kontainer' => $isLcl ? 'LCL' : ($first->tipe_kontainer ?? '-'),
+                    'size' => $size,
+                    'size_kontainer' => $size,
+                    'nama_barang' => $barangText,
+                    'pengirim' => $pengirimText,
+                    'penerima' => $penerimaText,
+                    'is_lcl' => $isLcl,
+                    'total_bl' => count($bls),
+                    'display_text' => $containerNo.($size !== '-' ? ' ('.$size.')' : '').($isLcl ? ' [LCL - '.count($bls).' BL]' : ''),
+                ];
+            })->values();
 
             return response()->json([
                 'success' => true,

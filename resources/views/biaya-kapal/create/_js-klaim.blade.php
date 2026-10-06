@@ -299,7 +299,10 @@
             clearContainersView();
             kontainerLoading.classList.remove('hidden');
 
-            fetch(`{{ url('biaya-kapal/get-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageVal)}`)
+            const kapalVal = kapalSelect ? kapalSelect.value : '';
+            const url = `{{ url('biaya-kapal/get-manifest-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageVal)}&kapal=${encodeURIComponent(kapalVal)}`;
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     kontainerLoading.classList.add('hidden');
@@ -329,14 +332,15 @@
                                        data-size="${kontainer.size_kontainer || ''}"
                                        data-bl="${kontainer.no_bl || ''}">
                                 <div class="flex-1 cursor-pointer klaim-card-info">
-                                    <div class="font-semibold text-sm text-gray-800">
-                                        <i class="fas fa-cube text-rose-500 mr-1"></i>
-                                        ${kontainer.nomor_kontainer}
-                                        <span class="ml-1.5 text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-normal">${kontainer.size_kontainer || '-'}'</span>
-                                        <span class="ml-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-normal">${kontainer.tipe_kontainer || '-'}</span>
+                                    <div class="font-semibold text-sm text-gray-800 flex flex-wrap items-center gap-1.5">
+                                        <i class="fas fa-cube text-rose-500"></i>
+                                        <span>${kontainer.nomor_kontainer}</span>
+                                        <span class="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-medium">${kontainer.size_kontainer || '-'}'</span>
+                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">${kontainer.tipe_kontainer || '-'}</span>
+                                        ${kontainer.is_lcl ? `<span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold"><i class="fas fa-layer-group mr-1"></i>LCL (${kontainer.total_bl || 1} BL)</span>` : ''}
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
-                                        <span><i class="fas fa-file-invoice text-teal-500 mr-1"></i>BL: ${kontainer.no_bl || '-'}</span>
+                                        <span><i class="fas fa-file-invoice text-teal-600 mr-1"></i>BL: <strong class="text-gray-700">${kontainer.no_bl || '-'}</strong></span>
                                         <span><i class="fas fa-lock text-gray-400 mr-1"></i>Seal: ${kontainer.no_seal || '-'}</span>
                                         ${kontainer.nama_barang && kontainer.nama_barang !== '-' ? `<span><i class="fas fa-box text-orange-400 mr-1"></i>${kontainer.nama_barang}</span>` : ''}
                                     </div>
