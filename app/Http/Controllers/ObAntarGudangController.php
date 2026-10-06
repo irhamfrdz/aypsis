@@ -223,6 +223,7 @@ class ObAntarGudangController extends Controller
         $validated['is_sekalian_antar'] = $request->boolean('is_sekalian_antar');
         $gudangAsalInput = Gudang::find($validated['gudang_id']);
         $isInputZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
+        $isInputDpe = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'dpe');
 
         $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
             ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
@@ -233,12 +234,15 @@ class ObAntarGudangController extends Controller
 
         $historyGudang = $historyGudangId ? Gudang::find($historyGudangId) : null;
         $isHistoryZona = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'zona');
+        $isHistoryDpe = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'dpe');
 
         $isDepoZona = $isInputZona || $isHistoryZona;
+        $isDepoDpe = $isInputDpe || $isHistoryDpe;
+        $isDepoZonaOrDpe = $isDepoZona || $isDepoDpe;
 
-        if ($isInputZona) {
+        if ($isInputZona || $isInputDpe) {
             $effectiveGudangId = $validated['gudang_id'];
-        } elseif ($isHistoryZona && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'])) {
+        } elseif (($isHistoryZona || $isHistoryDpe) && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'])) {
             $effectiveGudangId = $historyGudangId;
             $gudangAsalInput = $historyGudang;
         } else {
@@ -256,11 +260,11 @@ class ObAntarGudangController extends Controller
         if ($validated['is_ckls_mobil_panjang'] && ($ukuran !== '20' || ! $isTemasJkt)) {
             return back()->withInput()->with('error', 'CKLS menggunakan mobil panjang hanya tersedia untuk kontainer 20 ft dengan tujuan Temas JKT.');
         }
-        if ($validated['is_zona_mobil_panjang'] && ! $isDepoZona) {
-            return back()->withInput()->with('error', 'Tarif mobil panjang hanya tersedia jika gudang asal adalah Depo ZONA.');
+        if ($validated['is_zona_mobil_panjang'] && ! $isDepoZonaOrDpe) {
+            return back()->withInput()->with('error', 'Tarif mobil panjang hanya tersedia jika gudang asal adalah Depo ZONA atau Depo DPE.');
         }
-        if ($validated['is_sekalian_antar'] && ! $isDepoZona) {
-            return back()->withInput()->with('error', 'Tarif sekalian antar hanya tersedia jika gudang asal adalah Depo ZONA.');
+        if ($validated['is_sekalian_antar'] && ! $isDepoZonaOrDpe) {
+            return back()->withInput()->with('error', 'Tarif sekalian antar hanya tersedia jika gudang asal adalah Depo ZONA atau Depo DPE.');
         }
         $activeTariffOptions = collect([
             $validated['is_combo'],

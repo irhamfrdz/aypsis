@@ -482,7 +482,9 @@
                                     <select name="gudang_id" id="modal_gudang_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Gudang Asal--</option>
                                         @foreach($gudangs as $g)
-                                            <option value="{{ $g->id }}" data-is-zona="{{ str_contains(mb_strtolower($g->nama_gudang), 'zona') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            <option value="{{ $g->id }}" 
+                                                    data-is-zona="{{ str_contains(mb_strtolower($g->nama_gudang), 'zona') ? '1' : '0' }}"
+                                                    data-is-dpe="{{ str_contains(mb_strtolower($g->nama_gudang), 'dpe') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -743,11 +745,13 @@
         const isTemasJkt = destinationOption?.dataset.isTemasJkt === '1';
         const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
         const isDepoZona = originOption?.dataset.isZona === '1';
+        const isDepoDpe = originOption?.dataset.isDpe === '1';
+        const isZonaOrDpeEligible = isDepoZona || isDepoDpe;
 
         const isServiceComboEligible = isTwentyFt
             && isService;
         const isCklsEligible = isTwentyFt && isTemasJkt;
-        const isZonaEligible = isDepoZona;
+        const isZonaEligible = isZonaOrDpeEligible;
 
         const comboWrapper = document.getElementById('modal_combo_wrapper');
         const comboCheckbox = document.getElementById('modal_combo');
