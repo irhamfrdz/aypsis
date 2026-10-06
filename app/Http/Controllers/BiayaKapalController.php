@@ -1802,9 +1802,16 @@ class BiayaKapalController extends Controller
                     ]);
                 }
 
-                // Auto-calculate nominal for KLAIM from section totals
+                // Auto-calculate nominal for KLAIM from section totals & sync root penerima
                 $totalKlaim = \App\Models\BiayaKapalKlaim::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
-                $biayaKapal->update(['nominal' => $totalKlaim]);
+                $updatePayload = ['nominal' => $totalKlaim];
+                if (empty($biayaKapal->penerima)) {
+                    $firstPenerima = collect($request->klaim_sections)->pluck('penerima')->filter()->first();
+                    if ($firstPenerima) {
+                        $updatePayload['penerima'] = $firstPenerima;
+                    }
+                }
+                $biayaKapal->update($updatePayload);
             }
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
@@ -5507,8 +5514,18 @@ class BiayaKapalController extends Controller
                     }
                 }
 
+                $updatePayload = [];
                 if ($totalKlaim > 0) {
-                    $biayaKapal->update(['nominal' => $totalKlaim]);
+                    $updatePayload['nominal'] = $totalKlaim;
+                }
+                if (empty($biayaKapal->penerima)) {
+                    $firstPenerima = collect($request->klaim_sections)->pluck('penerima')->filter()->first();
+                    if ($firstPenerima) {
+                        $updatePayload['penerima'] = $firstPenerima;
+                    }
+                }
+                if (! empty($updatePayload)) {
+                    $biayaKapal->update($updatePayload);
                 }
             }
 

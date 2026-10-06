@@ -1747,11 +1747,22 @@
             blWrapper.classList.add('hidden');
 
             if (penerimaWrapper) {
-                penerimaWrapper.classList.remove('hidden');
-                if (penerimaInput) penerimaInput.setAttribute('required', 'required');
+                penerimaWrapper.classList.add('hidden');
+                if (penerimaInput) {
+                    penerimaInput.removeAttribute('required');
+                    penerimaInput.value = '';
+                }
             }
-            if (nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
-            if (bankIdWrapper) bankIdWrapper.classList.remove('hidden');
+            if (nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
+            if (bankIdWrapper) {
+                bankIdWrapper.classList.add('hidden');
+                const bankSelect = document.getElementById('bank_id');
+                if (bankSelect) bankSelect.value = '';
+            }
             if (namaVendorWrapper) {
                 namaVendorWrapper.classList.add('hidden');
                 const vendorInput = document.getElementById('nama_vendor');
