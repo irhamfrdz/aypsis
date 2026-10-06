@@ -540,7 +540,7 @@
                                         <input type="checkbox" name="is_sekalian_antar" id="modal_sekalian_antar" value="1" class="h-4 w-4 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
                                         <span>Sekalian antar</span>
                                     </label>
-                                    <p class="mt-1 pl-6 text-[10px] text-emerald-700">Jika dicentang, nominal OB menjadi Rp 50.000.</p>
+                                    <p id="modal_sekalian_antar_desc" class="mt-1 pl-6 text-[10px] text-emerald-700">Jika dicentang, nominal OB menjadi Rp 50.000.</p>
                                 </div>
 
                                 <div id="modal_status_kontainer_wrapper">
@@ -778,6 +778,13 @@
         sekalianAntarCheckbox.disabled = !isZonaEligible;
         if (!isZonaEligible) sekalianAntarCheckbox.checked = false;
 
+        const sekDesc = document.getElementById('modal_sekalian_antar_desc');
+        if (sekDesc) {
+            sekDesc.textContent = isDepoDpe
+                ? 'Jika dicentang, nominal OB menjadi Rp 75.000.'
+                : 'Jika dicentang, nominal OB menjadi Rp 50.000.';
+        }
+
         updateNominalFromSelection();
     }
 
@@ -885,7 +892,9 @@
         }
 
         if (document.getElementById('modal_sekalian_antar').checked) {
-            document.getElementById('nominal').value = '50000';
+            const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
+            const isDepoDpe = originOption?.dataset.isDpe === '1';
+            document.getElementById('nominal').value = isDepoDpe ? '75000' : '50000';
             return;
         }
 

@@ -24,6 +24,8 @@ class ObAntarGudangController extends Controller
 
     private const SEKALIAN_ANTAR_BIAYA = 50000;
 
+    private const DPE_SEKALIAN_ANTAR_BIAYA = 75000;
+
     /**
      * Return the warehouse where a container was located on a given date.
      */
@@ -355,9 +357,13 @@ class ObAntarGudangController extends Controller
             $tagihan->created_by = Auth::id();
 
             // Use the selected pricelist as the authoritative OB price.
+            $sekalianAntarBiaya = ($isInputDpe || $isHistoryDpe)
+                ? self::DPE_SEKALIAN_ANTAR_BIAYA
+                : self::SEKALIAN_ANTAR_BIAYA;
+
             $tagihan->biaya = match (true) {
                 $validated['is_zona_mobil_panjang'] => self::ZONA_MOBIL_PANJANG_BIAYA,
-                $validated['is_sekalian_antar'] => self::SEKALIAN_ANTAR_BIAYA,
+                $validated['is_sekalian_antar'] => $sekalianAntarBiaya,
                 $validated['is_ckls_mobil_panjang'] => self::CKLS_MOBIL_PANJANG_BIAYA_20FT,
                 $validated['is_combo'] => self::COMBO_BIAYA_20FT_SERVICE,
                 default => $pricelist?->biaya ?? $validated['nominal'],
