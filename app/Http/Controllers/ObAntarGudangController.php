@@ -22,6 +22,8 @@ class ObAntarGudangController extends Controller
 
     private const ZONA_MOBIL_PANJANG_BIAYA = 150000;
 
+    private const SEKALIAN_ANTAR_BIAYA = 50000;
+
     /**
      * Return the warehouse where a container was located on a given date.
      */
@@ -194,7 +196,7 @@ class ObAntarGudangController extends Controller
             'nama_supir' => 'required|string',
             'pricelist_id' => [
                 'nullable',
-                Rule::requiredIf(fn () => ! $request->boolean('is_zona_mobil_panjang') && ! $request->boolean('is_ckls_mobil_panjang')),
+                Rule::requiredIf(fn () => ! $request->boolean('is_zona_mobil_panjang') && ! $request->boolean('is_ckls_mobil_panjang') && ! $request->boolean('is_sekalian_antar')),
                 'exists:master_pricelist_ob_antar_gudang,id',
             ],
             'status_service' => 'required|in:service,non_service',
@@ -206,6 +208,7 @@ class ObAntarGudangController extends Controller
             'is_combo' => 'sometimes|boolean',
             'is_ckls_mobil_panjang' => 'sometimes|boolean',
             'is_zona_mobil_panjang' => 'sometimes|boolean',
+            'is_sekalian_antar' => 'sometimes|boolean',
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -217,6 +220,7 @@ class ObAntarGudangController extends Controller
         $validated['is_combo'] = $request->boolean('is_combo');
         $validated['is_ckls_mobil_panjang'] = $request->boolean('is_ckls_mobil_panjang');
         $validated['is_zona_mobil_panjang'] = $request->boolean('is_zona_mobil_panjang');
+        $validated['is_sekalian_antar'] = $request->boolean('is_sekalian_antar');
         $gudangAsalInput = Gudang::find($validated['gudang_id']);
         $isDepoZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
@@ -234,10 +238,14 @@ class ObAntarGudangController extends Controller
         if ($validated['is_zona_mobil_panjang'] && ! $isDepoZona) {
             return back()->withInput()->with('error', 'Tarif mobil panjang hanya tersedia jika gudang asal adalah Depo ZONA.');
         }
+        if ($validated['is_sekalian_antar'] && ! $isDepoZona) {
+            return back()->withInput()->with('error', 'Tarif sekalian antar hanya tersedia jika gudang asal adalah Depo ZONA.');
+        }
         $activeTariffOptions = collect([
             $validated['is_combo'],
             $validated['is_ckls_mobil_panjang'],
             $validated['is_zona_mobil_panjang'],
+            $validated['is_sekalian_antar'],
         ])->filter()->count();
 
         if ($activeTariffOptions > 1) {
@@ -308,6 +316,7 @@ class ObAntarGudangController extends Controller
             $tagihan->is_combo = $validated['is_combo'];
             $tagihan->is_ckls_mobil_panjang = $validated['is_ckls_mobil_panjang'];
             $tagihan->is_zona_mobil_panjang = $validated['is_zona_mobil_panjang'];
+            $tagihan->is_sekalian_antar = $validated['is_sekalian_antar'];
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
             $tagihan->keterangan = $validated['keterangan']
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
@@ -316,6 +325,7 @@ class ObAntarGudangController extends Controller
             // Use the selected pricelist as the authoritative OB price.
             $tagihan->biaya = match (true) {
                 $validated['is_zona_mobil_panjang'] => self::ZONA_MOBIL_PANJANG_BIAYA,
+                $validated['is_sekalian_antar'] => self::SEKALIAN_ANTAR_BIAYA,
                 $validated['is_ckls_mobil_panjang'] => self::CKLS_MOBIL_PANJANG_BIAYA_20FT,
                 $validated['is_combo'] => self::COMBO_BIAYA_20FT_SERVICE,
                 default => $pricelist?->biaya ?? $validated['nominal'],

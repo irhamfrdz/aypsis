@@ -533,6 +533,14 @@
                                     <p class="mt-1 pl-6 text-[10px] text-indigo-700">Jika dicentang, nominal OB menjadi Rp 150.000.</p>
                                 </div>
 
+                                <div id="modal_sekalian_antar_wrapper" class="hidden rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                                    <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-emerald-900">
+                                        <input type="checkbox" name="is_sekalian_antar" id="modal_sekalian_antar" value="1" class="h-4 w-4 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
+                                        <span>Sekalian antar</span>
+                                    </label>
+                                    <p class="mt-1 pl-6 text-[10px] text-emerald-700">Jika dicentang, nominal OB menjadi Rp 50.000.</p>
+                                </div>
+
                                 <div id="modal_status_kontainer_wrapper">
                                     <label for="modal_status_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
                                     <select name="status_kontainer" id="modal_status_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
@@ -603,6 +611,7 @@
         document.getElementById('modal_combo').checked = false;
         document.getElementById('modal_ckls_mobil_panjang').checked = false;
         document.getElementById('modal_zona_mobil_panjang').checked = false;
+        document.getElementById('modal_sekalian_antar').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
@@ -716,6 +725,8 @@
         const cklsCheckbox = document.getElementById('modal_ckls_mobil_panjang');
         const zonaWrapper = document.getElementById('modal_zona_mobil_panjang_wrapper');
         const zonaCheckbox = document.getElementById('modal_zona_mobil_panjang');
+        const sekalianAntarWrapper = document.getElementById('modal_sekalian_antar_wrapper');
+        const sekalianAntarCheckbox = document.getElementById('modal_sekalian_antar');
 
         comboWrapper.classList.toggle('hidden', !isServiceComboEligible);
         comboCheckbox.disabled = !isServiceComboEligible;
@@ -728,6 +739,10 @@
         zonaWrapper.classList.toggle('hidden', !isZonaEligible);
         zonaCheckbox.disabled = !isZonaEligible;
         if (!isZonaEligible) zonaCheckbox.checked = false;
+
+        sekalianAntarWrapper.classList.toggle('hidden', !isZonaEligible);
+        sekalianAntarCheckbox.disabled = !isZonaEligible;
+        if (!isZonaEligible) sekalianAntarCheckbox.checked = false;
 
         updateNominalFromSelection();
     }
@@ -742,6 +757,7 @@
         if (this.checked) {
             document.getElementById('modal_ckls_mobil_panjang').checked = false;
             document.getElementById('modal_zona_mobil_panjang').checked = false;
+            document.getElementById('modal_sekalian_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -749,6 +765,7 @@
         if (this.checked) {
             document.getElementById('modal_combo').checked = false;
             document.getElementById('modal_zona_mobil_panjang').checked = false;
+            document.getElementById('modal_sekalian_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -756,6 +773,15 @@
         if (this.checked) {
             document.getElementById('modal_combo').checked = false;
             document.getElementById('modal_ckls_mobil_panjang').checked = false;
+            document.getElementById('modal_sekalian_antar').checked = false;
+        }
+        updateNominalFromSelection();
+    });
+    document.getElementById('modal_sekalian_antar').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('modal_combo').checked = false;
+            document.getElementById('modal_ckls_mobil_panjang').checked = false;
+            document.getElementById('modal_zona_mobil_panjang').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -803,18 +829,24 @@
     });
 
     function updateNominalFromSelection() {
-        const isMobilPanjang = document.getElementById('modal_zona_mobil_panjang').checked
-            || document.getElementById('modal_ckls_mobil_panjang').checked;
+        const isCustomRate = document.getElementById('modal_zona_mobil_panjang').checked
+            || document.getElementById('modal_ckls_mobil_panjang').checked
+            || document.getElementById('modal_sekalian_antar').checked;
         const pricelistSelect = document.getElementById('pricelist_id');
         const pricelistStar = document.getElementById('pricelist_required_star');
 
-        pricelistSelect.required = !isMobilPanjang;
+        pricelistSelect.required = !isCustomRate;
         if (pricelistStar) {
-            pricelistStar.classList.toggle('hidden', isMobilPanjang);
+            pricelistStar.classList.toggle('hidden', isCustomRate);
         }
 
         if (document.getElementById('modal_zona_mobil_panjang').checked) {
             document.getElementById('nominal').value = '150000';
+            return;
+        }
+
+        if (document.getElementById('modal_sekalian_antar').checked) {
+            document.getElementById('nominal').value = '50000';
             return;
         }
 
