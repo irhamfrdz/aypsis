@@ -544,7 +544,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="pricelist_id" class="block text-sm font-medium text-gray-700 mb-1">Harga OB <span class="text-red-500">*</span></label>
+                                    <label for="pricelist_id" class="block text-sm font-medium text-gray-700 mb-1">Harga OB <span id="pricelist_required_star" class="text-red-500">*</span></label>
                                     <select name="pricelist_id" id="pricelist_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
@@ -683,7 +683,7 @@
         const selected = pricelistSelect.options[pricelistSelect.selectedIndex];
         if (!selected || selected.disabled || !selected.value) {
             pricelistSelect.value = '';
-            document.getElementById('nominal').value = '';
+            updateNominalFromSelection();
         }
     }
 
@@ -803,6 +803,16 @@
     });
 
     function updateNominalFromSelection() {
+        const isMobilPanjang = document.getElementById('modal_zona_mobil_panjang').checked
+            || document.getElementById('modal_ckls_mobil_panjang').checked;
+        const pricelistSelect = document.getElementById('pricelist_id');
+        const pricelistStar = document.getElementById('pricelist_required_star');
+
+        pricelistSelect.required = !isMobilPanjang;
+        if (pricelistStar) {
+            pricelistStar.classList.toggle('hidden', isMobilPanjang);
+        }
+
         if (document.getElementById('modal_zona_mobil_panjang').checked) {
             document.getElementById('nominal').value = '150000';
             return;
@@ -818,7 +828,6 @@
             return;
         }
 
-        const pricelistSelect = document.getElementById('pricelist_id');
         const selectedOption = pricelistSelect.options[pricelistSelect.selectedIndex];
         if (selectedOption && selectedOption.value) {
             const biaya = selectedOption.getAttribute('data-biaya');

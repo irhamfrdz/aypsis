@@ -192,7 +192,11 @@ class ObAntarGudangController extends Controller
             'nomor_kontainer' => 'required|string',
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
-            'pricelist_id' => 'required|exists:master_pricelist_ob_antar_gudang,id',
+            'pricelist_id' => [
+                'nullable',
+                Rule::requiredIf(fn () => ! $request->boolean('is_zona_mobil_panjang') && ! $request->boolean('is_ckls_mobil_panjang')),
+                'exists:master_pricelist_ob_antar_gudang,id',
+            ],
             'status_service' => 'required|in:service,non_service',
             'status_kontainer' => [
                 'nullable',
@@ -250,26 +254,29 @@ class ObAntarGudangController extends Controller
             $pricelistDimensions->where('status_kontainer', $validated['status_kontainer']);
         }
 
-        $destinationPricelists = (clone $pricelistDimensions)
-            ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
-            ->pluck('id');
-        $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
-            ->where('size_kontainer', $ukuran.'ft')
-            ->where('status_service', $validated['status_service']);
-        if ($validated['status_service'] === 'service') {
-            $pricelistQuery->whereNull('status_kontainer');
-        } elseif (! $abaikanStatusKontainer) {
-            $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
-        }
-        if ($destinationPricelists->isNotEmpty()) {
-            $pricelistQuery->where('gudang_tujuan_id', $validated['gudang_tujuan_id']);
-        } else {
-            $pricelistQuery->whereNull('gudang_tujuan_id');
-        }
-        $pricelist = $pricelistQuery->first();
+        $pricelist = null;
+        if (! empty($validated['pricelist_id'])) {
+            $destinationPricelists = (clone $pricelistDimensions)
+                ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+                ->pluck('id');
+            $pricelistQuery = MasterPricelistObAntarGudang::whereKey($validated['pricelist_id'])
+                ->where('size_kontainer', $ukuran.'ft')
+                ->where('status_service', $validated['status_service']);
+            if ($validated['status_service'] === 'service') {
+                $pricelistQuery->whereNull('status_kontainer');
+            } elseif (! $abaikanStatusKontainer) {
+                $pricelistQuery->where('status_kontainer', $validated['status_kontainer']);
+            }
+            if ($destinationPricelists->isNotEmpty()) {
+                $pricelistQuery->where('gudang_tujuan_id', $validated['gudang_tujuan_id']);
+            } else {
+                $pricelistQuery->whereNull('gudang_tujuan_id');
+            }
+            $pricelist = $pricelistQuery->first();
 
-        if (! $pricelist || ($destinationPricelists->isNotEmpty() && ! $destinationPricelists->contains($pricelist->id))) {
-            return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran, status, dan gudang tujuan. Tarif khusus tujuan akan digunakan jika tersedia.');
+            if (! $pricelist || ($destinationPricelists->isNotEmpty() && ! $destinationPricelists->contains($pricelist->id))) {
+                return back()->withInput()->with('error', 'Pricelist tidak sesuai dengan ukuran, status, dan gudang tujuan. Tarif khusus tujuan akan digunakan jika tersedia.');
+            }
         }
 
         try {
@@ -311,7 +318,7 @@ class ObAntarGudangController extends Controller
                 $validated['is_zona_mobil_panjang'] => self::ZONA_MOBIL_PANJANG_BIAYA,
                 $validated['is_ckls_mobil_panjang'] => self::CKLS_MOBIL_PANJANG_BIAYA_20FT,
                 $validated['is_combo'] => self::COMBO_BIAYA_20FT_SERVICE,
-                default => $pricelist->biaya,
+                default => $pricelist?->biaya ?? $validated['nominal'],
             };
 
             $tagihan->save();
