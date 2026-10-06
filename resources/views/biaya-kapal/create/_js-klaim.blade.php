@@ -205,8 +205,8 @@
         });
 
         // Kapal change -> load voyages
-        kapalSelect.addEventListener('change', function() {
-            const kapalNama = this.value;
+        const handleKapalChange = function() {
+            const kapalNama = kapalSelect.value;
             voyageSelect.innerHTML = '<option value="">-- Memuat Voyage... --</option>';
             voyageSelect.disabled = true;
             clearContainersView();
@@ -218,10 +218,20 @@
 
             fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
                 .then(res => res.json())
-                .then(voyages => {
+                .then(data => {
                     voyageSelect.innerHTML = '<option value="">-- Pilih Nomor Voyage --</option>';
-                    if (Array.isArray(voyages) && voyages.length > 0) {
-                        voyages.forEach(v => {
+
+                    let voyageList = [];
+                    if (data && Array.isArray(data.voyages)) {
+                        voyageList = data.voyages;
+                    } else if (data && Array.isArray(data.voyages_detailed)) {
+                        voyageList = data.voyages_detailed;
+                    } else if (Array.isArray(data)) {
+                        voyageList = data;
+                    }
+
+                    if (voyageList.length > 0) {
+                        voyageList.forEach(v => {
                             const val = typeof v === 'object' ? (v.no_voyage || v.voyage) : v;
                             if (val) {
                                 voyageSelect.innerHTML += `<option value="${val}">${val}</option>`;
@@ -236,16 +246,26 @@
                     console.error('Error fetching voyages for Klaim:', err);
                     voyageSelect.innerHTML = '<option value="">-- Gagal memuat voyage --</option>';
                 });
-        });
+        };
+
+        kapalSelect.addEventListener('change', handleKapalChange);
+        if (typeof jQuery !== 'undefined') {
+            jQuery(kapalSelect).on('change select2:select', handleKapalChange);
+        }
 
         // Voyage select change -> load containers
-        voyageSelect.addEventListener('change', function() {
+        const handleVoyageChange = function() {
             if (this.value) {
                 loadContainersForKlaim(this.value);
             } else {
                 clearContainersView();
             }
-        });
+        };
+
+        voyageSelect.addEventListener('change', handleVoyageChange);
+        if (typeof jQuery !== 'undefined') {
+            jQuery(voyageSelect).on('change select2:select', handleVoyageChange);
+        }
 
         // Voyage manual input (debounced)
         let manualTimeout;
