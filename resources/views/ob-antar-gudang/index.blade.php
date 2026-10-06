@@ -559,12 +559,12 @@
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-is-zona="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'zona') ? '1' : '0' }}" data-biaya="{{ $pl->biaya }}">
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-is-zona="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'zona') ? '1' : '0' }}" data-is-dpe="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'dpe') ? '1' : '0' }}" data-biaya="{{ $pl->biaya }}">
                                                 {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - {{ $pl->gudangTujuan?->nama_gudang ?? 'Semua Gudang' }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Jika gudang asal Depo ZONA, menggunakan tarif Depo ZONA. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Jika gudang asal Depo ZONA atau DEPO DPE, menggunakan tarif khusus depo tersebut. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -668,6 +668,7 @@
         const gudangTujuanOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
         const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
         const isDepoZona = originOption?.dataset.isZona === '1';
+        const isDepoDpe = originOption?.dataset.isDpe === '1';
         const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
 
         const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
@@ -688,6 +689,15 @@
                 hasSpecificRate = true;
                 isMatchingSpecificOption = (option) =>
                     option.getAttribute('data-is-zona') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value);
+            }
+        } else if (isDepoDpe) {
+            const hasDpeRate = eligibleOptions.some(option =>
+                option.getAttribute('data-is-dpe') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value)
+            );
+            if (hasDpeRate) {
+                hasSpecificRate = true;
+                isMatchingSpecificOption = (option) =>
+                    option.getAttribute('data-is-dpe') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value);
             }
         }
 
