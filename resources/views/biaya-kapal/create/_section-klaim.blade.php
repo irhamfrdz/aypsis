@@ -31,6 +31,9 @@
                     <span>+ Tambah Kapal</span>
                 </button>
             </div>
+        </div>
+    </div>
+
     <!-- Informasi Penerima Klaim (Hanya 1 Penerima untuk seluruh pengajuan klaim multi-kapal) -->
     <div class="mb-4 p-4 bg-white border border-rose-200 rounded-xl shadow-sm">
         <div class="flex items-center gap-2 mb-3 border-b border-rose-100 pb-2">
