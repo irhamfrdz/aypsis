@@ -34,6 +34,10 @@
             clearAllDokumenSections();
         }
         if(buruhBongkarWrapper) buruhBongkarWrapper.classList.add('hidden');
+        if(typeof klaimWrapper !== 'undefined' && klaimWrapper) {
+            klaimWrapper.classList.add('hidden');
+            if (typeof clearAllKlaimSections === 'function') clearAllKlaimSections();
+        }
         
         // Reset nominal input properties
         if(nominalInput) {
@@ -1728,6 +1732,68 @@
             clearAllTemasSections();
             if (tantoWrapper) tantoWrapper.classList.add('hidden');
             clearAllTantoSections();
+        } else if (selectedValue === 'KB00008' || selectedText.toLowerCase().includes('klaim')) {
+            // Show Klaim wrapper
+            if (typeof klaimWrapper !== 'undefined' && klaimWrapper) {
+                klaimWrapper.classList.remove('hidden');
+                if (document.querySelectorAll('.klaim-section').length === 0 && typeof addKlaimSection === 'function') {
+                    addKlaimSection();
+                }
+            }
+
+            // Hide normal kapal/voyage/bl wrappers
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+
+            // Set nominal input readonly as it will be auto-calculated from klaim
+            if (nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
+
+            // Hide other specific wrappers
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (demurrageWrapper) demurrageWrapper.classList.add('hidden');
+            clearAllDemurrageSections();
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
+            if (temasWrapper) temasWrapper.classList.add('hidden');
+            clearAllTemasSections();
+            if (tantoWrapper) tantoWrapper.classList.add('hidden');
+            clearAllTantoSections();
+            if (document.getElementById('umum_wrapper')) {
+                document.getElementById('umum_wrapper').classList.add('hidden');
+                clearAllUmumSections();
+            }
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
@@ -1815,6 +1881,10 @@
             if (document.getElementById('umum_wrapper')) {
                 document.getElementById('umum_wrapper').classList.add('hidden');
                 clearAllUmumSections();
+            }
+            if (typeof klaimWrapper !== 'undefined' && klaimWrapper) {
+                klaimWrapper.classList.add('hidden');
+                if (typeof clearAllKlaimSections === 'function') clearAllKlaimSections();
             }
         }
     });

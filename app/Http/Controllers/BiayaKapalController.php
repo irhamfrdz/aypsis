@@ -722,6 +722,27 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // Klaim Sections Cleaning
+        if (isset($data['klaim_sections']) && is_array($data['klaim_sections'])) {
+            foreach ($data['klaim_sections'] as &$section) {
+                $numericFields = ['subtotal', 'total_biaya'];
+                foreach ($numericFields as $f) {
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
+                    }
+                }
+                if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                    foreach ($section['kontainer'] as &$k) {
+                        if (isset($k['biaya_klaim'])) {
+                            $k['biaya_klaim'] = $this->cleanDecimal($k['biaya_klaim']);
+                        }
+                    }
+                    unset($k);
+                }
+            }
+            unset($section);
+        }
+
         $request->replace($data);
 
         $validated = $request->validate([
@@ -982,6 +1003,22 @@ class BiayaKapalController extends Controller
             'nota_retur_sections.*.notes_adjustment' => 'nullable|string',
             'nota_retur_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
+            // KLAIM sections validation
+            'klaim_sections' => 'nullable|array',
+            'klaim_sections.*.kapal' => 'nullable|string|max:255',
+            'klaim_sections.*.voyage' => 'nullable|string|max:255',
+            'klaim_sections.*.vendor' => 'nullable|string|max:255',
+            'klaim_sections.*.penerima' => 'nullable|string|max:255',
+            'klaim_sections.*.keterangan' => 'nullable|string',
+            'klaim_sections.*.kontainer' => 'nullable|array',
+            'klaim_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'klaim_sections.*.kontainer.*.nomor_kontainer' => 'nullable|string|max:255',
+            'klaim_sections.*.kontainer.*.size' => 'nullable|string|max:50',
+            'klaim_sections.*.kontainer.*.biaya_klaim' => 'nullable|numeric|min:0',
+            'klaim_sections.*.kontainer.*.keterangan' => 'nullable|string',
+            'klaim_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'klaim_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
             // Perlengkapan sections
             'perlengkapan_sections' => 'nullable|array',
             'perlengkapan_sections.*.nama_kapal' => 'nullable|string|max:255',
@@ -1217,7 +1254,7 @@ class BiayaKapalController extends Controller
                 'thc_sections', 'dokumen_sections', 'freight_sections',
                 'lolo_sections', 'storage_sections', 'demurrage_sections',
                 'nota_retur_sections', 'umum_sections', 'perijinan_sections',
-                'labuh_tambat', 'meratus', 'temas', 'tanto',
+                'labuh_tambat', 'meratus', 'temas', 'tanto', 'klaim_sections',
             ];
 
             foreach ($globalFields as $field) {
@@ -1722,6 +1759,52 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for NOTA RETUR from section totals
                 $totalNotaRetur = \App\Models\BiayaKapalNotaRetur::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalNotaRetur]);
+            }
+
+            // BIAYA KLAIM SECTIONS: Store Klaim details
+            if ($request->has('klaim_sections') && ! empty($request->klaim_sections)) {
+                foreach ($request->klaim_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage']) && empty($section['kontainer'])) {
+                        continue;
+                    }
+
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (! empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id' => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size' => $k['size'] ?? null,
+                                    'biaya_klaim' => (float) str_replace(['.', ','], ['', '.'], $k['biaya_klaim'] ?? 0),
+                                    'keterangan' => $k['keterangan'] ?? null,
+                                ];
+                            }
+                        }
+                    }
+
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? 0);
+                    };
+
+                    \App\Models\BiayaKapalKlaim::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'vendor' => $section['vendor'] ?? null,
+                        'penerima' => $section['penerima'] ?? null,
+                        'kontainer_ids' => $kontainerIds,
+                        'subtotal' => $cleanNum($section['subtotal'] ?? 0),
+                        'total_biaya' => $cleanNum($section['total_biaya'] ?? 0),
+                        'keterangan' => $section['keterangan'] ?? null,
+                    ]);
+                }
+
+                // Auto-calculate nominal for KLAIM from section totals
+                $totalKlaim = \App\Models\BiayaKapalKlaim::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalKlaim]);
             }
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
@@ -3040,6 +3123,7 @@ class BiayaKapalController extends Controller
             'meratusDetails',
             'demurrageDetails',
             'notaReturDetails',
+            'klaimDetails',
             'tenagaKerjaDetails.buruh',
         ]);
 
@@ -4244,6 +4328,27 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // Klaim Sections Cleaning
+        if (isset($data['klaim_sections']) && is_array($data['klaim_sections'])) {
+            foreach ($data['klaim_sections'] as &$section) {
+                $numericFields = ['subtotal', 'total_biaya'];
+                foreach ($numericFields as $f) {
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
+                    }
+                }
+                if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                    foreach ($section['kontainer'] as &$k) {
+                        if (isset($k['biaya_klaim'])) {
+                            $k['biaya_klaim'] = $this->cleanDecimal($k['biaya_klaim']);
+                        }
+                    }
+                    unset($k);
+                }
+            }
+            unset($section);
+        }
+
         $request->replace($data);
 
         $validated = $request->validate([
@@ -4458,6 +4563,22 @@ class BiayaKapalController extends Controller
             'nota_retur_sections.*.adjustment' => 'nullable|numeric',
             'nota_retur_sections.*.notes_adjustment' => 'nullable|string',
             'nota_retur_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // KLAIM sections validation
+            'klaim_sections' => 'nullable|array',
+            'klaim_sections.*.kapal' => 'nullable|string|max:255',
+            'klaim_sections.*.voyage' => 'nullable|string|max:255',
+            'klaim_sections.*.vendor' => 'nullable|string|max:255',
+            'klaim_sections.*.penerima' => 'nullable|string|max:255',
+            'klaim_sections.*.keterangan' => 'nullable|string',
+            'klaim_sections.*.kontainer' => 'nullable|array',
+            'klaim_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'klaim_sections.*.kontainer.*.nomor_kontainer' => 'nullable|string|max:255',
+            'klaim_sections.*.kontainer.*.size' => 'nullable|string|max:50',
+            'klaim_sections.*.kontainer.*.biaya_klaim' => 'nullable|numeric|min:0',
+            'klaim_sections.*.kontainer.*.keterangan' => 'nullable|string',
+            'klaim_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'klaim_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Labuh tambat sections validation
             'labuh_tambat' => 'nullable|array',
@@ -5340,6 +5461,54 @@ class BiayaKapalController extends Controller
 
                 if ($totalNotaRetur > 0) {
                     $biayaKapal->update(['nominal' => $totalNotaRetur]);
+                }
+            }
+
+            // KLAIM UPDATE
+            if ($request->has('klaim_sections')) {
+                \App\Models\BiayaKapalKlaim::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalKlaim = 0;
+                if (! empty($request->klaim_sections)) {
+                    foreach ($request->klaim_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage']) && empty($section['kontainer'])) {
+                            continue;
+                        }
+
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (! empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id' => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size' => $k['size'] ?? null,
+                                        'biaya_klaim' => (float) str_replace(['.', ','], ['', '.'], $k['biaya_klaim'] ?? '0'),
+                                        'keterangan' => $k['keterangan'] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+
+                        $cleanSubtotal = (float) str_replace(['.', ','], ['', '.'], $section['subtotal'] ?? '0');
+                        $cleanTotal = (float) str_replace(['.', ','], ['', '.'], $section['total_biaya'] ?? '0');
+
+                        \App\Models\BiayaKapalKlaim::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'vendor' => $section['vendor'] ?? null,
+                            'penerima' => $section['penerima'] ?? null,
+                            'kontainer_ids' => $kontainerIds,
+                            'subtotal' => $cleanSubtotal,
+                            'total_biaya' => $cleanTotal,
+                            'keterangan' => $section['keterangan'] ?? null,
+                        ]);
+                        $totalKlaim += floatval($cleanTotal);
+                    }
+                }
+
+                if ($totalKlaim > 0) {
+                    $biayaKapal->update(['nominal' => $totalKlaim]);
                 }
             }
 
@@ -7227,7 +7396,7 @@ class BiayaKapalController extends Controller
             'kapal_sections', 'air', 'tkbm_sections', 'operasional_sections',
             'trucking_sections', 'stuffing_sections', 'thc_sections', 'freight_sections',
             'lolo_sections', 'storage_sections', 'demurrage_sections', 'labuh_tambat',
-            'meratus', 'temas', 'tanto', 'nota_retur_sections',
+            'meratus', 'temas', 'tanto', 'nota_retur_sections', 'klaim_sections',
         ];
 
         foreach ($sectionKeys as $key) {

@@ -73,6 +73,8 @@
 @include('biaya-kapal.create._section-temas')
 {{-- Biaya Tanto --}}
 @include('biaya-kapal.create._section-tanto')
+{{-- Biaya Klaim --}}
+@include('biaya-kapal.create._section-klaim')
 
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
@@ -118,6 +120,7 @@
 @include('biaya-kapal.create._js-temas')
 @include('biaya-kapal.create._js-tanto')
 @include('biaya-kapal.create._js-buruh-bongkar')
+@include('biaya-kapal.create._js-klaim')
 </script>
 @endpush
 

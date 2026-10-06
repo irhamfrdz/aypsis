@@ -1380,6 +1380,71 @@
     </div>
     @endif
 
+    @if($biayaKapal->klaimDetails && $biayaKapal->klaimDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Klaim</h3>
+        <div class="space-y-6">
+            @foreach($biayaKapal->klaimDetails as $detail)
+                <div class="bg-rose-50 border-2 border-rose-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $detail->kapal ?: '-' }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $detail->voyage ?: '-' }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Vendor / Penerima</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $detail->vendor ?: ($detail->penerima ?: '-') }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Keterangan</span>
+                            <p class="text-sm text-gray-700">{{ $detail->keterangan ?: '-' }}</p>
+                        </div>
+                    </div>
+
+                    @if(!empty($detail->kontainer_ids) && is_array($detail->kontainer_ids))
+                    <div class="mt-4 border-t border-rose-200 pt-3">
+                        <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider mb-2 block">Daftar Kontainer & Biaya Klaim</span>
+                        <div class="overflow-x-auto bg-white rounded-lg border border-rose-100 shadow-sm">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-rose-100/50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">No. Kontainer</th>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">Size</th>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">Keterangan</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">Biaya Klaim</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($detail->kontainer_ids as $k)
+                                    <tr>
+                                        <td class="px-4 py-2 font-medium text-gray-900">{{ $k['nomor_kontainer'] ?? '-' }}</td>
+                                        <td class="px-4 py-2 text-gray-600">{{ $k['size'] ?? '-' }}</td>
+                                        <td class="px-4 py-2 text-gray-600">{{ $k['keterangan'] ?? '-' }}</td>
+                                        <td class="px-4 py-2 text-right font-bold text-gray-900">Rp {{ number_format($k['biaya_klaim'] ?? 0, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="mt-4 flex justify-end">
+                        <div class="bg-rose-600 p-3 rounded-lg shadow-md text-right min-w-[200px]">
+                            <span class="text-xs font-semibold text-rose-100 uppercase block">Total Biaya Klaim</span>
+                            <p class="text-lg font-black text-white">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">
         <form action="{{ route('biaya-kapal.destroy', $biayaKapal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline">

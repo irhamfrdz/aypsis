@@ -473,6 +473,13 @@
             }
         });
 
+        // Clean Biaya Klaim fields
+        document.querySelectorAll('[name^="klaim_sections"]').forEach(input => {
+            if (input.name.includes('[subtotal]') || input.name.includes('[total_biaya]') || input.name.includes('[biaya_klaim]')) {
+                input.value = input.value.replace(/\./g, '');
+            }
+        });
+
         // Sanitize per-section numeric hidden inputs to ensure validation accepts numbers
         document.querySelectorAll('.sub-total-value').forEach(el => {
             el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
