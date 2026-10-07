@@ -2829,18 +2829,8 @@
 {{-- Report Dropdown --}}
 @php
     $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.tanda-terima-jakarta.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.uang-jalan.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
-    // Check if user has view permissions for tagihan, pranota, or pembayaran modules
-    $hasReportPermission = $user && (
-        $isAdmin ||
-        $user->can('tagihan-kontainer-view') ||
-        $user->can('pranota-tagihan-view') ||
-        $user->can('pembayaran-pranota-cat-view') ||
-        $user->can('surat-jalan-view') ||
-        $user->can('uang-jalan-view') ||
-        $user->can('pranota-uang-jalan-view') ||
-        $user->can('manifest-view') ||
-        $user->can('perincian-view')
-    );
+    // Report Uang Jalan dan menu Report dapat diakses oleh semua user yang login
+    $hasReportPermission = (bool) $user;
 @endphp
 @if($hasReportPermission)
 <div class="mt-4 mb-4">

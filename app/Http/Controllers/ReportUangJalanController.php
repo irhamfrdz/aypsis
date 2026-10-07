@@ -8,18 +8,11 @@ use App\Models\PembayaranAktivitasLain;
 use App\Models\UangJalan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ReportUangJalanController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-
-        if (! $user->can('surat-jalan-view')) {
-            abort(403, 'Unauthorized');
-        }
-
         return view('report-uang-jalan.select-date');
     }
 
@@ -351,12 +344,6 @@ class ReportUangJalanController extends Controller
 
     public function view(Request $request)
     {
-        $user = Auth::user();
-
-        if (! $user->can('surat-jalan-view')) {
-            abort(403, 'Unauthorized');
-        }
-
         if (! $request->has('start_date') || ! $request->has('end_date')) {
             return redirect()->route('report.uang-jalan.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
@@ -410,12 +397,6 @@ class ReportUangJalanController extends Controller
     {
         ini_set('memory_limit', '1024M');
         set_time_limit(300); // 5 minutes
-
-        $user = Auth::user();
-
-        if (! $user->can('surat-jalan-view')) {
-            abort(403, 'Unauthorized');
-        }
 
         $startDate = Carbon::parse($request->input('start_date', now()->startOfMonth()))->startOfDay();
         $endDate = Carbon::parse($request->input('end_date', now()->endOfMonth()))->endOfDay();
