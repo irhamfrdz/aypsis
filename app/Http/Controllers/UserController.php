@@ -787,6 +787,7 @@ class UserController extends Controller
                 'realisasi-uang-muka' => 'realisasi-uang-muka',
                 'stock-amprahan' => 'stock-amprahan',
                 'stock-ban' => 'stock-ban',
+                'riwayat-pasang-ban' => 'riwayat-pasang-ban',
                 'tagihan-cat' => 'tagihan-cat',
                 'tagihan-pelindo' => 'tagihan-pelindo',
                 'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
@@ -2071,6 +2072,18 @@ class UserController extends Controller
 
                     // Try multiple naming patterns to find the permission
                     $found = false;
+
+                    // DIRECT FIX: Handle riwayat-pasang-ban explicitly
+                    if ($module === 'riwayat-pasang-ban' && in_array($action, ['view', 'export'])) {
+                        $permissionName = 'riwayat-pasang-ban-'.$action;
+                        $directPermission = Permission::where('name', $permissionName)->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
+
+                            continue;
+                        }
+                    }
 
                     // DIRECT FIX: Handle payroll, data-cuti, data-uang-makan explicitly
                     if (in_array($module, ['payroll', 'payroll-uang-karyawan', 'payroll-perhitungan-lembur', 'data-cuti', 'data-uang-makan']) && in_array($action, ['view', 'create', 'update', 'delete'])) {

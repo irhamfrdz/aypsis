@@ -3385,6 +3385,11 @@ Route::middleware([
             ->name('stock-ban.destroy')
             ->middleware('can:stock-ban-delete');
 
+        // 🔄 Riwayat Pasang Ban
+        Route::get('riwayat-pasang-ban', [\App\Http\Controllers\RiwayatPasangBanController::class, 'index'])
+            ->name('riwayat-pasang-ban.index')
+            ->middleware('can:riwayat-pasang-ban-view');
+
         // 💰 Stock Ban Luar Batam Management with permissions
         Route::get('stock-ban-luar-batam/create', [\App\Http\Controllers\StockBanLuarBatamController::class, 'create'])
             ->name('stock-ban-luar-batam.create')

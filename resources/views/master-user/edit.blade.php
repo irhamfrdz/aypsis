@@ -3389,6 +3389,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Riwayat Pasang Ban --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Riwayat Pasang Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[riwayat-pasang-ban][view]" value="1" class="permission-checkbox" @if(old('permissions.riwayat-pasang-ban.view') || (isset($userMatrixPermissions['riwayat-pasang-ban']['view']) && $userMatrixPermissions['riwayat-pasang-ban']['view']) || ($user && $user->can('riwayat-pasang-ban-view'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[riwayat-pasang-ban][export]" value="1" class="permission-checkbox" @if(old('permissions.riwayat-pasang-ban.export') || (isset($userMatrixPermissions['riwayat-pasang-ban']['export']) && $userMatrixPermissions['riwayat-pasang-ban']['export']) || ($user && $user->can('riwayat-pasang-ban-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Ongkos Truck --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

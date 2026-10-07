@@ -1014,6 +1014,23 @@
                                 <td><input type="checkbox" name="permissions[master-gudang-ban][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Riwayat Pasang Ban --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Riwayat Pasang Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[riwayat-pasang-ban][view]" value="1" class="permission-checkbox" @if(old('permissions.riwayat-pasang-ban.view')) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td><input type="checkbox" name="permissions[riwayat-pasang-ban][export]" value="1" class="permission-checkbox" @if(old('permissions.riwayat-pasang-ban.export')) checked @endif></td>
+                            </tr>
+
                             {{-- Aktivitas Supir --}}
                             <tr class="module-row" data-module="aktivitas-supir">
                                 <td class="module-header">

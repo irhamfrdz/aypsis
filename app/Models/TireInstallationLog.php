@@ -40,6 +40,11 @@ class TireInstallationLog extends Model
         return $this->belongsTo(Mobil::class, 'mobil_id');
     }
 
+    public function alatBerat(): BelongsTo
+    {
+        return $this->belongsTo(AlatBerat::class, 'alat_berat_id');
+    }
+
     public function stockBan(): BelongsTo
     {
         return $this->belongsTo(StockBan::class, 'stock_ban_id');

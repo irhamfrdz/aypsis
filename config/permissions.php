@@ -340,6 +340,15 @@ return [
                 'permohonan-amprahan-export' => 'Export Permohonan Amprahan',
             ],
         ],
+        'riwayat-pasang-ban' => [
+            'name' => 'Riwayat Pasang Ban',
+            'description' => 'Menu Riwayat Pemasangan Ban',
+            'required' => true,
+            'sub_modules' => [
+                'riwayat-pasang-ban-view' => 'View Riwayat Pasang Ban',
+                'riwayat-pasang-ban-export' => 'Export Riwayat Pasang Ban',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -431,5 +440,8 @@ return [
 
         // Master Asset
         'master-asset' => ['master-asset-view', 'master-asset-create', 'master-asset-update', 'master-asset-delete', 'asset-view', 'asset-create', 'asset-update', 'asset-delete'],
+
+        // Riwayat Pasang Ban
+        'riwayat-pasang-ban' => ['riwayat-pasang-ban-view'],
     ],
 ];
