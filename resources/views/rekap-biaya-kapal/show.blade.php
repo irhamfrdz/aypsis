@@ -243,6 +243,18 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        @php
+                                            $temasDetails = $item instanceof \App\Models\BiayaKapal && $item->relationLoaded('temasDetails')
+                                                ? $item->temasDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal)) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
+                                                : collect();
+                                        @endphp
+                                        @if($temasDetails->isNotEmpty())
+                                            <tr class="bg-blue-50/20">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-4 pb-4 pt-2">
+                                                    @include('rekap-biaya-kapal._temas-details', ['temasDetails' => $temasDetails])
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-100/50 font-bold border-t border-gray-200">
