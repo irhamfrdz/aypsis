@@ -190,7 +190,7 @@
                         <td class="px-4 py-3 text-xs text-gray-700">
                             @if($log->stockBan)
                                 <div class="font-medium text-gray-900">
-                                    {{ $log->stockBan->merkBan ? $log->stockBan->merkBan->nama_merk : ($log->stockBan->merk ?: '-') }}
+                                    {{ $log->stockBan->merk ?: ($log->stockBan->merkBan->nama ?? '-') }}
                                 </div>
                                 <div class="text-[11px] text-gray-500">
                                     {{ $log->stockBan->ukuran ?: ($log->stockBan->namaStockBan ? $log->stockBan->namaStockBan->nama : '') }}

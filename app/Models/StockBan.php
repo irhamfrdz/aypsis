@@ -52,6 +52,11 @@ class StockBan extends Model
         return $this->belongsTo(NamaStockBan::class, 'nama_stock_ban_id');
     }
 
+    public function merkBan()
+    {
+        return $this->belongsTo(MerkBan::class, 'merk', 'nama');
+    }
+
     public function mobil()
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');

@@ -15,4 +15,9 @@ class MerkBan extends Model
         'nama',
         'status',
     ];
+
+    public function getNamaMerkAttribute()
+    {
+        return $this->nama;
+    }
 }
