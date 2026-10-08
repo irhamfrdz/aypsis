@@ -113,4 +113,25 @@ class RekapBiayaKapalTest extends TestCase
         $response->assertSee('Sewa dermaga');
         $response->assertSee('Rp 1.000.000');
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_shows_batam_labor_totals_from_batam_details()
+    {
+        $this->actingAs($this->user);
+        $invoice = BiayaKapal::create([
+            'tanggal' => '2026-10-03', 'nomor_invoice' => 'BKP-10-26-000016',
+            'nama_kapal' => ['KM JALESMAS'], 'no_voyage' => ['JALESMAS59'],
+            'jenis_biaya' => 'KB001', 'nominal' => 0, 'pph' => 0, 'total_biaya' => 0,
+        ]);
+        \App\Models\BiayaKapalBuruhBatam::create([
+            'biaya_kapal_id' => $invoice->id, 'kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59',
+            'nominal' => 1000000, 'adjustment' => 50000, 'pph_percent' => 2.5,
+            'pph_amount' => 26250, 'total_nominal' => 1023750,
+        ]);
+
+        $response = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59']));
+
+        $response->assertOk();
+        $response->assertSee('Rp 1.023.750');
+    }
 }

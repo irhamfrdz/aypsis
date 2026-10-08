@@ -26,6 +26,7 @@ class RekapBiayaKapalController extends Controller
         'tantoDetails',
         'demurrageDetails',
         'tenagaKerjaDetails',
+        'buruhBatamDetails',
         'operasionalDetails',
         'dokumens',
     ];
@@ -150,8 +151,17 @@ class RekapBiayaKapalController extends Controller
         $pph = 0;
         $total = 0;
 
+        // Biaya buruh Batam menyimpan total per kapal/voyage pada tabel detail.
+        if ($item->buruhBatamDetails->count() > 0) {
+            $hasDetails = true;
+            $details = $item->buruhBatamDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower && strtolower(trim($d->voyage ?? '')) === $voyageLower);
+            $nominal = $details->sum(fn ($d) => (float) $d->nominal + (float) ($d->adjustment ?? 0));
+            $pph = $details->sum('pph_amount');
+            $total = $details->sum('total_nominal');
+        }
+
         // 1. Biaya Buruh (barangDetails / tenagaKerjaDetails)
-        if ($item->barangDetails->count() > 0 || $item->tenagaKerjaDetails->count() > 0) {
+        elseif ($item->barangDetails->count() > 0 || $item->tenagaKerjaDetails->count() > 0) {
             $hasDetails = true;
             $barangItems = $item->barangDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $tkItems = $item->tenagaKerjaDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
