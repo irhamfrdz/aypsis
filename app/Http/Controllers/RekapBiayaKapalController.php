@@ -419,18 +419,40 @@ class RekapBiayaKapalController extends Controller
         return response()->json($finalVoyages);
     }
 
-    /**
-     * Show the detailed costs for the selected ship and voyage.
-     */
+    private function normalizeBl($number): string
+    {
+        return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
+    }
+
+    public function getBls(Request $request)
+    {
+        $data = $request->validate(['kapal' => 'required|string', 'voyage' => 'required|string']);
+        $kapal = strtolower(trim($data['kapal']));
+        $voyage = strtolower(trim($data['voyage']));
+        $numbers = collect();
+        foreach (BiayaKapal::with('temasDetails')->get() as $record) {
+            foreach ($record->temasDetails as $detail) {
+                if (strtolower(trim($detail->kapal ?? '')) === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
+                    $numbers->push($this->normalizeBl($detail->nomor_bl ?? ''));
+                }
+            }
+        }
+
+        return response()->json($numbers->filter()->unique()->sort()->values());
+    }
+
+    /** Show the costs for the selected ship, voyage, and optional BL. */
     public function show(Request $request)
     {
         $request->validate([
             'kapal' => 'required|string',
             'voyage' => 'required|string',
+            'bl' => 'nullable|string|max:255',
         ]);
 
         $kapal = $request->kapal;
         $voyage = $request->voyage;
+        $bl = $this->normalizeBl($request->input('bl', ''));
 
         // Fetch all biaya kapals and load relations
         $allRelations = array_merge(['klasifikasiBiaya', 'vendor'], $this->relations);
@@ -439,6 +461,22 @@ class RekapBiayaKapalController extends Controller
             ->filter(function ($record) use ($kapal, $voyage) {
                 return $this->recordHasShipAndVoyage($record, $kapal, $voyage);
             });
+
+        if ($bl !== '') {
+            $biayaKapals = $biayaKapals->filter(function ($record) use ($kapal, $voyage, $bl) {
+                if ($record->temasDetails->isEmpty()) {
+                    return true;
+                }
+                $details = $record->temasDetails->filter(fn ($detail) =>
+                        strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
+                        && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage))
+                        && $this->normalizeBl($detail->nomor_bl ?? '') === $bl
+                );
+                $record->setRelation('temasDetails', $details);
+
+                return $details->isNotEmpty();
+            });
+        }
 
         // Apportion each record
         foreach ($biayaKapals as $record) {
@@ -578,6 +616,6 @@ class RekapBiayaKapalController extends Controller
                 ->whereIn('nomor_kontainer', $temasContainers)->get();
         }
 
-        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'biayaKapals', 'summary', 'grouped', 'temasManifests'));
+        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'bl', 'biayaKapals', 'summary', 'grouped', 'temasManifests'));
     }
 }

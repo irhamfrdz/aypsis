@@ -69,6 +69,16 @@
                     </div>
 
                     <!-- Submit Buttons -->
+                    <div>
+                        <label for="bl_select" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-file-alt text-gray-400 mr-1"></i> Filter BL Tagihan TEMAS (Opsional)
+                        </label>
+                        <select name="bl" id="bl_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" disabled>
+                            <option value="">-- Semua BL --</option>
+                        </select>
+                        <p id="bl_status" class="mt-2 text-xs text-gray-500" role="status">Pilih kapal dan voyage untuk memuat BL TEMAS. Filter hanya berlaku pada Tagihan TEMAS; biaya lainnya tetap ditampilkan.</p>
+                    </div>
+
                     <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
                         <button type="button" id="btnReset" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition duration-200 text-sm flex items-center">
                             <i class="fas fa-redo-alt mr-2"></i> Reset
@@ -104,6 +114,36 @@
             allowClear: true,
             width: '100%'
         });
+        $('#bl_select').select2({placeholder: '-- Semua BL --', allowClear: true, width: '100%'});
+        let voyageRequest = null;
+        let blRequest = null;
+
+        $('#voyage_select').on('change', function() {
+            if (blRequest) blRequest.abort();
+            const kapal = $('#kapal_select').val();
+            const voyage = $(this).val();
+            const $blSelect = $('#bl_select');
+            $blSelect.empty().append(new Option('-- Semua BL --', '', true, true)).prop('disabled', true).trigger('change');
+            if (!kapal || !voyage) {
+                $('#bl_status').text('Pilih kapal dan voyage untuk memuat BL.');
+                return;
+            }
+            $('#bl_status').text('Memuat nomor BL...');
+            blRequest = $.ajax({
+                url: "{{ route('rekap-biaya-kapal.get-bls') }}",
+                data: {kapal, voyage},
+                dataType: 'json',
+                success: function(data) {
+                    if ($('#kapal_select').val() !== kapal || $('#voyage_select').val() !== voyage) return;
+                    data.forEach(number => $blSelect.append(new Option('BL ' + number, number)));
+                    $blSelect.prop('disabled', false).trigger('change');
+                    $('#bl_status').text(data.length ? 'Pilihan BL hanya menyaring Tagihan TEMAS. Biaya lainnya tetap ditampilkan penuh.' : 'Belum ada Tagihan TEMAS dengan referensi BL pada kapal dan voyage ini.');
+                },
+                error: function(xhr, status) {
+                    if (status !== 'abort') $('#bl_status').text('Gagal memuat BL. Pilih ulang voyage untuk mencoba kembali.');
+                }
+            });
+        });
 
         // Store original options for filtering
         const originalKapalOptions = $('#kapal_select option').clone();
@@ -136,6 +176,7 @@
         });
 
         $('#kapal_select').on('change', function() {
+            if (voyageRequest) voyageRequest.abort();
             const kapal = $(this).val();
             const $voyageSelect = $('#voyage_select');
             
@@ -153,12 +194,13 @@
             $voyageSelect.append(new Option('Memuat nomor voyage...', '', true, true)).trigger('change');
 
             // Fetch Voyages from Controller
-            $.ajax({
+            voyageRequest = $.ajax({
                 url: "{{ route('rekap-biaya-kapal.get-voyages') }}",
                 type: "GET",
                 data: { kapal: kapal },
                 dataType: "json",
                 success: function(data) {
+                    if ($('#kapal_select').val() !== kapal) return;
                     $voyageSelect.empty();
                     $voyageSelect.prop('disabled', false);
 
@@ -174,6 +216,7 @@
                     $voyageSelect.trigger('change');
                 },
                 error: function(xhr, status, error) {
+                    if (status === 'abort') return;
                     console.error('AJAX Error: ' + status + error);
                     $voyageSelect.empty();
                     $voyageSelect.append(new Option('-- Gagal memuat data --', '', true, true)).trigger('change');
@@ -186,6 +229,7 @@
             $('#pemilik_select').val(null).trigger('change');
             $('#kapal_select').val(null).trigger('change');
             $('#voyage_select').val(null).trigger('change');
+            $('#bl_select').val(null).trigger('change');
         });
     });
 </script>

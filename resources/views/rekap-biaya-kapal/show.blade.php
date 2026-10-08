@@ -28,6 +28,9 @@
             <h1 class="text-3xl font-extrabold tracking-tight">Kapal: {{ $kapal }}</h1>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-slate-200 text-sm">
                 <span class="flex items-center"><i class="fas fa-route mr-2 text-blue-400"></i> Voyage: <strong>{{ $voyage }}</strong></span>
+                @if(!empty($bl))
+                    <span class="flex items-center"><i class="fas fa-file-alt mr-2 text-blue-400"></i> BL TEMAS: <strong>{{ $bl }}</strong></span>
+                @endif
                 <span class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-blue-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
                 <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-blue-400"></i> Total Records: <strong>{{ $biayaKapals->count() }}</strong></span>
             </div>
@@ -35,6 +38,9 @@
     </div>
 
     <!-- Summary Metrics -->
+    @if(!empty($bl))
+        <p class="mb-4 text-sm text-gray-600">Tagihan TEMAS disaring untuk BL {{ $bl }}. Biaya klasifikasi lainnya tetap dihitung penuh sesuai kapal dan voyage.</p>
+    @endif
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <!-- Total Nominal -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">

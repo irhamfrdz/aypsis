@@ -135,4 +135,38 @@ class RekapBiayaKapalTest extends TestCase
         $response->assertSee('BURUH BONGKAR BATAM');
         $response->assertSee('Rp 1.023.750');
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function bl_filter_applies_only_to_temas_and_keeps_other_costs()
+    {
+        $this->actingAs($this->user);
+        $invoice = BiayaKapal::create([
+            'tanggal' => '2026-10-08', 'nomor_invoice' => 'INV-BL-01',
+            'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101', 'V102'],
+            'jenis_biaya' => 'KB001', 'nominal' => 8500, 'total_biaya' => 8500,
+        ]);
+        foreach ([['01-1', 'V101', 1000], ['01-2', 'V101', 2000], ['02', 'V101', 5000], ['03', 'V102', 500]] as [$bl, $voyage, $amount]) {
+            $invoice->temasDetails()->create([
+                'kapal' => 'Sinar Batam', 'voyage' => $voyage, 'nomor_bl' => $bl,
+                'jenis_biaya' => 'Freight', 'kuantitas' => 1, 'harga' => $amount,
+                'sub_total' => $amount, 'grand_total' => $amount,
+            ]);
+        }
+        $shared = BiayaKapal::create([
+            'tanggal' => '2026-10-08', 'nomor_invoice' => 'INV-NO-BL',
+            'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101'],
+            'jenis_biaya' => 'KB001', 'nominal' => 9000, 'total_biaya' => 9000,
+        ]);
+        $this->getJson(route('rekap-biaya-kapal.get-bls', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']))
+            ->assertOk()->assertExactJson(['01', '02']);
+
+        $response = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101', 'bl' => '01']));
+        $response->assertOk();
+        $response->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 12000.0);
+        $response->assertViewHas('biayaKapals', fn ($items) => $items->contains('id', $invoice->id) && $items->contains('id', $shared->id));
+        $response->assertDontSee('BL: 02');
+
+        $unfiltered = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']));
+        $unfiltered->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 17000.0);
+    }
 }

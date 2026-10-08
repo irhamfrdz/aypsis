@@ -3241,6 +3241,9 @@ Route::middleware([
         Route::get('rekap-biaya-kapal/get-voyages', [\App\Http\Controllers\RekapBiayaKapalController::class, 'getVoyages'])
             ->name('rekap-biaya-kapal.get-voyages')
             ->middleware('can:biaya-kapal-view');
+        Route::get('rekap-biaya-kapal/get-bls', [\App\Http\Controllers\RekapBiayaKapalController::class, 'getBls'])
+            ->name('rekap-biaya-kapal.get-bls')
+            ->middleware('can:biaya-kapal-view');
 
         Route::get('rekap-biaya-asset', [\App\Http\Controllers\RekapBiayaAssetController::class, 'index'])
             ->name('rekap-biaya-asset.index')
