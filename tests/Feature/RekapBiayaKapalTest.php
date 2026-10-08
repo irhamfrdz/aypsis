@@ -159,6 +159,51 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function claim_rekap_recovers_zero_totals_from_subtotal_and_container_fees()
+    {
+        $this->actingAs($this->user);
+        $invoice = BiayaKapal::create([
+            'tanggal' => '2026-10-03', 'nomor_invoice' => 'INV-KLAIM-ZERO-TOTAL',
+            'nama_kapal' => ['KM JALESMAS'], 'no_voyage' => ['JALESMAS59'],
+            'jenis_biaya' => 'KB001', 'nominal' => 0, 'total_biaya' => 0,
+        ]);
+        $invoice->klaimDetails()->create([
+            'kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59',
+            'subtotal' => 1500000, 'total_biaya' => 0,
+        ]);
+        $invoice->klaimDetails()->create([
+            'kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59',
+            'subtotal' => 0, 'total_biaya' => 0,
+            'kontainer_ids' => [['biaya_klaim' => 50000], ['biaya_klaim' => 100000]],
+        ]);
+        $invoice->klaimDetails()->create([
+            'kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS60',
+            'subtotal' => 0, 'total_biaya' => 0,
+            'kontainer_ids' => [['biaya_klaim' => 9000000]],
+        ]);
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59']))
+            ->assertOk()->assertSee('Rp 1.650.000')
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 1650000.0);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function legacy_claim_without_details_uses_parent_nominal_when_total_is_zero()
+    {
+        $this->actingAs($this->user);
+        \App\Models\KlasifikasiBiaya::create(['kode' => 'KB002', 'nama' => 'Klaim']);
+        BiayaKapal::create([
+            'tanggal' => '2026-10-03', 'nomor_invoice' => 'INV-KLAIM-LEGACY',
+            'nama_kapal' => ['KM JALESMAS'], 'no_voyage' => ['JALESMAS59'],
+            'jenis_biaya' => 'KB002', 'nominal' => 1500000, 'ppn' => 0, 'pph' => 25000, 'total_biaya' => 0,
+        ]);
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59']))
+            ->assertOk()->assertSee('Rp 1.475.000')
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 1475000.0);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function temas_rekap_counts_invoices_on_target_voyages_without_counting_dp_twice()
     {
         $this->actingAs($this->user);

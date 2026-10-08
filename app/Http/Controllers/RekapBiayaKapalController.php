@@ -257,8 +257,9 @@ class RekapBiayaKapalController extends Controller
             $hasDetails = true;
             $details = $item->klaimDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
                 && strtolower(trim($d->voyage ?? '')) === $voyageLower);
-            $nominal = $details->sum('subtotal');
-            $total = $details->sum('total_biaya');
+            $nominal = $details->sum(fn ($d) => (float) $d->subtotal ?: collect($d->kontainer_ids ?? [])->sum('biaya_klaim'));
+            $total = $details->sum(fn ($d) => (float) $d->total_biaya
+                ?: ((float) $d->subtotal ?: collect($d->kontainer_ids ?? [])->sum('biaya_klaim')));
         }
 
         // TEMAS costs follow the final invoice, rather than the DP cash advance.
@@ -308,6 +309,10 @@ class RekapBiayaKapalController extends Controller
             $ppn = $item->ppn;
             $pph = $item->pph;
             $total = $item->total_biaya;
+            // Older claims may only have the nominal on the parent transaction.
+            if ((float) $total === 0.0 && stripos($item->klasifikasiBiaya?->nama ?? '', 'klaim') !== false) {
+                $total = (float) $nominal + (float) $ppn - (float) $pph;
+            }
         }
 
         return [
