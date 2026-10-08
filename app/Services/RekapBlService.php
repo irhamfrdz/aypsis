@@ -70,7 +70,7 @@ class RekapBlService
             foreach (['biaya_klaim', 'nominal', 'dpp', 'sisa_pembayaran'] as $field) {
                 $total = collect($entries)->sum(fn ($entry) => (float) data_get($entry, $field, 0));
                 if ($total > 0) {
-                    return collect($entries)->sum(fn ($entry, $index) => (float) data_get($entry, $field, 0) * ($ratios[$index] ?? 0)) / $total;
+                    return collect($entries)->map(fn ($entry, $index) => (float) data_get($entry, $field, 0) * ($ratios[$index] ?? 0))->sum() / $total;
                 }
             }
 

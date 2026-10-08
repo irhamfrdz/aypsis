@@ -46,6 +46,8 @@ class RekapBlServiceTest extends TestCase
             ]];
             $this->assertSame(0.25, $resolver->ratio($row, '01'));
             $this->assertSame(0.75, $resolver->ratio($row, '02'));
+            $row['kontainer_ids'] = [4 => $row['kontainer_ids'][0], 9 => $row['kontainer_ids'][1]];
+            $this->assertSame(0.25, $resolver->ratio($row, '01'));
         }
         $this->assertSame(0.5, $resolver->ratio(['kontainer_ids' => [['bl_id' => 1], ['bl_id' => 2]]], '01'));
     }
