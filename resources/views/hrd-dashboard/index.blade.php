@@ -66,7 +66,7 @@
         $totalKaryawanMasuk = max(0, $totalKaryawan - $karyawanBelumAbsen->count());
 
         // 1. Hadir Normal (Tepat waktu)
-        $cntHadirNormal = max(0, $totalKaryawanMasuk - $karyawanTerlambat->count());
+        $cntHadirNormal = $karyawanHadirNormal->count();
         $pctHadirNormal = $totalKaryawan > 0 ? round(($cntHadirNormal / $totalKaryawan) * 100, 1) : 0;
         $pctHadirOfMasuk = $totalKaryawanMasuk > 0 ? round(($cntHadirNormal / $totalKaryawanMasuk) * 100, 1) : 0;
 
@@ -82,7 +82,7 @@
         // 4. Absen Terlambat (dari karyawan yang masuk)
         $cntTerlambat = $karyawanTerlambat->count();
         $pctTerlambat = $totalKaryawanMasuk > 0 ? round(($cntTerlambat / $totalKaryawanMasuk) * 100, 1) : 0;
-        $cntTepatWaktu = max(0, $totalKaryawanMasuk - $cntTerlambat);
+        $cntTepatWaktu = $cntHadirNormal;
 
         // 5. Cuti & Izin Berjalan
         $cntCuti = $karyawanCuti->count();

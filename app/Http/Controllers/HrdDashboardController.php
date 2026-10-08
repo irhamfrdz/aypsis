@@ -102,7 +102,10 @@ class HrdDashboardController extends Controller
         $activeKaryawanIds = (clone $karyawanBaseQuery)->pluck('id')->toArray();
 
         // 2. Karyawan Absen Masuk (Hari Ini atau Rentang Periode)
-        $absensiMasukQuery = Absensi::with('karyawan')
+        $absensiMasukQuery = Absensi::with(['karyawan' => function ($q) {
+            $q->select('id', 'nik', 'nama_lengkap', 'divisi', 'cabang', 'grup', 'penempatan');
+        }])
+            ->select('id', 'karyawan_id', 'nik', 'waktu', 'tipe', 'latitude', 'longitude', 'detail_lokasi')
             ->where('tipe', 'Masuk');
 
         if ($isSingleDay) {
@@ -137,9 +140,16 @@ class HrdDashboardController extends Controller
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
             return $waktuAbsen->greaterThan($batasTerlambat) && ! $isExempt;
-        })->values();
+        })
+            ->sortByDesc('waktu')
+            ->unique('karyawan_id')
+            ->sortBy(function ($absen) {
+                return strtolower($absen->karyawan->nama_lengkap ?? '');
+            })
+            ->values();
 
         // Karyawan yang hadir normal: tapping masuk sampai batas toleransi atau bebas keterlambatan.
+        // Satu karyawan hanya ditampilkan satu kali pada daftar dashboard.
         $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) {
             $waktuAbsen = Carbon::parse($absen->waktu);
             $jamBatasHari = $waktuAbsen->isSaturday() ? 8 : 9;
@@ -147,51 +157,63 @@ class HrdDashboardController extends Controller
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
             return $waktuAbsen->lessThanOrEqualTo($batasTerlambat) || $isExempt;
-        });
-
-        if ($isSingleDay) {
-            $karyawanHadirNormal = $karyawanHadirNormal->unique('karyawan_id');
-        }
-        $karyawanHadirNormal = $karyawanHadirNormal->sortBy(function ($absen) {
-            return strtolower($absen->karyawan->nama_lengkap ?? '');
-        })->values();
+        })
+            ->sortByDesc('waktu')
+            ->unique('karyawan_id')
+            ->sortBy(function ($absen) {
+                return strtolower($absen->karyawan->nama_lengkap ?? '');
+            })
+            ->values();
 
         // Hitung jarak titik GPS absen ke lokasi absensi aktif terdekat.
         $lokasiAbsensi = DB::table('lokasi_absensis')
             ->where('is_active', 1)
             ->get(['nama_lokasi', 'latitude', 'longitude', 'radius']);
-        foreach ($karyawanHadirNormal as $absen) {
-            $absen->jarak_absen_meter = null;
-            $absen->radius_absensi_meter = null;
-            $absen->nama_lokasi_absensi = null;
 
-            if (! is_numeric($absen->latitude) || ! is_numeric($absen->longitude) || $lokasiAbsensi->isEmpty()) {
-                continue;
+        $parsedLokasi = [];
+        foreach ($lokasiAbsensi as $lok) {
+            if (is_numeric($lok->latitude) && is_numeric($lok->longitude)) {
+                $parsedLokasi[] = [
+                    'nama_lokasi' => $lok->nama_lokasi,
+                    'lat_rad' => deg2rad((float) $lok->latitude),
+                    'lon_rad' => deg2rad((float) $lok->longitude),
+                    'radius' => (int) $lok->radius,
+                ];
             }
+        }
 
-            $lat1 = deg2rad((float) $absen->latitude);
-            $lon1 = deg2rad((float) $absen->longitude);
-            $terdekat = $lokasiAbsensi->map(function ($lokasi) use ($lat1, $lon1) {
-                if (! is_numeric($lokasi->latitude) || ! is_numeric($lokasi->longitude)) {
-                    return null;
+        if (! empty($parsedLokasi)) {
+            foreach ($karyawanHadirNormal as $absen) {
+                $absen->jarak_absen_meter = null;
+                $absen->radius_absensi_meter = null;
+                $absen->nama_lokasi_absensi = null;
+
+                if (! is_numeric($absen->latitude) || ! is_numeric($absen->longitude)) {
+                    continue;
                 }
 
-                $lat2 = deg2rad((float) $lokasi->latitude);
-                $lon2 = deg2rad((float) $lokasi->longitude);
-                $dLat = $lat2 - $lat1;
-                $dLon = $lon2 - $lon1;
-                $a = sin($dLat / 2) ** 2 + cos($lat1) * cos($lat2) * sin($dLon / 2) ** 2;
-                $jarak = 6371000 * 2 * atan2(sqrt($a), sqrt(1 - $a));
+                $lat1 = deg2rad((float) $absen->latitude);
+                $lon1 = deg2rad((float) $absen->longitude);
+                $minJarak = null;
+                $closestLok = null;
 
-                $lokasi->jarak_meter = $jarak;
+                foreach ($parsedLokasi as $lok) {
+                    $dLat = $lok['lat_rad'] - $lat1;
+                    $dLon = $lok['lon_rad'] - $lon1;
+                    $a = sin($dLat / 2) ** 2 + cos($lat1) * cos($lok['lat_rad']) * sin($dLon / 2) ** 2;
+                    $jarak = 6371000 * 2 * atan2(sqrt($a), sqrt(1 - $a));
 
-                return $lokasi;
-            })->filter()->sortBy('jarak_meter')->first();
+                    if ($minJarak === null || $jarak < $minJarak) {
+                        $minJarak = $jarak;
+                        $closestLok = $lok;
+                    }
+                }
 
-            if ($terdekat) {
-                $absen->jarak_absen_meter = round($terdekat->jarak_meter, 1);
-                $absen->radius_absensi_meter = (int) $terdekat->radius;
-                $absen->nama_lokasi_absensi = $terdekat->nama_lokasi;
+                if ($closestLok !== null) {
+                    $absen->jarak_absen_meter = round($minJarak, 1);
+                    $absen->radius_absensi_meter = $closestLok['radius'];
+                    $absen->nama_lokasi_absensi = $closestLok['nama_lokasi'];
+                }
             }
         }
 
@@ -233,7 +255,10 @@ class HrdDashboardController extends Controller
             ->get();
 
         // 7. Absensi Luar Radius
-        $absensiLuarRadiusQuery = Absensi::with('karyawan')
+        $absensiLuarRadiusQuery = Absensi::with(['karyawan' => function ($q) {
+            $q->select('id', 'nik', 'nama_lengkap', 'divisi', 'cabang', 'grup', 'penempatan');
+        }])
+            ->select('id', 'karyawan_id', 'nik', 'waktu', 'tipe', 'latitude', 'longitude', 'detail_lokasi')
             ->where('detail_lokasi', 'like', '%Di luar radius%')
             ->orderBy('waktu', 'asc');
 
