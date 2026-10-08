@@ -1217,7 +1217,7 @@
                                 @endif
                                 <tr class="bg-indigo-100">
                                     <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
-                                    <td class="px-4 py-2 text-base text-right font-black text-indigo-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-base text-right font-black text-indigo-800">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -1307,7 +1307,7 @@
                                 @endif
                                 <tr class="bg-blue-100">
                                     <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
-                                    <td class="px-4 py-2 text-base text-right font-black text-blue-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-base text-right font-black text-blue-800">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
                         </table>
