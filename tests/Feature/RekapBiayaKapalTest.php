@@ -137,6 +137,28 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function claim_totals_come_from_details_for_the_selected_ship_and_voyage()
+    {
+        $this->actingAs($this->user);
+        $invoice = BiayaKapal::create([
+            'tanggal' => '2026-10-03', 'nomor_invoice' => 'BKP-10-26-000018',
+            'nama_kapal' => ['Kapal Lain'], 'no_voyage' => ['V99'],
+            'jenis_biaya' => 'KB001', 'nominal' => 9000000, 'total_biaya' => 0,
+        ]);
+        foreach ([['KM JALESMAS', 'JALESMAS59', 1500000], ['KM JALESMAS', 'JALESMAS60', 2500000], ['Kapal Lain', 'JALESMAS59', 5000000]] as [$ship, $voyage, $amount]) {
+            $invoice->klaimDetails()->create([
+                'kapal' => $ship, 'voyage' => $voyage,
+                'subtotal' => $amount, 'total_biaya' => $amount,
+            ]);
+        }
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59']))
+            ->assertOk()->assertSee('BKP-10-26-000018')->assertSee('Rp 1.500.000')
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 1500000.0
+                && (float) $summary['total_nominal'] === 1500000.0);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function temas_rekap_counts_invoices_on_target_voyages_without_counting_dp_twice()
     {
         $this->actingAs($this->user);

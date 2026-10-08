@@ -27,6 +27,7 @@ class RekapBiayaKapalController extends Controller
         'demurrageDetails',
         'tenagaKerjaDetails',
         'buruhBatamDetails',
+        'klaimDetails',
         'operasionalDetails',
         'dokumens',
     ];
@@ -249,6 +250,15 @@ class RekapBiayaKapalController extends Controller
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
+        }
+
+        // Claim amounts are stored per ship/voyage in the claim details.
+        elseif ($item->klaimDetails->count() > 0) {
+            $hasDetails = true;
+            $details = $item->klaimDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+                && strtolower(trim($d->voyage ?? '')) === $voyageLower);
+            $nominal = $details->sum('subtotal');
+            $total = $details->sum('total_biaya');
         }
 
         // TEMAS costs follow the final invoice, rather than the DP cash advance.
