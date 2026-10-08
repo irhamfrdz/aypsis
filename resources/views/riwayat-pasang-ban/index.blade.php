@@ -201,9 +201,12 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800 font-mono border border-slate-200">
-                                {{ $log->wheel_code ?: ($log->wheel_id ?: '-') }}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                                {{ $log->posisi_roda }}
                             </span>
+                            @if($log->wheel_code && $log->posisi_roda !== $log->wheel_code)
+                                <span class="block text-[10px] text-gray-400 font-mono mt-0.5">{{ $log->wheel_code }}</span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
                             <span class="font-mono text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">

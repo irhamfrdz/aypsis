@@ -65,6 +65,19 @@ class RiwayatPasangBanController extends Controller
                 $q->where('nomor_seri', 'like', "%{$keyword}%")
                     ->orWhere('wheel_code', 'like', "%{$keyword}%")
                     ->orWhere('wheel_id', 'like', "%{$keyword}%")
+                    ->orWhere(function ($qWheel) use ($keyword) {
+                        $matchedCodes = [];
+                        foreach (TireInstallationLog::$wheelNameMap as $code => $name) {
+                            if (stripos($name, $keyword) !== false) {
+                                $matchedCodes[] = $code;
+                            }
+                        }
+                        if (! empty($matchedCodes)) {
+                            $qWheel->whereIn('wheel_code', $matchedCodes);
+                        } else {
+                            $qWheel->whereRaw('0 = 1');
+                        }
+                    })
                     ->orWhere('donor_unit_name', 'like', "%{$keyword}%")
                     ->orWhere('notes', 'like', "%{$keyword}%")
                     ->orWhereHas('mobil', function ($qMobil) use ($keyword) {
