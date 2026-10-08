@@ -2189,7 +2189,7 @@ class BiayaKapalController extends Controller
                         $adjustment = $cleanNum($section['adjustment'] ?? 0);
                         $notesAdjustment = $section['notes_adjustment'] ?? null;
 
-                        $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                        $pphPercent = (float) str_replace(',', '.', (string) ($section['pph_percent'] ?? 0));
                         $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
 
                         $totalNominal = ($nominal + $adjustment) - $pphAmount;
@@ -2225,7 +2225,8 @@ class BiayaKapalController extends Controller
                     $cleanNumShared = function ($val) {
                         return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
                     };
-                    $sharedPphPercent = $cleanNumShared($batamShared['pph_percent'] ?? null);
+                    // Persentase memakai desimal, bukan pemisah ribuan seperti nominal rupiah.
+                    $sharedPphPercent = (float) str_replace(',', '.', (string) ($batamShared['pph_percent'] ?? 0));
                     $sharedNomorBukti = $batamShared['nomor_bukti'] ?? null;
                     $sharedPenerima = $batamShared['penerima'] ?? null;
                     $sharedNamaVendor = $batamShared['nama_vendor'] ?? null;
@@ -2374,7 +2375,7 @@ class BiayaKapalController extends Controller
                                 $pphPercent = $sharedPphPercent;
                                 $pphAmount = $grandSubtotal > 0 ? round($sharedPphAmountTotal * ($sectionSubtotal / $grandSubtotal)) : 0;
                             } else {
-                                $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                                $pphPercent = (float) str_replace(',', '.', (string) ($section['pph_percent'] ?? 0));
                                 $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
                             }
 
@@ -6067,7 +6068,7 @@ class BiayaKapalController extends Controller
                             $adjustment = $cleanNum($section['adjustment'] ?? 0);
                             $notesAdjustment = $section['notes_adjustment'] ?? null;
 
-                            $pphPercent = $cleanNum($section['pph_percent'] ?? 0);
+                            $pphPercent = (float) str_replace(',', '.', (string) ($section['pph_percent'] ?? 0));
                             $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
 
                             $totalNominal = ($nominal + $adjustment) - $pphAmount;
