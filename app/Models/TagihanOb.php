@@ -25,6 +25,7 @@ class TagihanOb extends Model
         'is_ckls_mobil_panjang',
         'is_zona_mobil_panjang',
         'is_sekalian_antar',
+        'is_langsung_antar',
         'biaya',
         'dp',
         'size_kontainer',
@@ -41,6 +42,7 @@ class TagihanOb extends Model
         'is_ckls_mobil_panjang' => 'boolean',
         'is_zona_mobil_panjang' => 'boolean',
         'is_sekalian_antar' => 'boolean',
+        'is_langsung_antar' => 'boolean',
     ];
 
     /**

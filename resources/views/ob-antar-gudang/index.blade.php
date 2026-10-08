@@ -484,7 +484,8 @@
                                         @foreach($gudangs as $g)
                                             <option value="{{ $g->id }}" 
                                                     data-is-zona="{{ str_contains(mb_strtolower($g->nama_gudang), 'zona') ? '1' : '0' }}"
-                                                    data-is-dpe="{{ str_contains(mb_strtolower($g->nama_gudang), 'dpe') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                                    data-is-dpe="{{ str_contains(mb_strtolower($g->nama_gudang), 'dpe') ? '1' : '0' }}"
+                                                    data-is-fortune="{{ str_contains(mb_strtolower($g->nama_gudang), 'fortune') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -541,6 +542,14 @@
                                         <span>Sekalian antar</span>
                                     </label>
                                     <p id="modal_sekalian_antar_desc" class="mt-1 pl-6 text-[10px] text-emerald-700">Jika dicentang, nominal OB menjadi Rp 50.000.</p>
+                                </div>
+
+                                <div id="modal_langsung_antar_wrapper" class="hidden rounded-md border border-purple-200 bg-purple-50 p-3">
+                                    <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-purple-900">
+                                        <input type="checkbox" name="is_langsung_antar" id="modal_langsung_antar" value="1" class="h-4 w-4 rounded border-purple-300 text-purple-600 focus:ring-purple-500">
+                                        <span>Langsung antar</span>
+                                    </label>
+                                    <p id="modal_langsung_antar_desc" class="mt-1 pl-6 text-[10px] text-purple-700">Jika dicentang, nominal OB menjadi Rp 150.000.</p>
                                 </div>
 
                                 <div id="modal_status_kontainer_wrapper">
@@ -614,6 +623,7 @@
         document.getElementById('modal_ckls_mobil_panjang').checked = false;
         document.getElementById('modal_zona_mobil_panjang').checked = false;
         document.getElementById('modal_sekalian_antar').checked = false;
+        document.getElementById('modal_langsung_antar').checked = false;
         document.getElementById('modal_gudang_id').value = gudangId;
         document.getElementById('modal_gudang_id').dataset.currentGudangId = gudangId;
         document.getElementById('modal_gudang_id').dataset.userModified = 'false';
@@ -756,6 +766,7 @@
         const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
         const isDepoZona = originOption?.dataset.isZona === '1';
         const isDepoDpe = originOption?.dataset.isDpe === '1';
+        const isDepoFortune = originOption?.dataset.isFortune === '1';
         const isZonaOrDpeEligible = isDepoZona || isDepoDpe;
 
         const isServiceComboEligible = isTwentyFt
@@ -771,6 +782,8 @@
         const zonaCheckbox = document.getElementById('modal_zona_mobil_panjang');
         const sekalianAntarWrapper = document.getElementById('modal_sekalian_antar_wrapper');
         const sekalianAntarCheckbox = document.getElementById('modal_sekalian_antar');
+        const langsungAntarWrapper = document.getElementById('modal_langsung_antar_wrapper');
+        const langsungAntarCheckbox = document.getElementById('modal_langsung_antar');
 
         comboWrapper.classList.toggle('hidden', !isServiceComboEligible);
         comboCheckbox.disabled = !isServiceComboEligible;
@@ -787,6 +800,10 @@
         sekalianAntarWrapper.classList.toggle('hidden', !isZonaEligible);
         sekalianAntarCheckbox.disabled = !isZonaEligible;
         if (!isZonaEligible) sekalianAntarCheckbox.checked = false;
+
+        langsungAntarWrapper.classList.toggle('hidden', !isDepoFortune);
+        langsungAntarCheckbox.disabled = !isDepoFortune;
+        if (!isDepoFortune) langsungAntarCheckbox.checked = false;
 
         const sekDesc = document.getElementById('modal_sekalian_antar_desc');
         if (sekDesc) {
@@ -809,6 +826,7 @@
             document.getElementById('modal_ckls_mobil_panjang').checked = false;
             document.getElementById('modal_zona_mobil_panjang').checked = false;
             document.getElementById('modal_sekalian_antar').checked = false;
+            document.getElementById('modal_langsung_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -817,6 +835,7 @@
             document.getElementById('modal_combo').checked = false;
             document.getElementById('modal_zona_mobil_panjang').checked = false;
             document.getElementById('modal_sekalian_antar').checked = false;
+            document.getElementById('modal_langsung_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -825,6 +844,7 @@
             document.getElementById('modal_combo').checked = false;
             document.getElementById('modal_ckls_mobil_panjang').checked = false;
             document.getElementById('modal_sekalian_antar').checked = false;
+            document.getElementById('modal_langsung_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -833,6 +853,16 @@
             document.getElementById('modal_combo').checked = false;
             document.getElementById('modal_ckls_mobil_panjang').checked = false;
             document.getElementById('modal_zona_mobil_panjang').checked = false;
+            document.getElementById('modal_langsung_antar').checked = false;
+        }
+        updateNominalFromSelection();
+    });
+    document.getElementById('modal_langsung_antar').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('modal_combo').checked = false;
+            document.getElementById('modal_ckls_mobil_panjang').checked = false;
+            document.getElementById('modal_zona_mobil_panjang').checked = false;
+            document.getElementById('modal_sekalian_antar').checked = false;
         }
         updateNominalFromSelection();
     });
@@ -887,13 +917,19 @@
     function updateNominalFromSelection() {
         const isCustomRate = document.getElementById('modal_zona_mobil_panjang').checked
             || document.getElementById('modal_ckls_mobil_panjang').checked
-            || document.getElementById('modal_sekalian_antar').checked;
+            || document.getElementById('modal_sekalian_antar').checked
+            || document.getElementById('modal_langsung_antar').checked;
         const pricelistSelect = document.getElementById('pricelist_id');
         const pricelistStar = document.getElementById('pricelist_required_star');
 
         pricelistSelect.required = !isCustomRate;
         if (pricelistStar) {
             pricelistStar.classList.toggle('hidden', isCustomRate);
+        }
+
+        if (document.getElementById('modal_langsung_antar').checked) {
+            document.getElementById('nominal').value = '150000';
+            return;
         }
 
         if (document.getElementById('modal_zona_mobil_panjang').checked) {

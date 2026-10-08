@@ -26,6 +26,8 @@ class ObAntarGudangController extends Controller
 
     private const DPE_SEKALIAN_ANTAR_BIAYA = 75000;
 
+    private const FORTUNE_LANGSUNG_ANTAR_BIAYA = 150000;
+
     /**
      * Return the warehouse where a container was located on a given date.
      */
@@ -211,6 +213,7 @@ class ObAntarGudangController extends Controller
             'is_ckls_mobil_panjang' => 'sometimes|boolean',
             'is_zona_mobil_panjang' => 'sometimes|boolean',
             'is_sekalian_antar' => 'sometimes|boolean',
+            'is_langsung_antar' => 'sometimes|boolean',
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -223,9 +226,11 @@ class ObAntarGudangController extends Controller
         $validated['is_ckls_mobil_panjang'] = $request->boolean('is_ckls_mobil_panjang');
         $validated['is_zona_mobil_panjang'] = $request->boolean('is_zona_mobil_panjang');
         $validated['is_sekalian_antar'] = $request->boolean('is_sekalian_antar');
+        $validated['is_langsung_antar'] = $request->boolean('is_langsung_antar');
         $gudangAsalInput = Gudang::find($validated['gudang_id']);
         $isInputZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
         $isInputDpe = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'dpe');
+        $isInputFortune = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'fortune');
 
         $historyGudangId = HistoryKontainer::where('nomor_kontainer', $validated['nomor_kontainer'])
             ->whereDate('tanggal_kegiatan', '<=', $validated['tanggal_ob'])
@@ -237,14 +242,16 @@ class ObAntarGudangController extends Controller
         $historyGudang = $historyGudangId ? Gudang::find($historyGudangId) : null;
         $isHistoryZona = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'zona');
         $isHistoryDpe = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'dpe');
+        $isHistoryFortune = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'fortune');
 
         $isDepoZona = $isInputZona || $isHistoryZona;
         $isDepoDpe = $isInputDpe || $isHistoryDpe;
+        $isDepoFortune = $isInputFortune || $isHistoryFortune;
         $isDepoZonaOrDpe = $isDepoZona || $isDepoDpe;
 
-        if ($isInputZona || $isInputDpe) {
+        if ($isInputZona || $isInputDpe || $isInputFortune) {
             $effectiveGudangId = $validated['gudang_id'];
-        } elseif (($isHistoryZona || $isHistoryDpe) && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'])) {
+        } elseif (($isHistoryZona || $isHistoryDpe || $isHistoryFortune) && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'] || $validated['is_langsung_antar'])) {
             $effectiveGudangId = $historyGudangId;
             $gudangAsalInput = $historyGudang;
         } else {
@@ -268,11 +275,15 @@ class ObAntarGudangController extends Controller
         if ($validated['is_sekalian_antar'] && ! $isDepoZonaOrDpe) {
             return back()->withInput()->with('error', 'Tarif sekalian antar hanya tersedia jika gudang asal adalah Depo ZONA atau Depo DPE.');
         }
+        if ($validated['is_langsung_antar'] && ! $isDepoFortune) {
+            return back()->withInput()->with('error', 'Tarif langsung antar hanya tersedia jika gudang asal adalah Depo Fortune.');
+        }
         $activeTariffOptions = collect([
             $validated['is_combo'],
             $validated['is_ckls_mobil_panjang'],
             $validated['is_zona_mobil_panjang'],
             $validated['is_sekalian_antar'],
+            $validated['is_langsung_antar'],
         ])->filter()->count();
 
         if ($activeTariffOptions > 1) {
@@ -366,6 +377,7 @@ class ObAntarGudangController extends Controller
             $tagihan->is_ckls_mobil_panjang = $validated['is_ckls_mobil_panjang'];
             $tagihan->is_zona_mobil_panjang = $validated['is_zona_mobil_panjang'];
             $tagihan->is_sekalian_antar = $validated['is_sekalian_antar'];
+            $tagihan->is_langsung_antar = $validated['is_langsung_antar'];
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
             $tagihan->keterangan = $validated['keterangan']
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
@@ -377,6 +389,7 @@ class ObAntarGudangController extends Controller
                 : self::SEKALIAN_ANTAR_BIAYA;
 
             $tagihan->biaya = match (true) {
+                $validated['is_langsung_antar'] => self::FORTUNE_LANGSUNG_ANTAR_BIAYA,
                 $validated['is_zona_mobil_panjang'] => self::ZONA_MOBIL_PANJANG_BIAYA,
                 $validated['is_sekalian_antar'] => $sekalianAntarBiaya,
                 $validated['is_ckls_mobil_panjang'] => self::CKLS_MOBIL_PANJANG_BIAYA_20FT,
