@@ -132,6 +132,7 @@ class RekapBiayaKapalTest extends TestCase
         $response = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM JALESMAS', 'voyage' => 'JALESMAS59']));
 
         $response->assertOk();
+        $response->assertSee('BURUH BONGKAR BATAM');
         $response->assertSee('Rp 1.023.750');
     }
 }

@@ -174,7 +174,7 @@
                                                 @elseif(isset($item->is_amprahan) && $item->is_amprahan)
                                                     <strong>Barang:</strong> {{ $item->nama_barang_amprahan ?? '-' }}
                                                 @else
-                                                    {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-' }}
+                                                    {{ isset($item->buruhBatamDetails) && $item->buruhBatamDetails->isNotEmpty() ? 'BURUH BONGKAR BATAM' : ($item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-') }}
                                                 @endif
                                             </td>
                                             @if(strtoupper($category) === 'BIAYA DOKUMEN')

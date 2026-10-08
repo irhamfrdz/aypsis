@@ -558,6 +558,10 @@ class RekapBiayaKapalController extends Controller
 
         // Group by classification/jenis_biaya
         $grouped = $biayaKapals->groupBy(function ($item) {
+            if (isset($item->buruhBatamDetails) && $item->buruhBatamDetails->isNotEmpty()) {
+                return 'BURUH BONGKAR BATAM';
+            }
+
             return $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain';
         });
 
