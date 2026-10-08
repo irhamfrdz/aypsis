@@ -52,6 +52,21 @@ class RekapBlServiceTest extends TestCase
         $this->assertSame(0.5, $resolver->ratio(['kontainer_ids' => [['bl_id' => 1], ['bl_id' => 2]]], '01'));
     }
 
+    public function test_multiple_selected_bls_combine_their_costs_without_duplicate_allocation(): void
+    {
+        $resolver = $this->resolver();
+        $row = ['kontainer_ids' => [
+            ['bl_id' => 1, 'biaya_klaim' => 100000],
+            ['bl_id' => 2, 'biaya_klaim' => 300000],
+        ]];
+        $this->assertSame(1.0, $resolver->ratio($row, ['01', '02', '01-1']));
+        $this->assertSame(0.25, $resolver->ratio($row, ['01', '03']));
+        $this->assertSame(1.0, $resolver->ratio(['no_bl' => ['01', '02']], ['01', '02']));
+        $this->assertSame(0.0, $resolver->ratio(['nomor_bl' => '03'], ['01', '02']));
+        $this->assertNull($resolver->ratio(['jenis_biaya' => 'Air'], ['01', '02']));
+        $this->assertSame(1.0, $resolver->transportRatio(new \App\Models\SuratJalanBongkaran(['no_bl' => '01-1']), 'KM JALESMAS', 'V01', ['01', '02', '01-2']));
+    }
+
     public function test_transport_uses_manifest_prospek_and_selected_voyage(): void
     {
         $sj = new SuratJalan;

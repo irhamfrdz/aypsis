@@ -280,6 +280,17 @@ class RekapBiayaKapalTest extends TestCase
         $response->assertSee('Biaya Umum Kapal');
         $response->assertDontSee('BL: 02');
 
+        $multiple = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101', 'bl' => ['01', '02', '01-1']]));
+        $multiple->assertOk()
+            ->assertViewHas('bl', '01, 02')
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 15000.0)
+            ->assertViewHas('biayaKapals', fn ($items) => $items->count() === 2)
+            ->assertViewHas('biayaUmum', fn ($items) => $items->count() === 1 && $items->contains('id', $shared->id))
+            ->assertSee('BL: 02')->assertDontSee('BL: 03');
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101', 'bl' => []]))
+            ->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 24000.0);
+
         $unfiltered = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']));
         $unfiltered->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 24000.0);
     }

@@ -73,10 +73,8 @@
                         <label for="bl_select" class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-file-alt text-gray-400 mr-1"></i> Filter BL (Opsional)
                         </label>
-                        <select name="bl" id="bl_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" disabled>
-                            <option value="">-- Semua BL --</option>
-                        </select>
-                        <p id="bl_status" class="mt-2 text-xs text-gray-500" role="status">Pilih kapal dan voyage untuk memuat BL. Filter berlaku pada seluruh sumber biaya yang terkait BL.</p>
+                        <select name="bl[]" id="bl_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" multiple disabled></select>
+                        <p id="bl_status" class="mt-2 text-xs text-gray-500" role="status">Pilih kapal dan voyage untuk memuat BL. Bisa memilih beberapa BL; kosongkan untuk menampilkan semua biaya.</p>
                     </div>
 
                     <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
@@ -114,7 +112,7 @@
             allowClear: true,
             width: '100%'
         });
-        $('#bl_select').select2({placeholder: '-- Semua BL --', allowClear: true, width: '100%'});
+        $('#bl_select').select2({placeholder: '-- Semua BL / Pilih beberapa BL --', allowClear: true, closeOnSelect: false, width: '100%'});
         let voyageRequest = null;
         let blRequest = null;
 
@@ -123,7 +121,7 @@
             const kapal = $('#kapal_select').val();
             const voyage = $(this).val();
             const $blSelect = $('#bl_select');
-            $blSelect.empty().append(new Option('-- Semua BL --', '', true, true)).prop('disabled', true).trigger('change');
+            $blSelect.empty().val([]).prop('disabled', true).trigger('change');
             if (!kapal || !voyage) {
                 $('#bl_status').text('Pilih kapal dan voyage untuk memuat BL.');
                 return;
@@ -137,7 +135,7 @@
                     if ($('#kapal_select').val() !== kapal || $('#voyage_select').val() !== voyage) return;
                     data.forEach(number => $blSelect.append(new Option('BL ' + number, number)));
                     $blSelect.prop('disabled', false).trigger('change');
-                    $('#bl_status').text(data.length ? 'Filter menyaring seluruh biaya terkait BL, termasuk uang jalan dan vendor supir. Biaya umum kapal ditampilkan terpisah.' : 'Belum ada referensi BL pada kapal dan voyage ini.');
+                    $('#bl_status').text(data.length ? 'Pilih satu atau beberapa BL. Kosongkan untuk semua biaya. Biaya umum kapal ditampilkan terpisah saat BL dipilih.' : 'Belum ada referensi BL pada kapal dan voyage ini.');
                 },
                 error: function(xhr, status) {
                     if (status !== 'abort') $('#bl_status').text('Gagal memuat BL. Pilih ulang voyage untuk mencoba kembali.');
@@ -278,6 +276,27 @@
         line-height: 24px;
         text-align: center;
         z-index: 1;
+    }
+    #rekapForm .select2-selection--multiple {
+        position: relative;
+        min-height: 48px;
+        padding: 6px 36px 6px 8px;
+        border-color: #e5e7eb;
+        border-radius: 0.75rem;
+    }
+    #rekapForm .select2-selection--multiple .select2-selection__clear {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        margin: 0;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+    }
+    #rekapForm .select2-selection--multiple .select2-selection__choice {
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1e40af;
     }
     .select2-dropdown {
         border-color: #f3f4f6 !important;

@@ -47,8 +47,13 @@ class RekapBlService
     }
 
     /** Null means no BL link; zero means a link to a different BL. */
-    public function ratio($row, string $selected): ?float
+    public function ratio($row, string|array $selected): ?float
     {
+        if (is_array($selected)) {
+            $ratios = $this->numbers($selected)->map(fn ($number) => $this->ratio($row, $number));
+
+            return $ratios->isEmpty() || $ratios->containsStrict(null) ? null : min(1.0, (float) $ratios->sum());
+        }
         foreach (['nomor_bl', 'no_bl'] as $field) {
             $numbers = $this->numbers(data_get($row, $field));
             if ($numbers->isNotEmpty()) {
@@ -105,8 +110,13 @@ class RekapBlService
         return null;
     }
 
-    public function transportRatio($suratJalan, string $kapal, string $voyage, string $selected): ?float
+    public function transportRatio($suratJalan, string $kapal, string $voyage, string|array $selected): ?float
     {
+        if (is_array($selected)) {
+            $ratios = $this->numbers($selected)->map(fn ($number) => $this->transportRatio($suratJalan, $kapal, $voyage, $number));
+
+            return $ratios->isEmpty() || $ratios->containsStrict(null) ? null : min(1.0, (float) $ratios->sum());
+        }
         if (! $suratJalan) {
             return null;
         }

@@ -487,7 +487,7 @@ class RekapBiayaKapalController extends Controller
         return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
     }
 
-    private function splitCostForBl($record, RekapBlService $resolver, string $kapal, string $voyage, string $bl): array
+    private function splitCostForBl($record, RekapBlService $resolver, string $kapal, string $voyage, string|array $bl): array
     {
         $empty = ['nominal' => 0, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 0];
         $selected = clone $record;
@@ -600,15 +600,21 @@ class RekapBiayaKapalController extends Controller
     /** Show the costs for the selected ship, voyage, and optional BL. */
     public function show(Request $request)
     {
+        // Keep existing links using ?bl=01 compatible with the multiple selection.
+        if (is_string($request->input('bl'))) {
+            $request->merge(['bl' => [$request->input('bl')]]);
+        }
         $request->validate([
             'kapal' => 'required|string',
             'voyage' => 'required|string',
-            'bl' => 'nullable|string|max:255',
+            'bl' => 'nullable|array',
+            'bl.*' => 'nullable|string|max:255',
         ]);
 
         $kapal = $request->kapal;
         $voyage = $request->voyage;
-        $bl = $this->normalizeBl($request->input('bl', ''));
+        $bls = collect($request->input('bl', []))->map(fn ($number) => $this->normalizeBl($number))->filter()->unique()->values()->all();
+        $bl = implode(', ', $bls);
 
         // Fetch all biaya kapals and load relations
         $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details'], $this->relations);
@@ -740,7 +746,7 @@ class RekapBiayaKapalController extends Controller
             $resolver = RekapBlService::forVoyage($kapal, $voyage);
             $filtered = collect();
             foreach ($biayaKapals as $record) {
-                [$selected, $common] = $this->splitCostForBl($record, $resolver, $kapal, $voyage, $bl);
+                [$selected, $common] = $this->splitCostForBl($record, $resolver, $kapal, $voyage, $bls);
                 if ($selected) {
                     $filtered->push($selected);
                 }
