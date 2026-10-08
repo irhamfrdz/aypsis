@@ -1321,7 +1321,7 @@ class SuratJalanController extends Controller
             $suratJalan = ($id instanceof SuratJalan) ? $id : SuratJalan::findOrFail($id);
 
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-                'status' => 'required|in:draft,active,completed,cancelled,sudah_dibayar,sudah dibayar',
+                'status' => 'required|in:draft,active,completed,cancelled,sudah_dibayar,sudah dibayar,belum_dibayar',
             ]);
 
             if ($validator->fails()) {
@@ -1332,7 +1332,15 @@ class SuratJalanController extends Controller
                 ], 422);
             }
 
-            if (in_array($request->status, ['sudah_dibayar', 'sudah dibayar'])) {
+            if ($request->status === 'belum_dibayar') {
+                $suratJalan->status_pembayaran = 'belum_dibayar';
+                // Keep the overall payment badge and payment filter in sync.
+                $suratJalan->status_pembayaran_uang_jalan = 'sudah_masuk_uang_jalan';
+                if (in_array($suratJalan->status, ['sudah_dibayar', 'sudah dibayar'])) {
+                    $suratJalan->status = 'active';
+                }
+                $suratJalan->save();
+            } elseif (in_array($request->status, ['sudah_dibayar', 'sudah dibayar'])) {
                 $suratJalan->status_pembayaran = 'sudah_dibayar';
                 $suratJalan->status_pembayaran_uang_jalan = 'dibayar';
 
@@ -1423,7 +1431,7 @@ class SuratJalanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Status berhasil diubah menjadi sudah dibayar',
+                'message' => 'Status berhasil diubah menjadi '.str_replace('_', ' ', $request->status),
             ]);
 
         } catch (\Throwable $e) {

@@ -247,6 +247,16 @@ use Illuminate\Support\Str;
                                                 </button>
                                             @endif
 
+                                            @can('surat-jalan-update')
+                                                @if($suratJalan->overall_status_pembayaran !== 'belum_dibayar')
+                                                    <button type="button" onclick="event.stopPropagation(); updateStatus('{{ $suratJalan->id }}', 'belum_dibayar')"
+                                                            class="group flex items-center w-full px-3 py-1.5 text-xs text-amber-700 hover:bg-amber-50 hover:text-amber-900 whitespace-nowrap">
+                                                        <i class="fas fa-undo mr-2 text-amber-500"></i>
+                                                        Belum Dibayar
+                                                    </button>
+                                                @endif
+                                            @endcan
+
                                             {{-- Tombol Cancel - untuk membatalkan surat jalan --}}
                                             <button onclick="event.stopPropagation(); updateStatus('{{ $suratJalan->id }}', 'cancelled')"
                                                     class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
@@ -628,6 +638,8 @@ function updateStatus(suratJalanId, status) {
     let confirmMsg = 'Yakin ingin mengubah status surat jalan ini?';
     if (status === 'sudah_dibayar') {
         confirmMsg = 'Yakin ingin mengubah status surat jalan ini menjadi Sudah Dibayar?';
+    } else if (status === 'belum_dibayar') {
+        confirmMsg = 'Yakin ingin mengubah status pembayaran surat jalan ini menjadi Belum Dibayar?';
     } else if (status === 'cancelled') {
         confirmMsg = 'Yakin ingin membatalkan surat jalan ini?';
     }
