@@ -565,6 +565,19 @@ class RekapBiayaKapalController extends Controller
             return $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain';
         });
 
-        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'biayaKapals', 'summary', 'grouped'));
+        $temasContainers = $biayaKapals
+            ->filter(fn ($item) => $item instanceof BiayaKapal)
+            ->flatMap(fn ($item) => $item->temasDetails)
+            ->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal)) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
+            ->flatMap(fn ($detail) => explode(',', $detail->nomor_kontainer ?? ''))
+            ->map(fn ($number) => strtoupper(trim($number)))->filter()->unique()->values();
+        $temasManifests = collect();
+        if ($temasContainers->isNotEmpty()) {
+            $temasManifests = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee'])
+                ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))])
+                ->whereIn('nomor_kontainer', $temasContainers)->get();
+        }
+
+        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'biayaKapals', 'summary', 'grouped', 'temasManifests'));
     }
 }

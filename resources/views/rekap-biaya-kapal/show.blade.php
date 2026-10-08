@@ -286,6 +286,14 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        let temasContainerListsForPrint = [];
+        window.addEventListener('beforeprint', function() {
+            temasContainerListsForPrint = [...document.querySelectorAll('.temas-container-list')].map(element => ({element, open: element.open}));
+            temasContainerListsForPrint.forEach(({element}) => element.open = true);
+        });
+        window.addEventListener('afterprint', function() {
+            temasContainerListsForPrint.forEach(({element, open}) => element.open = open);
+        });
         $('.toggle-accordion').on('click', function() {
             const target = $(this).data('target');
             const $body = $(target);
