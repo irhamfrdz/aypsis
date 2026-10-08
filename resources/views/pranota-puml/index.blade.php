@@ -96,6 +96,13 @@
                                        title="Export Excel Auto Transfer">
                                         <i class="fas fa-money-bill-transfer text-sm"></i>
                                     </a>
+
+                                    <a href="{{ route('pranota-puml.print', $pranota->id) }}"
+                                       target="_blank"
+                                       class="inline-flex items-center justify-center p-2 text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-full transition-colors duration-200"
+                                       title="Cetak Permohonan Transfer">
+                                        <i class="fas fa-print text-sm"></i>
+                                    </a>
                                     
                                     @can('payroll-delete')
                                     <form action="{{ route('pranota-puml.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus PUML ini? Data pranota anak (Uang Makan & Lembur) akan dikembalikan ke status draft.');">

@@ -18,9 +18,9 @@
             <a href="{{ route('pranota-puml.export-auto-transfer', $puml->id) }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                 <i class="fas fa-money-bill-transfer mr-2 text-blue-600"></i> Auto Transfer
             </a>
-            <button onclick="window.print()" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:-translate-y-0.5">
-                <i class="fas fa-print mr-2"></i> Cetak PUML
-            </button>
+            <a href="{{ route('pranota-puml.print', $puml->id) }}" target="_blank" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 hover:-translate-y-0.5">
+                <i class="fas fa-print mr-2"></i> Permohonan Transfer
+            </a>
         </div>
     </div>
 

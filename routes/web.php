@@ -8048,6 +8048,7 @@ Route::middleware(['auth',
     Route::post('pranota-puml/detach-lembur/{id}', [\App\Http\Controllers\PranotaPumlController::class, 'detachLembur'])->name('pranota-puml.detach-lembur')->middleware('can:pranota-puml-view');
     Route::get('pranota-puml/{id}/export-excel', [\App\Http\Controllers\PranotaPumlController::class, 'exportExcel'])->name('pranota-puml.export-excel')->middleware('can:pranota-puml-view');
     Route::get('pranota-puml/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaPumlController::class, 'exportAutoTransfer'])->name('pranota-puml.export-auto-transfer')->middleware('can:pranota-puml-view');
+    Route::get('pranota-puml/{id}/print', [\App\Http\Controllers\PranotaPumlController::class, 'print'])->name('pranota-puml.print')->middleware('can:pranota-puml-view');
     Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:pranota-puml-view');
 
     // Perhitungan Lembur

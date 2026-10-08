@@ -196,6 +196,94 @@ class PranotaPumlController extends Controller
         return view('pranota-puml.show', compact('puml', 'karyawanRekap'));
     }
 
+    public function print($id, Request $request)
+    {
+        $puml = \App\Models\PranotaPuml::with([
+            'uangMakans.details.karyawan',
+            'lemburs.karyawans.karyawan',
+            'potongans',
+            'creator',
+        ])->findOrFail($id);
+
+        $potonganMap = [];
+        foreach ($puml->potongans as $pot) {
+            $key = class_basename($pot->tipe_karyawan).'_'.$pot->karyawan_id;
+            $potonganMap[$key] = $pot;
+        }
+
+        $karyawanRekap = [];
+
+        foreach ($puml->uangMakans as $um) {
+            foreach ($um->details as $d) {
+                $kid = class_basename($d->tipe_karyawan).'_'.$d->karyawan_id;
+                $kar = $d->karyawan ?: (\App\Models\Karyawan::find($d->karyawan_id));
+                if (! isset($karyawanRekap[$kid])) {
+                    $pot = $potonganMap[$kid] ?? null;
+                    $karyawanRekap[$kid] = [
+                        'karyawan' => $kar,
+                        'total_uang_makan' => 0,
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? (float) $pot->pot_utang : 0,
+                        'pot_bpjs' => $pot ? (float) $pot->pot_bpjs : 0,
+                        'pot_pph' => $pot ? (float) $pot->pot_pph : 0,
+                        'pot_terlambat' => $pot ? (float) $pot->pot_terlambat : 0,
+                    ];
+                }
+                $karyawanRekap[$kid]['total_uang_makan'] += (float) $d->total_akhir;
+            }
+        }
+
+        foreach ($puml->lemburs as $lm) {
+            foreach ($lm->karyawans as $d) {
+                $tipe_karyawan = $d->tipe_karyawan ?? 'App\\Models\\Karyawan';
+                $kid = class_basename($tipe_karyawan).'_'.$d->karyawan_id;
+                $kar = $d->karyawan ?: (\App\Models\Karyawan::find($d->karyawan_id));
+                if (! isset($karyawanRekap[$kid])) {
+                    $pot = $potonganMap[$kid] ?? null;
+                    $karyawanRekap[$kid] = [
+                        'karyawan' => $kar,
+                        'total_uang_makan' => 0,
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? (float) $pot->pot_utang : 0,
+                        'pot_bpjs' => $pot ? (float) $pot->pot_bpjs : 0,
+                        'pot_pph' => $pot ? (float) $pot->pot_pph : 0,
+                        'pot_terlambat' => $pot ? (float) $pot->pot_terlambat : 0,
+                    ];
+                }
+                $karyawanRekap[$kid]['total_lembur'] += (float) $d->total_akhir;
+            }
+        }
+
+        foreach ($karyawanRekap as $kid => &$item) {
+            $potongan = $item['pot_utang'] + $item['pot_bpjs'] + $item['pot_pph'] + $item['pot_terlambat'];
+            $awal = $item['total_uang_makan'] + $item['total_lembur'];
+            $item['total_potongan'] = $potongan;
+            $item['total_terima'] = max(0, $awal - $potongan);
+        }
+        unset($item);
+
+        $karyawanRekap = collect($karyawanRekap)->sortBy(function ($item) {
+            return strtolower($item['karyawan']->nama_lengkap ?? 'z');
+        })->values();
+
+        $totalUangMakan = $karyawanRekap->sum('total_uang_makan');
+        $totalLembur = $karyawanRekap->sum('total_lembur');
+        $totalPotongan = $karyawanRekap->sum('total_potongan');
+        $grandTotal = $karyawanRekap->sum('total_terima');
+
+        $paperSize = $request->input('paper_size', 'Half-Folio');
+
+        return view('pranota-puml.print', compact(
+            'puml',
+            'karyawanRekap',
+            'totalUangMakan',
+            'totalLembur',
+            'totalPotongan',
+            'grandTotal',
+            'paperSize'
+        ));
+    }
+
     public function storePotongan(Request $request, $id)
     {
         $puml = \App\Models\PranotaPuml::findOrFail($id);

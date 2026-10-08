@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\HrdAbsensiExport;
 use App\Models\Absensi;
+use App\Models\Cabang;
 use App\Models\Cuti;
 use App\Models\Karyawan;
 use Carbon\Carbon;
@@ -18,9 +19,51 @@ class HrdDashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $date = $request->input('tanggal_dashboard', Carbon::today()->format('Y-m-d'));
-        $filterDate = Carbon::parse($date)->startOfDay();
+        $selectedCabang = $request->input('cabang');
         $selectedGroup = $request->input('grup');
+
+        // Resolve dates: support tanggal_dari & tanggal_sampai, with fallback to tanggal_dashboard or today
+        $tanggalDariInput = $request->input('tanggal_dari', $request->input('tanggal_dashboard'));
+        $tanggalSampaiInput = $request->input('tanggal_sampai', $request->input('tanggal_dashboard'));
+
+        if (! $tanggalDariInput && ! $tanggalSampaiInput) {
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+        } elseif ($tanggalDariInput && ! $tanggalSampaiInput) {
+            $startDate = Carbon::parse($tanggalDariInput)->startOfDay();
+            $endDate = Carbon::parse($tanggalDariInput)->endOfDay();
+        } elseif (! $tanggalDariInput && $tanggalSampaiInput) {
+            $startDate = Carbon::parse($tanggalSampaiInput)->startOfDay();
+            $endDate = Carbon::parse($tanggalSampaiInput)->endOfDay();
+        } else {
+            $startDate = Carbon::parse($tanggalDariInput)->startOfDay();
+            $endDate = Carbon::parse($tanggalSampaiInput)->endOfDay();
+            if ($startDate->gt($endDate)) {
+                [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
+            }
+        }
+
+        $isSingleDay = $startDate->isSameDay($endDate);
+        $filterDate = $startDate->copy(); // For backward compatibility in views
+        $startDateStr = $startDate->toDateString();
+        $endDateStr = $endDate->toDateString();
+
+        // Daftar cabang unik (untuk filter dropdown)
+        $allCabangs = Cabang::orderBy('nama_cabang')->pluck('nama_cabang')
+            ->merge(
+                Karyawan::where('status', 'active')
+                    ->whereNull('tanggal_berhenti')
+                    ->whereNotNull('cabang')
+                    ->where('cabang', '!=', '')
+                    ->distinct()
+                    ->pluck('cabang')
+            )
+            ->map(fn ($c) => trim($c))
+            ->unique()
+            ->filter(fn ($c) => $c !== '' && strtoupper($c) !== 'BEHENTI')
+            ->sort()
+            ->values()
+            ->toArray();
 
         // Daftar grup unik dari semua karyawan aktif (untuk filter dropdown)
         // Nilai grup berformat "KATEGORI:SUBKATEGORI" — ambil hanya bagian sebelum ':'
@@ -38,9 +81,13 @@ class HrdDashboardController extends Controller
             ->values()
             ->toArray();
 
-        // Query dasar karyawan aktif (dengan filter grup jika dipilih)
+        // Query dasar karyawan aktif (dengan filter cabang dan grup jika dipilih)
         $karyawanBaseQuery = Karyawan::where('status', 'active')
             ->whereNull('tanggal_berhenti');
+
+        if (! empty($selectedCabang)) {
+            $karyawanBaseQuery->where('cabang', $selectedCabang);
+        }
 
         if (! empty($selectedGroup)) {
             $karyawanBaseQuery->where(function ($q) use ($selectedGroup) {
@@ -54,12 +101,20 @@ class HrdDashboardController extends Controller
         $totalKaryawanAktif = (clone $karyawanBaseQuery)->count();
         $activeKaryawanIds = (clone $karyawanBaseQuery)->pluck('id')->toArray();
 
-        // 2. Karyawan Absen Masuk Hari Ini
+        // 2. Karyawan Absen Masuk (Hari Ini atau Rentang Periode)
         $absensiMasukQuery = Absensi::with('karyawan')
-            ->whereDate('waktu', $filterDate)
             ->where('tipe', 'Masuk');
 
-        if (! empty($selectedGroup)) {
+        if ($isSingleDay) {
+            $absensiMasukQuery->whereDate('waktu', $startDateStr);
+        } else {
+            $absensiMasukQuery->whereBetween('waktu', [
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->endOfDay(),
+            ]);
+        }
+
+        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
             $absensiMasukQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiMasuk = $absensiMasukQuery->get();
@@ -67,31 +122,37 @@ class HrdDashboardController extends Controller
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
 
         // 3. Karyawan Belum Absen
-        // Yaitu karyawan aktif yang id-nya belum ada di daftar absen masuk hari ini.
+        // Yaitu karyawan aktif yang id-nya belum ada di daftar absen masuk dalam periode
         $karyawanBelumAbsen = (clone $karyawanBaseQuery)
             ->whereNotIn('id', $karyawanIdsAbsen)
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
         // 4. Karyawan Absen Terlambat
-        // Definisi terlambat: Jam waktu absen > 09:05:00 (Senin-Jumat), atau > 08:05:00 (Sabtu) - toleransi 5 menit
-        $jamBatas = $filterDate->isSaturday() ? 8 : 9;
-        $batasTerlambat = $filterDate->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
-        $karyawanTerlambat = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
+        // Evaluasi per absensi: cek apakah waktu > jam batas toleransi 5 menit (Sabtu: 08:05, Hari lain: 09:05)
+        $karyawanTerlambat = $absensiMasuk->filter(function ($absen) {
             $waktuAbsen = Carbon::parse($absen->waktu);
+            $jamBatasHari = $waktuAbsen->isSaturday() ? 8 : 9;
+            $batasTerlambat = $waktuAbsen->copy()->setHour($jamBatasHari)->setMinute(5)->setSecond(0);
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
             return $waktuAbsen->greaterThan($batasTerlambat) && ! $isExempt;
         })->values();
 
         // Karyawan yang hadir normal: tapping masuk sampai batas toleransi atau bebas keterlambatan.
-        // Satu karyawan hanya ditampilkan satu kali pada daftar dashboard.
-        $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) use ($batasTerlambat) {
+        $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) {
             $waktuAbsen = Carbon::parse($absen->waktu);
+            $jamBatasHari = $waktuAbsen->isSaturday() ? 8 : 9;
+            $batasTerlambat = $waktuAbsen->copy()->setHour($jamBatasHari)->setMinute(5)->setSecond(0);
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
             return $waktuAbsen->lessThanOrEqualTo($batasTerlambat) || $isExempt;
-        })->unique('karyawan_id')->sortBy(function ($absen) {
+        });
+
+        if ($isSingleDay) {
+            $karyawanHadirNormal = $karyawanHadirNormal->unique('karyawan_id');
+        }
+        $karyawanHadirNormal = $karyawanHadirNormal->sortBy(function ($absen) {
             return strtolower($absen->karyawan->nama_lengkap ?? '');
         })->values();
 
@@ -136,21 +197,28 @@ class HrdDashboardController extends Controller
 
         // 5. Karyawan Cuti / Izin
         $karyawanCutiQuery = Cuti::with('karyawan')
-            ->whereDate('tanggal_mulai', '<=', $filterDate)
-            ->whereDate('tanggal_selesai', '>=', $filterDate)
+            ->whereDate('tanggal_mulai', '<=', $endDateStr)
+            ->whereDate('tanggal_selesai', '>=', $startDateStr)
             ->where('status', 'approved');
 
-        if (! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
             $karyawanCutiQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $karyawanCuti = $karyawanCutiQuery->get();
 
         // 6. Karyawan Belum Absen Pulang
-        // Yaitu karyawan yang SUDAH absen masuk hari ini, tapi BELUM absen pulang hari ini
-        $absensiPulangQuery = Absensi::whereDate('waktu', $filterDate)
-            ->where('tipe', 'Pulang');
+        // Yaitu karyawan yang SUDAH absen masuk, tapi BELUM absen pulang
+        $absensiPulangQuery = Absensi::where('tipe', 'Pulang');
+        if ($isSingleDay) {
+            $absensiPulangQuery->whereDate('waktu', $startDateStr);
+        } else {
+            $absensiPulangQuery->whereBetween('waktu', [
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->endOfDay(),
+            ]);
+        }
 
-        if (! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
             $absensiPulangQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiPulang = $absensiPulangQuery->pluck('karyawan_id')
@@ -166,24 +234,46 @@ class HrdDashboardController extends Controller
 
         // 7. Absensi Luar Radius
         $absensiLuarRadiusQuery = Absensi::with('karyawan')
-            ->whereDate('waktu', $filterDate)
             ->where('detail_lokasi', 'like', '%Di luar radius%')
             ->orderBy('waktu', 'asc');
 
-        if (! empty($selectedGroup)) {
+        if ($isSingleDay) {
+            $absensiLuarRadiusQuery->whereDate('waktu', $startDateStr);
+        } else {
+            $absensiLuarRadiusQuery->whereBetween('waktu', [
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->endOfDay(),
+            ]);
+        }
+
+        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
             $absensiLuarRadiusQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiLuarRadius = $absensiLuarRadiusQuery->get();
 
-        // 8. Total presensi (Masuk + Pulang) hari ini
-        $totalPresensiHariIniQuery = Absensi::whereDate('waktu', $filterDate);
-        if (! empty($selectedGroup)) {
+        // 8. Total presensi (Masuk + Pulang)
+        $totalPresensiHariIniQuery = Absensi::query();
+        if ($isSingleDay) {
+            $totalPresensiHariIniQuery->whereDate('waktu', $startDateStr);
+        } else {
+            $totalPresensiHariIniQuery->whereBetween('waktu', [
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->endOfDay(),
+            ]);
+        }
+
+        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
             $totalPresensiHariIniQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $totalPresensiHariIni = $totalPresensiHariIniQuery->count();
 
+        $jamBatas = $isSingleDay ? ($startDate->isSaturday() ? 8 : 9) : 9;
+
         return view('hrd-dashboard.index', compact(
             'filterDate',
+            'startDate',
+            'endDate',
+            'isSingleDay',
             'jamBatas',
             'totalKaryawanAktif',
             'karyawanBelumAbsen',
@@ -195,7 +285,9 @@ class HrdDashboardController extends Controller
             'absensiLuarRadius',
             'totalPresensiHariIni',
             'allGroups',
-            'selectedGroup'
+            'selectedGroup',
+            'allCabangs',
+            'selectedCabang'
         ));
     }
 
@@ -204,8 +296,8 @@ class HrdDashboardController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
-        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+        $startDate = $request->input('start_date', $request->input('tanggal_dari', Carbon::now()->startOfMonth()->toDateString()));
+        $endDate = $request->input('end_date', $request->input('tanggal_sampai', Carbon::now()->endOfMonth()->toDateString()));
 
         $fileName = 'Rekap_Absensi_HRD_'.str_replace('-', '', $startDate).'_'.str_replace('-', '', $endDate).'.xlsx';
 

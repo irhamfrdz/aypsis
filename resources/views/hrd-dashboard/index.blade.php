@@ -111,12 +111,25 @@
                     </span>
                     <span class="text-xs text-slate-500 font-medium">
                         <i class="far fa-calendar-alt mr-1 text-slate-400"></i>
-                        {{ $filterDate->translatedFormat('l, d F Y') }}
+                        @if($isSingleDay)
+                            {{ $startDate->translatedFormat('l, d F Y') }}
+                        @else
+                            {{ $startDate->translatedFormat('d M Y') }} s/d {{ $endDate->translatedFormat('d M Y') }}
+                        @endif
                     </span>
-                    @if($filterDate->isToday())
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Hari Ini</span>
-                    @elseif($filterDate->isYesterday())
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">Kemarin</span>
+                    @if($isSingleDay)
+                        @if($startDate->isToday())
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Hari Ini</span>
+                        @elseif($startDate->isYesterday())
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">Kemarin</span>
+                        @endif
+                    @else
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">Rentang Tanggal</span>
+                    @endif
+                    @if(request('cabang'))
+                        <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+                            <i class="fas fa-building text-blue-500 text-[10px]"></i> Cabang: {{ request('cabang') }}
+                        </span>
                     @endif
                     @if(request('grup'))
                         <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1.5">
@@ -135,7 +148,7 @@
             {{-- Filter & Actions Bar --}}
             <div class="flex flex-wrap items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-xs">
                 <form id="dashboard-filter-form" action="{{ route('hrd.dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2">
-                    @foreach(request()->except(['tanggal_dashboard', 'grup', 'page']) as $key => $value)
+                    @foreach(request()->except(['tanggal_dari', 'tanggal_sampai', 'tanggal_dashboard', 'cabang', 'grup', 'page']) as $key => $value)
                         @if(!is_array($value))
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endif
@@ -144,22 +157,44 @@
                     {{-- Quick Date Shortcuts --}}
                     <div class="inline-flex rounded-lg shadow-xs bg-white p-0.5 border border-slate-200">
                         <button type="button" onclick="setDashboardDate('{{ \Carbon\Carbon::today()->format('Y-m-d') }}')"
-                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ $filterDate->isToday() ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ ($isSingleDay && $startDate->isToday()) ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                             Hari Ini
                         </button>
                         <button type="button" onclick="setDashboardDate('{{ \Carbon\Carbon::yesterday()->format('Y-m-d') }}')"
-                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ $filterDate->isYesterday() ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all {{ ($isSingleDay && $startDate->isYesterday()) ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                             Kemarin
                         </button>
                     </div>
 
-                    {{-- Date Input --}}
-                    <div class="relative">
-                        <input type="date" id="tanggal_dashboard" name="tanggal_dashboard" 
-                               value="{{ $filterDate->format('Y-m-d') }}" 
-                               onchange="this.form.submit()"
-                               class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                    {{-- Date Range Inputs (Dari - Sampai) --}}
+                    <div class="flex items-center gap-1.5">
+                        <div class="relative">
+                            <input type="date" id="tanggal_dari" name="tanggal_dari" 
+                                   value="{{ $startDate->format('Y-m-d') }}" 
+                                   title="Tanggal Dari"
+                                   class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                        </div>
+                        <span class="text-xs text-slate-400 font-semibold">s/d</span>
+                        <div class="relative">
+                            <input type="date" id="tanggal_sampai" name="tanggal_sampai" 
+                                   value="{{ $endDate->format('Y-m-d') }}" 
+                                   title="Tanggal Sampai"
+                                   class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 px-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                        </div>
                     </div>
+
+                    {{-- Cabang Filter --}}
+                    @if(count($allCabangs) > 0)
+                    <div class="relative">
+                        <select name="cabang" id="global_cabang_filter" onchange="this.form.submit()"
+                                class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-8 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                            <option value="">Semua Cabang</option>
+                            @foreach($allCabangs as $cb)
+                                <option value="{{ $cb }}" {{ request('cabang', $selectedCabang) == $cb ? 'selected' : '' }}>{{ $cb }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
 
                     {{-- Group Filter --}}
                     @if(count($allGroups) > 0)
@@ -168,7 +203,7 @@
                                 class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-8 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
                             <option value="">Semua Group</option>
                             @foreach($allGroups as $grp)
-                                <option value="{{ $grp }}" {{ request('grup') == $grp ? 'selected' : '' }}>{{ $grp }}</option>
+                                <option value="{{ $grp }}" {{ request('grup', $selectedGroup) == $grp ? 'selected' : '' }}>{{ $grp }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -179,10 +214,13 @@
                         <span>Filter</span>
                     </button>
 
-                    @if(request('grup') || ($filterDate->format('Y-m-d') !== \Carbon\Carbon::today()->format('Y-m-d')))
+                    @php
+                        $isFilterActive = request('cabang') || request('grup') || !($isSingleDay && $startDate->isToday());
+                    @endphp
+                    @if($isFilterActive)
                         <a href="{{ route('hrd.dashboard') }}" 
                            class="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-xs" 
-                           title="Reset filter ke Hari Ini & Semua Group">
+                           title="Reset filter ke Hari Ini, Semua Cabang & Group">
                             <i class="fas fa-undo-alt text-[10px]"></i>
                             <span>Reset</span>
                         </a>
@@ -389,7 +427,7 @@
                     Diagram Analisis Variabel Kehadiran
                 </h3>
                 <p class="text-xs text-gray-500 mt-1">
-                    Visualisasi diagram terpisah untuk setiap variabel indikator absensi karyawan — <strong>{{ $filterDate->translatedFormat('d F Y') }}</strong>
+                    Visualisasi diagram terpisah untuk setiap variabel indikator absensi karyawan — <strong>@if($isSingleDay){{ $startDate->translatedFormat('d F Y') }}@else{{ $startDate->translatedFormat('d M Y') }} s/d {{ $endDate->translatedFormat('d M Y') }}@endif</strong>
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -829,13 +867,19 @@
                 </div>
             </div>
 
-            <!-- Filter Group Info Bar -->
-            @if(request('grup'))
-            <div id="detail-filter-bar" class="px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex items-center gap-2 text-xs text-indigo-800">
+            <!-- Filter Active Info Bar -->
+            @if(request('grup') || request('cabang'))
+            <div id="detail-filter-bar" class="px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex flex-wrap items-center gap-2.5 text-xs text-indigo-800">
                 <i class="fas fa-filter text-indigo-500"></i>
-                <span>Difilter berdasarkan group: <strong id="active-group-label" class="font-bold">{{ request('grup') }}</strong></span>
-                <a href="{{ route('hrd.dashboard', array_merge(request()->except(['grup', 'page']), ['tanggal_dashboard' => $filterDate->format('Y-m-d')])) }}" 
-                   class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Hapus Filter Group</a>
+                <span>Filter aktif:</span>
+                @if(request('cabang'))
+                    <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Cabang: {{ request('cabang') }}</span>
+                @endif
+                @if(request('grup'))
+                    <span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">Group: {{ request('grup') }}</span>
+                @endif
+                <a href="{{ route('hrd.dashboard', array_merge(request()->except(['grup', 'cabang', 'page']), ['tanggal_dari' => $startDate->format('Y-m-d'), 'tanggal_sampai' => $endDate->format('Y-m-d')])) }}" 
+                   class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Hapus Filter Cabang & Group</a>
             </div>
             @endif
 
@@ -851,12 +895,12 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanBelumAbsen as $i => $k)
-                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '')) }}">
+                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '') . ' ' . ($k->cabang ?? '')) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5">
                                     <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $k->nik }}</span>
@@ -874,9 +918,16 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-3.5">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
-                                        {{ $k->divisi ?: '-' }}
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                            {{ $k->divisi ?: '-' }}
+                                        </span>
+                                        @if($k->cabang)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {{ $k->cabang }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -902,14 +953,14 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu Tapping Masuk</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Jarak / Radius</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanHadirNormal as $i => $absen)
-                            <tr class="hover:bg-emerald-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '')) }}">
+                            <tr class="hover:bg-emerald-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '') . ' ' . ($absen->karyawan->cabang ?? '')) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5"><span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $absen->karyawan->nik ?? '-' }}</span></td>
                                 <td class="px-6 py-3.5 font-medium text-slate-800">
@@ -920,8 +971,17 @@
                                     </div>
                                     @else <span class="text-slate-400 italic">Data karyawan tidak ditemukan</span> @endif
                                 </td>
-                                <td class="px-6 py-3.5"><span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">{{ $absen->karyawan->divisi ?? '-' }}</span></td>
-                                <td class="px-6 py-3.5"><span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs shadow-xs"><i class="fas fa-check text-[10px]"></i>{{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB</span></td>
+                                <td class="px-6 py-3.5">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">{{ $absen->karyawan->divisi ?? '-' }}</span>
+                                        @if($absen->karyawan && $absen->karyawan->cabang)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {{ $absen->karyawan->cabang }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3.5"><span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs shadow-xs"><i class="fas fa-check text-[10px]"></i>{{ $isSingleDay ? \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') : \Carbon\Carbon::parse($absen->waktu)->format('d/m/Y H:i:s') }} WIB</span></td>
                                 <td class="px-6 py-3.5">
                                     @if($absen->jarak_absen_meter !== null)
                                         <span class="inline-flex items-center gap-1.5 font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md text-xs">
@@ -951,12 +1011,12 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanBelumAbsenPulang as $i => $k)
-                            <tr class="hover:bg-amber-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '')) }}">
+                            <tr class="hover:bg-amber-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '') . ' ' . ($k->cabang ?? '')) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5">
                                     <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $k->nik }}</span>
@@ -974,9 +1034,16 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-3.5">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
-                                        {{ $k->divisi ?: '-' }}
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                            {{ $k->divisi ?: '-' }}
+                                        </span>
+                                        @if($k->cabang)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {{ $k->cabang }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -1001,13 +1068,13 @@
                             <tr>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu Tapping Masuk</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanTerlambat as $i => $absen)
-                            <tr class="hover:bg-orange-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '')) }}">
+                            <tr class="hover:bg-orange-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->karyawan->divisi ?? '') . ' ' . ($absen->karyawan->cabang ?? '')) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5 font-medium text-slate-800">
                                     @if($absen->karyawan)
@@ -1029,14 +1096,21 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-3.5">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
-                                        {{ $absen->karyawan->divisi ?? '-' }}
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                            {{ $absen->karyawan->divisi ?? '-' }}
+                                        </span>
+                                        @if($absen->karyawan && $absen->karyawan->cabang)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {{ $absen->karyawan->cabang }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-3.5">
                                     <span class="inline-flex items-center gap-1.5 font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full text-xs shadow-xs">
                                         <i class="fas fa-clock text-[10px]"></i>
-                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB
+                                        {{ $isSingleDay ? \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') : \Carbon\Carbon::parse($absen->waktu)->format('d/m/Y H:i:s') }} WIB
                                     </span>
                                 </td>
                             </tr>
@@ -1062,6 +1136,7 @@
                             <tr>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Waktu</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tipe</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detail Lokasi</th>
@@ -1069,7 +1144,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($absensiLuarRadius as $i => $absen)
-                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->tipe ?? '') . ' ' . ($absen->detail_lokasi ?? '')) }}">
+                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ $absen->karyawan && is_array($absen->karyawan->grup) ? implode(',', $absen->karyawan->grup) : ($absen->karyawan->grup ?? '') }}" data-search="{{ strtolower(($absen->karyawan->nik ?? '') . ' ' . ($absen->karyawan->nama_lengkap ?? '') . ' ' . ($absen->tipe ?? '') . ' ' . ($absen->detail_lokasi ?? '') . ' ' . ($absen->karyawan->cabang ?? '')) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5 font-medium text-slate-800">
                                     @if($absen->karyawan)
@@ -1091,9 +1166,21 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-3.5">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 uppercase">
+                                            {{ $absen->karyawan->divisi ?? '-' }}
+                                        </span>
+                                        @if($absen->karyawan && $absen->karyawan->cabang)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {{ $absen->karyawan->cabang }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3.5">
                                     <span class="inline-flex items-center gap-1.5 font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full text-xs shadow-xs">
                                         <i class="fas fa-clock text-[10px]"></i>
-                                        {{ \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') }} WIB
+                                        {{ $isSingleDay ? \Carbon\Carbon::parse($absen->waktu)->format('H:i:s') : \Carbon\Carbon::parse($absen->waktu)->format('d/m/Y H:i:s') }} WIB
                                     </span>
                                 </td>
                                 <td class="px-6 py-3.5">
@@ -1145,11 +1232,11 @@
                     <div class="mt-4 space-y-4">
                         <div>
                             <label for="start_date" class="block text-sm font-medium text-gray-700">Tanggal Mulai</label>
-                            <input type="date" name="start_date" id="start_date" value="{{ \Carbon\Carbon::now()->startOfMonth()->format('Y-m-d') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <input type="date" name="start_date" id="start_date" value="{{ $startDate->format('Y-m-d') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                         </div>
                         <div>
                             <label for="end_date" class="block text-sm font-medium text-gray-700">Tanggal Akhir</label>
-                            <input type="date" name="end_date" id="end_date" value="{{ \Carbon\Carbon::now()->endOfMonth()->format('Y-m-d') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <input type="date" name="end_date" id="end_date" value="{{ $endDate->format('Y-m-d') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
                             Laporan ini berisi rekap absensi lengkap termasuk informasi kehadiran, keterlambatan, pulang cepat, dan ketidakhadiran karyawan.
@@ -1576,10 +1663,10 @@
 
     /** Set tanggal cepat lalu submit form secara otomatis */
     function setDashboardDate(date) {
-        var input = document.getElementById('tanggal_dashboard');
-        if (input) {
-            input.value = date;
-        }
+        var inputDari = document.getElementById('tanggal_dari');
+        var inputSampai = document.getElementById('tanggal_sampai');
+        if (inputDari) inputDari.value = date;
+        if (inputSampai) inputSampai.value = date;
         var form = document.getElementById('dashboard-filter-form');
         if (form) {
             form.submit();
