@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PranotaPumlAutoTransferExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
@@ -237,7 +238,10 @@ class PranotaPumlAutoTransferExport implements FromCollection, ShouldAutoSize, W
     public function columnFormats(): array
     {
         return [
+            'D' => NumberFormat::FORMAT_TEXT, // Debited Acc.
+            'F' => NumberFormat::FORMAT_TEXT, // Credited Acc.
             'G' => '#,##0', // Format kolom G (Amount) dengan pemisah ribuan
+            'L' => NumberFormat::FORMAT_TEXT, // Charges Acc.
         ];
     }
 
@@ -285,9 +289,18 @@ class PranotaPumlAutoTransferExport implements FromCollection, ShouldAutoSize, W
             ],
         ]);
 
-        // Styling untuk kolom Beneficiary Email (Kolom R) agar teks berwarna biru & bergaris bawah
         $dataEnd = $lastRow - 1;
         if ($dataEnd >= 2) {
+            // Text format & suppress warning triangle for account numbers (D, F, L)
+            foreach (['D', 'F', 'L'] as $col) {
+                $sheet->getStyle("{$col}2:{$col}{$dataEnd}")
+                    ->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                for ($r = 2; $r <= $dataEnd; $r++) {
+                    $sheet->getCell("{$col}{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
+                }
+            }
+
+            // Styling untuk kolom Beneficiary Email (Kolom R) agar teks berwarna biru & bergaris bawah
             $sheet->getStyle('R2:R'.$dataEnd)->applyFromArray([
                 'font' => [
                     'color' => ['argb' => 'FF0000FF'],

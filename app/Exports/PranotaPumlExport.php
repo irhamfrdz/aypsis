@@ -6,6 +6,7 @@ use App\Models\Karyawan;
 use App\Models\PranotaPuml;
 use App\Models\UangMakan;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -16,8 +17,9 @@ use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCustomValueBinder, WithEvents, WithTitle
+class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithColumnFormatting, WithCustomValueBinder, WithEvents, WithTitle
 {
     protected PranotaPuml $puml;
 
@@ -53,17 +55,34 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCus
     }
 
     /**
-     * Force NIK (col B) and No REK (col D) as text strings to preserve leading zeros.
+     * Force NIK (col B) and No REK (col D) as text strings to preserve leading zeros
+     * and suppress Excel's "number stored as text" warning triangle.
      */
     public function bindValue(Cell $cell, $value)
     {
         if (in_array($cell->getColumn(), ['B', 'D']) && $cell->getRow() >= 6) {
             $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+            $cell->getIgnoredErrors()->setNumberStoredAsText(true);
 
             return true;
         }
 
         return parent::bindValue($cell, $value);
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => NumberFormat::FORMAT_TEXT,
+            'D' => NumberFormat::FORMAT_TEXT,
+            'F' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
+            'J' => '#,##0',
+            'K' => '#,##0',
+            'L' => '#,##0',
+            'M' => '#,##0',
+        ];
     }
 
     public function array(): array
@@ -427,6 +446,18 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCus
                             ->getAlignment()
                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
                             ->setVertical(Alignment::VERTICAL_CENTER);
+                    }
+
+                    // Text format: B (NIK), D (No REK)
+                    foreach (['B', 'D'] as $col) {
+                        $sheet->getStyle("{$col}6:{$col}{$dataLast}")
+                            ->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                    }
+
+                    // Suppress Excel green warning triangle for numbers stored as text
+                    for ($r = 6; $r <= $dataLast; $r++) {
+                        $sheet->getCell("B{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
+                        $sheet->getCell("D{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
                     }
 
                     // Left: C, D
