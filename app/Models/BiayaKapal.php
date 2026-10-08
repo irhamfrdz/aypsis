@@ -325,6 +325,11 @@ class BiayaKapal extends Model
         return $this->hasOne(BiayaKapalBuruhBongkar::class, 'biaya_kapal_id');
     }
 
+    public function buruhBongkarDetails()
+    {
+        return $this->hasMany(BiayaKapalBuruhBongkar::class, 'biaya_kapal_id');
+    }
+
     public function buruhBatamDetails()
     {
         return $this->hasMany(BiayaKapalBuruhBatam::class, 'biaya_kapal_id');

@@ -29,7 +29,7 @@
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-slate-200 text-sm">
                 <span class="flex items-center"><i class="fas fa-route mr-2 text-blue-400"></i> Voyage: <strong>{{ $voyage }}</strong></span>
                 @if(!empty($bl))
-                    <span class="flex items-center"><i class="fas fa-file-alt mr-2 text-blue-400"></i> BL TEMAS: <strong>{{ $bl }}</strong></span>
+                    <span class="flex items-center"><i class="fas fa-file-alt mr-2 text-blue-400"></i> BL: <strong>{{ $bl }}</strong></span>
                 @endif
                 <span class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-blue-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
                 <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-blue-400"></i> Total Records: <strong>{{ $biayaKapals->count() }}</strong></span>
@@ -39,7 +39,7 @@
 
     <!-- Summary Metrics -->
     @if(!empty($bl))
-        <p class="mb-4 text-sm text-gray-600">Tagihan TEMAS disaring untuk BL {{ $bl }}. Biaya klasifikasi lainnya tetap dihitung penuh sesuai kapal dan voyage.</p>
+        <p class="mb-4 text-sm text-gray-600">Seluruh sumber biaya disaring untuk BL {{ $bl }}. Biaya tanpa hubungan BL ditampilkan sebagai biaya umum kapal dan tidak masuk total BL. Biaya gabungan beberapa BL dihitung proporsional berdasarkan nominal per kontainer bila tersedia, atau jumlah referensi kontainer / BL.</p>
     @endif
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <!-- Total Nominal -->
@@ -279,6 +279,35 @@
             @endforeach
         </div>
         
+        @if(!empty($bl) && $biayaUmum->isNotEmpty())
+            <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-5 page-break-inside-avoid">
+                <h3 class="font-bold text-gray-800">Biaya Umum Kapal</h3>
+                <p class="mt-1 text-xs text-gray-500">Tidak memiliki hubungan BL dan tidak termasuk grand total BL {{ $bl }}.</p>
+                <div class="mt-3 overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead class="bg-gray-50 text-gray-500"><tr>
+                            <th class="p-3 text-left">No. Bukti / Invoice</th>
+                            <th class="p-3 text-left">Jenis Biaya</th>
+                            <th class="p-3 text-right">Total</th>
+                        </tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($biayaUmum as $item)
+                                <tr>
+                                    <td class="p-3 font-semibold">{{ $item->nomor_invoice ?? '-' }}</td>
+                                    <td class="p-3">{{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-' }}</td>
+                                    <td class="p-3 text-right whitespace-nowrap">Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="bg-gray-50 font-bold"><tr>
+                            <td colspan="2" class="p-3 text-right">Total Biaya Umum Kapal</td>
+                            <td class="p-3 text-right whitespace-nowrap">Rp {{ number_format($biayaUmum->sum(fn ($item) => $item->apportioned['total_biaya']), 0, ',', '.') }}</td>
+                        </tr></tfoot>
+                    </table>
+                </div>
+            </div>
+        @endif
+
         @if($biayaKapals->count() === 0)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500 mt-4">
                 <i class="fas fa-ship text-gray-300 text-5xl mb-4 block"></i>

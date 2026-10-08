@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
+use App\Services\RekapBlService;
 use Illuminate\Http\Request;
 
 class RekapBiayaKapalController extends Controller
@@ -25,9 +26,12 @@ class RekapBiayaKapalController extends Controller
         'temasDetails',
         'tantoDetails',
         'demurrageDetails',
+        'notaReturDetails',
         'tenagaKerjaDetails',
         'buruhBatamDetails',
+        'buruhBongkarDetails',
         'klaimDetails',
+        'umumDetails',
         'operasionalDetails',
         'dokumens',
     ];
@@ -153,9 +157,10 @@ class RekapBiayaKapalController extends Controller
         $total = 0;
 
         // Biaya buruh Batam menyimpan total per kapal/voyage pada tabel detail.
-        if ($item->buruhBatamDetails->count() > 0) {
+        if ($item->buruhBatamDetails->count() > 0 || $item->buruhBongkarDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->buruhBatamDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower && strtolower(trim($d->voyage ?? '')) === $voyageLower);
+            $details = $item->buruhBatamDetails->concat($item->buruhBongkarDetails)
+                ->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower && strtolower(trim($d->voyage ?? '')) === $voyageLower);
             $nominal = $details->sum(fn ($d) => (float) $d->nominal + (float) ($d->adjustment ?? 0));
             $pph = $details->sum('pph_amount');
             $total = $details->sum('total_nominal');
@@ -252,6 +257,15 @@ class RekapBiayaKapalController extends Controller
             $ppn = $item->ppn * $ratio;
         }
 
+        elseif ($item->umumDetails->count() > 0) {
+            $hasDetails = true;
+            $details = $item->umumDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+                && strtolower(trim($d->voyage ?? '')) === $voyageLower);
+            $nominal = $details->sum('nominal');
+            $pph = $details->sum('pph');
+            $total = $nominal - $pph;
+        }
+
         // Claim amounts are stored per ship/voyage in the claim details.
         elseif ($item->klaimDetails->count() > 0) {
             $hasDetails = true;
@@ -287,6 +301,7 @@ class RekapBiayaKapalController extends Controller
                 'temasDetails',
                 'tantoDetails',
                 'demurrageDetails',
+                'notaReturDetails',
                 'operasionalDetails',
                 'dokumens',
             ];
@@ -326,6 +341,18 @@ class RekapBiayaKapalController extends Controller
     /**
      * Display a listing of the resource.
      */
+    private function additionalShipVoyages()
+    {
+        $rows = collect();
+        foreach ([\App\Models\Manifest::class, \App\Models\Bl::class, \App\Models\Prospek::class,
+            \App\Models\SuratJalanBongkaran::class, \App\Models\SuratJalanBongkaranBatam::class,
+            \App\Models\PranotaOb::class] as $model) {
+            $rows = $rows->concat($model::get(['nama_kapal', 'no_voyage']));
+        }
+
+        return $rows;
+    }
+
     public function index()
     {
         $kapals = [];
@@ -334,6 +361,12 @@ class RekapBiayaKapalController extends Controller
         foreach ($records as $record) {
             $data = $this->getShipsAndVoyagesForRecord($record);
             foreach ($data['ships'] as $ship) {
+                $kapals[$ship] = $ship;
+            }
+        }
+        foreach ($this->additionalShipVoyages() as $row) {
+            $ship = trim($row->nama_kapal ?? '');
+            if ($ship !== '') {
                 $kapals[$ship] = $ship;
             }
         }
@@ -411,6 +444,11 @@ class RekapBiayaKapalController extends Controller
                 }
             }
         }
+        foreach ($this->additionalShipVoyages() as $row) {
+            if (strtolower(trim($row->nama_kapal ?? '')) === $selectedShipLower && trim($row->no_voyage ?? '') !== '') {
+                $voyages[strtolower(trim($row->no_voyage))] = trim($row->no_voyage);
+            }
+        }
         krsort($voyages);
 
         $voyageList = array_values($voyages);
@@ -449,16 +487,109 @@ class RekapBiayaKapalController extends Controller
         return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
     }
 
+    private function splitCostForBl($record, RekapBlService $resolver, string $kapal, string $voyage, string $bl): array
+    {
+        $empty = ['nominal' => 0, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 0];
+        $selected = clone $record;
+        $common = clone $record;
+        $selected->apportioned = $empty;
+        $common->apportioned = $empty;
+        $hasSelected = false;
+        $hasCommon = false;
+        $add = function ($cost, $ratio) use ($selected, $common, &$hasSelected, &$hasCommon) {
+            $target = $ratio === null ? $common : $selected;
+            if ($ratio === 0.0) {
+                return;
+            }
+            $totals = $target->apportioned;
+            foreach ($totals as $field => $amount) {
+                $totals[$field] += round((float) $cost[$field] * ($ratio ?? 1), 2);
+            }
+            $target->apportioned = $totals;
+            if ($ratio === null) {
+                $hasCommon = true;
+            } else {
+                $hasSelected = true;
+            }
+        };
+
+        if ($record instanceof BiayaKapal) {
+            $parentRatio = $resolver->ratio($record, $bl);
+            $hasDetails = false;
+            foreach ($this->relations as $relation) {
+                $selected->setRelation($relation, collect());
+                $common->setRelation($relation, collect());
+                foreach ($record->{$relation} as $detail) {
+                    if (strtolower(trim($detail->kapal ?? '')) !== strtolower(trim($kapal))
+                        || strtolower(trim($detail->voyage ?? '')) !== strtolower(trim($voyage))) {
+                        continue;
+                    }
+                    $hasDetails = true;
+                    $ratio = $resolver->ratio($detail, $bl) ?? $parentRatio;
+                    $single = clone $record;
+                    foreach ($this->relations as $name) {
+                        $single->setRelation($name, collect());
+                    }
+                    $single->setRelation($relation, collect([$detail]));
+                    $cost = $this->getApportionedCostForRecord($single, $kapal, $voyage);
+                    $add($cost, $ratio);
+                    if ($ratio !== 0.0) {
+                        $target = $ratio === null ? $common : $selected;
+                        $copy = clone $detail;
+                        if ($relation === 'temasDetails') {
+                            $copy->rekap_bl_total = round($detail->rekap_total * ($ratio ?? 1), 2);
+                        }
+                        $target->{$relation}->push($copy);
+                    }
+                }
+            }
+            if (! $hasDetails) {
+                $add($record->apportioned, $parentRatio);
+            }
+        } elseif (isset($record->is_uang_jalan) || isset($record->is_tagihan_vendor)) {
+            $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
+            $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
+        } elseif (isset($record->is_pranota_ob)) {
+            foreach ($record->getEnrichedItems() as $entry) {
+                $amount = (float) ($entry['biaya'] ?? 0);
+                $add(['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount], $resolver->ratio($entry, $bl));
+            }
+        } else {
+            $add($record->apportioned, $resolver->ratio($record, $bl));
+        }
+
+        return [$hasSelected ? $selected : null, $hasCommon ? $common : null];
+    }
+
     public function getBls(Request $request)
     {
         $data = $request->validate(['kapal' => 'required|string', 'voyage' => 'required|string']);
         $kapal = strtolower(trim($data['kapal']));
         $voyage = strtolower(trim($data['voyage']));
-        $numbers = collect();
-        foreach (BiayaKapal::with('temasDetails')->get() as $record) {
-            foreach ($record->temasDetails as $detail) {
-                if (strtolower(trim($detail->kapal ?? '')) === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
-                    $numbers->push($this->normalizeBl($detail->nomor_bl ?? ''));
+        $numbers = RekapBlService::forVoyage($data['kapal'], $data['voyage'])->available();
+        foreach (BiayaKapal::with($this->relations)->get() as $record) {
+            if (! $this->recordHasShipAndVoyage($record, $data['kapal'], $data['voyage'])) {
+                continue;
+            }
+            foreach ((array) $record->no_bl as $number) {
+                $numbers->push($this->normalizeBl($number));
+            }
+            foreach ($this->relations as $relation) {
+                foreach ($record->{$relation} as $detail) {
+                    if (strtolower(trim($detail->kapal ?? '')) === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
+                        foreach (preg_split('/[,;\n]+/', $detail->nomor_bl ?? $detail->no_bl ?? '') as $number) {
+                            $numbers->push($this->normalizeBl($number));
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ([\App\Models\SuratJalanBongkaran::class, \App\Models\SuratJalanBongkaranBatam::class] as $model) {
+            $shipLike = '%'.preg_replace('/[^a-z0-9]+/i', '%', $data['kapal']).'%';
+            foreach ($model::where('nama_kapal', 'like', $shipLike)->where('no_voyage', $data['voyage'])->pluck('no_bl') as $number) {
+                foreach (preg_split('/[,;\n]+/', $number ?? '') as $part) {
+                    $numbers->push($this->normalizeBl($part));
                 }
             }
         }
@@ -494,22 +625,6 @@ class RekapBiayaKapalController extends Controller
 
                 return $this->recordHasShipAndVoyage($record, $kapal, $voyage);
             });
-
-        if ($bl !== '') {
-            $biayaKapals = $biayaKapals->filter(function ($record) use ($kapal, $voyage, $bl) {
-                if ($record->temasDetails->isEmpty()) {
-                    return true;
-                }
-                $details = $record->temasDetails->filter(fn ($detail) =>
-                        strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
-                        && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage))
-                        && $this->normalizeBl($detail->nomor_bl ?? '') === $bl
-                );
-                $record->setRelation('temasDetails', $details);
-
-                return $details->isNotEmpty();
-            });
-        }
 
         // Apportion each record
         foreach ($biayaKapals as $record) {
@@ -575,7 +690,8 @@ class RekapBiayaKapalController extends Controller
                 ->orWhereHas('suratJalanBongkaranBatam', function ($q) use ($kapalLike, $voyage) {
                     $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
                 });
-        })->where('status', '!=', 'dibatalkan')->get();
+        })->with(['suratJalan.prospeks', 'suratJalanBongkaran', 'suratJalanBongkaranBatam'])
+            ->where('status', '!=', 'dibatalkan')->get();
 
         foreach ($uangJalans as $uj) {
             $totalBiaya = floatval($uj->jumlah_total ?? 0);
@@ -619,6 +735,22 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($tagihan);
         }
 
+        $biayaUmum = collect();
+        if ($bl !== '') {
+            $resolver = RekapBlService::forVoyage($kapal, $voyage);
+            $filtered = collect();
+            foreach ($biayaKapals as $record) {
+                [$selected, $common] = $this->splitCostForBl($record, $resolver, $kapal, $voyage, $bl);
+                if ($selected) {
+                    $filtered->push($selected);
+                }
+                if ($common) {
+                    $biayaUmum->push($common);
+                }
+            }
+            $biayaKapals = $filtered;
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
@@ -649,6 +781,6 @@ class RekapBiayaKapalController extends Controller
                 ->whereIn('nomor_kontainer', $temasContainers)->get();
         }
 
-        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'bl', 'biayaKapals', 'summary', 'grouped', 'temasManifests'));
+        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'bl', 'biayaKapals', 'biayaUmum', 'summary', 'grouped', 'temasManifests'));
     }
 }

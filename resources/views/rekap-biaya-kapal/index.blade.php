@@ -71,12 +71,12 @@
                     <!-- Submit Buttons -->
                     <div>
                         <label for="bl_select" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-file-alt text-gray-400 mr-1"></i> Filter BL Tagihan TEMAS (Opsional)
+                            <i class="fas fa-file-alt text-gray-400 mr-1"></i> Filter BL (Opsional)
                         </label>
                         <select name="bl" id="bl_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" disabled>
                             <option value="">-- Semua BL --</option>
                         </select>
-                        <p id="bl_status" class="mt-2 text-xs text-gray-500" role="status">Pilih kapal dan voyage untuk memuat BL TEMAS. Filter hanya berlaku pada Tagihan TEMAS; biaya lainnya tetap ditampilkan.</p>
+                        <p id="bl_status" class="mt-2 text-xs text-gray-500" role="status">Pilih kapal dan voyage untuk memuat BL. Filter berlaku pada seluruh sumber biaya yang terkait BL.</p>
                     </div>
 
                     <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
@@ -137,7 +137,7 @@
                     if ($('#kapal_select').val() !== kapal || $('#voyage_select').val() !== voyage) return;
                     data.forEach(number => $blSelect.append(new Option('BL ' + number, number)));
                     $blSelect.prop('disabled', false).trigger('change');
-                    $('#bl_status').text(data.length ? 'Pilihan BL hanya menyaring Tagihan TEMAS. Biaya lainnya tetap ditampilkan penuh.' : 'Belum ada Tagihan TEMAS dengan referensi BL pada kapal dan voyage ini.');
+                    $('#bl_status').text(data.length ? 'Filter menyaring seluruh biaya terkait BL, termasuk uang jalan dan vendor supir. Biaya umum kapal ditampilkan terpisah.' : 'Belum ada referensi BL pada kapal dan voyage ini.');
                 },
                 error: function(xhr, status) {
                     if (status !== 'abort') $('#bl_status').text('Gagal memuat BL. Pilih ulang voyage untuk mencoba kembali.');

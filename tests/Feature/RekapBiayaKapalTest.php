@@ -243,7 +243,7 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function bl_filter_applies_only_to_temas_and_keeps_other_costs()
+    public function bl_filter_keeps_related_costs_and_separates_general_ship_costs()
     {
         $this->actingAs($this->user);
         $invoice = BiayaKapal::create([
@@ -263,16 +263,24 @@ class RekapBiayaKapalTest extends TestCase
             'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101'],
             'jenis_biaya' => 'KB001', 'nominal' => 9000, 'total_biaya' => 9000,
         ]);
+        $linked = BiayaKapal::create([
+            'tanggal' => '2026-10-08', 'nomor_invoice' => 'INV-OTHER-BL-01',
+            'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101'], 'no_bl' => ['01'],
+            'jenis_biaya' => 'KB001', 'nominal' => 7000, 'total_biaya' => 7000,
+        ]);
         $this->getJson(route('rekap-biaya-kapal.get-bls', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']))
             ->assertOk()->assertExactJson(['01', '02']);
 
         $response = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101', 'bl' => '01']));
         $response->assertOk();
-        $response->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 12000.0);
-        $response->assertViewHas('biayaKapals', fn ($items) => $items->contains('id', $invoice->id) && $items->contains('id', $shared->id));
+        $response->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 10000.0);
+        $response->assertViewHas('biayaKapals', fn ($items) => $items->contains('id', $invoice->id) && ! $items->contains('id', $shared->id));
+        $response->assertViewHas('biayaKapals', fn ($items) => $items->contains('id', $linked->id));
+        $response->assertViewHas('biayaUmum', fn ($items) => $items->contains('id', $shared->id));
+        $response->assertSee('Biaya Umum Kapal');
         $response->assertDontSee('BL: 02');
 
         $unfiltered = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']));
-        $unfiltered->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 17000.0);
+        $unfiltered->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 24000.0);
     }
 }
