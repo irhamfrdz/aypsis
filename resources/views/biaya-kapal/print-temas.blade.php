@@ -393,15 +393,18 @@
                         <strong>{{ $stage->kapal }} / {{ $stage->voyage }}:</strong>
                         @if($stage->payment_mode === 'dp')
                             DP / Uang muka Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}. Tagihan akhir belum ditentukan.
+                            Saldo DP saat ini Rp {{ number_format(app(\App\Services\TemasBillingService::class)->balanceCents($stage) / 100, 0, ',', '.') }}.
                             <a class="no-print" href="{{ route('biaya-kapal.print-temas-dp', $stage->id) }}" target="_blank" style="margin-left: 8px; color: #1d4ed8; text-decoration: underline;">Cetak bukti DP</a>
                         @elseif($stage->payment_mode === 'pelunasan_dp')
                             Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
-                            - DP Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
+                            - DP digunakan Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
                             = Pelunasan Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
                             @foreach($stage->dpStages as $dp)
                                 <div style="margin-left: 12px; font-size: 10px;">
                                     Referensi DP {{ $dp->biayaKapal->nomor_invoice ?? '#' . $dp->id }}:
-                                    Rp {{ number_format($dp->nominal_dibayar, 0, ',', '.') }}
+                                    {{ $dp->kapal }} / {{ $dp->voyage }};
+                                    digunakan Rp {{ number_format($dp->pivot->nominal_digunakan, 0, ',', '.') }};
+                                    saldo saat ini Rp {{ number_format(app(\App\Services\TemasBillingService::class)->balanceCents($dp) / 100, 0, ',', '.') }}.
                                 </div>
                             @endforeach
                         @else

@@ -6281,12 +6281,16 @@ class BiayaKapalController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function getOutstandingTemasDps(\App\Services\TemasBillingService $service)
+    public function getOutstandingTemasDps(Request $request, \App\Services\TemasBillingService $service)
     {
-        $data = $service->candidates()->with('biayaKapal:id,nomor_invoice')->latest('id')->get()->map(fn ($dp) => [
+        $request->validate(['biaya_kapal_id' => 'nullable|integer|exists:biaya_kapals,id']);
+        $invoiceId = $request->filled('biaya_kapal_id') ? (int) $request->biaya_kapal_id : null;
+        $data = $service->candidates($invoiceId)->with('biayaKapal:id,nomor_invoice,tanggal')->latest('id')->get()->map(fn ($dp) => [
             'id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
             'nominal_dibayar' => $dp->nominal_dibayar,
-            'label' => ($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | DP Rp '.number_format((float) $dp->nominal_dibayar, 0, ',', '.'),
+            'saldo_dp' => ((int) round((float) $dp->nominal_dibayar * 100) - (int) round((float) $dp->dp_digunakan * 100)) / 100,
+            'tanggal_dp' => $dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d'),
+            'label' => ($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | Saldo Rp '.number_format((float) $dp->nominal_dibayar - (float) $dp->dp_digunakan, 0, ',', '.'),
         ]);
 
         return response()->json(['data' => $data]);

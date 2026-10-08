@@ -71,13 +71,13 @@
                     <label class="block text-sm">Referensi DP
                         <select name="temas[${sectionIndex}][dp_stage_ids][]" multiple size="5" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
                     </label>
-                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih DP untuk kapal dan voyage yang sama (tahan Ctrl untuk memilih beberapa).</p>
+                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih saldo DP dari kapal/voyage mana pun (tahan Ctrl untuk memilih beberapa). Saldo DP paling lama digunakan terlebih dahulu.</p>
                     <button type="button" class="temas-reload-dp text-sm text-blue-700 mt-1">Muat ulang daftar DP</button>
                     <p class="temas-dp-status text-sm text-gray-600" role="status"></p>
                     <div class="temas-dp-summary hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                        <p class="text-xs font-medium uppercase tracking-wide text-amber-700">DP sudah dibayar</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-amber-700">Saldo DP tersedia</p>
                         <p class="temas-dp-paid mt-1 text-lg font-bold text-amber-900">Rp 0</p>
-                        <p class="text-xs text-amber-700 mt-1">Nominal ini akan dikurangkan dari total tagihan akhir.</p>
+                        <p class="text-xs text-amber-700 mt-1">Saldo dipakai sesuai nilai tagihan. Sisanya bisa digunakan pada tagihan kapal/voyage lain.</p>
                     </div>
                 </div>
             </div>
@@ -163,7 +163,10 @@
                         <span>Total tagihan</span><span class="temas-settlement-total">Rp 0</span>
                     </div>
                     <div class="flex justify-between gap-3 text-sm font-medium text-red-700">
-                        <span>Potongan DP</span><span class="temas-settlement-dp">- Rp 0</span>
+                        <span>DP digunakan</span><span class="temas-settlement-dp">- Rp 0</span>
+                    </div>
+                    <div class="flex justify-between gap-3 text-sm text-blue-800">
+                        <span>Sisa saldo DP</span><span class="temas-settlement-balance">Rp 0</span>
                     </div>
                 </div>
                 <div class="flex justify-between gap-3">
@@ -220,14 +223,7 @@
         section.querySelector('.temas-dp-amount').addEventListener('input', () => calculateTemasSectionTotal(sectionIndex));
         section.querySelector('.temas-reload-dp').addEventListener('click', () => loadTemasDps(section));
         section.querySelector('.temas-dp-reference').addEventListener('change', () => {
-            const option = updateTemasDpSelection(section);
-            if (option?.value) {
-                if (![...kapalSelect.options].some(o => o.value === option.dataset.kapal)) kapalSelect.add(new Option(option.dataset.kapal, option.dataset.kapal));
-                kapalSelect.value = option.dataset.kapal;
-                voyageInput.value = option.dataset.voyage;
-                voyageSelect.replaceChildren(new Option(option.dataset.voyage, option.dataset.voyage));
-                loadTemasContainers(section);
-            }
+            updateTemasDpSelection(section);
             updateTemasPaymentMode(section);
         });
         addTemasContainer(section);
@@ -353,7 +349,7 @@
             section.querySelector('.temas-status').textContent = 'Voyage gagal dimuat. Pilih ulang kapal untuk mencoba lagi, atau ketik voyage manual.';
         }
         if (!section.isConnected || section.voyageRequest !== request) return;
-        select.disabled = section.querySelector('.temas-payment-mode').value === 'pelunasan_dp' || !section.querySelector('.voyage-input-temas').disabled;
+        select.disabled = !section.querySelector('.voyage-input-temas').disabled;
         if (!section.querySelector('.voyage-input-temas').disabled) loadTemasContainers(section);
     }
     async function loadTemasContainers(section) {
@@ -687,9 +683,9 @@
         const settlementBreakdown = section.querySelector('.temas-settlement-breakdown');
         settlementBreakdown.classList.toggle('hidden', mode !== 'pelunasan_dp');
         section.querySelector('.temas-settlement-total').textContent = temasMoney(grandTotal);
-        section.querySelector('.temas-settlement-dp').textContent = '- ' + temasMoney(advance);
+        section.querySelector('.temas-settlement-dp').textContent = '- ' + temasMoney(Math.min(grandTotal, advance));
         const dpSelect = section.querySelector('.temas-dp-reference');
-        if (dpSelect) dpSelect.setCustomValidity(mode === 'pelunasan_dp' && grandTotal < advance ? 'Tagihan akhir tidak boleh lebih kecil dari DP.' : '');
+        if (dpSelect) dpSelect.setCustomValidity('');
         const cashInput = section.querySelector('.temas-cash-value');
         if (cashInput) {
             cashInput.value = Math.max(0, Math.round((grandTotal - advance) * 100) / 100);
@@ -700,6 +696,7 @@
     }
     
     function calculateTotalFromAllTemasSections() {
+        calculateTemasDpUsageForAllSections();
         let grandTotalAll = 0;
         document.querySelectorAll('.temas-section').forEach(section => {
             grandTotalAll += parseFloat((section.querySelector('.temas-cash-value') || section.querySelector('.grand-total-value-temas')).value) || 0;

@@ -137,6 +137,45 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function temas_rekap_counts_invoices_on_target_voyages_without_counting_dp_twice()
+    {
+        $this->actingAs($this->user);
+        $create = function ($number, $ship, $voyage, $mode, $tagihan, $cash, $used) {
+            $invoice = BiayaKapal::create([
+                'tanggal' => '2026-10-08', 'nomor_invoice' => $number,
+                'nama_kapal' => [$ship], 'no_voyage' => [$voyage],
+                'jenis_biaya' => 'KB001', 'nominal' => $cash, 'total_biaya' => $cash,
+            ]);
+            $stage = \App\Models\BiayaKapalTemasStage::create([
+                'biaya_kapal_id' => $invoice->id,
+                'kapal' => $ship, 'voyage' => $voyage, 'payment_mode' => $mode,
+                'nilai_tagihan' => $tagihan, 'nominal_dibayar' => $cash, 'dp_diperhitungkan' => $used,
+            ]);
+            $stage->details()->create([
+                'biaya_kapal_id' => $invoice->id, 'kapal' => $ship, 'voyage' => $voyage,
+                'nomor_bl' => $mode === 'dp' ? null : '01',
+                'jenis_biaya' => $mode === 'dp' ? 'DP / Uang Muka TEMAS' : 'Freight',
+                'kuantitas' => 1, 'harga' => $tagihan, 'sub_total' => $tagihan, 'grand_total' => $cash,
+            ]);
+
+            return $invoice;
+        };
+        $dp = $create('INV-DP-35JT', 'Kapal A', 'V01', 'dp', 35000000, 35000000, 0);
+        $first = $create('INV-TAGIHAN-33JT', 'Kapal A', 'V01', 'pelunasan_dp', 33000000, 0, 33000000);
+        $second = $create('INV-TAGIHAN-5JT', 'Kapal B', 'V02', 'pelunasan_dp', 5000000, 3000000, 2000000);
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Kapal A', 'voyage' => 'V01']))
+            ->assertOk()
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 33000000.0)
+            ->assertViewHas('biayaKapals', fn ($items) => $items->contains('id', $first->id) && ! $items->contains('id', $dp->id))
+            ->assertSee('Rp 33.000.000')->assertDontSee('Rp 35.000.000');
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Kapal B', 'voyage' => 'V02', 'bl' => '01']))
+            ->assertOk()
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 5000000.0)
+            ->assertSee('Rp 5.000.000');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function bl_filter_applies_only_to_temas_and_keeps_other_costs()
     {
         $this->actingAs($this->user);

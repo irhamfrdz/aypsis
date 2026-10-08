@@ -27,12 +27,12 @@ class BiayaKapalTemasStage extends Model
 
     public function settlements()
     {
-        return $this->belongsToMany(self::class, 'temas_dp_references', 'dp_stage_id', 'settlement_stage_id');
+        return $this->belongsToMany(self::class, 'temas_dp_references', 'dp_stage_id', 'settlement_stage_id')->withPivot('nominal_digunakan');
     }
 
     public function dpStages()
     {
-        return $this->belongsToMany(self::class, 'temas_dp_references', 'settlement_stage_id', 'dp_stage_id');
+        return $this->belongsToMany(self::class, 'temas_dp_references', 'settlement_stage_id', 'dp_stage_id')->withPivot('nominal_digunakan');
     }
 
     public function details()

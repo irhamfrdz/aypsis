@@ -54,6 +54,7 @@ class TemasPaymentTest extends TestCase
         (require database_path('migrations/2026_09_26_120000_add_dp_metadata_to_biaya_kapal_temas_stages.php'))->up();
         (require database_path('migrations/2026_10_02_103000_add_nama_bank_to_biaya_kapal_temas_stages.php'))->up();
         (require database_path('migrations/2026_10_08_000001_create_temas_dp_references_table.php'))->up();
+        (require database_path('migrations/2026_10_08_000002_add_used_amount_to_temas_dp_references.php'))->up();
         Schema::create('manifests', function (Blueprint $table) {
             $table->id();
             $table->string('no_voyage')->nullable();
@@ -359,7 +360,7 @@ class TemasPaymentTest extends TestCase
         $section['pph'] = 20000; // Storage-style settlement excludes these extras.
         $billing->replace($settlement, [$section]);
         $stage = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $settlement->id)->firstOrFail();
-        $this->assertSame('TEMAS 1', $stage->kapal);
+        $this->assertSame('IGNORED', $stage->kapal); // The invoice ship is independent of the source DP.
         $this->assertSame('1000000.00', $stage->nilai_tagihan);
         $this->assertSame('300000.00', $stage->dp_diperhitungkan);
         $this->assertSame('700000.00', $settlement->fresh()->nominal);
@@ -507,20 +508,19 @@ class TemasPaymentTest extends TestCase
         $this->assertStringContainsString('Rp 20.000', $activePphHtml);
     }
 
-    public function test_storage_style_rejects_final_invoice_below_dp_and_rolls_back(): void
+    public function test_settlement_below_dp_preserves_unused_balance(): void
     {
         $billing = app(\App\Services\TemasBillingService::class);
         $dpInvoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
         $billing->replace($dpInvoice, [['kapal' => 'TEMAS 1', 'voyage' => 'V001', 'payment_mode' => 'dp', 'tanggal_dp' => '2026-09-22', 'nama_bank' => 'BANK TEST', 'nominal_dibayar' => 2000000]]);
         $dp = \App\Models\BiayaKapalTemasStage::firstOrFail();
         $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
-        try {
-            $billing->replace($invoice, [$this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_id' => $dp->id]]);
-            $this->fail('Final invoice below DP must be rejected.');
-        } catch (ValidationException $e) {
-            $this->assertSame(0, $invoice->temasDetails()->count());
-            $this->assertSame(1, $billing->candidates()->count());
-        }
+        $billing->replace($invoice, [$this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_id' => $dp->id]]);
+        $this->assertSame('0.00', $invoice->fresh()->nominal);
+        $this->assertSame('paid', $invoice->fresh()->status_pembayaran);
+        $this->assertSame('lunas', $this->service->summary($invoice->fresh())['status']);
+        $this->assertSame(100000000, $billing->balanceCents($dp));
+        $this->assertSame(1, $billing->candidates()->count());
     }
 
     public function test_storage_style_rejects_second_settlement_and_dp_edit(): void
@@ -591,7 +591,7 @@ class TemasPaymentTest extends TestCase
         $first = $this->createTemasAdvance(600000);
         $second = $this->createTemasAdvance(500000);
         $other = $this->createTemasAdvance(100000, 'V002');
-        foreach ([[$first->id, $first->id], [$first->id, $other->id], [$first->id, $second->id], [$first->id, 999999]] as $ids) {
+        foreach ([[$first->id, $first->id], [$first->id, 999999]] as $ids) {
             $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
             try {
                 $billing->replace($invoice, [$this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => $ids]]);
@@ -612,10 +612,98 @@ class TemasPaymentTest extends TestCase
         $migration = require database_path('migrations/2026_10_08_000001_create_temas_dp_references_table.php');
         $migration->down();
         $migration->up();
+        (require database_path('migrations/2026_10_08_000002_add_used_amount_to_temas_dp_references.php'))->up();
 
         $stage = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->firstOrFail();
         $this->assertSame([$dp->id], $stage->dpStages->modelKeys());
         $this->assertSame(0, $billing->candidates()->count());
         $this->assertSame('700000.00', $invoice->fresh()->nominal);
+    }
+
+    public function test_balance_can_be_used_on_another_ship_and_voyage_and_restored_on_delete(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dp = $this->createTemasAdvance(35000000);
+        $first = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $costs = $this->finalCosts();
+        $costs['kapal'] = 'TEMAS OTHER';
+        $costs['voyage'] = 'V002';
+        $costs['custom_prices'] = [33000000, 0];
+        $costs += ['payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => [$dp->id]];
+        $billing->replace($first, [$costs]);
+        $this->assertSame('0.00', $first->fresh()->nominal);
+        $this->assertSame(200000000, $billing->balanceCents($dp));
+        $candidate = $billing->candidates()->whereKey($dp->id)->firstOrFail();
+        $this->assertEquals(33000000, $candidate->dp_digunakan);
+        $stage = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $first->id)->firstOrFail();
+        $this->assertSame('TEMAS OTHER', $stage->kapal);
+        $this->assertSame('V002', $stage->voyage);
+        $this->assertEquals(33000000, $stage->dpStages->first()->pivot->nominal_digunakan);
+        $this->assertSame(3500000000, $billing->balanceCents($dp, $first->id));
+
+        $second = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $next = $costs;
+        $next['kapal'] = 'TEMAS NEXT';
+        $next['voyage'] = 'V003';
+        $next['custom_prices'] = [5000000, 0];
+        $billing->replace($second, [$next]);
+        $this->assertSame('3000000.00', $second->fresh()->nominal);
+        $this->assertSame(0, $billing->balanceCents($dp));
+        $this->assertSame(0, $billing->candidates()->count());
+        $billing->replace($first, [$costs]); // Its own allocation is released and reapplied once.
+        $this->assertSame('0.00', $first->fresh()->nominal);
+        $this->assertSame(0, $billing->balanceCents($dp));
+
+        $second->delete();
+        $this->assertSame(200000000, $billing->balanceCents($dp));
+        $first->delete();
+        $this->assertSame(3500000000, $billing->balanceCents($dp));
+    }
+
+    public function test_multiple_sources_use_oldest_balance_first_across_voyages(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $first = $this->createTemasAdvance(700000);
+        $second = $this->createTemasAdvance(600000, 'V002');
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $billing->replace($invoice, [$this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => [$second->id, $first->id]]]);
+        $this->assertSame(0, $billing->balanceCents($first));
+        $this->assertSame(30000000, $billing->balanceCents($second));
+        $this->assertSame(1, $billing->candidates()->count());
+        $this->assertSame('0.00', $invoice->fresh()->nominal);
+    }
+
+    public function test_failed_edit_rolls_back_dp_consumption(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dp = $this->createTemasAdvance(2000000);
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $section = $this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => [$dp->id]];
+        $billing->replace($invoice, [$section]);
+        $section['nomor_kontainers'] = [];
+        try {
+            $billing->replace($invoice, [$section]);
+            $this->fail('Invalid edit must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertSame(100000000, $billing->balanceCents($dp));
+            $this->assertEquals(1000000, \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->value('dp_diperhitungkan'));
+        }
+    }
+
+    public function test_two_sections_cannot_spend_the_same_dp_balance_twice(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dp = $this->createTemasAdvance(35000000);
+        $invoice = BiayaKapal::create(['status_pembayaran' => 'pending']);
+        $first = $this->finalCosts() + ['payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => [$dp->id]];
+        $first['custom_prices'] = [33000000, 0];
+        $second = $first;
+        $second['kapal'] = 'TEMAS OTHER';
+        $second['voyage'] = 'V003';
+        $second['custom_prices'] = [5000000, 0];
+        $billing->replace($invoice, [$first, $second]);
+        $this->assertSame('3000000.00', $invoice->fresh()->nominal);
+        $this->assertSame(0, $billing->balanceCents($dp));
+        $this->assertEquals(35000000, $dp->settlements()->sum('temas_dp_references.nominal_digunakan'));
     }
 }

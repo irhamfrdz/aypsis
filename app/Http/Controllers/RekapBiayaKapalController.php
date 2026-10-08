@@ -251,6 +251,16 @@ class RekapBiayaKapalController extends Controller
             $ppn = $item->ppn * $ratio;
         }
 
+        // TEMAS costs follow the final invoice, rather than the DP cash advance.
+        elseif ($item->temasDetails->count() > 0) {
+            $hasDetails = true;
+            $details = $item->temasDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+                && strtolower(trim($d->voyage ?? '')) === $voyageLower
+                && $d->stage?->payment_mode !== 'dp');
+            $nominal = $details->sum('sub_total');
+            $total = $details->sum('rekap_total');
+        }
+
         // Generic fallback for other details
         else {
             $relations = [
@@ -455,10 +465,18 @@ class RekapBiayaKapalController extends Controller
         $bl = $this->normalizeBl($request->input('bl', ''));
 
         // Fetch all biaya kapals and load relations
-        $allRelations = array_merge(['klasifikasiBiaya', 'vendor'], $this->relations);
+        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
             ->filter(function ($record) use ($kapal, $voyage) {
+                if ($record->temasDetails->isNotEmpty()) {
+                    $details = $record->temasDetails->filter(fn ($detail) => $detail->stage?->payment_mode !== 'dp');
+                    if ($details->isEmpty()) {
+                        return false;
+                    }
+                    $record->setRelation('temasDetails', $details);
+                }
+
                 return $this->recordHasShipAndVoyage($record, $kapal, $voyage);
             });
 

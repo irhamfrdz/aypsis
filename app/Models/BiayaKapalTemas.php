@@ -73,6 +73,34 @@ class BiayaKapalTemas extends Model
         return $this->belongsTo(BiayaKapalTemasStage::class, 'temas_stage_id');
     }
 
+    /** Cost assigned to this invoice row, including the portion paid using DP. */
+    public function getRekapTotalAttribute(): float
+    {
+        if (! $this->temas_stage_id || ! $this->stage) {
+            return (float) $this->grand_total;
+        }
+        if ($this->stage->payment_mode === 'dp') {
+            return 0;
+        }
+
+        // Allocate the full invoice amount, independent of cash paid or a BL filter.
+        $rows = $this->stage->details->sortBy('id');
+        $subtotal = $rows->sum(fn ($row) => (int) round((float) $row->sub_total * 100));
+        $total = (int) round((float) $this->stage->nilai_tagihan * 100);
+        $cumulative = 0;
+        $allocated = 0;
+        foreach ($rows as $row) {
+            $cumulative += (int) round((float) $row->sub_total * 100);
+            $target = $subtotal > 0 ? (int) round($total * ($cumulative / $subtotal)) : $total;
+            if ($row->id === $this->id) {
+                return ($target - $allocated) / 100;
+            }
+            $allocated = $target;
+        }
+
+        return 0;
+    }
+
     /**
      * Accessor for formatted sub_total
      */

@@ -37,6 +37,8 @@ class TemasPaymentService
         $items = $this->activeItems($invoice)->with('pembayaran')->orderBy('id')->get();
         $paid = $items->sum(fn ($item) => $this->cents($item->nominal));
         $dp = $items->firstWhere('payment_mode', 'dp');
+        $coveredByDp = $total === 0 && \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)
+            ->where('payment_mode', 'pelunasan_dp')->where('dp_diperhitungkan', '>', 0)->exists();
 
         return [
             'biaya_kapal_id' => $invoice->id,
@@ -44,7 +46,7 @@ class TemasPaymentService
             'total_dibayar' => $this->decimal($paid),
             'sisa_pembayaran' => $this->decimal(max(0, $total - $paid)),
             'status' => $invoice->status_pembayaran === 'cancelled' ? 'cancelled'
-                : ($total > 0 && $paid >= $total ? 'lunas' : ($paid > 0 ? 'dp' : 'belum_dibayar')),
+                : ($coveredByDp || ($total > 0 && $paid >= $total) ? 'lunas' : ($paid > 0 ? 'dp' : 'belum_dibayar')),
             'dp_item_id' => $dp?->id,
             'riwayat' => $items->map(fn ($item) => [
                 'id' => $item->id,

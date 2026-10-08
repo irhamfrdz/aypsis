@@ -52,8 +52,8 @@
                     @endif
                 </div>
                 <div class="text-right whitespace-nowrap">
-                    <p class="text-gray-500">Total bersih BL / kontainer</p>
-                    <p class="mt-1 text-sm font-bold text-blue-900">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</p>
+                    <p class="text-gray-500">Total biaya BL / kontainer</p>
+                    <p class="mt-1 text-sm font-bold text-blue-900">Rp {{ number_format($details->sum('rekap_total'), 0, ',', '.') }}</p>
                 </div>
             </div>
             @if($containers->isNotEmpty())
@@ -75,7 +75,7 @@
                             <th class="px-3 py-2 text-right font-semibold">Qty</th>
                             <th class="px-3 py-2 text-right font-semibold">Tarif</th>
                             <th class="px-3 py-2 text-right font-semibold">Nominal Biaya</th>
-                            <th class="px-3 py-2 text-right font-semibold">Total Bersih</th>
+                            <th class="px-3 py-2 text-right font-semibold">Total Biaya</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -86,7 +86,7 @@
                                 <td class="px-3 py-2 text-right text-gray-600">{{ number_format((float) $detail->kuantitas, (float) $detail->kuantitas == floor((float) $detail->kuantitas) ? 0 : 2, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right text-gray-600 whitespace-nowrap">Rp {{ number_format((float) $detail->harga, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">Rp {{ number_format((float) $detail->sub_total, 0, ',', '.') }}</td>
-                                <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) $detail->grand_total, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) $detail->rekap_total, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

@@ -62,6 +62,7 @@
             <strong>Rp {{ number_format($amount, 0, ',', '.') }},-</strong>
         </p>
         <p class="amount-words">{{ $amountWords }} Rupiah</p>
+        <p class="memo-line">Saldo DP saat ini: <strong>Rp {{ number_format(app(\App\Services\TemasBillingService::class)->balanceCents($stage) / 100, 0, ',', '.') }}</strong>. Saldo dapat digunakan untuk tagihan TEMAS kapal/voyage lain.</p>
 
         <p class="memo-line">Dikirim ke rekening sebagai berikut:</p>
         <table class="account">

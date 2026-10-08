@@ -42,7 +42,7 @@ const fields = { '.temas-count': input() };
 for (const key of ['kapal-select', 'sub-total-display', 'sub-total-value', 'pph-active', 'pph-display', 'pph-value', 'ppn-active', 'ppn-display', 'ppn-value', 'materai-value', 'admin-value', 'adjustment-value', 'grand-total-display', 'grand-total-value']) {
     fields['.' + key + '-temas'] = input(0);
 }
-for (const key of ['temas-payment-mode', 'temas-settlement-breakdown', 'temas-settlement-total', 'temas-settlement-dp', 'temas-dp-reference', 'temas-cash-value', 'temas-cash-display']) fields['.' + key] = input();
+for (const key of ['temas-payment-mode', 'temas-settlement-breakdown', 'temas-settlement-total', 'temas-settlement-dp', 'temas-settlement-balance', 'temas-dp-reference', 'temas-cash-value', 'temas-cash-display']) fields['.' + key] = input();
 fields['.temas-payment-mode'].value = 'lunas';
 fields['.pph-active-temas'].checked = true;
 const section = group(fields, { '.temas-container-card': cards, '.temas-type-item': [first, manual, second] });
@@ -96,7 +96,7 @@ dpSelect.options = [dp1, dp2, other];
 dpSelect.selectedOptions = [dp1, dp2];
 context.updateTemasDpSelection(section);
 assert.equal(section.dataset.dpAmount, 150000.75);
-assert.equal(other.disabled, true);
+assert.equal(other.disabled, false);
 fields['.temas-payment-mode'].value = 'pelunasan_dp';
 context.calculateTemasSectionTotal(1);
 assert.equal(fields['.temas-cash-value'].value, 299999.25);
@@ -105,12 +105,38 @@ assert.equal(dpSelect.validationMessage, '');
 dp2.dataset.amount = '500000';
 context.updateTemasDpSelection(section);
 context.calculateTemasSectionTotal(1);
-assert.ok(dpSelect.validationMessage);
+assert.equal(dpSelect.validationMessage, '');
+assert.equal(fields['.temas-cash-value'].value, 0);
+const money = amount => vm.runInContext('temasMoney(' + Number(amount) + ')', context);
+assert.equal(fields['.temas-settlement-balance'].textContent, money(150000.25));
 dpSelect.selectedOptions = [];
 context.updateTemasDpSelection(section);
 assert.equal(section.dataset.dpAmount, 0);
 assert.equal(other.disabled, false);
-console.log('PASS: multiple DP totals, decimal precision, vessel filtering and settlement validation');
+console.log('PASS: multiple DP balances, decimal precision and cross-voyage selection');
+
+const source = option('1', '35000000');
+dpSelect.options = [source];
+dpSelect.selectedOptions = [source];
+fields['.grand-total-value-temas'].value = 33000000;
+context.calculateTemasDpUsageForAllSections();
+assert.equal(fields['.temas-cash-value'].value, 0);
+assert.equal(fields['.temas-settlement-balance'].textContent, money(2000000));
+const nextFields = {};
+for (const key of ['temas-payment-mode', 'grand-total-value-temas', 'temas-dp-reference', 'temas-settlement-dp', 'temas-settlement-balance', 'temas-cash-value', 'temas-cash-display']) nextFields['.' + key] = input();
+nextFields['.temas-payment-mode'].value = 'pelunasan_dp';
+nextFields['.grand-total-value-temas'].value = 5000000;
+nextFields['.temas-dp-reference'].selectedOptions = [option('1', '35000000')];
+const nextSection = Object.assign(group(nextFields), {dataset: {}});
+context.document.querySelectorAll = () => [section, nextSection];
+context.calculateTemasDpUsageForAllSections();
+assert.equal(nextFields['.temas-cash-value'].value, 3000000);
+assert.equal(nextFields['.temas-settlement-balance'].textContent, money(0));
+assert.equal(nextSection.dataset.dpAmount, 2000000);
+fields['.grand-total-value-temas'].value = 32000000;
+context.calculateTemasDpUsageForAllSections();
+assert.equal(nextFields['.temas-cash-value'].value, 2000000);
+console.log('PASS: DP 35m covers invoice 33m and retains 2m for the next invoice; sections share the balance once');
 
 (async () => {
     class OptionFixture {

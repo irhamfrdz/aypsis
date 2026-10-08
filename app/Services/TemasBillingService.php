@@ -44,12 +44,39 @@ class TemasBillingService
         return max(1, count($containers));
     }
 
-    public function candidates()
+    private function usageQuery(?int $excludingInvoiceId = null)
     {
-        return BiayaKapalTemasStage::where('payment_mode', 'dp')
+        return DB::table('temas_dp_references as refs')
+            ->join('biaya_kapal_temas_stages as settlement', 'settlement.id', '=', 'refs.settlement_stage_id')
+            ->join('biaya_kapals as invoice', 'invoice.id', '=', 'settlement.biaya_kapal_id')
+            ->whereNull('invoice.deleted_at')->where('invoice.status_pembayaran', '!=', 'cancelled')
+            ->when($excludingInvoiceId, fn ($query) => $query->where('invoice.id', '!=', $excludingInvoiceId));
+    }
+
+    public function balanceCents(BiayaKapalTemasStage $dp, ?int $excludingInvoiceId = null, bool $lock = false): int
+    {
+        $query = $this->usageQuery($excludingInvoiceId)->where('refs.dp_stage_id', $dp->id)->select('refs.nominal_digunakan');
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+        // Read individual locked rows so MySQL sees the latest committed use, including under REPEATABLE READ.
+        $used = $query->get()->sum(fn ($reference) => $this->cents($reference->nominal_digunakan));
+
+        return max(0, $this->cents($dp->nominal_dibayar) - $used);
+    }
+
+    public function candidates(?int $excludingInvoiceId = null)
+    {
+        $used = $this->usageQuery($excludingInvoiceId)
+            ->whereColumn('refs.dp_stage_id', 'biaya_kapal_temas_stages.id')
+            ->selectRaw('COALESCE(SUM(refs.nominal_digunakan), 0)');
+
+        return BiayaKapalTemasStage::select('biaya_kapal_temas_stages.*')->selectSub($used, 'dp_digunakan')
+            ->where('payment_mode', 'dp')
             ->where('nominal_dibayar', '>', 0)
             ->whereHas('biayaKapal', fn ($q) => $q->where('status_pembayaran', '!=', 'cancelled'))
-            ->whereDoesntHave('settlements', fn ($q) => $q->whereHas('biayaKapal'));
+            ->where('nominal_dibayar', '>', $used)
+            ->when($excludingInvoiceId, fn ($query) => $query->where('biaya_kapal_id', '!=', $excludingInvoiceId));
     }
 
     public function assertCanReplace(BiayaKapal $invoice): void
@@ -73,6 +100,12 @@ class TemasBillingService
             if (! $sections) {
                 throw ValidationException::withMessages(['temas' => 'Tambahkan minimal satu bagian TEMAS.']);
             }
+            // Lock all old and new source DPs before returning balances during an edit.
+            $oldDpIds = DB::table('temas_dp_references as refs')
+                ->join('biaya_kapal_temas_stages as stages', 'stages.id', '=', 'refs.settlement_stage_id')
+                ->where('stages.biaya_kapal_id', $invoice->id)->pluck('refs.dp_stage_id');
+            $newDpIds = collect($sections)->flatMap(fn ($section) => $section['dp_stage_ids'] ?? (isset($section['dp_stage_id']) ? [$section['dp_stage_id']] : []));
+            BiayaKapalTemasStage::whereIn('id', $oldDpIds->merge($newDpIds)->unique()->all())->orderBy('id')->lockForUpdate()->get();
             BiayaKapalTemas::where('biaya_kapal_id', $invoice->id)->delete();
             BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->delete();
             foreach ($sections as $index => $section) {
@@ -84,6 +117,8 @@ class TemasBillingService
                 'nominal' => $nominal, 'total_biaya' => $nominal,
                 'nama_kapal' => $stages->pluck('kapal')->unique()->values()->all(),
                 'no_voyage' => $stages->pluck('voyage')->unique()->values()->all(),
+                'status_pembayaran' => $nominal == 0 && $stages->contains('payment_mode', 'pelunasan_dp') ? 'paid' : 'pending',
+                'sisa_pembayaran' => $nominal,
             ]);
         });
     }
@@ -104,6 +139,7 @@ class TemasBillingService
             'dp_stage_ids.*' => 'required|integer|distinct',
         ])->validate();
         $dps = collect();
+        $balances = [];
         if ($mode === 'pelunasan_dp') {
             $dps = BiayaKapalTemasStage::query()
                 ->join('biaya_kapals as dp_invoice', 'dp_invoice.id', '=', 'biaya_kapal_temas_stages.biaya_kapal_id')
@@ -114,26 +150,22 @@ class TemasBillingService
                 throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Referensi DP tidak tersedia.']);
             }
             foreach ($dps as $dp) {
-                // Locking reads see the latest committed state even under MySQL REPEATABLE READ.
-                $settled = DB::table('temas_dp_references as refs')
-                    ->join('biaya_kapal_temas_stages as stages', 'stages.id', '=', 'refs.settlement_stage_id')
-                    ->join('biaya_kapals as invoices', 'invoices.id', '=', 'stages.biaya_kapal_id')
-                    ->where('refs.dp_stage_id', $dp->id)->whereNull('invoices.deleted_at')
-                    ->select('stages.id')->lockForUpdate()->get()->isNotEmpty();
-                if ($dp->payment_mode !== 'dp' || $dp->nominal_dibayar <= 0 || $settled || $dp->biaya_kapal_id == $invoice->id) {
-                    throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'DP tidak tersedia, sudah dilunasi, atau berasal dari invoice yang sama.']);
+                if ($dp->payment_mode !== 'dp' || $dp->nominal_dibayar <= 0 || $dp->biaya_kapal_id == $invoice->id) {
+                    throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Referensi harus berupa DP aktif dari invoice lain.']);
                 }
-                if ($dp->kapal !== $dps->first()->kapal || $dp->voyage !== $dps->first()->voyage) {
-                    throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Semua referensi DP harus berasal dari kapal dan voyage yang sama.']);
-                }
-                if ($invoice->tanggal && $dp->biayaKapal->tanggal && $invoice->tanggal->lt($dp->biayaKapal->tanggal)) {
+                $balances[$dp->id] = $this->balanceCents($dp, null, true);
+                $dpDate = $dp->tanggal_dp ?? $dp->biayaKapal->tanggal;
+                if ($invoice->tanggal && $dpDate && $invoice->tanggal->lt($dpDate)) {
                     throw ValidationException::withMessages(['tanggal' => 'Tanggal pelunasan tidak boleh mendahului tanggal DP.']);
                 }
             }
-            $section['kapal'] = $dps->first()->kapal;
-            $section['voyage'] = $dps->first()->voyage;
+            if (array_sum($balances) <= 0) {
+                throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Saldo DP sudah habis. Pilih referensi DP lain atau pembayaran langsung.']);
+            }
+            $dps = $dps->sortBy(fn ($dp) => ($dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d') ?? '9999-12-31').sprintf('%020d', $dp->id))->values();
         }
-        $advance = $dps->sum(fn ($dp) => $this->cents($dp->nominal_dibayar));
+        $advance = 0;
+        $allocations = [];
         Validator::make($section, ['kapal' => 'required|string|max:255', 'voyage' => 'required|string|max:255'])->validate();
         $common = array_intersect_key($section, array_flip([
             'kapal', 'voyage', 'penerima', 'nomor_rekening', 'nomor_referensi', 'tanggal_invoice_vendor', 'keterangan',
@@ -212,8 +244,15 @@ class TemasBillingService
                 }
             }
             $total = $subTotal + $extras;
-            if ($total < $advance || $total < 0) {
-                throw ValidationException::withMessages(["temas.$index.types" => 'Tagihan akhir tidak boleh lebih kecil dari DP. Periksa biaya per nomor BL.']);
+            if ($total < 0 || ($mode === 'pelunasan_dp' && $total <= 0)) {
+                throw ValidationException::withMessages(["temas.$index.types" => 'Tagihan pelunasan harus lebih dari nol.']);
+            }
+            foreach ($dps as $dp) {
+                $used = min($balances[$dp->id], $total - $advance);
+                if ($used > 0) {
+                    $allocations[$dp->id] = ['nominal_digunakan' => $used / 100];
+                    $advance += $used;
+                }
             }
             $cash = $total - $advance;
             // Allocate the cash amount once across cost rows, including cent rounding remainder.
@@ -229,14 +268,14 @@ class TemasBillingService
         }
         $stage = BiayaKapalTemasStage::create([
             'biaya_kapal_id' => $invoice->id, 'kapal' => $section['kapal'], 'voyage' => $section['voyage'],
-            'payment_mode' => $mode, 'dp_stage_id' => $dps->first()?->id,
+            'payment_mode' => $mode, 'dp_stage_id' => array_key_first($allocations),
             'tanggal_dp' => $mode === 'dp' ? ($section['tanggal_dp'] ?? null) : null,
             'nama_bank' => $mode === 'dp' ? ($section['nama_bank'] ?? null) : null,
             'keterangan_dp' => $mode === 'dp' ? ($section['keterangan_dp'] ?? null) : null,
             'nilai_tagihan' => $total / 100, 'nominal_dibayar' => $cash / 100,
             'dp_diperhitungkan' => $advance / 100,
         ]);
-        $stage->dpStages()->sync($dps->pluck('id')->all());
+        $stage->dpStages()->sync($allocations);
         foreach ($rows as $row) {
             $stage->details()->create($row);
         }
