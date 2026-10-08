@@ -1,3 +1,14 @@
+    function updateTemasDpSelection(section) {
+        const select = section.querySelector('.temas-dp-reference');
+        const selected = [...select.selectedOptions].filter(option => option.value);
+        const first = selected[0];
+        section.dataset.dpAmount = selected.reduce((sum, option) => sum + Math.round(Number(option.dataset.amount || 0) * 100), 0) / 100;
+        [...select.options].forEach(option => {
+            option.disabled = !option.value || Boolean(first && (option.dataset.kapal !== first.dataset.kapal || option.dataset.voyage !== first.dataset.voyage));
+        });
+        return first;
+    }
+
     function updateTemasPaymentMode(section) {
         const mode = section.querySelector('.temas-payment-mode').value;
         const isDp = mode === 'dp';
@@ -21,7 +32,7 @@
         section.querySelector('.temas-dp-reference').required = isSettlement;
         section.querySelector('.temas-payment-help').textContent = isDp
             ? 'Isi nominal DP yang dibayar. Tagihan akhir dan rincian kontainer diisi saat pelunasan.'
-            : isSettlement ? 'Pilih DP, lalu isi biaya akhir per kontainer. Pelunasan = total biaya akhir dikurangi DP satu kali.'
+            : isSettlement ? 'Pilih DP, lalu isi biaya akhir per kontainer. Pelunasan = total biaya akhir dikurangi jumlah seluruh DP yang dipilih.'
             : 'Isi biaya per kontainer. Seluruh nilai tagihan dicatat sebagai pembayaran langsung.';
         section.querySelector('.temas-tax-help').classList.toggle('hidden', isSettlement);
         ['pph', 'ppn', 'materai', 'admin', 'adjustment'].forEach(key => {
@@ -53,7 +64,7 @@
             if (!response.ok) throw new Error('DP');
             const data = await response.json();
             if (!section.isConnected || request !== section.dpRequest) return;
-            const selected = select.selectedOptions[0]?.cloneNode(true);
+            const selected = [...select.selectedOptions].filter(o => o.value).map(o => o.cloneNode(true));
             select.replaceChildren(new Option('Pilih DP yang akan dilunasi', ''));
             (data.data || []).forEach(dp => {
                 const option = new Option(dp.label, dp.id);
@@ -62,12 +73,12 @@
                 option.dataset.voyage = dp.voyage;
                 select.add(option);
             });
-            if (selected?.value) {
-                if (![...select.options].some(o => o.value === selected.value)) select.add(selected);
-                select.value = selected.value;
-            }
-            const selectedOption = select.selectedOptions[0];
-            section.dataset.dpAmount = selectedOption?.value ? (selectedOption.dataset.amount || '0') : '0';
+            selected.forEach(saved => {
+                let option = [...select.options].find(o => o.value === saved.value);
+                if (!option) { select.add(saved); option = saved; }
+                option.selected = true;
+            });
+            updateTemasDpSelection(section);
             updateTemasPaymentMode(section);
             status.textContent = data.data?.length ? 'Pilih DP sesuai kapal dan voyage.' : 'Tidak ada DP yang belum dilunasi.';
         } catch (error) {
@@ -88,12 +99,13 @@
         section.querySelector('.temas-dp-bank').value = data.nama_bank || '';
         section.querySelector('.temas-dp-description').value = data.keterangan_dp || '';
         section.dataset.dpAmount = data.dp_diperhitungkan || 0;
-        if (data.dp_stage_id) {
-            const option = new Option('DP ' + data.kapal + ' / ' + data.voyage + ' - ' + temasMoney(data.dp_diperhitungkan), data.dp_stage_id);
-            Object.assign(option.dataset, {amount: data.dp_diperhitungkan, kapal: data.kapal, voyage: data.voyage});
+        const references = data.dp_references || (data.dp_stage_id ? [{id: data.dp_stage_id, nominal_dibayar: data.dp_diperhitungkan, kapal: data.kapal, voyage: data.voyage}] : []);
+        references.forEach(dp => {
+            const option = new Option('DP #' + dp.id + ' ' + dp.kapal + ' / ' + dp.voyage + ' - ' + temasMoney(dp.nominal_dibayar), dp.id, false, true);
+            Object.assign(option.dataset, {amount: dp.nominal_dibayar, kapal: dp.kapal, voyage: dp.voyage});
             section.querySelector('.temas-dp-reference').add(option);
-            section.querySelector('.temas-dp-reference').value = data.dp_stage_id;
-        }
+        });
+        updateTemasDpSelection(section);
         const index = section.dataset.sectionIndex;
         ['penerima', 'nomor_rekening', 'nomor_referensi', 'tanggal_invoice_vendor', 'keterangan'].forEach(field => {
             section.querySelector('[name="temas[' + index + '][' + field + ']"]').value = data[field] || '';

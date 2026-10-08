@@ -383,7 +383,7 @@
         </table>
 
         @php
-            $temasStages = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $biayaKapal->id)->get();
+            $temasStages = \App\Models\BiayaKapalTemasStage::with('dpStages.biayaKapal')->where('biaya_kapal_id', $biayaKapal->id)->get();
             $dpDiperhitungkan = $temasStages->sum('dp_diperhitungkan');
         @endphp
         @if($temasStages->isNotEmpty())
@@ -398,6 +398,12 @@
                             Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
                             - DP Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
                             = Pelunasan Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
+                            @foreach($stage->dpStages as $dp)
+                                <div style="margin-left: 12px; font-size: 10px;">
+                                    Referensi DP {{ $dp->biayaKapal->nomor_invoice ?? '#' . $dp->id }}:
+                                    Rp {{ number_format($dp->nominal_dibayar, 0, ',', '.') }}
+                                </div>
+                            @endforeach
                         @else
                             Bayar langsung Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
                         @endif

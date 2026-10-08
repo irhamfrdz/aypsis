@@ -91,35 +91,49 @@ class TemasBillingService
     private function storeSection(BiayaKapal $invoice, array $section, $index): void
     {
         $mode = $section['payment_mode'] ?? 'lunas';
+        if (! isset($section['dp_stage_ids']) && ! empty($section['dp_stage_id'])) {
+            $section['dp_stage_ids'] = [$section['dp_stage_id']];
+        }
         Validator::make($section, [
             'payment_mode' => 'sometimes|in:lunas,dp,pelunasan_dp',
             'nominal_dibayar' => 'required_if:payment_mode,dp|nullable|numeric|decimal:0,2|gt:0',
             'tanggal_dp' => 'nullable|required_if:payment_mode,dp|date',
             'nama_bank' => 'nullable|required_if:payment_mode,dp|string|max:255',
             'keterangan_dp' => 'nullable|string|max:5000',
-            'dp_stage_id' => 'required_if:payment_mode,pelunasan_dp|nullable|integer',
+            'dp_stage_ids' => 'required_if:payment_mode,pelunasan_dp|nullable|array|min:1',
+            'dp_stage_ids.*' => 'required|integer|distinct',
         ])->validate();
-        $dp = null;
+        $dps = collect();
         if ($mode === 'pelunasan_dp') {
-            $dp = BiayaKapalTemasStage::query()
+            $dps = BiayaKapalTemasStage::query()
                 ->join('biaya_kapals as dp_invoice', 'dp_invoice.id', '=', 'biaya_kapal_temas_stages.biaya_kapal_id')
-                ->where('biaya_kapal_temas_stages.id', $section['dp_stage_id'])
+                ->whereIn('biaya_kapal_temas_stages.id', $section['dp_stage_ids'])
                 ->whereNull('dp_invoice.deleted_at')->where('dp_invoice.status_pembayaran', '!=', 'cancelled')
-                ->select('biaya_kapal_temas_stages.*')->lockForUpdate()->first();
-            // Locking reads see the latest committed state even under MySQL REPEATABLE READ.
-            $settled = $dp && DB::table('biaya_kapal_temas_stages as stages')
-                ->join('biaya_kapals as invoices', 'invoices.id', '=', 'stages.biaya_kapal_id')
-                ->where('stages.dp_stage_id', $dp->id)->whereNull('invoices.deleted_at')
-                ->select('stages.id')->lockForUpdate()->get()->isNotEmpty();
-            if (! $dp || $dp->payment_mode !== 'dp' || $dp->nominal_dibayar <= 0 || $settled || $dp->biaya_kapal_id == $invoice->id) {
-                throw ValidationException::withMessages(["temas.$index.dp_stage_id" => 'DP tidak tersedia, sudah dilunasi, atau berasal dari invoice yang sama.']);
+                ->select('biaya_kapal_temas_stages.*')->orderBy('biaya_kapal_temas_stages.id')->lockForUpdate()->get();
+            if ($dps->count() !== count($section['dp_stage_ids'])) {
+                throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Referensi DP tidak tersedia.']);
             }
-            $section['kapal'] = $dp->kapal;
-            $section['voyage'] = $dp->voyage;
-            if ($invoice->tanggal && $dp->biayaKapal->tanggal && $invoice->tanggal->lt($dp->biayaKapal->tanggal)) {
-                throw ValidationException::withMessages(['tanggal' => 'Tanggal pelunasan tidak boleh mendahului tanggal DP.']);
+            foreach ($dps as $dp) {
+                // Locking reads see the latest committed state even under MySQL REPEATABLE READ.
+                $settled = DB::table('temas_dp_references as refs')
+                    ->join('biaya_kapal_temas_stages as stages', 'stages.id', '=', 'refs.settlement_stage_id')
+                    ->join('biaya_kapals as invoices', 'invoices.id', '=', 'stages.biaya_kapal_id')
+                    ->where('refs.dp_stage_id', $dp->id)->whereNull('invoices.deleted_at')
+                    ->select('stages.id')->lockForUpdate()->get()->isNotEmpty();
+                if ($dp->payment_mode !== 'dp' || $dp->nominal_dibayar <= 0 || $settled || $dp->biaya_kapal_id == $invoice->id) {
+                    throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'DP tidak tersedia, sudah dilunasi, atau berasal dari invoice yang sama.']);
+                }
+                if ($dp->kapal !== $dps->first()->kapal || $dp->voyage !== $dps->first()->voyage) {
+                    throw ValidationException::withMessages(["temas.$index.dp_stage_ids" => 'Semua referensi DP harus berasal dari kapal dan voyage yang sama.']);
+                }
+                if ($invoice->tanggal && $dp->biayaKapal->tanggal && $invoice->tanggal->lt($dp->biayaKapal->tanggal)) {
+                    throw ValidationException::withMessages(['tanggal' => 'Tanggal pelunasan tidak boleh mendahului tanggal DP.']);
+                }
             }
+            $section['kapal'] = $dps->first()->kapal;
+            $section['voyage'] = $dps->first()->voyage;
         }
+        $advance = $dps->sum(fn ($dp) => $this->cents($dp->nominal_dibayar));
         Validator::make($section, ['kapal' => 'required|string|max:255', 'voyage' => 'required|string|max:255'])->validate();
         $common = array_intersect_key($section, array_flip([
             'kapal', 'voyage', 'penerima', 'nomor_rekening', 'nomor_referensi', 'tanggal_invoice_vendor', 'keterangan',
@@ -198,7 +212,6 @@ class TemasBillingService
                 }
             }
             $total = $subTotal + $extras;
-            $advance = $dp ? $this->cents($dp->nominal_dibayar) : 0;
             if ($total < $advance || $total < 0) {
                 throw ValidationException::withMessages(["temas.$index.types" => 'Tagihan akhir tidak boleh lebih kecil dari DP. Periksa biaya per nomor BL.']);
             }
@@ -216,13 +229,14 @@ class TemasBillingService
         }
         $stage = BiayaKapalTemasStage::create([
             'biaya_kapal_id' => $invoice->id, 'kapal' => $section['kapal'], 'voyage' => $section['voyage'],
-            'payment_mode' => $mode, 'dp_stage_id' => $dp?->id,
+            'payment_mode' => $mode, 'dp_stage_id' => $dps->first()?->id,
             'tanggal_dp' => $mode === 'dp' ? ($section['tanggal_dp'] ?? null) : null,
             'nama_bank' => $mode === 'dp' ? ($section['nama_bank'] ?? null) : null,
             'keterangan_dp' => $mode === 'dp' ? ($section['keterangan_dp'] ?? null) : null,
             'nilai_tagihan' => $total / 100, 'nominal_dibayar' => $cash / 100,
-            'dp_diperhitungkan' => $dp?->nominal_dibayar ?? 0,
+            'dp_diperhitungkan' => $advance / 100,
         ]);
+        $stage->dpStages()->sync($dps->pluck('id')->all());
         foreach ($rows as $row) {
             $stage->details()->create($row);
         }

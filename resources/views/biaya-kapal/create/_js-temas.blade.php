@@ -69,8 +69,9 @@
                 </div>
                 <div class="temas-dp-reference-wrap hidden">
                     <label class="block text-sm">Referensi DP
-                        <select name="temas[${sectionIndex}][dp_stage_id]" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
+                        <select name="temas[${sectionIndex}][dp_stage_ids][]" multiple size="5" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
                     </label>
+                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih DP untuk kapal dan voyage yang sama (tahan Ctrl untuk memilih beberapa).</p>
                     <button type="button" class="temas-reload-dp text-sm text-blue-700 mt-1">Muat ulang daftar DP</button>
                     <p class="temas-dp-status text-sm text-gray-600" role="status"></p>
                     <div class="temas-dp-summary hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
@@ -219,8 +220,7 @@
         section.querySelector('.temas-dp-amount').addEventListener('input', () => calculateTemasSectionTotal(sectionIndex));
         section.querySelector('.temas-reload-dp').addEventListener('click', () => loadTemasDps(section));
         section.querySelector('.temas-dp-reference').addEventListener('change', () => {
-            const option = section.querySelector('.temas-dp-reference').selectedOptions[0];
-            section.dataset.dpAmount = option?.value ? (option.dataset.amount || '0') : '0';
+            const option = updateTemasDpSelection(section);
             if (option?.value) {
                 if (![...kapalSelect.options].some(o => o.value === option.dataset.kapal)) kapalSelect.add(new Option(option.dataset.kapal, option.dataset.kapal));
                 kapalSelect.value = option.dataset.kapal;

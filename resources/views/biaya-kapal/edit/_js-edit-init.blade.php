@@ -416,6 +416,7 @@
                          'payment_mode' => $firstItem->stage?->payment_mode ?? 'lunas',
                          'nominal_dibayar' => $firstItem->stage?->nominal_dibayar ?? 0,
                          'dp_stage_id' => $firstItem->stage?->dp_stage_id,
+                         'dp_references' => $firstItem->stage?->dpStages->map(fn ($dp) => ['id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage, 'nominal_dibayar' => $dp->nominal_dibayar])->values()->all() ?? [],
                          'dp_diperhitungkan' => $firstItem->stage?->dp_diperhitungkan ?? 0,
                          'tanggal_dp' => $firstItem->stage?->tanggal_dp?->format('Y-m-d'),
                          'nama_bank' => $firstItem->stage?->nama_bank,
