@@ -239,6 +239,7 @@
 <style>
     /* Premium Select2 overrides matching layouts styling */
     .select2-container .select2-selection--single {
+        position: relative;
         height: 48px !important;
         padding-top: 10px !important;
         border-color: #e5e7eb !important;
@@ -262,6 +263,21 @@
         color: #1f2937 !important;
         font-weight: 500 !important;
         padding-left: 16px !important;
+        padding-right: 72px !important;
+    }
+    #rekapForm .select2-container--default .select2-selection--single .select2-selection__clear {
+        position: absolute;
+        top: 50%;
+        right: 40px;
+        transform: translateY(-50%);
+        float: none;
+        margin: 0;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        line-height: 24px;
+        text-align: center;
+        z-index: 1;
     }
     .select2-dropdown {
         border-color: #f3f4f6 !important;
