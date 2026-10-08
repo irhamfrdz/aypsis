@@ -243,6 +243,37 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function location_filter_uses_detail_location_and_combines_with_bl_filter()
+    {
+        $this->actingAs($this->user);
+        $invoice = BiayaKapal::create([
+            'tanggal' => '2026-10-08', 'nomor_invoice' => 'INV-MIXED-LOCATIONS',
+            'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101'], 'lokasi' => 'jakarta',
+            'jenis_biaya' => 'KB001', 'nominal' => 12000, 'total_biaya' => 12000,
+        ]);
+        foreach ([['jakarta', 'V101', 1000], ['batam', 'V101', 2000], ['batam', 'V102', 9000]] as [$location, $voyage, $amount]) {
+            $invoice->temasDetails()->create([
+                'kapal' => 'Sinar Batam', 'voyage' => $voyage, 'nomor_bl' => '01', 'lokasi' => $location,
+                'jenis_biaya' => 'Freight', 'kuantitas' => 1, 'harga' => $amount,
+                'sub_total' => $amount, 'grand_total' => $amount,
+            ]);
+        }
+        BiayaKapal::create([
+            'tanggal' => '2026-10-08', 'nomor_invoice' => 'INV-UNKNOWN-LOCATION',
+            'nama_kapal' => ['Sinar Batam'], 'no_voyage' => ['V101'],
+            'jenis_biaya' => 'KB001', 'nominal' => 4000, 'total_biaya' => 4000,
+        ]);
+        foreach (['jakarta' => 1000.0, 'batam' => 2000.0] as $location => $total) {
+            $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101', 'lokasi' => $location, 'bl' => ['01']]))
+                ->assertOk()->assertViewHas('lokasi', $location)
+                ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === $total)
+                ->assertDontSee('INV-UNKNOWN-LOCATION');
+        }
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']))
+            ->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 7000.0);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function bl_filter_keeps_related_costs_and_separates_general_ship_costs()
     {
         $this->actingAs($this->user);

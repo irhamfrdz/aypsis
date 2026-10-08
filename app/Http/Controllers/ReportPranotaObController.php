@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PranotaObAccurateService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -64,6 +65,8 @@ class ReportPranotaObController extends Controller
             ->orderBy('pranota_obs.no_voyage', 'asc')
             ->orderBy('pranota_ob_items.supir', 'asc')
             ->get();
+
+        $items = app(PranotaObAccurateService::class)->attach($items, $dariTanggal, $sampaiTanggal);
 
         // Group items by voyage
         $groupedByVoyage = $items->groupBy('no_voyage');
@@ -168,6 +171,8 @@ class ReportPranotaObController extends Controller
             ->orderBy('pranota_ob_items.supir', 'asc')
             ->get();
 
+        $items = app(PranotaObAccurateService::class)->attach($items, $dariTanggal, $sampaiTanggal);
+
         // Flatten items for simple listing
         $allItems = $items;
 
@@ -240,6 +245,8 @@ class ReportPranotaObController extends Controller
         $sheet->setCellValue('F1', 'Supir');
         $sheet->setCellValue('G1', 'Total');
         $sheet->setCellValue('H1', 'Keterangan');
+        $sheet->setCellValue('I1', 'Nomor Accurate DP');
+        $sheet->setCellValue('J1', 'Nomor Accurate Pelunasan');
 
         // Style header
         $headerStyle = [
@@ -248,7 +255,7 @@ class ReportPranotaObController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
         ];
-        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:J1')->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
@@ -259,6 +266,8 @@ class ReportPranotaObController extends Controller
         $sheet->getColumnDimension('F')->setWidth(30);
         $sheet->getColumnDimension('G')->setWidth(20);
         $sheet->getColumnDimension('H')->setWidth(50);
+        $sheet->getColumnDimension('I')->setWidth(30);
+        $sheet->getColumnDimension('J')->setWidth(30);
 
         $row = 2;
         $no = 1;
@@ -288,10 +297,12 @@ class ReportPranotaObController extends Controller
             $sheet->setCellValue('F'.$row, $displayName);
             $sheet->setCellValue('G'.$row, 'Rp '.number_format($item->total_biaya, 0, ',', '.'));
             $sheet->setCellValue('H'.$row, $keterangan);
+            $sheet->setCellValueExplicit('I'.$row, implode(', ', $item->accurate_dp) ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('J'.$row, implode(', ', $item->accurate_pelunasan) ?: '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
             // Style data rows with alternating colors
             $bgColor = ($row % 2 == 0) ? 'F2F2F2' : 'FFFFFF';
-            $sheet->getStyle('A'.$row.':H'.$row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':J'.$row)->applyFromArray([
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgColor]],
                 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             ]);
@@ -308,7 +319,7 @@ class ReportPranotaObController extends Controller
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFC000']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]],
         ];
-        $sheet->getStyle('A'.$row.':H'.$row)->applyFromArray($totalStyle);
+        $sheet->getStyle('A'.$row.':J'.$row)->applyFromArray($totalStyle);
         $sheet->getStyle('F'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getStyle('G'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 

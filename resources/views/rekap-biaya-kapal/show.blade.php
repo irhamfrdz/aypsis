@@ -31,6 +31,9 @@
                 @if(!empty($bl))
                     <span class="flex items-center"><i class="fas fa-file-alt mr-2 text-blue-400"></i> BL: <strong>{{ $bl }}</strong></span>
                 @endif
+                @if(!empty($lokasi))
+                    <span class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-blue-400"></i> Lokasi: <strong>{{ ucfirst($lokasi) }}</strong></span>
+                @endif
                 <span class="flex items-center"><i class="fas fa-calendar-alt mr-2 text-blue-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
                 <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-blue-400"></i> Total Records: <strong>{{ $biayaKapals->count() }}</strong></span>
             </div>

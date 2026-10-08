@@ -45,6 +45,18 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label for="lokasi_select" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> Pilih Lokasi
+                        </label>
+                        <select name="lokasi" id="lokasi_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                            <option value="">-- Semua Lokasi --</option>
+                            <option value="jakarta">Jakarta</option>
+                            <option value="batam">Batam</option>
+                        </select>
+                        <p class="mt-2 text-xs text-gray-500">Biaya yang lokasinya belum tercatat hanya tampil pada Semua Lokasi.</p>
+                    </div>
+
                     <!-- Ship Selection -->
                     <div>
                         <label for="kapal_select" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -113,6 +125,7 @@
             width: '100%'
         });
         $('#bl_select').select2({placeholder: '-- Semua BL / Pilih beberapa BL --', allowClear: true, closeOnSelect: false, width: '100%'});
+        $('#lokasi_select').select2({placeholder: '-- Semua Lokasi --', allowClear: true, width: '100%'});
         let voyageRequest = null;
         let blRequest = null;
 
@@ -224,6 +237,7 @@
 
         // Reset functionality
         $('#btnReset').on('click', function() {
+            $('#lokasi_select').val(null).trigger('change');
             $('#pemilik_select').val(null).trigger('change');
             $('#kapal_select').val(null).trigger('change');
             $('#voyage_select').val(null).trigger('change');

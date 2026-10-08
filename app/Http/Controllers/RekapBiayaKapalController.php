@@ -487,6 +487,56 @@ class RekapBiayaKapalController extends Controller
         return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
     }
 
+    private function normalizeLocation($value): ?string
+    {
+        $value = strtolower(trim((string) $value));
+        foreach (['jakarta', 'batam'] as $location) {
+            if (preg_match('/\b'.$location.'\b/', $value)) {
+                return $location;
+            }
+        }
+
+        return null;
+    }
+
+    private function filterRecordLocation($record, string $lokasi, string $kapal, string $voyage): bool
+    {
+        if ($lokasi === '') {
+            return true;
+        }
+        if ($record instanceof BiayaKapal) {
+            $parentLocation = $this->normalizeLocation($record->lokasi);
+            $hasDetails = false;
+            $hasMatchingDetail = false;
+            foreach ($this->relations as $relation) {
+                $hasDetails = $hasDetails || $record->{$relation}->isNotEmpty();
+                $details = $record->{$relation}->filter(function ($detail) use ($relation, $parentLocation, $lokasi, $kapal, $voyage) {
+                    $location = $relation === 'buruhBatamDetails' ? 'batam' : ($this->normalizeLocation($detail->lokasi) ?? $parentLocation);
+
+                    return $location === $lokasi
+                        && strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
+                        && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage));
+                });
+                $hasMatchingDetail = $hasMatchingDetail || $details->isNotEmpty();
+                $record->setRelation($relation, $details);
+            }
+
+            return $hasDetails ? $hasMatchingDetail : $parentLocation === $lokasi;
+        }
+        if (isset($record->is_uang_jalan)) {
+            $location = $record->surat_jalan_bongkaran_batam_id ? 'batam'
+                : (($record->surat_jalan_id || $record->surat_jalan_bongkaran_id) ? 'jakarta' : null);
+        } elseif (isset($record->is_tagihan_vendor)) {
+            $location = 'jakarta'; // Vendor invoices use the Jakarta SuratJalan model.
+        } elseif (isset($record->is_amprahan)) {
+            $location = $this->normalizeLocation($record->stockAmprahan?->lokasi);
+        } else {
+            $location = $this->normalizeLocation($record->lokasi);
+        }
+
+        return $location === $lokasi;
+    }
+
     private function splitCostForBl($record, RekapBlService $resolver, string $kapal, string $voyage, string|array $bl): array
     {
         $empty = ['nominal' => 0, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 0];
@@ -609,10 +659,12 @@ class RekapBiayaKapalController extends Controller
             'voyage' => 'required|string',
             'bl' => 'nullable|array',
             'bl.*' => 'nullable|string|max:255',
+            'lokasi' => 'nullable|in:jakarta,batam',
         ]);
 
         $kapal = $request->kapal;
         $voyage = $request->voyage;
+        $lokasi = $request->input('lokasi') ?? '';
         $bls = collect($request->input('bl', []))->map(fn ($number) => $this->normalizeBl($number))->filter()->unique()->values()->all();
         $bl = implode(', ', $bls);
 
@@ -620,7 +672,7 @@ class RekapBiayaKapalController extends Controller
         $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
-            ->filter(function ($record) use ($kapal, $voyage) {
+            ->filter(function ($record) use ($kapal, $voyage, $lokasi) {
                 if ($record->temasDetails->isNotEmpty()) {
                     $details = $record->temasDetails->filter(fn ($detail) => $detail->stage?->payment_mode !== 'dp');
                     if ($details->isEmpty()) {
@@ -629,7 +681,8 @@ class RekapBiayaKapalController extends Controller
                     $record->setRelation('temasDetails', $details);
                 }
 
-                return $this->recordHasShipAndVoyage($record, $kapal, $voyage);
+                return $this->recordHasShipAndVoyage($record, $kapal, $voyage)
+                    && $this->filterRecordLocation($record, $lokasi, $kapal, $voyage);
             });
 
         // Apportion each record
@@ -742,6 +795,9 @@ class RekapBiayaKapalController extends Controller
         }
 
         $biayaUmum = collect();
+        // BiayaKapal details were filtered before calculating their totals above.
+        $biayaKapals = $biayaKapals->filter(fn ($record) => $record instanceof BiayaKapal
+            || $this->filterRecordLocation($record, $lokasi, $kapal, $voyage));
         if ($bl !== '') {
             $resolver = RekapBlService::forVoyage($kapal, $voyage);
             $filtered = collect();
@@ -787,6 +843,6 @@ class RekapBiayaKapalController extends Controller
                 ->whereIn('nomor_kontainer', $temasContainers)->get();
         }
 
-        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'bl', 'biayaKapals', 'biayaUmum', 'summary', 'grouped', 'temasManifests'));
+        return view('rekap-biaya-kapal.show', compact('kapal', 'voyage', 'lokasi', 'bl', 'biayaKapals', 'biayaUmum', 'summary', 'grouped', 'temasManifests'));
     }
 }

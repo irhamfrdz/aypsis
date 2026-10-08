@@ -106,4 +106,24 @@ class RekapBlServiceTest extends TestCase
         $this->assertNull($selected);
         $this->assertSame(9000.0, $common->apportioned['total_biaya']);
     }
+
+    public function test_location_filter_distinguishes_transport_sources_and_stock_location(): void
+    {
+        $method = new \ReflectionMethod(\App\Http\Controllers\RekapBiayaKapalController::class, 'filterRecordLocation');
+        $controller = new \App\Http\Controllers\RekapBiayaKapalController;
+        foreach (['surat_jalan_id' => 'jakarta', 'surat_jalan_bongkaran_id' => 'jakarta', 'surat_jalan_bongkaran_batam_id' => 'batam'] as $field => $location) {
+            $record = new \App\Models\UangJalan([$field => 1]);
+            $record->is_uang_jalan = true;
+            $this->assertTrue($method->invoke($controller, $record, $location, 'KM JALESMAS', 'V01'));
+            $this->assertFalse($method->invoke($controller, $record, $location === 'jakarta' ? 'batam' : 'jakarta', 'KM JALESMAS', 'V01'));
+        }
+        $usage = new \App\Models\StockAmprahanUsage;
+        $usage->is_amprahan = true;
+        $usage->setRelation('stockAmprahan', new \App\Models\StockAmprahan(['lokasi' => 'Gudang Batam']));
+        $this->assertTrue($method->invoke($controller, $usage, 'batam', 'KM JALESMAS', 'V01'));
+        $this->assertFalse($method->invoke($controller, $usage, 'jakarta', 'KM JALESMAS', 'V01'));
+        $unknown = new \App\Models\PranotaOb;
+        $this->assertTrue($method->invoke($controller, $unknown, '', 'KM JALESMAS', 'V01'));
+        $this->assertFalse($method->invoke($controller, $unknown, 'batam', 'KM JALESMAS', 'V01'));
+    }
 }
