@@ -61,7 +61,7 @@
                         <input type="text"
                                name="search"
                                value="{{ request('search') }}"
-                               placeholder="No Seri, Posisi Roda, Catatan..."
+                               placeholder="No Seri, Plat/KIR, Posisi Roda, Catatan..."
                                class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                         <option value="">Semua Mobil</option>
                         @foreach($mobils as $m)
                             <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
-                                {{ $m->nomor_polisi }}
+                                {{ $m->nomor_polisi ?: ($m->no_kir ? 'KIR: '.$m->no_kir : 'Mobil #'.$m->id) }}{{ $m->nomor_polisi && $m->no_kir ? ' (KIR: '.$m->no_kir.')' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -173,7 +173,16 @@
                             @else
                                 <div class="flex items-center gap-1.5">
                                     <span class="inline-block p-1 bg-blue-100 text-blue-800 rounded text-xs"><i class="fas fa-truck"></i></span>
-                                    <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil ? $log->mobil->nomor_polisi : ($log->mobil_id ? 'Mobil #'.$log->mobil_id : '-') }}</span>
+                                    <div>
+                                        @if($log->mobil)
+                                            <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil->nomor_polisi ?: ($log->mobil->no_kir ? 'KIR: '.$log->mobil->no_kir : 'Mobil #'.$log->mobil_id) }}</span>
+                                            @if($log->mobil->nomor_polisi && $log->mobil->no_kir)
+                                                <span class="block text-[11px] text-gray-500 font-mono">KIR: {{ $log->mobil->no_kir }}</span>
+                                            @endif
+                                        @else
+                                            <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil_id ? 'Mobil #'.$log->mobil_id : '-' }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             @endif
                         </td>

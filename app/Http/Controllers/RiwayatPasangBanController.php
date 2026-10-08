@@ -68,7 +68,8 @@ class RiwayatPasangBanController extends Controller
                     ->orWhere('donor_unit_name', 'like', "%{$keyword}%")
                     ->orWhere('notes', 'like', "%{$keyword}%")
                     ->orWhereHas('mobil', function ($qMobil) use ($keyword) {
-                        $qMobil->where('nomor_polisi', 'like', "%{$keyword}%");
+                        $qMobil->where('nomor_polisi', 'like', "%{$keyword}%")
+                            ->orWhere('no_kir', 'like', "%{$keyword}%");
                     })
                     ->orWhereHas('alatBerat', function ($qAlat) use ($keyword) {
                         $qAlat->where('nama', 'like', "%{$keyword}%")
@@ -90,7 +91,7 @@ class RiwayatPasangBanController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $mobils = Mobil::orderBy('nomor_polisi')->get(['id', 'nomor_polisi']);
+        $mobils = Mobil::orderBy('nomor_polisi')->get(['id', 'nomor_polisi', 'no_kir']);
         $alatBerats = AlatBerat::orderBy('nama')->get(['id', 'nama', 'kode_alat']);
 
         return view('riwayat-pasang-ban.index', compact(
