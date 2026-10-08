@@ -1258,7 +1258,7 @@
 
 @php
     $authUser = auth()->user();
-    $karyawan = $authUser->karyawan;
+    $karyawan = $authUser?->karyawan;
     $isAuthorizedApprover = false;
     
     if ($karyawan) {
@@ -1275,7 +1275,7 @@
     }
     
     // Also allow super-admin or specific users
-    if ($authUser->hasRole('super-admin') || $authUser->username === 'kiky') {
+    if ($authUser && ($authUser->hasRole('super-admin') || $authUser->username === 'kiky')) {
         $isAuthorizedApprover = true;
     }
 @endphp
