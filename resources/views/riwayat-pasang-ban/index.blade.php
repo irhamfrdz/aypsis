@@ -73,7 +73,7 @@
                         <option value="">Semua Mobil</option>
                         @foreach($mobils as $m)
                             <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
-                                {{ $m->nomor_polisi ?: ($m->no_kir ? 'KIR: '.$m->no_kir : 'Mobil #'.$m->id) }}{{ $m->nomor_polisi && $m->no_kir ? ' (KIR: '.$m->no_kir.')' : '' }}
+                                {{ $m->nomor_polisi ?: ($m->no_kir ? 'KIR: '.$m->no_kir : 'Mobil #'.$m->id) }}{{ $m->nomor_polisi && $m->no_kir ? ' (KIR: '.$m->no_kir.')' : '' }}{{ $m->jenis ? ' - '.$m->jenis : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -164,10 +164,17 @@
                                 <div class="flex items-center gap-1.5">
                                     <span class="inline-block p-1 bg-amber-100 text-amber-800 rounded text-xs"><i class="fas fa-truck-pickup"></i></span>
                                     <div>
-                                        <span class="font-semibold text-gray-800 text-xs">{{ $log->alatBerat ? $log->alatBerat->nama : 'Alat Berat #'.$log->alat_berat_id }}</span>
-                                        @if($log->alatBerat && $log->alatBerat->kode_alat)
-                                            <span class="block text-[11px] text-gray-400 font-mono">{{ $log->alatBerat->kode_alat }}</span>
-                                        @endif
+                                        <div class="font-semibold text-gray-800 text-xs">
+                                            {{ $log->alatBerat ? $log->alatBerat->nama : 'Alat Berat #'.$log->alat_berat_id }}
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-[11px] text-gray-400">
+                                            @if($log->alatBerat && $log->alatBerat->kode_alat)
+                                                <span class="font-mono">{{ $log->alatBerat->kode_alat }}</span>
+                                            @endif
+                                            @if($log->alatBerat && $log->alatBerat->jenis)
+                                                <span class="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60 text-[10px]">{{ $log->alatBerat->jenis }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @else
@@ -175,10 +182,17 @@
                                     <span class="inline-block p-1 bg-blue-100 text-blue-800 rounded text-xs"><i class="fas fa-truck"></i></span>
                                     <div>
                                         @if($log->mobil)
-                                            <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil->nomor_polisi ?: ($log->mobil->no_kir ? 'KIR: '.$log->mobil->no_kir : 'Mobil #'.$log->mobil_id) }}</span>
-                                            @if($log->mobil->nomor_polisi && $log->mobil->no_kir)
-                                                <span class="block text-[11px] text-gray-500 font-mono">KIR: {{ $log->mobil->no_kir }}</span>
-                                            @endif
+                                            <div class="font-semibold text-gray-800 text-xs">
+                                                {{ $log->mobil->nomor_polisi ?: ($log->mobil->no_kir ? 'KIR: '.$log->mobil->no_kir : 'Mobil #'.$log->mobil_id) }}
+                                            </div>
+                                            <div class="flex items-center gap-1.5 text-[11px] text-gray-500">
+                                                @if($log->mobil->nomor_polisi && $log->mobil->no_kir)
+                                                    <span class="font-mono">KIR: {{ $log->mobil->no_kir }}</span>
+                                                @endif
+                                                @if($log->mobil->jenis)
+                                                    <span class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60 text-[10px]">{{ $log->mobil->jenis }}</span>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil_id ? 'Mobil #'.$log->mobil_id : '-' }}</span>
                                         @endif

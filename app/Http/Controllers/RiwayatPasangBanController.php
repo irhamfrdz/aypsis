@@ -69,11 +69,13 @@ class RiwayatPasangBanController extends Controller
                     ->orWhere('notes', 'like', "%{$keyword}%")
                     ->orWhereHas('mobil', function ($qMobil) use ($keyword) {
                         $qMobil->where('nomor_polisi', 'like', "%{$keyword}%")
-                            ->orWhere('no_kir', 'like', "%{$keyword}%");
+                            ->orWhere('no_kir', 'like', "%{$keyword}%")
+                            ->orWhere('jenis', 'like', "%{$keyword}%");
                     })
                     ->orWhereHas('alatBerat', function ($qAlat) use ($keyword) {
                         $qAlat->where('nama', 'like', "%{$keyword}%")
-                            ->orWhere('kode_alat', 'like', "%{$keyword}%");
+                            ->orWhere('kode_alat', 'like', "%{$keyword}%")
+                            ->orWhere('jenis', 'like', "%{$keyword}%");
                     });
             });
         }
@@ -91,8 +93,8 @@ class RiwayatPasangBanController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $mobils = Mobil::orderBy('nomor_polisi')->get(['id', 'nomor_polisi', 'no_kir']);
-        $alatBerats = AlatBerat::orderBy('nama')->get(['id', 'nama', 'kode_alat']);
+        $mobils = Mobil::orderBy('nomor_polisi')->get(['id', 'nomor_polisi', 'no_kir', 'jenis']);
+        $alatBerats = AlatBerat::orderBy('nama')->get(['id', 'nama', 'kode_alat', 'jenis']);
 
         return view('riwayat-pasang-ban.index', compact(
             'logs',
