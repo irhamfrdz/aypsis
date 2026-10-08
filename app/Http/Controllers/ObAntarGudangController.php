@@ -332,6 +332,21 @@ class ObAntarGudangController extends Controller
                         ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
                         ->pluck('id');
                 }
+            } elseif ($isDepoFortune) {
+                $destinationPricelists = (clone $pricelistDimensions)
+                    ->where(function ($q) use ($gudangAsalInput) {
+                        $q->where('gudang_tujuan_id', $gudangAsalInput->id)
+                            ->orWhereHas('gudangTujuan', function ($gq) {
+                                $gq->where('nama_gudang', 'like', '%fortune%');
+                            });
+                    })
+                    ->pluck('id');
+
+                if ($destinationPricelists->isEmpty()) {
+                    $destinationPricelists = (clone $pricelistDimensions)
+                        ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+                        ->pluck('id');
+                }
             } else {
                 $destinationPricelists = (clone $pricelistDimensions)
                     ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
