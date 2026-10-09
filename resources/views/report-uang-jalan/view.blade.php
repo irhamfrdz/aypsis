@@ -48,7 +48,7 @@
                     </span>
                     <input type="text" name="search" value="{{ $search }}" 
                            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition duration-200" 
-                           placeholder="Cari Nomor UJ, Surat Jalan, Supir, atau Plat...">
+                           placeholder="Cari Nomor UJ/Pranota, Surat Jalan, Supir, atau Kontainer...">
                 </div>
             </div>
             <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition duration-200">
@@ -70,7 +70,7 @@
                 <thead>
                     <tr class="bg-gray-50">
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No</th>
-                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No UJ</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No UJ / Pranota</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No Bukti</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Surat Jalan / Tipe</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Nama Barang</th>
@@ -90,7 +90,7 @@
                         @php
                             $standalonePayment = $uj->_standalone_payment ?? null;
                             $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
-                            $typeLabel = $standalonePayment ? 'Aktivitas Lain' : ($uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-'));
+                            $typeLabel = $uj->_report_type ?? ($standalonePayment ? 'Aktivitas Lain' : ($uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-')));
                             $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
                             $supir = $relatedSJ->supir ?? '-';
                             $plat = $relatedSJ->no_plat ?? '-';
@@ -99,7 +99,7 @@
                             $namaBarang = $relatedSJ->jenis_barang ?? '-';
                             
                             $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
-                            $noBukti = $standalonePayment ? ($standalonePayment->nomor_accurate ?: '-') : ($pembayaran ? $pembayaran->nomor_accurate : '-');
+                            $noBukti = $uj->_report_nomor_bukti ?? ($standalonePayment ? ($standalonePayment->nomor_accurate ?: '-') : ($pembayaran ? $pembayaran->nomor_accurate : '-'));
 
                             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
 
@@ -134,6 +134,9 @@
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-700">{{ $namaBarang }}</div>
+                                @if($uj->_report_kontainer ?? null)
+                                    <div class="text-xs text-gray-500">{{ $uj->_report_kontainer }}</div>
+                                @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-xs font-bold text-gray-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded w-fit">{{ $tujuanAmbil }}</div>

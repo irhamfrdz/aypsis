@@ -42,16 +42,19 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
 
             $standalonePayment = $uj->_standalone_payment ?? null;
             $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
-            $typeLabel = $standalonePayment ? 'Aktivitas Lain' : ($uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-'));
+            $typeLabel = $uj->_report_type ?? ($standalonePayment ? 'Aktivitas Lain' : ($uj->surat_jalan_id ? 'Muat' : ($uj->surat_jalan_bongkaran_id ? 'Bongkar' : '-')));
             $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
             $supir = $relatedSJ->supir ?? '-';
             $plat = $relatedSJ->no_plat ?? '-';
             $nik = $relatedSJ->supirKaryawan->nik ?? '-';
             $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
             $namaBarang = $relatedSJ->jenis_barang ?? '-';
+            if ($uj->_report_kontainer ?? null) {
+                $namaBarang .= ' / '.$uj->_report_kontainer;
+            }
 
             $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
-            $noBukti = $standalonePayment ? ($standalonePayment->nomor_accurate ?: '-') : ($pembayaran ? $pembayaran->nomor_accurate : '-');
+            $noBukti = $uj->_report_nomor_bukti ?? ($standalonePayment ? ($standalonePayment->nomor_accurate ?: '-') : ($pembayaran ? $pembayaran->nomor_accurate : '-'));
 
             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
 
@@ -148,7 +151,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
             [
                 'No',
                 'Tanggal',
-                'Nomor UJ',
+                'Nomor UJ / Pranota',
                 'No. Bukti (Accurate)',
                 'No. Surat Jalan',
                 'Tipe',

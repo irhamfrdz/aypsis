@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\InvoiceAktivitasLain;
 use App\Models\PembatalanSuratJalan;
 use App\Models\PembayaranAktivitasLain;
+use App\Models\PranotaObAntarGudang;
+use App\Models\PranotaObMuatTemas;
 use App\Models\UangJalan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -342,6 +344,82 @@ class ReportUangJalanController extends Controller
         $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
     }
 
+    private function appendPranotaObRows(&$uangJalans, $startDate, $endDate, $search)
+    {
+        $sources = [
+            [PranotaObAntarGudang::class, 'OB Antar Gudang', 1000000000],
+            [PranotaObMuatTemas::class, 'OB Muat Temas', 2000000000],
+        ];
+
+        foreach ($sources as [$model, $type, $idOffset]) {
+            $query = $model::with(['creator', 'items.tagihanOb.suratJalan.supirKaryawan'])
+                ->whereBetween('tanggal_pranota', [$startDate->toDateString(), $endDate->toDateString()]);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_pranota', 'like', "%{$search}%")
+                        ->orWhereHas('items.tagihanOb', function ($itemQuery) use ($search) {
+                            $itemQuery->where('nomor_kontainer', 'like', "%{$search}%")
+                                ->orWhere('nomor_surat_jalan', 'like', "%{$search}%")
+                                ->orWhere('nama_supir', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            foreach ($query->get() as $pranota) {
+                $isMuatTemas = $pranota instanceof PranotaObMuatTemas;
+                $items = $pranota->items->filter(fn ($item) => ($isMuatTemas && $item->snapshot) || $item->tagihanOb)->values();
+                if ($items->isEmpty()) {
+                    continue;
+                }
+
+                $remaining = round((float) $pranota->grand_total, 2);
+                $nominal = $items->sum(fn ($item) => (float) (($isMuatTemas ? $item->snapshot?->biaya : null) ?? $item->tagihanOb?->biaya ?? 0));
+
+                foreach ($items as $index => $item) {
+                    $detail = ($isMuatTemas ? $item->snapshot : null) ?? $item->tagihanOb;
+                    $baseAmount = (float) ($detail->biaya ?? 0);
+                    $amount = $index === $items->count() - 1
+                        ? $remaining
+                        : round($baseAmount + ($nominal > 0
+                            ? (float) $pranota->adjustment * $baseAmount / $nominal
+                            : (float) $pranota->adjustment / $items->count()), 2);
+                    $remaining = round($remaining - $amount, 2);
+
+                    $suratJalan = $item->tagihanOb?->suratJalan;
+                    $fakeSj = new \App\Models\SuratJalan;
+                    $fakeSj->no_surat_jalan = $detail->nomor_surat_jalan ?? $suratJalan?->no_surat_jalan ?? '-';
+                    $fakeSj->jenis_barang = $detail->barang ?? $item->tagihanOb?->barang ?? '-';
+                    $fakeSj->tujuan_pengambilan = $detail->tujuan_gudang ?? $item->tagihanOb?->keterangan ?? '-';
+                    $fakeSj->supir = $detail->nama_supir ?? '-';
+                    $fakeSj->no_plat = $suratJalan?->no_plat ?? '-';
+                    $fakeSj->setRelation('supirKaryawan', $suratJalan?->supirKaryawan);
+
+                    $row = new UangJalan;
+                    $row->id = -($idOffset + (int) $item->id);
+                    $row->tanggal_uang_jalan = $pranota->tanggal_pranota;
+                    $row->nomor_uang_jalan = $pranota->nomor_pranota;
+                    $row->jumlah_uang_jalan = $amount;
+                    $row->jumlah_total = $amount;
+                    $row->jumlah_mel = 0;
+                    $row->jumlah_pelancar = 0;
+                    $row->jumlah_kawalan = 0;
+                    $row->jumlah_parkir = 0;
+                    $row->_report_type = $type;
+                    $row->_report_nomor_bukti = $isMuatTemas ? ($pranota->nomor_accurate ?: '-') : '-';
+                    $row->_report_kontainer = $detail->nomor_kontainer ?? '-';
+                    $row->setRelation('suratJalan', $fakeSj);
+                    $row->setRelation('pranotaUangJalan', collect());
+                    $row->setRelation('createdBy', $pranota->creator);
+
+                    $uangJalans->push($row);
+                }
+            }
+        }
+
+        $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
+    }
+
     public function view(Request $request)
     {
         if (! $request->has('start_date') || ! $request->has('end_date')) {
@@ -383,6 +461,7 @@ class ReportUangJalanController extends Controller
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
+        $this->appendPranotaObRows($uangJalans, $startDate, $endDate, $search);
 
         return view('report-uang-jalan.view', [
             'uangJalans' => $uangJalans,
@@ -432,6 +511,7 @@ class ReportUangJalanController extends Controller
         // Append standalone Pembatalan records that occurred in this period
         $this->appendStandalonePembatalans($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
+        $this->appendPranotaObRows($uangJalans, $startDate, $endDate, $search);
 
         // In export, order needs to be ascending as before
         $uangJalans = $uangJalans->sortBy('tanggal_uang_jalan')->values();
