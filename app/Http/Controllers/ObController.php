@@ -2855,11 +2855,11 @@ class ObController extends Controller
                 ], 400);
             }
 
-            // Set destination as 'ON BOARD' for TL Muat
+            // Use the selected Temas destination for OB Muat Temas.
             if ($isMuatTemas) {
                 $naikKapal->asal_kontainer = Gudang::findOrFail($validated['gudang_asal_id'])->nama_gudang;
             }
-            $naikKapal->ke = 'ON BOARD';
+            $naikKapal->ke = $isMuatTemas ? $temasPricelist->gudangTujuan->nama_gudang : 'ON BOARD';
             $naikKapal->save();
 
             // Check if CARGO container (always create new BL, no dedup)
@@ -2950,9 +2950,26 @@ class ObController extends Controller
                 ]);
             }
 
-            // Record to history and update container gudangs_id
+            // HistoryKontainer synchronizes the current location using the latest movement date.
+            if ($isMuatTemas) {
+                $typeKontainer = Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+                HistoryKontainer::create([
+                    'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                    'tipe_kontainer' => $typeKontainer,
+                    'jenis_kegiatan' => 'Pindahan Gudang',
+                    'tanggal_kegiatan' => $validated['tanggal_ob'],
+                    'asal_gudang_id' => $validated['gudang_asal_id'],
+                    'gudang_id' => $temasPricelist->gudang_tujuan_id,
+                    'keterangan' => 'OB Muat Temas: '.$naikKapal->asal_kontainer.' -> '.$naikKapal->ke
+                        .'. Surat Jalan: '.$suratJalan->no_surat_jalan
+                        .'. Kapal: '.$naikKapal->nama_kapal.'. Voyage: '.$naikKapal->no_voyage,
+                    'created_by' => $user->id,
+                ]);
+            }
+
+            // Record to history and update container gudangs_id for regular TL.
             try {
-                if ($naikKapal->nomor_kontainer) {
+                if (! $isMuatTemas && $naikKapal->nomor_kontainer) {
                     $targetGudangId = null;
                     if ($naikKapal->ke) {
                         $gudang = \App\Models\Gudang::where('nama_gudang', $naikKapal->ke)->first();
