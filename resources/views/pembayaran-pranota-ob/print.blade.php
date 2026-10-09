@@ -282,11 +282,11 @@
                         @foreach($pranotaObs as $index => $pranota)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $pranota->nomor_pranota }}</td>
+                                <td>{{ $pranota->nomor_pranota }} @if($pranota instanceof \App\Models\PranotaObMuatTemas)<br>OB Muat Temas@endif</td>
                                 <td>{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</td>
                                 <td style="text-align: center;">
                                     @php
-                                        $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
+                                        $itemsCount = $pranota instanceof \App\Models\PranotaObMuatTemas ? $pranota->items->count() : (($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0));
                                     @endphp
                                     {{ $itemsCount }}
                                 </td>

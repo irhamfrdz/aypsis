@@ -25,6 +25,7 @@ class PembayaranPranotaOb extends Model
         'keterangan',
         'status',
         'pranota_ob_ids',
+        'pranota_ob_muat_temas_ids',
         'pembayaran_ob_id',
         'pembayaran_ob_ids',
         'kapal',
@@ -46,6 +47,7 @@ class PembayaranPranotaOb extends Model
         'dp_amount' => 'decimal:2',
         'total_biaya_pranota' => 'decimal:2',
         'pranota_ob_ids' => 'array',
+        'pranota_ob_muat_temas_ids' => 'array',
         'pembayaran_ob_ids' => 'array',
         'breakdown_supir' => 'array',
     ];
@@ -63,11 +65,16 @@ class PembayaranPranotaOb extends Model
             $ids = json_decode($ids, true) ?? [];
         }
 
-        if (empty($ids) || ! is_array($ids)) {
-            return collect([]);
+        $ids = is_array($ids) ? $ids : [];
+        $temasIds = $this->pranota_ob_muat_temas_ids ?? [];
+        if (is_string($temasIds)) {
+            $temasIds = json_decode($temasIds, true) ?? [];
         }
 
-        return PranotaOb::whereIn('id', $ids)->get();
+        // concat preserves records with the same numeric ID in the two tables.
+        return PranotaOb::whereIn('id', $ids)->get()->concat(
+            PranotaObMuatTemas::with('items')->whereIn('id', is_array($temasIds) ? $temasIds : [])->get()
+        );
     }
 
     /**

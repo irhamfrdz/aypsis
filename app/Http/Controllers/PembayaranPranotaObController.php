@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Coa;
 use App\Models\PembayaranPranotaOb;
 use App\Models\PranotaOb;
+use App\Models\PranotaObMuatTemas;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +53,8 @@ class PembayaranPranotaObController extends Controller
         $kapalList = PranotaOb::where('status', 'unpaid')
             ->distinct()
             ->pluck('nama_kapal')
+            ->concat(PranotaObMuatTemas::where('status', 'unpaid')->pluck('nama_kapal'))
+            ->unique()
             ->filter()
             ->sort()
             ->values();
@@ -59,6 +62,8 @@ class PembayaranPranotaObController extends Controller
         $voyageList = PranotaOb::where('status', 'unpaid')
             ->distinct()
             ->pluck('no_voyage')
+            ->concat(PranotaObMuatTemas::where('status', 'unpaid')->pluck('no_voyage'))
+            ->unique()
             ->filter()
             ->sort()
             ->values();
@@ -135,7 +140,14 @@ class PembayaranPranotaObController extends Controller
             $query->where('no_voyage', $request->voyage);
         }
 
-        $pranotaList = $query->orderBy('created_at', 'desc')->get();
+        $temasQuery = PranotaObMuatTemas::with('items')->where('status', 'unpaid');
+        if ($request->filled('kapal')) {
+            $temasQuery->where('nama_kapal', $request->kapal);
+        }
+        if ($request->filled('voyage')) {
+            $temasQuery->where('no_voyage', $request->voyage);
+        }
+        $pranotaList = $query->get()->concat($temasQuery->get())->sortByDesc('created_at')->values();
 
         // Check if any pranota found
         if ($pranotaList->isEmpty()) {
@@ -183,7 +195,7 @@ class PembayaranPranotaObController extends Controller
                 'akun_bank_id' => 'required|exists:akun_coa,id',
                 'tanggal_kas' => 'required|date',
                 'pranota_ids' => 'required|array|min:1',
-                'pranota_ids.*' => 'exists:pranota_obs,id',
+                'pranota_ids.*' => ['required', 'distinct', 'regex:/^(?:muat_temas:)?[1-9][0-9]*$/'],
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
                 'keterangan' => 'nullable|string',
@@ -194,16 +206,27 @@ class PembayaranPranotaObController extends Controller
                 'breakdown_supir' => 'nullable|json',
             ]);
 
-            $pranotaIds = $request->input('pranota_ids');
+            $selectedIds = collect($request->input('pranota_ids'));
+            $pranotaIds = $selectedIds->reject(fn ($id) => str_starts_with((string) $id, 'muat_temas:'))->map(fn ($id) => (int) $id)->values()->all();
+            $temasIds = $selectedIds->filter(fn ($id) => str_starts_with((string) $id, 'muat_temas:'))->map(fn ($id) => (int) substr($id, 11))->values()->all();
             $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', 0));
 
             // Get and validate pranota records
-            $pranotas = PranotaOb::whereIn('id', $pranotaIds)->get();
+            $pranotas = PranotaOb::whereIn('id', $pranotaIds)->orderBy('id')->lockForUpdate()->get()->concat(
+                PranotaObMuatTemas::with('items')->whereIn('id', $temasIds)->orderBy('id')->lockForUpdate()->get()
+            );
+            if ($pranotas->count() !== $selectedIds->count()) {
+                throw new \Exception('Pranota yang dipilih tidak ditemukan. Silakan muat ulang daftar pranota.');
+            }
             Log::info('Found pranotas', ['count' => $pranotas->count(), 'ids' => $pranotaIds]);
 
             foreach ($pranotas as $pranota) {
                 if ($pranota->status !== 'unpaid') {
-                    throw new \Exception("Pranota {$pranota->no_invoice} sudah dibayar atau tidak dapat diproses");
+                    throw new \Exception("Pranota {$pranota->nomor_pranota} sudah dibayar atau tidak dapat diproses");
+                }
+                if (($request->filled('kapal') && $pranota->nama_kapal !== $request->kapal)
+                    || ($request->filled('voyage') && $pranota->no_voyage !== $request->voyage)) {
+                    throw new \Exception('Kapal atau voyage pranota tidak sesuai dengan kriteria pembayaran.');
                 }
             }
 
@@ -267,6 +290,7 @@ class PembayaranPranotaObController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
                 'pranota_ob_ids' => $pranotaIds,
+                'pranota_ob_muat_temas_ids' => $temasIds,
                 'pembayaran_ob_id' => ! empty($dpIds) ? $dpIds[0] : null,
                 'pembayaran_ob_ids' => $dpIds,
                 'kapal' => $request->kapal,
@@ -324,7 +348,7 @@ class PembayaranPranotaObController extends Controller
             Log::info('Transaction committed successfully');
 
             $message = "Pembayaran pranota OB berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
-            $message .= 'Total pranota: '.count($pranotaIds).'. ';
+            $message .= 'Total pranota: '.$pranotas->count().'. ';
             $message .= 'Status: Sudah dibayar.';
 
             return redirect()->route('pembayaran-pranota-ob.index')->with('success', $message);
@@ -343,7 +367,7 @@ class PembayaranPranotaObController extends Controller
 
     public function print(string $id)
     {
-        $pembayaran = PembayaranPranotaOb::with(['pranotaObs'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaOb::findOrFail($id);
 
         return view('pembayaran-pranota-ob.print', compact('pembayaran'));
     }
@@ -459,22 +483,11 @@ class PembayaranPranotaObController extends Controller
         try {
             DB::beginTransaction();
 
-            $pembayaran = PembayaranPranotaOb::findOrFail($id);
+            $pembayaran = PembayaranPranotaOb::lockForUpdate()->findOrFail($id);
 
-            // Get associated pranota IDs (model has 'pranota_ob_ids' => 'array' cast)
-            $pranotaIds = $pembayaran->pranota_ob_ids;
-
-            // Handle double encoded JSON if necessary (workaround for existing data)
-            if (is_string($pranotaIds)) {
-                $pranotaIds = json_decode($pranotaIds, true) ?? [];
-            }
-
-            $pranotaIds = is_array($pranotaIds) ? $pranotaIds : [];
-
-            // Restore pranota status to unpaid
-            if (! empty($pranotaIds)) {
-                PranotaOb::whereIn('id', $pranotaIds)->update(['status' => 'unpaid']);
-                Log::info('Restored pranota statuses to unpaid', ['pranota_ids' => $pranotaIds]);
+            // Restore both types, including old payments containing regular IDs only.
+            foreach ($pembayaran->pranota_obs as $pranota) {
+                $pranota->update(['status' => 'unpaid']);
             }
 
             // Delete associated COA transactions
@@ -586,7 +599,7 @@ class PembayaranPranotaObController extends Controller
                 $newTotal += $pranota->calculateTotalAmount();
 
                 // Recalculate breakdown from items
-                $items = $pranota->getEnrichedItems();
+                $items = $pranota instanceof PranotaObMuatTemas ? $pranota->getPaymentItems() : $pranota->getEnrichedItems();
                 foreach ($items as $item) {
                     $supir = strtoupper(trim($item['supir'] ?? ''));
                     if (empty($supir) || $supir === '-') {
@@ -635,10 +648,12 @@ class PembayaranPranotaObController extends Controller
 
             // Update main payment record
             $penyesuaian = $pembayaranPranotaOb->penyesuaian ?? 0;
+            $deductions = collect($finalBreakdown)->sum(fn ($row) => (float) $row['potongan_utang'] + (float) $row['potongan_tabungan'] + (float) $row['potongan_bpjs']);
+            $totalPembayaran = $newTotal - (float) $pembayaranPranotaOb->dp_amount - $deductions;
             $pembayaranPranotaOb->update([
-                'total_pembayaran' => $newTotal,
+                'total_pembayaran' => $totalPembayaran,
                 'total_biaya_pranota' => $newTotal,
-                'total_setelah_penyesuaian' => $newTotal + $penyesuaian,
+                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
                 'breakdown_supir' => $finalBreakdown,
                 'updated_by' => Auth::id(),
             ]);

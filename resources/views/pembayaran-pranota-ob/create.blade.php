@@ -330,15 +330,19 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($pranotaList as $pranota)
+                                @php
+                                    $isMuatTemas = $pranota instanceof \App\Models\PranotaObMuatTemas;
+                                    $paymentKey = $isMuatTemas ? 'muat_temas:'.$pranota->id : $pranota->id;
+                                @endphp
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked data-pranota-id="{{ $pranota->id }}">
+                                        <input type="checkbox" name="pranota_ids[]" value="{{ $paymentKey }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked data-pranota-id="{{ $paymentKey }}">
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota }} @if($isMuatTemas)<span class="block text-teal-600">OB Muat Temas</span>@endif</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</td>
                                     <td class="px-2 py-2 text-xs">
                                         @php
-                                            $enrichedItems = $pranota->getEnrichedItems();
+                                            $enrichedItems = $isMuatTemas ? $pranota->getPaymentItems() : $pranota->getEnrichedItems();
                                             // Ensure uniform uppercase matching
                                             foreach ($enrichedItems as &$item) {
                                                 if (isset($item['supir'])) {
@@ -394,11 +398,11 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
                                         @php
-                                            $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
+                                            $itemsCount = $isMuatTemas ? $pranota->items->count() : (($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0));
                                         @endphp
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ $itemsCount }}</span>
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ \Carbon\Carbon::parse($pranota->created_at)->format('d/M/Y') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ \Carbon\Carbon::parse($isMuatTemas ? $pranota->tanggal_pranota : $pranota->created_at)->format('d/M/Y') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->status == 'paid')
@@ -574,6 +578,7 @@
                 checkbox.checked = this.checked;
             });
             calculateTotal();
+            updateSupirList();
         });
 
         // Individual checkbox change

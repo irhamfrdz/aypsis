@@ -292,6 +292,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ $pranota->nomor_pranota }}
+                                        @if($pranota instanceof \App\Models\PranotaObMuatTemas)<span class="block text-teal-600">OB Muat Temas</span>@endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -301,7 +302,9 @@
                                     @php
                                         $itemsCount = 0;
                                         try {
-                                            if (isset($pranota->itemsPivot) && is_countable($pranota->itemsPivot)) {
+                                            if ($pranota instanceof \App\Models\PranotaObMuatTemas) {
+                                                $itemsCount = $pranota->items->count();
+                                            } elseif (isset($pranota->itemsPivot) && is_countable($pranota->itemsPivot)) {
                                                 $itemsCount = count($pranota->itemsPivot);
                                             } elseif (isset($pranota->items)) {
                                                 $items = $pranota->items;

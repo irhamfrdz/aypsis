@@ -14,6 +14,12 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
         <p class="mb-2">Tanggal Pranota: <strong>{{ $pranota->tanggal_pranota->format('d/m/Y') }}</strong></p>
         <p class="mb-2">Kapal / Voyage: <strong>{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</strong></p>
+        <p class="mb-2">Status Pembayaran: <strong>{{ $pranota->status === 'paid' ? 'Lunas' : 'Belum Lunas' }}</strong></p>
+        @if($pranota->status !== 'paid')
+            @can('pembayaran-pranota-ob-create')
+                <a href="{{ route('pembayaran-pranota-ob.create', ['kapal' => $pranota->nama_kapal, 'voyage' => $pranota->no_voyage]) }}" class="inline-block mb-4 text-teal-700 underline">Bayar melalui Pembayaran Pranota OB</a>
+            @endcan
+        @endif
         <p class="mb-4">Nomor Accurate: {{ $pranota->nomor_accurate ?? '-' }} | Dibuat Oleh: {{ $pranota->creator->name ?? '-' }}</p>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
