@@ -11,10 +11,6 @@
             <h1 class="text-2xl font-bold text-gray-800">📰 Berita & Pamflet</h1>
             <p class="text-gray-500 text-sm mt-1">Kelola konten berita dan pamflet yang ditampilkan di sistem PWA karyawan</p>
         </div>
-            <a href="{{ route('berita.create', ['tipe' => 'pengumuman']) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
-                <span aria-hidden="true">📢</span>
-                Buat Pengumuman PWA
-            </a>
             <a href="{{ route('berita.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Tambah Baru
@@ -63,6 +59,7 @@
                         <th class="px-4 py-3 text-left">No</th>
                         <th class="px-4 py-3 text-left">Gambar</th>
                         <th class="px-4 py-3 text-left">Judul</th>
+                        <th class="px-4 py-3 text-left">Isi Konten</th>
                         <th class="px-4 py-3 text-center">Tipe</th>
                         <th class="px-4 py-3 text-center">Status</th>
                         <th class="px-4 py-3 text-center">Pin</th>
@@ -86,6 +83,18 @@
                         </td>
                         <td class="px-4 py-3 font-medium text-gray-800 max-w-xs">
                             <div class="truncate" title="{{ $item->judul }}">{{ $item->judul }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 max-w-sm">
+                            @php
+                                $teksKonten = trim(html_entity_decode(strip_tags($item->konten ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                            @endphp
+                            @if($teksKonten !== '')
+                                <div class="max-w-sm whitespace-normal break-words text-xs leading-relaxed" title="{{ $teksKonten }}">
+                                    {{ \Illuminate\Support\Str::limit($teksKonten, 180) }}
+                                </div>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($item->tipe === 'pamflet')
@@ -132,7 +141,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="px-4 py-10 text-center text-gray-400">
+                        <td colspan="10" class="px-4 py-10 text-center text-gray-400">
                             <div class="flex flex-col items-center gap-2">
                                 <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                                 <p class="font-medium">Belum ada konten</p>
