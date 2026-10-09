@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
+    $isMuatTemas = $pranota instanceof \App\Models\PranotaObMuatTemas;
     // Fixed paper size: Half-Folio
     $paperSize = 'Half-Folio';
     
@@ -193,6 +194,31 @@
             font-size: 8px;
             font-weight: bold;
         }
+
+        .temas-columns {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 3mm;
+            align-items: start;
+        }
+
+        .temas-items th, .temas-items td {
+            font-size: 10px;
+            line-height: 1.1;
+            padding: 1px 2px;
+        }
+
+        .temas-items th { font-size: 8px; }
+        .temas-items td { white-space: normal; overflow: visible; text-overflow: clip; }
+        .temas-items .nowrap { white-space: nowrap; }
+        .temas-totals {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 10px;
+        }
+        .temas-totals td { border: 1px solid #000; padding: 3px; }
+        .temas-totals .grand-total { background: #eee; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -236,6 +262,9 @@
         </table>
 
         <!-- Items Table -->
+        @if($isMuatTemas)
+            @include('pranota-ob._print-muat-temas-items')
+        @else
         <table class="items-table">
             <thead>
                 <tr>
@@ -290,6 +319,7 @@
                 @endif
             </tbody>
         </table>
+        @endif
 
         @if($pranota->keterangan)
         <div class="keterangan-section">
@@ -317,6 +347,7 @@
         </div>
     </div>
     </div>
+    @unless($isMuatTemas)
     <script>
         // Measure all rows, totals, notes, and signatures before scaling the full document.
         function fitPranotaToPage() {
@@ -346,5 +377,6 @@
             document.fonts.ready.then(fitPranotaToPage);
         }
     </script>
+    @endunless
 </body>
 </html>
