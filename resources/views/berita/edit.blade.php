@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('berita.update', $berita->id) }}" enctype="multipart/form-data"
+    <form id="berita-form" method="POST" action="{{ route('berita.update', $berita->id) }}" enctype="multipart/form-data"
           class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
         @csrf
         @method('PUT')
@@ -199,6 +199,13 @@ if (@json(session()->hasOldInput('konten'))) {
 } else {
     richEditor.innerHTML = kontenInput.value;
 }
+const beritaForm = document.getElementById('berita-form');
+const syncRichText = () => {
+    if (document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman') {
+        kontenInput.value = richEditor.innerHTML.trim();
+    }
+};
+richEditor.addEventListener('input', syncRichText);
 document.querySelectorAll('.rich-btn').forEach(button => {
     button.addEventListener('mousedown', event => event.preventDefault());
     button.addEventListener('click', () => {
@@ -214,11 +221,7 @@ document.getElementById('rich-color').addEventListener('input', event => {
     richEditor.focus();
     document.execCommand('foreColor', false, event.target.value);
 });
-document.querySelector('form').addEventListener('submit', () => {
-    if (document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman') {
-        kontenInput.value = richEditor.innerHTML.trim();
-    }
-});
+beritaForm.addEventListener('submit', syncRichText);
 
 function showFile(file) {
     clientError.classList.add('hidden');
