@@ -92,7 +92,28 @@
             <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="konten">{{ $berita->tipe === 'pengumuman' ? 'Teks Pengumuman *' : 'Konten / Deskripsi' }}</label>
             <textarea id="konten" name="konten" rows="6"
                       placeholder="{{ $berita->tipe === 'pengumuman' ? 'Tulis teks pengumuman yang akan dibaca karyawan di PWA...' : '' }}"
-                      class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y">{{ old('konten', $berita->konten) }}</textarea>
+                      class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y">{{ old('konten', $kontenEditor) }}</textarea>
+            <div id="rich-toolbar" class="hidden flex-wrap items-center gap-1 rounded-t-xl border border-gray-300 bg-gray-50 p-2">
+                <button type="button" data-command="bold" class="rich-btn" title="Tebal"><strong>B</strong></button>
+                <button type="button" data-command="italic" class="rich-btn" title="Miring"><em>I</em></button>
+                <button type="button" data-command="underline" class="rich-btn" title="Garis bawah"><u>U</u></button>
+                <button type="button" data-command="strikeThrough" class="rich-btn" title="Coret"><s>S</s></button>
+                <span class="mx-1 h-6 border-l border-gray-300"></span>
+                <select id="rich-size" class="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm" title="Ukuran teks">
+                    <option value="3">Normal</option><option value="2">Kecil</option><option value="4">Besar</option><option value="5">Sangat besar</option>
+                </select>
+                <input id="rich-color" type="color" value="#1f2937" class="h-8 w-9 cursor-pointer rounded border border-gray-300 bg-white p-1" title="Warna teks">
+                <span class="mx-1 h-6 border-l border-gray-300"></span>
+                <button type="button" data-command="insertUnorderedList" class="rich-btn" title="Daftar poin">• Daftar</button>
+                <button type="button" data-command="insertOrderedList" class="rich-btn" title="Daftar bernomor">1. Daftar</button>
+                <button type="button" data-command="justifyLeft" class="rich-btn" title="Rata kiri">☰</button>
+                <button type="button" data-command="justifyCenter" class="rich-btn" title="Rata tengah">≡</button>
+                <button type="button" data-command="justifyRight" class="rich-btn" title="Rata kanan">☷</button>
+                <button type="button" data-command="removeFormat" class="rich-btn" title="Hapus format">Hapus format</button>
+            </div>
+            <div id="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Teks pengumuman"
+                 class="rich-editor hidden min-h-48 rounded-b-xl border border-t-0 border-gray-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                 data-placeholder="Tulis teks pengumuman yang akan dibaca karyawan di PWA..."></div>
             @error('konten') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
@@ -133,6 +154,16 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+    .rich-btn { border: 1px solid #d1d5db; border-radius: .375rem; background: #fff; padding: .375rem .625rem; font-size: .875rem; color: #374151; }
+    .rich-btn:hover { background: #eef2ff; border-color: #a5b4fc; }
+    .rich-editor:empty::before { content: attr(data-placeholder); color: #9ca3af; pointer-events: none; }
+    .rich-editor ul { list-style: disc; padding-left: 1.5rem; }
+    .rich-editor ol { list-style: decimal; padding-left: 1.5rem; }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 const gambarInput = document.getElementById('gambar');
@@ -146,19 +177,48 @@ const clientError = document.getElementById('client-error');
 const gambarSection = document.getElementById('gambar-section');
 const kontenLabel = document.querySelector('label[for="konten"]');
 const kontenInput = document.getElementById('konten');
+const richToolbar = document.getElementById('rich-toolbar');
+const richEditor = document.getElementById('rich-editor');
 
 function updateTipeFields() {
     const isPengumuman = document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman';
     gambarSection.classList.toggle('hidden', isPengumuman);
     kontenLabel.textContent = isPengumuman ? 'Teks Pengumuman *' : 'Konten / Deskripsi';
-    kontenInput.placeholder = isPengumuman
-        ? 'Tulis teks pengumuman yang akan dibaca karyawan di PWA...'
-        : 'Tulis isi berita atau keterangan pamflet...';
-    kontenInput.required = isPengumuman;
+    kontenInput.classList.toggle('hidden', isPengumuman);
+    richToolbar.classList.toggle('hidden', !isPengumuman);
+    richEditor.classList.toggle('hidden', !isPengumuman);
+    richEditor.classList.toggle('flex', isPengumuman);
+    kontenInput.required = false;
 }
 
 document.querySelectorAll('input[name="tipe"]').forEach(input => input.addEventListener('change', updateTipeFields));
 updateTipeFields();
+
+if (@json(session()->hasOldInput('konten'))) {
+    richEditor.textContent = kontenInput.value;
+} else {
+    richEditor.innerHTML = kontenInput.value;
+}
+document.querySelectorAll('.rich-btn').forEach(button => {
+    button.addEventListener('mousedown', event => event.preventDefault());
+    button.addEventListener('click', () => {
+        richEditor.focus();
+        document.execCommand(button.dataset.command, false, null);
+    });
+});
+document.getElementById('rich-size').addEventListener('change', event => {
+    richEditor.focus();
+    document.execCommand('fontSize', false, event.target.value);
+});
+document.getElementById('rich-color').addEventListener('input', event => {
+    richEditor.focus();
+    document.execCommand('foreColor', false, event.target.value);
+});
+document.querySelector('form').addEventListener('submit', () => {
+    if (document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman') {
+        kontenInput.value = richEditor.innerHTML.trim();
+    }
+});
 
 function showFile(file) {
     clientError.classList.add('hidden');

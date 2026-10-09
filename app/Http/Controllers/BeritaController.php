@@ -55,7 +55,7 @@ class BeritaController extends Controller
 
         Berita::create([
             'judul' => $request->judul,
-            'konten' => $request->konten,
+            'konten' => $request->tipe === 'pengumuman' ? $this->sanitizeRichText($request->konten) : $request->konten,
             'tipe' => $request->tipe,
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
@@ -69,7 +69,9 @@ class BeritaController extends Controller
 
     public function edit(Berita $berita)
     {
-        return view('berita.edit', compact('berita'));
+        $kontenEditor = $this->sanitizeRichText($berita->konten ?? '');
+
+        return view('berita.edit', compact('berita', 'kontenEditor'));
     }
 
     public function update(Request $request, Berita $berita)
@@ -103,7 +105,7 @@ class BeritaController extends Controller
 
         $berita->update([
             'judul' => $request->judul,
-            'konten' => $request->konten,
+            'konten' => $request->tipe === 'pengumuman' ? $this->sanitizeRichText($request->konten) : $request->konten,
             'tipe' => $request->tipe,
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
@@ -138,6 +140,71 @@ class BeritaController extends Controller
             'is_active' => $berita->is_active,
             'message' => $berita->is_active ? 'Berita diaktifkan.' : 'Berita dinonaktifkan.',
         ]);
+    }
+
+    /** Bersihkan HTML editor pengumuman agar hanya format teks yang diizinkan tersimpan. */
+    private function sanitizeRichText(?string $html): string
+    {
+        if (! $html) {
+            return '';
+        }
+
+        $previousErrors = libxml_use_internal_errors(true);
+        $document = new \DOMDocument('1.0', 'UTF-8');
+        $document->loadHTML('<?xml encoding="UTF-8"><div id="rich-root">'.$html.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrors);
+
+        $root = (new \DOMXPath($document))->query('//*[@id="rich-root"]')->item(0);
+        if (! $root) {
+            return strip_tags($html);
+        }
+
+        $allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ul', 'ol', 'li', 'div', 'span', 'font'];
+        $cleanNode = function (\DOMNode $node) use (&$cleanNode, $allowedTags): void {
+            foreach (iterator_to_array($node->childNodes) as $child) {
+                if ($child instanceof \DOMComment) {
+                    $node->removeChild($child);
+
+                    continue;
+                }
+
+                if (! $child instanceof \DOMElement) {
+                    continue;
+                }
+
+                $cleanNode($child);
+                if (! in_array(strtolower($child->tagName), $allowedTags, true)) {
+                    while ($child->firstChild) {
+                        $node->insertBefore($child->firstChild, $child);
+                    }
+                    $node->removeChild($child);
+
+                    continue;
+                }
+
+                $tag = strtolower($child->tagName);
+                foreach (iterator_to_array($child->attributes) as $attribute) {
+                    $name = strtolower($attribute->name);
+                    $value = trim($attribute->value);
+                    $allowed = ($tag === 'font' && $name === 'size' && preg_match('/^[1-7]$/', $value))
+                        || ($tag === 'font' && $name === 'color' && preg_match('/^#[0-9a-f]{3,8}$/i', $value))
+                        || ($name === 'style' && preg_match('/^text-align:\s*(left|center|right|justify);?$/i', $value));
+
+                    if (! $allowed) {
+                        $child->removeAttribute($attribute->name);
+                    }
+                }
+            }
+        };
+        $cleanNode($root);
+
+        $result = '';
+        foreach ($root->childNodes as $child) {
+            $result .= $document->saveHTML($child);
+        }
+
+        return trim($result);
     }
 
     /* ------------------------------------------------------------------ */
