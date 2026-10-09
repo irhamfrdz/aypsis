@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\InvoiceAktivitasLain;
 use App\Models\PembatalanSuratJalan;
 use App\Models\PembayaranAktivitasLain;
+use App\Models\PembayaranPranotaOb;
+use App\Models\PembayaranPranotaObAntarGudang;
 use App\Models\PranotaObAntarGudang;
 use App\Models\PranotaObMuatTemas;
 use App\Models\UangJalan;
@@ -347,11 +349,11 @@ class ReportUangJalanController extends Controller
     private function appendPranotaObRows(&$uangJalans, $startDate, $endDate, $search)
     {
         $sources = [
-            [PranotaObAntarGudang::class, 'OB Antar Gudang', 1000000000],
-            [PranotaObMuatTemas::class, 'OB Muat Temas', 2000000000],
+            [PranotaObAntarGudang::class, PembayaranPranotaObAntarGudang::class, 'pranota_ob_antar_gudang_ids', 'OB Antar Gudang', 1000000000],
+            [PranotaObMuatTemas::class, PembayaranPranotaOb::class, 'pranota_ob_muat_temas_ids', 'OB Muat Temas', 2000000000],
         ];
 
-        foreach ($sources as [$model, $type, $idOffset]) {
+        foreach ($sources as [$model, $paymentModel, $paymentIdsColumn, $type, $idOffset]) {
             $query = $model::with(['creator', 'items.tagihanOb.suratJalan.supirKaryawan'])
                 ->whereBetween('tanggal_pranota', [$startDate->toDateString(), $endDate->toDateString()]);
 
@@ -366,7 +368,29 @@ class ReportUangJalanController extends Controller
                 });
             }
 
-            foreach ($query->get() as $pranota) {
+            $pranotas = $query->get();
+            if ($pranotas->isEmpty()) {
+                continue;
+            }
+
+            $pranotaIds = $pranotas->pluck('id')->mapWithKeys(fn ($id) => [(int) $id => true]);
+            $buktiByPranotaId = [];
+            $payments = $paymentModel::query()
+                ->select($paymentIdsColumn, 'nomor_accurate')
+                ->whereNotNull($paymentIdsColumn)
+                ->orderByDesc('tanggal_kas')
+                ->orderByDesc('id')
+                ->cursor();
+            foreach ($payments as $payment) {
+                foreach ($payment->$paymentIdsColumn ?? [] as $pranotaId) {
+                    $pranotaId = (int) $pranotaId;
+                    if (isset($pranotaIds[$pranotaId]) && ! array_key_exists($pranotaId, $buktiByPranotaId)) {
+                        $buktiByPranotaId[$pranotaId] = $payment->nomor_accurate ?: '-';
+                    }
+                }
+            }
+
+            foreach ($pranotas as $pranota) {
                 $isMuatTemas = $pranota instanceof PranotaObMuatTemas;
                 $items = $pranota->items->filter(fn ($item) => ($isMuatTemas && $item->snapshot) || $item->tagihanOb)->values();
                 if ($items->isEmpty()) {
@@ -406,7 +430,7 @@ class ReportUangJalanController extends Controller
                     $row->jumlah_kawalan = 0;
                     $row->jumlah_parkir = 0;
                     $row->_report_type = $type;
-                    $row->_report_nomor_bukti = $isMuatTemas ? ($pranota->nomor_accurate ?: '-') : '-';
+                    $row->_report_nomor_bukti = $buktiByPranotaId[$pranota->id] ?? '-';
                     $row->_report_kontainer = $detail->nomor_kontainer ?? '-';
                     $row->setRelation('suratJalan', $fakeSj);
                     $row->setRelation('pranotaUangJalan', collect());
