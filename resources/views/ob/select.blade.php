@@ -31,6 +31,7 @@
                         <option value="">--Pilih Kegiatan--</option>
                         <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
                         <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
+                        <option value="muat_temas" {{ request('kegiatan') == 'muat_temas' ? 'selected' : '' }}>OB Muat Temas</option>
                     </select>
                 </div>
 
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let url = '';
         if (kegiatan === 'bongkar') {
             url = '{{ route("ob.get-kapal-bongkar", [], false) }}';
-        } else if (kegiatan === 'muat') {
+        } else if (['muat', 'muat_temas'].includes(kegiatan)) {
             url = '{{ route("ob.get-kapal-muat", [], false) }}';
         }
 
@@ -161,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let url = '';
         if (kegiatanSelect.value === 'bongkar') {
             url = `{{ route('ob.get-voyage-bongkar', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
-        } else if (kegiatanSelect.value === 'muat') {
+        } else if (['muat', 'muat_temas'].includes(kegiatanSelect.value)) {
             url = `{{ route('ob.get-voyage-muat', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
         }
 

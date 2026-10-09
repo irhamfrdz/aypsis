@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
-@if(isset($bls) && $bls->count() > 0)
+@if(request('kegiatan') === 'muat_temas')
+@section('title', 'OB Muat Temas')
+@section('page_title', 'OB Muat Temas')
+@elseif(isset($bls) && $bls->count() > 0)
 @section('title', 'OB - Data Bongkaran')
 @section('page_title', 'OB - Data Bongkaran')
 @else
@@ -105,7 +108,9 @@
             <div class="flex items-center">
                 <i class="fas fa-ship mr-2 md:mr-3 text-orange-600 text-xl md:text-2xl"></i>
                 <div>
-                    @if(isset($bls) && $bls->count() > 0)
+                    @if(request('kegiatan') === 'muat_temas')
+                    <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB Muat Temas</h1>
+                    @elseif(isset($bls) && $bls->count() > 0)
                     <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB - Data Bongkaran</h1>
                     @else
                     <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
@@ -263,7 +268,7 @@
                 {{-- Asal Kontainer Input --}}
                 <div>
                     <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Asal Kontainer (Semua)</label>
-                    @if(request('kegiatan') === 'muat')
+                    @if(in_array(request('kegiatan'), ['muat', 'muat_temas'], true))
                         <select id="bulk_asal_kontainer"
                                 class="select2-gudang w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Pilih gudang...</option>
@@ -394,7 +399,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Pengirim:</span>
-                            <span class="font-medium text-gray-900 text-right">{{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}</span>
+                            <span class="font-medium text-gray-900 text-right">{{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">No. Seal:</span>
@@ -526,7 +531,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Pengirim:</span>
-                            <span class="font-medium text-gray-900 text-right">{{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}</span>
+                            <span class="font-medium text-gray-900 text-right">{{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">No. Seal:</span>
@@ -651,8 +656,8 @@
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->nomor_kontainer ?: '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">{{ $bl->no_seal ?: '-' }}</td>
                         <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $bl->nama_barang }}">{{ $bl->nama_barang ?: '-' }}</td>
-                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}">
-                            {{ request('kegiatan') === 'muat' ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}
+                        <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}">
+                            {{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($bl->prospek->pt_pengirim ?? $bl->prospek->pengirim ?? '-') : ($bl->pt_pengirim ?? $bl->pengirim ?? '-') }}
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs">
                             @php
@@ -665,7 +670,7 @@
                         </td>
                         <td class="px-1 py-1 text-xs text-gray-900">
                             <div class="flex items-center gap-1">
-                                @if(request('kegiatan') === 'muat')
+                                @if(in_array(request('kegiatan'), ['muat', 'muat_temas'], true))
                                     <select class="editable-asal-kontainer select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                             data-id="{{ $bl->id }}" 
                                             data-type="bl">
@@ -702,7 +707,7 @@
                                         // Determine the selected value:
                                         // 1. Use existing $bl->ke value if present
                                             // 2. Fallback to ON BOARD when activity is muat
-                                            $selectedValue = $bl->ke ?: (request('kegiatan') === 'muat' ? 'ON BOARD' : '');
+                                            $selectedValue = $bl->ke ?: (in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? 'ON BOARD' : '');
                                             $hasSelectedGudang = $gudangs->contains('nama_gudang', $selectedValue);
                                     @endphp
                                     @foreach($gudangs as $gudang)
@@ -898,8 +903,8 @@
                             <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
                                 {{ $naikKapal->jenis_barang ?: '-' }}
                             </td>
-                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}">
-                                {{ request('kegiatan') === 'muat' ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}
+                            <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}">
+                                {{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? ($naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-') : ($naikKapal->pt_pengirim ?? $naikKapal->pengirim ?? '-') }}
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs">
                                 @php
@@ -912,7 +917,7 @@
                             </td>
                             <td class="px-1 py-1 text-xs text-gray-900">
                                 <div class="flex items-center gap-1">
-                                    @if(request('kegiatan') === 'muat')
+                                    @if(in_array(request('kegiatan'), ['muat', 'muat_temas'], true))
                                         <select class="editable-asal-kontainer select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                                 data-id="{{ $naikKapal->id }}" 
                                                 data-type="naik_kapal">
@@ -944,7 +949,7 @@
                                            class="editable-ke w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                            data-id="{{ $naikKapal->id }}" 
                                            data-type="naik_kapal"
-                                         value="{{ $naikKapal->ke ?: (request('kegiatan') === 'muat' ? 'ON BOARD' : '') }}"
+                                         value="{{ $naikKapal->ke ?: (in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? 'ON BOARD' : '') }}"
                                            placeholder="Tujuan...">
                                     <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
                                             class="text-green-600 hover:text-green-900 transition duration-150"
@@ -1191,7 +1196,7 @@
                             class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Lokasi Tujuan</option>
                         @foreach($gudangs as $gudang)
-                            <option value="{{ $gudang->id }}" {{ request('kegiatan') === 'muat'
+                            <option value="{{ $gudang->id }}" {{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true)
                                 ? (strtoupper($gudang->nama_gudang) === 'ON BOARD' ? 'selected' : '')
                                 : ($gudang->nama_gudang == 'SS JKT' ? 'selected' : '') }}>
                                 {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
@@ -1477,7 +1482,7 @@
                                 class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
                             <option value="">Pilih Lokasi Tujuan</option>
                             @foreach($gudangs as $gudang)
-                                <option value="{{ $gudang->id }}" {{ request('kegiatan') === 'muat'
+                                <option value="{{ $gudang->id }}" {{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true)
                                     ? (strtoupper($gudang->nama_gudang) === 'ON BOARD' ? 'selected' : '')
                                     : ($gudang->nama_gudang == 'SS JKT' ? 'selected' : '') }}>
                                     {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
@@ -1572,6 +1577,10 @@
         </div>
     </div>
 </div>
+
+@if(request('kegiatan') === 'muat_temas')
+    @include('ob._muat-temas-modal')
+@endif
 
 <script>
 // Handle per page change
@@ -2208,8 +2217,88 @@ function unmarkOB(type, id) {
     }
 }
 
+function openMuatTemasModal(naikKapalId) {
+    const row = document.querySelector(`.row-checkbox[data-type="naik_kapal"][value="${naikKapalId}"]`);
+    const form = document.getElementById('muatTemasForm');
+    form.reset();
+    document.getElementById('muatTemasNaikKapalId').value = naikKapalId;
+    form.dataset.size = (row?.dataset.size || '').replace(/ft/gi, '').trim();
+    document.getElementById('muatTemasKontainer').textContent = 'Kontainer: ' + (row?.dataset.nomorKontainer || '-');
+    document.getElementById('muatTemasError').classList.add('hidden');
+    filterMuatTemasPricelists();
+    document.getElementById('muatTemasModal').classList.remove('hidden');
+    document.getElementById('muatTemasTanggal').focus();
+}
+
+function closeMuatTemasModal() {
+    document.getElementById('muatTemasModal').classList.add('hidden');
+}
+
+function filterMuatTemasPricelists() {
+    const size = document.getElementById('muatTemasForm').dataset.size;
+    const status = document.getElementById('muatTemasStatus').value;
+    const select = document.getElementById('muatTemasPricelist');
+    let available = 0;
+    Array.from(select.options).forEach(option => {
+        if (!option.value) return;
+        const eligible = !!status && option.dataset.size === size && (!option.dataset.status || option.dataset.status === status);
+        option.hidden = !eligible;
+        option.disabled = !eligible;
+        if (eligible) available++;
+    });
+    if (select.selectedOptions[0]?.disabled) select.value = '';
+    document.getElementById('muatTemasPricelistStatus').textContent = !status
+        ? 'Pilih status kontainer terlebih dahulu.'
+        : (available ? 'Tarif dari Pricelist OB Antar Gudang dengan tujuan Temas.' : 'Tidak ada pricelist Temas untuk ukuran dan status kontainer ini.');
+}
+
+document.getElementById('muatTemasForm')?.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = document.getElementById('muatTemasSubmit');
+    const cancel = document.getElementById('muatTemasCancel');
+    const error = document.getElementById('muatTemasError');
+    button.disabled = true;
+    cancel.disabled = true;
+    error.classList.add('hidden');
+    try {
+        const response = await fetch('{{ route('ob.process-tl', [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                naik_kapal_id: document.getElementById('muatTemasNaikKapalId').value,
+                kegiatan: 'muat_temas',
+                tanggal_ob: document.getElementById('muatTemasTanggal').value,
+                nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
+                status_kontainer: document.getElementById('muatTemasStatus').value,
+                pricelist_id: document.getElementById('muatTemasPricelist').value
+            })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || 'Gagal menyimpan OB Muat Temas.'));
+        }
+        closeMuatTemasModal();
+        showNotification(data.message || 'OB Muat Temas berhasil disimpan.', 'success');
+        window.location.reload();
+    } catch (err) {
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+    } finally {
+        button.disabled = false;
+        cancel.disabled = false;
+    }
+});
+
 // Function to process TL (Tanda Langsung) - Langsung dimuat tanpa supir
 function prosesTL(naikKapalId) {
+    if (@json(request('kegiatan') === 'muat_temas')) {
+        openMuatTemasModal(naikKapalId);
+        return;
+    }
     if (!confirm('Proses TL (Tanda Langsung)?\n\nKontainer akan langsung dimuat dan ditandai sebagai OB tanpa supir.\n\nProses ini akan:\n- Membuat record BL baru\n- Menandai sebagai sudah OB\n- Ditandai TL untuk audit trail')) {
         return;
     }

@@ -10,14 +10,18 @@ use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\Manifest;
 use App\Models\MasterPricelistOb;
+use App\Models\MasterPricelistObAntarGudang;
 use App\Models\NaikKapal;
 use App\Models\PranotaOb;
 use App\Models\Prospek;
 use App\Models\StockKontainer;
+use App\Models\SuratJalan;
+use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ObController extends Controller
@@ -104,7 +108,7 @@ class ObController extends Controller
         // Determine data source based on kegiatan
         // If kegiatan is 'muat', FORCE use naik_kapal table
         // If kegiatan is 'bongkar' or not specified, check BL first (legacy behavior)
-        $useMuatData = ($kegiatan === 'muat');
+        $useMuatData = in_array($kegiatan, ['muat', 'muat_temas'], true);
 
         // Normalize ship name for flexible matching (remove dots, extra spaces)
         $normalizedKapal = $namaKapal ? $this->normalizeShipName($namaKapal) : null;
@@ -120,7 +124,7 @@ class ObController extends Controller
             $hasBl = $blQueryCount->exists();
         }
 
-        if ($kegiatan !== 'muat' && $hasBl) {
+        if (! in_array($kegiatan, ['muat', 'muat_temas'], true) && $hasBl) {
 
             $queryBl = Bl::with(['prospek', 'supir']);
             if ($namaKapal && $noVoyage) {
@@ -445,11 +449,18 @@ class ObController extends Controller
             ->orderBy('nama_gudang')
             ->get(['id', 'nama_gudang', 'lokasi']);
 
+        $temasPricelists = $kegiatan === 'muat_temas'
+            ? MasterPricelistObAntarGudang::with('gudangTujuan')
+                ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
+                ->orderBy('size_kontainer')->orderBy('biaya')->get()
+            : collect();
+
         // Use index view
         $viewName = 'ob.index';
 
         return view($viewName, compact(
             'naikKapals',
+            'temasPricelists',
             'namaKapal',
             'noVoyage',
             'totalKontainer',
@@ -2081,7 +2092,7 @@ class ObController extends Controller
                 ->exists();
         }
 
-        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl) || ($request->has('show_all') && $kegiatan !== 'muat')) {
+        if ($kegiatan === 'bongkar' || (! in_array($kegiatan, ['muat', 'muat_temas'], true) && $hasBl) || ($request->has('show_all') && ! in_array($kegiatan, ['muat', 'muat_temas'], true))) {
             // Use BL data
             $query = Bl::with(['prospek', 'supir']);
 
@@ -2184,7 +2195,7 @@ class ObController extends Controller
                 ->exists();
         }
 
-        if ($kegiatan !== 'muat' && ($hasBl || $request->has('show_all'))) {
+        if (! in_array($kegiatan, ['muat', 'muat_temas'], true) && ($hasBl || $request->has('show_all'))) {
             // Use BL data
             $query = Bl::with(['prospek', 'supir']);
 
@@ -2397,7 +2408,7 @@ class ObController extends Controller
             $normalizedKapal = $this->normalizeShipName($namaKapal);
 
             // Mirror logic from showOBData to select the table
-            $hasBl = $kegiatan !== 'muat' && Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            $hasBl = ! in_array($kegiatan, ['muat', 'muat_temas'], true) && Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->exists();
 
@@ -2795,22 +2806,48 @@ class ObController extends Controller
     {
         $user = Auth::user();
 
-        try {
-            $request->validate([
-                'naik_kapal_id' => 'required|integer|exists:naik_kapal,id',
+        $request->validate([
+            'naik_kapal_id' => 'required|integer|exists:naik_kapal,id',
+            'kegiatan' => 'nullable|in:muat,muat_temas',
+        ]);
+        $isMuatTemas = $request->input('kegiatan') === 'muat_temas';
+        $temasPricelist = null;
+        $suratJalan = null;
+        if ($isMuatTemas) {
+            $validated = $request->validate([
+                'tanggal_ob' => 'required|date',
+                'nomor_surat_jalan' => 'required|string|exists:surat_jalans,no_surat_jalan',
+                'status_kontainer' => 'required|in:full,empty',
+                'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
             ]);
-
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            $size = preg_replace('/\s+/', '', str_ireplace('ft', '', $naikKapal->size_kontainer));
+            $temasPricelist = MasterPricelistObAntarGudang::with('gudangTujuan')
+                ->whereKey($validated['pricelist_id'])
+                ->where('size_kontainer', $size.'ft')
+                ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
+                ->where(fn ($query) => $query->where('status_kontainer', $validated['status_kontainer'])->orWhereNull('status_kontainer'))
+                ->first();
+            if (! $temasPricelist) {
+                throw ValidationException::withMessages([
+                    'pricelist_id' => 'Pilih pricelist tujuan Temas yang sesuai ukuran dan status kontainer.',
+                ]);
+            }
+            $suratJalan = SuratJalan::where('no_surat_jalan', $validated['nomor_surat_jalan'])->firstOrFail();
+        }
+
+        try {
+            DB::beginTransaction();
+            $naikKapal = NaikKapal::lockForUpdate()->findOrFail($request->naik_kapal_id);
 
             // Check if already processed
             if ($naikKapal->sudah_ob) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Kontainer ini sudah ditandai OB',
                 ], 400);
             }
-
-            DB::beginTransaction();
 
             // Set destination as 'ON BOARD' for TL Muat
             $naikKapal->ke = 'ON BOARD';
@@ -2876,10 +2913,31 @@ class ObController extends Controller
             // Update naik_kapal status
             $naikKapal->sudah_ob = true;
             $naikKapal->supir_id = null;
-            $naikKapal->tanggal_ob = now();
-            $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
+            $naikKapal->tanggal_ob = $isMuatTemas ? $request->tanggal_ob : now();
+            $naikKapal->catatan_ob = $isMuatTemas
+                ? 'OB Muat Temas - Surat Jalan: '.$suratJalan->no_surat_jalan
+                : 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             $naikKapal->is_tl = true;
             $naikKapal->save();
+
+            if ($isMuatTemas) {
+                TagihanOb::create([
+                    'kapal' => $naikKapal->nama_kapal,
+                    'voyage' => $naikKapal->no_voyage,
+                    'kegiatan' => 'MUAT TEMAS',
+                    'tanggal_ob' => $request->tanggal_ob,
+                    'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                    'size_kontainer' => $naikKapal->size_kontainer,
+                    'nama_supir' => 'TL',
+                    'barang' => $naikKapal->jenis_barang ?? '-',
+                    'status_kontainer' => $request->status_kontainer,
+                    'biaya' => $temasPricelist->biaya,
+                    'naik_kapal_id' => $naikKapal->id,
+                    'surat_jalan_id' => $suratJalan->id,
+                    'keterangan' => 'OB Muat Temas - '.$temasPricelist->gudangTujuan->nama_gudang.' - Pricelist #'.$temasPricelist->id,
+                    'created_by' => $user->id,
+                ]);
+            }
 
             // Record to history and update container gudangs_id
             try {
@@ -3574,7 +3632,7 @@ class ObController extends Controller
             'ke_gudang_id' => 'required|exists:gudangs,id',
             'nama_kapal' => 'nullable|string',
             'no_voyage' => 'nullable|string',
-            'kegiatan' => 'nullable|string|in:muat,bongkar',
+            'kegiatan' => 'nullable|string|in:muat,muat_temas,bongkar',
             'catatan' => 'nullable|string',
         ]);
 
@@ -3827,7 +3885,7 @@ class ObController extends Controller
             }
 
             // --- Try BL (bongkar) ---
-            if (! $processed && $kegiatan !== 'muat') {
+            if (! $processed && ! in_array($kegiatan, ['muat', 'muat_temas'], true)) {
                 $query = Bl::where('nomor_kontainer', $nomorKontainer);
                 if ($namaKapal) {
                     $normalized = $this->normalizeShipName($namaKapal);
