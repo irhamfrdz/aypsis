@@ -2298,7 +2298,8 @@
         const input = document.getElementById('nomor_pranota');
         input.value = 'Generating...';
         
-        fetch("{{ route('stock-amprahan.generate-nomor-pranota') }}", {
+        fetch("{{ route('stock-amprahan.generate-nomor-pranota', [], false) }}", {
+            credentials: 'same-origin',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -2352,8 +2353,9 @@
             const rekening = document.getElementById('rekening_pranota').value;
             const penerima = document.getElementById('penerima_pranota').value;
 
-            fetch("{{ route('stock-amprahan.masuk-pranota') }}", {
+            fetch("{{ route('stock-amprahan.masuk-pranota', [], false) }}", {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
