@@ -24,6 +24,15 @@
                     <input type="text" id="muatTemasSuratJalan" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Masukkan nomor surat jalan yang sudah terdaftar">
                 </div>
                 <div>
+                    <label for="muatTemasSupir" class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-500">*</span></label>
+                    <select id="muatTemasSupir" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">--Pilih Supir--</option>
+                        @foreach($supirs as $supir)
+                            <option value="{{ $supir->id }}">{{ $supir->nama_panggilan ?: $supir->nama_lengkap }}{{ $supir->plat ? ' - '.$supir->plat : '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label for="muatTemasStatus" class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
                     <select id="muatTemasStatus" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="filterMuatTemasPricelists()">
                         <option value="">--Pilih Status--</option>

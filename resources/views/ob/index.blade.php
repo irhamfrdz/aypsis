@@ -2347,6 +2347,7 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 kegiatan: 'muat_temas',
                 tanggal_ob: document.getElementById('muatTemasTanggal').value,
                 gudang_asal_id: document.getElementById('muatTemasGudangAsal').value,
+                supir_id: document.getElementById('muatTemasSupir').value,
                 nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,
                 pricelist_id: document.getElementById('muatTemasPricelist').value,
