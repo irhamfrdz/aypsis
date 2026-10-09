@@ -153,13 +153,16 @@
                                                 {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
                                             </td>
                                             <td class="px-4 py-3">
-                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor))
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_supir_detail))
                                                     @php
-                                                        $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
+                                                        $sj = $item->rekapSuratJalan ?? $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
                                                         $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? '-';
                                                     @endphp
                                                     <div class="text-xs font-bold text-indigo-600">{{ $noSuratJalan }}</div>
                                                     <div class="text-[10px] text-gray-400">Surat Jalan</div>
+                                                    @if(isset($item->is_rit_supir_detail))
+                                                        <div class="text-[10px] text-gray-400">Pranota: {{ $item->nomor_invoice }}</div>
+                                                    @endif
                                                 @elseif(isset($item->is_pranota_uang_rit))
                                                     <div class="text-xs font-bold text-indigo-600">{{ $item->nomor_invoice }}</div>
                                                     <div class="text-[10px] text-gray-400">Pranota Uang Rit</div>
@@ -171,9 +174,9 @@
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-xs text-gray-700">
-                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor))
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_supir_detail))
                                                     @php
-                                                        $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
+                                                        $sj = $item->rekapSuratJalan ?? $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
                                                         $pengirim = '-';
                                                         if ($sj) {
                                                             if (method_exists($sj, 'pengirimRelation') && $sj->pengirimRelation) {
@@ -186,6 +189,9 @@
                                                     @endphp
                                                     <span class="block"><strong>Pengirim:</strong> {{ $pengirim }}</span>
                                                     <span class="block text-gray-500"><strong>Kontainer:</strong> {{ $noKontainer }}</span>
+                                                    @if(isset($item->is_rit_supir_detail))
+                                                        <span class="block text-gray-500"><strong>Supir:</strong> {{ $item->supir_nama ?? '-' }}</span>
+                                                    @endif
                                                 @elseif(isset($item->is_amprahan) && $item->is_amprahan)
                                                     <strong>Barang:</strong> {{ $item->nama_barang_amprahan ?? '-' }}
                                                 @elseif(isset($item->is_pranota_uang_rit))

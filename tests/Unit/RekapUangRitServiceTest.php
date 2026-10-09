@@ -13,6 +13,44 @@ use PHPUnit\Framework\TestCase;
 
 class RekapUangRitServiceTest extends TestCase
 {
+    public function test_driver_breakdown_preserves_pranota_links_and_filters_each_surat_jalan_by_bl(): void
+    {
+        $first = (new SuratJalanBongkaran)->forceFill([
+            'nomor_surat_jalan' => 'SJ-01', 'no_bl' => '01', 'supir' => 'Supir A',
+            'pengirim' => 'Pengirim A', 'no_kontainer' => 'CONT-A',
+        ]);
+        $second = (new SuratJalanBongkaran)->forceFill([
+            'nomor_surat_jalan' => 'SJ-02', 'no_bl' => '02', 'supir' => 'Supir B',
+        ]);
+        $pranota = (new PranotaUangRit)->forceFill([
+            'id' => 42, 'nomor_invoice' => 'PUR-42', 'supir_nama' => 'Supir A, Supir B',
+            'is_pranota_uang_rit' => true, 'is_pranota_uang_rit_kenek' => false,
+            'rekap_rit_items' => [
+                ['nomor' => 'SJ-01', 'biaya' => 80000, 'surat_jalan' => $first],
+                ['nomor' => 'SJ-02', 'biaya' => 90000, 'surat_jalan' => $second],
+            ],
+        ]);
+        $rows = (new RekapUangRitService)->driverRows($pranota);
+
+        $this->assertCount(2, $rows);
+        $this->assertEquals(170000, $rows->sum(fn ($row) => $row->apportioned['total_biaya']));
+        $this->assertSame([42, 42], $rows->pluck('id')->all());
+        $this->assertSame(['Supir A', 'Supir B'], $rows->pluck('supir_nama')->all());
+        $this->assertSame($first, $rows[0]->rekapSuratJalan);
+        $this->assertSame('CONT-A', $rows[0]->rekapSuratJalan->no_kontainer);
+        $this->assertCount(2, $pranota->rekap_rit_items);
+
+        $method = new \ReflectionMethod(\App\Http\Controllers\RekapBiayaKapalController::class, 'splitCostForBl');
+        $resolver = new RekapBlService(collect(), collect());
+        [$selected, $common] = $method->invoke(new \App\Http\Controllers\RekapBiayaKapalController,
+            $rows[0], $resolver, 'Kapal A', 'V01', ['01']);
+        $this->assertEquals(80000, $selected->apportioned['total_biaya']);
+        $this->assertNull($common);
+        $this->assertSame($first, $selected->rekapSuratJalan);
+        $this->assertSame([null, null], $method->invoke(new \App\Http\Controllers\RekapBiayaKapalController,
+            $rows[1], $resolver, 'Kapal A', 'V01', ['01']));
+    }
+
     public function test_bl_filter_splits_rit_costs_and_keeps_unlinked_costs_separate(): void
     {
         $record = (new PranotaUangRit)->forceFill([

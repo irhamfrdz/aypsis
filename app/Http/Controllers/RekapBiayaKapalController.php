@@ -838,7 +838,7 @@ class RekapBiayaKapalController extends Controller
             }
         }
         $references = $ritPranotas->flatMap(fn ($pranota) => $ritService->references($pranota));
-        $muat = \App\Models\SuratJalan::with('prospeks')
+        $muat = \App\Models\SuratJalan::with(['prospeks', 'pengirimRelation'])
             ->whereIn('no_surat_jalan', $references->where('bongkaran', false)->pluck('number')->unique())
             ->get()->keyBy('no_surat_jalan');
         $bongkaran = \App\Models\SuratJalanBongkaran::whereIn('nomor_surat_jalan',
@@ -856,7 +856,13 @@ class RekapBiayaKapalController extends Controller
             $pranota->is_pranota_uang_rit_kenek = $pranota instanceof \App\Models\PranotaUangRitKenek;
             $pranota->nomor_invoice = $pranota->no_pranota;
             $pranota->jenis_biaya = $pranota->is_pranota_uang_rit_kenek ? 'Pranota Uang Rit Kenek' : 'Pranota Uang Rit Supir';
-            $biayaKapals->push($pranota);
+            if ($pranota->is_pranota_uang_rit_kenek) {
+                $biayaKapals->push($pranota);
+            } else {
+                foreach ($ritService->driverRows($pranota) as $row) {
+                    $biayaKapals->push($row);
+                }
+            }
         }
 
         // Fetch Tagihan Vendor Supir (Pranota Invoice Vendor Supir details)

@@ -53,6 +53,22 @@ class RekapUangRitService
         })->filter()->values();
     }
 
+    /** Keep the original pranota ID for detail links while displaying one row per surat jalan. */
+    public function driverRows($pranota): Collection
+    {
+        return collect($pranota->rekap_rit_items)->map(function ($entry) use ($pranota) {
+            $row = clone $pranota;
+            $row->is_rit_supir_detail = true;
+            $row->rekap_rit_items = [$entry];
+            $row->setRelation('rekapSuratJalan', $entry['surat_jalan']);
+            $row->supir_nama = $entry['surat_jalan']->supir ?: $pranota->supir_nama;
+            $amount = round($entry['biaya'], 2);
+            $row->apportioned = ['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount];
+
+            return $row;
+        });
+    }
+
     private function ship(string $name): string
     {
         return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim($name))));
