@@ -319,12 +319,15 @@ class ReportUangJalanController extends Controller
             $fakeUj->id = 'pal_'.$payment->id;
             $fakeUj->tanggal_uang_jalan = Carbon::parse($payment->tanggal);
             $fakeUj->nomor_uang_jalan = $payment->nomor ?: '-';
-            $fakeUj->jumlah_uang_jalan = (float) ($payment->jumlah ?? 0);
+            $amount = (float) ($payment->jumlah ?? 0);
+            // Bank debit is a refund of the expense and reduces the report total.
+            $reportAmount = strtolower(trim($payment->debit_kredit ?? '')) === 'debit' ? -abs($amount) : $amount;
+            $fakeUj->jumlah_uang_jalan = $reportAmount;
             $fakeUj->jumlah_mel = 0;
             $fakeUj->jumlah_pelancar = 0;
             $fakeUj->jumlah_kawalan = 0;
             $fakeUj->jumlah_parkir = 0;
-            $fakeUj->jumlah_total = (float) ($payment->jumlah ?? 0);
+            $fakeUj->jumlah_total = $reportAmount;
             $fakeUj->_source_type = 'pembayaran_aktivitas_lain';
             $fakeUj->_standalone_payment = $payment;
 
