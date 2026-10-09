@@ -123,6 +123,9 @@
                 <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
+                @if(request('kegiatan') === 'muat_temas')
+                    <a href="{{ route('pranota-ob.index') }}" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">Pranota OB</a>
+                @endif
                 <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'gudang_id', 'show_all']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-print md:mr-2"></i><span class="hidden md:inline">Print</span>
                 </a>
@@ -479,6 +482,7 @@
                     $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
                     $shouldDisable = $isCARGO || !$isOB;
                     $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
+                    if (request('kegiatan') === 'muat_temas' && !$naikKapal->temas_eligible) $shouldDisable = true;
                     $isEmpty = str_contains($barangUpper, 'EMPTY');
                 @endphp
                 <div class="bg-white rounded-lg shadow-sm border {{ $isCARGO ? 'border-red-200 bg-gray-50' : 'border-gray-200' }} p-3">
@@ -878,7 +882,7 @@
                             $isTL = ($naikKapal->is_tl === true || $naikKapal->is_tl === 1 || $naikKapal->is_tl === '1');
                             $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
                             $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
-                            $shouldDisable = $isCARGO || !$isOB;
+                            $shouldDisable = $isCARGO || !$isOB || (request('kegiatan') === 'muat_temas' && !$naikKapal->temas_eligible);
                         @endphp
                         <tr class="hover:bg-gray-50 transition duration-150 {{ $isCARGO ? 'bg-gray-100' : '' }}">
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -1328,7 +1332,7 @@
         <div class="mt-3">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b">
-                <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Masuk Pranota</h3>
+                <h3 class="text-lg font-semibold text-gray-900">{{ request('kegiatan') === 'muat_temas' ? 'Pranota OB Muat Temas' : 'Konfirmasi Masuk Pranota' }}</h3>
                 <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1354,13 +1358,13 @@
                             <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Format: POB-MM-YY-000001 (auto-generate)</p>
+                    <p class="text-xs text-gray-500 mt-1">Format: {{ request('kegiatan') === 'muat_temas' ? 'PMT' : 'POB' }}-MM-YY-000001 (auto-generate)</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="tanggal_ob" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal OB <span class="text-red-500">*</span>
+                            {{ request('kegiatan') === 'muat_temas' ? 'Tanggal Pranota' : 'Tanggal OB' }} <span class="text-red-500">*</span>
                         </label>
                         <input type="date" id="tanggal_ob" name="tanggal_ob" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1899,7 +1903,7 @@ function openPranotaModal() {
         row.className = 'hover:bg-gray-50';
         let biayaDisplay = '';
         // Check if TL container first
-        if (item.sudah_tl === '1' || item.sudah_tl === true) {
+        if (!@json(request('kegiatan') === 'muat_temas') && (item.sudah_tl === '1' || item.sudah_tl === true)) {
             biayaDisplay = `<span class="text-blue-600">Tidak ada biaya (TL)</span>`;
         } else if (item.biaya === null || item.biaya === undefined || item.biaya === '') {
             biayaDisplay = `<span class="text-red-600">Biaya belum diatur</span>`;
@@ -1966,7 +1970,7 @@ function generateNomorPranota() {
     const nomorInput = document.getElementById('nomor_pranota');
     nomorInput.value = 'Loading...';
     
-    fetch('/ob/generate-nomor-pranota', {
+    fetch(@json(request('kegiatan') === 'muat_temas' ? route('pranota-ob-muat-temas.generate-nomor', [], false) : route('ob.generate-nomor-pranota', [], false)), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -2511,7 +2515,7 @@ const bulkActions = document.getElementById('bulk-actions');
 const selectAll = document.getElementById('select-all');
 
 // Storage key based on current page
-const storageKey = `selected_ob_{{ $namaKapal }}_{{ $noVoyage }}`;
+const storageKey = `selected_ob_{{ $namaKapal }}_{{ $noVoyage }}{{ request('kegiatan') === 'muat_temas' ? '_muat_temas' : '' }}`;
 
 function getSelectedItems() {
     const stored = localStorage.getItem(storageKey);
@@ -2710,7 +2714,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
     
     // Send to pranota endpoint
-    fetch('/ob/masuk-pranota', {
+    fetch(@json(request('kegiatan') === 'muat_temas' ? route('pranota-ob-muat-temas.store', [], false) : route('ob.masuk-pranota', [], false)), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -2744,6 +2748,10 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             closePranotaModal();
             // Clear storage after success
             localStorage.removeItem(storageKey);
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
+            }
             setTimeout(() => window.location.reload(), 1000);
         } else {
             showNotification(data?.message || 'Terjadi kesalahan saat memproses pranota', 'error');

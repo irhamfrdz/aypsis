@@ -18,7 +18,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
-    <title>PRANOTA OB ANTAR GUDANG - {{ $pranota->nomor_pranota }}</title>
+    <title>{{ $judulPranota ?? 'PRANOTA OB ANTAR GUDANG' }} - {{ $pranota->nomor_pranota }}</title>
     <style>
         * {
             margin: 0;
@@ -196,7 +196,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PRANOTA OB ANTAR GUDANG</h1>
+            <h1>{{ $judulPranota ?? 'PRANOTA OB ANTAR GUDANG' }}</h1>
         </div>
 
         <!-- Info Section -->
@@ -233,14 +233,15 @@
             </thead>
             <tbody>
                 @foreach($pranota->items as $index => $item)
-                    @if($item->tagihanOb)
+                    @php($detail = $item->snapshot ?? $item->tagihanOb)
+                    @if($detail)
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-center">{{ $item->tagihanOb->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="font-bold text-center">{{ $item->tagihanOb->nomor_kontainer }}</td>
-                            <td>{{ $item->tagihanOb->nama_supir }}</td>
-                            <td>{{ $item->tagihanOb->tujuan_gudang ?? '-' }}</td>
-                            <td class="text-right font-bold">Rp {{ number_format($item->tagihanOb->biaya, 0, ',', '.') }}</td>
+                            <td class="text-center">{{ $item->snapshot ? \Carbon\Carbon::parse($detail->tanggal_ob ?? $detail->created_at)->format('d/m/Y H:i') : $detail->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="font-bold text-center">{{ $detail->nomor_kontainer }}</td>
+                            <td>{{ $detail->nama_supir }}</td>
+                            <td>{{ $detail->tujuan_gudang ?? '-' }}</td>
+                            <td class="text-right font-bold">Rp {{ number_format($detail->biaya, 0, ',', '.') }}</td>
                         </tr>
                     @else
                         <tr>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kontainer;
 use App\Models\PranotaOb;
+use App\Models\PranotaObMuatTemas;
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,8 @@ class PranotaObController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota OB.');
         }
 
-        $query = PranotaOb::with('creator', 'itemsPivot');
+        $query = PranotaOb::query();
+        $temasQuery = PranotaObMuatTemas::query();
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -29,13 +31,35 @@ class PranotaObController extends Controller
                     ->orWhere('no_voyage', 'like', "%{$s}%")
                     ->orWhereJsonContains('items', ['nomor_kontainer' => $s]);
             });
+            $temasQuery->where(function ($q) use ($s) {
+                $q->where('nomor_pranota', 'like', "%{$s}%")
+                    ->orWhere('nama_kapal', 'like', "%{$s}%")
+                    ->orWhere('no_voyage', 'like', "%{$s}%")
+                    ->orWhereHas('items', fn ($items) => $items->where('snapshot->nomor_kontainer', 'like', "%{$s}%"));
+            });
         }
 
-        $pranotas = $query->orderBy('created_at', 'desc')->paginate(20)->appends($request->query());
+        $combined = $query->select('id', 'created_at', DB::raw("'ob' as jenis_pranota"))->toBase()
+            ->unionAll($temasQuery->select('id', 'created_at', DB::raw("'muat_temas' as jenis_pranota"))->toBase());
+        $pranotas = DB::query()->fromSub($combined, 'daftar_pranota_ob')
+            ->orderByDesc('created_at')->orderByDesc('id')->orderBy('jenis_pranota')
+            ->paginate(20)->appends($request->query());
+        $rows = $pranotas->getCollection();
+        $regular = PranotaOb::with('creator', 'itemsPivot')
+            ->whereIn('id', $rows->where('jenis_pranota', 'ob')->pluck('id'))->get()->keyBy('id');
+        $temas = PranotaObMuatTemas::with('creator')->withCount('items')
+            ->whereIn('id', $rows->where('jenis_pranota', 'muat_temas')->pluck('id'))->get()->keyBy('id');
+        $pranotas->setCollection($rows->map(function ($row) use ($regular, $temas) {
+            $record = $row->jenis_pranota === 'muat_temas' ? $temas->get($row->id) : $regular->get($row->id);
+            $record->jenis_pranota = $row->jenis_pranota;
+
+            return $record;
+        }));
 
         $stats = [
-            'total' => PranotaOb::count(),
-            'this_month' => PranotaOb::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total' => PranotaOb::count() + PranotaObMuatTemas::count(),
+            'this_month' => PranotaOb::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count()
+                + PranotaObMuatTemas::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
         ];
 
         return view('pranota-ob.index', compact('pranotas', 'stats'));

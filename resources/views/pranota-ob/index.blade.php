@@ -53,24 +53,32 @@
                     @forelse($pranotas as $i => $pranota)
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranotas->firstItem() + $i }}</td>
-                        <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->nomor_pranota }}</td>
+                        <td class="px-3 py-2 text-sm text-gray-900">
+                            {{ $pranota->nomor_pranota }}
+                            @if($pranota->jenis_pranota === 'muat_temas')
+                                <span class="block text-xs text-teal-700">OB Muat Temas</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->nama_kapal }} / {{ $pranota->no_voyage }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900 text-center">
                             @php
-                                $itemsCount = ($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0);
+                                $itemsCount = $pranota->jenis_pranota === 'muat_temas'
+                                    ? $pranota->items_count
+                                    : (($pranota->itemsPivot && $pranota->itemsPivot->count()) ? $pranota->itemsPivot->count() : (is_array($pranota->items) ? count($pranota->items) : 0));
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ $itemsCount }}</span>
                         </td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->creator?->nama_lengkap ?? $pranota->creator?->name ?? '-' }}</td>
                         <td class="px-3 py-2 text-sm text-gray-900">{{ $pranota->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-3 py-2 text-center text-sm space-x-2">
-                            <a href="{{ route('pranota-ob.show', $pranota) }}" class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
+                            <a href="{{ route($pranota->jenis_pranota === 'muat_temas' ? 'pranota-ob.muat-temas.show' : 'pranota-ob.show', $pranota) }}" class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="Cetak">
+                            <a href="{{ route($pranota->jenis_pranota === 'muat_temas' ? 'pranota-ob.muat-temas.print' : 'pranota-ob.print', $pranota->id) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="Cetak">
                                 <i class="fas fa-print"></i>
                             </a>
                             @can('pranota-ob-delete')
+                                @if($pranota->jenis_pranota !== 'muat_temas')
                                 <form action="{{ route('pranota-ob.destroy', $pranota) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota {{ $pranota->nomor_pranota }}?')">
                                     @csrf
                                     @method('DELETE')
@@ -78,6 +86,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             @endcan
                         </td>
                     </tr>

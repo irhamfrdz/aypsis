@@ -449,6 +449,23 @@ class ObController extends Controller
             ->orderBy('nama_gudang')
             ->get(['id', 'nama_gudang', 'lokasi']);
 
+        if ($kegiatan === 'muat_temas') {
+            $temasTagihans = TagihanOb::with(['pranotaMuatTemasItem', 'pranotaObItem', 'pranotaObAntarGudangItem'])
+                ->whereIn('naik_kapal_id', $naikKapals->pluck('id'))
+                ->where('kegiatan', 'MUAT TEMAS')->orderBy('id')->get()->groupBy('naik_kapal_id');
+            $regularPranotaIds = \App\Models\PranotaObItem::where('item_type', NaikKapal::class)
+                ->whereIn('item_id', $naikKapals->pluck('id'))->pluck('item_id');
+            foreach ($naikKapals as $record) {
+                $tagihans = $temasTagihans->get($record->id, collect());
+                $tagihan = $tagihans->last();
+                $record->temas_eligible = $tagihans->count() === 1 && ! $tagihan->pranotaMuatTemasItem
+                    && ! $tagihan->pranotaObItem && ! $tagihan->pranotaObAntarGudangItem
+                    && ! $regularPranotaIds->contains($record->id);
+                $record->biaya = $tagihan?->biaya;
+                $record->detected_status = $tagihan?->status_kontainer ?? 'full';
+            }
+        }
+
         $temasPricelists = $kegiatan === 'muat_temas'
             ? MasterPricelistObAntarGudang::with('gudangTujuan')
                 ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
@@ -1900,6 +1917,10 @@ class ObController extends Controller
 
             // Build snapshot items before create so pranota keeps essential info
             $itemsToSave = $request->items;
+            $muatTemasIds = collect($itemsToSave)->where('type', 'naik_kapal')->pluck('id');
+            if (TagihanOb::whereIn('naik_kapal_id', $muatTemasIds)->where('kegiatan', 'MUAT TEMAS')->exists()) {
+                throw ValidationException::withMessages(['items' => 'Tagihan OB Muat Temas harus dimasukkan melalui Pranota OB Muat Temas.']);
+            }
             foreach ($itemsToSave as $idx => $it) {
                 if (! isset($it['type']) || ! isset($it['id'])) {
                     continue;

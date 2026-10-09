@@ -82,6 +82,11 @@ class TagihanOb extends Model
         return $this->belongsTo(Gudang::class, 'gudang_asal_id');
     }
 
+    public function pranotaMuatTemasItem()
+    {
+        return $this->hasOne(PranotaObMuatTemasItem::class, 'tagihan_ob_id');
+    }
+
     /**
      * Get pranota item untuk tagihan OB ini
      */

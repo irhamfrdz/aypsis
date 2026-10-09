@@ -4589,6 +4589,10 @@ Route::middleware([
             ->middleware('can:pranota-ob-view');
 
         // Pranota OB Management
+        Route::get('pranota-ob/muat-temas/{pranota}/print', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'print'])
+            ->name('pranota-ob.muat-temas.print')->middleware('can:pranota-ob-view');
+        Route::get('pranota-ob/muat-temas/{pranota}', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'show'])
+            ->name('pranota-ob.muat-temas.show')->middleware('can:pranota-ob-view');
         Route::resource('pranota-ob', \App\Http\Controllers\PranotaObController::class)
             ->only(['index', 'show', 'destroy'])
             ->middleware([
@@ -6554,6 +6558,14 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('auth');
 
     // OB Antar Gudang routes
+    Route::prefix('pranota-ob-muat-temas')->name('pranota-ob-muat-temas.')->middleware('can:ob-view')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'index'])->name('index');
+        Route::get('/generate-nomor', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'generateNomor'])->name('generate-nomor');
+        Route::post('/', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'store'])->name('store');
+        Route::get('/{pranota}/print', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'print'])->name('print');
+        Route::get('/{pranota}', [\App\Http\Controllers\PranotaObMuatTemasController::class, 'show'])->name('show');
+    });
+
     Route::get('ob-antar-gudang', [\App\Http\Controllers\ObAntarGudangController::class, 'index'])
         ->name('ob-antar-gudang.index')
         ->middleware('can:ob-antar-gudang-view');
