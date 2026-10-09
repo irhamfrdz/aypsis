@@ -56,6 +56,11 @@
                 display: none !important;
             }
             html, body { height: auto; margin: 0; padding: 0; }
+            .print-page {
+                height: 164mm !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
             .container {
                 min-height: 0 !important;
                 border: none !important;
@@ -68,11 +73,18 @@
             }
         }
 
-        .container {
+        .print-page {
             width: {{ $currentPaper['containerWidth'] }};
-            min-height: {{ $currentPaper['height'] }};
+            height: {{ $currentPaper['height'] }};
             margin: 0 auto;
-            padding: 5mm 8mm;
+            padding: 4mm 6mm;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
             position: relative;
             box-sizing: border-box;
             background: white;
@@ -81,8 +93,8 @@
         .header {
             text-align: center;
             border-bottom: 2px solid #333;
-            padding-bottom: 5px;
-            margin-bottom: 8px;
+            padding-bottom: 3px;
+            margin-bottom: 4px;
         }
 
         .header h1 {
@@ -94,12 +106,12 @@
 
         .info-table {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             border-collapse: collapse;
         }
 
         .info-table td {
-            padding: 2px 0;
+            padding: 1px 0;
             vertical-align: top;
             font-size: 8px;
         }
@@ -117,14 +129,15 @@
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             table-layout: fixed;
         }
 
         .items-table th, .items-table td {
             border: 1px solid #000;
-            padding: 3px 4px;
+            padding: 1px 3px;
             font-size: {{ $currentPaper['tableFont'] }};
+            line-height: 1.1;
             vertical-align: middle;
         }
 
@@ -146,15 +159,15 @@
         .font-bold { font-weight: bold; }
 
         .keterangan-section {
-            margin-top: 5px;
-            padding: 5px;
+            margin-top: 3px;
+            padding: 3px;
             border: 1px dashed #ccc;
             background-color: #fdfdfd;
             font-size: 8px;
         }
 
         .footer-signatures {
-            margin-top: 15px;
+            margin-top: 5px;
             width: 100%;
         }
 
@@ -167,7 +180,7 @@
             width: 33.33%;
             text-align: center;
             vertical-align: bottom;
-            padding-top: 30px;
+            padding-top: 18px;
         }
 
         .signature-line {
@@ -195,7 +208,8 @@
         </button>
     </div>
 
-    <div class="container">
+    <div class="print-page" id="pranota-print-page">
+    <div class="container" id="pranota-print-content">
         <!-- Header -->
         <div class="header">
             <h1>{{ $judulPranota ?? 'PRANOTA OB ANTAR GUDANG' }}</h1>
@@ -302,5 +316,35 @@
             </table>
         </div>
     </div>
+    </div>
+    <script>
+        // Measure all rows, totals, notes, and signatures before scaling the full document.
+        function fitPranotaToPage() {
+            const page = document.getElementById('pranota-print-page');
+            const content = document.getElementById('pranota-print-content');
+            content.style.zoom = '1';
+            const styles = window.getComputedStyle(page);
+            const availableWidth = page.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+            const availableHeight = page.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom) - 8;
+            content.style.width = `${availableWidth}px`;
+            const contentHeight = Math.max(content.scrollHeight, content.getBoundingClientRect().height);
+            let scale = Math.min(1, availableHeight / Math.max(contentHeight, 1));
+            content.style.zoom = String(scale);
+            // Table borders and text rounding can change height after applying zoom.
+            for (let attempt = 0; attempt < 4; attempt++) {
+                const printedHeight = content.getBoundingClientRect().height;
+                if (printedHeight <= availableHeight) break;
+                scale *= availableHeight / printedHeight;
+                content.style.zoom = String(scale);
+            }
+        }
+
+        window.addEventListener('load', fitPranotaToPage);
+        window.addEventListener('beforeprint', fitPranotaToPage);
+        window.addEventListener('afterprint', fitPranotaToPage);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(fitPranotaToPage);
+        }
+    </script>
 </body>
 </html>
