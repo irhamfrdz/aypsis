@@ -199,6 +199,12 @@
                 </div>
 
                 <div>
+                    <label for="departemen" class="{{ $labelClasses }}">Departemen</label>
+                    <input type="text" name="departemen" id="departemen" value="{{ old('departemen', $karyawan->departemen) }}" maxlength="255"
+                           class="{{ $inputClasses }}" placeholder="Masukkan departemen karyawan">
+                </div>
+
+                <div>
                     <label for="pekerjaan" class="{{ $labelClasses }}">Pekerjaan</label>
                     <select name="pekerjaan" id="pekerjaan" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Pekerjaan --</option>

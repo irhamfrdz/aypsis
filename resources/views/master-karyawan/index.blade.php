@@ -442,6 +442,7 @@
                                 </div>
                             </div>
                         </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">DEPARTEMEN</th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
                                 <span>KANTOR CABANG AYP</span>
@@ -594,6 +595,9 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                {{ $karyawan->departemen ? strtoupper($karyawan->departemen) : '-' }}
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->cabang)
                                     {{ strtoupper($karyawan->cabang) }}
                                 @else
@@ -724,7 +728,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '10' : '9' }}" class="px-6 py-2 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '11' : '10' }}" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-6">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -778,6 +782,10 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-gray-600 mb-4">
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Departemen</span>
+                            <span class="font-medium">{{ $karyawan->departemen ? strtoupper($karyawan->departemen) : '-' }}</span>
+                        </div>
                         <div>
                             <span class="block text-gray-400 mb-0.5">Pekerjaan</span>
                             <span class="font-medium">{{ $karyawan->pekerjaan && $karyawan->pekerjaan !== '0' ? strtoupper($karyawan->pekerjaan) : '-' }}</span>

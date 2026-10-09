@@ -326,6 +326,10 @@
                 <p class="text-gray-800">{{ $karyawan->divisi ?? '-' }}</p>
             </div>
             <div>
+                <p class="font-semibold text-gray-600">Departemen</p>
+                <p class="text-gray-800">{{ $karyawan->departemen ?? '-' }}</p>
+            </div>
+            <div>
                 <p class="font-semibold text-gray-600">Pekerjaan</p>
                 <p class="text-gray-800">{{ $karyawan->pekerjaan ?? '-' }}</p>
             </div>
