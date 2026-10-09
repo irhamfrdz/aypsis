@@ -20,6 +20,7 @@ class TagihanOb extends Model
         'nomor_kontainer',
         'nama_supir',
         'surat_jalan_id',
+        'gudang_asal_id',
         'barang',
         'status_kontainer', // full atau empty
         'is_combo',
@@ -73,6 +74,11 @@ class TagihanOb extends Model
     public function suratJalan()
     {
         return $this->belongsTo(SuratJalan::class);
+    }
+
+    public function gudangAsal()
+    {
+        return $this->belongsTo(Gudang::class, 'gudang_asal_id');
     }
 
     /**

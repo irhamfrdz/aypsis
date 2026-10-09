@@ -10,6 +10,16 @@
                     <input type="date" id="muatTemasTanggal" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
                 </div>
                 <div>
+                    <label for="muatTemasGudangAsal" class="block text-sm font-medium text-gray-700 mb-1">Gudang Asal <span class="text-red-500">*</span></label>
+                    <select id="muatTemasGudangAsal" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="">--Pilih Gudang Asal--</option>
+                        @foreach($temasGudangs as $gudang)
+                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                        @endforeach
+                    </select>
+                    <p id="muatTemasGudangStatus" class="text-xs text-gray-500 mt-1" role="status">Gudang asal mengikuti riwayat kontainer sampai tanggal OB yang dipilih.</p>
+                </div>
+                <div>
                     <label for="muatTemasSuratJalan" class="block text-sm font-medium text-gray-700 mb-1">Nomor Surat Jalan <span class="text-red-500">*</span></label>
                     <input type="text" id="muatTemasSuratJalan" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Masukkan nomor surat jalan yang sudah terdaftar">
                 </div>

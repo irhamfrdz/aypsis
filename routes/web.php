@@ -6503,6 +6503,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('ob/process-tl', [\App\Http\Controllers\ObController::class, 'processTL'])
         ->name('ob.process-tl')
         ->middleware('can:ob-view');
+    Route::get('ob/gudang-asal', [\App\Http\Controllers\ObAntarGudangController::class, 'gudangAsal'])
+        ->name('ob.gudang-asal')
+        ->middleware('can:ob-view');
     Route::post('ob/process-tl-bongkar', [\App\Http\Controllers\ObController::class, 'processTLBongkar'])
         ->name('ob.process-tl-bongkar')
         ->middleware('can:ob-view');

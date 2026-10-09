@@ -454,6 +454,9 @@ class ObController extends Controller
                 ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
                 ->orderBy('size_kontainer')->orderBy('biaya')->get()
             : collect();
+        $temasGudangs = $kegiatan === 'muat_temas'
+            ? Gudang::orderBy('nama_gudang')->get(['id', 'nama_gudang'])
+            : collect();
 
         // Use index view
         $viewName = 'ob.index';
@@ -461,6 +464,7 @@ class ObController extends Controller
         return view($viewName, compact(
             'naikKapals',
             'temasPricelists',
+            'temasGudangs',
             'namaKapal',
             'noVoyage',
             'totalKontainer',
@@ -2820,6 +2824,7 @@ class ObController extends Controller
                 'status_kontainer' => 'required|in:full,empty',
                 'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
                 'is_ckls_mobil_panjang' => 'sometimes|boolean',
+                'gudang_asal_id' => 'required|integer|exists:gudangs,id',
             ]);
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
             $size = preg_replace('/\s+/', '', str_ireplace('ft', '', $naikKapal->size_kontainer));
@@ -2851,6 +2856,9 @@ class ObController extends Controller
             }
 
             // Set destination as 'ON BOARD' for TL Muat
+            if ($isMuatTemas) {
+                $naikKapal->asal_kontainer = Gudang::findOrFail($validated['gudang_asal_id'])->nama_gudang;
+            }
             $naikKapal->ke = 'ON BOARD';
             $naikKapal->save();
 
@@ -2936,6 +2944,7 @@ class ObController extends Controller
                     'is_ckls_mobil_panjang' => $request->boolean('is_ckls_mobil_panjang'),
                     'naik_kapal_id' => $naikKapal->id,
                     'surat_jalan_id' => $suratJalan->id,
+                    'gudang_asal_id' => $validated['gudang_asal_id'],
                     'keterangan' => 'OB Muat Temas - '.$temasPricelist->gudangTujuan->nama_gudang.' - Pricelist #'.$temasPricelist->id,
                     'created_by' => $user->id,
                 ]);

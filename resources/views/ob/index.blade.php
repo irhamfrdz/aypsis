@@ -2217,22 +2217,82 @@ function unmarkOB(type, id) {
     }
 }
 
+let muatTemasGudangController;
+let muatTemasGudangLoading = false;
+let muatTemasSaving = false;
+
 function openMuatTemasModal(naikKapalId) {
     const row = document.querySelector(`.row-checkbox[data-type="naik_kapal"][value="${naikKapalId}"]`);
     const form = document.getElementById('muatTemasForm');
     form.reset();
     document.getElementById('muatTemasNaikKapalId').value = naikKapalId;
     form.dataset.size = (row?.dataset.size || '').replace(/ft/gi, '').trim();
+    form.dataset.nomorKontainer = row?.dataset.nomorKontainer || '';
+    document.getElementById('muatTemasGudangAsal').dataset.userModified = 'false';
     document.getElementById('muatTemasKontainer').textContent = 'Kontainer: ' + (row?.dataset.nomorKontainer || '-');
     document.getElementById('muatTemasError').classList.add('hidden');
     filterMuatTemasPricelists();
     document.getElementById('muatTemasModal').classList.remove('hidden');
     document.getElementById('muatTemasTanggal').focus();
+    updateMuatTemasGudangAsal();
 }
 
 function closeMuatTemasModal() {
+    muatTemasGudangController?.abort();
     document.getElementById('muatTemasModal').classList.add('hidden');
 }
+
+async function updateMuatTemasGudangAsal() {
+    muatTemasGudangController?.abort();
+    const controller = new AbortController();
+    muatTemasGudangController = controller;
+    const select = document.getElementById('muatTemasGudangAsal');
+    const status = document.getElementById('muatTemasGudangStatus');
+    const nomor = document.getElementById('muatTemasForm').dataset.nomorKontainer;
+    const tanggal = document.getElementById('muatTemasTanggal').value;
+    select.value = '';
+    if (!nomor || !tanggal) {
+        muatTemasGudangLoading = false;
+        document.getElementById('muatTemasSubmit').disabled = muatTemasSaving;
+        status.textContent = 'Pilih tanggal OB untuk mencari gudang asal.';
+        return;
+    }
+    muatTemasGudangLoading = true;
+    document.getElementById('muatTemasSubmit').disabled = true;
+    status.textContent = 'Mencari gudang asal berdasarkan tanggal OB...';
+    try {
+        const response = await fetch('{{ route('ob.gudang-asal', [], false) }}?' + new URLSearchParams({
+            nomor_kontainer: nomor,
+            tanggal_ob: tanggal
+        }), { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('Gagal memuat gudang asal');
+        const data = await response.json();
+        if (controller.signal.aborted || select.dataset.userModified === 'true') return;
+        const exists = data.gudang_id && Array.from(select.options).some(option => option.value === String(data.gudang_id));
+        select.value = exists ? String(data.gudang_id) : '';
+        status.textContent = exists
+            ? 'Gudang asal dari riwayat tanggal ' + data.history_date + '. Anda dapat mengubah pilihan.'
+            : 'Riwayat gudang asal tidak ditemukan. Pilih gudang asal secara manual.';
+    } catch (error) {
+        if (!controller.signal.aborted && select.dataset.userModified !== 'true') {
+            status.textContent = 'Gagal memuat riwayat. Pilih gudang asal secara manual.';
+        }
+    } finally {
+        if (muatTemasGudangController === controller) {
+            muatTemasGudangLoading = false;
+            document.getElementById('muatTemasSubmit').disabled = muatTemasSaving;
+        }
+    }
+}
+
+document.getElementById('muatTemasTanggal')?.addEventListener('change', function() {
+    document.getElementById('muatTemasGudangAsal').dataset.userModified = 'false';
+    updateMuatTemasGudangAsal();
+});
+document.getElementById('muatTemasGudangAsal')?.addEventListener('change', function() {
+    this.dataset.userModified = 'true';
+    document.getElementById('muatTemasGudangStatus').textContent = 'Gudang asal dipilih secara manual.';
+});
 
 function filterMuatTemasPricelists() {
     const size = document.getElementById('muatTemasForm').dataset.size;
@@ -2266,6 +2326,8 @@ function updateMuatTemasBiaya() {
 
 document.getElementById('muatTemasForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
+    if (muatTemasGudangLoading || muatTemasSaving) return;
+    muatTemasSaving = true;
     const button = document.getElementById('muatTemasSubmit');
     const cancel = document.getElementById('muatTemasCancel');
     const error = document.getElementById('muatTemasError');
@@ -2284,6 +2346,7 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 naik_kapal_id: document.getElementById('muatTemasNaikKapalId').value,
                 kegiatan: 'muat_temas',
                 tanggal_ob: document.getElementById('muatTemasTanggal').value,
+                gudang_asal_id: document.getElementById('muatTemasGudangAsal').value,
                 nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,
                 pricelist_id: document.getElementById('muatTemasPricelist').value,
@@ -2301,7 +2364,8 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
         error.textContent = err.message;
         error.classList.remove('hidden');
     } finally {
-        button.disabled = false;
+        muatTemasSaving = false;
+        button.disabled = muatTemasGudangLoading;
         cancel.disabled = false;
     }
 });
