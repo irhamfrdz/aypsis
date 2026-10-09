@@ -42,6 +42,11 @@
                            class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                     <span class="text-sm text-gray-700 font-medium">🖼️ Pamflet</span>
                 </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="tipe" value="pengumuman" {{ old('tipe', $berita->tipe) === 'pengumuman' ? 'checked' : '' }}
+                           class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                    <span class="text-sm text-gray-700 font-medium">📢 Pengumuman</span>
+                </label>
             </div>
         </div>
 

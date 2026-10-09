@@ -27,7 +27,9 @@ class BeritaController extends Controller
 
     public function create()
     {
-        return view('berita.create');
+        return view('berita.create', [
+            'tipeDefault' => request()->query('tipe') === 'pengumuman' ? 'pengumuman' : 'berita',
+        ]);
     }
 
     public function store(Request $request)
@@ -35,7 +37,7 @@ class BeritaController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'nullable|string',
-            'tipe' => 'required|in:berita,pamflet',
+            'tipe' => 'required|in:berita,pamflet,pengumuman',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
@@ -62,7 +64,7 @@ class BeritaController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('berita.index')->with('success', 'Berita/Pamflet berhasil ditambahkan.');
+        return redirect()->route('berita.index')->with('success', 'Konten berhasil ditambahkan dan akan tampil di PWA sesuai status publish.');
     }
 
     public function edit(Berita $berita)
@@ -75,7 +77,7 @@ class BeritaController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'nullable|string',
-            'tipe' => 'required|in:berita,pamflet',
+            'tipe' => 'required|in:berita,pamflet,pengumuman',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);

@@ -11,7 +11,11 @@
             <h1 class="text-2xl font-bold text-gray-800">📰 Berita & Pamflet</h1>
             <p class="text-gray-500 text-sm mt-1">Kelola konten berita dan pamflet yang ditampilkan di sistem PWA karyawan</p>
         </div>
-        <a href="{{ route('berita.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+            <a href="{{ route('berita.create', ['tipe' => 'pengumuman']) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+                <span aria-hidden="true">📢</span>
+                Buat Pengumuman PWA
+            </a>
+            <a href="{{ route('berita.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Tambah Baru
         </a>
@@ -38,6 +42,7 @@
                     <option value="">Semua</option>
                     <option value="berita" @selected(request('tipe') === 'berita')>Berita</option>
                     <option value="pamflet" @selected(request('tipe') === 'pamflet')>Pamflet</option>
+                    <option value="pengumuman" @selected(request('tipe') === 'pengumuman')>Pengumuman</option>
                 </select>
             </div>
             <div class="flex gap-2">
@@ -85,6 +90,8 @@
                         <td class="px-4 py-3 text-center">
                             @if($item->tipe === 'pamflet')
                                 <span class="inline-flex px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">Pamflet</span>
+                            @elseif($item->tipe === 'pengumuman')
+                                <span class="inline-flex px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">Pengumuman</span>
                             @else
                                 <span class="inline-flex px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Berita</span>
                             @endif
@@ -128,7 +135,7 @@
                         <td colspan="9" class="px-4 py-10 text-center text-gray-400">
                             <div class="flex flex-col items-center gap-2">
                                 <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                                <p class="font-medium">Belum ada berita atau pamflet</p>
+                                <p class="font-medium">Belum ada konten</p>
                                 <a href="{{ route('berita.create') }}" class="text-indigo-600 text-sm hover:underline">Tambah yang pertama</a>
                             </div>
                         </td>

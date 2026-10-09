@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Berita / Pamflet')
+@section('title', 'Tambah Konten PWA')
 
 @section('content')
 <div class="container mx-auto px-4 py-6 max-w-2xl">
@@ -10,7 +10,7 @@
             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Tambah Berita / Pamflet</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Tambah Konten PWA</h1>
             <p class="text-gray-500 text-sm mt-0.5">Konten akan tampil di halaman PWA karyawan</p>
         </div>
     </div>
@@ -33,7 +33,7 @@
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipe Konten <span class="text-red-500">*</span></label>
             <div class="flex gap-4">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="tipe" value="berita" {{ old('tipe', 'berita') === 'berita' ? 'checked' : '' }}
+                    <input type="radio" name="tipe" value="berita" {{ old('tipe', $tipeDefault) === 'berita' ? 'checked' : '' }}
                            class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                     <span class="text-sm text-gray-700 font-medium">📰 Berita</span>
                 </label>
@@ -41,6 +41,11 @@
                     <input type="radio" name="tipe" value="pamflet" {{ old('tipe') === 'pamflet' ? 'checked' : '' }}
                            class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                     <span class="text-sm text-gray-700 font-medium">🖼️ Pamflet</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="tipe" value="pengumuman" {{ old('tipe', $tipeDefault) === 'pengumuman' ? 'checked' : '' }}
+                           class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                    <span class="text-sm text-gray-700 font-medium">📢 Pengumuman</span>
                 </label>
             </div>
         </div>
