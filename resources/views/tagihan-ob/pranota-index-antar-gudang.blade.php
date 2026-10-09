@@ -137,6 +137,11 @@
                                            title="Cetak">
                                             <i class="fas fa-print"></i> Cetak
                                         </a>
+                                        <a href="{{ route('pranota-ob-antar-gudang.excel', $item->id) }}"
+                                           class="text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-1.5 rounded transition duration-150"
+                                           title="Download Excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
                                         @can('pranota-ob-antar-gudang-delete')
                                             <form action="{{ route('pranota-ob-antar-gudang.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus Pranota ini? Tagihan di dalamnya akan dikembalikan ke status belum masuk pranota.')" class="inline">
                                                 @csrf

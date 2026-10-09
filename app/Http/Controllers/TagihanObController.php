@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PranotaObAntarGudangExport;
 use App\Models\Bl;
 use App\Models\MasterPricelistOb;
 use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TagihanObController extends Controller
 {
@@ -552,6 +554,14 @@ class TagihanObController extends Controller
         $pranota = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb'])->findOrFail($id);
 
         return view('tagihan-ob.pranota-print-antar-gudang', compact('pranota'));
+    }
+
+    public function exportPranotaAntarGudang($id)
+    {
+        $pranota = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb'])->findOrFail($id);
+        $filename = 'pranota-ob-antar-gudang-'.preg_replace('/[^A-Za-z0-9_-]+/', '-', $pranota->nomor_pranota).'.xlsx';
+
+        return Excel::download(new PranotaObAntarGudangExport($pranota), $filename);
     }
 
     /**

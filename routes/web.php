@@ -6607,6 +6607,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('pranota-ob-antar-gudang.print')
         ->middleware('can:pranota-ob-antar-gudang-view');
 
+    Route::get('pranota-ob-antar-gudang/{id}/excel', [\App\Http\Controllers\TagihanObController::class, 'exportPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.excel')
+        ->middleware('can:pranota-ob-antar-gudang-view');
+
     Route::delete('pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\TagihanObController::class, 'destroyPranotaAntarGudang'])
         ->name('pranota-ob-antar-gudang.destroy')
         ->middleware('can:pranota-ob-antar-gudang-delete');
