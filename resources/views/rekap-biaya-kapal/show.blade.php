@@ -153,14 +153,14 @@
                                                 {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
                                             </td>
                                             <td class="px-4 py-3">
-                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_supir_detail))
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_detail))
                                                     @php
                                                         $sj = $item->rekapSuratJalan ?? $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
                                                         $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? '-';
                                                     @endphp
                                                     <div class="text-xs font-bold text-indigo-600">{{ $noSuratJalan }}</div>
                                                     <div class="text-[10px] text-gray-400">Surat Jalan</div>
-                                                    @if(isset($item->is_rit_supir_detail))
+                                                    @if(isset($item->is_rit_detail))
                                                         <div class="text-[10px] text-gray-400">Pranota: {{ $item->nomor_invoice }}</div>
                                                     @endif
                                                 @elseif(isset($item->is_pranota_uang_rit))
@@ -174,7 +174,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-xs text-gray-700">
-                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_supir_detail))
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor) || isset($item->is_rit_detail))
                                                     @php
                                                         $sj = $item->rekapSuratJalan ?? $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
                                                         $pengirim = '-';
@@ -189,8 +189,8 @@
                                                     @endphp
                                                     <span class="block"><strong>Pengirim:</strong> {{ $pengirim }}</span>
                                                     <span class="block text-gray-500"><strong>Kontainer:</strong> {{ $noKontainer }}</span>
-                                                    @if(isset($item->is_rit_supir_detail))
-                                                        <span class="block text-gray-500"><strong>Supir:</strong> {{ $item->supir_nama ?? '-' }}</span>
+                                                    @if(isset($item->is_rit_detail))
+                                                        <span class="block text-gray-500"><strong>{{ $item->is_pranota_uang_rit_kenek ? 'Kenek' : 'Supir' }}:</strong> {{ ($item->is_pranota_uang_rit_kenek ? $item->kenek_nama : $item->supir_nama) ?: '-' }}</span>
                                                     @endif
                                                 @elseif(isset($item->is_amprahan) && $item->is_amprahan)
                                                     <strong>Barang:</strong> {{ $item->nama_barang_amprahan ?? '-' }}

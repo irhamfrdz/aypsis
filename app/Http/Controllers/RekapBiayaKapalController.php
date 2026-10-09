@@ -856,12 +856,8 @@ class RekapBiayaKapalController extends Controller
             $pranota->is_pranota_uang_rit_kenek = $pranota instanceof \App\Models\PranotaUangRitKenek;
             $pranota->nomor_invoice = $pranota->no_pranota;
             $pranota->jenis_biaya = $pranota->is_pranota_uang_rit_kenek ? 'Pranota Uang Rit Kenek' : 'Pranota Uang Rit Supir';
-            if ($pranota->is_pranota_uang_rit_kenek) {
-                $biayaKapals->push($pranota);
-            } else {
-                foreach ($ritService->driverRows($pranota) as $row) {
-                    $biayaKapals->push($row);
-                }
+            foreach ($ritService->rowsForSuratJalan($pranota) as $row) {
+                $biayaKapals->push($row);
             }
         }
 

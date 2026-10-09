@@ -30,7 +30,7 @@ class RekapUangRitServiceTest extends TestCase
                 ['nomor' => 'SJ-02', 'biaya' => 90000, 'surat_jalan' => $second],
             ],
         ]);
-        $rows = (new RekapUangRitService)->driverRows($pranota);
+        $rows = (new RekapUangRitService)->rowsForSuratJalan($pranota);
 
         $this->assertCount(2, $rows);
         $this->assertEquals(170000, $rows->sum(fn ($row) => $row->apportioned['total_biaya']));
@@ -47,6 +47,44 @@ class RekapUangRitServiceTest extends TestCase
         $this->assertEquals(80000, $selected->apportioned['total_biaya']);
         $this->assertNull($common);
         $this->assertSame($first, $selected->rekapSuratJalan);
+        $this->assertSame([null, null], $method->invoke(new \App\Http\Controllers\RekapBiayaKapalController,
+            $rows[1], $resolver, 'Kapal A', 'V01', ['01']));
+    }
+
+    public function test_kenek_breakdown_preserves_individual_names_amounts_and_bl_links(): void
+    {
+        $first = (new SuratJalanBongkaran)->forceFill([
+            'nomor_surat_jalan' => 'SJ-01', 'no_bl' => '01', 'kenek' => 'Kenek A',
+            'pengirim' => 'Pengirim A', 'no_kontainer' => 'CONT-A',
+        ]);
+        $second = (new SuratJalanBongkaran)->forceFill([
+            'nomor_surat_jalan' => 'SJ-02', 'no_bl' => '02', 'kenek' => 'Kenek B',
+        ]);
+        $pranota = (new PranotaUangRitKenek)->forceFill([
+            'id' => 43, 'nomor_invoice' => 'PNK-43', 'kenek_nama' => 'Kenek A, Kenek B',
+            'is_pranota_uang_rit' => true, 'is_pranota_uang_rit_kenek' => true,
+            'rekap_rit_items' => [
+                ['nomor' => 'SJ-01', 'biaya' => 40000, 'surat_jalan' => $first],
+                ['nomor' => 'SJ-02', 'biaya' => 50000, 'surat_jalan' => $second],
+            ],
+        ]);
+        $rows = (new RekapUangRitService)->rowsForSuratJalan($pranota);
+        $this->assertCount(2, $rows);
+        $this->assertSame(['Kenek A', 'Kenek B'], $rows->pluck('kenek_nama')->all());
+        $this->assertSame([43, 43], $rows->pluck('id')->all());
+        $this->assertEquals(90000, $rows->sum(fn ($row) => $row->apportioned['total_biaya']));
+        $this->assertSame($first, $rows[0]->rekapSuratJalan);
+        $this->assertSame('CONT-A', $rows[0]->rekapSuratJalan->no_kontainer);
+        $this->assertTrue($rows[0]->is_rit_detail);
+        $this->assertCount(2, $pranota->rekap_rit_items);
+
+        $method = new \ReflectionMethod(\App\Http\Controllers\RekapBiayaKapalController::class, 'splitCostForBl');
+        $resolver = new RekapBlService(collect(), collect());
+        [$selected, $common] = $method->invoke(new \App\Http\Controllers\RekapBiayaKapalController,
+            $rows[0], $resolver, 'Kapal A', 'V01', ['01']);
+        $this->assertEquals(40000, $selected->apportioned['total_biaya']);
+        $this->assertNull($common);
+        $this->assertSame('Kenek A', $selected->kenek_nama);
         $this->assertSame([null, null], $method->invoke(new \App\Http\Controllers\RekapBiayaKapalController,
             $rows[1], $resolver, 'Kapal A', 'V01', ['01']));
     }

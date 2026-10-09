@@ -54,14 +54,18 @@ class RekapUangRitService
     }
 
     /** Keep the original pranota ID for detail links while displaying one row per surat jalan. */
-    public function driverRows($pranota): Collection
+    public function rowsForSuratJalan($pranota): Collection
     {
         return collect($pranota->rekap_rit_items)->map(function ($entry) use ($pranota) {
             $row = clone $pranota;
-            $row->is_rit_supir_detail = true;
+            $row->is_rit_detail = true;
             $row->rekap_rit_items = [$entry];
             $row->setRelation('rekapSuratJalan', $entry['surat_jalan']);
-            $row->supir_nama = $entry['surat_jalan']->supir ?: $pranota->supir_nama;
+            if ($pranota instanceof PranotaUangRitKenek) {
+                $row->kenek_nama = $entry['surat_jalan']->kenek ?: $pranota->kenek_nama;
+            } else {
+                $row->supir_nama = $entry['surat_jalan']->supir ?: $pranota->supir_nama;
+            }
             $amount = round($entry['biaya'], 2);
             $row->apportioned = ['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount];
 
