@@ -19,6 +19,7 @@ class Berita extends Model
         'gambar',
         'is_active',
         'pinned',
+        'kecepatan_teks',
         'published_at',
         'created_by',
     ];
@@ -26,6 +27,7 @@ class Berita extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'pinned' => 'boolean',
+        'kecepatan_teks' => 'integer',
         'published_at' => 'datetime',
     ];
 

@@ -89,7 +89,7 @@
                 <button type="button" data-command="strikeThrough" class="rich-btn" title="Coret"><s>S</s></button>
                 <span class="mx-1 h-6 border-l border-gray-300"></span>
                 <select id="rich-size" class="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm" title="Ukuran teks">
-                    <option value="3">Normal</option><option value="2">Kecil</option><option value="4">Besar</option><option value="5">Sangat besar</option>
+                    <option value="8">8 px</option><option value="10">10 px</option><option value="12">12 px</option><option value="14">14 px</option><option value="16" selected>16 px</option><option value="18">18 px</option><option value="20">20 px</option><option value="24">24 px</option><option value="28">28 px</option><option value="32">32 px</option><option value="36">36 px</option><option value="48">48 px</option>
                 </select>
                 <input id="rich-color" type="color" value="#1f2937" class="h-8 w-9 cursor-pointer rounded border border-gray-300 bg-white p-1" title="Warna teks">
                 <span class="mx-1 h-6 border-l border-gray-300"></span>
@@ -104,6 +104,16 @@
                  class="rich-editor hidden min-h-48 rounded-b-xl border border-t-0 border-gray-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                  data-placeholder="Tulis teks pengumuman yang akan dibaca karyawan di PWA..."></div>
             @error('konten') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div id="running-speed-wrap" class="hidden">
+            <label for="kecepatan_teks" class="mb-1.5 block text-sm font-semibold text-gray-700">Kecepatan teks berjalan</label>
+            <div class="flex items-center gap-3">
+                <input id="kecepatan_teks" name="kecepatan_teks" type="number" min="1" max="10" step="1" value="{{ old('kecepatan_teks', 5) }}"
+                       class="w-28 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-transparent focus:ring-2 focus:ring-indigo-500">
+                <span class="text-sm text-gray-500">1 paling lambat · 10 paling cepat</span>
+            </div>
+            @error('kecepatan_teks') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>
 
         {{-- Tanggal Publish --}}
@@ -169,6 +179,7 @@ const kontenLabel = document.querySelector('label[for="konten"]');
 const kontenInput = document.getElementById('konten');
 const richToolbar = document.getElementById('rich-toolbar');
 const richEditor = document.getElementById('rich-editor');
+const runningSpeedWrap = document.getElementById('running-speed-wrap');
 
 function updateTipeFields() {
     const isPengumuman = document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman';
@@ -178,6 +189,7 @@ function updateTipeFields() {
     richToolbar.classList.toggle('hidden', !isPengumuman);
     richEditor.classList.toggle('hidden', !isPengumuman);
     richEditor.classList.toggle('flex', isPengumuman);
+    runningSpeedWrap.classList.toggle('hidden', !isPengumuman);
     kontenInput.placeholder = 'Tulis isi berita atau keterangan pamflet...';
     kontenInput.required = false;
 }
@@ -202,7 +214,13 @@ document.querySelectorAll('.rich-btn').forEach(button => {
 });
 document.getElementById('rich-size').addEventListener('change', event => {
     richEditor.focus();
-    document.execCommand('fontSize', false, event.target.value);
+    document.execCommand('fontSize', false, '7');
+    richEditor.querySelectorAll('font[size="7"]').forEach(font => {
+        const span = document.createElement('span');
+        span.style.fontSize = `${event.target.value}px`;
+        font.replaceWith(span);
+        while (font.firstChild) span.appendChild(font.firstChild);
+    });
 });
 document.getElementById('rich-color').addEventListener('input', event => {
     richEditor.focus();

@@ -39,6 +39,7 @@ class BeritaController extends Controller
             'konten' => 'nullable|string|required_if:tipe,pengumuman',
             'tipe' => 'required|in:berita,pamflet,pengumuman',
             'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'kecepatan_teks' => 'nullable|integer|min:1|max:10',
             'published_at' => 'nullable|date',
         ]);
 
@@ -60,6 +61,7 @@ class BeritaController extends Controller
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
             'pinned' => $request->boolean('pinned', false),
+            'kecepatan_teks' => $request->input('kecepatan_teks', 5),
             'published_at' => $request->published_at ? Carbon::parse($request->published_at) : Carbon::now(),
             'created_by' => Auth::id(),
         ]);
@@ -81,6 +83,7 @@ class BeritaController extends Controller
             'konten' => 'nullable|string|required_if:tipe,pengumuman',
             'tipe' => 'required|in:berita,pamflet,pengumuman',
             'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'kecepatan_teks' => 'nullable|integer|min:1|max:10',
             'published_at' => 'nullable|date',
         ]);
 
@@ -110,6 +113,7 @@ class BeritaController extends Controller
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
             'pinned' => $request->boolean('pinned', false),
+            'kecepatan_teks' => $request->input('kecepatan_teks', $berita->kecepatan_teks ?? 5),
             'published_at' => $request->published_at ? Carbon::parse($request->published_at) : $berita->published_at,
         ]);
 
@@ -189,7 +193,7 @@ class BeritaController extends Controller
                     $value = trim($attribute->value);
                     $allowed = ($tag === 'font' && $name === 'size' && preg_match('/^[1-7]$/', $value))
                         || ($tag === 'font' && $name === 'color' && preg_match('/^#[0-9a-f]{3,8}$/i', $value))
-                        || ($name === 'style' && preg_match('/^text-align:\s*(left|center|right|justify);?$/i', $value));
+                        || ($name === 'style' && preg_match('/^(text-align:\s*(left|center|right|justify)|font-size:\s*(8|[9]|[1-6][0-9]|7[0-2])px);?$/i', $value));
 
                     if (! $allowed) {
                         $child->removeAttribute($attribute->name);
