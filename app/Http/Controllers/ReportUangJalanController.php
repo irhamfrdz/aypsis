@@ -15,6 +15,47 @@ use Illuminate\Http\Request;
 
 class ReportUangJalanController extends Controller
 {
+    private function invoiceIds($value): array
+    {
+        $decoded = is_string($value) ? json_decode($value, true) : $value;
+        $ids = is_array($decoded) ? $decoded : preg_split('/[,;]+/', (string) $value);
+
+        return array_values(array_unique(array_filter(array_map('intval', $ids))));
+    }
+
+    private function invoiceUangJalan($invoice, $uangJalans)
+    {
+        $candidates = $uangJalans->filter(function ($uj) use ($invoice) {
+            if ($invoice->surat_jalan_source === 'bongkar') {
+                return (int) $uj->surat_jalan_bongkaran_id === (int) $invoice->surat_jalan_id;
+            }
+            if ($invoice->surat_jalan_source === 'regular') {
+                return (int) $uj->surat_jalan_id === (int) $invoice->surat_jalan_id;
+            }
+
+            return (int) $uj->surat_jalan_id === (int) $invoice->surat_jalan_id
+                || (int) $uj->surat_jalan_bongkaran_id === (int) $invoice->surat_jalan_id;
+        })->sortByDesc('tanggal_uang_jalan');
+        $links = $candidates->groupBy(fn ($uj) => $uj->surat_jalan_id ? 'regular:'.$uj->surat_jalan_id : 'bongkar:'.$uj->surat_jalan_bongkaran_id);
+        if ($links->count() === 1) {
+            return $candidates->first();
+        }
+        // Older invoices did not save the table source. Match the recipient to the driver.
+        $normalize = fn ($name) => preg_replace('/[^a-z0-9]/', '', strtolower((string) $name));
+        $recipient = $normalize($invoice->penerima);
+        $matches = $candidates->filter(function ($uj) use ($normalize, $recipient) {
+            $sj = $uj->surat_jalan_id ? $uj->suratJalan : $uj->suratJalanBongkaran;
+            $driver = $sj?->supirKaryawan;
+
+            return $recipient !== '' && in_array($recipient, array_map($normalize, [
+                $sj?->supir, $driver?->nama_lengkap, $driver?->nama_panggilan,
+            ]), true);
+        });
+        $matchedLinks = $matches->groupBy(fn ($uj) => $uj->surat_jalan_id ? 'regular:'.$uj->surat_jalan_id : 'bongkar:'.$uj->surat_jalan_bongkaran_id);
+
+        return $matchedLinks->count() === 1 ? $matches->first() : null;
+    }
+
     public function index(Request $request)
     {
         return view('report-uang-jalan.select-date');
@@ -48,7 +89,7 @@ class ReportUangJalanController extends Controller
         $allNoSjs = $allNoSjs->filter()->unique();
 
         // Fetch adjustment invoices
-        $adjInvoices = InvoiceAktivitasLain::with(['pembayarans', 'suratJalan'])
+        $adjInvoices = InvoiceAktivitasLain::with('pembayarans')
             ->whereIn('surat_jalan_id', $allSjIds)
             ->where(function ($q) {
                 $q->where('jenis_aktivitas', 'like', '%Adjusment%')
@@ -71,29 +112,32 @@ class ReportUangJalanController extends Controller
         $directPayments = PembayaranAktivitasLain::whereNotNull('invoice_ids')->get();
         $dpByInvoiceId = [];
         foreach ($directPayments as $dp) {
-            $ids = explode(',', $dp->invoice_ids);
+            $ids = $this->invoiceIds($dp->invoice_ids);
             foreach ($ids as $id) {
                 $trimmedId = trim($id);
                 if ($trimmedId) {
                     $dpByInvoiceId[$trimmedId][] = $dp;
                 }
             }
-            try {
-                $jsonIds = json_decode($dp->invoice_ids, true);
-                if (is_array($jsonIds)) {
-                    foreach ($jsonIds as $id) {
-                        $dpByInvoiceId[$id][] = $dp;
-                    }
-                }
-            } catch (\Exception $e) {
+        }
+
+        // Assign each invoice to one UJ, keeping regular and bongkar IDs separate.
+        $adjByUjId = collect();
+        $representedInvoices = [];
+        foreach ($adjInvoices as $invoice) {
+            $target = $this->invoiceUangJalan($invoice, $uangJalans);
+            if ($target) {
+                $adjByUjId[$target->id] = ($adjByUjId[$target->id] ?? collect())->concat([$invoice]);
+                $representedInvoices[] = (int) $invoice->id;
             }
         }
 
-        // Group by surat_jalan_id for invoices
-        $adjBySjId = $adjInvoices->groupBy('surat_jalan_id');
-
         // Group pembayarans by no_surat_jalan
-        $adjPembayaransGrouped = $adjPembayarans->filter(function ($dp) {
+        $adjPembayaransGrouped = $adjPembayarans->filter(function ($dp) use ($representedInvoices) {
+            $invoiceIds = $this->invoiceIds($dp->invoice_ids);
+            if ($invoiceIds && ! array_diff($invoiceIds, $representedInvoices)) {
+                return false;
+            }
             $type = strtolower($dp->jenis_aktivitas ?? '');
 
             return str_contains($type, 'adjusment') || str_contains($type, 'adjustment');
@@ -121,8 +165,8 @@ class ReportUangJalanController extends Controller
             }
 
             // Add invoice adjustments
-            if ($sjId && isset($adjBySjId[$sjId])) {
-                $ujAdjs = $ujAdjs->merge($adjBySjId[$sjId]);
+            if (isset($adjByUjId[$uj->id])) {
+                $ujAdjs = $ujAdjs->concat($adjByUjId[$uj->id]);
             }
 
             // Add pembayaran adjustments
@@ -309,17 +353,34 @@ class ReportUangJalanController extends Controller
         $existingPaymentIds = $adjustmentsByUjId->flatten()->filter(function ($item) {
             return $item instanceof PembayaranAktivitasLain;
         })->pluck('id')->all();
+        $representedInvoices = $adjustmentsByUjId->flatten()->filter(fn ($item) => $item instanceof InvoiceAktivitasLain)->keyBy('id');
+        $invoiceLinks = $representedInvoices->isEmpty() ? collect()
+            : \Illuminate\Support\Facades\DB::table('pembayaran_invoice_pivot')
+                ->whereIn('pembayaran_id', $payments->pluck('id'))->get()->groupBy('pembayaran_id');
 
         foreach ($payments as $payment) {
             if (in_array($payment->id, $existingPaymentIds, true)) {
                 continue;
             }
+            $links = $invoiceLinks->get($payment->id, collect());
+            $linkedIds = array_unique(array_merge($this->invoiceIds($payment->invoice_ids), $links->pluck('invoice_id')->map(fn ($id) => (int) $id)->all()));
+            $coveredIds = array_values(array_intersect($linkedIds, $representedInvoices->keys()->map(fn ($id) => (int) $id)->all()));
+            if ($linkedIds && count($coveredIds) === count($linkedIds)) {
+                continue;
+            }
+            $coveredAmount = $links->whereIn('invoice_id', $coveredIds)->sum('jumlah_dibayar');
+            if ($coveredIds && $coveredAmount == 0) {
+                $coveredAmount = $representedInvoices->only($coveredIds)->sum(fn ($invoice) => (float) ($invoice->grand_total ?: $invoice->total));
+            }
 
             $fakeUj = new UangJalan;
-            $fakeUj->id = 'pal_'.$payment->id;
+            $fakeUj->id = -(3000000000 + (int) $payment->id);
             $fakeUj->tanggal_uang_jalan = Carbon::parse($payment->tanggal);
             $fakeUj->nomor_uang_jalan = $payment->nomor ?: '-';
             $amount = (float) ($payment->jumlah ?? 0);
+            if ($coveredAmount > 0) {
+                $amount = ($amount < 0 ? -1 : 1) * max(0, abs($amount) - $coveredAmount);
+            }
             // Bank debit is a refund of the expense and reduces the report total.
             $reportAmount = strtolower(trim($payment->debit_kredit ?? '')) === 'debit' ? -abs($amount) : $amount;
             $fakeUj->jumlah_uang_jalan = $reportAmount;

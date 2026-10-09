@@ -26,6 +26,7 @@ class InvoiceAktivitasLain extends Model
         'klasifikasi_biaya_id',
         'barang_detail',
         'surat_jalan_id',
+        'surat_jalan_source',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
         'detail_pembayaran',

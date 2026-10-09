@@ -6,6 +6,7 @@ use App\Models\BiayaKapal;
 use App\Models\Gudang;
 use App\Models\PranotaObMuatTemas;
 use App\Services\RekapBlService;
+use App\Services\RekapUangRitService;
 use Illuminate\Http\Request;
 
 class RekapBiayaKapalController extends Controller
@@ -257,9 +258,7 @@ class RekapBiayaKapalController extends Controller
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
-        }
-
-        elseif ($item->umumDetails->count() > 0) {
+        } elseif ($item->umumDetails->count() > 0) {
             $hasDetails = true;
             $details = $item->umumDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
                 && strtolower(trim($d->voyage ?? '')) === $voyageLower);
@@ -506,6 +505,9 @@ class RekapBiayaKapalController extends Controller
         if ($lokasi === '') {
             return true;
         }
+        if (isset($record->is_pranota_uang_rit)) {
+            return $lokasi === 'jakarta' && ! empty($record->rekap_rit_items);
+        }
         if ($record instanceof PranotaObMuatTemas) {
             // Muat Temas entries have already been filtered by destination location.
             return ! empty($record->rekap_ob_temas_items);
@@ -601,6 +603,21 @@ class RekapBiayaKapalController extends Controller
             }
             if (! $hasDetails) {
                 $add($record->apportioned, $parentRatio);
+            }
+        } elseif (isset($record->is_pranota_uang_rit)) {
+            $selected->rekap_rit_items = [];
+            $common->rekap_rit_items = [];
+            foreach ($record->rekap_rit_items as $entry) {
+                $amount = $entry['biaya'];
+                $ratio = $resolver->transportRatio($entry['surat_jalan'], $kapal, $voyage, $bl);
+                $add(['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount],
+                    $ratio);
+                if ($ratio !== 0.0) {
+                    $target = $ratio === null ? $common : $selected;
+                    $entries = $target->rekap_rit_items;
+                    $entries[] = $entry;
+                    $target->rekap_rit_items = $entries;
+                }
             }
         } elseif (isset($record->is_uang_jalan) || isset($record->is_tagihan_vendor)) {
             $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
@@ -809,6 +826,37 @@ class RekapBiayaKapalController extends Controller
             $uj->jenis_biaya = 'Uang Jalan';
 
             $biayaKapals->push($uj);
+        }
+
+        // Resolve every saved surat jalan, including those beyond the first FK reference.
+        $ritService = new RekapUangRitService;
+        $ritPranotas = collect();
+        foreach ([\App\Models\PranotaUangRit::class, \App\Models\PranotaUangRitKenek::class] as $model) {
+            foreach ($model::with(['suratJalan', 'suratJalanBongkaran'])
+                ->where('status', '!=', 'cancelled')->get() as $pranota) {
+                $ritPranotas->push($pranota);
+            }
+        }
+        $references = $ritPranotas->flatMap(fn ($pranota) => $ritService->references($pranota));
+        $muat = \App\Models\SuratJalan::with('prospeks')
+            ->whereIn('no_surat_jalan', $references->where('bongkaran', false)->pluck('number')->unique())
+            ->get()->keyBy('no_surat_jalan');
+        $bongkaran = \App\Models\SuratJalanBongkaran::whereIn('nomor_surat_jalan',
+            $references->where('bongkaran', true)->pluck('number')->unique())
+            ->get()->keyBy('nomor_surat_jalan');
+        foreach ($ritPranotas as $pranota) {
+            $entries = $ritService->entries($pranota, $muat, $bongkaran, $kapal, $voyage, $lokasi);
+            if ($entries->isEmpty()) {
+                continue;
+            }
+            $total = round($entries->sum('biaya'), 2);
+            $pranota->rekap_rit_items = $entries->all();
+            $pranota->apportioned = ['nominal' => $total, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $total];
+            $pranota->is_pranota_uang_rit = true;
+            $pranota->is_pranota_uang_rit_kenek = $pranota instanceof \App\Models\PranotaUangRitKenek;
+            $pranota->nomor_invoice = $pranota->no_pranota;
+            $pranota->jenis_biaya = $pranota->is_pranota_uang_rit_kenek ? 'Pranota Uang Rit Kenek' : 'Pranota Uang Rit Supir';
+            $biayaKapals->push($pranota);
         }
 
         // Fetch Tagihan Vendor Supir (Pranota Invoice Vendor Supir details)

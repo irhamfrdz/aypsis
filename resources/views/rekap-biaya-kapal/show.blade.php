@@ -41,6 +41,9 @@
     </div>
 
     <!-- Summary Metrics -->
+    @if($biayaKapals->contains(fn ($item) => isset($item->is_pranota_uang_rit)))
+        <p class="mb-4 text-sm text-gray-600">Pranota uang rit gabungan dialokasikan rata per surat jalan sesuai rincian pranota. Biaya mencakup uang rit dan adjustment sebelum potongan hutang, tabungan, dan BPJS.</p>
+    @endif
     @if(!empty($bl))
         <p class="mb-4 text-sm text-gray-600">Seluruh sumber biaya disaring untuk BL {{ $bl }}. Biaya tanpa hubungan BL ditampilkan sebagai biaya umum kapal dan tidak masuk total BL. Biaya gabungan beberapa BL dihitung proporsional berdasarkan nominal per kontainer bila tersedia, atau jumlah referensi kontainer / BL.</p>
     @endif
@@ -157,6 +160,9 @@
                                                     @endphp
                                                     <div class="text-xs font-bold text-indigo-600">{{ $noSuratJalan }}</div>
                                                     <div class="text-[10px] text-gray-400">Surat Jalan</div>
+                                                @elseif(isset($item->is_pranota_uang_rit))
+                                                    <div class="text-xs font-bold text-indigo-600">{{ $item->nomor_invoice }}</div>
+                                                    <div class="text-[10px] text-gray-400">Pranota Uang Rit</div>
                                                 @elseif(isset($item->is_amprahan) && $item->is_amprahan)
                                                     <div class="text-xs font-bold text-amber-600">{{ $item->stockAmprahan->nomor_bukti ?? '-' }}</div>
                                                     <div class="text-[10px] text-gray-400">Bukti Amprahan</div>
@@ -182,6 +188,9 @@
                                                     <span class="block text-gray-500"><strong>Kontainer:</strong> {{ $noKontainer }}</span>
                                                 @elseif(isset($item->is_amprahan) && $item->is_amprahan)
                                                     <strong>Barang:</strong> {{ $item->nama_barang_amprahan ?? '-' }}
+                                                @elseif(isset($item->is_pranota_uang_rit))
+                                                    <span class="block"><strong>{{ $item->is_pranota_uang_rit_kenek ? 'Kenek' : 'Supir' }}:</strong> {{ $item->is_pranota_uang_rit_kenek ? $item->kenek_nama : $item->supir_nama }}</span>
+                                                    <span class="block text-gray-500"><strong>Surat Jalan:</strong> {{ collect($item->rekap_rit_items)->pluck('nomor')->implode(', ') }}</span>
                                                 @else
                                                     {{ isset($item->buruhBatamDetails) && $item->buruhBatamDetails->isNotEmpty() ? 'BURUH BONGKAR BATAM' : ($item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-') }}
                                                 @endif
@@ -233,7 +242,11 @@
                                                 Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                             </td>
                                             <td class="px-4 py-3 text-center whitespace-nowrap no-print">
-                                                @if(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas)
+                                                @if(isset($item->is_pranota_uang_rit))
+                                                    <a href="{{ route($item->is_pranota_uang_rit_kenek ? 'pranota-uang-rit-kenek.show' : 'pranota-uang-rit.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota Uang Rit">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @elseif(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas)
                                                     <a href="{{ route('pranota-ob.muat-temas.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB Muat Temas">
                                                         <i class="fas fa-eye text-xs"></i>
                                                     </a>
