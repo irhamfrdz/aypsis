@@ -125,7 +125,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
                         '', // Parkir
                         '', // Total Lain-lain
                         (float) $displayNominal, // Adj. UJ
-                        '', // GRAND TOTAL
+                        (float) $displayNominal, // GRAND TOTAL adjustment row
                         $adjLabel, // Keterangan Adj.
                         '', // Dibuat Oleh
                     ];
