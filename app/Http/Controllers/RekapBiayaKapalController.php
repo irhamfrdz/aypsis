@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
+use App\Models\Gudang;
+use App\Models\PranotaObMuatTemas;
 use App\Services\RekapBlService;
 use Illuminate\Http\Request;
 
@@ -346,7 +348,7 @@ class RekapBiayaKapalController extends Controller
         $rows = collect();
         foreach ([\App\Models\Manifest::class, \App\Models\Bl::class, \App\Models\Prospek::class,
             \App\Models\SuratJalanBongkaran::class, \App\Models\SuratJalanBongkaranBatam::class,
-            \App\Models\PranotaOb::class] as $model) {
+            \App\Models\PranotaOb::class, PranotaObMuatTemas::class] as $model) {
             $rows = $rows->concat($model::get(['nama_kapal', 'no_voyage']));
         }
 
@@ -504,6 +506,10 @@ class RekapBiayaKapalController extends Controller
         if ($lokasi === '') {
             return true;
         }
+        if ($record instanceof PranotaObMuatTemas) {
+            // Muat Temas entries have already been filtered by destination location.
+            return ! empty($record->rekap_ob_temas_items);
+        }
         if ($record instanceof BiayaKapal) {
             $parentLocation = $this->normalizeLocation($record->lokasi);
             $hasDetails = false;
@@ -600,7 +606,8 @@ class RekapBiayaKapalController extends Controller
             $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
             $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
         } elseif (isset($record->is_pranota_ob)) {
-            foreach ($record->getEnrichedItems() as $entry) {
+            $entries = $record instanceof PranotaObMuatTemas ? $record->rekap_ob_temas_items : $record->getEnrichedItems();
+            foreach ($entries as $entry) {
                 $amount = (float) ($entry['biaya'] ?? 0);
                 $add(['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount], $resolver->ratio($entry, $bl));
             }
@@ -710,6 +717,42 @@ class RekapBiayaKapalController extends Controller
             $pranota->nomor_invoice = $pranota->nomor_pranota;
             $pranota->tanggal = $pranota->tanggal_ob;
             $pranota->jenis_biaya = 'Pranota OB';
+            $biayaKapals->push($pranota);
+        }
+
+        // Include the saved Muat Temas costs and adjustment once, regardless of payment status.
+        $pranotaTemas = PranotaObMuatTemas::with('items')
+            ->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage)
+            ->where('status', '!=', 'cancelled')->get();
+        $gudangLocations = $lokasi === '' || $pranotaTemas->isEmpty() ? collect()
+            : Gudang::get(['nama_gudang', 'lokasi'])->keyBy(fn ($gudang) => strtoupper(trim($gudang->nama_gudang)));
+        foreach ($pranotaTemas as $pranota) {
+            $entries = collect($pranota->getPaymentItems())->filter(function ($entry) use ($lokasi, $gudangLocations) {
+                if ($lokasi === '') {
+                    return true;
+                }
+                $destination = strtoupper(trim($entry['tujuan_gudang'] ?? ''));
+                $location = $this->normalizeLocation($entry['lokasi'] ?? '')
+                    ?? $this->normalizeLocation($gudangLocations->get($destination)?->lokasi)
+                    ?? $this->normalizeLocation($destination);
+                if ($location === null && preg_match('/\bJKT\b/', $destination)) {
+                    $location = 'jakarta';
+                }
+
+                return $location === $lokasi;
+            })->values()->all();
+            if (empty($entries)) {
+                continue;
+            }
+            $totalBiaya = round(collect($entries)->sum('biaya'), 2);
+            $pranota->rekap_ob_temas_items = $entries;
+            $pranota->apportioned = ['nominal' => $totalBiaya, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $totalBiaya];
+            $pranota->display_total = $totalBiaya;
+            $pranota->is_pranota_ob = true;
+            $pranota->is_pranota_ob_muat_temas = true;
+            $pranota->nomor_invoice = $pranota->nomor_pranota;
+            $pranota->tanggal = $pranota->tanggal_pranota;
+            $pranota->jenis_biaya = 'Pranota OB Muat Temas';
             $biayaKapals->push($pranota);
         }
 

@@ -325,4 +325,57 @@ class RekapBiayaKapalTest extends TestCase
         $unfiltered = $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'Sinar Batam', 'voyage' => 'V101']));
         $unfiltered->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 24000.0);
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function muat_temas_pranota_uses_saved_costs_and_adjustment_with_location_and_bl_filters()
+    {
+        $this->actingAs($this->user);
+        $pranota = \App\Models\PranotaObMuatTemas::create([
+            'nomor_pranota' => 'PMT-10-26-000001', 'tanggal_pranota' => '2026-10-09',
+            'nama_kapal' => 'KM BELIK MAS', 'no_voyage' => 'BELIK01',
+            'nominal' => 575000, 'adjustment' => 57500, 'grand_total' => 632500,
+            'status' => 'unpaid', 'created_by' => $this->user->id,
+        ]);
+        foreach ([['TEST-JKT', 'TEMAS JKT', 250000], ['TEST-BTM', 'TEMAS BATAM', 325000]] as [$container, $destination, $amount]) {
+            $tagihanId = \Illuminate\Support\Facades\DB::table('tagihan_ob')->insertGetId([
+                'kapal' => 'KM BELIK MAS', 'voyage' => 'BELIK01', 'kegiatan' => 'MUAT TEMAS',
+                'tanggal_ob' => '2026-10-01', 'nomor_kontainer' => $container,
+                'nama_supir' => 'SUPIR UJI', 'barang' => 'BARANG UJI', 'status_kontainer' => 'full',
+                'biaya' => 999999, // The rekap must use the immutable snapshot, not this live cost.
+            ]);
+            $pranota->items()->create(['tagihan_ob_id' => $tagihanId, 'snapshot' => [
+                'nomor_kontainer' => $container, 'tujuan_gudang' => $destination,
+                'biaya' => $amount, 'nama_supir' => 'SUPIR UJI',
+            ]]);
+        }
+        $criteria = ['kapal' => 'KM BELIK MAS', 'voyage' => 'BELIK01'];
+        $response = $this->get(route('rekap-biaya-kapal.show', $criteria));
+        $response->assertOk()->assertSee('Pranota OB Muat Temas')
+            ->assertSee(route('pranota-ob.muat-temas.show', $pranota->id), false)
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 632500.0);
+        foreach (['jakarta' => 275000.0, 'batam' => 357500.0] as $location => $total) {
+            $this->get(route('rekap-biaya-kapal.show', $criteria + ['lokasi' => $location]))
+                ->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === $total);
+        }
+
+        // The container-to-BL resolver must retain the proportional adjustment.
+        $record = $response->viewData('biayaKapals')->first();
+        $resolver = new \App\Services\RekapBlService(collect([
+            (object) ['nomor_kontainer' => 'TEST-JKT', 'nomor_bl' => '01'],
+            (object) ['nomor_kontainer' => 'TEST-BTM', 'nomor_bl' => '02'],
+        ]), collect());
+        $split = new \ReflectionMethod(\App\Http\Controllers\RekapBiayaKapalController::class, 'splitCostForBl');
+        [$selected, $common] = $split->invoke(new \App\Http\Controllers\RekapBiayaKapalController, $record, $resolver, 'KM BELIK MAS', 'BELIK01', ['01']);
+        $this->assertEquals(275000, $selected->apportioned['total_biaya']);
+        $this->assertNull($common);
+
+        $pranota->update(['status' => 'paid']);
+        $this->get(route('rekap-biaya-kapal.show', $criteria))->assertOk()
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 632500.0);
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM BELIK MAS', 'voyage' => 'BELIK02']))
+            ->assertOk()->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 0.0);
+        $pranota->update(['status' => 'cancelled']);
+        $this->get(route('rekap-biaya-kapal.show', $criteria))->assertOk()
+            ->assertViewHas('summary', fn ($summary) => (float) $summary['grand_total'] === 0.0);
+    }
 }

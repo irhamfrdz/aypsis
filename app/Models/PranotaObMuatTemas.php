@@ -46,6 +46,8 @@ class PranotaObMuatTemas extends Model
                 'supir' => $snapshot->nama_supir ?? '-',
                 'size' => $snapshot->size_kontainer ?? '-',
                 'biaya' => (float) ($snapshot->biaya ?? 0),
+                'tujuan_gudang' => $snapshot->tujuan_gudang ?? null,
+                'lokasi' => $snapshot->lokasi ?? null,
             ];
         })->all();
     }

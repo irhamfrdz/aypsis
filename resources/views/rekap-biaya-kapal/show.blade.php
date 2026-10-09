@@ -233,7 +233,11 @@
                                                 Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                             </td>
                                             <td class="px-4 py-3 text-center whitespace-nowrap no-print">
-                                                @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
+                                                @if(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas)
+                                                    <a href="{{ route('pranota-ob.muat-temas.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB Muat Temas">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @elseif(isset($item->is_pranota_ob) && $item->is_pranota_ob)
                                                     <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
                                                         <i class="fas fa-eye text-xs"></i>
                                                     </a>
