@@ -15,7 +15,6 @@ use App\Models\NaikKapal;
 use App\Models\PranotaOb;
 use App\Models\Prospek;
 use App\Models\StockKontainer;
-use App\Models\SuratJalan;
 use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -2817,12 +2816,12 @@ class ObController extends Controller
         ]);
         $isMuatTemas = $request->input('kegiatan') === 'muat_temas';
         $temasPricelist = null;
-        $suratJalan = null;
+        $nomorSuratJalan = null;
         $temasSupir = null;
         if ($isMuatTemas) {
             $validated = $request->validate([
                 'tanggal_ob' => 'required|date',
-                'nomor_surat_jalan' => 'required|string|exists:surat_jalans,no_surat_jalan',
+                'nomor_surat_jalan' => 'required|string|max:255',
                 'status_kontainer' => 'required|in:full,empty',
                 'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
                 'is_ckls_mobil_panjang' => 'sometimes|boolean',
@@ -2849,7 +2848,7 @@ class ObController extends Controller
                     'pricelist_id' => 'Pilih pricelist tujuan Temas yang sesuai ukuran dan status kontainer.',
                 ]);
             }
-            $suratJalan = SuratJalan::where('no_surat_jalan', $validated['nomor_surat_jalan'])->firstOrFail();
+            $nomorSuratJalan = trim($validated['nomor_surat_jalan']);
         }
 
         try {
@@ -2934,7 +2933,7 @@ class ObController extends Controller
             $naikKapal->supir_id = $isMuatTemas ? $temasSupir->id : null;
             $naikKapal->tanggal_ob = $isMuatTemas ? $request->tanggal_ob : now();
             $naikKapal->catatan_ob = $isMuatTemas
-                ? 'OB Muat Temas - Surat Jalan: '.$suratJalan->no_surat_jalan
+                ? 'OB Muat Temas - Surat Jalan: '.$nomorSuratJalan
                 : 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             $naikKapal->is_tl = true;
             $naikKapal->save();
@@ -2953,7 +2952,7 @@ class ObController extends Controller
                     'biaya' => $request->boolean('is_ckls_mobil_panjang') ? 250000 : $temasPricelist->biaya,
                     'is_ckls_mobil_panjang' => $request->boolean('is_ckls_mobil_panjang'),
                     'naik_kapal_id' => $naikKapal->id,
-                    'surat_jalan_id' => $suratJalan->id,
+                    'nomor_surat_jalan' => $nomorSuratJalan,
                     'gudang_asal_id' => $validated['gudang_asal_id'],
                     'keterangan' => 'OB Muat Temas - '.$temasPricelist->gudangTujuan->nama_gudang.' - Pricelist #'.$temasPricelist->id,
                     'created_by' => $user->id,
@@ -2971,7 +2970,7 @@ class ObController extends Controller
                     'asal_gudang_id' => $validated['gudang_asal_id'],
                     'gudang_id' => $temasPricelist->gudang_tujuan_id,
                     'keterangan' => 'OB Muat Temas: '.$naikKapal->asal_kontainer.' -> '.$naikKapal->ke
-                        .'. Surat Jalan: '.$suratJalan->no_surat_jalan
+                        .'. Surat Jalan: '.$nomorSuratJalan
                         .'. Supir: '.($temasSupir->nama_panggilan ?: $temasSupir->nama_lengkap)
                         .'. Kapal: '.$naikKapal->nama_kapal.'. Voyage: '.$naikKapal->no_voyage,
                     'created_by' => $user->id,

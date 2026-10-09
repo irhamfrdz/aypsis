@@ -20,6 +20,7 @@ class TagihanOb extends Model
         'nomor_kontainer',
         'nama_supir',
         'surat_jalan_id',
+        'nomor_surat_jalan',
         'gudang_asal_id',
         'barang',
         'status_kontainer', // full atau empty

@@ -21,7 +21,7 @@
                 </div>
                 <div>
                     <label for="muatTemasSuratJalan" class="block text-sm font-medium text-gray-700 mb-1">Nomor Surat Jalan <span class="text-red-500">*</span></label>
-                    <input type="text" id="muatTemasSuratJalan" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Masukkan nomor surat jalan yang sudah terdaftar">
+                    <input type="text" id="muatTemasSuratJalan" required maxlength="255" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Masukkan nomor surat jalan manual, contoh: SC 0011687">
                 </div>
                 <div>
                     <label for="muatTemasSupir" class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-500">*</span></label>

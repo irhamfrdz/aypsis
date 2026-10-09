@@ -112,6 +112,13 @@
                 </div>
             </div>
 
+            @if($tagihanOb->nomor_surat_jalan)
+                <div class="mb-6">
+                    <span class="font-medium text-gray-700">Nomor Surat Jalan:</span>
+                    <span class="text-gray-900 font-semibold">{{ $tagihanOb->nomor_surat_jalan }}</span>
+                </div>
+            @endif
+
             @if($tagihanOb->keterangan)
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold text-blue-600 mb-4 flex items-center">
