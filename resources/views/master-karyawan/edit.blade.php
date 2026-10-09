@@ -226,6 +226,15 @@
                         <option value="GARASAI JAKARTA" {{ old('penempatan', $karyawan->penempatan ?? '') == 'GARASAI JAKARTA' ? 'selected' : '' }}>GARASAI JAKARTA</option>
                         <option value="KANTOR BATAM" {{ old('penempatan', $karyawan->penempatan ?? '') == 'KANTOR BATAM' ? 'selected' : '' }}>KANTOR BATAM</option>
                         <option value="GARASI BATAM" {{ old('penempatan', $karyawan->penempatan ?? '') == 'GARASI BATAM' ? 'selected' : '' }}>GARASI BATAM</option>
+                        <option value="BATAM HARIAN" {{ old('penempatan', $karyawan->penempatan ?? '') == 'BATAM HARIAN' ? 'selected' : '' }}>BATAM HARIAN</option>
+                        <option value="BATAM LAPANGAN" {{ old('penempatan', $karyawan->penempatan ?? '') == 'BATAM LAPANGAN' ? 'selected' : '' }}>BATAM LAPANGAN</option>
+                        <option value="BATAM SUPIR" {{ old('penempatan', $karyawan->penempatan ?? '') == 'BATAM SUPIR' ? 'selected' : '' }}>BATAM SUPIR</option>
+                        <option value="BATAM TEKNISI" {{ old('penempatan', $karyawan->penempatan ?? '') == 'BATAM TEKNISI' ? 'selected' : '' }}>BATAM TEKNISI</option>
+                        <option value="JAKARTA HARIAN" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA HARIAN' ? 'selected' : '' }}>JAKARTA HARIAN</option>
+                        <option value="JAKARTA KENEK" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA KENEK' ? 'selected' : '' }}>JAKARTA KENEK</option>
+                        <option value="JAKARTA SATPAM" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA SATPAM' ? 'selected' : '' }}>JAKARTA SATPAM</option>
+                        <option value="JAKARTA SATPAM PEL" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA SATPAM PEL' ? 'selected' : '' }}>JAKARTA SATPAM PEL</option>
+                        <option value="JAKARTA SUPIR" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA SUPIR' ? 'selected' : '' }}>JAKARTA SUPIR</option>
                     </select>
                 </div>
 
