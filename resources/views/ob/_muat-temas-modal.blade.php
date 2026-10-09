@@ -34,9 +34,16 @@
                     <p id="muatTemasPricelistStatus" class="text-xs text-gray-500 mt-1" role="status"></p>
                 </div>
                 <div>
+                    <label for="muatTemasMobilPanjang" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input type="checkbox" id="muatTemasMobilPanjang" class="rounded border-gray-300 text-teal-600" onchange="updateMuatTemasBiaya()">
+                        Menggunakan mobil panjang
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1">Jika dicentang, biaya OB menjadi Rp 250.000.</p>
+                </div>
+                <div>
                     <label for="muatTemasBiaya" class="block text-sm font-medium text-gray-700 mb-1">Biaya OB</label>
                     <input type="text" id="muatTemasBiaya" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Pilih pricelist untuk menampilkan biaya OB">
-                    <p class="text-xs text-gray-500 mt-1">Biaya OB mengikuti pricelist yang dipilih.</p>
+                    <p class="text-xs text-gray-500 mt-1">Biaya OB mengikuti pricelist atau tarif mobil panjang jika dicentang.</p>
                 </div>
                 <p id="muatTemasError" class="hidden text-sm text-red-600" role="alert"></p>
                 <div class="flex justify-end gap-2 pt-4">

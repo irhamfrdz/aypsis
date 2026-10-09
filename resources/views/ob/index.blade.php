@@ -2254,6 +2254,10 @@ function filterMuatTemasPricelists() {
 }
 
 function updateMuatTemasBiaya() {
+    if (document.getElementById('muatTemasMobilPanjang').checked) {
+        document.getElementById('muatTemasBiaya').value = 'Rp 250.000';
+        return;
+    }
     const option = document.getElementById('muatTemasPricelist').selectedOptions[0];
     document.getElementById('muatTemasBiaya').value = option?.value && !option.disabled && option.dataset.biaya !== undefined
         ? 'Rp ' + Number(option.dataset.biaya).toLocaleString('id-ID', { maximumFractionDigits: 2 })
@@ -2282,7 +2286,8 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 tanggal_ob: document.getElementById('muatTemasTanggal').value,
                 nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,
-                pricelist_id: document.getElementById('muatTemasPricelist').value
+                pricelist_id: document.getElementById('muatTemasPricelist').value,
+                is_ckls_mobil_panjang: document.getElementById('muatTemasMobilPanjang').checked
             })
         });
         const data = await response.json();

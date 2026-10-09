@@ -2819,6 +2819,7 @@ class ObController extends Controller
                 'nomor_surat_jalan' => 'required|string|exists:surat_jalans,no_surat_jalan',
                 'status_kontainer' => 'required|in:full,empty',
                 'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
+                'is_ckls_mobil_panjang' => 'sometimes|boolean',
             ]);
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
             $size = preg_replace('/\s+/', '', str_ireplace('ft', '', $naikKapal->size_kontainer));
@@ -2931,7 +2932,8 @@ class ObController extends Controller
                     'nama_supir' => 'TL',
                     'barang' => $naikKapal->jenis_barang ?? '-',
                     'status_kontainer' => $request->status_kontainer,
-                    'biaya' => $temasPricelist->biaya,
+                    'biaya' => $request->boolean('is_ckls_mobil_panjang') ? 250000 : $temasPricelist->biaya,
+                    'is_ckls_mobil_panjang' => $request->boolean('is_ckls_mobil_panjang'),
                     'naik_kapal_id' => $naikKapal->id,
                     'surat_jalan_id' => $suratJalan->id,
                     'keterangan' => 'OB Muat Temas - '.$temasPricelist->gudangTujuan->nama_gudang.' - Pricelist #'.$temasPricelist->id,
