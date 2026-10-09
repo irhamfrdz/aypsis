@@ -136,6 +136,11 @@
                             <i class="fas fa-layer-group text-purple-500 text-[10px]"></i> Group: {{ request('grup') }}
                         </span>
                     @endif
+                    @if(request('departemen'))
+                        <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5">
+                            <i class="fas fa-briefcase text-amber-500 text-[10px]"></i> Departemen: {{ request('departemen') }}
+                        </span>
+                    @endif
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
                     Dashboard Kehadiran HRD
@@ -148,7 +153,7 @@
             {{-- Filter & Actions Bar --}}
             <div class="flex flex-wrap items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-xs">
                 <form id="dashboard-filter-form" action="{{ route('hrd.dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2">
-                    @foreach(request()->except(['tanggal_dari', 'tanggal_sampai', 'tanggal_dashboard', 'cabang', 'grup', 'page']) as $key => $value)
+                    @foreach(request()->except(['tanggal_dari', 'tanggal_sampai', 'tanggal_dashboard', 'cabang', 'grup', 'departemen', 'page']) as $key => $value)
                         @if(!is_array($value))
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endif
@@ -196,6 +201,19 @@
                     </div>
                     @endif
 
+                    {{-- Department Filter --}}
+                    @if(count($allDepartemens) > 0)
+                    <div class="relative">
+                        <select name="departemen" id="global_department_filter" onchange="this.form.submit()"
+                                class="rounded-lg bg-white border-slate-200 text-slate-800 text-xs py-1.5 pr-8 pl-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                            <option value="">Semua Departemen</option>
+                            @foreach($allDepartemens as $departemen)
+                                <option value="{{ $departemen }}" {{ request('departemen', $selectedDepartemen) == $departemen ? 'selected' : '' }}>{{ $departemen }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
                     {{-- Group Filter --}}
                     @if(count($allGroups) > 0)
                     <div class="relative">
@@ -215,12 +233,12 @@
                     </button>
 
                     @php
-                        $isFilterActive = request('cabang') || request('grup') || !($isSingleDay && $startDate->isToday());
+                        $isFilterActive = request('cabang') || request('grup') || request('departemen') || !($isSingleDay && $startDate->isToday());
                     @endphp
                     @if($isFilterActive)
                         <a href="{{ route('hrd.dashboard') }}" 
                            class="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-xs" 
-                           title="Reset filter ke Hari Ini, Semua Cabang & Group">
+                           title="Reset filter ke Hari Ini, Semua Cabang, Departemen & Group">
                             <i class="fas fa-undo-alt text-[10px]"></i>
                             <span>Reset</span>
                         </a>
@@ -868,7 +886,7 @@
             </div>
 
             <!-- Filter Active Info Bar -->
-            @if(request('grup') || request('cabang'))
+            @if(request('grup') || request('cabang') || request('departemen'))
             <div id="detail-filter-bar" class="px-6 py-2.5 bg-indigo-50/80 border-b border-indigo-100 flex flex-wrap items-center gap-2.5 text-xs text-indigo-800">
                 <i class="fas fa-filter text-indigo-500"></i>
                 <span>Filter aktif:</span>
@@ -877,6 +895,9 @@
                 @endif
                 @if(request('grup'))
                     <span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">Group: {{ request('grup') }}</span>
+                @endif
+                @if(request('departemen'))
+                    <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">Departemen: {{ request('departemen') }}</span>
                 @endif
                 <a href="{{ route('hrd.dashboard', array_merge(request()->except(['grup', 'cabang', 'page']), ['tanggal_dari' => $startDate->format('Y-m-d'), 'tanggal_sampai' => $endDate->format('Y-m-d')])) }}" 
                    class="ml-auto text-indigo-600 hover:text-indigo-900 underline font-semibold">Hapus Filter Cabang & Group</a>

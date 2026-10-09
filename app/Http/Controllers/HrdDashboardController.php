@@ -21,6 +21,7 @@ class HrdDashboardController extends Controller
     {
         $selectedCabang = $request->input('cabang');
         $selectedGroup = $request->input('grup');
+        $selectedDepartemen = $request->input('departemen');
 
         // Resolve dates: support tanggal_dari & tanggal_sampai, with fallback to tanggal_dashboard or today
         $tanggalDariInput = $request->input('tanggal_dari', $request->input('tanggal_dashboard'));
@@ -81,12 +82,29 @@ class HrdDashboardController extends Controller
             ->values()
             ->toArray();
 
+        $allDepartemens = Karyawan::where('status', 'active')
+            ->whereNull('tanggal_berhenti')
+            ->whereNotNull('departemen')
+            ->where('departemen', '!=', '')
+            ->distinct()
+            ->orderBy('departemen')
+            ->pluck('departemen')
+            ->map(fn ($departemen) => trim($departemen))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
         // Query dasar karyawan aktif (dengan filter cabang dan grup jika dipilih)
         $karyawanBaseQuery = Karyawan::where('status', 'active')
             ->whereNull('tanggal_berhenti');
 
         if (! empty($selectedCabang)) {
             $karyawanBaseQuery->where('cabang', $selectedCabang);
+        }
+
+        if (! empty($selectedDepartemen)) {
+            $karyawanBaseQuery->where('departemen', $selectedDepartemen);
         }
 
         if (! empty($selectedGroup)) {
@@ -117,7 +135,7 @@ class HrdDashboardController extends Controller
             ]);
         }
 
-        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $absensiMasukQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiMasuk = $absensiMasukQuery->get();
@@ -223,7 +241,7 @@ class HrdDashboardController extends Controller
             ->whereDate('tanggal_selesai', '>=', $startDateStr)
             ->where('status', 'approved');
 
-        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $karyawanCutiQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $karyawanCuti = $karyawanCutiQuery->get();
@@ -240,7 +258,7 @@ class HrdDashboardController extends Controller
             ]);
         }
 
-        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $absensiPulangQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiPulang = $absensiPulangQuery->pluck('karyawan_id')
@@ -271,7 +289,7 @@ class HrdDashboardController extends Controller
             ]);
         }
 
-        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $absensiLuarRadiusQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $absensiLuarRadius = $absensiLuarRadiusQuery->get();
@@ -287,7 +305,7 @@ class HrdDashboardController extends Controller
             ]);
         }
 
-        if (! empty($selectedCabang) || ! empty($selectedGroup)) {
+        if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $totalPresensiHariIniQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
         $totalPresensiHariIni = $totalPresensiHariIniQuery->count();
@@ -311,6 +329,8 @@ class HrdDashboardController extends Controller
             'totalPresensiHariIni',
             'allGroups',
             'selectedGroup',
+            'allDepartemens',
+            'selectedDepartemen',
             'allCabangs',
             'selectedCabang'
         ));
