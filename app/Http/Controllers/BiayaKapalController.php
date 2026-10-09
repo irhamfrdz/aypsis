@@ -7463,6 +7463,7 @@ class BiayaKapalController extends Controller
     public function exportBuruhRange(Request $request)
     {
         $request->validate([
+            'lokasi' => 'nullable|in:jakarta,batam',
             'tanggal_mulai' => 'required|date',
             'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
         ]);
@@ -7474,12 +7475,15 @@ class BiayaKapalController extends Controller
             'bank',
         ])
             ->where('jenis_biaya', 'KB024')
+            ->when($request->filled('lokasi'), function ($query) use ($request) {
+                $query->where('lokasi', $request->lokasi);
+            })
             ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
             ->orderBy('tanggal', 'asc')
             ->get();
 
         if ($biayaKapals->isEmpty()) {
-            return redirect()->back()->with('error', 'Tidak ada data Biaya Buruh pada rentang tanggal tersebut.');
+            return redirect()->back()->with('error', 'Tidak ada data Biaya Buruh pada lokasi dan rentang tanggal yang dipilih.');
         }
 
         $filename = 'biaya-buruh-range-'.$request->tanggal_mulai.'-sd-'.$request->tanggal_akhir.'.xlsx';
