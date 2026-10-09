@@ -18,6 +18,7 @@ class KaryawanSupervisorImport implements ToCollection, WithHeadingRow
         foreach ($rows as $index => $row) {
             $nik = $row['nik'] ?? null;
             $nik_supervisor = $row['nik_supervisor'] ?? null;
+            $departemen = isset($row['departemen']) ? trim((string) $row['departemen']) : null;
 
             if (empty($nik)) {
                 $this->failedRows[] = [
@@ -36,6 +37,16 @@ class KaryawanSupervisorImport implements ToCollection, WithHeadingRow
                     'row' => $index + 2,
                     'nik' => $nik,
                     'reason' => 'Karyawan dengan NIK tersebut tidak ditemukan.',
+                ];
+
+                continue;
+            }
+
+            if ($departemen !== null && mb_strlen($departemen) > 255) {
+                $this->failedRows[] = [
+                    'row' => $index + 2,
+                    'nik' => $nik,
+                    'reason' => 'Departemen maksimal 255 karakter.',
                 ];
 
                 continue;
@@ -60,6 +71,10 @@ class KaryawanSupervisorImport implements ToCollection, WithHeadingRow
                     // if it's explicitly empty in the excel, clear it
                     $karyawan->nik_supervisor = null;
                     $karyawan->supervisor = null;
+                }
+
+                if ($departemen !== null && $departemen !== '') {
+                    $karyawan->departemen = mb_strtoupper($departemen);
                 }
 
                 if ($karyawan->isDirty()) {

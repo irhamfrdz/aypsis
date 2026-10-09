@@ -872,7 +872,7 @@ class KaryawanController extends Controller
 
     public function downloadSupervisorTemplate()
     {
-        $columns = ['nik', 'nik_supervisor'];
+        $columns = ['nik', 'nik_supervisor', 'departemen'];
         $fileName = 'template_supervisor_karyawan.csv';
 
         $callback = function () use ($columns) {
@@ -2457,7 +2457,7 @@ class KaryawanController extends Controller
             $hasSuccess = $import->successCount > 0;
 
             if ($hasSuccess) {
-                $messages[] = "✅ {$import->successCount} data Supervisor berhasil diperbarui.";
+                $messages[] = "✅ {$import->successCount} data Supervisor/Departemen berhasil diperbarui.";
             }
 
             if ($hasErrors) {
@@ -2479,7 +2479,7 @@ class KaryawanController extends Controller
             } elseif ($hasErrors && $hasSuccess) {
                 return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
             } else {
-                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data Supervisor berhasil diperbarui secara massal.');
+                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data Supervisor/Departemen berhasil diperbarui secara massal.');
             }
 
         } catch (\Exception $e) {

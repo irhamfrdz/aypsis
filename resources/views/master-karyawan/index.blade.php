@@ -1113,7 +1113,7 @@
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
-                                Update Massal Supervisor
+                                Update Massal Supervisor & Departemen
                             </h3>
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
                                 <p>Silakan upload file Excel (.xlsx, .csv) dengan format kolom:</p>
@@ -1124,6 +1124,7 @@
                                             <ul class="list-disc list-inside text-xs text-blue-700 ml-1">
                                                 <li><strong>nik</strong> (Wajib)</li>
                                                 <li><strong>nik_supervisor</strong> (Wajib)</li>
+                                                <li><strong>departemen</strong> (Opsional, kosong = tidak diubah)</li>
                                             </ul>
                                         </div>
                                         <div>
