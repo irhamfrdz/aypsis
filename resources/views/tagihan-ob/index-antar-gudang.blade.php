@@ -137,6 +137,17 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
+                    <p class="font-semibold mb-1">Pranota belum tersimpan. Periksa data berikut:</p>
+                    <ul class="list-disc list-inside text-sm space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- Info Banner for Inline Editing --}}
             <div class="bg-teal-50 border border-teal-150 rounded-lg p-4 mb-6">
                 <div class="flex items-start">
@@ -366,7 +377,7 @@
                                 <div>
                                     <label for="nomor_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
                                     <div class="flex gap-2">
-                                        <input type="text" name="nomor_pranota" id="nomor_pranota" required class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs font-mono" placeholder="PAG-XXXXXX">
+                                        <input type="text" name="nomor_pranota" id="nomor_pranota" value="{{ old('nomor_pranota') }}" required class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs font-mono" placeholder="PAG-XXXXXX">
                                         <button type="button" onclick="ajaxGenerateNomor()" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium transition duration-150">
                                             <i class="fas fa-sync-alt"></i>
                                         </button>
@@ -375,24 +386,24 @@
 
                                 <div>
                                     <label for="tanggal_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tanggal_pranota" id="tanggal_pranota" required value="{{ now()->format('Y-m-d') }}" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs">
+                                    <input type="date" name="tanggal_pranota" id="tanggal_pranota" required value="{{ old('tanggal_pranota', now()->format('Y-m-d')) }}" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs">
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label for="adjustment" class="block text-xs font-semibold text-gray-700 mb-1">Adjustment (Penyesuaian)</label>
-                                        <input type="number" name="adjustment" id="adjustment" value="0" oninput="updateGrandTotal()" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="0">
+                                        <input type="number" name="adjustment" id="adjustment" value="{{ old('adjustment', 0) }}" oninput="updateGrandTotal()" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="0">
                                     </div>
 
                                     <div>
                                         <label for="alasan_adjustment" class="block text-xs font-semibold text-gray-700 mb-1">Alasan Adjustment</label>
-                                        <input type="text" name="alasan_adjustment" id="alasan_adjustment" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Alasan penyesuaian biaya...">
+                                        <input type="text" name="alasan_adjustment" id="alasan_adjustment" value="{{ old('alasan_adjustment') }}" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Alasan penyesuaian biaya...">
                                     </div>
                                 </div>
 
                                 <div>
                                     <label for="keterangan_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Keterangan (Opsional)</label>
-                                    <textarea name="keterangan" id="keterangan_pranota" rows="2" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Catatan tambahan pranota..."></textarea>
+                                    <textarea name="keterangan" id="keterangan_pranota" rows="2" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Catatan tambahan pranota...">{{ old('keterangan') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -632,7 +643,7 @@ function updateGrandTotal() {
     }
 }
 
-function openPranotaModal() {
+function openPranotaModal(preserveValues = false) {
     const selected = getStoredSelectedTagihan();
     const container = document.getElementById('selectedIdsContainer');
     container.innerHTML = ''; // Clear previous
@@ -651,11 +662,11 @@ function openPranotaModal() {
 
     // Reset fields
     const adjustmentInput = document.getElementById('adjustment');
-    if (adjustmentInput) {
+    if (adjustmentInput && !preserveValues) {
         adjustmentInput.value = 0;
     }
     const alasanInput = document.getElementById('alasan_adjustment');
-    if (alasanInput) {
+    if (alasanInput && !preserveValues) {
         alasanInput.value = '';
     }
 
@@ -666,6 +677,10 @@ function openPranotaModal() {
 
     document.getElementById('pranotaModal').classList.remove('hidden');
 }
+
+@if ($errors->any())
+document.addEventListener('DOMContentLoaded', () => openPranotaModal(true));
+@endif
 
 function closePranotaModal() {
     document.getElementById('pranotaModal').classList.add('hidden');
