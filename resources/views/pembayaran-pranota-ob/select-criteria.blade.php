@@ -45,21 +45,24 @@
             </div>
 
             {{-- Pilih Voyage --}}
+            @php
+                $voyageList = collect($voyagesByKapal[request('kapal', '')] ?? []);
+            @endphp
             <div>
                 <label for="voyage" class="block text-sm font-medium text-gray-700 mb-2">
                     Pilih Voyage <span class="text-red-500">*</span>
                 </label>
                 <select name="voyage" id="voyage" 
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        required>
-                    <option value="">-- Pilih Voyage --</option>
+                        required {{ $voyageList->isEmpty() ? 'disabled' : '' }}>
+                    <option value="">{{ request('kapal') ? '-- Pilih Voyage --' : '-- Pilih kapal terlebih dahulu --' }}</option>
                     @foreach($voyageList as $voyage)
                         <option value="{{ $voyage }}" {{ request('voyage') == $voyage ? 'selected' : '' }}>
                             {{ $voyage }}
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-gray-500">Pilih voyage dari pranota OB yang tersedia</p>
+                <p class="mt-1 text-xs text-gray-500">Voyage mengikuti kapal yang dipilih dan pranota yang belum lunas.</p>
             </div>
 
             {{-- Pilih DP (Opsional) --}}
@@ -130,6 +133,7 @@
             const voyageSelect = document.getElementById('voyage');
             const dpSelect = document.getElementById('dp');
             const dpHelpText = document.getElementById('dp-help-text');
+            const voyagesByKapal = @json($voyagesByKapal);
 
             // Initialize Select2
             $('#dp').select2({
@@ -145,8 +149,7 @@
                     allDpOptions.push({
                         value: option.value,
                         text: option.textContent,
-                        voyage: option.getAttribute('data-voyage'),
-                        selected: option.selected
+                        voyage: option.getAttribute('data-voyage')
                     });
                 }
             });
@@ -181,7 +184,7 @@
                         option.textContent = dp.text;
                         option.setAttribute('data-voyage', dp.voyage);
                         // Re-select if it was selected previously or from backend
-                        if (currentSelected.includes(dp.value) || dp.selected) {
+                        if (currentSelected.includes(dp.value)) {
                             option.selected = true;
                         }
                         dpSelect.appendChild(option);
@@ -192,10 +195,32 @@
                 $('#dp').trigger('change');
             });
 
-            // Initialize on page load if voyage is already selected
-            if (voyageSelect.value) {
+            function updateVoyageOptions(preserveSelection = false) {
+                const previousVoyage = preserveSelection ? voyageSelect.value : '';
+                const voyages = Object.prototype.hasOwnProperty.call(voyagesByKapal, kapalSelect.value)
+                    ? voyagesByKapal[kapalSelect.value] : [];
+                voyageSelect.innerHTML = '';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = !kapalSelect.value ? '-- Pilih kapal terlebih dahulu --'
+                    : voyages.length ? '-- Pilih Voyage --' : '-- Tidak ada voyage tersedia --';
+                voyageSelect.appendChild(placeholder);
+                voyages.forEach(voyage => {
+                    const option = document.createElement('option');
+                    option.value = String(voyage);
+                    option.textContent = String(voyage);
+                    option.selected = String(voyage) === previousVoyage;
+                    voyageSelect.appendChild(option);
+                });
+                voyageSelect.disabled = voyages.length === 0;
                 voyageSelect.dispatchEvent(new Event('change'));
             }
+
+            kapalSelect.addEventListener('change', function() {
+                $('#dp').val([]);
+                updateVoyageOptions();
+            });
+            updateVoyageOptions(true);
         });
     </script>
     @endpush

@@ -49,31 +49,25 @@ class PembayaranPranotaObController extends Controller
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
         }
 
-        // Get distinct kapal and voyage from unpaid pranota OB
-        $kapalList = PranotaOb::where('status', 'unpaid')
-            ->distinct()
-            ->pluck('nama_kapal')
-            ->concat(PranotaObMuatTemas::where('status', 'unpaid')->pluck('nama_kapal'))
+        // Keep each voyage linked to its ship for both pranota types.
+        $criteria = PranotaOb::where('status', 'unpaid')->distinct()->get(['nama_kapal', 'no_voyage'])
+            ->concat(PranotaObMuatTemas::where('status', 'unpaid')->distinct()->get(['nama_kapal', 'no_voyage']));
+        $kapalList = $criteria->pluck('nama_kapal')
             ->unique()
             ->filter()
             ->sort()
             ->values();
 
-        $voyageList = PranotaOb::where('status', 'unpaid')
-            ->distinct()
-            ->pluck('no_voyage')
-            ->concat(PranotaObMuatTemas::where('status', 'unpaid')->pluck('no_voyage'))
-            ->unique()
-            ->filter()
-            ->sort()
-            ->values();
+        $voyagesByKapal = $criteria->groupBy('nama_kapal')->map(fn ($pranotas) => $pranotas
+            ->pluck('no_voyage')->filter(fn ($voyage) => $voyage !== null && $voyage !== '')
+            ->unique()->sort()->values())->all();
 
         // Get DP list from pembayaran_obs where dp_amount > 0
         $dpList = \App\Models\PembayaranOb::where('dp_amount', '>', 0)
             ->orderBy('tanggal_pembayaran', 'desc')
             ->get();
 
-        return view('pembayaran-pranota-ob.select-criteria', compact('kapalList', 'voyageList', 'dpList'));
+        return view('pembayaran-pranota-ob.select-criteria', compact('kapalList', 'voyagesByKapal', 'dpList'));
     }
 
     /**

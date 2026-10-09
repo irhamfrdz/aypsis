@@ -151,7 +151,8 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         PranotaObMuatTemas::findOrFail(1)->update(['status' => 'unpaid', 'nama_kapal' => 'KAPAL TEMAS', 'no_voyage' => '002']);
         $criteria = $controller->selectCriteria()->getData();
         $this->assertContains('KAPAL TEMAS', $criteria['kapalList']);
-        $this->assertContains('002', $criteria['voyageList']);
+        $this->assertEquals(['001'], $criteria['voyagesByKapal']['KAPAL UJI']->all());
+        $this->assertEquals(['002'], $criteria['voyagesByKapal']['KAPAL TEMAS']->all());
     }
 
     public function test_breakdown_includes_adjustment_without_changing_snapshot(): void
