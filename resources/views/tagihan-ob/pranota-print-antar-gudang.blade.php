@@ -5,10 +5,10 @@
     $paperSize = 'Half-Folio';
     
     $currentPaper = [
-        'size' => '8.5in 6.5in',
-        'width' => '8.5in',
-        'height' => '6.5in',
-        'containerWidth' => '8.5in',
+        'size' => '215.9mm 165.1mm',
+        'width' => '215.9mm',
+        'height' => '165.1mm',
+        'containerWidth' => '215.9mm',
         'fontSize' => '9px',
         'headerH1' => '14px',
         'tableFont' => '8px',
@@ -17,7 +17,7 @@
 @endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $judulPranota ?? 'PRANOTA OB ANTAR GUDANG' }} - {{ $pranota->nomor_pranota }}</title>
     <style>
         * {
@@ -27,13 +27,12 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
+            size: {{ $currentPaper['size'] }};
             margin: 0;
         }
 
         html {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
         }
 
         body {
@@ -44,7 +43,6 @@
             background: white;
             position: relative;
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             margin: 0;
             padding: 0;
         }
@@ -57,10 +55,16 @@
             .no-print {
                 display: none !important;
             }
-            body { margin: 0; padding: 0; }
+            html, body { height: auto; margin: 0; padding: 0; }
             .container {
+                min-height: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
+            }
+            .items-table thead { display: table-header-group; }
+            .items-table tr, .footer-signatures, .keterangan-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
             }
         }
 
@@ -181,9 +185,7 @@
 <body>
     <!-- Instruction Banner -->
     <div class="no-print" style="background: #fef3c7; padding: 10px; border: 1px solid #f59e0b; margin: 10px; font-size: 11px; border-radius: 5px;">
-        <strong>⚠️ PENTING - Setting Print untuk Half-Folio:</strong><br>
-        Setting Printer: Paper Size <b>Folio/Legal</b>, Scale: <b>100%</b>, Orientation: <b>Portrait</b>.<br>
-        Potong kertas Folio menjadi 2 bagian secara horizontal setelah dicetak.
+        <strong>Cetak Setengah Folio</strong><br>Ukuran kertas: <b>215,9 &times; 165,1 mm</b> (21,59 &times; 16,51 cm).<br>Gunakan ukuran kertas khusus tersebut, skala <b>100%</b>, margin <b>None / Tidak ada</b>, dan matikan header/footer browser.
     </div>
 
     <!-- Print Button -->
