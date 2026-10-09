@@ -6563,6 +6563,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('ob-antar-gudang.store-tagihan')
         ->middleware('can:ob-antar-gudang-create');
 
+    Route::get('ob-antar-gudang/surat-jalan', [\App\Http\Controllers\ObAntarGudangController::class, 'suratJalans'])
+        ->name('ob-antar-gudang.surat-jalan')
+        ->middleware('can:ob-antar-gudang-create');
+
     // Tagihan OB routes
     Route::get('tagihan-ob-antar-gudang', [\App\Http\Controllers\TagihanObController::class, 'indexAntarGudang'])
         ->name('tagihan-ob-antar-gudang.index')

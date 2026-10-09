@@ -592,6 +592,15 @@
                                 </div>
 
                                 <div>
+                                    <div id="surat_jalan_wrapper" class="hidden mb-4">
+                                        <label for="surat_jalan_search" class="block text-sm font-medium text-gray-700 mb-1">Surat Jalan (Opsional)</label>
+                                        <input type="search" id="surat_jalan_search" maxlength="100" disabled class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-md text-sm" placeholder="Cari nomor surat jalan...">
+                                        <select name="surat_jalan_id" id="surat_jalan_id" disabled aria-label="Pilih surat jalan" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                            <option value="">--Pilih Surat Jalan--</option>
+                                        </select>
+                                        <p id="surat_jalan_status" role="status" class="text-xs text-gray-500 mt-1"></p>
+                                        <a id="surat_jalan_link" target="_blank" rel="noopener noreferrer" class="hidden inline-block text-sm text-teal-600 hover:underline mt-2">Lihat Surat Jalan</a>
+                                    </div>
                                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan (Opsional)</label>
                                     <textarea name="keterangan" id="keterangan" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" placeholder="Catatan tambahan..."></textarea>
                                 </div>
@@ -657,6 +666,7 @@
         
         const gudangTujuanSelect = document.getElementById('gudang_tujuan_id');
         gudangTujuanSelect.value = '';
+        updateSuratJalanVisibility();
 
         updateStatusKontainerVisibility();
         updateComboVisibility();
@@ -825,9 +835,86 @@
         updateNominalFromSelection();
     }
 
+    let suratJalanController;
+    let suratJalanSearchTimer;
+
+    function updateSuratJalanLink() {
+        const option = document.getElementById('surat_jalan_id').selectedOptions[0];
+        const link = document.getElementById('surat_jalan_link');
+        link.classList.toggle('hidden', !option?.dataset.url);
+        if (option?.dataset.url) {
+            link.href = option.dataset.url;
+        } else {
+            link.removeAttribute('href');
+        }
+    }
+
+    async function loadSuratJalans() {
+        suratJalanController?.abort();
+        const select = document.getElementById('surat_jalan_id');
+        if (document.getElementById('surat_jalan_wrapper').classList.contains('hidden')) return;
+        const controller = new AbortController();
+        suratJalanController = controller;
+        const status = document.getElementById('surat_jalan_status');
+        status.textContent = 'Memuat surat jalan...';
+        const selectedOption = select.value ? select.selectedOptions[0].cloneNode(true) : null;
+        try {
+            const response = await fetch('{{ route('ob-antar-gudang.surat-jalan') }}?' + new URLSearchParams({
+                search: document.getElementById('surat_jalan_search').value.trim()
+            }), { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Gagal memuat surat jalan');
+            const items = await response.json();
+            if (controller.signal.aborted) return;
+            select.replaceChildren(new Option('--Pilih Surat Jalan--', ''));
+            items.forEach(item => {
+                const option = new Option(item.label, item.id);
+                option.dataset.url = item.url;
+                select.add(option);
+            });
+            if (selectedOption) {
+                if (!Array.from(select.options).some(option => option.value === selectedOption.value)) {
+                    select.add(selectedOption);
+                }
+                select.value = selectedOption.value;
+            }
+            status.textContent = items.length ? 'Ketik nomor untuk mencari surat jalan lainnya.' : 'Surat jalan tidak ditemukan.';
+            updateSuratJalanLink();
+        } catch (error) {
+            if (error.name !== 'AbortError') status.textContent = 'Gagal memuat surat jalan. Ketik ulang nomor untuk mencoba lagi.';
+        }
+    }
+
+    function updateSuratJalanVisibility() {
+        const destination = document.getElementById('gudang_tujuan_id').selectedOptions[0];
+        const isTemas = destination?.dataset.isTemas === '1' || destination?.dataset.isTemasJkt === '1';
+        const wrapper = document.getElementById('surat_jalan_wrapper');
+        const select = document.getElementById('surat_jalan_id');
+        const search = document.getElementById('surat_jalan_search');
+        wrapper.classList.toggle('hidden', !isTemas);
+        select.disabled = !isTemas;
+        search.disabled = !isTemas;
+        clearTimeout(suratJalanSearchTimer);
+        if (isTemas) {
+            loadSuratJalans();
+        } else {
+            suratJalanController?.abort();
+            select.replaceChildren(new Option('--Pilih Surat Jalan--', ''));
+            search.value = '';
+            document.getElementById('surat_jalan_status').textContent = '';
+            updateSuratJalanLink();
+        }
+    }
+
+    document.getElementById('surat_jalan_search').addEventListener('input', function() {
+        suratJalanController?.abort();
+        clearTimeout(suratJalanSearchTimer);
+        suratJalanSearchTimer = setTimeout(loadSuratJalans, 300);
+    });
+    document.getElementById('surat_jalan_id').addEventListener('change', updateSuratJalanLink);
     document.getElementById('modal_status_service').addEventListener('change', updateStatusKontainerVisibility);
     document.getElementById('modal_status_kontainer').addEventListener('change', updatePricelistOptions);
     document.getElementById('gudang_tujuan_id').addEventListener('change', function() {
+        updateSuratJalanVisibility();
         updatePricelistOptions();
         updateComboVisibility();
     });

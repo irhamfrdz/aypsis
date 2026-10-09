@@ -21,7 +21,7 @@ class TagihanObController extends Controller
             abort(403);
         }
 
-        $tagihanOb = TagihanOb::with(['bl', 'creator'])
+        $tagihanOb = TagihanOb::with(['bl', 'creator', 'suratJalan'])
             ->where('kapal', 'ANTAR GUDANG')
             ->where('voyage', 'ANTAR GUDANG')
             ->orderBy('created_at', 'desc')

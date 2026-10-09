@@ -229,6 +229,11 @@
                                 </td>
                                 <td class="px-6 py-4 text-xs text-gray-900 font-medium">
                                     {{ $item->keterangan }}
+                                    @if($item->suratJalan)
+                                        <a href="{{ route('surat-jalan.show', $item->surat_jalan_id) }}" target="_blank" rel="noopener noreferrer" class="block mt-1 text-teal-600 hover:underline">
+                                            Surat Jalan: {{ $item->suratJalan->no_surat_jalan }}
+                                        </a>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs">
                                     <span class="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $item->status_kontainer === 'full' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">

@@ -19,6 +19,7 @@ class TagihanOb extends Model
         'tanggal_ob', // tanggal kegiatan ob
         'nomor_kontainer',
         'nama_supir',
+        'surat_jalan_id',
         'barang',
         'status_kontainer', // full atau empty
         'is_combo',
@@ -67,6 +68,11 @@ class TagihanOb extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    public function suratJalan()
+    {
+        return $this->belongsTo(SuratJalan::class);
     }
 
     /**

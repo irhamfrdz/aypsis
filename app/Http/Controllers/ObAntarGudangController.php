@@ -8,6 +8,7 @@ use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\MasterPricelistObAntarGudang;
 use App\Models\StockKontainer;
+use App\Models\SuratJalan;
 use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,28 @@ class ObAntarGudangController extends Controller
     private const DPE_SEKALIAN_ANTAR_BIAYA = 75000;
 
     private const FORTUNE_LANGSUNG_ANTAR_BIAYA = 150000;
+
+    public function suratJalans(Request $request)
+    {
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:100',
+        ]);
+
+        $suratJalans = SuratJalan::query()
+            ->when(! empty($validated['search']), function ($query) use ($validated) {
+                $query->where('no_surat_jalan', 'like', '%'.$validated['search'].'%');
+            })
+            ->orderByDesc('tanggal_surat_jalan')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get(['id', 'no_surat_jalan', 'no_kontainer']);
+
+        return response()->json($suratJalans->map(fn ($suratJalan) => [
+            'id' => $suratJalan->id,
+            'label' => $suratJalan->no_surat_jalan.($suratJalan->no_kontainer ? ' - '.$suratJalan->no_kontainer : ''),
+            'url' => route('surat-jalan.show', $suratJalan->id),
+        ]));
+    }
 
     /**
      * Return the warehouse where a container was located on a given date.
@@ -217,6 +240,7 @@ class ObAntarGudangController extends Controller
             'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
+            'surat_jalan_id' => 'nullable|integer|exists:surat_jalans,id',
             'source' => 'required|in:stock,kontainer',
             'keterangan' => 'nullable|string',
         ]);
@@ -259,6 +283,9 @@ class ObAntarGudangController extends Controller
         }
         $gudangTujuan = Gudang::findOrFail($validated['gudang_tujuan_id']);
         $namaGudangTujuan = mb_strtolower($gudangTujuan->nama_gudang);
+        $suratJalanId = str_contains($namaGudangTujuan, 'temas')
+            ? ($validated['surat_jalan_id'] ?? null)
+            : null;
         $isTemasJkt = str_contains($namaGudangTujuan, 'temas jkt');
         $abaikanStatusKontainer = str_contains($namaGudangTujuan, 'temas')
             && ! $isTemasJkt;
@@ -387,6 +414,7 @@ class ObAntarGudangController extends Controller
             $tagihan->nomor_kontainer = $validated['nomor_kontainer'];
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
+            $tagihan->surat_jalan_id = $suratJalanId;
             $tagihan->status_kontainer = $validated['status_kontainer'];
             $tagihan->is_combo = $validated['is_combo'];
             $tagihan->is_ckls_mobil_panjang = $validated['is_ckls_mobil_panjang'];
