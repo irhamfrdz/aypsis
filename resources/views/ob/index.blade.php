@@ -2247,9 +2247,17 @@ function filterMuatTemasPricelists() {
         if (eligible) available++;
     });
     if (select.selectedOptions[0]?.disabled) select.value = '';
+    updateMuatTemasBiaya();
     document.getElementById('muatTemasPricelistStatus').textContent = !status
         ? 'Pilih status kontainer terlebih dahulu.'
         : (available ? 'Tarif dari Pricelist OB Antar Gudang dengan tujuan Temas.' : 'Tidak ada pricelist Temas untuk ukuran dan status kontainer ini.');
+}
+
+function updateMuatTemasBiaya() {
+    const option = document.getElementById('muatTemasPricelist').selectedOptions[0];
+    document.getElementById('muatTemasBiaya').value = option?.value && !option.disabled && option.dataset.biaya !== undefined
+        ? 'Rp ' + Number(option.dataset.biaya).toLocaleString('id-ID', { maximumFractionDigits: 2 })
+        : '';
 }
 
 document.getElementById('muatTemasForm')?.addEventListener('submit', async function(event) {
