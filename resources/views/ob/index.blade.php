@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+@php
+    $isObMuatTemas = request('kegiatan') === 'muat_temas';
+    $pranotaNomorUrl = route($isObMuatTemas ? 'pranota-ob-muat-temas.generate-nomor' : 'ob.generate-nomor-pranota', [], false);
+    $pranotaSimpanUrl = route($isObMuatTemas ? 'pranota-ob-muat-temas.store' : 'ob.masuk-pranota', [], false);
+@endphp
+
 @if(request('kegiatan') === 'muat_temas')
 @section('title', 'OB Muat Temas')
 @section('page_title', 'OB Muat Temas')
@@ -1970,7 +1976,7 @@ function generateNomorPranota() {
     const nomorInput = document.getElementById('nomor_pranota');
     nomorInput.value = 'Loading...';
     
-    fetch(@json(request('kegiatan') === 'muat_temas' ? route('pranota-ob-muat-temas.generate-nomor', [], false) : route('ob.generate-nomor-pranota', [], false)), {
+    fetch(@json($pranotaNomorUrl), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -2714,7 +2720,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
     
     // Send to pranota endpoint
-    fetch(@json(request('kegiatan') === 'muat_temas' ? route('pranota-ob-muat-temas.store', [], false) : route('ob.masuk-pranota', [], false)), {
+    fetch(@json($pranotaSimpanUrl), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
