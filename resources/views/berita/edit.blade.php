@@ -51,7 +51,7 @@
         </div>
 
         {{-- Gambar --}}
-        <div>
+        <div id="gambar-section">
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
                 Gambar / Banner
                 <span class="text-gray-400 font-normal">(Kosongkan jika tidak diganti · Maks 5MB)</span>
@@ -89,9 +89,11 @@
 
         {{-- Konten --}}
         <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="konten">Konten / Deskripsi</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="konten">{{ $berita->tipe === 'pengumuman' ? 'Teks Pengumuman *' : 'Konten / Deskripsi' }}</label>
             <textarea id="konten" name="konten" rows="6"
+                      placeholder="{{ $berita->tipe === 'pengumuman' ? 'Tulis teks pengumuman yang akan dibaca karyawan di PWA...' : '' }}"
                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y">{{ old('konten', $berita->konten) }}</textarea>
+            @error('konten') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
         {{-- Tanggal Publish --}}
@@ -141,6 +143,22 @@ const uploadIcon = document.getElementById('upload-icon');
 const fileInfo = document.getElementById('file-info');
 const btnRemove = document.getElementById('btn-remove-gambar');
 const clientError = document.getElementById('client-error');
+const gambarSection = document.getElementById('gambar-section');
+const kontenLabel = document.querySelector('label[for="konten"]');
+const kontenInput = document.getElementById('konten');
+
+function updateTipeFields() {
+    const isPengumuman = document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman';
+    gambarSection.classList.toggle('hidden', isPengumuman);
+    kontenLabel.textContent = isPengumuman ? 'Teks Pengumuman *' : 'Konten / Deskripsi';
+    kontenInput.placeholder = isPengumuman
+        ? 'Tulis teks pengumuman yang akan dibaca karyawan di PWA...'
+        : 'Tulis isi berita atau keterangan pamflet...';
+    kontenInput.required = isPengumuman;
+}
+
+document.querySelectorAll('input[name="tipe"]').forEach(input => input.addEventListener('change', updateTipeFields));
+updateTipeFields();
 
 function showFile(file) {
     clientError.classList.add('hidden');

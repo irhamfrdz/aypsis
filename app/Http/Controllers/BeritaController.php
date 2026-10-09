@@ -36,9 +36,9 @@ class BeritaController extends Controller
     {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'konten' => 'nullable|string',
+            'konten' => 'nullable|string|required_if:tipe,pengumuman',
             'tipe' => 'required|in:berita,pamflet,pengumuman',
-            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
 
@@ -76,9 +76,9 @@ class BeritaController extends Controller
     {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'konten' => 'nullable|string',
+            'konten' => 'nullable|string|required_if:tipe,pengumuman',
             'tipe' => 'required|in:berita,pamflet,pengumuman',
-            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
             'published_at' => 'nullable|date',
         ]);
 
@@ -89,7 +89,10 @@ class BeritaController extends Controller
         }
 
         $gambarPath = $berita->gambar;
-        if ($request->hasFile('gambar')) {
+        if ($request->tipe === 'pengumuman') {
+            $this->deleteGambar($berita->gambar);
+            $gambarPath = null;
+        } elseif ($request->hasFile('gambar')) {
             // Hapus gambar lama jika ada
             $this->deleteGambar($berita->gambar);
             $gambarPath = $this->storeGambar($request->file('gambar'), $request->tipe);
