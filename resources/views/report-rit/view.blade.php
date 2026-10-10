@@ -84,6 +84,7 @@
                     <select name="status_pembayaran_rit"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Status</option>
+                        <option value="tersedia_pranota" {{ request('status_pembayaran_rit') == 'tersedia_pranota' ? 'selected' : '' }}>Belum Dibayar & Belum Masuk Pranota</option>
                         <option value="belum_dibayar" {{ request('status_pembayaran_rit') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
                         <option value="dibayar" {{ request('status_pembayaran_rit') == 'dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                         <option value="proses" {{ request('status_pembayaran_rit') == 'proses' ? 'selected' : '' }}>Dalam Proses</option>
@@ -103,6 +104,8 @@
                         <option value="500" {{ request('per_page') == 500 ? 'selected' : '' }}>500</option>
                     </select>
                 </div>
+
+            </div>
 
             <div class="flex gap-2 mt-4">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
@@ -135,6 +138,11 @@
             return (is_array($item) ? $item['kegiatan'] : $item->kegiatan) == 'bongkar';
         })->count();
     @endphp
+    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4 text-sm text-indigo-900">
+        <span class="font-semibold">{{ $availableCount }} surat jalan belum dibayar dan belum masuk pranota</span>
+        dari {{ $reportCount }} surat jalan dalam laporan untuk periode dan pencarian ini.
+        <a class="underline font-semibold ml-1" href="{{ route('report.rit.view', array_merge(request()->except('page'), ['status_pembayaran_rit' => 'tersedia_pranota'])) }}">Lihat surat jalan tersebut</a>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
@@ -142,7 +150,7 @@
                     <i class="fas fa-file-alt text-2xl text-blue-600"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Surat Jalan</p>
+                    <p class="text-sm font-medium text-gray-500">Surat Jalan Ditampilkan</p>
                     <p class="text-2xl font-bold text-gray-900">{{ $totalItems }}</p>
                 </div>
             </div>

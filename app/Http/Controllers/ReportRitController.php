@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
+use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
+use App\Services\PranotaUangRitEligibility;
 use App\Services\RitSuratJalanService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -81,6 +84,13 @@ class ReportRitController extends Controller
             $querySuratJalan->where('kegiatan', $request->kegiatan);
             $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
+
+        // Hitung kedua angka dari periode dan filter pencarian yang sama.
+        $reportCount = (clone $querySuratJalan)->count() + (clone $querySuratJalanBongkaran)->count();
+        $availableCount = PranotaUangRitEligibility::regular(clone $querySuratJalan)->count()
+            + PranotaUangRitEligibility::bongkaran(clone $querySuratJalanBongkaran)->count();
+
+        $this->applyPaymentFilter($request, $querySuratJalan, $querySuratJalanBongkaran);
 
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
@@ -214,7 +224,7 @@ class ReportRitController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        return view('report-rit.view', compact('suratJalans', 'startDate', 'endDate'));
+        return view('report-rit.view', compact('suratJalans', 'startDate', 'endDate', 'reportCount', 'availableCount'));
     }
 
     public function print(Request $request)
@@ -275,6 +285,8 @@ class ReportRitController extends Controller
             $querySuratJalan->where('kegiatan', $request->kegiatan);
             $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
+
+        $this->applyPaymentFilter($request, $querySuratJalan, $querySuratJalanBongkaran);
 
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
@@ -449,6 +461,8 @@ class ReportRitController extends Controller
             $querySuratJalanBongkaran->where('kegiatan', $request->kegiatan);
         }
 
+        $this->applyPaymentFilter($request, $querySuratJalan, $querySuratJalanBongkaran);
+
         // Get data dari kedua tabel
         $suratJalansBiasa = $querySuratJalan
             ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
@@ -563,5 +577,29 @@ class ReportRitController extends Controller
         $filename = 'Report_Rit_'.$startDate->format('d-m-Y').'_to_'.$endDate->format('d-m-Y').'.xlsx';
 
         return \Excel::download(new \App\Exports\ReportRitExport($suratJalans, $startDate, $endDate), $filename);
+    }
+
+    private function applyPaymentFilter(Request $request, $querySuratJalan, $querySuratJalanBongkaran): void
+    {
+        if ($request->input('status_pembayaran_rit') === 'tersedia_pranota') {
+            PranotaUangRitEligibility::regular($querySuratJalan);
+            PranotaUangRitEligibility::bongkaran($querySuratJalanBongkaran);
+        } elseif ($request->input('status_pembayaran_rit') === 'belum_dibayar') {
+            $querySuratJalan->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR);
+            $querySuratJalanBongkaran->where(function ($q) {
+                $q->where('status_pembayaran_uang_rit', 'belum_bayar')->orWhereNull('status_pembayaran_uang_rit');
+            });
+        } elseif ($request->input('status_pembayaran_rit') === 'dibayar') {
+            $querySuratJalan->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_DIBAYAR);
+            $querySuratJalanBongkaran->where('status_pembayaran_uang_rit', 'lunas');
+        } elseif ($request->input('status_pembayaran_rit') === 'proses') {
+            $querySuratJalan->whereIn('status_pembayaran_uang_rit', [
+                SuratJalan::STATUS_UANG_RIT_PROSES_PRANOTA,
+                SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA,
+                SuratJalan::STATUS_UANG_RIT_PRANOTA_SUBMITTED,
+                SuratJalan::STATUS_UANG_RIT_PRANOTA_APPROVED,
+            ]);
+            $querySuratJalanBongkaran->where('status_pembayaran_uang_rit', 'proses');
+        }
     }
 }

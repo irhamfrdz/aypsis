@@ -2042,6 +2042,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Pada kegiatan bongkar, tujuan yang dipilih berlaku untuk baris ini dan baris setelahnya.
+    if (@json(request('kegiatan') === 'bongkar')) {
+        document.querySelectorAll('.editable-ke').forEach(input => {
+            input.addEventListener('change', function() {
+                const row = this.closest('tr');
+                if (!row) return;
+
+                for (let nextRow = row; nextRow; nextRow = nextRow.nextElementSibling) {
+                    const nextInput = nextRow.querySelector('.editable-ke');
+                    if (!nextInput) continue;
+
+                    nextInput.value = this.value;
+                    nextRow.dataset.pendingKe = 'true';
+                    if (nextInput.tagName === 'SELECT' && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+                        jQuery(nextInput).trigger('change.select2');
+                    }
+                }
+            });
+        });
+    }
+
     // Handle bulk Asal Kontainer and Ke update
     const bulkAsalInput = document.getElementById('bulk_asal_kontainer');
     const bulkKeInput = document.getElementById('bulk_ke');
@@ -2773,82 +2794,57 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     });
 });
 
-// Function to save individual Asal Kontainer and Ke
-function saveAsalKe(type, id, tdElement) {
+// Simpan baris yang dipilih beserta baris yang menerima perubahan tujuan.
+async function saveAsalKe(type, id, tdElement) {
     const row = tdElement.closest('tr');
-    const asalInput = row.querySelector('.editable-asal-kontainer');
-    const keInput = row.querySelector('.editable-ke');
-    
-    // Get value from input or select element
-    // For Select2 elements, use jQuery to get the value
-    let asalValue = '';
-    if (asalInput) {
-        if (asalInput.tagName === 'SELECT' && typeof jQuery !== 'undefined') {
-            // Use jQuery for Select2 elements
-            asalValue = jQuery(asalInput).val() || '';
-        } else if (asalInput.tagName === 'SELECT') {
-            // Fallback for native select
-            asalValue = asalInput.options[asalInput.selectedIndex]?.value || '';
-        } else {
-            // For input elements
-            asalValue = asalInput.value || '';
-        }
-        asalValue = asalValue.trim();
-    }
-    
-    let keValue = '';
-    if (keInput) {
-        if (keInput.tagName === 'SELECT' && typeof jQuery !== 'undefined') {
-            keValue = jQuery(keInput).val() || '';
-        } else if (keInput.tagName === 'SELECT') {
-            keValue = keInput.options[keInput.selectedIndex]?.value || '';
-        } else {
-            keValue = keInput.value || '';
-        }
-        keValue = keValue.trim();
-    }
-    
-    // Show loading state
+    const pendingRows = @json(request('kegiatan') === 'bongkar')
+        ? Array.from(row.parentElement.querySelectorAll('tr[data-pending-ke="true"]'))
+        : [];
+    const rowsToSave = Array.from(new Set([row, ...pendingRows]));
     const saveBtn = tdElement.querySelector('button');
     const originalBtnHtml = saveBtn.innerHTML;
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    
-    // Send AJAX request
-    fetch('/ob/save-asal-ke', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            type: type,
-            id: id,
-            asal_kontainer: asalValue || null,
-            ke: keValue || null
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // Show success feedback
-            saveBtn.innerHTML = '<i class="fas fa-check text-green-600"></i>';
-            setTimeout(() => {
-                saveBtn.innerHTML = originalBtnHtml;
-                saveBtn.disabled = false;
-            }, 1500);
-        } else {
-            alert(result.message || 'Terjadi kesalahan saat menyimpan');
-            saveBtn.innerHTML = originalBtnHtml;
-            saveBtn.disabled = false;
+
+    const valueOf = input => input ? String(input.value || '').trim() : '';
+    const results = await Promise.allSettled(rowsToSave.map(async currentRow => {
+        const keInput = currentRow.querySelector('.editable-ke');
+        const response = await fetch('/ob/save-asal-ke', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                type: keInput.dataset.type,
+                id: keInput.dataset.id,
+                asal_kontainer: valueOf(currentRow.querySelector('.editable-asal-kontainer')) || null,
+                ke: valueOf(keInput) || null
+            })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Terjadi kesalahan saat menyimpan');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat menyimpan data');
+    }));
+
+    results.forEach((result, index) => {
+        if (result.status === 'fulfilled') delete rowsToSave[index].dataset.pendingKe;
+    });
+    const failed = results.filter(result => result.status === 'rejected');
+    if (failed.length) {
+        console.error('Gagal menyimpan tujuan:', failed);
+        alert(`${failed.length} baris gagal disimpan. Klik Simpan lagi untuk mencoba ulang.`);
         saveBtn.innerHTML = originalBtnHtml;
         saveBtn.disabled = false;
-    });
+        return;
+    }
+
+    saveBtn.innerHTML = '<i class="fas fa-check text-green-600"></i>';
+    setTimeout(() => {
+        saveBtn.innerHTML = originalBtnHtml;
+        saveBtn.disabled = false;
+    }, 1500);
 }
 
 // Handle Save Asal Kontainer and Ke (Bulk)
