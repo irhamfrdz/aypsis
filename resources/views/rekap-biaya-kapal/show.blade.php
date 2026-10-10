@@ -275,6 +275,41 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        @if(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas && !empty($item->rekap_ob_temas_items))
+                                            <tr class="bg-indigo-50/40">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-indigo-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-indigo-50 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+                                                            Rincian biaya per kontainer
+                                                        </div>
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-left">Nama Barang</th>
+                                                                    <th class="px-3 py-2 text-left">Supir</th>
+                                                                    <th class="px-3 py-2 text-left">Size</th>
+                                                                    <th class="px-3 py-2 text-left">Tujuan</th>
+                                                                    <th class="px-3 py-2 text-right">Biaya</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($item->rekap_ob_temas_items as $temaEntry)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $temaEntry['nomor_kontainer'] ?? '-' }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $temaEntry['nama_barang'] ?? '-' }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $temaEntry['supir'] ?? '-' }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $temaEntry['size'] ?? '-' }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $temaEntry['tujuan_gudang'] ?? '-' }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) ($temaEntry['biaya'] ?? 0), 0, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @php
                                             $temasDetails = $item instanceof \App\Models\BiayaKapal && $item->relationLoaded('temasDetails')
                                                 ? $item->temasDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal)) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
