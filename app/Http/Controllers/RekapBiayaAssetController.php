@@ -6,6 +6,7 @@ use App\Models\AlatBerat;
 use App\Models\Mobil;
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
+use App\Models\SuratJalanBongkaranBatam;
 use Illuminate\Http\Request;
 
 class RekapBiayaAssetController extends Controller
@@ -48,6 +49,7 @@ class RekapBiayaAssetController extends Controller
         $query = StockAmprahanUsage::with(['stockAmprahan', 'penerima', 'createdBy']);
 
         $assetName = '';
+        $mobil = null;
         if ($type === 'mobil') {
             // Can be kendaraan_id, truck_id, or buntut_id
             $query->where(function ($q) use ($id) {
@@ -72,6 +74,28 @@ class RekapBiayaAssetController extends Controller
         }
 
         $usages = $query->orderBy('tanggal_pengambilan', 'desc')->get();
+
+        $suratJalans = collect();
+        if ($mobil && $mobil->nomor_polisi) {
+            $normalizedPlate = strtoupper(str_replace([' ', '-', '.'], '', $mobil->nomor_polisi));
+            $suratJalanQuery = SuratJalanBongkaranBatam::whereRaw(
+                "UPPER(REPLACE(REPLACE(REPLACE(no_plat, ' ', ''), '-', ''), '.', '')) = ?",
+                [$normalizedPlate]
+            );
+
+            if ($bulan) {
+                $suratJalanQuery->whereMonth('tanggal_surat_jalan', $bulan);
+            }
+            if ($tahun) {
+                $suratJalanQuery->whereYear('tanggal_surat_jalan', $tahun);
+            }
+
+            $suratJalans = $suratJalanQuery->orderByDesc('tanggal_surat_jalan')->get();
+            foreach ($suratJalans as $suratJalan) {
+                $biaya = $suratJalan->tanpa_uang_jalan ? 0 : (float) $suratJalan->uang_jalan_nominal;
+                $suratJalan->apportioned = ['total_biaya' => $biaya];
+            }
+        }
 
         // Calculate totals
         $totalNominal = 0;
@@ -217,11 +241,12 @@ class RekapBiayaAssetController extends Controller
         // Sort combined usages by date descending
         $usages = $usages->sortByDesc('tanggal')->values();
 
+        $totalSuratJalan = $suratJalans->sum(fn ($suratJalan) => $suratJalan->apportioned['total_biaya']);
         $summary = [
-            'total_nominal' => $totalNominal,
+            'total_nominal' => $totalNominal + $totalSuratJalan,
             'total_ppn' => 0,
             'total_pph' => 0,
-            'grand_total' => $totalNominal,
+            'grand_total' => $totalNominal + $totalSuratJalan,
         ];
 
         // Group by classification/jenis_biaya (excluding Ban)
@@ -231,6 +256,10 @@ class RekapBiayaAssetController extends Controller
             return $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain';
         });
 
-        return view('rekap-biaya-asset.show', compact('usages', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
+        if ($suratJalans->isNotEmpty()) {
+            $grouped->put('Surat Jalan Bongkaran Batam', $suratJalans);
+        }
+
+        return view('rekap-biaya-asset.show', compact('usages', 'suratJalans', 'totalSuratJalan', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
     }
 }
