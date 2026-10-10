@@ -322,6 +322,86 @@
                                                 </td>
                                             </tr>
                                         @endif
+                                        @php
+                                            $buruhBatamDetails = isset($item->buruhBatamDetails)
+                                                ? $item->buruhBatamDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal)) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
+                                                : collect();
+                                        @endphp
+                                        @if(strtoupper($category) === 'BURUH BONGKAR BATAM' && $buruhBatamDetails->isNotEmpty())
+                                            @php
+                                                $buruhBatamRows = collect();
+                                                foreach ($buruhBatamDetails as $detail) {
+                                                    $containers = is_array($detail->kontainer_ids)
+                                                        ? $detail->kontainer_ids
+                                                        : (json_decode($detail->kontainer_ids ?? '[]', true) ?: []);
+                                                    $containers = collect($containers)->values();
+                                                    if ($containers->isEmpty()) {
+                                                        $containers = collect([['nomor_kontainer' => 'Tanpa rincian kontainer', 'size' => '-', 'nominal' => (float) $detail->nominal]]);
+                                                    }
+
+                                                    $weights = $containers->map(fn ($container) => max(0, (float) ($container['nominal'] ?? 0)));
+                                                    $weightTotal = $weights->sum();
+                                                    $grossTotal = (float) $detail->nominal + (float) ($detail->adjustment ?? 0);
+                                                    $allocatedAdjustment = 0;
+                                                    $allocatedPph = 0;
+
+                                                    foreach ($containers as $index => $container) {
+                                                        $weight = $weightTotal > 0 ? $weights[$index] : 1;
+                                                        $denominator = $weightTotal > 0 ? $weightTotal : $containers->count();
+                                                        $isLast = $index === $containers->count() - 1;
+                                                        $nominal = (float) ($container['nominal'] ?? 0);
+                                                        $adjustment = $isLast
+                                                            ? (float) ($detail->adjustment ?? 0) - $allocatedAdjustment
+                                                            : round((float) ($detail->adjustment ?? 0) * $weight / $denominator, 2);
+                                                        $allocatedAdjustment += $adjustment;
+                                                        $containerGross = $nominal + $adjustment;
+                                                        $pph = $isLast
+                                                            ? (float) ($detail->pph_amount ?? 0) - $allocatedPph
+                                                            : round((float) ($detail->pph_amount ?? 0) * ($grossTotal != 0 ? $containerGross / $grossTotal : 1 / $containers->count()), 2);
+                                                        $allocatedPph += $pph;
+                                                        $buruhBatamRows->push([
+                                                            'nomor_kontainer' => $container['nomor_kontainer'] ?? 'Unknown',
+                                                            'size' => $container['size'] ?? '-',
+                                                            'nominal' => $nominal,
+                                                            'adjustment' => $adjustment,
+                                                            'pph' => $pph,
+                                                            'total' => $containerGross - $pph,
+                                                        ]);
+                                                    }
+                                                }
+                                            @endphp
+                                            <tr class="bg-amber-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-amber-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-amber-50 text-[11px] font-semibold uppercase tracking-wide text-amber-800">Rincian biaya buruh bongkar Batam per kontainer</div>
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-left">Size</th>
+                                                                    <th class="px-3 py-2 text-right">Nominal</th>
+                                                                    <th class="px-3 py-2 text-right">Adjustment</th>
+                                                                    <th class="px-3 py-2 text-right">PPh</th>
+                                                                    <th class="px-3 py-2 text-right">Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($buruhBatamRows as $containerRow)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $containerRow['nomor_kontainer'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $containerRow['size'] }}</td>
+                                                                        <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">Rp {{ number_format($containerRow['nominal'], 0, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">Rp {{ number_format($containerRow['adjustment'], 0, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right text-gray-700 whitespace-nowrap">Rp {{ number_format($containerRow['pph'], 0, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format($containerRow['total'], 0, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-100/50 font-bold border-t border-gray-200">
