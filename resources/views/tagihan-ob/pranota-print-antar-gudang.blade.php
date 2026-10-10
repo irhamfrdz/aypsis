@@ -6,10 +6,10 @@
     $paperSize = 'Half-Folio';
     
     $currentPaper = [
-        'size' => '215.9mm 165.1mm',
-        'width' => '215.9mm',
-        'height' => '165.1mm',
-        'containerWidth' => '215.9mm',
+        'size' => '165.1mm 215.9mm',
+        'width' => '165.1mm',
+        'height' => '215.9mm',
+        'containerWidth' => '165.1mm',
         'fontSize' => '9px',
         'headerH1' => '14px',
         'tableFont' => '8px',
@@ -58,7 +58,7 @@
             }
             html, body { height: auto; margin: 0; padding: 0; }
             .print-page {
-                height: 164mm !important;
+                height: 214mm !important;
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
@@ -224,7 +224,7 @@
 <body>
     <!-- Instruction Banner -->
     <div class="no-print" style="background: #fef3c7; padding: 10px; border: 1px solid #f59e0b; margin: 10px; font-size: 11px; border-radius: 5px;">
-        <strong>Cetak Setengah Folio</strong><br>Ukuran kertas: <b>215,9 &times; 165,1 mm</b> (21,59 &times; 16,51 cm).<br>Gunakan ukuran kertas khusus tersebut, skala <b>100%</b>, margin <b>None / Tidak ada</b>, dan matikan header/footer browser.
+        <strong>Cetak Setengah Folio Potret</strong><br>Ukuran kertas: <b>165,1 &times; 215,9 mm</b> (16,51 &times; 21,59 cm).<br>Gunakan ukuran kertas khusus tersebut, skala <b>100%</b>, margin <b>None / Tidak ada</b>, dan matikan header/footer browser.
     </div>
 
     <!-- Print Button -->
