@@ -240,7 +240,7 @@
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
-                    <p class="mb-1">Keterangan: <strong>{{ $eligibleCount }}</strong> total surat jalan memenuhi syarat umum. <strong>{{ $pranotaUsedCount }}</strong> sudah diproses atau memiliki status pembayaran yang tidak tersedia. Setelah filter tambahan, <strong>{{ $finalFilteredCount }}</strong> yang tersedia untuk dipilih.</p>
+                    <p class="mb-1">Keterangan: Seluruh <strong>{{ $eligibleCount }}</strong> surat jalan sesuai Report Rit tersedia untuk dipilih, termasuk yang sudah masuk pranota atau berstatus lunas.</p>
                 </div>
                 @endif
 
@@ -369,7 +369,6 @@
                             
                             @forelse($allSuratJalans as $item)
                                 @php
-                                    $unavailableReason = $item['data']->rit_unavailable_reason;
                                     $inputPrefix = $item['type'] === 'regular' ? 'surat_jalan_data' : 'surat_jalan_bongkaran_data';
                                 @endphp
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
@@ -379,8 +378,7 @@
                                         <input type="checkbox"
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
                                                value="1"
-                                               @disabled($unavailableReason)
-                                               title="{{ $unavailableReason ?? 'Tersedia untuk dipilih' }}"
+                                               title="Tersedia untuk dipilih"
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
                                                data-id="{{ $item['id'] }}"
                                                data-type="{{ $item['type'] }}"
@@ -410,9 +408,6 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
-                                        @if($unavailableReason)
-                                            <span class="block text-xs text-amber-700">{{ $unavailableReason }}</span>
-                                        @endif
                                         @if($item['tanggal_checkpoint'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint supir detected">Checkpoint</span>
                                         @endif

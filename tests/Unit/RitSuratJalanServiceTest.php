@@ -2,8 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Models\SuratJalan;
-use App\Models\SuratJalanBongkaran;
 use App\Services\RitSuratJalanService;
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager;
@@ -84,29 +82,30 @@ class RitSuratJalanServiceTest extends TestCase
         $bongkaran = $service->bongkaran($start, $end)->get();
         $this->assertSame([1, 2, 5, 6, 7], $regular->pluck('id')->all());
         $this->assertCount(1, $bongkaran);
-        $service->markAvailability($regular, $bongkaran);
-        $this->assertNull($regular[0]->rit_unavailable_reason);
-        $this->assertNotNull($regular[1]->rit_unavailable_reason);
-        $this->assertNotNull($bongkaran[0]->rit_unavailable_reason);
+        $this->assertSame('belum_dibayar', $regular[0]->status_pembayaran_uang_rit);
+        $this->assertSame('sudah_masuk_pranota', $regular[1]->status_pembayaran_uang_rit);
+        $this->assertSame('lunas', $bongkaran[0]->status_pembayaran_uang_rit);
         $this->assertCount(5, $regular);
     }
 
-    public function test_grouped_pranotas_block_every_number_and_cancelled_pranotas_do_not_block(): void
+    public function test_existing_pranotas_do_not_exclude_surat_jalan_from_selection(): void
     {
         $this->database->getConnection()->table('pranota_uang_rits')->insert([
             ['status' => 'draft', 'surat_jalan_id' => 1, 'no_surat_jalan' => 'SJ-01, SJ-02, SJ-03 (Bongkaran)'],
             ['status' => 'cancelled', 'surat_jalan_id' => 4, 'no_surat_jalan' => 'SJ-04'],
         ]);
-        $regular = collect([
-            (new SuratJalan)->forceFill(['id' => 1, 'no_surat_jalan' => 'SJ-01', 'status_pembayaran_uang_rit' => 'belum_dibayar']),
-            (new SuratJalan)->forceFill(['id' => 2, 'no_surat_jalan' => 'SJ-02', 'status_pembayaran_uang_rit' => null]),
-            (new SuratJalan)->forceFill(['id' => 4, 'no_surat_jalan' => 'SJ-04', 'status_pembayaran_uang_rit' => 'belum_dibayar']),
-        ]);
-        $bongkaran = collect([(new SuratJalanBongkaran)->forceFill(['id' => 3, 'nomor_surat_jalan' => 'SJ-03', 'status_pembayaran_uang_rit' => 'belum_bayar'])]);
-        (new RitSuratJalanService)->markAvailability($regular, $bongkaran);
-        $this->assertSame('Sudah masuk pranota', $regular[0]->rit_unavailable_reason);
-        $this->assertSame('Sudah masuk pranota', $regular[1]->rit_unavailable_reason);
-        $this->assertSame('Sudah masuk pranota', $bongkaran[0]->rit_unavailable_reason);
-        $this->assertNull($regular[2]->rit_unavailable_reason);
+        $db = $this->database->getConnection();
+        foreach ([1, 2, 4] as $id) {
+            $db->table('surat_jalans')->insert(['id' => $id, 'no_surat_jalan' => 'SJ-0'.$id,
+                'rit' => 'menggunakan_rit', 'tanggal_checkpoint' => '2026-10-05',
+                'status_pembayaran_uang_rit' => 'sudah_masuk_pranota']);
+        }
+        $db->table('surat_jalan_bongkarans')->insert(['id' => 3, 'nomor_surat_jalan' => 'SJ-03',
+            'rit' => 'menggunakan_rit', 'tanggal_checkpoint' => '2026-10-05', 'status_pembayaran_uang_rit' => 'lunas']);
+        $service = new RitSuratJalanService;
+        $start = Carbon::parse('2026-10-03');
+        $end = Carbon::parse('2026-10-09');
+        $this->assertSame([1, 2, 4], $service->regular($start, $end)->orderBy('id')->pluck('id')->all());
+        $this->assertSame([3], $service->bongkaran($start, $end)->pluck('id')->all());
     }
 }

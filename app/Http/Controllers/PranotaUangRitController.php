@@ -120,12 +120,11 @@ class PranotaUangRitController extends Controller
             ->with(['tandaTerima', 'approvals'])->orderBy('created_at', 'desc')->get();
         $suratJalanBongkarans = $ritService->bongkaran($startDateObj, $endDateObj)
             ->with('tandaTerima')->orderBy('created_at', 'desc')->get();
-        $ritService->markAvailability($suratJalans, $suratJalanBongkarans);
 
         $allSuratJalans = $suratJalans->concat($suratJalanBongkarans);
         $eligibleCount = $allSuratJalans->count();
-        $finalFilteredCount = $allSuratJalans->whereNull('rit_unavailable_reason')->count();
-        $pranotaUsedCount = $eligibleCount - $finalFilteredCount;
+        $finalFilteredCount = $eligibleCount;
+        $pranotaUsedCount = 0;
         $eligibleExamples = collect();
         $excludedByPranotaExamples = collect();
         $excludedByPaymentExamples = collect();
@@ -400,13 +399,11 @@ class PranotaUangRitController extends Controller
 
             $selectedRegular = SuratJalan::whereIn('id', array_keys($selectedData))->lockForUpdate()->get();
             $selectedBongkaran = SuratJalanBongkaran::whereIn('id', array_keys($selectedBongkaranData))->lockForUpdate()->get();
-            app(RitSuratJalanService::class)->markAvailability($selectedRegular, $selectedBongkaran);
             if ($selectedRegular->count() !== count($selectedData)
-                || $selectedBongkaran->count() !== count($selectedBongkaranData)
-                || $selectedRegular->concat($selectedBongkaran)->whereNotNull('rit_unavailable_reason')->isNotEmpty()) {
+                || $selectedBongkaran->count() !== count($selectedBongkaranData)) {
                 DB::rollBack();
 
-                return back()->withErrors(['surat_jalan_data' => 'Surat jalan yang dipilih sudah diproses atau tidak tersedia. Muat ulang halaman dan periksa statusnya.'])->withInput();
+                return back()->withErrors(['surat_jalan_data' => 'Surat jalan yang dipilih tidak ditemukan. Muat ulang halaman dan periksa kembali.'])->withInput();
             }
 
             // Generate nomor pranota DALAM transaksi yang sama
