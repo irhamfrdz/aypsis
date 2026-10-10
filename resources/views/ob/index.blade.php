@@ -1186,9 +1186,7 @@
                             class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Lokasi Tujuan</option>
                         @foreach($gudangs as $gudang)
-                            <option value="{{ $gudang->id }}" {{ in_array(request('kegiatan'), ['muat', 'muat_temas'], true)
-                                ? (strtoupper($gudang->nama_gudang) === 'ON BOARD' ? 'selected' : '')
-                                : ($gudang->nama_gudang == 'SS JKT' ? 'selected' : '') }}>
+                            <option value="{{ $gudang->id }}" data-nama-gudang="{{ $gudang->nama_gudang }}">
                                 {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
                             </option>
                         @endforeach
@@ -1647,6 +1645,13 @@ function openSupirModal(type, id, isGanti = false) {
     const keGudangId = document.getElementById('ke_gudang_id');
     const btnSubmitText = document.getElementById('btnSubmitOBText');
     const btnSubmitIcon = document.getElementById('btnSubmitOBIcon');
+
+    const keInput = Array.from(document.querySelectorAll('.editable-ke'))
+        .find(input => input.dataset.type === type && input.dataset.id === String(id));
+    const tujuan = (keInput?.value || '').trim().toUpperCase();
+    const gudangTujuan = Array.from(keGudangId.options)
+        .find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === tujuan);
+    keGudangId.value = gudangTujuan?.value || '';
     
     if (isGanti) {
         obFields.style.display = 'none';
@@ -2113,7 +2118,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Handle form submission
-document.getElementById('formMarkOB').addEventListener('submit', function(e) {
+document.getElementById('formMarkOB').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const recordType = document.getElementById('record_type').value;
@@ -2138,6 +2143,9 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     const btnSubmit = document.getElementById('btnSubmitOB');
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+
+    // Pastikan perubahan Ke di tabel selesai disimpan sebelum status OB diperbarui.
+    await asalKeSaveQueue;
     
     // Determine endpoint based on record type
     let endpoint = isGantiSupir ? '/ob/update-supir' : '/ob/mark-as-ob';
