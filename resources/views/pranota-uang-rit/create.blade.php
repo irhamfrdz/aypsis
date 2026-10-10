@@ -45,7 +45,7 @@
 
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
             <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan dengan <strong>tanggal checkpoint</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
+                <p class="text-xs text-yellow-800">Menampilkan Surat Jalan sesuai filter tanggal <strong>Report Rit</strong> dari <strong>{{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }}</strong> hingga <strong>{{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }}</strong>.</p>
                 <a href="{{ route('pranota-uang-rit.select-date') }}" class="ml-2 text-xs text-blue-600 hover:underline">Ubah rentang tanggal</a>
             </div>
             @endif
@@ -240,7 +240,7 @@
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
-                    <p class="mb-1">Keterangan: <strong>{{ $eligibleCount }}</strong> total surat jalan memenuhi syarat umum. <strong>{{ $pranotaUsedCount }}</strong> sudah diproses dalam pranota. Setelah filter tambahan, <strong>{{ $finalFilteredCount }}</strong> yang tersedia untuk dipilih.</p>
+                    <p class="mb-1">Keterangan: <strong>{{ $eligibleCount }}</strong> total surat jalan memenuhi syarat umum. <strong>{{ $pranotaUsedCount }}</strong> sudah diproses atau memiliki status pembayaran yang tidak tersedia. Setelah filter tambahan, <strong>{{ $finalFilteredCount }}</strong> yang tersedia untuk dipilih.</p>
                 </div>
                 @endif
 
@@ -294,7 +294,7 @@
                                     <input type="checkbox" id="selectAllCheckbox" class="h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Checkpoint</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Rit</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Eligible</th>
                                 <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Supir</th>
@@ -309,9 +309,11 @@
                                     // Prioritas tanggal: checkpoint -> tanda terima
                                     $tanggalDisplay = $sj->tanggal_checkpoint;
                                     if (!$tanggalDisplay && $sj->tandaTerima) {
-                                        $tanggalDisplay = $sj->tandaTerima->tanggal_terima;
+                                        $tanggalDisplay = $sj->tandaTerima->tanggal;
                                     }
                                     
+                                    $tanggalDisplay = $tanggalDisplay ?: ($sj->kegiatan === 'bongkaran' ? $sj->tanggal_tanda_terima : null) ?: $sj->tanggal_surat_jalan;
+
                                     // Robust identification
                                     $supirIdentifier = $sj->supir_nik ?: $sj->supir;
                                     $supirDisplayName = $sj->supir_display_name;
@@ -367,6 +369,7 @@
                             
                             @forelse($allSuratJalans as $item)
                                 @php
+                                    $unavailableReason = $item['data']->rit_unavailable_reason;
                                     $inputPrefix = $item['type'] === 'regular' ? 'surat_jalan_data' : 'surat_jalan_bongkaran_data';
                                 @endphp
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
@@ -376,6 +379,8 @@
                                         <input type="checkbox"
                                                name="{{ $inputPrefix }}[{{ $item['id'] }}][selected]"
                                                value="1"
+                                               @disabled($unavailableReason)
+                                               title="{{ $unavailableReason ?? 'Tersedia untuk dipilih' }}"
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
                                                data-id="{{ $item['id'] }}"
                                                data-type="{{ $item['type'] }}"
@@ -384,7 +389,7 @@
                                                data-supir_identifier="{{ $item['supir_identifier'] }}"
                                                data-supir_display_name="{{ $item['supir_display_name'] }}"
                                                data-tanggal_checkpoint="{{ $item['tanggal_checkpoint'] ?? '' }}"
-                                               data-tanggal_tanda_terima="{{ $item['type'] === 'regular' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_terima : '' }}"
+                                               data-tanggal_tanda_terima="{{ $item['type'] === 'regular' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal : '' }}"
                                                data-tanggal_tanda_terima_bongkaran="{{ $item['type'] === 'bongkaran' && $item['tandaTerima'] ? $item['tandaTerima']->tanggal_tanda_terima : '' }}"
                                                data-pengirim="{{ $item['type'] === 'regular' ? ($item['data']->pengirim ?? $item['data']->pengirim_nama ?? '-') : ($item['data']->pengirim ?? '-') }}"
                                                data-tujuan_pengambilan="{{ $item['type'] === 'regular' ? ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_pengambilan ?? '-') : ($item['data']->tujuan_pengambilan ?? $item['data']->tempat_tujuan ?? '-') }}">
@@ -405,6 +410,9 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center text-xs">
+                                        @if($unavailableReason)
+                                            <span class="block text-xs text-amber-700">{{ $unavailableReason }}</span>
+                                        @endif
                                         @if($item['tanggal_checkpoint'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800" title="Checkpoint supir detected">Checkpoint</span>
                                         @endif
@@ -519,7 +527,7 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
                     <div class="text-xs text-gray-600">
-                        <span class="font-semibold text-indigo-600">Total {{ $suratJalans->count() + ($suratJalanBongkarans->count() ?? 0) }} surat jalan</span> tersedia dalam tabel (scroll untuk melihat semua).
+                        <span class="font-semibold text-indigo-600">Total {{ $suratJalans->count() + ($suratJalanBongkarans->count() ?? 0) }} surat jalan</span> ditampilkan sesuai Report Rit (scroll untuk melihat semua).
                         <span id="searchResults" class="ml-2 text-green-600 font-medium hidden"></span>
                     </div>
                     <p class="text-xs text-gray-600">
@@ -563,7 +571,7 @@
             </div>
 
             <!-- Submit Button -->
-            @if($suratJalans->count() > 0)
+            @if($finalFilteredCount > 0)
                 <div class="flex flex-col sm:flex-row justify-end gap-2">
                     <a href="{{ route('pranota-uang-rit.index') }}"
                        class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
@@ -1030,8 +1038,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateSelectAllState() {
         if (!selectAllCheckbox) return;
 
-        const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"])');
-        const checkedVisibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"]):checked');
+        const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not(:disabled):not([style*="display: none"])');
+        const checkedVisibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not(:disabled):not([style*="display: none"]):checked');
 
         if (visibleCheckboxes.length === 0) {
             selectAllCheckbox.checked = false;
@@ -1051,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Select all functionality
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function () {
-            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"])');
+            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not(:disabled):not([style*="display: none"])');
             visibleCheckboxes.forEach((checkbox, globalIndex) => {
                 checkbox.checked = this.checked;
             });
@@ -1063,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectAllBtn = document.getElementById('selectAllBtn');
     if (selectAllBtn) {
         selectAllBtn.addEventListener('click', function() {
-            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"])');
+            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not(:disabled):not([style*="display: none"])');
             visibleCheckboxes.forEach(checkbox => {
                 checkbox.checked = true;
             });
@@ -1076,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const deselectAllBtn = document.getElementById('deselectAllBtn');
     if (deselectAllBtn) {
         deselectAllBtn.addEventListener('click', function() {
-            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"])');
+            const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not(:disabled):not([style*="display: none"])');
             visibleCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });

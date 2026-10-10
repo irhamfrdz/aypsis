@@ -6,6 +6,7 @@ use App\Models\PranotaUangRit;
 use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
+use App\Services\RitSuratJalanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -114,241 +115,23 @@ class PranotaUangRitController extends Controller
             }
         }
 
-        // Get available surat jalans that haven't been processed for pranota uang rit
-        // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
-        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
-            // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
-            $q->where('status', 'approved')
-                ->orWhere('status', 'sudah_checkpoint')
-                ->orWhere('status', 'active')
-                ->orWhereNotNull('tanggal_checkpoint')
-                ->orWhereHas('tandaTerima')
-                ->orWhereHas('approvals', function ($sub) {
-                    $sub->where('status', 'approved');
-                });
-        })
-            ->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
-            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
-            ->whereNotIn('id', function ($query) {
-                $query->select('surat_jalan_id')
-                    ->from('pranota_uang_rits')
-                    ->whereNotNull('surat_jalan_id')
-                    ->whereNotIn('status', ['cancelled']);
-            })
-            // Include surat jalan that:
-            // - Have a supir/kenek checkpoint (tanggal_checkpoint), OR
-            // - Have a Tanda Terima record, OR
-            // - Are bongkaran with tanggal tanda terima, OR
-            // - Are approved (don't strictly require checkpoint)
-            ->where(function ($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                    ->orWhereHas('tandaTerima')
-                    ->orWhere(function ($subQ) {
-                        // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
-                        $subQ->where('kegiatan', 'bongkaran')
-                            ->whereNotNull('tanggal_tanda_terima');
-                    })
-                    ->orWhere('status', 'approved'); // Tambahan: surat jalan yang sudah approved bisa langsung muncul
-            });
+        $ritService = app(RitSuratJalanService::class);
+        $suratJalans = $ritService->regular($startDateObj, $endDateObj)
+            ->with(['tandaTerima', 'approvals'])->orderBy('created_at', 'desc')->get();
+        $suratJalanBongkarans = $ritService->bongkaran($startDateObj, $endDateObj)
+            ->with('tandaTerima')->orderBy('created_at', 'desc')->get();
+        $ritService->markAvailability($suratJalans, $suratJalanBongkarans);
 
-        // Apply date range filter to base query BEFORE any cloning - filter by tanggal tanda terima
-        if ($startDateObj && $endDateObj) {
-            $baseQuery->where(function ($q) use ($startDateObj, $endDateObj) {
-                // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function ($subQ) use ($startDateObj, $endDateObj) {
-                    // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
-                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDateObj, $endDateObj) {
-                        $ttQuery->where(DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                            ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
-                    });
-                })
-                    ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
-                        // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
-                        $subQ->where('kegiatan', 'bongkaran')
-                            ->whereNotNull('tanggal_tanda_terima')
-                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
-                    })
-                    ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
-                        // 3. Filter berdasarkan tanggal checkpoint
-                        $subQ->whereNotNull('tanggal_checkpoint')
-                            ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                            ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                    })
-                    ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
-                        // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
-                        $subQ->where('status', 'approved')
-                            ->where(DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDateObj->toDateString())
-                            ->where(DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDateObj->toDateString());
-                    });
-            });
-
-            // Log the actual SQL query for debugging
-            $sqlQuery = $baseQuery->toSql();
-            $bindings = $baseQuery->getBindings();
-
-            Log::info('Applied date filter to base query (tanggal tanda terima)', [
-                'start_filter' => $startDateObj->toDateString(),
-                'end_filter' => $endDateObj->toDateString(),
-                'filter_type' => 'tanggal_tanda_terima (relasi + kolom bongkaran + fallback checkpoint)',
-                'sql_query_preview' => str_replace('?', "'%s'", $sqlQuery),
-                'bindings_count' => count($bindings),
-            ]);
-        }
-
-        $baseQuery->orderBy('created_at', 'desc');
-
-        // Now calculate statistics based on the filtered base query
-        $baseQueryBeforeDate = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
-            // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
-            $q->where('status', 'approved')
-                ->orWhere('status', 'sudah_checkpoint')
-                ->orWhere('status', 'active')
-                ->orWhereNotNull('tanggal_checkpoint')
-                ->orWhereHas('tandaTerima')
-                ->orWhereHas('approvals', function ($sub) {
-                    $sub->where('status', 'approved');
-                });
-        })
-            ->where('rit', 'menggunakan_rit')
-            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
-            ->whereNotIn('id', function ($query) {
-                $query->select('surat_jalan_id')
-                    ->from('pranota_uang_rits')
-                    ->whereNotNull('surat_jalan_id')
-                    ->whereNotIn('status', ['cancelled']);
-            })
-            ->where(function ($q) {
-                $q->whereNotNull('tanggal_checkpoint')
-                    ->orWhereHas('tandaTerima')
-                    ->orWhere(function ($subQ) {
-                        // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
-                        $subQ->where('kegiatan', 'bongkaran')
-                            ->whereNotNull('tanggal_tanda_terima');
-                    });
-            });
-
-        $countBeforeDate = $baseQueryBeforeDate->count();
-        $countAfterDate = (clone $baseQuery)->count();
-
-        Log::info('Date filtering impact', [
-            'count_before_date_filter' => $countBeforeDate,
-            'count_after_date_filter' => $countAfterDate,
-            'date_filter_applied' => ($startDateObj && $endDateObj),
-            'start_date' => $startDateObj ? $startDateObj->toDateString() : null,
-            'end_date' => $endDateObj ? $endDateObj->toDateString() : null,
-        ]);
-
-        $eligibleCount = (clone $baseQuery)->count();
-        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-        })->count();
-
-        // Get final surat jalans (no need to reapply filters, they're already in baseQuery)
-        $suratJalans = (clone $baseQuery)->get();
-        $finalFilteredCount = $suratJalans->count();
-
-        // Get examples for debugging
-        $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
-        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
-        })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
-        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
-
-        // Pass the start and end dates to the view so UI shows selected range explicitly
+        $allSuratJalans = $suratJalans->concat($suratJalanBongkarans);
+        $eligibleCount = $allSuratJalans->count();
+        $finalFilteredCount = $allSuratJalans->whereNull('rit_unavailable_reason')->count();
+        $pranotaUsedCount = $eligibleCount - $finalFilteredCount;
+        $eligibleExamples = collect();
+        $excludedByPranotaExamples = collect();
+        $excludedByPaymentExamples = collect();
+        $excludedByTandaTerimaExamples = collect();
         $viewStartDate = $startDate;
         $viewEndDate = $endDate;
-
-        Log::info('Final Surat Jalans for Pranota: '.$suratJalans->count());
-        Log::info('Date filtering applied', [
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'start_obj' => $startDateObj ? $startDateObj->toDateString() : null,
-            'end_obj' => $endDateObj ? $endDateObj->toDateString() : null,
-            'eligible_count' => $eligibleCount,
-            'final_count' => $finalFilteredCount,
-        ]);
-
-        // Debug: Show some sample data with dates
-        if ($suratJalans->count() > 0) {
-            $sample = $suratJalans->first();
-            Log::info('Sample Surat Jalan: ', [
-                'id' => $sample->id,
-                'no_surat_jalan' => $sample->no_surat_jalan,
-                'tanggal_surat_jalan' => $sample->tanggal_surat_jalan,
-                'status' => $sample->status,
-                'rit' => $sample->rit,
-                'supir_nama' => $sample->supir_nama,
-                'kenek_nama' => $sample->kenek_nama,
-            ]);
-
-            // Log ALL dates to see if filtering is working
-            $allDates = $suratJalans->pluck('tanggal_surat_jalan', 'no_surat_jalan')->toArray();
-            Log::info('ALL Surat Jalan dates returned:', $allDates);
-        }
-
-        // Compute extra diagnostics: SJs that have Tanda Terima but are excluded from final list
-        $suratJalanIncludedIds = $suratJalans->pluck('id')->toArray();
-        $excludedByTandaTerimaExamples = (clone $baseQuery)
-            ->whereHas('tandaTerima')
-            ->whereNotIn('id', $suratJalanIncludedIds)
-            ->take(10)
-            ->get(['id', 'no_surat_jalan', 'supir', 'status', 'rit', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
-
-        // TAMBAHAN: Ambil juga data dari SuratJalanBongkaran yang sudah ada tanda terima
-        $suratJalanBongkarans = collect();
-        if ($startDateObj && $endDateObj) {
-            $queryBongkaran = SuratJalanBongkaran::with(['tandaTerima'])
-                ->where(function ($q) use ($startDateObj, $endDateObj) {
-                    $q->whereHas('tandaTerima', function ($query) use ($startDateObj, $endDateObj) {
-                        $query->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
-                    })
-                        ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
-                            $subQ->whereNotNull('tanggal_checkpoint')
-                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                        });
-                })
-                // Filter lokasi removed to match Report logic
-                ->where(function ($q) {
-                    // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
-                    $q->where('rit', 'menggunakan_rit')
-                        ->orWhereNull('rit');
-                })
-                ->where(function ($q) {
-                    // Filter: status_pembayaran_uang_rit = belum_bayar ATAU NULL (belum ada pembayaran)
-                    $q->where('status_pembayaran_uang_rit', 'belum_bayar')
-                        ->orWhereNull('status_pembayaran_uang_rit');
-                })
-                ->whereNotIn('id', function ($query) {
-                    $query->select('surat_jalan_bongkaran_id')
-                        ->from('pranota_uang_rits')
-                        ->whereNotNull('surat_jalan_bongkaran_id')
-                        ->whereNotIn('status', ['cancelled']);
-                });
-
-            $suratJalanBongkarans = $queryBongkaran->orderBy('created_at', 'desc')->get();
-
-            Log::info('Surat Jalan Bongkaran Query', [
-                'date_range' => $startDateObj->toDateString().' to '.$endDateObj->toDateString(),
-                'count' => $suratJalanBongkarans->count(),
-                'sql' => $queryBongkaran->toSql(),
-            ]);
-
-            if ($suratJalanBongkarans->count() > 0) {
-                Log::info('Sample Bongkaran Data:', [
-                    'first' => [
-                        'id' => $suratJalanBongkarans->first()->id,
-                        'nomor' => $suratJalanBongkarans->first()->nomor_surat_jalan,
-                        'rit' => $suratJalanBongkarans->first()->rit,
-                        'status_pembayaran' => $suratJalanBongkarans->first()->status_pembayaran_uang_rit,
-                        'has_tanda_terima' => $suratJalanBongkarans->first()->tandaTerima ? 'yes' : 'no',
-                        'tanggal_tt' => $suratJalanBongkarans->first()->tandaTerima ? $suratJalanBongkarans->first()->tandaTerima->tanggal_tanda_terima : null,
-                    ],
-                ]);
-            }
-        }
 
         // Count unique check dates per supir within the range for attendance from cek_kendaraans table
         $driverAttendance = [];
@@ -573,13 +356,13 @@ class PranotaUangRitController extends Controller
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string',
             'surat_jalan_data' => 'sometimes|array',
-            'surat_jalan_data.*.selected' => 'required',
+            'surat_jalan_data.*.selected' => 'sometimes|boolean',
             'surat_jalan_data.*.no_surat_jalan' => 'required|string|max:255',
             'surat_jalan_data.*.supir_nama' => 'required|string|max:255',
             'surat_jalan_data.*.kenek_nama' => 'nullable|string|max:255',
             'surat_jalan_data.*.uang_rit_supir' => 'required|numeric|min:0',
             'surat_jalan_bongkaran_data' => 'sometimes|array',
-            'surat_jalan_bongkaran_data.*.selected' => 'required',
+            'surat_jalan_bongkaran_data.*.selected' => 'sometimes|boolean',
             'surat_jalan_bongkaran_data.*.no_surat_jalan' => 'required|string|max:255',
             'surat_jalan_bongkaran_data.*.supir_nama' => 'required|string|max:255',
             'surat_jalan_bongkaran_data.*.uang_rit_supir' => 'required|numeric|min:0',
@@ -613,6 +396,17 @@ class PranotaUangRitController extends Controller
 
             if (empty($selectedData) && empty($selectedBongkaranData)) {
                 return back()->withErrors(['surat_jalan_data' => 'Silakan pilih minimal satu surat jalan.'])->withInput();
+            }
+
+            $selectedRegular = SuratJalan::whereIn('id', array_keys($selectedData))->lockForUpdate()->get();
+            $selectedBongkaran = SuratJalanBongkaran::whereIn('id', array_keys($selectedBongkaranData))->lockForUpdate()->get();
+            app(RitSuratJalanService::class)->markAvailability($selectedRegular, $selectedBongkaran);
+            if ($selectedRegular->count() !== count($selectedData)
+                || $selectedBongkaran->count() !== count($selectedBongkaranData)
+                || $selectedRegular->concat($selectedBongkaran)->whereNotNull('rit_unavailable_reason')->isNotEmpty()) {
+                DB::rollBack();
+
+                return back()->withErrors(['surat_jalan_data' => 'Surat jalan yang dipilih sudah diproses atau tidak tersedia. Muat ulang halaman dan periksa statusnya.'])->withInput();
             }
 
             // Generate nomor pranota DALAM transaksi yang sama
