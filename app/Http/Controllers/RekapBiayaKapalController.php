@@ -644,9 +644,9 @@ class RekapBiayaKapalController extends Controller
 
         $normalizeShip = fn ($name) => preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\\s]+/i', '', strtolower(trim((string) $name))));
         $blMetadata = [];
-        $addMetadata = function ($blNumbers, $shippers, $goods) use (&$blMetadata) {
+        $addMetadata = function ($blNumbers, $shippers, $jenisBarang) use (&$blMetadata) {
             $shippers = collect($shippers)->filter(fn ($value) => filled($value))->unique()->values()->all();
-            $goods = collect($goods)->filter(fn ($value) => filled($value))->unique()->values()->all();
+            $jenisBarang = collect($jenisBarang)->filter(fn ($value) => filled($value))->unique()->values()->all();
 
             foreach ($blNumbers as $number) {
                 $number = $this->normalizeBl($number);
@@ -654,21 +654,44 @@ class RekapBiayaKapalController extends Controller
                     continue;
                 }
                 $blMetadata[$number]['shipper'] = array_values(array_unique(array_merge($blMetadata[$number]['shipper'] ?? [], $shippers)));
-                $blMetadata[$number]['nama_barang'] = array_values(array_unique(array_merge($blMetadata[$number]['nama_barang'] ?? [], $goods)));
+                $blMetadata[$number]['jenis_barang'] = array_values(array_unique(array_merge($blMetadata[$number]['jenis_barang'] ?? [], $jenisBarang)));
             }
         };
 
-        $manifestRecords = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee'])
+        $manifestRecords = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee', 'prospek.tandaTerima'])
             ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
             ->get()
             ->filter(fn ($record) => $normalizeShip($record->nama_kapal) === $normalizeShip($data['kapal']));
+
+        $receiptNumbers = $manifestRecords->pluck('nomor_tanda_terima')->filter()->unique()->values();
+        $receiptTypes = [];
+        if ($receiptNumbers->isNotEmpty()) {
+            foreach ([\App\Models\TandaTerima::class, \App\Models\TandaTerimaBatam::class] as $receiptModel) {
+                foreach ($receiptModel::whereIn('no_surat_jalan', $receiptNumbers)->get(['no_surat_jalan', 'jenis_barang']) as $receipt) {
+                    if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_surat_jalan] = $receipt->jenis_barang;
+                }
+            }
+            foreach ([\App\Models\TandaTerimaTanpaSuratJalan::class, \App\Models\TandaTerimaTanpaSuratJalanBatam::class] as $receiptModel) {
+                foreach ($receiptModel::whereIn('nomor_tanda_terima', $receiptNumbers)->get(['nomor_tanda_terima', 'jenis_barang']) as $receipt) {
+                    if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->nomor_tanda_terima] = $receipt->jenis_barang;
+                }
+            }
+            foreach (\App\Models\TandaTerimaTanpaSuratJalan::whereIn('no_tanda_terima', $receiptNumbers)->get(['no_tanda_terima', 'jenis_barang']) as $receipt) {
+                if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+            }
+            foreach (\App\Models\TandaTerimaTanpaSuratJalanBatam::whereIn('no_tanda_terima', $receiptNumbers)->get(['no_tanda_terima', 'jenis_barang']) as $receipt) {
+                if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+            }
+        }
         foreach ($manifestRecords as $record) {
             $details = $record->shipperDetails;
+            $receiptType = $record->prospek?->tandaTerima?->jenis_barang
+                ?: ($receiptTypes[$record->nomor_tanda_terima ?? ''] ?? null);
             $addMetadata(
                 preg_split('/[,;\\n]+/', (string) $record->nomor_bl),
                 collect([$record->pengirim, $record->shipperJb?->shipper, $record->shipperConsignee?->shipper])
                     ->merge($details->map(fn ($detail) => $detail->shipperConsignee?->shipper ?? $detail->pengirim)),
-                collect([$record->nama_barang])->merge($details->pluck('nama_barang'))
+                collect([$receiptType])
             );
         }
 
@@ -705,7 +728,7 @@ class RekapBiayaKapalController extends Controller
             return [
                 'number' => $number,
                 'shipper' => collect($metadata['shipper'] ?? [])->implode(', ') ?: '-',
-                'nama_barang' => collect($metadata['nama_barang'] ?? [])->implode(', ') ?: '-',
+                'jenis_barang' => collect($metadata['jenis_barang'] ?? [])->implode(', ') ?: '-',
             ];
         });
 
