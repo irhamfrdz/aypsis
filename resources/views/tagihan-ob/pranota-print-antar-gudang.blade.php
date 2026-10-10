@@ -10,9 +10,9 @@
         'width' => '165.1mm',
         'height' => '215.9mm',
         'containerWidth' => '165.1mm',
-        'fontSize' => '9px',
-        'headerH1' => '14px',
-        'tableFont' => '8px',
+        'fontSize' => '10px',
+        'headerH1' => '15px',
+        'tableFont' => '9px',
         'signatureBottom' => '3mm'
     ];
 @endphp
@@ -114,7 +114,7 @@
         .info-table td {
             padding: 1px 0;
             vertical-align: top;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .info-table .label {
@@ -136,7 +136,7 @@
 
         .items-table th, .items-table td {
             border: 1px solid #000;
-            padding: 1px 3px;
+            padding: 2px 3px;
             font-size: {{ $currentPaper['tableFont'] }};
             line-height: 1.1;
             vertical-align: middle;
@@ -164,7 +164,7 @@
             padding: 3px;
             border: 1px dashed #ccc;
             background-color: #fdfdfd;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .footer-signatures {
@@ -191,7 +191,7 @@
         }
 
         .signature-label {
-            font-size: 8px;
+            font-size: 9px;
             font-weight: bold;
         }
 
@@ -203,12 +203,12 @@
         }
 
         .temas-items th, .temas-items td {
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1.1;
-            padding: 1px 2px;
+            padding: 2px 2px;
         }
 
-        .temas-items th { font-size: 8px; }
+        .temas-items th { font-size: 9px; }
         .temas-items td { white-space: normal; overflow: visible; text-overflow: clip; }
         .temas-items .nowrap { white-space: nowrap; }
         .temas-totals {
