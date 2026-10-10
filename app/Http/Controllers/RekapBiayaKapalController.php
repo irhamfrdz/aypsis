@@ -658,18 +658,6 @@ class RekapBiayaKapalController extends Controller
             }
         };
 
-        $blRecords = \App\Models\Bl::with('prospek')
-            ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
-            ->get()
-            ->filter(fn ($record) => $normalizeShip($record->nama_kapal) === $normalizeShip($data['kapal']));
-        foreach ($blRecords as $record) {
-            $addMetadata(
-                preg_split('/[,;\\n]+/', (string) $record->nomor_bl),
-                [$record->pengirim, $record->prospek?->pt_pengirim, $record->prospek?->pengirim],
-                [$record->nama_barang, $record->prospek?->barang]
-            );
-        }
-
         $manifestRecords = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee'])
             ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
             ->get()
