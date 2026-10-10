@@ -2043,9 +2043,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Pada kegiatan bongkar, tujuan yang dipilih berlaku untuk baris ini dan baris setelahnya.
-    if (@json(request('kegiatan') === 'bongkar')) {
+    if (@json(isset($bls) || request('kegiatan') === 'bongkar')) {
         document.querySelectorAll('.editable-ke').forEach(input => {
-            input.addEventListener('change', function() {
+            const onKeChange = function() {
                 const row = this.closest('tr');
                 if (!row) return;
 
@@ -2059,7 +2059,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         jQuery(nextInput).trigger('change.select2');
                     }
                 }
-            });
+            };
+
+            if (input.tagName === 'SELECT' && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+                jQuery(input).on('change', onKeChange);
+            } else {
+                input.addEventListener('change', onKeChange);
+            }
         });
     }
 
@@ -2797,7 +2803,7 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
 // Simpan baris yang dipilih beserta baris yang menerima perubahan tujuan.
 async function saveAsalKe(type, id, tdElement) {
     const row = tdElement.closest('tr');
-    const pendingRows = @json(request('kegiatan') === 'bongkar')
+    const pendingRows = @json(isset($bls) || request('kegiatan') === 'bongkar')
         ? Array.from(row.parentElement.querySelectorAll('tr[data-pending-ke="true"]'))
         : [];
     const rowsToSave = Array.from(new Set([row, ...pendingRows]));
