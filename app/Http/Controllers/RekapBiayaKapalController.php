@@ -624,18 +624,23 @@ class RekapBiayaKapalController extends Controller
             $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
         } elseif (isset($record->is_pranota_ob)) {
             $entries = $record instanceof PranotaObMuatTemas ? $record->rekap_ob_temas_items : $record->getEnrichedItems();
-            if ($record instanceof PranotaObMuatTemas) {
-                $selected->rekap_ob_temas_items = [];
-                $common->rekap_ob_temas_items = [];
-            }
+            $selectedTemasItems = [];
+            $commonTemasItems = [];
             foreach ($entries as $entry) {
                 $amount = (float) ($entry['biaya'] ?? 0);
                 $ratio = $resolver->ratio($entry, $bl);
                 $add(['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount], $ratio);
                 if ($record instanceof PranotaObMuatTemas && $ratio !== 0.0) {
-                    $target = $ratio === null ? $common : $selected;
-                    $target->rekap_ob_temas_items[] = $entry;
+                    if ($ratio === null) {
+                        $commonTemasItems[] = $entry;
+                    } else {
+                        $selectedTemasItems[] = $entry;
+                    }
                 }
+            }
+            if ($record instanceof PranotaObMuatTemas) {
+                $selected->rekap_ob_temas_items = $selectedTemasItems;
+                $common->rekap_ob_temas_items = $commonTemasItems;
             }
         } else {
             $add($record->apportioned, $resolver->ratio($record, $bl));
