@@ -15,6 +15,7 @@ class Berita extends Model
     protected $fillable = [
         'judul',
         'konten',
+        'target_departemen',
         'tipe',
         'gambar',
         'is_active',
@@ -25,11 +26,32 @@ class Berita extends Model
     ];
 
     protected $casts = [
+        'target_departemen' => 'array',
         'is_active' => 'boolean',
         'pinned' => 'boolean',
         'kecepatan_teks' => 'integer',
         'published_at' => 'datetime',
     ];
+
+    /**
+     * Helper cek apakah berita/pengumuman ditujukan ke semua departemen
+     */
+    public function getIsSemuaDepartemenAttribute(): bool
+    {
+        return empty($this->target_departemen) || ! is_array($this->target_departemen) || count($this->target_departemen) === 0;
+    }
+
+    /**
+     * Helper label departemen sasaran
+     */
+    public function getTargetDepartemenLabelAttribute(): string
+    {
+        if ($this->is_semua_departemen) {
+            return 'Semua Departemen';
+        }
+
+        return implode(', ', (array) $this->target_departemen);
+    }
 
     /**
      * Relasi ke User yang membuat

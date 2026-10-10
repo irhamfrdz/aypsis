@@ -129,6 +129,58 @@
             @error('kecepatan_teks') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>
 
+        {{-- Target Departemen (Khusus Pengumuman) --}}
+        @php
+            $hasCustomDept = !empty($berita->target_departemen) && is_array($berita->target_departemen) && count($berita->target_departemen) > 0;
+            $selectedDepts = (array) old('target_departemen', $berita->target_departemen ?? []);
+            $currentDeptMode = old('target_departemen_mode', $hasCustomDept ? 'custom' : 'all');
+        @endphp
+        <div id="target-departemen-wrap" class="hidden">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                Target Departemen
+                <span class="text-xs text-gray-400 font-normal ml-1">(Pilih departemen sasaran pengumuman)</span>
+            </label>
+            <div class="p-3.5 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                <div class="flex items-center gap-5">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="target_departemen_mode" value="all" id="dept_mode_all"
+                               {{ $currentDeptMode === 'all' ? 'checked' : '' }}
+                               class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <span class="text-sm text-gray-700 font-medium">🌐 Semua Departemen</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="target_departemen_mode" value="custom" id="dept_mode_custom"
+                               {{ $currentDeptMode === 'custom' ? 'checked' : '' }}
+                               class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <span class="text-sm text-gray-700 font-medium">🏢 Departemen Tertentu</span>
+                    </label>
+                </div>
+
+                <div id="custom-dept-box" class="{{ $currentDeptMode === 'custom' ? '' : 'hidden' }} pt-2.5 border-t border-gray-200/80 space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-500 font-medium">Pilih satu atau beberapa departemen:</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btn-select-all-dept" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors">Pilih Semua</button>
+                            <span class="text-gray-300">•</span>
+                            <button type="button" id="btn-clear-dept" class="text-gray-500 hover:text-red-600 font-semibold transition-colors">Kosongkan</button>
+                        </div>
+                    </div>
+
+                    <select id="target_departemen" name="target_departemen[]" multiple="multiple"
+                            class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                            data-placeholder="Ketik atau pilih departemen sasaran...">
+                        @foreach($departemens as $dept)
+                            <option value="{{ $dept }}" {{ in_array($dept, $selectedDepts) ? 'selected' : '' }}>
+                                {{ $dept }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[11px] text-gray-400">Pengumuman hanya akan tayang di dashboard PWA karyawan pada departemen yang dipilih.</p>
+                    @error('target_departemen') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </div>
+
         {{-- Tanggal Publish --}}
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="published_at">Tanggal Publish</label>
@@ -173,6 +225,30 @@
     .rich-editor:empty::before { content: attr(data-placeholder); color: #9ca3af; pointer-events: none; }
     .rich-editor ul { list-style: disc; padding-left: 1.5rem; }
     .rich-editor ol { list-style: decimal; padding-left: 1.5rem; }
+    .select2-container--default .select2-selection--multiple {
+        border-color: #d1d5db;
+        border-radius: 0.75rem;
+        padding: 4px 6px;
+        min-height: 42px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #e0e7ff;
+        border: 1px solid #c7d2fe;
+        color: #3730a3;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #4f46e5;
+        margin-right: 4px;
+    }
 </style>
 @endpush
 
@@ -192,6 +268,38 @@ const kontenInput = document.getElementById('konten');
 const richToolbar = document.getElementById('rich-toolbar');
 const richEditor = document.getElementById('rich-editor');
 const runningSpeedWrap = document.getElementById('running-speed-wrap');
+const targetDepartemenWrap = document.getElementById('target-departemen-wrap');
+const customDeptBox = document.getElementById('custom-dept-box');
+const deptModeRadios = document.querySelectorAll('input[name="target_departemen_mode"]');
+const targetDeptSelect = $('#target_departemen');
+
+function updateDeptFields() {
+    const isCustom = document.querySelector('input[name="target_departemen_mode"]:checked')?.value === 'custom';
+    if (customDeptBox) {
+        customDeptBox.classList.toggle('hidden', !isCustom);
+    }
+}
+
+deptModeRadios.forEach(radio => radio.addEventListener('change', updateDeptFields));
+
+// Inisialisasi Select2 untuk target departemen
+if (typeof $.fn.select2 !== 'undefined') {
+    targetDeptSelect.select2({
+        placeholder: 'Pilih satu atau lebih departemen...',
+        allowClear: true,
+        closeOnSelect: false,
+        width: '100%'
+    });
+}
+
+document.getElementById('btn-select-all-dept')?.addEventListener('click', function() {
+    targetDeptSelect.find('option').prop('selected', true);
+    targetDeptSelect.trigger('change');
+});
+
+document.getElementById('btn-clear-dept')?.addEventListener('click', function() {
+    targetDeptSelect.val(null).trigger('change');
+});
 
 function updateTipeFields() {
     const isPengumuman = document.querySelector('input[name="tipe"]:checked')?.value === 'pengumuman';
@@ -202,11 +310,13 @@ function updateTipeFields() {
     richEditor.classList.toggle('hidden', !isPengumuman);
     richEditor.classList.toggle('flex', isPengumuman);
     runningSpeedWrap.classList.toggle('hidden', !isPengumuman);
+    targetDepartemenWrap.classList.toggle('hidden', !isPengumuman);
     kontenInput.required = false;
 }
 
 document.querySelectorAll('input[name="tipe"]').forEach(input => input.addEventListener('change', updateTipeFields));
 updateTipeFields();
+updateDeptFields();
 
 if (@json(session()->hasOldInput('konten'))) {
     richEditor.textContent = kontenInput.value;

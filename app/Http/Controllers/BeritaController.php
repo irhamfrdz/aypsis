@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,19 +17,28 @@ class BeritaController extends Controller
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
         }
+        if ($request->filled('departemen')) {
+            $deptFilter = $request->departemen;
+            $query->where(function ($q) use ($deptFilter) {
+                $q->whereNull('target_departemen')
+                    ->orWhereJsonContains('target_departemen', $deptFilter);
+            });
+        }
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%'.$request->search.'%');
         }
 
         $beritas = $query->paginate(15)->withQueryString();
+        $departemens = $this->getDepartemenList();
 
-        return view('berita.index', compact('beritas'));
+        return view('berita.index', compact('beritas', 'departemens'));
     }
 
     public function create()
     {
         return view('berita.create', [
             'tipeDefault' => request()->query('tipe') === 'pengumuman' ? 'pengumuman' : 'berita',
+            'departemens' => $this->getDepartemenList(),
         ]);
     }
 
@@ -41,6 +51,9 @@ class BeritaController extends Controller
             'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
             'kecepatan_teks' => 'nullable|integer|min:1|max:10',
             'published_at' => 'nullable|date',
+            'target_departemen_mode' => 'nullable|in:all,custom',
+            'target_departemen' => 'nullable|array',
+            'target_departemen.*' => 'string|max:100',
         ]);
 
         if ($request->hasFile('gambar') === false && $request->file('gambar')) {
@@ -54,9 +67,17 @@ class BeritaController extends Controller
             $gambarPath = $this->storeGambar($request->file('gambar'), $request->tipe);
         }
 
+        $targetDepartemen = null;
+        if ($request->tipe === 'pengumuman' && $request->input('target_departemen_mode') === 'custom') {
+            $rawDepts = (array) $request->input('target_departemen', []);
+            $cleanDepts = array_values(array_unique(array_filter(array_map('trim', $rawDepts))));
+            $targetDepartemen = count($cleanDepts) > 0 ? $cleanDepts : null;
+        }
+
         Berita::create([
             'judul' => $request->judul,
             'konten' => $request->tipe === 'pengumuman' ? $this->sanitizeRichText($request->konten) : $request->konten,
+            'target_departemen' => $targetDepartemen,
             'tipe' => $request->tipe,
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
@@ -72,8 +93,9 @@ class BeritaController extends Controller
     public function edit(Berita $berita)
     {
         $kontenEditor = $this->sanitizeRichText($berita->konten ?? '');
+        $departemens = $this->getDepartemenList();
 
-        return view('berita.edit', compact('berita', 'kontenEditor'));
+        return view('berita.edit', compact('berita', 'kontenEditor', 'departemens'));
     }
 
     public function update(Request $request, Berita $berita)
@@ -85,6 +107,9 @@ class BeritaController extends Controller
             'gambar' => 'nullable|prohibited_if:tipe,pengumuman|image|mimes:jpg,jpeg,png,webp|max:5120',
             'kecepatan_teks' => 'nullable|integer|min:1|max:10',
             'published_at' => 'nullable|date',
+            'target_departemen_mode' => 'nullable|in:all,custom',
+            'target_departemen' => 'nullable|array',
+            'target_departemen.*' => 'string|max:100',
         ]);
 
         if ($request->hasFile('gambar') === false && $request->file('gambar')) {
@@ -106,9 +131,17 @@ class BeritaController extends Controller
             $gambarPath = $this->moveGambar($berita->gambar, $request->tipe);
         }
 
+        $targetDepartemen = null;
+        if ($request->tipe === 'pengumuman' && $request->input('target_departemen_mode') === 'custom') {
+            $rawDepts = (array) $request->input('target_departemen', []);
+            $cleanDepts = array_values(array_unique(array_filter(array_map('trim', $rawDepts))));
+            $targetDepartemen = count($cleanDepts) > 0 ? $cleanDepts : null;
+        }
+
         $berita->update([
             'judul' => $request->judul,
             'konten' => $request->tipe === 'pengumuman' ? $this->sanitizeRichText($request->konten) : $request->konten,
+            'target_departemen' => $targetDepartemen,
             'tipe' => $request->tipe,
             'gambar' => $gambarPath,
             'is_active' => $request->boolean('is_active', true),
@@ -118,6 +151,20 @@ class BeritaController extends Controller
         ]);
 
         return redirect()->route('berita.index')->with('success', 'Berita/Pamflet berhasil diperbarui.');
+    }
+
+    /**
+     * Ambil daftar semua nama departemen unik dari data karyawan
+     */
+    private function getDepartemenList(): array
+    {
+        return Karyawan::whereNotNull('departemen')
+            ->where('departemen', '!=', '')
+            ->distinct()
+            ->orderBy('departemen')
+            ->pluck('departemen')
+            ->values()
+            ->all();
     }
 
     public function destroy(Berita $berita)

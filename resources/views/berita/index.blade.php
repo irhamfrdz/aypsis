@@ -41,9 +41,20 @@
                     <option value="pengumuman" @selected(request('tipe') === 'pengumuman')>Pengumuman</option>
                 </select>
             </div>
+            @if(isset($departemens) && count($departemens) > 0)
+            <div class="min-w-[160px]">
+                <label class="block text-xs font-semibold text-gray-500 mb-1">Target Departemen</label>
+                <select name="departemen" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option value="">Semua Departemen</option>
+                    @foreach($departemens as $dept)
+                        <option value="{{ $dept }}" @selected(request('departemen') === $dept)>{{ $dept }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="flex gap-2">
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">Cari</button>
-                @if(request()->anyFilled(['search','tipe']))
+                @if(request()->anyFilled(['search','tipe','departemen']))
                 <a href="{{ route('berita.index') }}" class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">Reset</a>
                 @endif
             </div>
@@ -101,6 +112,19 @@
                                 <span class="inline-flex px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">Pamflet</span>
                             @elseif($item->tipe === 'pengumuman')
                                 <span class="inline-flex px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">Pengumuman</span>
+                                <div class="mt-1">
+                                    @if(!$item->is_semua_departemen)
+                                        <span class="inline-flex items-center gap-1 text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-medium max-w-[130px] truncate" title="Target: {{ $item->target_departemen_label }}">
+                                            <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                            <span class="truncate">{{ $item->target_departemen_label }}</span>
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium" title="Semua Departemen">
+                                            <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+                                            Semua Dept
+                                        </span>
+                                    @endif
+                                </div>
                             @else
                                 <span class="inline-flex px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Berita</span>
                             @endif
