@@ -699,11 +699,6 @@
                                            value="{{ $bl->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
                                            placeholder="Asal kontainer...">
                                 @endif
-                                <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
-                                        class="text-green-600 hover:text-green-900 transition duration-150"
-                                        title="Simpan">
-                                    <i class="fas fa-save"></i>
-                                </button>
                             </div>
                         </td>
                         <td class="px-1 py-1 text-xs text-gray-900">
@@ -729,11 +724,6 @@
                                              <option value="{{ $selectedValue }}" selected>{{ $selectedValue }}</option>
                                     @endif
                                 </select>
-                                <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
-                                        class="text-green-600 hover:text-green-900 transition duration-150"
-                                        title="Simpan">
-                                    <i class="fas fa-save"></i>
-                                </button>
                             </div>
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -946,11 +936,6 @@
                                                value="{{ $naikKapal->asal_kontainer ?: (request('kegiatan') === 'bongkar' ? $namaKapal : '') }}"
                                                placeholder="Asal kontainer...">
                                     @endif
-                                    <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
-                                            class="text-green-600 hover:text-green-900 transition duration-150"
-                                            title="Simpan">
-                                        <i class="fas fa-save"></i>
-                                    </button>
                                 </div>
                             </td>
                             <td class="px-1 py-1 text-xs text-gray-900">
@@ -961,11 +946,6 @@
                                            data-type="naik_kapal"
                                          value="{{ $naikKapal->ke ?: (in_array(request('kegiatan'), ['muat', 'muat_temas'], true) ? 'ON BOARD' : '') }}"
                                            placeholder="Tujuan...">
-                                    <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
-                                            class="text-green-600 hover:text-green-900 transition duration-150"
-                                            title="Simpan">
-                                        <i class="fas fa-save"></i>
-                                    </button>
                                 </div>
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -2042,32 +2022,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Pada kegiatan bongkar, tujuan yang dipilih berlaku untuk baris ini dan baris setelahnya.
-    if (@json(isset($bls) || request('kegiatan') === 'bongkar')) {
-        document.querySelectorAll('.editable-ke').forEach(input => {
-            const onKeChange = function() {
-                const row = this.closest('tr');
-                if (!row) return;
+    const bindEditableChange = (input, handler) => {
+        if (input.tagName === 'SELECT' && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+            jQuery(input).on('change', handler);
+        } else {
+            input.addEventListener('change', handler);
+        }
+    };
 
-                for (let nextRow = row; nextRow; nextRow = nextRow.nextElementSibling) {
+    document.querySelectorAll('.editable-asal-kontainer').forEach(input => {
+        bindEditableChange(input, function() {
+            const row = this.closest('tr');
+            if (row) queueAsalKeSave([row], 'Asal kontainer');
+        });
+    });
+
+    document.querySelectorAll('.editable-ke').forEach(input => {
+        bindEditableChange(input, function() {
+            const row = this.closest('tr');
+            if (!row) return;
+
+            const changedRows = [row];
+            if (@json(isset($bls) || request('kegiatan') === 'bongkar')) {
+                for (let nextRow = row.nextElementSibling; nextRow; nextRow = nextRow.nextElementSibling) {
                     const nextInput = nextRow.querySelector('.editable-ke');
-                    if (!nextInput) continue;
+                    if (!nextInput || nextInput.value === this.value) continue;
 
                     nextInput.value = this.value;
-                    nextRow.dataset.pendingKe = 'true';
+                    changedRows.push(nextRow);
                     if (nextInput.tagName === 'SELECT' && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
                         jQuery(nextInput).trigger('change.select2');
                     }
                 }
-            };
-
-            if (input.tagName === 'SELECT' && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-                jQuery(input).on('change', onKeChange);
-            } else {
-                input.addEventListener('change', onKeChange);
             }
+
+            queueAsalKeSave(changedRows, 'Tujuan');
         });
-    }
+    });
 
     // Handle bulk Asal Kontainer and Ke update
     const bulkAsalInput = document.getElementById('bulk_asal_kontainer');
@@ -2800,57 +2791,58 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
     });
 });
 
-// Simpan baris yang dipilih beserta baris yang menerima perubahan tujuan.
-async function saveAsalKe(type, id, tdElement) {
-    const row = tdElement.closest('tr');
-    const pendingRows = @json(isset($bls) || request('kegiatan') === 'bongkar')
-        ? Array.from(row.parentElement.querySelectorAll('tr[data-pending-ke="true"]'))
-        : [];
-    const rowsToSave = Array.from(new Set([row, ...pendingRows]));
-    const saveBtn = tdElement.querySelector('button');
-    const originalBtnHtml = saveBtn.innerHTML;
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+// Antrekan penyimpanan agar perubahan berurutan pada baris yang sama tidak saling menimpa.
+let asalKeSaveQueue = Promise.resolve();
+const failedAsalKeRows = new Set();
 
+function queueAsalKeSave(rows, fieldLabel) {
+    const rowsToSave = Array.from(new Set([...failedAsalKeRows, ...rows]));
     const valueOf = input => input ? String(input.value || '').trim() : '';
-    const results = await Promise.allSettled(rowsToSave.map(async currentRow => {
-        const keInput = currentRow.querySelector('.editable-ke');
-        const response = await fetch('/ob/save-asal-ke', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
+    const entries = rowsToSave.map(row => {
+        const keInput = row.querySelector('.editable-ke');
+        return {
+            row,
+            payload: {
                 type: keInput.dataset.type,
                 id: keInput.dataset.id,
-                asal_kontainer: valueOf(currentRow.querySelector('.editable-asal-kontainer')) || null,
+                asal_kontainer: valueOf(row.querySelector('.editable-asal-kontainer')) || null,
                 ke: valueOf(keInput) || null
-            })
-        });
-        const result = await response.json();
-        if (!response.ok || !result.success) {
-            throw new Error(result.message || 'Terjadi kesalahan saat menyimpan');
-        }
-    }));
-
-    results.forEach((result, index) => {
-        if (result.status === 'fulfilled') delete rowsToSave[index].dataset.pendingKe;
+            }
+        };
     });
-    const failed = results.filter(result => result.status === 'rejected');
-    if (failed.length) {
-        console.error('Gagal menyimpan tujuan:', failed);
-        alert(`${failed.length} baris gagal disimpan. Klik Simpan lagi untuk mencoba ulang.`);
-        saveBtn.innerHTML = originalBtnHtml;
-        saveBtn.disabled = false;
-        return;
-    }
 
-    saveBtn.innerHTML = '<i class="fas fa-check text-green-600"></i>';
-    setTimeout(() => {
-        saveBtn.innerHTML = originalBtnHtml;
-        saveBtn.disabled = false;
-    }, 1500);
+    asalKeSaveQueue = asalKeSaveQueue.then(async () => {
+        const results = await Promise.allSettled(entries.map(async ({ payload }) => {
+            const response = await fetch('/ob/save-asal-ke', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Terjadi kesalahan saat menyimpan');
+            }
+        }));
+
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                failedAsalKeRows.delete(entries[index].row);
+            } else {
+                failedAsalKeRows.add(entries[index].row);
+            }
+        });
+
+        const failed = results.filter(result => result.status === 'rejected');
+        if (failed.length) {
+            console.error('Gagal menyimpan Asal/Ke:', failed);
+            showNotification(`${failed.length} baris gagal disimpan. Ubah kembali nilainya untuk mencoba ulang.`, 'error');
+        } else {
+            showNotification(`${fieldLabel} berhasil disimpan`, 'success');
+        }
+    });
 }
 
 // Handle Save Asal Kontainer and Ke (Bulk)

@@ -2347,8 +2347,8 @@ class ObController extends Controller
             $record->ke = $ke;
             $record->save();
 
-            // UPDATE STOCK KONTAINER LOCATION AND RECORD HISTORY
-            if (! empty($ke)) {
+            // Perbarui lokasi dan riwayat hanya saat tujuan benar-benar berubah.
+            if ($oldKe !== $ke && ! empty($ke)) {
                 $gudang = \App\Models\Gudang::where('nama_gudang', $ke)->first();
                 if ($gudang) {
                     $noKontainer = $record->nomor_kontainer;
@@ -2369,7 +2369,7 @@ class ObController extends Controller
                             }
                         }
 
-                        // Record history if it's a new location or even if same as before to track the OB event
+                        // Catat perpindahan ke lokasi baru.
                         if ($knt) {
                             HistoryKontainer::create([
                                 'nomor_kontainer' => $noKontainer,
