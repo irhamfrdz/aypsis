@@ -11,6 +11,44 @@ use Illuminate\Http\Request;
 class AbsensiController extends Controller
 {
     /**
+     * Build the actual timestamp for a manually entered attendance event.
+     * Overtime checkout belongs to the next calendar day when its clock time
+     * is earlier than the matching overtime check-in for the work date.
+     */
+    private function manualAttendanceDateTime(string $nik, string $tanggal, string $tipe, string $time, ?string $submittedOvertimeStart = null): Carbon
+    {
+        $waktu = Carbon::parse($tanggal.' '.$time);
+
+        if ($tipe === 'Lembur_Pulang') {
+            $overtimeStart = $submittedOvertimeStart;
+
+            if (empty($overtimeStart)) {
+                $existingStart = Absensi::where('nik', $nik)
+                    ->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur', 'lembur'])
+                    ->workDates($tanggal)
+                    ->orderBy('waktu', 'desc')
+                    ->first();
+
+                $overtimeStart = $existingStart
+                    ? Carbon::parse($existingStart->waktu)->format('H:i')
+                    : null;
+            }
+
+            if (! empty($overtimeStart) && $time < $overtimeStart) {
+                $waktu->addDay();
+            }
+
+            return $waktu;
+        }
+
+        if (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00') {
+            $waktu->addDay();
+        }
+
+        return $waktu;
+    }
+
+    /**
      * Download User Data from fingerprint machine (MDB)
      */
     public function exportMachineUsers()
@@ -564,10 +602,7 @@ class AbsensiController extends Controller
                     }
                 }
 
-                $waktu = Carbon::parse($tanggal.' '.$time);
-                if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                    $waktu->addDay();
-                }
+                $waktu = $this->manualAttendanceDateTime($nik, $tanggal, $tipe, $time, $times['Lembur_Masuk']);
 
                 try {
                     Absensi::create([
@@ -651,10 +686,7 @@ class AbsensiController extends Controller
             // Update data jika sudah ada, atau hapus jika kosong
             if ($existingLog) {
                 if (! empty($time)) {
-                    $waktu = Carbon::parse($tanggal.' '.$time);
-                    if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                        $waktu->addDay();
-                    }
+                    $waktu = $this->manualAttendanceDateTime($nik, $tanggal, $tipe, $time, $times['Lembur_Masuk']);
 
                     try {
                         $existingLog->update([
@@ -691,10 +723,7 @@ class AbsensiController extends Controller
 
             // Jika belum ada dan form diisi
             if (! empty($time)) {
-                $waktu = Carbon::parse($tanggal.' '.$time);
-                if (($tipe === 'Lembur_Pulang' && ! empty($times['Lembur_Masuk']) && $time < $times['Lembur_Masuk']) || (in_array($tipe, ['Pulang', 'Istirahat_Keluar', 'Istirahat_Masuk']) && $time < '06:00')) {
-                    $waktu->addDay();
-                }
+                $waktu = $this->manualAttendanceDateTime($nik, $tanggal, $tipe, $time, $times['Lembur_Masuk']);
 
                 try {
                     Absensi::create([
