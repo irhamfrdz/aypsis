@@ -146,7 +146,10 @@
                 dataType: 'json',
                 success: function(data) {
                     if ($('#kapal_select').val() !== kapal || $('#voyage_select').val() !== voyage) return;
-                    data.forEach(number => $blSelect.append(new Option('BL ' + number, number)));
+                    data.forEach(bl => {
+                        const label = `BL ${bl.number} | Shipper: ${bl.shipper} | Barang: ${bl.nama_barang}`;
+                        $blSelect.append(new Option(label, bl.number));
+                    });
                     $blSelect.prop('disabled', false).trigger('change');
                     $('#bl_status').text(data.length ? 'Pilih satu atau beberapa BL. Kosongkan untuk semua biaya. Biaya umum kapal ditampilkan terpisah saat BL dipilih.' : 'Belum ada referensi BL pada kapal dan voyage ini.');
                 },

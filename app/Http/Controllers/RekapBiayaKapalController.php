@@ -641,6 +641,49 @@ class RekapBiayaKapalController extends Controller
         $kapal = strtolower(trim($data['kapal']));
         $voyage = strtolower(trim($data['voyage']));
         $numbers = RekapBlService::forVoyage($data['kapal'], $data['voyage'])->available();
+
+        $normalizeShip = fn ($name) => preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\\s]+/i', '', strtolower(trim((string) $name))));
+        $blMetadata = [];
+        $addMetadata = function ($blNumbers, $shippers, $goods) use (&$blMetadata) {
+            $shippers = collect($shippers)->filter(fn ($value) => filled($value))->unique()->values()->all();
+            $goods = collect($goods)->filter(fn ($value) => filled($value))->unique()->values()->all();
+
+            foreach ($blNumbers as $number) {
+                $number = $this->normalizeBl($number);
+                if ($number === '') {
+                    continue;
+                }
+                $blMetadata[$number]['shipper'] = array_values(array_unique(array_merge($blMetadata[$number]['shipper'] ?? [], $shippers)));
+                $blMetadata[$number]['nama_barang'] = array_values(array_unique(array_merge($blMetadata[$number]['nama_barang'] ?? [], $goods)));
+            }
+        };
+
+        $blRecords = \App\Models\Bl::with('prospek')
+            ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
+            ->get()
+            ->filter(fn ($record) => $normalizeShip($record->nama_kapal) === $normalizeShip($data['kapal']));
+        foreach ($blRecords as $record) {
+            $addMetadata(
+                preg_split('/[,;\\n]+/', (string) $record->nomor_bl),
+                [$record->pengirim, $record->prospek?->pt_pengirim, $record->prospek?->pengirim],
+                [$record->nama_barang, $record->prospek?->barang]
+            );
+        }
+
+        $manifestRecords = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee'])
+            ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
+            ->get()
+            ->filter(fn ($record) => $normalizeShip($record->nama_kapal) === $normalizeShip($data['kapal']));
+        foreach ($manifestRecords as $record) {
+            $details = $record->shipperDetails;
+            $addMetadata(
+                preg_split('/[,;\\n]+/', (string) $record->nomor_bl),
+                collect([$record->pengirim, $record->shipperJb?->shipper, $record->shipperConsignee?->shipper])
+                    ->merge($details->map(fn ($detail) => $detail->shipperConsignee?->shipper ?? $detail->pengirim)),
+                collect([$record->nama_barang])->merge($details->pluck('nama_barang'))
+            );
+        }
+
         foreach (BiayaKapal::with($this->relations)->get() as $record) {
             if (! $this->recordHasShipAndVoyage($record, $data['kapal'], $data['voyage'])) {
                 continue;
@@ -668,7 +711,17 @@ class RekapBiayaKapalController extends Controller
             }
         }
 
-        return response()->json($numbers->filter()->unique()->sort()->values());
+        $options = $numbers->filter()->unique()->sort()->values()->map(function ($number) use ($blMetadata) {
+            $metadata = $blMetadata[$number] ?? [];
+
+            return [
+                'number' => $number,
+                'shipper' => collect($metadata['shipper'] ?? [])->implode(', ') ?: '-',
+                'nama_barang' => collect($metadata['nama_barang'] ?? [])->implode(', ') ?: '-',
+            ];
+        });
+
+        return response()->json($options);
     }
 
     /** Show the costs for the selected ship, voyage, and optional BL. */
