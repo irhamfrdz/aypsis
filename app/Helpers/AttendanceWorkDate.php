@@ -26,7 +26,7 @@ class AttendanceWorkDate
                 SELECT DATE(s.waktu) FROM absensis s
                 WHERE $employee
                   AND LOWER(REPLACE(s.tipe, '_', ' ')) IN ($starts)
-                  AND s.waktu >= $earliest AND s.waktu <= $table.waktu
+                  AND s.waktu >= $earliest AND s.waktu < $table.waktu
                   AND NOT EXISTS (
                       SELECT 1 FROM absensis e
                       WHERE (e.nik = s.nik OR (e.karyawan_id IS NOT NULL AND e.karyawan_id = s.karyawan_id))
