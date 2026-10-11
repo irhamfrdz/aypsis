@@ -4,62 +4,67 @@
 @section('page_title', 'Data Absensi')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-6">
+<div class="min-h-screen bg-slate-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Header Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div class="mb-4 sm:mb-0">
-                    <h1 class="text-3xl font-bold text-gray-900">Data Absensi</h1>
-                    <p class="mt-1 text-sm text-gray-600">Daftar log absensi karyawan hasil sinkronisasi mesin fingerprint</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
+            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5">
+                <div class="flex items-start gap-4">
+                    <span class="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>
+                    </span>
+                    <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Data Absensi</h1>
+                    <p class="mt-1 text-sm text-slate-500">Daftar log kehadiran karyawan hasil sinkronisasi mesin fingerprint.</p>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 w-full xl:max-w-4xl">
                     @can('absensi-create')
-                    <button type="button" onclick="document.getElementById('createModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
+                    <button type="button" onclick="document.getElementById('createModal').classList.remove('hidden')" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         Tambah Manual
                     </button>
                     @endcan
-                    <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
+                    <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
                         Import File Absen
                     </button>
-                    <a href="{{ route('absensi.export_machine_users') }}" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('absensi.export_machine_users') }}" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-teal-700 text-white text-sm font-semibold rounded-lg hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Download Data User
                     </a>
-                    <a href="{{ route('absensi.export_excel', request()->query()) }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('absensi.export_excel', request()->query()) }}" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-blue-700 text-white text-sm font-semibold rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                         Download Excel
                     </a>
-                    <a href="{{ route('absensi.export_pdf', request()->query()) }}" class="inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('absensi.export_pdf', request()->query()) }}" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-rose-600 text-white text-sm font-semibold rounded-lg hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                         Download PDF
                     </a>
-                    <button type="button" onclick="document.getElementById('exportDatModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
+                    <button type="button" onclick="document.getElementById('exportDatModal').classList.remove('hidden')" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-sky-700 text-white text-sm font-semibold rounded-lg hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                         Download File .dat
                     </button>
-                    <button type="button" onclick="document.getElementById('importKoreksiModal').classList.remove('hidden')" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200 shadow-sm">
+                    <button type="button" onclick="document.getElementById('importKoreksiModal').classList.remove('hidden')" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-emerald-700 text-white text-sm font-semibold rounded-lg hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
                         Import Koreksi Excel
                     </button>
-                    <a href="{{ route('absensi.rekap') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('absensi.rekap') }}" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-violet-700 text-white text-sm font-semibold rounded-lg hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -102,22 +107,22 @@
         @endif
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Search Karyawan -->
                     <div>
-                        <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
+                        <label for="search" class="block text-sm font-medium text-slate-700 mb-1.5">Cari Karyawan / NIK</label>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
                                placeholder="Nama atau NIK..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm placeholder:text-slate-400">
                     </div>
 
                     <!-- Pekerjaan -->
                     <div>
-                        <label for="pekerjaan" class="block text-xs font-semibold text-gray-700 mb-1">Pekerjaan</label>
+                        <label for="pekerjaan" class="block text-sm font-medium text-slate-700 mb-1.5">Pekerjaan</label>
                         <select name="pekerjaan" id="pekerjaan"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                             <option value="">Semua Pekerjaan</option>
                             @foreach($pekerjaans as $pekerjaan)
                                 <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ $pekerjaan }}</option>
@@ -127,9 +132,9 @@
 
                     <!-- Penempatan -->
                     <div>
-                        <label for="penempatan" class="block text-xs font-semibold text-gray-700 mb-1">Penempatan</label>
+                        <label for="penempatan" class="block text-sm font-medium text-slate-700 mb-1.5">Penempatan</label>
                         <select name="penempatan" id="penempatan"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                             <option value="">Semua Penempatan</option>
                             @foreach($penempatans as $penempatan)
                                 <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
@@ -139,9 +144,9 @@
 
                     <!-- Cabang -->
                     <div>
-                        <label for="cabang" class="block text-xs font-semibold text-gray-700 mb-1">Cabang</label>
+                        <label for="cabang" class="block text-sm font-medium text-slate-700 mb-1.5">Cabang</label>
                         <select name="cabang" id="cabang"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                             <option value="">Semua Cabang</option>
                             @foreach($cabangs as $cabang)
                                 <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ strtoupper($cabang) }}</option>
@@ -151,9 +156,9 @@
 
                     <!-- Status Absen -->
                     <div>
-                        <label for="status_absen" class="block text-xs font-semibold text-gray-700 mb-1">Status Absen</label>
+                        <label for="status_absen" class="block text-sm font-medium text-slate-700 mb-1.5">Status Absen</label>
                         <select name="status_absen" id="status_absen"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                             <option value="">Semua Status</option>
                             <option value="tidak_masuk" {{ request('status_absen') == 'tidak_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
                             <option value="tidak_pulang" {{ request('status_absen') == 'tidak_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
@@ -167,18 +172,19 @@
 
                     <!-- Tanggal -->
                     <div>
-                        <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
+                        <label for="start_date" class="block text-sm font-medium text-slate-700 mb-1.5">Tanggal</label>
                         <input type="date" name="start_date" id="start_date" value="{{ $startDate }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-sm">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" /></svg>
                         Filter Data
                     </button>
-                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'status_absen', 'start_date']))
-                        <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
+                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'cabang', 'status_absen', 'start_date']))
+                        <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 focus:outline-none transition shadow-sm">
                             Reset
                         </a>
                     @endif
@@ -187,44 +193,53 @@
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-5 py-4 border-b border-slate-200">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-900">Log Kehadiran</h2>
+                    <p class="mt-0.5 text-xs text-slate-500">Rincian waktu masuk, istirahat, pulang, dan lembur.</p>
+                </div>
+                <span class="inline-flex w-fit items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Data absensi
+                </span>
+            </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
+                <table class="min-w-[1300px] w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50 font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
                         <tr>
-                            <th class="px-2 py-2 text-left">No</th>
-                            <th class="px-2 py-2 text-left">NIK</th>
-                            <th class="px-2 py-2 text-left">Nama Lengkap</th>
-                            <th class="px-2 py-2 text-left">Pekerjaan</th>
-                            <th class="px-2 py-2 text-left">Divisi</th>
-                            <th class="px-2 py-2 text-left">Tanggal</th>
-                            <th class="px-2 py-2 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
-                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
-                            <th class="px-2 py-2 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
-                            <th class="px-2 py-2 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
-                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
-                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
-                            <th class="px-2 py-2 text-center text-purple-700 bg-purple-50/50">Durasi Lembur</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">No</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">NIK</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">Nama Lengkap</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">Pekerjaan</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">Divisi</th>
+                            <th class="px-3 py-3 text-left whitespace-nowrap">Tanggal</th>
+                            <th class="px-3 py-3 text-center text-emerald-700 bg-emerald-50/70 whitespace-nowrap">Jam Masuk</th>
+                            <th class="px-3 py-3 text-center text-amber-700 bg-amber-50/70 whitespace-nowrap">Istirahat Keluar</th>
+                            <th class="px-3 py-3 text-center text-amber-700 bg-amber-50/70 whitespace-nowrap">Istirahat Masuk</th>
+                            <th class="px-3 py-3 text-center text-rose-700 bg-rose-50/70 whitespace-nowrap">Jam Pulang</th>
+                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Lembur Masuk</th>
+                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Lembur Pulang</th>
+                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Durasi Lembur</th>
 
-                            <th class="px-2 py-2 text-center">Aksi</th>
+                            <th class="px-3 py-3 text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
+                    <tbody class="bg-white divide-y divide-slate-100 text-sm text-slate-800">
                         @forelse($absensis as $index => $absensi)
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-2 py-2 whitespace-nowrap font-medium text-gray-500">
+                            <tr class="hover:bg-blue-50/40 transition-colors duration-150">
+                                <td class="px-3 py-3 whitespace-nowrap font-medium text-slate-400">
                                     {{ $absensis->firstItem() + $index }}
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap font-semibold font-mono text-indigo-600">
+                                <td class="px-3 py-3 whitespace-nowrap font-semibold font-mono text-blue-700">
                                     {{ $absensi->nik }}
                                 </td>
-                                <td class="px-2 py-2 font-medium">
+                                <td class="px-3 py-3 font-semibold text-slate-900">
                                     {{ $absensi->karyawan ? $absensi->karyawan->nama_lengkap : 'Karyawan Tidak Terdaftar' }}
                                 </td>
-                                <td class="px-2 py-2 text-gray-500">
+                                <td class="px-3 py-3 text-slate-600">
                                     {{ $absensi->karyawan ? $absensi->karyawan->pekerjaan : '-' }}
                                 </td>
-                                <td class="px-2 py-2 text-gray-500">
+                                <td class="px-3 py-3 text-slate-600">
                                     @if($absensi->karyawan && $absensi->karyawan->divisi && $absensi->karyawan->divisi !== '0')
                                         <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
                                             {{ strtolower($absensi->karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
@@ -237,10 +252,10 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap font-mono text-gray-600">
+                                <td class="px-3 py-3 whitespace-nowrap font-mono text-slate-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-emerald-700 bg-emerald-50/30 group relative">
                                     {{ $absensi->waktu_masuk ? Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam masuk ini?')">
@@ -255,13 +270,13 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-amber-700 bg-amber-50/30">
                                     {{ $absensi->waktu_istirahat_keluar ? Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i:s') : '-' }}
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-amber-700 bg-amber-50/30">
                                     {{ $absensi->waktu_istirahat_masuk ? Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i:s') : '-' }}
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-rose-700 bg-rose-50/30 group relative">
                                     {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam pulang ini?')">
@@ -276,7 +291,7 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-violet-700 bg-violet-50/30 group relative">
                                     {{ $absensi->waktu_lembur_masuk ? Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_lembur_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur masuk ini?')">
@@ -291,7 +306,7 @@
                                     </form>
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-violet-700 bg-violet-50/30 group relative">
                                     {{ $absensi->waktu_lembur_pulang ? Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_lembur_pulang && Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->toDateString() !== $absensi->tanggal)
                                         <span class="block text-xs font-normal" title="Tanggal aktual pulang lembur">{{ Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('d/m/Y') }}</span>
@@ -311,7 +326,7 @@
                                 </td>
 
 
-                                <td class="px-2 py-2 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20">
+                                <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-violet-700 bg-violet-50/30">
                                     @php
                                         $durasiLemburMenit = null;
                                         if ($absensi->waktu_lembur_masuk && $absensi->waktu_lembur_pulang) {
@@ -328,16 +343,16 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 whitespace-nowrap text-center text-sm font-medium">
+                                <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex justify-center space-x-2">
                                         <a href="{{ route('absensi.show', ['nik' => $absensi->nik, 'tanggal' => $absensi->tanggal]) }}" 
-                                           class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors" title="Lihat">
+                                           class="inline-flex h-9 w-9 items-center justify-center text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Lihat">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         </a>
                                         @can('absensi-edit')
                                         <button type="button" 
                                             onclick="openEditModal('{{ $absensi->nik }}', '{{ $absensi->tanggal }}', '{{ $absensi->waktu_masuk ? \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_istirahat_keluar ? \Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i') : '' }}', '{{ $absensi->waktu_istirahat_masuk ? \Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_pulang ? \Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : '' }}', '{{ $absensi->waktu_lembur_masuk ? \Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_lembur_pulang ? \Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i') : '' }}')"
-                                            class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors" title="Edit">
+                                            class="inline-flex h-9 w-9 items-center justify-center text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition" title="Edit">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </button>
                                         @endcan
@@ -347,7 +362,7 @@
                                             @method('DELETE')
                                             <input type="hidden" name="nik" value="{{ $absensi->nik }}">
                                             <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors" title="Hapus">
+                                            <button type="submit" class="inline-flex h-9 w-9 items-center justify-center text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 rounded-lg transition" title="Hapus">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>
@@ -374,7 +389,7 @@
 
             <!-- Pagination -->
             @if ($absensis->hasPages())
-            <div class="px-2 py-2 border-t border-gray-200 bg-gray-50">
+            <div class="px-4 py-3 border-t border-slate-200 bg-slate-50">
                 {{ $absensis->links() }}
             </div>
             @endif
