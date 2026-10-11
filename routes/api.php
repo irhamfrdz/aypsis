@@ -275,13 +275,25 @@ Route::delete('/lokasi-absensi/{id}', function ($id) {
 });
 
 // Jam Kerja (Working Hours) API endpoints
+Route::get('/working-hours/departments', function () {
+    return response()->json(
+        DB::table('karyawans')
+            ->whereNotNull('departemen')
+            ->where('departemen', '!=', '')
+            ->distinct()
+            ->orderBy('departemen')
+            ->pluck('departemen')
+            ->values()
+    );
+});
+
 Route::get('/working-hours', function () {
     return response()->json(DB::table('jam_kerjas')->orderBy('created_at', 'desc')->get());
 });
 
 Route::post('/working-hours', function (Request $request) {
     $data = $request->validate([
-        'nama_shift' => 'required|string',
+        'departemen' => 'required|string|max:100|exists:karyawans,departemen',
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
@@ -291,7 +303,7 @@ Route::post('/working-hours', function (Request $request) {
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
 
     $id = DB::table('jam_kerjas')->insertGetId([
-        'nama_shift' => $data['nama_shift'],
+        'departemen' => trim($data['departemen']),
         'jam_masuk' => $data['jam_masuk'],
         'jam_keluar' => $data['jam_keluar'],
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
@@ -308,7 +320,7 @@ Route::post('/working-hours', function (Request $request) {
 
 Route::put('/working-hours/{id}', function (Request $request, $id) {
     $data = $request->validate([
-        'nama_shift' => 'required|string',
+        'departemen' => 'required|string|max:100|exists:karyawans,departemen',
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
@@ -318,7 +330,7 @@ Route::put('/working-hours/{id}', function (Request $request, $id) {
     $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
 
     DB::table('jam_kerjas')->where('id', $id)->update([
-        'nama_shift' => $data['nama_shift'],
+        'departemen' => trim($data['departemen']),
         'jam_masuk' => $data['jam_masuk'],
         'jam_keluar' => $data['jam_keluar'],
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,

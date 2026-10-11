@@ -30,7 +30,7 @@
 <!-- Page Header Card -->
 <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
     <h1 class="text-xl font-bold text-gray-900 leading-tight">Kelola Jam Kerja</h1>
-    <p class="text-xs text-gray-500 mt-1">Konfigurasi shift kerja karyawan beserta toleransi keterlambatan sistem absensi.</p>
+    <p class="text-xs text-gray-500 mt-1">Atur jam kerja dan toleransi keterlambatan berdasarkan departemen karyawan.</p>
 </div>
 
 <!-- Main Layout Grid -->
@@ -40,16 +40,18 @@
     <div class="lg:col-span-5 flex flex-col gap-6">
         <div class="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
             <h3 id="form-title" class="text-sm font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
-                <span class="text-blue-600"><i class="fa-solid fa-plus-minus"></i></span> Tambah Shift Kerja
+                <span class="text-blue-600"><i class="fa-solid fa-plus-minus"></i></span> Tambah Jam Kerja Departemen
             </h3>
             
             <form id="shift-form" class="space-y-4">
                 <input type="hidden" id="shift-id" value="">
                 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Shift</label>
-                    <input type="text" id="nama-shift" placeholder="Contoh: Shift Pagi, Shift Regular" required
+                    <label for="departemen" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Departemen Karyawan</label>
+                    <select id="departemen" required
                         class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        <option value="">Memuat departemen...</option>
+                    </select>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
@@ -85,7 +87,7 @@
                         Batal
                     </button>
                     <button type="submit" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md text-sm transition shadow-sm">
-                        Simpan Shift
+                        Simpan Pengaturan
                     </button>
                 </div>
             </form>
@@ -96,9 +98,9 @@
     <div class="lg:col-span-7 flex flex-col gap-4 bg-white rounded-lg border border-gray-200 p-5 shadow-sm h-fit min-h-[350px]">
         <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-100">
             <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                <span class="text-blue-600"><i class="fa-solid fa-list"></i></span> Daftar Shift Terdaftar
+                <span class="text-blue-600"><i class="fa-solid fa-list"></i></span> Jam Kerja per Departemen
             </h3>
-            <span id="shift-count-badge" class="bg-blue-50 text-blue-700 text-xs px-2.5 py-0.5 rounded-full border border-blue-200 font-semibold">0 Shift</span>
+            <span id="shift-count-badge" class="bg-blue-50 text-blue-700 text-xs px-2.5 py-0.5 rounded-full border border-blue-200 font-semibold">0 Departemen</span>
         </div>
 
         <!-- List Container -->
@@ -118,8 +120,8 @@
             <div class="w-12 h-12 rounded-full bg-slate-50 border border-gray-200 flex items-center justify-center text-xl mb-3">
                 📭
             </div>
-            <h4 class="text-xs font-bold text-gray-800">Tidak ada shift</h4>
-            <p class="text-[11px] text-gray-500 mt-1">Silakan tambahkan konfigurasi jam kerja baru.</p>
+            <h4 class="text-xs font-bold text-gray-800">Belum ada pengaturan departemen</h4>
+            <p class="text-[11px] text-gray-500 mt-1">Tambahkan departemen beserta jam kerja dan toleransi keterlambatannya.</p>
         </div>
     </div>
 
@@ -136,8 +138,37 @@
 
 @push('scripts')
 <script>
-    const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8085";
+    const API_BASE_URL = "{{ url('') }}";
     let shiftsData = [];
+
+    async function loadDepartments() {
+        const departmentSelect = document.getElementById('departemen');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/working-hours/departments`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) throw new Error('Gagal mengambil data departemen.');
+
+            const departments = await response.json();
+            departmentSelect.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = departments.length ? 'Pilih departemen karyawan' : 'Belum ada data departemen';
+            departmentSelect.appendChild(placeholder);
+
+            departments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                departmentSelect.appendChild(option);
+            });
+        } catch (err) {
+            departmentSelect.innerHTML = '<option value="">Departemen gagal dimuat</option>';
+            showToast('❌', 'Gagal memuat pilihan departemen karyawan.', 'rose');
+        }
+    }
 
     async function loadShifts() {
         const container = document.getElementById('shifts-list');
@@ -145,11 +176,13 @@
         const countBadge = document.getElementById('shift-count-badge');
         
         try {
-            const response = await fetch(`${API_BASE_URL}/api/working-hours`);
+            const response = await fetch(`${API_BASE_URL}/api/working-hours`, {
+                headers: { 'Accept': 'application/json' }
+            });
             if (!response.ok) throw new Error('Gagal mengambil data.');
             
             shiftsData = await response.json();
-            countBadge.innerText = `${shiftsData.length} Shift`;
+            countBadge.innerText = `${shiftsData.length} Departemen`;
 
             if (shiftsData.length === 0) {
                 container.innerHTML = '';
@@ -168,7 +201,7 @@
                     <div class="p-4 border border-gray-200 rounded-lg flex items-center justify-between card-animate bg-white" id="shift-card-${item.id}">
                         <div>
                             <div class="flex items-center gap-2 mb-1.5">
-                                <h4 class="text-sm font-bold text-gray-900 leading-snug">${item.nama_shift}</h4>
+                            <h4 class="text-sm font-bold text-gray-900 leading-snug">${item.departemen}</h4>
                                 ${statusBadge}
                             </div>
                             <div class="flex items-center gap-4 text-xs text-gray-500">
@@ -194,7 +227,7 @@
                 `;
             }).join('');
         } catch (err) {
-            showToast('❌', 'Gagal memuat daftar shift.', 'rose');
+            showToast('❌', 'Gagal memuat pengaturan jam kerja departemen.', 'rose');
         }
     }
 
@@ -202,34 +235,34 @@
         e.preventDefault();
         
         const id = document.getElementById('shift-id').value;
-        const nama_shift = document.getElementById('nama-shift').value;
+        const departemen = document.getElementById('departemen').value.trim();
         const jam_masuk = document.getElementById('jam-masuk').value;
         const jam_keluar = document.getElementById('jam-keluar').value;
         const toleransi_keterlambatan = document.getElementById('toleransi').value;
         const is_active = document.getElementById('is-active').checked ? 1 : 0;
 
-        const payload = { nama_shift, jam_masuk, jam_keluar, toleransi_keterlambatan, is_active };
+        const payload = { departemen, jam_masuk, jam_keluar, toleransi_keterlambatan, is_active };
         
         try {
             let response;
             if (id) {
                 response = await fetch(`${API_BASE_URL}/api/working-hours/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(payload)
                 });
             } else {
                 response = await fetch(`${API_BASE_URL}/api/working-hours`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(payload)
                 });
             }
             
             const resData = await response.json();
-            if (!response.ok) throw new Error(resData.error || 'Gagal menyimpan shift.');
+            if (!response.ok) throw new Error(resData.error || 'Gagal menyimpan pengaturan jam kerja.');
 
-            showToast('✅', id ? 'Shift berhasil diperbarui.' : 'Shift berhasil ditambahkan.', 'emerald');
+            showToast('✅', id ? 'Pengaturan departemen berhasil diperbarui.' : 'Pengaturan departemen berhasil ditambahkan.', 'emerald');
             resetForm();
             loadShifts();
         } catch (err) {
@@ -242,29 +275,30 @@
         if (!item) return;
 
         document.getElementById('shift-id').value = item.id;
-        document.getElementById('nama-shift').value = item.nama_shift;
+        document.getElementById('departemen').value = item.departemen;
         document.getElementById('jam-masuk').value = item.jam_masuk.substring(0, 5);
         document.getElementById('jam-keluar').value = item.jam_keluar.substring(0, 5);
         document.getElementById('toleransi').value = item.toleransi_keterlambatan;
         document.getElementById('is-active').checked = item.is_active === 1;
 
         // Update Form Title
-        document.getElementById('form-title').innerHTML = `<span class="text-blue-600"><i class="fa-solid fa-pen-to-square"></i></span> Edit Shift Kerja`;
+        document.getElementById('form-title').innerHTML = `<span class="text-blue-600"><i class="fa-solid fa-pen-to-square"></i></span> Edit Jam Kerja Departemen`;
         document.getElementById('cancel-edit-btn').classList.remove('hidden');
     }
 
     async function deleteShift(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus shift kerja ini?')) return;
+        if (!confirm('Apakah Anda yakin ingin menghapus pengaturan jam kerja departemen ini?')) return;
         
         try {
             const response = await fetch(`${API_BASE_URL}/api/working-hours/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
             });
             const resData = await response.json();
             
-            if (!response.ok) throw new Error(resData.error || 'Gagal menghapus shift.');
+            if (!response.ok) throw new Error(resData.error || 'Gagal menghapus pengaturan departemen.');
 
-            showToast('✖', 'Shift berhasil dihapus.', 'rose');
+            showToast('✖', 'Pengaturan departemen berhasil dihapus.', 'rose');
             loadShifts();
             resetForm();
         } catch (err) {
@@ -276,14 +310,14 @@
 
     function resetForm() {
         document.getElementById('shift-id').value = '';
-        document.getElementById('nama-shift').value = '';
+        document.getElementById('departemen').value = '';
         document.getElementById('jam-masuk').value = '';
         document.getElementById('jam-keluar').value = '';
         document.getElementById('toleransi').value = 0;
         document.getElementById('is-active').checked = true;
 
         // Reset Form Title
-        document.getElementById('form-title').innerHTML = `<span class="text-blue-600"><i class="fa-solid fa-plus-minus"></i></span> Tambah Shift Kerja`;
+        document.getElementById('form-title').innerHTML = `<span class="text-blue-600"><i class="fa-solid fa-plus-minus"></i></span> Tambah Jam Kerja Departemen`;
         document.getElementById('cancel-edit-btn').classList.add('hidden');
     }
 
@@ -304,6 +338,9 @@
         }, 3000);
     }
 
-    window.onload = loadShifts;
+    window.onload = () => {
+        loadDepartments();
+        loadShifts();
+    };
 </script>
 @endpush
