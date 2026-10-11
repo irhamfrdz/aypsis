@@ -204,24 +204,40 @@
                 </span>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-[1300px] w-full divide-y divide-slate-200">
+                <table class="table-fixed min-w-[1100px] w-full divide-y divide-slate-200 xl:min-w-0">
+                    <colgroup>
+                        <col style="width: 3%">
+                        <col style="width: 5%">
+                        <col style="width: 10%">
+                        <col style="width: 7%">
+                        <col style="width: 5%">
+                        <col style="width: 8%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                    </colgroup>
                     <thead class="bg-slate-50 font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
                         <tr>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">No</th>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">NIK</th>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">Nama Lengkap</th>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">Pekerjaan</th>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">Divisi</th>
-                            <th class="px-3 py-3 text-left whitespace-nowrap">Tanggal</th>
-                            <th class="px-3 py-3 text-center text-emerald-700 bg-emerald-50/70 whitespace-nowrap">Jam Masuk</th>
-                            <th class="px-3 py-3 text-center text-amber-700 bg-amber-50/70 whitespace-nowrap">Istirahat Keluar</th>
-                            <th class="px-3 py-3 text-center text-amber-700 bg-amber-50/70 whitespace-nowrap">Istirahat Masuk</th>
-                            <th class="px-3 py-3 text-center text-rose-700 bg-rose-50/70 whitespace-nowrap">Jam Pulang</th>
-                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Lembur Masuk</th>
-                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Lembur Pulang</th>
-                            <th class="px-3 py-3 text-center text-violet-700 bg-violet-50/70 whitespace-nowrap">Durasi Lembur</th>
+                            <th class="px-2 py-3 text-left">No</th>
+                            <th class="px-2 py-3 text-left">NIK</th>
+                            <th class="px-2 py-3 text-left">Nama Lengkap</th>
+                            <th class="px-2 py-3 text-left">Pekerjaan</th>
+                            <th class="px-2 py-3 text-left">Divisi</th>
+                            <th class="px-2 py-3 text-left">Tanggal</th>
+                            <th class="px-2 py-3 text-center text-emerald-700 bg-emerald-50/70">Jam Masuk</th>
+                            <th class="px-2 py-3 text-center text-amber-700 bg-amber-50/70">Istirahat Keluar</th>
+                            <th class="px-2 py-3 text-center text-amber-700 bg-amber-50/70">Istirahat Masuk</th>
+                            <th class="px-2 py-3 text-center text-rose-700 bg-rose-50/70">Jam Pulang</th>
+                            <th class="px-2 py-3 text-center text-violet-700 bg-violet-50/70">Lembur Masuk</th>
+                            <th class="px-2 py-3 text-center text-violet-700 bg-violet-50/70">Lembur Pulang</th>
+                            <th class="px-2 py-3 text-center text-violet-700 bg-violet-50/70">Durasi Lembur</th>
 
-                            <th class="px-3 py-3 text-center whitespace-nowrap">Aksi</th>
+                            <th class="px-2 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-slate-100 text-sm text-slate-800">
@@ -344,7 +360,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-medium">
-                                    <div class="flex justify-center space-x-2">
+                                    <div class="flex justify-center space-x-1">
                                         <a href="{{ route('absensi.show', ['nik' => $absensi->nik, 'tanggal' => $absensi->tanggal]) }}" 
                                            class="inline-flex h-9 w-9 items-center justify-center text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Lihat">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
