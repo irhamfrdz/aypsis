@@ -911,9 +911,16 @@ class RekapBiayaKapalController extends Controller
         // Surat Jalan Bongkaran Batam is a direct voyage cost source. It does not
         // require a related Uang Jalan record to appear in this recap.
         $suratJalanBongkaranBatams = \App\Models\SuratJalanBongkaranBatam::query()
-            ->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
-            ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))])
             ->whereRaw('LOWER(TRIM(lokasi)) = ?', ['batam'])
+            ->where(function ($query) use ($kapal, $voyage) {
+                $query->where(function ($direct) use ($kapal, $voyage) {
+                    $direct->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
+                        ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))]);
+                })->orWhereHas('manifest', function ($manifest) use ($kapal, $voyage) {
+                    $manifest->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
+                        ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))]);
+                });
+            })
             ->get();
         foreach ($suratJalanBongkaranBatams as $suratJalan) {
             $nominal = $suratJalan->tanpa_uang_jalan ? 0 : (float) ($suratJalan->uang_jalan_nominal ?? 0);
