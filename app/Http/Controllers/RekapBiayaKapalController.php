@@ -933,7 +933,7 @@ class RekapBiayaKapalController extends Controller
 
     private function normalizeBl($number): string
     {
-        return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
+        return RekapBlService::normalize($number);
     }
 
     private function normalizeLocation($value): ?string

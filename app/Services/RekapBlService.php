@@ -41,7 +41,10 @@ class RekapBlService
 
     public static function normalize($number): string
     {
-        return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
+        $number = strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
+
+        // Letter suffixes identify parts of the same numeric BL (01A, 01B -> 01).
+        return preg_replace('/^(\d+)[\s-]*[A-Z]+$/', '$1', $number);
     }
 
     private function numbers($value): Collection
