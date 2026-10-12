@@ -12,6 +12,11 @@ use Illuminate\Support\Collection;
 
 class RekapBiayaKapalController extends Controller
 {
+    private function shipKey($name): string
+    {
+        return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim((string) $name))));
+    }
+
     private function tkbmSections($details): Collection
     {
         return $details->groupBy(fn ($detail) => implode('|', [
@@ -21,7 +26,7 @@ class RekapBiayaKapalController extends Controller
 
     private function allocateTkbmRows(BiayaKapal $record, Collection $containers, string $kapal, string $voyage): Collection
     {
-        $details = $record->tkbmDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
+        $details = $record->tkbmDetails->filter(fn ($detail) => $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal)
             && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)));
         if ($details->isEmpty()) {
             return collect();
@@ -131,7 +136,7 @@ class RekapBiayaKapalController extends Controller
     {
         $rows = collect();
         foreach ($record->oppOptDetails as $detail) {
-            if (strcasecmp(trim($detail->kapal ?? ''), trim($kapal)) !== 0
+            if ($this->shipKey($detail->kapal ?? '') !== $this->shipKey($kapal)
                 || strcasecmp(trim($detail->voyage ?? ''), trim($voyage)) !== 0) {
                 continue;
             }
@@ -255,7 +260,7 @@ class RekapBiayaKapalController extends Controller
      */
     private function recordHasShipAndVoyage($record, $kapal, $voyage)
     {
-        $kapalLower = strtolower(trim($kapal));
+        $kapalLower = $this->shipKey($kapal);
         $voyageLower = strtolower(trim($voyage));
 
         $hasAnyDetails = false;
@@ -265,7 +270,7 @@ class RekapBiayaKapalController extends Controller
             if ($record->relationLoaded($relation) && $record->{$relation}->count() > 0) {
                 $hasAnyDetails = true;
                 foreach ($record->{$relation} as $detail) {
-                    $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
+                    $dKapal = $this->shipKey($detail->kapal ?? '');
                     $dVoyage = isset($detail->voyage) ? strtolower(trim($detail->voyage)) : '';
                     if ($dKapal === $kapalLower && $dVoyage === $voyageLower) {
                         return true;
@@ -283,7 +288,7 @@ class RekapBiayaKapalController extends Controller
         $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
         $parentVoyages = is_array($record->no_voyage) ? $record->no_voyage : ($record->no_voyage ? [$record->no_voyage] : []);
 
-        $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
+        $parentShipsLower = array_map(fn ($s) => $this->shipKey($s), $parentShips);
         $parentVoyagesLower = array_map(fn ($v) => strtolower(trim($v)), $parentVoyages);
 
         $indices = array_keys($parentShipsLower, $kapalLower);
@@ -360,7 +365,7 @@ class RekapBiayaKapalController extends Controller
      */
     public function getApportionedCostForRecord($item, $kapal, $voyage)
     {
-        $kapalLower = strtolower(trim($kapal));
+        $kapalLower = $this->shipKey($kapal);
         $voyageLower = strtolower(trim($voyage));
 
         $hasDetails = false;
@@ -374,7 +379,7 @@ class RekapBiayaKapalController extends Controller
         if ($item->buruhBatamDetails->count() > 0 || $item->buruhBongkarDetails->count() > 0) {
             $hasDetails = true;
             $details = $item->buruhBatamDetails->concat($item->buruhBongkarDetails)
-                ->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower && strtolower(trim($d->voyage ?? '')) === $voyageLower);
+                ->filter(fn ($d) => $this->shipKey($d->kapal ?? '') === $kapalLower && strtolower(trim($d->voyage ?? '')) === $voyageLower);
             $nominal = $details->sum(fn ($d) => (float) $d->nominal + (float) ($d->adjustment ?? 0));
             $pph = $details->sum('pph_amount');
             $total = $details->sum('total_nominal');
@@ -383,8 +388,8 @@ class RekapBiayaKapalController extends Controller
         // 1. Biaya Buruh (barangDetails / tenagaKerjaDetails)
         elseif ($item->barangDetails->count() > 0 || $item->tenagaKerjaDetails->count() > 0) {
             $hasDetails = true;
-            $barangItems = $item->barangDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
-            $tkItems = $item->tenagaKerjaDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $barangItems = $item->barangDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $tkItems = $item->tenagaKerjaDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
 
             $subtotalBarang = $barangItems->sum('subtotal');
             $subtotalTk = $tkItems->sum('nominal');
@@ -411,7 +416,7 @@ class RekapBiayaKapalController extends Controller
         // 2. Biaya Air (airDetails)
         elseif ($item->airDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->airDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->airDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('sub_total');
             $pph = $details->sum('pph');
             $total = $details->sum('grand_total');
@@ -424,7 +429,7 @@ class RekapBiayaKapalController extends Controller
         // 3. Biaya TKBM (tkbmDetails)
         elseif ($item->tkbmDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->tkbmDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->tkbmDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
 
             $sections = $this->tkbmSections($details);
             $nominal = $sections->sum(fn ($section) => (float) ($section->first()->total_nominal
@@ -442,7 +447,7 @@ class RekapBiayaKapalController extends Controller
         // 4. Biaya Trucking (truckingDetails)
         elseif ($item->truckingDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->truckingDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->truckingDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('subtotal');
             $pph = $details->sum('pph');
             $total = $details->sum('total_biaya');
@@ -455,7 +460,7 @@ class RekapBiayaKapalController extends Controller
         // 5. Stuffing (stuffingDetails)
         elseif ($item->stuffingDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->stuffingDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->stuffingDetails->filter(fn ($d) => $this->shipKey($d->kapal) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('subtotal');
             $pph = $details->sum('pph');
             $total = $details->sum('total_biaya');
@@ -465,7 +470,7 @@ class RekapBiayaKapalController extends Controller
             $ppn = $item->ppn * $ratio;
         } elseif ($item->umumDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->umumDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+            $details = $item->umumDetails->filter(fn ($d) => $this->shipKey($d->kapal ?? '') === $kapalLower
                 && strtolower(trim($d->voyage ?? '')) === $voyageLower);
             $nominal = $details->sum('nominal');
             $pph = $details->sum('pph');
@@ -475,7 +480,7 @@ class RekapBiayaKapalController extends Controller
         // Claim amounts are stored per ship/voyage in the claim details.
         elseif ($item->klaimDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->klaimDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+            $details = $item->klaimDetails->filter(fn ($d) => $this->shipKey($d->kapal ?? '') === $kapalLower
                 && strtolower(trim($d->voyage ?? '')) === $voyageLower);
             $nominal = $details->sum(fn ($d) => (float) $d->subtotal ?: collect($d->kontainer_ids ?? [])->sum('biaya_klaim'));
             $total = $details->sum(fn ($d) => (float) $d->total_biaya
@@ -485,7 +490,7 @@ class RekapBiayaKapalController extends Controller
         // TEMAS costs follow the final invoice, rather than the DP cash advance.
         elseif ($item->temasDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->temasDetails->filter(fn ($d) => strtolower(trim($d->kapal ?? '')) === $kapalLower
+            $details = $item->temasDetails->filter(fn ($d) => $this->shipKey($d->kapal ?? '') === $kapalLower
                 && strtolower(trim($d->voyage ?? '')) === $voyageLower
                 && $d->stage?->payment_mode !== 'dp');
             $nominal = $details->sum('sub_total');
@@ -514,7 +519,7 @@ class RekapBiayaKapalController extends Controller
 
             foreach ($relations as $rel) {
                 if ($item->{$rel}->count() > 0) {
-                    $details = $item->{$rel}->filter(fn ($d) => isset($d->kapal) && strtolower(trim($d->kapal)) === $kapalLower && isset($d->voyage) && strtolower(trim($d->voyage)) === $voyageLower);
+                    $details = $item->{$rel}->filter(fn ($d) => isset($d->kapal) && $this->shipKey($d->kapal) === $kapalLower && isset($d->voyage) && strtolower(trim($d->voyage)) === $voyageLower);
                     if ($details->count() > 0) {
                         $hasDetails = true;
                         $nominal += $details->sum('subtotal') ?: $details->sum('nominal') ?: $details->sum('total_biaya');
@@ -567,16 +572,15 @@ class RekapBiayaKapalController extends Controller
         foreach ($records as $record) {
             $data = $this->getShipsAndVoyagesForRecord($record);
             foreach ($data['ships'] as $ship) {
-                $kapals[$ship] = $ship;
+                $kapals[$this->shipKey($ship)] = $ship;
             }
         }
         foreach ($this->additionalShipVoyages() as $row) {
             $ship = trim($row->nama_kapal ?? '');
             if ($ship !== '') {
-                $kapals[$ship] = $ship;
+                $kapals[$this->shipKey($ship)] = $ship;
             }
         }
-        ksort($kapals);
 
         // Get Master Kapal data for Pemilik (Owner) filtering
         $masterKapals = \App\Models\MasterKapal::all();
@@ -585,10 +589,14 @@ class RekapBiayaKapalController extends Controller
         $kapalPemilikMap = [];
         foreach ($masterKapals as $mk) {
             if ($mk->nama_kapal) {
-                // Store mapped by lowercase name for robust matching
-                $kapalPemilikMap[strtolower(trim($mk->nama_kapal))] = $mk->pelayaran;
+                $key = $this->shipKey($mk->nama_kapal);
+                if (isset($kapals[$key])) {
+                    $kapals[$key] = trim($mk->nama_kapal);
+                }
+                $kapalPemilikMap[$key] = $mk->pelayaran;
             }
         }
+        asort($kapals);
 
         return view('rekap-biaya-kapal.index', compact('kapals', 'pemilikList', 'kapalPemilikMap'));
     }
@@ -606,7 +614,7 @@ class RekapBiayaKapalController extends Controller
         $voyages = [];
         $records = BiayaKapal::with($this->relations)->get();
 
-        $selectedShipLower = strtolower(trim($selectedShip));
+        $selectedShipLower = $this->shipKey($selectedShip);
 
         foreach ($records as $record) {
             $hasAnyDetails = false;
@@ -614,7 +622,7 @@ class RekapBiayaKapalController extends Controller
                 if ($record->relationLoaded($relation) && $record->{$relation}->count() > 0) {
                     $hasAnyDetails = true;
                     foreach ($record->{$relation} as $detail) {
-                        $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
+                        $dKapal = $this->shipKey($detail->kapal ?? '');
                         if ($dKapal === $selectedShipLower && isset($detail->voyage)) {
                             $trimmed = trim($detail->voyage);
                             if ($trimmed !== '') {
@@ -627,7 +635,7 @@ class RekapBiayaKapalController extends Controller
 
             if (! $hasAnyDetails) {
                 $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
-                $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
+                $parentShipsLower = array_map(fn ($s) => $this->shipKey($s), $parentShips);
                 $indices = array_keys($parentShipsLower, $selectedShipLower);
 
                 if (! empty($indices)) {
@@ -651,7 +659,7 @@ class RekapBiayaKapalController extends Controller
             }
         }
         foreach ($this->additionalShipVoyages() as $row) {
-            if (strtolower(trim($row->nama_kapal ?? '')) === $selectedShipLower && trim($row->no_voyage ?? '') !== '') {
+            if ($this->shipKey($row->nama_kapal ?? '') === $selectedShipLower && trim($row->no_voyage ?? '') !== '') {
                 $voyages[strtolower(trim($row->no_voyage))] = trim($row->no_voyage);
             }
         }
@@ -727,7 +735,7 @@ class RekapBiayaKapalController extends Controller
                     $location = $relation === 'buruhBatamDetails' ? 'batam' : ($this->normalizeLocation($detail->lokasi) ?? $parentLocation);
 
                     return $location === $lokasi
-                        && strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
+                        && $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal)
                         && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage));
                 });
                 $hasMatchingDetail = $hasMatchingDetail || $details->isNotEmpty();
@@ -789,7 +797,7 @@ class RekapBiayaKapalController extends Controller
                     : $record->{$relation}->map(fn ($detail) => collect([$detail]));
                 foreach ($relationDetails as $detailGroup) {
                     $detail = $detailGroup->first();
-                    if (strtolower(trim($detail->kapal ?? '')) !== strtolower(trim($kapal))
+                    if ($this->shipKey($detail->kapal ?? '') !== $this->shipKey($kapal)
                         || strtolower(trim($detail->voyage ?? '')) !== strtolower(trim($voyage))) {
                         continue;
                     }
@@ -890,13 +898,12 @@ class RekapBiayaKapalController extends Controller
     public function getBls(Request $request)
     {
         $data = $request->validate(['kapal' => 'required|string', 'voyage' => 'required|string']);
-        $kapal = strtolower(trim($data['kapal']));
+        $kapal = $this->shipKey($data['kapal']);
         $voyage = strtolower(trim($data['voyage']));
         $blResolver = RekapBlService::forVoyage($data['kapal'], $data['voyage']);
         $numbers = $blResolver->available();
         $containerCounts = $blResolver->containerCounts();
 
-        $normalizeShip = fn ($name) => preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\\s]+/i', '', strtolower(trim((string) $name))));
         $blMetadata = [];
         $addMetadata = function ($blNumbers, $shippers, $jenisBarang) use (&$blMetadata) {
             $shippers = collect($shippers)->filter(fn ($value) => filled($value))->unique()->values()->all();
@@ -915,7 +922,7 @@ class RekapBiayaKapalController extends Controller
         $manifestRecords = \App\Models\Manifest::with(['shipperConsignee', 'shipperJb', 'shipperDetails.shipperConsignee', 'prospek.tandaTerima'])
             ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [$voyage])
             ->get()
-            ->filter(fn ($record) => $normalizeShip($record->nama_kapal) === $normalizeShip($data['kapal']));
+            ->filter(fn ($record) => $this->shipKey($record->nama_kapal) === $kapal);
 
         $receiptNumbers = $manifestRecords->pluck('nomor_tanda_terima')->filter()->unique()->values();
         $receiptTypes = [];
@@ -958,7 +965,7 @@ class RekapBiayaKapalController extends Controller
             }
             foreach ($this->relations as $relation) {
                 foreach ($record->{$relation} as $detail) {
-                    if (strtolower(trim($detail->kapal ?? '')) === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
+                    if ($this->shipKey($detail->kapal ?? '') === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
                         foreach (preg_split('/[,;\n]+/', $detail->nomor_bl ?? $detail->no_bl ?? '') as $number) {
                             $numbers->push($this->normalizeBl($number));
                         }
@@ -1148,12 +1155,12 @@ class RekapBiayaKapalController extends Controller
         // require a related Uang Jalan record to appear in this recap.
         $suratJalanBongkaranBatams = \App\Models\SuratJalanBongkaranBatam::with('manifest')
             ->whereRaw('LOWER(TRIM(lokasi)) = ?', ['batam'])
-            ->where(function ($query) use ($kapal, $voyage) {
-                $query->where(function ($direct) use ($kapal, $voyage) {
-                    $direct->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
+            ->where(function ($query) use ($kapalLike, $voyage) {
+                $query->where(function ($direct) use ($kapalLike, $voyage) {
+                    $direct->where('nama_kapal', 'like', $kapalLike)
                         ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))]);
-                })->orWhereHas('manifest', function ($manifest) use ($kapal, $voyage) {
-                    $manifest->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
+                })->orWhereHas('manifest', function ($manifest) use ($kapalLike, $voyage) {
+                    $manifest->where('nama_kapal', 'like', $kapalLike)
                         ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))]);
                 });
             })
@@ -1292,7 +1299,7 @@ class RekapBiayaKapalController extends Controller
         $temasContainers = $biayaKapals
             ->filter(fn ($item) => $item instanceof BiayaKapal)
             ->flatMap(fn ($item) => $item->temasDetails)
-            ->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal)) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
+            ->filter(fn ($detail) => $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal) && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
             ->flatMap(fn ($detail) => explode(',', $detail->nomor_kontainer ?? ''))
             ->map(fn ($number) => strtoupper(trim($number)))->filter()->unique()->values();
         $temasManifests = collect();

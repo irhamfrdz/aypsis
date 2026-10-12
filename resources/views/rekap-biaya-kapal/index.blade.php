@@ -64,8 +64,8 @@
                         </label>
                         <select name="kapal" id="kapal_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" required>
                             <option value="">-- Pilih Kapal --</option>
-                            @foreach($kapals as $kapal)
-                                <option value="{{ $kapal }}" data-pemilik="{{ $kapalPemilikMap[strtolower(trim($kapal))] ?? '' }}">{{ $kapal }}</option>
+                            @foreach($kapals as $key => $kapal)
+                                <option value="{{ $kapal }}" data-pemilik="{{ $kapalPemilikMap[$key] ?? '' }}">{{ $kapal }}</option>
                             @endforeach
                         </select>
                     </div>

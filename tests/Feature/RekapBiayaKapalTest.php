@@ -84,6 +84,35 @@ class RekapBiayaKapalTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function it_combines_ship_name_variants_in_the_selector_voyages_and_recap()
+    {
+        $this->actingAs($this->user);
+
+        foreach (['KM ALKEN PRINCESS', 'KM. ALKEN PRINCESS'] as $index => $ship) {
+            BiayaKapal::create([
+                'tanggal' => '2026-06-11',
+                'nomor_invoice' => 'INV-ALKEN-'.($index + 1),
+                'nama_kapal' => [$ship],
+                'no_voyage' => [$index === 0 ? 'V-101' : 'V-102'],
+                'jenis_biaya' => 'KB001',
+                'nominal' => 1000000,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => 1000000,
+            ]);
+        }
+
+        $this->get(route('rekap-biaya-kapal.index'))->assertOk()
+            ->assertViewHas('kapals', fn ($ships) => count($ships) === 1);
+
+        $this->getJson(route('rekap-biaya-kapal.get-voyages', ['kapal' => 'KM. ALKEN PRINCESS']))
+            ->assertOk()->assertJson(['V-101', 'V-102']);
+
+        $this->get(route('rekap-biaya-kapal.show', ['kapal' => 'KM. ALKEN PRINCESS', 'voyage' => 'V-101']))
+            ->assertOk()->assertSee('INV-ALKEN-1');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_show_detailed_rekap_for_ship_and_voyage()
     {
         $this->actingAs($this->user);
