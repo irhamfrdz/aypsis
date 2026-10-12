@@ -43,8 +43,12 @@ class RekapBiayaKapalController extends Controller
         ];
         $rows = collect();
         $containerCount = $containers->count();
-        foreach ($containers as $index => $number) {
-            $row = ['nomor_kontainer' => $number];
+        foreach ($containers as $index => $container) {
+            $row = [
+                'nomor_kontainer' => $container['nomor_kontainer'],
+                'size' => $container['size'],
+                'status' => $container['status'],
+            ];
             foreach ($amounts as $field => $cents) {
                 $share = intdiv($cents, $containerCount);
                 $row[$field] = ($index === $containerCount - 1 ? $cents - $share * $index : $share) / 100;
@@ -1066,7 +1070,7 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals = $filtered;
         }
 
-        $tkbmContainers = ($resolver ?? RekapBlService::forVoyage($kapal, $voyage))->containers($bls);
+        $tkbmContainers = ($resolver ?? RekapBlService::forVoyage($kapal, $voyage))->containerDetails($bls);
         foreach ($biayaKapals as $record) {
             if (! $record instanceof BiayaKapal || $record->tkbmDetails->isEmpty()) {
                 continue;

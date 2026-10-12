@@ -67,15 +67,52 @@ class RekapBlService
 
     public function containers(array $selectedBls = []): Collection
     {
-        $selected = $this->numbers($selectedBls);
+        return $this->containerDetails($selectedBls)->pluck('nomor_kontainer');
+    }
 
-        return $this->bls->merge($this->manifests)
-            ->filter(fn ($record) => $selected->isEmpty()
-                || $this->numbers($record->nomor_bl)->intersect($selected)->isNotEmpty())
-            ->flatMap(fn ($record) => preg_split('/[,;\r\n]+/', (string) $record->nomor_kontainer))
-            ->map(fn ($number) => strtoupper(preg_replace('/\s+/', '', trim($number))))
-            ->filter(fn ($number) => $number !== '' && ! in_array($number, ['-', 'N/A', 'NULL']))
-            ->unique()->sort()->values();
+    public function containerDetails(array $selectedBls = []): Collection
+    {
+        $selected = $this->numbers($selectedBls);
+        $details = collect();
+
+        // Manifest is the source used when TKBM items are created; BL fills gaps.
+        foreach ($this->manifests->merge($this->bls) as $record) {
+            if ($selected->isNotEmpty() && $this->numbers($record->nomor_bl)->intersect($selected)->isEmpty()) {
+                continue;
+            }
+            $type = strtoupper(trim($record->tipe_kontainer ?? ''));
+            if ($type === 'CARGO') {
+                continue;
+            }
+
+            $sizeRaw = strtoupper((string) ($record->size_kontainer ?? ''));
+            $size = str_contains($sizeRaw, '40') ? '40' : (str_contains($sizeRaw, '20') ? '20' : '-');
+            $barang = strtoupper((string) ($record->nama_barang ?? ''));
+            $explicitStatus = preg_match('/\b(EMPTY|KOSONG)\b/', $barang) ? 'EMPTY'
+                : (preg_match('/\bFULL\b/', $barang) ? 'FULL' : null);
+
+            foreach (preg_split('/[,;\r\n]+/', (string) $record->nomor_kontainer) as $rawNumber) {
+                $number = strtoupper(preg_replace('/\s+/', '', trim($rawNumber)));
+                if ($number === '' || in_array($number, ['-', 'N/A', 'NULL'])) {
+                    continue;
+                }
+
+                $status = $explicitStatus ?? ($type === 'FCL' && str_starts_with($number, 'CARGO-') ? 'EMPTY' : null);
+                $current = $details->get($number);
+                $details->put($number, [
+                    'nomor_kontainer' => $number,
+                    'size' => $current && $current['size'] !== '-' ? $current['size'] : $size,
+                    'status' => $current && $current['status_explicit'] ? $current['status'] : ($status ?? 'FULL'),
+                    'status_explicit' => ($current['status_explicit'] ?? false) || $status !== null,
+                ]);
+            }
+        }
+
+        return $details->sortKeys()->values()->map(function ($detail) {
+            unset($detail['status_explicit']);
+
+            return $detail;
+        });
     }
 
     /** Null means no BL link; zero means a link to a different BL. */

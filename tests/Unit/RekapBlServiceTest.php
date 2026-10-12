@@ -29,14 +29,16 @@ class RekapBlServiceTest extends TestCase
     public function test_containers_are_unique_and_follow_selected_bls(): void
     {
         $resolver = new RekapBlService(collect([
-            (new Bl)->forceFill(['nomor_bl' => '01-1', 'nomor_kontainer' => 'CONT-A, CONT-B']),
-            (new Bl)->forceFill(['nomor_bl' => '02', 'nomor_kontainer' => 'CONT-C']),
+            (new Bl)->forceFill(['nomor_bl' => '01-1', 'nomor_kontainer' => 'CONT-A, CONT-B', 'size_kontainer' => '20ft', 'nama_barang' => 'Barang']),
+            (new Bl)->forceFill(['nomor_bl' => '02', 'nomor_kontainer' => 'CONT-C', 'size_kontainer' => '40ft', 'nama_barang' => 'EMPTY']),
         ]), collect([
-            (new Manifest)->forceFill(['nomor_bl' => '01', 'nomor_kontainer' => 'CONT-A']),
+            (new Manifest)->forceFill(['nomor_bl' => '01', 'nomor_kontainer' => 'CONT-A', 'size_kontainer' => '20ft', 'nama_barang' => 'Container Full']),
         ]));
 
         $this->assertSame(['CONT-A', 'CONT-B', 'CONT-C'], $resolver->containers()->all());
         $this->assertSame(['CONT-A', 'CONT-B'], $resolver->containers(['01'])->all());
+        $this->assertSame(['FULL', 'FULL', 'EMPTY'], $resolver->containerDetails()->pluck('status')->all());
+        $this->assertSame(['20', '20', '40'], $resolver->containerDetails()->pluck('size')->all());
     }
 
     public function test_tkbm_invoice_adjustment_is_counted_once_and_evenly_allocated(): void
@@ -60,15 +62,21 @@ class RekapBlServiceTest extends TestCase
         $invoice->apportioned = $full;
 
         $allocate = new \ReflectionMethod($controller, 'allocateTkbmRows');
-        $rows = $allocate->invoke($controller, $invoice, collect(['CONT-A', 'CONT-B', 'CONT-C']), 'KM TEST', 'V01');
+        $containers = collect([
+            ['nomor_kontainer' => 'CONT-A', 'size' => '20', 'status' => 'FULL'],
+            ['nomor_kontainer' => 'CONT-B', 'size' => '20', 'status' => 'FULL'],
+            ['nomor_kontainer' => 'CONT-C', 'size' => '40', 'status' => 'EMPTY'],
+        ]);
+        $rows = $allocate->invoke($controller, $invoice, $containers, 'KM TEST', 'V01');
         $this->assertCount(3, $rows);
+        $this->assertSame('EMPTY', $rows->last()['status']);
         $this->assertEqualsWithDelta(100, $rows->sum('adjustment'), 0.001);
         $this->assertEqualsWithDelta(22, $rows->sum('pph'), 0.001);
         $this->assertEqualsWithDelta(1078, $rows->sum('total'), 0.001);
         $this->assertEqualsWithDelta(33.34, $rows->last()['adjustment'], 0.001);
 
         $invoice->apportioned = ['nominal' => 550, 'ppn' => 0, 'pph' => 11, 'total_biaya' => 539];
-        $selectedRows = $allocate->invoke($controller, $invoice, collect(['CONT-A', 'CONT-B']), 'KM TEST', 'V01');
+        $selectedRows = $allocate->invoke($controller, $invoice, $containers->take(2), 'KM TEST', 'V01');
         $this->assertEqualsWithDelta(50, $selectedRows->sum('adjustment'), 0.001);
         $this->assertEqualsWithDelta(539, $selectedRows->sum('total'), 0.001);
     }
