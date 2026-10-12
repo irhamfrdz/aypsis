@@ -256,7 +256,7 @@
                                                     @php
                                                         $ritDetailUrl = isset($item->is_rit_detail) && $item->is_pranota_uang_rit_kenek
                                                             ? route('pranota-uang-rit-kenek.show', [
-                                                                'pranotaUangRitKenek' => $item->id,
+                                                                'pranota_uang_rit_kenek' => $item->id,
                                                                 'surat_jalan' => $item->rekap_rit_items[0]['nomor'],
                                                                 'bongkaran' => $item->rekapSuratJalan instanceof \App\Models\SuratJalanBongkaran ? 1 : 0,
                                                                 'kapal' => $kapal,
