@@ -141,10 +141,13 @@ class RekapBiayaKapalController extends Controller
             if ($manifests->isEmpty() && strtolower(trim((string) $detail->klasifikasi)) === 'opslag') {
                 $type = strtoupper(trim((string) $detail->jenis_ukuran));
                 $size = str_contains($type, '40') ? '40' : (str_contains($type, '20') ? '20' : null);
+                $isLcl = str_contains($type, 'LCL');
                 $status = preg_match('/\bEMPTY\b|\bKOSONG\b/', $type) ? 'EMPTY'
                     : (preg_match('/\bFULL\b/', $type) ? 'FULL' : null);
-                $matches = $size && $status && ! str_contains($type, 'LCL') && ! str_contains($type, 'BOOKING')
-                    ? $voyageContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)->values()
+                $matches = $size && ($isLcl || ($status && ! str_contains($type, 'BOOKING')))
+                    ? $voyageContainers->filter(fn ($container) => $container['size'] === $size
+                        && ($isLcl ? ($container['category'] ?? 'standard') === 'LCL'
+                            : ($container['category'] ?? 'standard') === 'standard' && $container['status'] === $status))->values()
                     : collect();
                 // Opslag stores only a category count. Assign numbers only when the
                 // voyage has exactly that many matching containers.

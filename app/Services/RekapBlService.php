@@ -116,7 +116,7 @@ class RekapBlService
         });
     }
 
-    /** Container numbers eligible for the standard Full/Empty Opslag categories. */
+    /** Container numbers grouped for the standard and LCL Opslag categories. */
     public function opslagContainerDetails(?Collection $prospects = null): Collection
     {
         $prospects ??= Prospek::whereIn('tipe', ['LCL', 'FCL Booking'])
@@ -124,13 +124,16 @@ class RekapBlService
             ->get();
         $ships = $this->manifests->pluck('nama_kapal')->map(fn ($ship) => self::ship((string) $ship))->unique();
         $voyages = $this->manifests->pluck('no_voyage')->map(fn ($voyage) => strtolower(trim((string) $voyage)))->unique();
-        $excluded = $prospects->filter(fn ($prospect) => $ships->contains(self::ship((string) $prospect->nama_kapal))
+        $matchingProspects = $prospects->filter(fn ($prospect) => $ships->contains(self::ship((string) $prospect->nama_kapal))
                 && $voyages->contains(strtolower(trim((string) $prospect->no_voyage)))
                 && in_array(strtoupper(trim((string) $prospect->tipe)), ['LCL', 'FCL BOOKING']))
+            ->values();
+        $bookings = $matchingProspects->filter(fn ($prospect) => strtoupper(trim((string) $prospect->tipe)) === 'FCL BOOKING')
             ->pluck('nomor_kontainer')->map(fn ($number) => strtoupper(preg_replace('/\s+/', '', trim((string) $number))))
             ->filter()->flip();
 
         $containers = collect();
+        $lclContainers = collect();
         foreach ($this->manifests as $manifest) {
             $type = strtoupper(trim((string) $manifest->tipe_kontainer));
             $sizeRaw = strtoupper((string) $manifest->size_kontainer);
@@ -147,19 +150,44 @@ class RekapBlService
                 if ($number === '' || in_array($number, ['-', 'N/A', 'NULL'])) {
                     continue;
                 }
-                if (str_contains($type, 'LCL') || str_contains($type, 'BOOKING')) {
-                    $excluded->put($number, true);
-                }
-                $containers->put($number, [
+                $container = [
                     'nomor_kontainer' => $number,
                     'nomor_bl' => $manifest->nomor_bl ?: '-',
                     'size' => $size,
                     'status' => $status,
+                ];
+                if (str_contains($type, 'LCL')) {
+                    $container['category'] = 'LCL';
+                    $lclContainers->put($number, $container);
+                    continue;
+                }
+                if (str_contains($type, 'BOOKING') || $bookings->has($number)) {
+                    continue;
+                }
+                $container['category'] = 'standard';
+                $containers->put($number, $container);
+            }
+        }
+
+        foreach ($matchingProspects->filter(fn ($prospect) => strtoupper(trim((string) $prospect->tipe)) === 'LCL') as $prospect) {
+            $sizeRaw = strtoupper((string) $prospect->ukuran);
+            $size = str_contains($sizeRaw, '40') ? '40' : (str_contains($sizeRaw, '20') ? '20' : null);
+            if (! $size) {
+                continue;
+            }
+            foreach (preg_split('/[,;\r\n]+/', (string) $prospect->nomor_kontainer) as $rawNumber) {
+                $number = strtoupper(preg_replace('/\s+/', '', trim($rawNumber)));
+                if ($number === '' || in_array($number, ['-', 'N/A', 'NULL']) || $lclContainers->has($number)) {
+                    continue;
+                }
+                $lclContainers->put($number, [
+                    'nomor_kontainer' => $number,
+                    'nomor_bl' => '-', 'size' => $size, 'status' => 'FULL', 'category' => 'LCL',
                 ]);
             }
         }
 
-        return $containers->reject(fn ($container, $number) => $excluded->has($number))->sortKeys()->values();
+        return $containers->merge($lclContainers)->sortKeys()->values();
     }
 
     /** Null means no BL link; zero means a link to a different BL. */
