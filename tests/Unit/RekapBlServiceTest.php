@@ -157,7 +157,7 @@ class RekapBlServiceTest extends TestCase
         $invoice->apportioned = ['nominal' => 250, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 250];
 
         $allocate = new \ReflectionMethod($controller, 'allocateOppOptRows');
-        $rows = $allocate->invoke($controller, $invoice, 'KM TEST', 'V01');
+        $rows = $allocate->invoke($controller, $invoice, collect(), 'KM TEST', 'V01');
         $this->assertSame(['CONT-A', 'CONT-B', 'CONT-A'], $rows->pluck('kontainer')->all());
         $this->assertEqualsWithDelta(250, $rows->sum('biaya'), 0.001);
 
@@ -165,9 +165,43 @@ class RekapBlServiceTest extends TestCase
             ->invoke($controller, $invoice, $this->resolver(), 'KM TEST', 'V01', '01');
         $this->assertNull($common);
         $this->assertEqualsWithDelta(150, $selected->apportioned['total_biaya'], 0.001);
-        $selectedRows = $allocate->invoke($controller, $selected, 'KM TEST', 'V01');
+        $selectedRows = $allocate->invoke($controller, $selected, collect(), 'KM TEST', 'V01');
         $this->assertSame(['CONT-A', 'CONT-A'], $selectedRows->pluck('kontainer')->all());
         $this->assertEqualsWithDelta(150, $selectedRows->sum('biaya'), 0.001);
+    }
+
+    public function test_opslag_uses_voyage_container_numbers_only_when_category_count_matches(): void
+    {
+        $controller = new \App\Http\Controllers\RekapBiayaKapalController;
+        $invoice = new \App\Models\BiayaKapal;
+        $invoice->setRelation('oppOptDetails', collect([
+            (new \App\Models\BiayaKapalOppOpt)->forceFill([
+                'kapal' => 'KM TEST', 'voyage' => 'V01', 'klasifikasi' => 'opslag',
+                'jenis_ukuran' => '20ft Full', 'jumlah' => 2, 'tarif' => 3000, 'subtotal' => 6000,
+            ]),
+            (new \App\Models\BiayaKapalOppOpt)->forceFill([
+                'kapal' => 'KM TEST', 'voyage' => 'V01', 'klasifikasi' => 'opslag',
+                'jenis_ukuran' => 'Mobil', 'jumlah' => 3, 'tarif' => 1000, 'subtotal' => 3000,
+            ]),
+        ]));
+        foreach ($invoice->oppOptDetails as $detail) {
+            $detail->setRelation('manifests', collect());
+        }
+        $containers = collect([
+            ['nomor_kontainer' => 'CONT-A', 'size' => '20', 'status' => 'FULL'],
+            ['nomor_kontainer' => 'CONT-B', 'size' => '20', 'status' => 'FULL'],
+        ]);
+        $allocate = new \ReflectionMethod($controller, 'allocateOppOptRows');
+        $rows = $allocate->invoke($controller, $invoice, $containers, 'KM TEST', 'V01');
+        $this->assertSame(['CONT-A', 'CONT-B', 'Mobil'], $rows->pluck('kontainer')->all());
+        $this->assertSame([true, true, false], $rows->pluck('per_kontainer')->all());
+        $this->assertSame(3.0, $rows->last()['jumlah']);
+        $this->assertEqualsWithDelta(9000, $rows->sum('biaya'), 0.001);
+
+        $rows = $allocate->invoke($controller, $invoice, $containers->take(1), 'KM TEST', 'V01');
+        $this->assertSame('20ft Full', $rows->first()['kontainer']);
+        $this->assertFalse($rows->first()['per_kontainer']);
+        $this->assertSame(2.0, $rows->first()['jumlah']);
     }
 
     public function test_direct_bl_container_and_unlinked_costs(): void

@@ -127,7 +127,7 @@ class RekapBiayaKapalController extends Controller
         return $rows;
     }
 
-    private function allocateOppOptRows(BiayaKapal $record, string $kapal, string $voyage): Collection
+    private function allocateOppOptRows(BiayaKapal $record, Collection $voyageContainers, string $kapal, string $voyage): Collection
     {
         $rows = collect();
         foreach ($record->oppOptDetails as $detail) {
@@ -138,6 +138,35 @@ class RekapBiayaKapalController extends Controller
 
             $manifests = $detail->manifests->unique('id')->values();
             $totalCents = (int) round((float) ($detail->rekap_opp_opt_total ?? $detail->subtotal) * 100);
+            if ($manifests->isEmpty() && strtolower(trim((string) $detail->klasifikasi)) === 'opslag') {
+                $type = strtoupper(trim((string) $detail->jenis_ukuran));
+                $size = str_contains($type, '40') ? '40' : (str_contains($type, '20') ? '20' : null);
+                $status = preg_match('/\bEMPTY\b|\bKOSONG\b/', $type) ? 'EMPTY'
+                    : (preg_match('/\bFULL\b/', $type) ? 'FULL' : null);
+                $matches = $size && $status && ! str_contains($type, 'LCL') && ! str_contains($type, 'BOOKING')
+                    ? $voyageContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)->values()
+                    : collect();
+                // Opslag stores only a category count. Assign numbers only when the
+                // voyage has exactly that many matching containers.
+                if ($matches->isNotEmpty() && $matches->count() === (int) $detail->jumlah
+                    && (float) $detail->jumlah === (float) (int) $detail->jumlah) {
+                    $allocated = 0;
+                    foreach ($matches as $index => $container) {
+                        $amount = $index === $matches->count() - 1
+                            ? $totalCents - $allocated : (int) round($totalCents / $matches->count());
+                        $allocated += $amount;
+                        $rows->push([
+                            'kontainer' => $container['nomor_kontainer'], 'bl' => '-',
+                            'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
+                            'ukuran' => $detail->jenis_ukuran ?: '-',
+                            'vendor' => $detail->vendor ?: '-', 'jumlah' => 1,
+                            'per_kontainer' => true,
+                            'tarif' => (float) $detail->tarif, 'biaya' => $amount / 100,
+                        ]);
+                    }
+                    continue;
+                }
+            }
             $weights = $manifests->map(fn ($manifest) => (float) ($manifest->rekap_bl_share ?? 1));
             $weightTotal = $weights->sum();
             $allocated = 0;
@@ -152,16 +181,20 @@ class RekapBiayaKapalController extends Controller
                     'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
                     'ukuran' => $manifest->size_kontainer ?: ($detail->jenis_ukuran ?: '-'),
                     'vendor' => $detail->vendor ?: '-',
+                    'jumlah' => 1,
+                    'per_kontainer' => true,
                     'tarif' => (float) $detail->tarif,
                     'biaya' => $amount / 100,
                 ]);
             }
             if ($manifests->isEmpty() && $totalCents !== 0) {
                 $rows->push([
-                    'kontainer' => 'Tanpa rincian kontainer', 'bl' => '-',
+                    'kontainer' => $detail->jenis_ukuran ?: 'Biaya OPP/OPT', 'bl' => '-',
                     'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
                     'ukuran' => $detail->jenis_ukuran ?: '-',
                     'vendor' => $detail->vendor ?: '-',
+                    'jumlah' => (float) $detail->jumlah,
+                    'per_kontainer' => false,
                     'tarif' => (float) $detail->tarif,
                     'biaya' => $totalCents / 100,
                 ]);
@@ -1211,7 +1244,7 @@ class RekapBiayaKapalController extends Controller
                 $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
             }
             if ($record->oppOptDetails->isNotEmpty()) {
-                $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $kapal, $voyage);
+                $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $tkbmContainers, $kapal, $voyage);
             }
         }
 

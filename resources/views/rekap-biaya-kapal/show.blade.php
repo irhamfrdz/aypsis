@@ -297,16 +297,20 @@
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
                                                     <div class="rounded-lg border border-purple-100 bg-white overflow-hidden">
                                                         <div class="px-3 py-2 bg-purple-50 text-[11px] font-semibold uppercase tracking-wide text-purple-800">
-                                                            Rincian biaya OPP/OPT per kontainer ({{ $item->rekap_opp_opt_rows->pluck('kontainer')->filter(fn ($number) => $number !== '-' && $number !== 'Tanpa rincian kontainer')->unique()->count() }} kontainer)
+                                                            Rincian biaya OPP/OPT per kontainer dan barang ({{ $item->rekap_opp_opt_rows->where('per_kontainer', true)->pluck('kontainer')->unique()->count() }} kontainer)
                                                         </div>
+                                                        @if($item->rekap_opp_opt_rows->contains('per_kontainer', false))
+                                                            <p class="px-3 py-2 text-[11px] text-gray-500">Item tanpa manifest ditampilkan menurut jenis dan jumlah. Nomor kontainer dari voyage hanya dicocokkan bila jumlahnya sama dengan item invoice.</p>
+                                                        @endif
                                                         <table class="w-full text-xs">
                                                             <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
                                                                 <tr>
-                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer / Barang</th>
                                                                     <th class="px-3 py-2 text-left">BL</th>
                                                                     <th class="px-3 py-2 text-left">Jenis</th>
                                                                     <th class="px-3 py-2 text-left">Ukuran</th>
                                                                     <th class="px-3 py-2 text-left">Vendor</th>
+                                                                    <th class="px-3 py-2 text-right">Jumlah</th>
                                                                     <th class="px-3 py-2 text-right">Tarif</th>
                                                                     <th class="px-3 py-2 text-right">Biaya</th>
                                                                 </tr>
@@ -319,6 +323,7 @@
                                                                         <td class="px-3 py-2 text-gray-700">{{ $containerRow['jenis'] }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $containerRow['ukuran'] }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $containerRow['vendor'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">{{ number_format($containerRow['jumlah'], 2, ',', '.') }}</td>
                                                                         <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['tarif'], 2, ',', '.') }}</td>
                                                                         <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($containerRow['biaya'], 2, ',', '.') }}</td>
                                                                     </tr>
@@ -326,7 +331,7 @@
                                                             </tbody>
                                                             <tfoot class="bg-purple-50 font-semibold text-gray-900">
                                                                 <tr>
-                                                                    <td colspan="6" class="px-3 py-2 text-right">Total OPP/OPT</td>
+                                                                    <td colspan="7" class="px-3 py-2 text-right">Total OPP/OPT</td>
                                                                     <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_opp_opt_rows->sum('biaya'), 2, ',', '.') }}</td>
                                                                 </tr>
                                                             </tfoot>
