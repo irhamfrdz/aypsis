@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
@@ -181,6 +182,7 @@ class LaporanTerlambatExport implements WithMultipleSheets
 
         $detailRows = [];
         $summaryRows = [];
+        $workingHours = new WorkingHoursService;
 
         foreach ($karyawans as $karyawan) {
             if ($karyawan->isExemptFromTerlambat()) {
@@ -213,17 +215,18 @@ class LaporanTerlambatExport implements WithMultipleSheets
 
                 if ($masukLog) {
                     $waktuMasuk = Carbon::parse($masukLog->waktu);
-                    $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
-                    $batasToleransi = $jamMasukNormal->copy()->addMinutes(5);
+                    $jadwalKerja = $workingHours->scheduleFor($karyawan, $dateStr);
+                    $jamMasukNormal = $jadwalKerja['start'];
+                    $batasToleransi = $jamMasukNormal->copy()->addMinutes($jadwalKerja['grace_minutes']);
 
-                    // Pastikan tidak ada scan pagi sebelum 09:05 (misal scan pagi yang salah tipe jadi Pulang)
+                    // Pastikan tidak ada scan pagi sebelum batas toleransi jadwal.
                     $hadMorningScanOnTime = $dayLogs->contains(function ($val) use ($batasToleransi) {
                         return Carbon::parse($val->waktu)->lte($batasToleransi);
                     });
 
                     // Hanya dihitung terlambat jika:
-                    // 1. Scan masuk setelah batas toleransi 09:05
-                    // 2. Karyawan memang belum melakukan scan apapun di pagi hari <= 09:05
+                    // 1. Scan masuk setelah batas toleransi jadwal.
+                    // 2. Karyawan belum melakukan scan lain pada atau sebelum batas toleransi.
                     // 3. Scan masuk bukan scan sore hari (misal jam >= 14:00 yang salah tipe)
                     if ($waktuMasuk->gt($batasToleransi) && ! $hadMorningScanOnTime && $waktuMasuk->hour < 14) {
                         $hasPerm = $empPerms->contains(function ($perm) use ($dateStr) {
@@ -231,7 +234,7 @@ class LaporanTerlambatExport implements WithMultipleSheets
                         });
 
                         if (! $hasPerm) {
-                            $menit = (int) round($jamMasukNormal->diffInMinutes($waktuMasuk));
+                            $menit = $workingHours->lateMinutes($karyawan, $dateStr, $waktuMasuk);
                             $totalKali++;
                             $totalMenit += $menit;
 

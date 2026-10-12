@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
@@ -172,24 +173,11 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
                 });
             } elseif ($kehadiran === 'terlambat') {
-                $timeExpr = $driver === 'sqlite' ? 'time(waktu)' : 'TIME(waktu)';
-                $karyawansQuery->where(function ($q) {
-                    $q->whereNull('penempatan')
-                        ->orWhere(function ($sq) {
-                            $sq->whereNotIn(\Illuminate\Support\Facades\DB::raw('LOWER(penempatan)'), [
-                                'jakarta pelabuhan', 'jakarta pelabhuhan', 'garasi jakarta',
-                                'garasai jakarta', 'jakarta pelabuhan 1', 'pelabuhan',
-                                'garasi', 'pelabuhan 1', '1',
-                            ])
-                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabuhan%"')
-                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabhuhan%"');
-                        });
-                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr, $timeExpr) {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\Illuminate\Support\Facades\DB::raw($dateExpr))
                         ->whereBetween('waktu', [$startObj, $endObj])
                         ->groupBy(\Illuminate\Support\Facades\DB::raw($dateExpr))
-                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) > '09:05:00'")
-                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) < '14:00:00'");
+                        ->havingRaw("SUM(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN 1 ELSE 0 END) > 0");
                 });
             }
         }
@@ -245,6 +233,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ->toArray();
 
         $this->rekapData = [];
+        $workingHours = new WorkingHoursService;
 
         $dayMap = [
             'Sunday' => 'Min',
@@ -278,9 +267,6 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ];
         }
 
-        $limitInTime = strtotime('09:00:00');
-        $limitOutTime = strtotime('17:00:00');
-
         foreach ($karyawans as $karyawan) {
             $logs = $allLogs->get($karyawan->id, collect());
             $logsByDay = $logs->keyBy('tanggal');
@@ -294,6 +280,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $cutiDays = 0;
             $alphaDays = 0;
             $totalLateMinutes = 0;
+            $lateDates = [];
+            $earlyDates = [];
             $totalEarlyMinutes = 0;
             $totalOvertimeMinutes = 0;
 
@@ -340,10 +328,11 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
+                    $jadwalKerja = $workingHours->scheduleFor($karyawan, $dateString);
 
-                    if ($inTimeStr !== '-' && $inTimeStr > '09:05') { // 5 menit toleransi
-                        $diff = strtotime($inTimeStr.':00') - strtotime('09:00:00');
-                        if ($diff > 0) {
+                    if ($inTimeStr !== '-') {
+                        $lateMinutes = $workingHours->lateMinutes($karyawan, $dateString, $inTimeStr);
+                        if ($lateMinutes > 0) {
                             // Check for approved datang_terlambat permission
                             $hasLatePermission = $karyawanPermissions->contains(function ($perm) use ($dateString) {
                                 return strtolower($perm->jenis_izin) === 'datang_terlambat' &&
@@ -353,13 +342,14 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                             $isExempt = $karyawan->isExemptFromTerlambat();
 
                             if (! $hasLatePermission && ! $isExempt) {
-                                $totalLateMinutes += round($diff / 60);
+                                $totalLateMinutes += $lateMinutes;
+                                $lateDates[] = $dateString;
                             }
                         }
                     }
 
-                    if ($outTimeStr !== '-' && $outTimeStr < '17:00') {
-                        $diff = strtotime('17:00:00') - strtotime($outTimeStr.':00');
+                    if ($outTimeStr !== '-' && $outTimeStr < $jadwalKerja['end']->format('H:i')) {
+                        $diff = strtotime($jadwalKerja['end']->format('H:i:s')) - strtotime($outTimeStr.':00');
                         if ($diff > 0) {
                             // Check for approved pulang_cepat permission
                             $hasEarlyPermission = $karyawanPermissions->contains(function ($perm) use ($dateString) {
@@ -369,6 +359,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
                             if (! $hasEarlyPermission) {
                                 $totalEarlyMinutes += round($diff / 60);
+                                $earlyDates[] = $dateString;
                             }
                         }
                     }
@@ -384,19 +375,23 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 }
             }
 
-            $this->rekapData[] = [
-                'karyawan' => $karyawan,
-                'dailyStatus' => $dailyStatus,
-                'normalDays' => $normalDays,
-                'riilDays' => $riilDays,
-                'absenDays' => $alphaDays,
-                'sakitDays' => $sakitDays,
-                'izinDays' => $izinDays,
-                'cutiDays' => $cutiDays,
-                'lateMinutes' => $totalLateMinutes,
-                'earlyMinutes' => $totalEarlyMinutes,
-                'overtimeMinutes' => $totalOvertimeMinutes,
-            ];
+            if ($this->kehadiran !== 'terlambat' || $totalLateMinutes > 0) {
+                $this->rekapData[] = [
+                    'karyawan' => $karyawan,
+                    'dailyStatus' => $dailyStatus,
+                    'lateDates' => $lateDates,
+                    'earlyDates' => $earlyDates,
+                    'normalDays' => $normalDays,
+                    'riilDays' => $riilDays,
+                    'absenDays' => $alphaDays,
+                    'sakitDays' => $sakitDays,
+                    'izinDays' => $izinDays,
+                    'cutiDays' => $cutiDays,
+                    'lateMinutes' => $totalLateMinutes,
+                    'earlyMinutes' => $totalEarlyMinutes,
+                    'overtimeMinutes' => $totalOvertimeMinutes,
+                ];
+            }
         }
     }
 
@@ -474,8 +469,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
 
                     $isTidakMasuk = ($masuk === '-');
                     $isTidakPulang = ($pulang === '-');
-                    $isTerlambat = (! $isTidakMasuk && $masuk > '09:05' && ! $karyawan->isExemptFromTerlambat());
-                    $isPulangCepat = (! $isTidakPulang && $pulang < '17:00');
+                    $isTerlambat = (! $isTidakMasuk && in_array($date, $data['lateDates'] ?? [], true));
+                    $isPulangCepat = (! $isTidakPulang && in_array($date, $data['earlyDates'] ?? [], true));
 
                     if ($isTidakMasuk) {
                         $this->styleRanges['tidak_masuk'][] = $cellCoord;

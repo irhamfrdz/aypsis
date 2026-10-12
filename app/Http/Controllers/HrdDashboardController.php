@@ -7,6 +7,7 @@ use App\Models\Absensi;
 use App\Models\Cabang;
 use App\Models\Cuti;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -121,7 +122,7 @@ class HrdDashboardController extends Controller
 
         // 2. Karyawan Absen Masuk (Hari Ini atau Rentang Periode)
         $absensiMasukQuery = Absensi::with(['karyawan' => function ($q) {
-            $q->select('id', 'nik', 'nama_lengkap', 'divisi', 'cabang', 'grup', 'penempatan');
+            $q->select('id', 'nik', 'nama_lengkap', 'divisi', 'cabang', 'grup', 'penempatan', 'departemen');
         }])
             ->select('id', 'karyawan_id', 'nik', 'waktu', 'tipe', 'latitude', 'longitude', 'detail_lokasi')
             ->where('tipe', 'Masuk');
@@ -140,6 +141,7 @@ class HrdDashboardController extends Controller
         }
         $absensiMasuk = $absensiMasukQuery->get();
 
+        $workingHours = new WorkingHoursService;
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
 
         // 3. Karyawan Belum Absen
@@ -150,14 +152,14 @@ class HrdDashboardController extends Controller
             ->get();
 
         // 4. Karyawan Absen Terlambat
-        // Evaluasi per absensi: cek apakah waktu > jam batas toleransi 5 menit (Sabtu: 08:05, Hari lain: 09:05)
-        $karyawanTerlambat = $absensiMasuk->filter(function ($absen) {
+        // Evaluasi per absensi berdasarkan jam kerja aktif karyawan.
+        $karyawanTerlambat = $absensiMasuk->filter(function ($absen) use ($workingHours) {
             $waktuAbsen = Carbon::parse($absen->waktu);
-            $jamBatasHari = $waktuAbsen->isSaturday() ? 8 : 9;
-            $batasTerlambat = $waktuAbsen->copy()->setHour($jamBatasHari)->setMinute(5)->setSecond(0);
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
-            return $waktuAbsen->greaterThan($batasTerlambat) && ! $isExempt;
+            return $absen->karyawan
+                && $workingHours->lateMinutes($absen->karyawan, $waktuAbsen, $waktuAbsen) > 0
+                && ! $isExempt;
         })
             ->sortByDesc('waktu')
             ->unique('karyawan_id')
@@ -168,13 +170,11 @@ class HrdDashboardController extends Controller
 
         // Karyawan yang hadir normal: tapping masuk sampai batas toleransi atau bebas keterlambatan.
         // Satu karyawan hanya ditampilkan satu kali pada daftar dashboard.
-        $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) {
+        $karyawanHadirNormal = $absensiMasuk->filter(function ($absen) use ($workingHours) {
             $waktuAbsen = Carbon::parse($absen->waktu);
-            $jamBatasHari = $waktuAbsen->isSaturday() ? 8 : 9;
-            $batasTerlambat = $waktuAbsen->copy()->setHour($jamBatasHari)->setMinute(5)->setSecond(0);
             $isExempt = $absen->karyawan ? $absen->karyawan->isExemptFromTerlambat() : false;
 
-            return $waktuAbsen->lessThanOrEqualTo($batasTerlambat) || $isExempt;
+            return ($absen->karyawan && $workingHours->lateMinutes($absen->karyawan, $waktuAbsen, $waktuAbsen) === 0) || $isExempt;
         })
             ->sortByDesc('waktu')
             ->unique('karyawan_id')

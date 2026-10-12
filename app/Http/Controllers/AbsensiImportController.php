@@ -104,11 +104,6 @@ class AbsensiImportController extends Controller
                 try {
                     $parsedTime = Carbon::parse($datetimeStr);
 
-                    // Jika waktu absensi adalah 09:01 atau 09:02, sesuaikan menjadi 09:00
-                    if ($parsedTime->format('H:i') === '09:01' || $parsedTime->format('H:i') === '09:02') {
-                        $parsedTime->setTime(9, 0, 0);
-                    }
-
                     $waktu = $parsedTime->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip invalid date

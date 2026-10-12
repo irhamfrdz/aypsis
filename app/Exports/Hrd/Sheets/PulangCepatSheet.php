@@ -4,6 +4,7 @@ namespace App\Exports\Hrd\Sheets;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -37,6 +38,7 @@ class PulangCepatSheet implements FromCollection, ShouldAutoSize, WithHeadings, 
             ->get();
 
         $data = [];
+        $workingHours = new WorkingHoursService;
 
         foreach ($absensiRaw as $log) {
             if (! $log->waktu_pulang || ! isset($karyawans[$log->karyawan_id])) {
@@ -44,16 +46,12 @@ class PulangCepatSheet implements FromCollection, ShouldAutoSize, WithHeadings, 
             }
 
             $waktuPulang = Carbon::parse($log->waktu_pulang);
-            $tanggal = $waktuPulang->copy()->startOfDay();
-            $isSaturday = $tanggal->isSaturday();
-
-            // Batas pulang cepat: 17:00 (Senin-Jumat) atau 13:00 (Sabtu)
-            $jamBatasPulang = $isSaturday ? 13 : 17;
-            $batasPulang = $tanggal->copy()->setHour($jamBatasPulang)->setMinute(0)->setSecond(0);
+            $tanggal = Carbon::parse($log->tanggal);
+            $karyawan = $karyawans[$log->karyawan_id];
+            $batasPulang = $workingHours->scheduleFor($karyawan, $tanggal)['end'];
 
             if ($waktuPulang->lessThan($batasPulang)) {
                 $menitCepat = round($waktuPulang->diffInMinutes($batasPulang, true));
-                $karyawan = $karyawans[$log->karyawan_id];
 
                 $data[] = [
                     'Tanggal' => $tanggal->format('Y-m-d'),

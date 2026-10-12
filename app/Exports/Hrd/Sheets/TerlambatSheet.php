@@ -4,6 +4,7 @@ namespace App\Exports\Hrd\Sheets;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -37,6 +38,7 @@ class TerlambatSheet implements FromCollection, ShouldAutoSize, WithHeadings, Wi
             ->get();
 
         $data = [];
+        $workingHours = new WorkingHoursService;
 
         foreach ($absensiRaw as $log) {
             if (! $log->waktu_masuk || ! isset($karyawans[$log->karyawan_id])) {
@@ -44,20 +46,11 @@ class TerlambatSheet implements FromCollection, ShouldAutoSize, WithHeadings, Wi
             }
 
             $waktuMasuk = Carbon::parse($log->waktu_masuk);
-            $tanggal = $waktuMasuk->copy()->startOfDay();
-            $isSaturday = $tanggal->isSaturday();
+            $tanggal = Carbon::parse($log->tanggal);
+            $karyawan = $karyawans[$log->karyawan_id];
+            $menitTerlambat = $workingHours->lateMinutes($karyawan, $tanggal, $waktuMasuk);
 
-            // Batas terlambat: 09:05 (Senin-Jumat) atau 08:05 (Sabtu)
-            $jamBatas = $isSaturday ? 8 : 9;
-            $batasTerlambat = $tanggal->copy()->setHour($jamBatas)->setMinute(5)->setSecond(0);
-
-            if ($waktuMasuk->greaterThan($batasTerlambat)) {
-                $karyawan = $karyawans[$log->karyawan_id];
-                if ($karyawan->isExemptFromTerlambat()) {
-                    continue;
-                }
-
-                $menitTerlambat = round($batasTerlambat->copy()->setMinute(0)->diffInMinutes($waktuMasuk, true));
+            if ($menitTerlambat > 0 && ! $karyawan->isExemptFromTerlambat()) {
 
                 $data[] = [
                     'Tanggal' => $tanggal->format('Y-m-d'),

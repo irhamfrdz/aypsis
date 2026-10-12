@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\WorkingHoursService;
 use App\Models\Mesin;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -948,24 +949,11 @@ class AbsensiController extends Controller
                         ->havingRaw('(SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0) OR (SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0)');
                 });
             } elseif ($kehadiran === 'terlambat') {
-                $timeExpr = $driver === 'sqlite' ? 'time(waktu)' : 'TIME(waktu)';
-                $karyawansQuery->where(function ($q) {
-                    $q->whereNull('penempatan')
-                        ->orWhere(function ($sq) {
-                            $sq->whereNotIn(\DB::raw('LOWER(penempatan)'), [
-                                'jakarta pelabuhan', 'jakarta pelabhuhan', 'garasi jakarta',
-                                'garasai jakarta', 'jakarta pelabuhan 1', 'pelabuhan',
-                                'garasi', 'pelabuhan 1', '1',
-                            ])
-                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabuhan%"')
-                                ->whereRaw('LOWER(penempatan) NOT LIKE "%pelabhuhan%"');
-                        });
-                })->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr, $timeExpr) {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
                         ->whereBetween('waktu', [$startObj, $endObj])
                         ->groupBy(\DB::raw($dateExpr))
-                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) > '09:05:00'")
-                        ->havingRaw("MIN(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN {$timeExpr} ELSE NULL END) < '14:00:00'");
+                        ->havingRaw("SUM(CASE WHEN LOWER(REPLACE(tipe, '_', ' ')) IN ('masuk', 'check in', 'in') THEN 1 ELSE 0 END) > 0");
                 });
             }
         }
@@ -1169,6 +1157,7 @@ class AbsensiController extends Controller
             ->toArray();
 
         // Calculate rekap statistics for each employee
+        $workingHours = new WorkingHoursService;
         $rekapData = [];
         foreach ($karyawans as $karyawan) {
             $logs = $attendance->get($karyawan->id, collect());
@@ -1243,6 +1232,7 @@ class AbsensiController extends Controller
                     $hadir++;
                     $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
+                    $jadwalKerja = $workingHours->scheduleFor($karyawan, $dateStr);
 
                     // Normalisasi scan Masuk (mencakup 'Masuk', 'Check In', 'in')
                     $masukLog = $dayLogs->first(function ($val) {
@@ -1299,10 +1289,10 @@ class AbsensiController extends Controller
                     // Lateness
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
-                        $jamMasukNormal = Carbon::parse($dateStr.' 09:00:00');
-                        $batasToleransi = $jamMasukNormal->copy()->addMinutes(5);
+                        $jamMasukNormal = $jadwalKerja['start'];
+                        $batasToleransi = $jamMasukNormal->copy()->addMinutes($jadwalKerja['grace_minutes']);
 
-                        // Pastikan tidak ada scan pagi sebelum 09:05 (misal scan pagi yang salah tipe jadi Pulang)
+                        // Pastikan tidak ada scan pagi sebelum batas toleransi (misalnya scan salah tipe).
                         $hadMorningScanOnTime = $dayLogs->contains(function ($val) use ($batasToleransi) {
                             return Carbon::parse($val->waktu)->lte($batasToleransi);
                         });
@@ -1318,7 +1308,7 @@ class AbsensiController extends Controller
                             });
 
                             if (! $hasLatePermission && ! $isExempt) {
-                                $menit = (int) round($jamMasukNormal->diffInMinutes($waktuMasuk));
+                                $menit = $workingHours->lateMinutes($karyawan, $dateStr, $waktuMasuk);
                                 $terlambatKali++;
                                 $terlambatMenit += $menit;
                                 $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y').' ('.$menit.' mnt)';
@@ -1341,9 +1331,9 @@ class AbsensiController extends Controller
                     // Early leave
                     if ($pulangLog) {
                         $waktuPulang = Carbon::parse($pulangLog->waktu);
-                        $jamPulangNormal = Carbon::parse($dateStr.' 17:00:00');
+                        $jamPulangNormal = $jadwalKerja['end'];
                         // if clock out is next day (e.g. 02:00 AM), it's not early leave.
-                        // But if it's same day before 17:00
+                        // But if it's the same workday and before the scheduled end time.
                         if ($waktuPulang->lt($jamPulangNormal) && $waktuPulang->format('Y-m-d') == $dateStr) {
                             // Check for approved pulang_cepat permission
                             $hasEarlyPermission = $karyawanPermissions->contains(function ($perm) use ($dateStr) {
@@ -1447,6 +1437,13 @@ class AbsensiController extends Controller
                 'detail_pulang_cepat' => $detail_pulang_cepat,
                 'detail_tidak_absen_masuk' => $detail_tidak_absen_masuk,
             ];
+        }
+
+        if ($request->input('kehadiran') === 'terlambat') {
+            $karyawans = $karyawans
+                ->filter(fn ($karyawan) => ($rekapData[$karyawan->id]['terlambat_kali'] ?? 0) > 0)
+                ->values();
+            $rekapData = array_intersect_key($rekapData, array_flip($karyawans->pluck('id')->all()));
         }
 
         $allHariLiburs = \App\Models\HariLibur::orderBy('tanggal', 'desc')->get();
