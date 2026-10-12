@@ -46,6 +46,25 @@ class RekapBlService
             ->flatMap(fn ($number) => $this->numbers($number))->unique()->sort()->values();
     }
 
+    public function containerCounts(): array
+    {
+        $containersByBl = [];
+
+        foreach ($this->bls->merge($this->manifests) as $record) {
+            $containers = collect(preg_split('/[,;\r\n]+/', (string) $record->nomor_kontainer))
+                ->map(fn ($number) => strtoupper(preg_replace('/\s+/', '', trim($number))))
+                ->filter()->unique();
+
+            foreach ($this->numbers($record->nomor_bl) as $blNumber) {
+                foreach ($containers as $containerNumber) {
+                    $containersByBl[$blNumber][$containerNumber] = true;
+                }
+            }
+        }
+
+        return collect($containersByBl)->map(fn ($containers) => count($containers))->all();
+    }
+
     /** Null means no BL link; zero means a link to a different BL. */
     public function ratio($row, string|array $selected): ?float
     {

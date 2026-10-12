@@ -147,7 +147,7 @@
                 success: function(data) {
                     if ($('#kapal_select').val() !== kapal || $('#voyage_select').val() !== voyage) return;
                     data.forEach(bl => {
-                        const label = `BL ${bl.number} | Shipper: ${bl.shipper} | Jenis Barang: ${bl.jenis_barang}`;
+                        const label = `BL ${bl.number} | ${bl.jumlah_kontainer} Kontainer | Shipper: ${bl.shipper} | Jenis Barang: ${bl.jenis_barang}`;
                         $blSelect.append(new Option(label, bl.number));
                     });
                     $blSelect.prop('disabled', false).trigger('change');

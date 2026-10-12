@@ -660,7 +660,9 @@ class RekapBiayaKapalController extends Controller
         $data = $request->validate(['kapal' => 'required|string', 'voyage' => 'required|string']);
         $kapal = strtolower(trim($data['kapal']));
         $voyage = strtolower(trim($data['voyage']));
-        $numbers = RekapBlService::forVoyage($data['kapal'], $data['voyage'])->available();
+        $blResolver = RekapBlService::forVoyage($data['kapal'], $data['voyage']);
+        $numbers = $blResolver->available();
+        $containerCounts = $blResolver->containerCounts();
 
         $normalizeShip = fn ($name) => preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\\s]+/i', '', strtolower(trim((string) $name))));
         $blMetadata = [];
@@ -742,13 +744,14 @@ class RekapBiayaKapalController extends Controller
             }
         }
 
-        $options = $numbers->filter()->unique()->sort()->values()->map(function ($number) use ($blMetadata) {
+        $options = $numbers->filter()->unique()->sort()->values()->map(function ($number) use ($blMetadata, $containerCounts) {
             $metadata = $blMetadata[$number] ?? [];
 
             return [
                 'number' => $number,
                 'shipper' => collect($metadata['shipper'] ?? [])->implode(', ') ?: '-',
                 'jenis_barang' => collect($metadata['jenis_barang'] ?? [])->implode(', ') ?: '-',
+                'jumlah_kontainer' => $containerCounts[$number] ?? 0,
             ];
         });
 
