@@ -168,7 +168,7 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $suratJalan->tanggal_surat_jalan ? $suratJalan->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->Kenek ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-gray-700">
-                                        Rp {{ number_format($suratJalan->uang_rit_Kenek ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format($suratJalan->uang_rit_kenek ?? 0, 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @empty

@@ -147,10 +147,10 @@
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_surat_jalan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $pranota->tanggal ? $pranota->tanggal->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranota->Kenek_nama ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranota->kenek_nama ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">1</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-indigo-600">
-                                        Rp {{ number_format($pranota->uang_rit_Kenek, 0, ',', '.') }}
+                                        Rp {{ number_format($pranota->uang_rit_kenek, 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -159,10 +159,10 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranotaUangRitKenek->no_surat_jalan ?? '-' }}</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $pranotaUangRitKenek->tanggal ? $pranotaUangRitKenek->tanggal->format('d/m/Y') : '-' }}</td>
-                                <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranotaUangRitKenek->Kenek_nama ?? '-' }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranotaUangRitKenek->kenek_nama ?? '-' }}</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-xs text-center">1</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-indigo-600">
-                                    Rp {{ number_format($pranotaUangRitKenek->uang_rit_Kenek, 0, ',', '.') }}
+                                    Rp {{ number_format($pranotaUangRitKenek->uang_rit_kenek, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @endif
