@@ -558,7 +558,6 @@
                                                                     <th class="px-3 py-2 text-left">Nama Barang</th>
                                                                     <th class="px-3 py-2 text-left">Supir</th>
                                                                     <th class="px-3 py-2 text-left">Size</th>
-                                                                    <th class="px-3 py-2 text-left">Tujuan</th>
                                                                     <th class="px-3 py-2 text-right">Biaya</th>
                                                                 </tr>
                                                             </thead>
@@ -569,14 +568,13 @@
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['nama_barang'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['supir'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['size'] ?? '-' }}</td>
-                                                                        <td class="px-3 py-2 text-gray-700">{{ $temaEntry['tujuan_gudang'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) ($temaEntry['biaya'] ?? 0), 2, ',', '.') }}</td>
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>
                                                             <tfoot class="bg-indigo-50 font-semibold">
                                                                 <tr>
-                                                                    <td colspan="5" class="px-3 py-2 text-right">Total Pranota OB</td>
+                                                                    <td colspan="4" class="px-3 py-2 text-right">Total Pranota OB</td>
                                                                     <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format(collect($obEntries)->sum('biaya'), 2, ',', '.') }}</td>
                                                                 </tr>
                                                             </tfoot>
