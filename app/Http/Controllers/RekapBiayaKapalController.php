@@ -622,8 +622,9 @@ class RekapBiayaKapalController extends Controller
                 }
             }
         } elseif (isset($record->is_surat_jalan_bongkaran_batam)) {
-            $sj = $record;
-            $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
+            // On Batam waybills, no_bl may hold an internal MNF reference.
+            // The linked manifest contains the actual BL number.
+            $add($record->apportioned, $resolver->ratio($record->manifest ?? $record, $bl));
         } elseif (isset($record->is_uang_jalan) || isset($record->is_tagihan_vendor)) {
             $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
             $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
@@ -910,7 +911,7 @@ class RekapBiayaKapalController extends Controller
 
         // Surat Jalan Bongkaran Batam is a direct voyage cost source. It does not
         // require a related Uang Jalan record to appear in this recap.
-        $suratJalanBongkaranBatams = \App\Models\SuratJalanBongkaranBatam::query()
+        $suratJalanBongkaranBatams = \App\Models\SuratJalanBongkaranBatam::with('manifest')
             ->whereRaw('LOWER(TRIM(lokasi)) = ?', ['batam'])
             ->where(function ($query) use ($kapal, $voyage) {
                 $query->where(function ($direct) use ($kapal, $voyage) {
