@@ -8,9 +8,54 @@ use App\Models\PranotaObMuatTemas;
 use App\Services\RekapBlService;
 use App\Services\RekapUangRitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class RekapBiayaKapalController extends Controller
 {
+    private function tkbmSections($details): Collection
+    {
+        return $details->groupBy(fn ($detail) => implode('|', [
+            $detail->kapal, $detail->voyage, $detail->no_referensi, $detail->tanggal_invoice_vendor,
+        ]));
+    }
+
+    private function allocateTkbmRows(BiayaKapal $record, Collection $containers, string $kapal, string $voyage): Collection
+    {
+        $details = $record->tkbmDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
+            && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)));
+        if ($details->isEmpty() || $containers->isEmpty()) {
+            return collect();
+        }
+
+        // Adjustment is repeated on every item in a section, so count it once.
+        $adjustment = $this->tkbmSections($details)->sum(fn ($section) => (float) $section->first()->adjustment);
+        $fullTotal = (float) $this->getApportionedCostForRecord($record, $kapal, $voyage)['total_biaya'];
+        $selectedTotal = (float) $record->apportioned['total_biaya'];
+        $adjustment = $fullTotal != 0 ? $adjustment * $selectedTotal / $fullTotal : 0;
+        $pph = (float) $record->apportioned['pph'];
+        $totalCents = (int) round($selectedTotal * 100);
+        $adjustmentCents = (int) round($adjustment * 100);
+        $pphCents = (int) round($pph * 100);
+        $amounts = [
+            'biaya' => $totalCents - $adjustmentCents + $pphCents,
+            'adjustment' => $adjustmentCents,
+            'pph' => $pphCents,
+        ];
+        $rows = collect();
+        $containerCount = $containers->count();
+        foreach ($containers as $index => $number) {
+            $row = ['nomor_kontainer' => $number];
+            foreach ($amounts as $field => $cents) {
+                $share = intdiv($cents, $containerCount);
+                $row[$field] = ($index === $containerCount - 1 ? $cents - $share * $index : $share) / 100;
+            }
+            $row['total'] = $row['biaya'] + $row['adjustment'] - $row['pph'];
+            $rows->push($row);
+        }
+
+        return $rows;
+    }
+
     private $relations = [
         'barangDetails',
         'airDetails',
@@ -215,19 +260,13 @@ class RekapBiayaKapalController extends Controller
             $hasDetails = true;
             $details = $item->tkbmDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
 
-            $subtotal = $details->sum('subtotal');
-            $adjustment = 0;
-            $nominal = 0;
-            $pph = 0;
-            $total = 0;
-
-            $first = $details->first();
-            if ($first) {
-                $adjustment = $first->adjustment ?? 0;
-                $nominal = $first->total_nominal ?? ($subtotal + $adjustment);
-                $pph = $first->pph ?? 0;
-                $total = $first->grand_total ?? ($nominal - $pph);
-            }
+            $sections = $this->tkbmSections($details);
+            $nominal = $sections->sum(fn ($section) => (float) ($section->first()->total_nominal
+                ?? ($section->sum('subtotal') + (float) ($section->first()->adjustment ?? 0))));
+            $pph = $sections->sum(fn ($section) => (float) ($section->first()->pph ?? 0));
+            $total = $sections->sum(fn ($section) => (float) ($section->first()->grand_total
+                ?? ((float) ($section->first()->total_nominal ?? ($section->sum('subtotal') + (float) ($section->first()->adjustment ?? 0)))
+                    - (float) ($section->first()->pph ?? 0))));
 
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
@@ -579,7 +618,11 @@ class RekapBiayaKapalController extends Controller
             foreach ($this->relations as $relation) {
                 $selected->setRelation($relation, collect());
                 $common->setRelation($relation, collect());
-                foreach ($record->{$relation} as $detail) {
+                $relationDetails = $relation === 'tkbmDetails'
+                    ? $this->tkbmSections($record->{$relation})->values()
+                    : $record->{$relation}->map(fn ($detail) => collect([$detail]));
+                foreach ($relationDetails as $detailGroup) {
+                    $detail = $detailGroup->first();
                     if (strtolower(trim($detail->kapal ?? '')) !== strtolower(trim($kapal))
                         || strtolower(trim($detail->voyage ?? '')) !== strtolower(trim($voyage))) {
                         continue;
@@ -590,16 +633,18 @@ class RekapBiayaKapalController extends Controller
                     foreach ($this->relations as $name) {
                         $single->setRelation($name, collect());
                     }
-                    $single->setRelation($relation, collect([$detail]));
+                    $single->setRelation($relation, $detailGroup);
                     $cost = $this->getApportionedCostForRecord($single, $kapal, $voyage);
                     $add($cost, $ratio);
                     if ($ratio !== 0.0) {
                         $target = $ratio === null ? $common : $selected;
-                        $copy = clone $detail;
-                        if ($relation === 'temasDetails') {
-                            $copy->rekap_bl_total = round($detail->rekap_total * ($ratio ?? 1), 2);
+                        foreach ($detailGroup as $groupDetail) {
+                            $copy = clone $groupDetail;
+                            if ($relation === 'temasDetails') {
+                                $copy->rekap_bl_total = round($groupDetail->rekap_total * ($ratio ?? 1), 2);
+                            }
+                            $target->{$relation}->push($copy);
                         }
-                        $target->{$relation}->push($copy);
                     }
                 }
             }
@@ -1019,6 +1064,14 @@ class RekapBiayaKapalController extends Controller
                 }
             }
             $biayaKapals = $filtered;
+        }
+
+        $tkbmContainers = ($resolver ?? RekapBlService::forVoyage($kapal, $voyage))->containers($bls);
+        foreach ($biayaKapals as $record) {
+            if (! $record instanceof BiayaKapal || $record->tkbmDetails->isEmpty()) {
+                continue;
+            }
+            $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
         }
 
         // Calculate summaries based on apportioned costs

@@ -292,6 +292,43 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        @if($item instanceof \App\Models\BiayaKapal && $item->tkbmDetails->isNotEmpty() && isset($item->rekap_tkbm_rows))
+                                            <tr class="bg-amber-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-amber-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-amber-50 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                                                            Rincian biaya KTKBM per kontainer ({{ $item->rekap_tkbm_rows->count() }} kontainer)
+                                                        </div>
+                                                        @if($item->rekap_tkbm_rows->isNotEmpty())
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-right">Biaya</th>
+                                                                    <th class="px-3 py-2 text-right">Adjustment</th>
+                                                                    <th class="px-3 py-2 text-right">PPh</th>
+                                                                    <th class="px-3 py-2 text-right">Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($item->rekap_tkbm_rows as $containerRow)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $containerRow['nomor_kontainer'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['biaya'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['adjustment'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['pph'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($containerRow['total'], 2, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                        @else
+                                                            <p class="px-3 py-3 text-xs text-gray-500">Nomor kontainer untuk voyage ini belum tersedia pada BL atau manifest.</p>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @if(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas && !empty($item->rekap_ob_temas_items))
                                             <tr class="bg-indigo-50/40">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
