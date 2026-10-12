@@ -24,6 +24,47 @@ class RekapBiayaKapalController extends Controller
         ]));
     }
 
+    private function buruhCategory($detail): array
+    {
+        $price = $detail->pricelistBuruh;
+        $name = strtoupper((string) ($price?->barang ?? ''));
+        $sizeText = strtoupper((string) ($price?->size ?? $name));
+        $statusText = strtoupper((string) ($price?->tipe ?? $name));
+        $size = str_contains($sizeText, '40') ? '40' : (str_contains($sizeText, '20') ? '20' : null);
+        $status = str_contains($statusText, 'EMPTY') || str_contains($statusText, 'KOSONG') ? 'EMPTY'
+            : (str_contains($statusText, 'FULL') ? 'FULL' : null);
+
+        return [$size, $status, $name ?: 'Barang lainnya'];
+    }
+
+    private function buruhBlRatio(Collection $details, Collection $allContainers, Collection $selectedContainers): ?float
+    {
+        if ($allContainers->isEmpty() || $selectedContainers->isEmpty()) {
+            return null;
+        }
+
+        $containerRatio = $selectedContainers->count() / $allContainers->count();
+        $weightedTotal = 0;
+        $selectedWeight = 0;
+        foreach ($details as $detail) {
+            $weight = (float) $detail->subtotal;
+            if ($weight <= 0) {
+                continue;
+            }
+            [$size, $status] = $this->buruhCategory($detail);
+            $matchingAll = $size && $status
+                ? $allContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)
+                : collect();
+            $ratio = $matchingAll->isNotEmpty()
+                ? $selectedContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)->count() / $matchingAll->count()
+                : $containerRatio;
+            $weightedTotal += $weight;
+            $selectedWeight += $weight * $ratio;
+        }
+
+        return $weightedTotal > 0 ? min(1.0, $selectedWeight / $weightedTotal) : $containerRatio;
+    }
+
     private function tkbmBlRatio(Collection $details, Collection $allContainers, Collection $selectedContainers): ?float
     {
         if ($allContainers->isEmpty() || $selectedContainers->isEmpty()) {
@@ -158,6 +199,100 @@ class RekapBiayaKapalController extends Controller
             $row['pph'] = $pphShare / 100;
             $row['total'] = ($row['biaya_cents'] + $row['adjustment_cents'] - $pphShare) / 100;
             unset($row['biaya_cents'], $row['adjustment_cents']);
+            $rows[$index] = $row;
+        }
+
+        return $rows;
+    }
+
+    private function allocateBuruhRows(BiayaKapal $record, Collection $containers, Collection $allContainers, string $kapal, string $voyage): Collection
+    {
+        $details = $record->barangDetails->filter(fn ($detail) => $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal)
+            && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)));
+        if ($details->isEmpty()) {
+            return collect();
+        }
+
+        $full = $this->getApportionedCostForRecord($record, $kapal, $voyage);
+        $selectedRatio = (float) $full['nominal'] !== 0.0
+            ? (float) $record->apportioned['nominal'] / (float) $full['nominal'] : 1;
+        $containerRatio = $allContainers->isNotEmpty() ? $containers->count() / $allContainers->count() : $selectedRatio;
+        $adjustmentCents = (int) round((float) ($details->first()->adjustment ?? 0) * $selectedRatio * 100);
+        $ppnCents = (int) round((float) $record->apportioned['ppn'] * 100);
+        $pphCents = (int) round((float) $record->apportioned['pph'] * 100);
+        $totalCents = (int) round((float) $record->apportioned['total_biaya'] * 100);
+        $baseCents = $totalCents - $adjustmentCents - $ppnCents + $pphCents;
+
+        $rates = [];
+        $rows = collect();
+        foreach ($details as $detail) {
+            [$size, $status, $name] = $this->buruhCategory($detail);
+            if ($size && $status && (float) $detail->jumlah > 0) {
+                $key = $size.'|'.$status;
+                $rates[$key]['subtotal'] = ($rates[$key]['subtotal'] ?? 0) + (float) $detail->subtotal;
+                $rates[$key]['jumlah'] = ($rates[$key]['jumlah'] ?? 0) + (float) $detail->jumlah;
+                $rates[$key]['label'] = $name;
+                continue;
+            }
+            $rows->push([
+                'jenis' => 'barang', 'label' => $name, 'size' => '-', 'status' => '-',
+                'jumlah' => (float) $detail->jumlah * $containerRatio,
+                'tarif' => (float) $detail->tarif,
+                'biaya_cents' => (int) round((float) $detail->subtotal * $containerRatio * 100),
+            ]);
+        }
+
+        foreach ($containers as $container) {
+            $group = $rates[$container['size'].'|'.$container['status']] ?? null;
+            $rateCents = $group && $group['jumlah'] > 0 ? (int) round($group['subtotal'] / $group['jumlah'] * 100) : 0;
+            $rows->push([
+                'jenis' => 'kontainer', 'label' => $container['nomor_kontainer'],
+                'size' => $container['size'], 'status' => $container['status'],
+                'jumlah' => 1, 'tarif' => $rateCents / 100, 'biaya_cents' => $rateCents,
+            ]);
+        }
+
+        if ($containers->count() === $allContainers->count()) {
+            foreach ($rates as $key => $group) {
+                [$size, $status] = explode('|', $key);
+                $knownCount = $containers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)->count();
+                $unmatched = max(0, $group['jumlah'] - $knownCount);
+                if ($unmatched > 0) {
+                    $rate = $group['subtotal'] / $group['jumlah'];
+                    $rows->push([
+                        'jenis' => 'barang', 'label' => 'Sisa '.$group['label'].' tanpa nomor kontainer',
+                        'size' => $size, 'status' => $status, 'jumlah' => $unmatched,
+                        'tarif' => $rate, 'biaya_cents' => (int) round($unmatched * $rate * 100),
+                    ]);
+                }
+            }
+        }
+
+        $difference = $baseCents - $rows->sum('biaya_cents');
+        if ($difference !== 0) {
+            $rows->push([
+                'jenis' => 'selisih', 'label' => 'Selisih alokasi invoice', 'size' => '-', 'status' => '-',
+                'jumlah' => null, 'tarif' => null, 'biaya_cents' => $difference,
+            ]);
+        }
+
+        $basis = $rows->sum(fn ($row) => max(0, $row['biaya_cents']));
+        $allocatedAdjustment = $allocatedPpn = $allocatedPph = 0;
+        foreach ($rows as $index => $row) {
+            $last = $index === $rows->count() - 1;
+            $share = $basis > 0 ? max(0, $row['biaya_cents']) / $basis : 0;
+            $adj = $last ? $adjustmentCents - $allocatedAdjustment : (int) round($adjustmentCents * $share);
+            $ppn = $last ? $ppnCents - $allocatedPpn : (int) round($ppnCents * $share);
+            $pph = $last ? $pphCents - $allocatedPph : (int) round($pphCents * $share);
+            $allocatedAdjustment += $adj;
+            $allocatedPpn += $ppn;
+            $allocatedPph += $pph;
+            $row['biaya'] = $row['biaya_cents'] / 100;
+            $row['adjustment'] = $adj / 100;
+            $row['ppn'] = $ppn / 100;
+            $row['pph'] = $pph / 100;
+            $row['total'] = ($row['biaya_cents'] + $adj + $ppn - $pph) / 100;
+            unset($row['biaya_cents']);
             $rows[$index] = $row;
         }
 
@@ -822,13 +957,17 @@ class RekapBiayaKapalController extends Controller
             $parentRatio = $resolver->ratio($record, $bl);
             $allTkbmContainers = $record->tkbmDetails->isNotEmpty() ? $resolver->containerDetails() : collect();
             $selectedTkbmContainers = $record->tkbmDetails->isNotEmpty() ? $resolver->containerDetails((array) $bl) : collect();
+            $allBuruhContainers = $record->barangDetails->isNotEmpty() ? $resolver->containerDetails() : collect();
+            $selectedBuruhContainers = $record->barangDetails->isNotEmpty() ? $resolver->containerDetails((array) $bl) : collect();
             $hasDetails = false;
             foreach ($this->relations as $relation) {
                 $selected->setRelation($relation, collect());
                 $common->setRelation($relation, collect());
-                $relationDetails = $relation === 'tkbmDetails'
-                    ? $this->tkbmSections($record->{$relation})->values()
-                    : $record->{$relation}->map(fn ($detail) => collect([$detail]));
+                $relationDetails = match ($relation) {
+                    'tkbmDetails' => $this->tkbmSections($record->{$relation})->values(),
+                    'barangDetails' => $record->{$relation}->groupBy(fn ($detail) => $this->shipKey($detail->kapal ?? '').'|'.strtolower(trim($detail->voyage ?? '')))->values(),
+                    default => $record->{$relation}->map(fn ($detail) => collect([$detail])),
+                };
                 foreach ($relationDetails as $detailGroup) {
                     $detail = $detailGroup->first();
                     if ($this->shipKey($detail->kapal ?? '') !== $this->shipKey($kapal)
@@ -839,6 +978,8 @@ class RekapBiayaKapalController extends Controller
                     $manifestShares = null;
                     if ($relation === 'tkbmDetails' && $resolver->ratio($detail, $bl) === null && $parentRatio === null) {
                         $ratio = $this->tkbmBlRatio($detailGroup, $allTkbmContainers, $selectedTkbmContainers);
+                    } elseif ($relation === 'barangDetails' && $resolver->ratio($detail, $bl) === null && $parentRatio === null) {
+                        $ratio = $this->buruhBlRatio($detailGroup, $allBuruhContainers, $selectedBuruhContainers);
                     } elseif ($relation === 'oppOptDetails' && $detail->manifests->isNotEmpty()) {
                         $manifests = $detail->manifests->unique('id')->values();
                         $manifestShares = $manifests->map(fn ($manifest) => $resolver->ratio($manifest, $bl));
@@ -1055,7 +1196,7 @@ class RekapBiayaKapalController extends Controller
         $bl = implode(', ', $bls);
 
         // Fetch all biaya kapals and load relations
-        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm', 'oppOptDetails.manifests'], $this->relations);
+        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'barangDetails.pricelistBuruh', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm', 'oppOptDetails.manifests'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
             ->filter(function ($record) use ($kapal, $voyage, $lokasi) {
@@ -1298,6 +1439,7 @@ class RekapBiayaKapalController extends Controller
 
         $catalogResolver = $resolver ?? RekapBlService::forVoyage($kapal, $voyage);
         $tkbmContainers = $catalogResolver->containerDetails($bls);
+        $allBuruhContainers = $bls ? $catalogResolver->containerDetails() : $tkbmContainers;
         $opslagContainers = null;
         foreach ($biayaKapals as $record) {
             if (! $record instanceof BiayaKapal) {
@@ -1305,6 +1447,9 @@ class RekapBiayaKapalController extends Controller
             }
             if ($record->tkbmDetails->isNotEmpty()) {
                 $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
+            }
+            if ($record->barangDetails->isNotEmpty()) {
+                $record->rekap_buruh_rows = $this->allocateBuruhRows($record, $tkbmContainers, $allBuruhContainers, $kapal, $voyage);
             }
             if ($record->oppOptDetails->isNotEmpty()) {
                 if ($record->oppOptDetails->contains(fn ($detail) => strtolower(trim((string) $detail->klasifikasi)) === 'opslag'

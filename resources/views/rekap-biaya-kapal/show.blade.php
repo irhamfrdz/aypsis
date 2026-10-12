@@ -340,6 +340,59 @@
                                                 </td>
                                             </tr>
                                         @endif
+                                        @if($item instanceof \App\Models\BiayaKapal && $item->barangDetails->isNotEmpty() && isset($item->rekap_buruh_rows))
+                                            <tr class="bg-amber-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-amber-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-amber-50 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                                                            Rincian biaya buruh per kontainer dan barang ({{ $item->rekap_buruh_rows->where('jenis', 'kontainer')->count() }} kontainer: {{ $item->rekap_buruh_rows->where('jenis', 'kontainer')->where('status', 'FULL')->count() }} FULL, {{ $item->rekap_buruh_rows->where('jenis', 'kontainer')->where('status', 'EMPTY')->count() }} EMPTY)
+                                                        </div>
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer / Barang</th>
+                                                                    <th class="px-3 py-2 text-left">Ukuran</th>
+                                                                    <th class="px-3 py-2 text-left">Full / Empty</th>
+                                                                    <th class="px-3 py-2 text-right">Jumlah</th>
+                                                                    <th class="px-3 py-2 text-right">Tarif</th>
+                                                                    <th class="px-3 py-2 text-right">Biaya</th>
+                                                                    <th class="px-3 py-2 text-right">Adjustment</th>
+                                                                    <th class="px-3 py-2 text-right">PPN</th>
+                                                                    <th class="px-3 py-2 text-right">PPh</th>
+                                                                    <th class="px-3 py-2 text-right">Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($item->rekap_buruh_rows as $buruhRow)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-semibold {{ $buruhRow['jenis'] === 'kontainer' ? 'font-mono text-gray-800' : 'text-amber-800' }}">{{ $buruhRow['label'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $buruhRow['size'] === '-' ? '-' : $buruhRow['size'] . ' ft' }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $buruhRow['status'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">{{ $buruhRow['jumlah'] === null ? '-' : number_format($buruhRow['jumlah'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">{{ $buruhRow['tarif'] === null ? '-' : 'Rp ' . number_format($buruhRow['tarif'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($buruhRow['biaya'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($buruhRow['adjustment'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($buruhRow['ppn'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($buruhRow['pph'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($buruhRow['total'], 2, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                            <tfoot class="bg-amber-50 font-semibold text-gray-900">
+                                                                <tr>
+                                                                    <td colspan="5" class="px-3 py-2 text-right">Total Invoice</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_buruh_rows->sum('biaya'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_buruh_rows->sum('adjustment'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_buruh_rows->sum('ppn'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_buruh_rows->sum('pph'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_buruh_rows->sum('total'), 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @if($item instanceof \App\Models\BiayaKapal && $item->tkbmDetails->isNotEmpty() && isset($item->rekap_tkbm_rows))
                                             <tr class="bg-amber-50/30">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
