@@ -29,6 +29,16 @@ class RekapBlService
         return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim($name))));
     }
 
+    private static function explicitContainerStatus(string $name): ?string
+    {
+        $name = strtoupper(trim($name));
+        if (preg_match('/^(?:EMPTY|KOSONG)$|\b(?:EMPTY|KOSONG)\s+(?:CONTAINER|KONTAINER)\b|\b(?:CONTAINER|KONTAINER)\b.*\b(?:EMPTY|KOSONG)\b/', $name)) {
+            return 'EMPTY';
+        }
+
+        return preg_match('/\bFULL\b/', $name) ? 'FULL' : null;
+    }
+
     public static function normalize($number): string
     {
         return strtoupper(preg_replace('/-\d+$/', '', trim((string) $number)));
@@ -88,9 +98,7 @@ class RekapBlService
 
             $sizeRaw = strtoupper((string) ($record->size_kontainer ?? ''));
             $size = str_contains($sizeRaw, '40') ? '40' : (str_contains($sizeRaw, '20') ? '20' : '-');
-            $barang = strtoupper((string) ($record->nama_barang ?? ''));
-            $explicitStatus = preg_match('/\b(EMPTY|KOSONG)\b/', $barang) ? 'EMPTY'
-                : (preg_match('/\bFULL\b/', $barang) ? 'FULL' : null);
+            $explicitStatus = self::explicitContainerStatus((string) ($record->nama_barang ?? ''));
 
             foreach (preg_split('/[,;\r\n]+/', (string) $record->nomor_kontainer) as $rawNumber) {
                 $number = strtoupper(preg_replace('/\s+/', '', trim($rawNumber)));
@@ -141,8 +149,7 @@ class RekapBlService
                 continue;
             }
             $size = str_contains($sizeRaw, '40') ? '40' : '20';
-            $barang = strtoupper((string) $manifest->nama_barang);
-            $status = str_contains($barang, 'EMPTY') || ($type === 'FCL'
+            $status = self::explicitContainerStatus((string) $manifest->nama_barang) === 'EMPTY' || ($type === 'FCL'
                 && (empty($manifest->nomor_kontainer) || str_starts_with(strtoupper((string) $manifest->nomor_kontainer), 'CARGO-')))
                 ? 'EMPTY' : 'FULL';
             foreach (preg_split('/[,;\r\n]+/', (string) $manifest->nomor_kontainer) as $rawNumber) {

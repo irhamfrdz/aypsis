@@ -14,6 +14,32 @@ use ReflectionProperty;
 
 class RekapBiayaKapalBuruhBreakdownTest extends TestCase
 {
+    public function test_empty_packaging_does_not_make_a_full_container_look_empty(): void
+    {
+        $resolver = new RekapBlService(collect(), collect([
+            (new Manifest)->forceFill([
+                'nomor_bl' => '16', 'nomor_kontainer' => 'AYPU7501922',
+                'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL Booking',
+                'nama_barang' => 'SUSU MILANO 1000gr, KARDUS KOSONG',
+            ]),
+            (new Manifest)->forceFill([
+                'nomor_bl' => '17', 'nomor_kontainer' => 'AXIU2933779',
+                'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL Booking',
+                'nama_barang' => 'SUSU MILANO 1000gr, DUS KOSONG',
+            ]),
+            (new Manifest)->forceFill([
+                'nomor_bl' => '18', 'nomor_kontainer' => 'EMPTY-01',
+                'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL',
+                'nama_barang' => 'EMPTY CONTAINER',
+            ]),
+        ]));
+
+        $this->assertSame(['AXIU2933779', 'AYPU7501922'],
+            $resolver->containerDetails()->where('status', 'FULL')->pluck('nomor_kontainer')->all());
+        $this->assertSame(['EMPTY-01'],
+            $resolver->containerDetails()->where('status', 'EMPTY')->pluck('nomor_kontainer')->all());
+    }
+
     public function test_buruh_costs_are_broken_down_by_container_with_cargo_separate(): void
     {
         $controller = new RekapBiayaKapalController;
