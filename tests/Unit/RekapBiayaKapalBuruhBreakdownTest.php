@@ -14,6 +14,39 @@ use ReflectionProperty;
 
 class RekapBiayaKapalBuruhBreakdownTest extends TestCase
 {
+    public function test_cargo_only_bl_receives_its_labour_cost_without_container_costs(): void
+    {
+        $controller = new RekapBiayaKapalController;
+        $invoice = (new BiayaKapal)->forceFill(['nominal' => 140000, 'ppn' => 0, 'pph' => 0]);
+        foreach ((new ReflectionProperty($controller, 'relations'))->getValue($controller) as $relation) {
+            $invoice->setRelation($relation, collect());
+        }
+        $details = collect();
+        foreach ([['KONTAINER 20 FULL', '20', 'Full', 1, 50000], ['CARGO', null, null, 8, 10000], ['FUSO', null, null, 1, 10000]] as [$name, $size, $type, $quantity, $tariff]) {
+            $detail = (new BiayaKapalBarang)->forceFill(['kapal' => 'KM TEST', 'voyage' => 'V01',
+                'jumlah' => $quantity, 'tarif' => $tariff, 'subtotal' => $quantity * $tariff]);
+            $detail->setRelation('pricelistBuruh', (new PricelistBuruh)->forceFill(['barang' => $name, 'size' => $size, 'tipe' => $type]));
+            $details->push($detail);
+        }
+        $invoice->setRelation('barangDetails', $details);
+        $resolver = new RekapBlService(collect(), collect([
+            (new Manifest)->forceFill(['nomor_bl' => '01', 'tipe_kontainer' => 'Cargo', 'kuantitas' => 2]),
+            (new Manifest)->forceFill(['nomor_bl' => '02', 'tipe_kontainer' => 'Cargo', 'kuantitas' => 6]),
+            (new Manifest)->forceFill(['nomor_bl' => '03', 'nomor_kontainer' => 'CONT-A', 'size_kontainer' => '20']),
+        ]));
+        $this->assertSame(0.25, $resolver->cargoRatio(['01']));
+        [$selected, $common] = (new ReflectionMethod($controller, 'splitCostForBl'))
+            ->invoke($controller, $invoice, $resolver, 'KM TEST', 'V01', ['01']);
+        $this->assertNull($common);
+        $this->assertEquals(20000, $selected->apportioned['total_biaya']);
+        $rows = (new ReflectionMethod($controller, 'allocateBuruhRows'))->invoke($controller, $selected,
+            $resolver->containerDetails(['01']), $resolver->containerDetails(), 'KM TEST', 'V01', $resolver->cargoRatio(['01']));
+        $this->assertEquals(20000, $rows->firstWhere('label', 'CARGO')['total']);
+        $this->assertEquals(2, $rows->firstWhere('label', 'CARGO')['jumlah']);
+        $this->assertCount(0, $rows->where('jenis', 'kontainer'));
+        $this->assertEquals(20000, $rows->sum('total'));
+    }
+
     public function test_empty_packaging_does_not_make_a_full_container_look_empty(): void
     {
         $resolver = new RekapBlService(collect(), collect([

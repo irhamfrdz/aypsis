@@ -84,6 +84,24 @@ class RekapBlService
         return $this->containerDetails($selectedBls)->pluck('nomor_kontainer');
     }
 
+    public function cargoRatio(array $selectedBls = []): ?float
+    {
+        $cargo = $this->manifests->filter(fn ($record) => strtoupper(trim((string) $record->tipe_kontainer)) === 'CARGO');
+        if ($cargo->isEmpty()) {
+            $cargo = $this->bls->filter(fn ($record) => strtoupper(trim((string) $record->tipe_kontainer)) === 'CARGO');
+        }
+        if ($cargo->isEmpty()) {
+            return null;
+        }
+        $selected = $this->numbers($selectedBls);
+        $weight = fn ($record) => (float) $record->kuantitas > 0 ? (float) $record->kuantitas : 1;
+        $total = $cargo->sum($weight);
+        $matchingWeight = $selected->isEmpty() ? $total
+            : $cargo->sum(fn ($record) => $weight($record) * ($this->ratio($record, $selected->all()) ?? 0));
+
+        return $matchingWeight / $total;
+    }
+
     public function containerDetails(array $selectedBls = []): Collection
     {
         $selected = $this->numbers($selectedBls);
