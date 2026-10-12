@@ -1171,6 +1171,21 @@ class RekapBiayaKapalController extends Controller
         return [$hasSelected ? $selected : null, $hasCommon ? $common : null];
     }
 
+    private function blReferences($record, Collection $manifests): Collection
+    {
+        if ($record instanceof \App\Models\BiayaKapalTrucking) {
+            // Trucking stores manifest IDs in no_bl, rather than the displayed BL numbers.
+            $references = $manifests->whereIn('id', $record->no_bl ?? [])->pluck('nomor_bl')->all();
+        } else {
+            $references = $record->nomor_bl ?? $record->no_bl ?? [];
+        }
+
+        return collect(is_array($references) ? $references : [$references])
+            ->filter(fn ($value) => is_scalar($value))
+            ->flatMap(fn ($value) => preg_split('/[,;\r\n]+/', (string) $value))
+            ->map(fn ($value) => trim($value))->filter()->unique()->values();
+    }
+
     public function getBls(Request $request)
     {
         $data = $request->validate(['kapal' => 'required|string', 'voyage' => 'required|string']);
@@ -1236,13 +1251,13 @@ class RekapBiayaKapalController extends Controller
             if (! $this->recordHasShipAndVoyage($record, $data['kapal'], $data['voyage'])) {
                 continue;
             }
-            foreach ((array) $record->no_bl as $number) {
+            foreach ($this->blReferences($record, $manifestRecords) as $number) {
                 $numbers->push($this->normalizeBl($number));
             }
             foreach ($this->relations as $relation) {
                 foreach ($record->{$relation} as $detail) {
                     if ($this->shipKey($detail->kapal ?? '') === $kapal && strtolower(trim($detail->voyage ?? '')) === $voyage) {
-                        foreach (preg_split('/[,;\n]+/', $detail->nomor_bl ?? $detail->no_bl ?? '') as $number) {
+                        foreach ($this->blReferences($detail, $manifestRecords) as $number) {
                             $numbers->push($this->normalizeBl($number));
                         }
                     }
