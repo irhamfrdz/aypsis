@@ -340,6 +340,48 @@
                                                 </td>
                                             </tr>
                                         @endif
+                                        @if($item instanceof \App\Models\BiayaKapal && isset($item->rekap_stuffing_rows) && $item->rekap_stuffing_rows->isNotEmpty())
+                                            <tr class="bg-rose-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-rose-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-rose-50 text-[11px] font-semibold uppercase tracking-wide text-rose-800">
+                                                            Rincian biaya stuffing per kontainer dan cargo ({{ $item->rekap_stuffing_rows->where('jenis', 'kontainer')->count() }} kontainer, {{ $item->rekap_stuffing_rows->where('jenis', 'cargo')->count() }} cargo)
+                                                        </div>
+                                                        <p class="px-3 py-2 text-[11px] text-gray-500">Nominal tiap bagian stuffing dibagi rata menurut tanda terima dan nomor kontainer yang tercantum.</p>
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer / Cargo</th>
+                                                                    <th class="px-3 py-2 text-left">Tanda Terima / Surat Jalan</th>
+                                                                    <th class="px-3 py-2 text-right">Subtotal</th>
+                                                                    <th class="px-3 py-2 text-right">PPh</th>
+                                                                    <th class="px-3 py-2 text-right">Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($item->rekap_stuffing_rows as $stuffingRow)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-semibold {{ $stuffingRow['jenis'] === 'kontainer' ? 'font-mono text-gray-800' : 'text-rose-800' }}">{{ $stuffingRow['label'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $stuffingRow['receipts'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($stuffingRow['subtotal'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($stuffingRow['pph'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($stuffingRow['total'], 2, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                            <tfoot class="bg-rose-50 font-semibold text-gray-900">
+                                                                <tr>
+                                                                    <td colspan="2" class="px-3 py-2 text-right">Total Stuffing</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_stuffing_rows->sum('subtotal'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_stuffing_rows->sum('pph'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_stuffing_rows->sum('total'), 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @if($item instanceof \App\Models\BiayaKapal && $item->barangDetails->isNotEmpty() && isset($item->rekap_buruh_rows))
                                             <tr class="bg-amber-50/30">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">

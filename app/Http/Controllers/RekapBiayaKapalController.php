@@ -394,6 +394,72 @@ class RekapBiayaKapalController extends Controller
         return $rows;
     }
 
+    private function allocateStuffingRows(BiayaKapal $record, string $kapal, string $voyage): Collection
+    {
+        $rows = collect();
+        foreach ($record->stuffingDetails as $detail) {
+            if ($this->shipKey($detail->kapal ?? '') !== $this->shipKey($kapal)
+                || strtolower(trim($detail->voyage ?? '')) !== strtolower(trim($voyage))) {
+                continue;
+            }
+
+            $units = collect();
+            foreach ($detail->getTandaTerimas() as $tt) {
+                $type = strtoupper(trim((string) ($tt->tipe_kontainer ?? '')));
+                $isCargo = $type === 'CARGO' || str_starts_with(strtoupper(trim((string) ($tt->no_kontainer ?? ''))), 'CARGO-');
+                $numbers = $isCargo ? collect() : collect(preg_split('/[,;\r\n]+/', (string) ($tt->no_kontainer ?? '')))
+                    ->map(fn ($number) => strtoupper(trim($number)))
+                    ->filter(fn ($number) => $number !== '' && ! in_array($number, ['-', 'N/A', 'NULL']))->unique()->values();
+                $receipt = $tt->no_surat_jalan ?: ($tt->nomor_tanda_terima ?? $tt->no_tanda_terima ?? '-');
+                if ($numbers->isEmpty()) {
+                    $name = $tt->nama_barang ?? null;
+                    $name = is_array($name) ? implode(', ', array_filter($name, 'is_scalar')) : $name;
+                    $units->push([
+                        'key' => 'cargo:'.$tt->getTable().':'.$tt->getKey(),
+                        'label' => ($isCargo ? 'Cargo' : 'Tanpa nomor kontainer').($name ? ' - '.$name : ''),
+                        'jenis' => $isCargo ? 'cargo' : 'lainnya', 'receipt' => $receipt,
+                    ]);
+                } else {
+                    foreach ($numbers as $number) {
+                        $units->push(['key' => 'container:'.$number, 'label' => $number,
+                            'jenis' => 'kontainer', 'receipt' => $receipt]);
+                    }
+                }
+            }
+            if ($units->isEmpty()) {
+                $units->push(['key' => 'unassigned:'.$detail->id, 'label' => 'Tanpa rincian tanda terima',
+                    'jenis' => 'lainnya', 'receipt' => '-']);
+            }
+
+            $ratio = (float) ($detail->rekap_bl_ratio ?? 1);
+            $amounts = [
+                'subtotal' => (int) round((float) $detail->subtotal * $ratio * 100),
+                'pph' => (int) round((float) $detail->pph * $ratio * 100),
+                'total' => (int) round((float) $detail->total_biaya * $ratio * 100),
+            ];
+            foreach ($units as $index => $unit) {
+                $key = $unit['key'];
+                if (! $rows->has($key)) {
+                    $rows->put($key, $unit + ['receipts' => [], 'subtotal' => 0, 'pph' => 0, 'total' => 0]);
+                }
+                $row = $rows->get($key);
+                $row['receipts'][$unit['receipt']] = true;
+                foreach ($amounts as $field => $cents) {
+                    $base = intdiv($cents, $units->count());
+                    $row[$field] += ($base + ($index < ($cents % $units->count()) ? 1 : 0)) / 100;
+                }
+                $rows->put($key, $row);
+            }
+        }
+
+        return $rows->values()->map(function ($row) {
+            $row['receipts'] = implode(', ', array_keys($row['receipts']));
+            unset($row['key'], $row['receipt']);
+
+            return $row;
+        });
+    }
+
     private $relations = [
         'barangDetails',
         'airDetails',
@@ -1015,6 +1081,9 @@ class RekapBiayaKapalController extends Controller
                                         })->values());
                                 }
                             }
+                            if ($relation === 'stuffingDetails') {
+                                $copy->rekap_bl_ratio = $ratio ?? 1;
+                            }
                             $target->{$relation}->push($copy);
                         }
                     }
@@ -1457,6 +1526,9 @@ class RekapBiayaKapalController extends Controller
                     $opslagContainers ??= $catalogResolver->opslagContainerDetails();
                 }
                 $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $opslagContainers ?? collect(), $kapal, $voyage);
+            }
+            if ($record->stuffingDetails->isNotEmpty()) {
+                $record->rekap_stuffing_rows = $this->allocateStuffingRows($record, $kapal, $voyage);
             }
         }
 
