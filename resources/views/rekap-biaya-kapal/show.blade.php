@@ -297,15 +297,17 @@
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
                                                     <div class="rounded-lg border border-amber-100 bg-white overflow-hidden">
                                                         <div class="px-3 py-2 bg-amber-50 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
-                                                            Rincian biaya KTKBM per kontainer ({{ $item->rekap_tkbm_rows->count() }} kontainer: {{ $item->rekap_tkbm_rows->where('status', 'FULL')->count() }} FULL, {{ $item->rekap_tkbm_rows->where('status', 'EMPTY')->count() }} EMPTY)
+                                                            Rincian biaya KTKBM per kontainer dan barang ({{ $item->rekap_tkbm_rows->where('jenis', 'kontainer')->count() }} kontainer: {{ $item->rekap_tkbm_rows->where('status', 'FULL')->count() }} FULL, {{ $item->rekap_tkbm_rows->where('status', 'EMPTY')->count() }} EMPTY)
                                                         </div>
                                                         @if($item->rekap_tkbm_rows->isNotEmpty())
                                                         <table class="w-full text-xs">
                                                             <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
                                                                 <tr>
-                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer / Barang</th>
                                                                     <th class="px-3 py-2 text-left">Ukuran</th>
                                                                     <th class="px-3 py-2 text-left">Full / Empty</th>
+                                                                    <th class="px-3 py-2 text-right">Jumlah</th>
+                                                                    <th class="px-3 py-2 text-right">Tarif</th>
                                                                     <th class="px-3 py-2 text-right">Biaya</th>
                                                                     <th class="px-3 py-2 text-right">Adjustment</th>
                                                                     <th class="px-3 py-2 text-right">PPh</th>
@@ -315,9 +317,11 @@
                                                             <tbody class="divide-y divide-gray-100">
                                                                 @foreach($item->rekap_tkbm_rows as $containerRow)
                                                                     <tr>
-                                                                        <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $containerRow['nomor_kontainer'] }}</td>
+                                                                        <td class="px-3 py-2 font-semibold {{ $containerRow['jenis'] === 'kontainer' ? 'font-mono text-gray-800' : 'text-amber-800' }}">{{ $containerRow['label'] }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $containerRow['size'] === '-' ? '-' : $containerRow['size'] . ' ft' }}</td>
                                                                         <td class="px-3 py-2 font-semibold {{ $containerRow['status'] === 'EMPTY' ? 'text-amber-700' : 'text-emerald-700' }}">{{ $containerRow['status'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">{{ $containerRow['jumlah'] === null ? '-' : number_format($containerRow['jumlah'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">{{ $containerRow['tarif'] === null ? '-' : 'Rp ' . number_format($containerRow['tarif'], 2, ',', '.') }}</td>
                                                                         <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['biaya'], 2, ',', '.') }}</td>
                                                                         <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['adjustment'], 2, ',', '.') }}</td>
                                                                         <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['pph'], 2, ',', '.') }}</td>
@@ -325,6 +329,15 @@
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>
+                                                            <tfoot class="bg-amber-50 font-semibold text-gray-900">
+                                                                <tr>
+                                                                    <td colspan="5" class="px-3 py-2 text-right">Total Invoice</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_tkbm_rows->sum('biaya'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_tkbm_rows->sum('adjustment'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_tkbm_rows->sum('pph'), 2, ',', '.') }}</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_tkbm_rows->sum('total'), 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            </tfoot>
                                                         </table>
                                                         @else
                                                             <p class="px-3 py-3 text-xs text-gray-500">Nomor kontainer untuk voyage ini belum tersedia pada BL atau manifest.</p>

@@ -23,7 +23,7 @@ class RekapBiayaKapalController extends Controller
     {
         $details = $record->tkbmDetails->filter(fn ($detail) => strtolower(trim($detail->kapal ?? '')) === strtolower(trim($kapal))
             && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)));
-        if ($details->isEmpty() || $containers->isEmpty()) {
+        if ($details->isEmpty()) {
             return collect();
         }
 
@@ -31,30 +31,97 @@ class RekapBiayaKapalController extends Controller
         $adjustment = $this->tkbmSections($details)->sum(fn ($section) => (float) $section->first()->adjustment);
         $fullTotal = (float) $this->getApportionedCostForRecord($record, $kapal, $voyage)['total_biaya'];
         $selectedTotal = (float) $record->apportioned['total_biaya'];
-        $adjustment = $fullTotal != 0 ? $adjustment * $selectedTotal / $fullTotal : 0;
+        $selectedRatio = $fullTotal != 0 ? $selectedTotal / $fullTotal : 0;
+        $adjustment *= $selectedRatio;
         $pph = (float) $record->apportioned['pph'];
         $totalCents = (int) round($selectedTotal * 100);
         $adjustmentCents = (int) round($adjustment * 100);
         $pphCents = (int) round($pph * 100);
-        $amounts = [
-            'biaya' => $totalCents - $adjustmentCents + $pphCents,
-            'adjustment' => $adjustmentCents,
-            'pph' => $pphCents,
-        ];
+        $baseCents = $totalCents - $adjustmentCents + $pphCents;
+        $tariffGroups = [];
+        $itemRows = collect();
+        foreach ($details as $detail) {
+            $name = strtoupper((string) ($detail->pricelistTkbm?->nama_barang ?? ''));
+            $size = str_contains($name, '40') ? '40' : (str_contains($name, '20') ? '20' : null);
+            $status = str_contains($name, 'EMPTY') || str_contains($name, 'KOSONG') ? 'EMPTY'
+                : (str_contains($name, 'FULL') ? 'FULL' : null);
+            if ($size === null || $status === null || (float) $detail->jumlah <= 0) {
+                $itemRows->push([
+                    'jenis' => 'barang', 'label' => $name ?: 'Barang lainnya', 'size' => '-', 'status' => '-',
+                    'jumlah' => (float) $detail->jumlah * $selectedRatio,
+                    'tarif' => (float) $detail->tarif,
+                    'biaya_cents' => (int) round((float) $detail->subtotal * $selectedRatio * 100),
+                    'adjustment_cents' => 0,
+                ]);
+                continue;
+            }
+            $key = $size.'|'.$status;
+            $tariffGroups[$key]['subtotal'] = ($tariffGroups[$key]['subtotal'] ?? 0) + (float) $detail->subtotal;
+            $tariffGroups[$key]['jumlah'] = ($tariffGroups[$key]['jumlah'] ?? 0) + (float) $detail->jumlah;
+        }
+        $rates = [];
+        foreach ($tariffGroups as $key => $group) {
+            $rates[$key] = (int) round($group['subtotal'] / $group['jumlah'] * 100);
+        }
+
         $rows = collect();
         $containerCount = $containers->count();
         foreach ($containers as $index => $container) {
-            $row = [
-                'nomor_kontainer' => $container['nomor_kontainer'],
+            $rateCents = $rates[$container['size'].'|'.$container['status']] ?? 0;
+            $share = $containerCount > 0 ? intdiv($adjustmentCents, $containerCount) : 0;
+            $rows->push([
+                'jenis' => 'kontainer', 'label' => $container['nomor_kontainer'],
                 'size' => $container['size'],
                 'status' => $container['status'],
-            ];
-            foreach ($amounts as $field => $cents) {
-                $share = intdiv($cents, $containerCount);
-                $row[$field] = ($index === $containerCount - 1 ? $cents - $share * $index : $share) / 100;
+                'jumlah' => 1, 'tarif' => $rateCents / 100,
+                'biaya_cents' => $rateCents,
+                'adjustment_cents' => $index === $containerCount - 1
+                    ? $adjustmentCents - $share * $index : $share,
+            ]);
+        }
+        $rows = $rows->concat($itemRows)->values();
+
+        // Keep any unmatched invoice amount visible instead of hiding it inside container tariffs.
+        $unallocatedCents = $baseCents - $rows->sum('biaya_cents');
+        if ($containerCount > 0 && $rows->where('jenis', 'kontainer')->sum('biaya_cents') === 0) {
+            $perContainer = intdiv($unallocatedCents, $containerCount);
+            foreach ($rows as $index => $row) {
+                if ($row['jenis'] !== 'kontainer') {
+                    continue;
+                }
+                $row['biaya_cents'] = $index === $containerCount - 1
+                    ? $unallocatedCents - $perContainer * $index : $perContainer;
+                $row['tarif'] = $row['biaya_cents'] / 100;
+                $rows[$index] = $row;
             }
-            $row['total'] = $row['biaya'] + $row['adjustment'] - $row['pph'];
-            $rows->push($row);
+        } elseif ($unallocatedCents !== 0) {
+            $rows->push([
+                'jenis' => 'selisih', 'label' => 'Selisih alokasi invoice', 'size' => '-', 'status' => '-',
+                'jumlah' => null, 'tarif' => null, 'biaya_cents' => $unallocatedCents,
+                'adjustment_cents' => 0,
+            ]);
+        }
+        if ($containerCount === 0 && $adjustmentCents !== 0) {
+            $rows->push([
+                'jenis' => 'adjustment', 'label' => 'Adjustment invoice', 'size' => '-', 'status' => '-',
+                'jumlah' => null, 'tarif' => null, 'biaya_cents' => 0,
+                'adjustment_cents' => $adjustmentCents,
+            ]);
+        }
+
+        $taxBasis = $rows->sum(fn ($row) => max(0, $row['biaya_cents'] + $row['adjustment_cents']));
+        $allocatedPph = 0;
+        foreach ($rows as $index => $row) {
+            $pphShare = $index === $rows->count() - 1
+                ? $pphCents - $allocatedPph
+                : ($taxBasis > 0 ? (int) round($pphCents * max(0, $row['biaya_cents'] + $row['adjustment_cents']) / $taxBasis) : 0);
+            $allocatedPph += $pphShare;
+            $row['biaya'] = $row['biaya_cents'] / 100;
+            $row['adjustment'] = $row['adjustment_cents'] / 100;
+            $row['pph'] = $pphShare / 100;
+            $row['total'] = ($row['biaya_cents'] + $row['adjustment_cents'] - $pphShare) / 100;
+            unset($row['biaya_cents'], $row['adjustment_cents']);
+            $rows[$index] = $row;
         }
 
         return $rows;
@@ -829,7 +896,7 @@ class RekapBiayaKapalController extends Controller
         $bl = implode(', ', $bls);
 
         // Fetch all biaya kapals and load relations
-        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details'], $this->relations);
+        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
             ->filter(function ($record) use ($kapal, $voyage, $lokasi) {

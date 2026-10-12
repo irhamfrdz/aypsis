@@ -48,12 +48,15 @@ class RekapBlServiceTest extends TestCase
             $invoice->setRelation($relation, collect());
         }
         $details = collect();
-        for ($index = 0; $index < 2; $index++) {
-            $details->push((new \App\Models\BiayaKapalTkbm)->forceFill([
+        foreach ([['KONTAINER 20FT FULL', 2, 400], ['KONTAINER 40FT EMPTY', 1, 200]] as [$name, $quantity, $rate]) {
+            $detail = (new \App\Models\BiayaKapalTkbm)->forceFill([
                 'kapal' => 'KM TEST', 'voyage' => 'V01', 'no_referensi' => 'REF-01',
-                'subtotal' => 500, 'total_nominal' => 1100, 'adjustment' => 100,
+                'jumlah' => $quantity, 'tarif' => $rate, 'subtotal' => $quantity * $rate,
+                'total_nominal' => 1100, 'adjustment' => 100,
                 'pph' => 22, 'grand_total' => 1078,
-            ]));
+            ]);
+            $detail->setRelation('pricelistTkbm', (new \App\Models\PricelistTkbm)->forceFill(['nama_barang' => $name]));
+            $details->push($detail);
         }
         $invoice->setRelation('tkbmDetails', $details);
         $controller = new \App\Http\Controllers\RekapBiayaKapalController;
@@ -79,6 +82,52 @@ class RekapBlServiceTest extends TestCase
         $selectedRows = $allocate->invoke($controller, $invoice, $containers->take(2), 'KM TEST', 'V01');
         $this->assertEqualsWithDelta(50, $selectedRows->sum('adjustment'), 0.001);
         $this->assertEqualsWithDelta(539, $selectedRows->sum('total'), 0.001);
+    }
+
+    public function test_tkbm_container_cost_uses_its_tariff_and_separates_cargo(): void
+    {
+        $invoice = (new \App\Models\BiayaKapal)->forceFill(['nominal' => 3951700, 'ppn' => 0]);
+        foreach (['buruhBatamDetails', 'buruhBongkarDetails', 'barangDetails', 'tenagaKerjaDetails', 'airDetails'] as $relation) {
+            $invoice->setRelation($relation, collect());
+        }
+        $details = collect();
+        foreach ([
+            ['KONTAINER 20FT FULL', 65, 39000],
+            ['KONTAINER 40FT FULL', 14, 80000],
+            ['CARGO', 129, 2300],
+        ] as [$name, $quantity, $tariff]) {
+            $detail = (new \App\Models\BiayaKapalTkbm)->forceFill([
+                'kapal' => 'KM ALKEN PESONA', 'voyage' => 'AS14JP26', 'no_referensi' => '98/08JUP/2026',
+                'jumlah' => $quantity, 'tarif' => $tariff, 'subtotal' => $quantity * $tariff,
+                'total_nominal' => 3951700, 'adjustment' => 0, 'pph' => 79034, 'grand_total' => 3872666,
+            ]);
+            $detail->setRelation('pricelistTkbm', (new \App\Models\PricelistTkbm)->forceFill(['nama_barang' => $name]));
+            $details->push($detail);
+        }
+        $invoice->setRelation('tkbmDetails', $details);
+        $controller = new \App\Http\Controllers\RekapBiayaKapalController;
+        $invoice->apportioned = $controller->getApportionedCostForRecord($invoice, 'KM ALKEN PESONA', 'AS14JP26');
+        $containers = collect();
+        for ($index = 0; $index < 65; $index++) {
+            $containers->push(['nomor_kontainer' => '20-'.$index, 'size' => '20', 'status' => 'FULL']);
+        }
+        for ($index = 0; $index < 14; $index++) {
+            $containers->push(['nomor_kontainer' => '40-'.$index, 'size' => '40', 'status' => 'FULL']);
+        }
+
+        $rows = (new \ReflectionMethod($controller, 'allocateTkbmRows'))
+            ->invoke($controller, $invoice, $containers, 'KM ALKEN PESONA', 'AS14JP26');
+        $this->assertCount(80, $rows);
+        $this->assertEqualsWithDelta(39000, $rows->first()['biaya'], 0.001);
+        $this->assertEqualsWithDelta(780, $rows->first()['pph'], 0.001);
+        $this->assertEqualsWithDelta(80000, $rows[78]['biaya'], 0.001);
+        $this->assertSame('CARGO', $rows->last()['label']);
+        $this->assertEqualsWithDelta(129, $rows->last()['jumlah'], 0.001);
+        $this->assertEqualsWithDelta(2300, $rows->last()['tarif'], 0.001);
+        $this->assertEqualsWithDelta(296700, $rows->last()['biaya'], 0.001);
+        $this->assertEqualsWithDelta(5934, $rows->last()['pph'], 0.001);
+        $this->assertEqualsWithDelta(79034, $rows->sum('pph'), 0.001);
+        $this->assertEqualsWithDelta(3872666, $rows->sum('total'), 0.001);
     }
 
     public function test_direct_bl_container_and_unlinked_costs(): void
