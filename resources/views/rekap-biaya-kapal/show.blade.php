@@ -292,6 +292,49 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        @if($item instanceof \App\Models\BiayaKapal && isset($item->rekap_opp_opt_rows) && $item->rekap_opp_opt_rows->isNotEmpty())
+                                            <tr class="bg-purple-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-purple-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-purple-50 text-[11px] font-semibold uppercase tracking-wide text-purple-800">
+                                                            Rincian biaya OPP/OPT per kontainer ({{ $item->rekap_opp_opt_rows->pluck('kontainer')->filter(fn ($number) => $number !== '-' && $number !== 'Tanpa rincian kontainer')->unique()->count() }} kontainer)
+                                                        </div>
+                                                        <table class="w-full text-xs">
+                                                            <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left">No. Kontainer</th>
+                                                                    <th class="px-3 py-2 text-left">BL</th>
+                                                                    <th class="px-3 py-2 text-left">Jenis</th>
+                                                                    <th class="px-3 py-2 text-left">Ukuran</th>
+                                                                    <th class="px-3 py-2 text-left">Vendor</th>
+                                                                    <th class="px-3 py-2 text-right">Tarif</th>
+                                                                    <th class="px-3 py-2 text-right">Biaya</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100">
+                                                                @foreach($item->rekap_opp_opt_rows as $containerRow)
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $containerRow['kontainer'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $containerRow['bl'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $containerRow['jenis'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $containerRow['ukuran'] }}</td>
+                                                                        <td class="px-3 py-2 text-gray-700">{{ $containerRow['vendor'] }}</td>
+                                                                        <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($containerRow['tarif'], 2, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($containerRow['biaya'], 2, ',', '.') }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                            <tfoot class="bg-purple-50 font-semibold text-gray-900">
+                                                                <tr>
+                                                                    <td colspan="6" class="px-3 py-2 text-right">Total OPP/OPT</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_opp_opt_rows->sum('biaya'), 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @if($item instanceof \App\Models\BiayaKapal && $item->tkbmDetails->isNotEmpty() && isset($item->rekap_tkbm_rows))
                                             <tr class="bg-amber-50/30">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">

@@ -130,6 +130,46 @@ class RekapBlServiceTest extends TestCase
         $this->assertEqualsWithDelta(3872666, $rows->sum('total'), 0.001);
     }
 
+    public function test_opp_opt_breakdown_uses_linked_manifests_and_respects_bl_filter(): void
+    {
+        $controller = new \App\Http\Controllers\RekapBiayaKapalController;
+        $invoice = new \App\Models\BiayaKapal;
+        foreach ((new \ReflectionProperty($controller, 'relations'))->getValue($controller) as $relation) {
+            $invoice->setRelation($relation, collect());
+        }
+        foreach (['buruhBatamDetails', 'buruhBongkarDetails', 'tenagaKerjaDetails'] as $relation) {
+            $invoice->setRelation($relation, collect());
+        }
+        $first = (new \App\Models\BiayaKapalOppOpt)->forceFill([
+            'kapal' => 'KM TEST', 'voyage' => 'V01', 'klasifikasi' => 'OPP',
+            'tarif' => 100, 'subtotal' => 200,
+        ]);
+        $first->setRelation('manifests', collect([
+            (new Manifest)->forceFill(['id' => 1, 'nomor_bl' => '01', 'nomor_kontainer' => 'CONT-A']),
+            (new Manifest)->forceFill(['id' => 2, 'nomor_bl' => '02', 'nomor_kontainer' => 'CONT-B']),
+        ]));
+        $second = (new \App\Models\BiayaKapalOppOpt)->forceFill([
+            'kapal' => 'KM TEST', 'voyage' => 'V01', 'klasifikasi' => 'OPT',
+            'tarif' => 50, 'subtotal' => 50,
+        ]);
+        $second->setRelation('manifests', collect([$first->manifests->first()]));
+        $invoice->setRelation('oppOptDetails', collect([$first, $second]));
+        $invoice->apportioned = ['nominal' => 250, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 250];
+
+        $allocate = new \ReflectionMethod($controller, 'allocateOppOptRows');
+        $rows = $allocate->invoke($controller, $invoice, 'KM TEST', 'V01');
+        $this->assertSame(['CONT-A', 'CONT-B', 'CONT-A'], $rows->pluck('kontainer')->all());
+        $this->assertEqualsWithDelta(250, $rows->sum('biaya'), 0.001);
+
+        [$selected, $common] = (new \ReflectionMethod($controller, 'splitCostForBl'))
+            ->invoke($controller, $invoice, $this->resolver(), 'KM TEST', 'V01', '01');
+        $this->assertNull($common);
+        $this->assertEqualsWithDelta(150, $selected->apportioned['total_biaya'], 0.001);
+        $selectedRows = $allocate->invoke($controller, $selected, 'KM TEST', 'V01');
+        $this->assertSame(['CONT-A', 'CONT-A'], $selectedRows->pluck('kontainer')->all());
+        $this->assertEqualsWithDelta(150, $selectedRows->sum('biaya'), 0.001);
+    }
+
     public function test_direct_bl_container_and_unlinked_costs(): void
     {
         $resolver = $this->resolver();

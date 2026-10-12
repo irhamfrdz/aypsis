@@ -127,6 +127,50 @@ class RekapBiayaKapalController extends Controller
         return $rows;
     }
 
+    private function allocateOppOptRows(BiayaKapal $record, string $kapal, string $voyage): Collection
+    {
+        $rows = collect();
+        foreach ($record->oppOptDetails as $detail) {
+            if (strcasecmp(trim($detail->kapal ?? ''), trim($kapal)) !== 0
+                || strcasecmp(trim($detail->voyage ?? ''), trim($voyage)) !== 0) {
+                continue;
+            }
+
+            $manifests = $detail->manifests->unique('id')->values();
+            $totalCents = (int) round((float) ($detail->rekap_opp_opt_total ?? $detail->subtotal) * 100);
+            $weights = $manifests->map(fn ($manifest) => (float) ($manifest->rekap_bl_share ?? 1));
+            $weightTotal = $weights->sum();
+            $allocated = 0;
+            foreach ($manifests as $index => $manifest) {
+                $amount = $index === $manifests->count() - 1
+                    ? $totalCents - $allocated
+                    : ($weightTotal > 0 ? (int) round($totalCents * $weights[$index] / $weightTotal) : 0);
+                $allocated += $amount;
+                $rows->push([
+                    'kontainer' => $manifest->nomor_kontainer ?: '-',
+                    'bl' => $manifest->nomor_bl ?: '-',
+                    'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
+                    'ukuran' => $manifest->size_kontainer ?: ($detail->jenis_ukuran ?: '-'),
+                    'vendor' => $detail->vendor ?: '-',
+                    'tarif' => (float) $detail->tarif,
+                    'biaya' => $amount / 100,
+                ]);
+            }
+            if ($manifests->isEmpty() && $totalCents !== 0) {
+                $rows->push([
+                    'kontainer' => 'Tanpa rincian kontainer', 'bl' => '-',
+                    'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
+                    'ukuran' => $detail->jenis_ukuran ?: '-',
+                    'vendor' => $detail->vendor ?: '-',
+                    'tarif' => (float) $detail->tarif,
+                    'biaya' => $totalCents / 100,
+                ]);
+            }
+        }
+
+        return $rows;
+    }
+
     private $relations = [
         'barangDetails',
         'airDetails',
@@ -699,7 +743,16 @@ class RekapBiayaKapalController extends Controller
                         continue;
                     }
                     $hasDetails = true;
-                    $ratio = $resolver->ratio($detail, $bl) ?? $parentRatio;
+                    $manifestShares = null;
+                    if ($relation === 'oppOptDetails' && $detail->manifests->isNotEmpty()) {
+                        $manifests = $detail->manifests->unique('id')->values();
+                        $manifestShares = $manifests->map(fn ($manifest) => $resolver->ratio($manifest, $bl));
+                        $ratio = $manifestShares->every(fn ($share) => $share === null)
+                            ? $parentRatio
+                            : $manifestShares->sum() / $manifests->count();
+                    } else {
+                        $ratio = $resolver->ratio($detail, $bl) ?? $parentRatio;
+                    }
                     $single = clone $record;
                     foreach ($this->relations as $name) {
                         $single->setRelation($name, collect());
@@ -713,6 +766,18 @@ class RekapBiayaKapalController extends Controller
                             $copy = clone $groupDetail;
                             if ($relation === 'temasDetails') {
                                 $copy->rekap_bl_total = round($groupDetail->rekap_total * ($ratio ?? 1), 2);
+                            }
+                            if ($relation === 'oppOptDetails') {
+                                $copy->rekap_opp_opt_total = round($cost['total_biaya'] * ($ratio ?? 1), 2);
+                                if ($manifestShares !== null && $ratio !== null) {
+                                    $copy->setRelation('manifests', $manifests->filter(fn ($manifest, $index) => ($manifestShares[$index] ?? 0) > 0)
+                                        ->map(function ($manifest, $index) use ($manifestShares) {
+                                            $manifestCopy = clone $manifest;
+                                            $manifestCopy->rekap_bl_share = $manifestShares[$index];
+
+                                            return $manifestCopy;
+                                        })->values());
+                                }
                             }
                             $target->{$relation}->push($copy);
                         }
@@ -896,7 +961,7 @@ class RekapBiayaKapalController extends Controller
         $bl = implode(', ', $bls);
 
         // Fetch all biaya kapals and load relations
-        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm'], $this->relations);
+        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm', 'oppOptDetails.manifests'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
             ->filter(function ($record) use ($kapal, $voyage, $lokasi) {
@@ -1139,10 +1204,15 @@ class RekapBiayaKapalController extends Controller
 
         $tkbmContainers = ($resolver ?? RekapBlService::forVoyage($kapal, $voyage))->containerDetails($bls);
         foreach ($biayaKapals as $record) {
-            if (! $record instanceof BiayaKapal || $record->tkbmDetails->isEmpty()) {
+            if (! $record instanceof BiayaKapal) {
                 continue;
             }
-            $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
+            if ($record->tkbmDetails->isNotEmpty()) {
+                $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
+            }
+            if ($record->oppOptDetails->isNotEmpty()) {
+                $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $kapal, $voyage);
+            }
         }
 
         // Calculate summaries based on apportioned costs
