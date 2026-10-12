@@ -297,6 +297,9 @@ Route::post('/working-hours', function (Request $request) {
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
+        'jam_masuk_sabtu' => 'nullable|date_format:H:i',
+        'jam_keluar_sabtu' => 'nullable|date_format:H:i',
+        'toleransi_keterlambatan_sabtu' => 'nullable|integer|min:0',
         'is_active' => 'nullable',
     ]);
 
@@ -307,6 +310,9 @@ Route::post('/working-hours', function (Request $request) {
         'jam_masuk' => $data['jam_masuk'],
         'jam_keluar' => $data['jam_keluar'],
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
+        'jam_masuk_sabtu' => $data['jam_masuk_sabtu'] ?? null,
+        'jam_keluar_sabtu' => $data['jam_keluar_sabtu'] ?? null,
+        'toleransi_keterlambatan_sabtu' => $data['toleransi_keterlambatan_sabtu'] ?? 0,
         'is_active' => $isActive,
         'created_at' => now(),
         'updated_at' => now(),
@@ -324,6 +330,9 @@ Route::put('/working-hours/{id}', function (Request $request, $id) {
         'jam_masuk' => 'required',
         'jam_keluar' => 'required',
         'toleransi_keterlambatan' => 'nullable|integer',
+        'jam_masuk_sabtu' => 'nullable|date_format:H:i',
+        'jam_keluar_sabtu' => 'nullable|date_format:H:i',
+        'toleransi_keterlambatan_sabtu' => 'nullable|integer|min:0',
         'is_active' => 'nullable',
     ]);
 
@@ -334,6 +343,9 @@ Route::put('/working-hours/{id}', function (Request $request, $id) {
         'jam_masuk' => $data['jam_masuk'],
         'jam_keluar' => $data['jam_keluar'],
         'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
+        'jam_masuk_sabtu' => $data['jam_masuk_sabtu'] ?? null,
+        'jam_keluar_sabtu' => $data['jam_keluar_sabtu'] ?? null,
+        'toleransi_keterlambatan_sabtu' => $data['toleransi_keterlambatan_sabtu'] ?? 0,
         'is_active' => $isActive,
         'updated_at' => now(),
     ]);

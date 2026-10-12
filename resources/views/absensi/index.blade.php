@@ -210,7 +210,6 @@
                         <col style="width: 5%">
                         <col style="width: 10%">
                         <col style="width: 7%">
-                        <col style="width: 5%">
                         <col style="width: 8%">
                         <col style="width: 7%">
                         <col style="width: 7%">
@@ -227,7 +226,6 @@
                             <th class="px-2 py-3 text-left">NIK</th>
                             <th class="px-2 py-3 text-left">Nama Lengkap</th>
                             <th class="px-2 py-3 text-left">Pekerjaan</th>
-                            <th class="px-2 py-3 text-left">Divisi</th>
                             <th class="px-2 py-3 text-left">Tanggal</th>
                             <th class="px-2 py-3 text-center text-emerald-700 bg-emerald-50/70">Jam Masuk</th>
                             <th class="px-2 py-3 text-center text-amber-700 bg-amber-50/70">Istirahat Keluar</th>
@@ -254,19 +252,6 @@
                                 </td>
                                 <td class="px-3 py-3 text-slate-600">
                                     {{ $absensi->karyawan ? $absensi->karyawan->pekerjaan : '-' }}
-                                </td>
-                                <td class="px-3 py-3 text-slate-600 overflow-hidden">
-                                    @if($absensi->karyawan && $absensi->karyawan->divisi && $absensi->karyawan->divisi !== '0')
-                                        <span title="{{ strtoupper($absensi->karyawan->divisi) }}" class="inline-flex max-w-full min-w-0 truncate px-2 py-1 text-[10px] font-medium rounded-md
-                                            {{ strtolower($absensi->karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
-                                               (strtolower($absensi->karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
-                                               (strtolower($absensi->karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
-                                               'bg-gray-100 text-gray-800')) }}">
-                                            {{ strtoupper($absensi->karyawan->divisi) }}
-                                        </span>
-                                    @else
-                                        -
-                                    @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap font-mono text-slate-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
@@ -388,7 +373,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="px-6 py-10 text-center">
+                                <td colspan="13" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

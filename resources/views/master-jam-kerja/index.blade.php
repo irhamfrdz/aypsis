@@ -66,6 +66,30 @@
                             class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                     </div>
                 </div>
+
+                <div class="rounded-md border border-blue-100 bg-blue-50/50 p-3 space-y-3">
+                    <p class="text-xs font-bold text-gray-700">Jam Kerja Hari Sabtu</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="jam-masuk-sabtu" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jam Masuk</label>
+                            <input type="time" id="jam-masuk-sabtu"
+                                class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label for="jam-keluar-sabtu" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Jam Keluar</label>
+                            <input type="time" id="jam-keluar-sabtu"
+                                class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="toleransi-sabtu" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Toleransi Keterlambatan</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="toleransi-sabtu" min="0" value="0"
+                                class="flex-1 bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            <span class="text-xs text-gray-500 font-bold bg-white border border-gray-300 px-3 py-2.5 rounded-md">MENIT</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Toleransi Keterlambatan</label>
@@ -212,6 +236,11 @@
                                     <i class="fa-solid fa-hourglass-half text-gray-400"></i> Toleransi: ${item.toleransi_keterlambatan} menit
                                 </span>
                             </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="fa-solid fa-calendar-day text-gray-400"></i>
+                                Sabtu: ${item.jam_masuk_sabtu ? item.jam_masuk_sabtu.substring(0, 5) : '-'} - ${item.jam_keluar_sabtu ? item.jam_keluar_sabtu.substring(0, 5) : '-'}
+                                · Toleransi ${item.toleransi_keterlambatan_sabtu ?? 0} menit
+                            </div>
                         </div>
 
                         <!-- Actions -->
@@ -238,10 +267,13 @@
         const departemen = document.getElementById('departemen').value.trim();
         const jam_masuk = document.getElementById('jam-masuk').value;
         const jam_keluar = document.getElementById('jam-keluar').value;
+        const jam_masuk_sabtu = document.getElementById('jam-masuk-sabtu').value || null;
+        const jam_keluar_sabtu = document.getElementById('jam-keluar-sabtu').value || null;
+        const toleransi_keterlambatan_sabtu = document.getElementById('toleransi-sabtu').value || 0;
         const toleransi_keterlambatan = document.getElementById('toleransi').value;
         const is_active = document.getElementById('is-active').checked ? 1 : 0;
 
-        const payload = { departemen, jam_masuk, jam_keluar, toleransi_keterlambatan, is_active };
+        const payload = { departemen, jam_masuk, jam_keluar, toleransi_keterlambatan, jam_masuk_sabtu, jam_keluar_sabtu, toleransi_keterlambatan_sabtu, is_active };
         
         try {
             let response;
@@ -278,6 +310,9 @@
         document.getElementById('departemen').value = item.departemen;
         document.getElementById('jam-masuk').value = item.jam_masuk.substring(0, 5);
         document.getElementById('jam-keluar').value = item.jam_keluar.substring(0, 5);
+        document.getElementById('jam-masuk-sabtu').value = item.jam_masuk_sabtu ? item.jam_masuk_sabtu.substring(0, 5) : '';
+        document.getElementById('jam-keluar-sabtu').value = item.jam_keluar_sabtu ? item.jam_keluar_sabtu.substring(0, 5) : '';
+        document.getElementById('toleransi-sabtu').value = item.toleransi_keterlambatan_sabtu ?? 0;
         document.getElementById('toleransi').value = item.toleransi_keterlambatan;
         document.getElementById('is-active').checked = item.is_active === 1;
 
@@ -313,6 +348,9 @@
         document.getElementById('departemen').value = '';
         document.getElementById('jam-masuk').value = '';
         document.getElementById('jam-keluar').value = '';
+        document.getElementById('jam-masuk-sabtu').value = '';
+        document.getElementById('jam-keluar-sabtu').value = '';
+        document.getElementById('toleransi-sabtu').value = 0;
         document.getElementById('toleransi').value = 0;
         document.getElementById('is-active').checked = true;
 
