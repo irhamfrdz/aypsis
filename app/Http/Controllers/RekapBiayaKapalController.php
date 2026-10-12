@@ -1140,14 +1140,16 @@ class RekapBiayaKapalController extends Controller
             $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
             $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
         } elseif (isset($record->is_pranota_ob)) {
-            $entries = $record instanceof PranotaObMuatTemas ? $record->rekap_ob_temas_items : $record->getEnrichedItems();
+            $entries = $record instanceof PranotaObMuatTemas ? $record->rekap_ob_temas_items
+                : ($record->rekap_ob_items ?? $record->getEnrichedItems());
             $selectedTemasItems = [];
             $commonTemasItems = [];
             foreach ($entries as $entry) {
                 $amount = (float) ($entry['biaya'] ?? 0);
                 $ratio = $resolver->ratio($entry, $bl);
                 $add(['nominal' => $amount, 'ppn' => 0, 'pph' => 0, 'total_biaya' => $amount], $ratio);
-                if ($record instanceof PranotaObMuatTemas && $ratio !== 0.0) {
+                if ($ratio !== 0.0) {
+                    $entry['biaya'] = round($amount * ($ratio ?? 1), 2);
                     if ($ratio === null) {
                         $commonTemasItems[] = $entry;
                     } else {
@@ -1158,6 +1160,9 @@ class RekapBiayaKapalController extends Controller
             if ($record instanceof PranotaObMuatTemas) {
                 $selected->rekap_ob_temas_items = $selectedTemasItems;
                 $common->rekap_ob_temas_items = $commonTemasItems;
+            } else {
+                $selected->rekap_ob_items = $selectedTemasItems;
+                $common->rekap_ob_items = $commonTemasItems;
             }
         } else {
             $add($record->apportioned, $resolver->ratio($record, $bl));
@@ -1320,6 +1325,7 @@ class RekapBiayaKapalController extends Controller
             ->get();
         foreach ($pranotaObs as $pranota) {
             $totalBiaya = $pranota->calculateTotalAmount();
+            $pranota->rekap_ob_items = $pranota->getEnrichedItems();
             $pranota->apportioned = [
                 'nominal' => $totalBiaya,
                 'ppn' => 0,

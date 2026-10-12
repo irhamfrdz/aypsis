@@ -539,12 +539,17 @@
                                                 </td>
                                             </tr>
                                         @endif
-                                        @if(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas && !empty($item->rekap_ob_temas_items))
+                                        @php
+                                            $obEntries = isset($item->is_pranota_ob) && $item->is_pranota_ob
+                                                ? ($item->is_pranota_ob_muat_temas ? ($item->rekap_ob_temas_items ?? []) : ($item->rekap_ob_items ?? []))
+                                                : [];
+                                        @endphp
+                                        @if(!empty($obEntries))
                                             <tr class="bg-indigo-50/40">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
                                                     <div class="rounded-lg border border-indigo-100 bg-white overflow-hidden">
                                                         <div class="px-3 py-2 bg-indigo-50 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
-                                                            Rincian biaya per kontainer
+                                                            Rincian biaya pranota OB per kontainer ({{ count($obEntries) }} rincian)
                                                         </div>
                                                         <table class="w-full text-xs">
                                                             <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
@@ -558,17 +563,23 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="divide-y divide-gray-100">
-                                                                @foreach($item->rekap_ob_temas_items as $temaEntry)
+                                                                @foreach($obEntries as $temaEntry)
                                                                     <tr>
                                                                         <td class="px-3 py-2 font-mono font-semibold text-gray-800">{{ $temaEntry['nomor_kontainer'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['nama_barang'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['supir'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['size'] ?? '-' }}</td>
                                                                         <td class="px-3 py-2 text-gray-700">{{ $temaEntry['tujuan_gudang'] ?? '-' }}</td>
-                                                                        <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) ($temaEntry['biaya'] ?? 0), 0, ',', '.') }}</td>
+                                                                        <td class="px-3 py-2 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format((float) ($temaEntry['biaya'] ?? 0), 2, ',', '.') }}</td>
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>
+                                                            <tfoot class="bg-indigo-50 font-semibold">
+                                                                <tr>
+                                                                    <td colspan="5" class="px-3 py-2 text-right">Total Pranota OB</td>
+                                                                    <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format(collect($obEntries)->sum('biaya'), 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            </tfoot>
                                                         </table>
                                                     </div>
                                                 </td>
