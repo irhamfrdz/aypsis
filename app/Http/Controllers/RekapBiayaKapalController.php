@@ -405,9 +405,10 @@ class RekapBiayaKapalController extends Controller
 
             $units = collect();
             foreach ($detail->getTandaTerimas() as $tt) {
+                $containerNumber = $tt->no_kontainer ?: $tt->nomor_kontainer;
                 $type = strtoupper(trim((string) ($tt->tipe_kontainer ?? '')));
-                $isCargo = $type === 'CARGO' || str_starts_with(strtoupper(trim((string) ($tt->no_kontainer ?? ''))), 'CARGO-');
-                $numbers = $isCargo ? collect() : collect(preg_split('/[,;\r\n]+/', (string) ($tt->no_kontainer ?? '')))
+                $isCargo = $type === 'CARGO' || str_starts_with(strtoupper(trim((string) $containerNumber)), 'CARGO-');
+                $numbers = $isCargo ? collect() : collect(preg_split('/[,;\r\n]+/', (string) $containerNumber))
                     ->map(fn ($number) => strtoupper(trim($number)))
                     ->filter(fn ($number) => $number !== '' && ! in_array($number, ['-', 'N/A', 'NULL']))->unique()->values();
                 $receipt = $tt->no_surat_jalan ?: ($tt->nomor_tanda_terima ?? $tt->no_tanda_terima ?? '-');

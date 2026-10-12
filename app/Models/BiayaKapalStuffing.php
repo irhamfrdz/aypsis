@@ -66,7 +66,7 @@ class BiayaKapalStuffing extends Model
 
         foreach ($grouped as $type => $ids) {
             if ($type === 'tanda_terima_lcl') {
-                $records = TandaTerimaLcl::whereIn('id', $ids)->get()->map(function ($tt) {
+                $records = TandaTerimaLcl::with(['kontainerPivot', 'items'])->whereIn('id', $ids)->get()->map(function ($tt) {
                     // Normalize attributes so that generic views can render them transparently
                     $tt->no_surat_jalan = $tt->nomor_tanda_terima;
                     $tt->pengirim = $tt->nama_pengirim;
