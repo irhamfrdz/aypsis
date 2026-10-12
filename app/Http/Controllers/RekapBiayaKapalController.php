@@ -7,6 +7,7 @@ use App\Models\Gudang;
 use App\Models\PranotaObMuatTemas;
 use App\Services\RekapBlService;
 use App\Services\RekapUangRitService;
+use App\Services\RekapTruckingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -1042,6 +1043,29 @@ class RekapBiayaKapalController extends Controller
                         continue;
                     }
                     $hasDetails = true;
+                    if ($relation === 'truckingDetails' && isset($detail->rekap_trucking_rows)) {
+                        $buckets = ['selected' => collect(), 'common' => collect()];
+                        foreach ($detail->rekap_trucking_rows as $row) {
+                            $share = $row['bl'] === '-' ? $parentRatio : $resolver->ratio(['nomor_bl' => $row['bl']], $bl);
+                            if ($share === 0.0) {
+                                continue;
+                            }
+                            $ppn = (float) $record->ppn * $row['subtotal'] / ((float) $record->nominal ?: 1);
+                            $add(['nominal' => $row['subtotal'], 'ppn' => $ppn, 'pph' => $row['pph'], 'total_biaya' => $row['total']], $share);
+                            foreach (['subtotal', 'adjustment', 'pph', 'total', 'container_adjustment'] as $field) {
+                                $row[$field] = round($row[$field] * ($share ?? 1), 2);
+                            }
+                            $buckets[$share === null ? 'common' : 'selected']->push($row);
+                        }
+                        foreach ($buckets as $bucket => $rows) {
+                            if ($rows->isNotEmpty()) {
+                                $copy = clone $detail;
+                                $copy->rekap_trucking_rows = $rows;
+                                ($bucket === 'common' ? $common : $selected)->{$relation}->push($copy);
+                            }
+                        }
+                        continue;
+                    }
                     $manifestShares = null;
                     if ($relation === 'tkbmDetails' && $resolver->ratio($detail, $bl) === null && $parentRatio === null) {
                         $ratio = $this->tkbmBlRatio($detailGroup, $allTkbmContainers, $selectedTkbmContainers);
@@ -1492,6 +1516,15 @@ class RekapBiayaKapalController extends Controller
         // BiayaKapal details were filtered before calculating their totals above.
         $biayaKapals = $biayaKapals->filter(fn ($record) => $record instanceof BiayaKapal
             || $this->filterRecordLocation($record, $lokasi, $kapal, $voyage));
+        $truckingDetails = $biayaKapals->filter(fn ($record) => $record instanceof BiayaKapal)
+            ->flatMap(fn ($record) => $record->truckingDetails);
+        $truckingManifestIds = $truckingDetails->flatMap(fn ($detail) => $detail->no_bl ?? [])->unique()->values();
+        $truckingManifests = $truckingManifestIds->isEmpty() ? collect()
+            : \App\Models\Manifest::whereIn('id', $truckingManifestIds)->get();
+        $truckingService = new RekapTruckingService;
+        foreach ($truckingDetails as $detail) {
+            $detail->rekap_trucking_rows = $truckingService->rows($detail, $truckingManifests);
+        }
         if ($bl !== '') {
             $resolver = RekapBlService::forVoyage($kapal, $voyage);
             $filtered = collect();
@@ -1530,6 +1563,12 @@ class RekapBiayaKapalController extends Controller
             }
             if ($record->stuffingDetails->isNotEmpty()) {
                 $record->rekap_stuffing_rows = $this->allocateStuffingRows($record, $kapal, $voyage);
+            }
+            if ($record->truckingDetails->isNotEmpty()) {
+                $record->rekap_trucking_rows = $record->truckingDetails
+                    ->filter(fn ($detail) => $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal)
+                        && strtolower(trim($detail->voyage ?? '')) === strtolower(trim($voyage)))
+                    ->flatMap(fn ($detail) => $detail->rekap_trucking_rows ?? collect())->values();
             }
         }
 

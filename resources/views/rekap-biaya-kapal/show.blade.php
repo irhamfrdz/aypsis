@@ -292,6 +292,56 @@
                                                 @endif
                                             </td>
                                         </tr>
+                                        @if($item instanceof \App\Models\BiayaKapal && isset($item->rekap_trucking_rows) && $item->rekap_trucking_rows->isNotEmpty())
+                                            <tr class="bg-blue-50/30">
+                                                <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
+                                                    <div class="rounded-lg border border-blue-100 bg-white overflow-hidden">
+                                                        <div class="px-3 py-2 bg-blue-50 text-[11px] font-semibold uppercase tracking-wide text-blue-800">
+                                                            Rincian biaya trucking per kontainer ({{ $item->rekap_trucking_rows->where('jenis', 'kontainer')->count() }} kontainer, {{ $item->rekap_trucking_rows->where('jenis', 'cargo')->count() }} cargo)
+                                                        </div>
+                                                        <p class="px-3 py-2 text-[11px] text-gray-500">Subtotal dialokasikan dari total per ukuran yang tersimpan, termasuk adjustment kontainer. Adjustment bagian dan PPH dibagi proporsional; total mengikuti transaksi.</p>
+                                                        <div class="overflow-x-auto">
+                                                            <table class="w-full text-xs">
+                                                                <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">
+                                                                    <tr>
+                                                                        <th class="px-3 py-2 text-left">No. Kontainer / Cargo</th>
+                                                                        <th class="px-3 py-2 text-left">BL</th>
+                                                                        <th class="px-3 py-2 text-left">Ukuran</th>
+                                                                        <th class="px-3 py-2 text-left">Vendor</th>
+                                                                        <th class="px-3 py-2 text-right">Subtotal</th>
+                                                                        <th class="px-3 py-2 text-right">Adjustment Bagian</th>
+                                                                        <th class="px-3 py-2 text-right">PPH</th>
+                                                                        <th class="px-3 py-2 text-right">Total</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="divide-y divide-gray-100">
+                                                                    @foreach($item->rekap_trucking_rows as $truckingRow)
+                                                                        <tr>
+                                                                            <td class="px-3 py-2 font-semibold {{ $truckingRow['jenis'] === 'kontainer' ? 'font-mono text-gray-800' : 'text-blue-800' }}">{{ $truckingRow['label'] }}</td>
+                                                                            <td class="px-3 py-2">{{ $truckingRow['bl'] }}</td>
+                                                                            <td class="px-3 py-2">{{ $truckingRow['size'] === '-' ? '-' : $truckingRow['size'].'ft' }}</td>
+                                                                            <td class="px-3 py-2">{{ $truckingRow['vendor'] }}</td>
+                                                                            <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($truckingRow['subtotal'], 2, ',', '.') }}</td>
+                                                                            <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($truckingRow['adjustment'], 2, ',', '.') }}</td>
+                                                                            <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($truckingRow['pph'], 2, ',', '.') }}</td>
+                                                                            <td class="px-3 py-2 text-right font-semibold whitespace-nowrap">Rp {{ number_format($truckingRow['total'], 2, ',', '.') }}</td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                                <tfoot class="bg-blue-50 font-semibold">
+                                                                    <tr>
+                                                                        <td colspan="4" class="px-3 py-2 text-right">Total Trucking</td>
+                                                                        @foreach(['subtotal', 'adjustment', 'pph', 'total'] as $truckingField)
+                                                                            <td class="px-3 py-2 text-right whitespace-nowrap">Rp {{ number_format($item->rekap_trucking_rows->sum($truckingField), 2, ',', '.') }}</td>
+                                                                        @endforeach
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                         @if($item instanceof \App\Models\BiayaKapal && isset($item->rekap_opp_opt_rows) && $item->rekap_opp_opt_rows->isNotEmpty())
                                             <tr class="bg-purple-50/30">
                                                 <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 9 : 6 }}" class="px-6 pb-4 pt-2">
