@@ -300,7 +300,7 @@
                                                             Rincian biaya OPP/OPT per kontainer dan barang ({{ $item->rekap_opp_opt_rows->where('per_kontainer', true)->pluck('kontainer')->unique()->count() }} kontainer)
                                                         </div>
                                                         @if($item->rekap_opp_opt_rows->contains('per_kontainer', false))
-                                                            <p class="px-3 py-2 text-[11px] text-gray-500">Item tanpa manifest ditampilkan menurut jenis dan jumlah. Nomor kontainer dari voyage hanya dicocokkan bila jumlahnya sama dengan item invoice.</p>
+                                                            <p class="px-3 py-2 text-[11px] text-gray-500">Nomor kontainer yang cocok dengan kategori voyage ditampilkan. Sisa jumlah invoice yang belum memiliki nomor kontainer tampil terpisah.</p>
                                                         @endif
                                                         <table class="w-full text-xs">
                                                             <thead class="text-[10px] uppercase text-gray-500 bg-gray-50">

@@ -149,14 +149,17 @@ class RekapBiayaKapalController extends Controller
                         && ($isLcl ? ($container['category'] ?? 'standard') === 'LCL'
                             : ($container['category'] ?? 'standard') === 'standard' && $container['status'] === $status))->values()
                     : collect();
-                // Opslag stores only a category count. Assign numbers only when the
-                // voyage has exactly that many matching containers.
-                if ($matches->isNotEmpty() && $matches->count() === (int) $detail->jumlah
+                // Opslag stores category totals, while voyage records may identify
+                // only some of the billed containers. Show known numbers and leave
+                // any unmatched quantity visible as a separate row.
+                if ($matches->isNotEmpty() && $matches->count() <= (int) $detail->jumlah
                     && (float) $detail->jumlah === (float) (int) $detail->jumlah) {
+                    $unitCount = (int) $detail->jumlah;
+                    $baseUnitCents = intdiv($totalCents, $unitCount);
+                    $extraCents = $totalCents % $unitCount;
                     $allocated = 0;
                     foreach ($matches as $index => $container) {
-                        $amount = $index === $matches->count() - 1
-                            ? $totalCents - $allocated : (int) round($totalCents / $matches->count());
+                        $amount = $baseUnitCents + ($index < $extraCents ? 1 : 0);
                         $allocated += $amount;
                         $rows->push([
                             'kontainer' => $container['nomor_kontainer'],
@@ -166,6 +169,17 @@ class RekapBiayaKapalController extends Controller
                             'vendor' => $detail->vendor ?: '-', 'jumlah' => 1,
                             'per_kontainer' => true,
                             'tarif' => (float) $detail->tarif, 'biaya' => $amount / 100,
+                        ]);
+                    }
+                    $unmatchedCount = $unitCount - $matches->count();
+                    if ($unmatchedCount > 0) {
+                        $rows->push([
+                            'kontainer' => 'Sisa jumlah '.$detail->jenis_ukuran.' tanpa nomor kontainer',
+                            'bl' => '-', 'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
+                            'ukuran' => $detail->jenis_ukuran ?: '-', 'vendor' => $detail->vendor ?: '-',
+                            'jumlah' => $unmatchedCount, 'per_kontainer' => false,
+                            'tarif' => (float) $detail->tarif,
+                            'biaya' => ($totalCents - $allocated) / 100,
                         ]);
                     }
                     continue;
