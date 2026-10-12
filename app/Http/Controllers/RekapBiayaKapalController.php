@@ -531,7 +531,9 @@ class RekapBiayaKapalController extends Controller
 
             return $hasDetails ? $hasMatchingDetail : $parentLocation === $lokasi;
         }
-        if (isset($record->is_uang_jalan)) {
+        if (isset($record->is_surat_jalan_bongkaran_batam)) {
+            $location = 'batam';
+        } elseif (isset($record->is_uang_jalan)) {
             $location = $record->surat_jalan_bongkaran_batam_id ? 'batam'
                 : (($record->surat_jalan_id || $record->surat_jalan_bongkaran_id) ? 'jakarta' : null);
         } elseif (isset($record->is_tagihan_vendor)) {
@@ -619,6 +621,9 @@ class RekapBiayaKapalController extends Controller
                     $target->rekap_rit_items = $entries;
                 }
             }
+        } elseif (isset($record->is_surat_jalan_bongkaran_batam)) {
+            $sj = $record;
+            $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
         } elseif (isset($record->is_uang_jalan) || isset($record->is_tagihan_vendor)) {
             $sj = $record->suratJalan ?? $record->suratJalanBongkaran ?? $record->suratJalanBongkaranBatam;
             $add($record->apportioned, $resolver->transportRatio($sj, $kapal, $voyage, $bl));
@@ -883,11 +888,8 @@ class RekapBiayaKapalController extends Controller
             })
                 ->orWhereHas('suratJalanBongkaran', function ($q) use ($kapalLike, $voyage) {
                     $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
-                })
-                ->orWhereHas('suratJalanBongkaranBatam', function ($q) use ($kapalLike, $voyage) {
-                    $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
                 });
-        })->with(['suratJalan.prospeks', 'suratJalanBongkaran', 'suratJalanBongkaranBatam'])
+        })->with(['suratJalan.prospeks', 'suratJalanBongkaran'])
             ->where('status', '!=', 'dibatalkan')->get();
 
         foreach ($uangJalans as $uj) {
@@ -904,6 +906,30 @@ class RekapBiayaKapalController extends Controller
             $uj->jenis_biaya = 'Uang Jalan';
 
             $biayaKapals->push($uj);
+        }
+
+        // Surat Jalan Bongkaran Batam is a direct voyage cost source. It does not
+        // require a related Uang Jalan record to appear in this recap.
+        $suratJalanBongkaranBatams = \App\Models\SuratJalanBongkaranBatam::query()
+            ->whereRaw('LOWER(TRIM(nama_kapal)) = ?', [strtolower(trim($kapal))])
+            ->whereRaw('LOWER(TRIM(no_voyage)) = ?', [strtolower(trim($voyage))])
+            ->whereRaw('LOWER(TRIM(lokasi)) = ?', ['batam'])
+            ->get();
+        foreach ($suratJalanBongkaranBatams as $suratJalan) {
+            $nominal = $suratJalan->tanpa_uang_jalan ? 0 : (float) ($suratJalan->uang_jalan_nominal ?? 0);
+            $suratJalan->apportioned = [
+                'nominal' => $nominal,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $nominal,
+            ];
+            $suratJalan->is_surat_jalan_bongkaran_batam = true;
+            $suratJalan->nomor_invoice = $suratJalan->nomor_surat_jalan ?? '-';
+            $suratJalan->tanggal = $suratJalan->tanggal_surat_jalan;
+            $suratJalan->jenis_biaya = 'Surat Jalan Bongkaran Batam';
+            $suratJalan->klasifikasiBiaya = (object) ['nama' => 'Surat Jalan Bongkaran Batam'];
+
+            $biayaKapals->push($suratJalan);
         }
 
         // Resolve every saved surat jalan, including those beyond the first FK reference.

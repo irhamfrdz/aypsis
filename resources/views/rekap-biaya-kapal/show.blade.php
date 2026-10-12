@@ -197,6 +197,10 @@
                                                 @elseif(isset($item->is_pranota_uang_rit))
                                                     <span class="block"><strong>{{ $item->is_pranota_uang_rit_kenek ? 'Kenek' : 'Supir' }}:</strong> {{ $item->is_pranota_uang_rit_kenek ? $item->kenek_nama : $item->supir_nama }}</span>
                                                     <span class="block text-gray-500"><strong>Surat Jalan:</strong> {{ collect($item->rekap_rit_items)->pluck('nomor')->implode(', ') }}</span>
+                                                @elseif(isset($item->is_surat_jalan_bongkaran_batam))
+                                                    <span class="block"><strong>Pengirim:</strong> {{ $item->pengirim ?: '-' }}</span>
+                                                    <span class="block text-gray-500"><strong>Kontainer:</strong> {{ $item->no_kontainer ?: '-' }}</span>
+                                                    <span class="block text-gray-500"><strong>Supir:</strong> {{ $item->supir ?: '-' }}</span>
                                                 @else
                                                     {{ isset($item->buruhBatamDetails) && $item->buruhBatamDetails->isNotEmpty() ? 'BURUH BONGKAR BATAM' : ($item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-') }}
                                                 @endif
