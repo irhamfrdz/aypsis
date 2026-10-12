@@ -24,6 +24,38 @@ class RekapBiayaKapalController extends Controller
         ]));
     }
 
+    private function tkbmBlRatio(Collection $details, Collection $allContainers, Collection $selectedContainers): ?float
+    {
+        if ($allContainers->isEmpty() || $selectedContainers->isEmpty()) {
+            return null;
+        }
+
+        $containerRatio = $selectedContainers->count() / $allContainers->count();
+        $weightedTotal = 0;
+        $selectedWeight = 0;
+        foreach ($details as $detail) {
+            $weight = (float) $detail->subtotal;
+            if ($weight <= 0) {
+                continue;
+            }
+
+            $name = strtoupper((string) ($detail->pricelistTkbm?->nama_barang ?? ''));
+            $size = str_contains($name, '40') ? '40' : (str_contains($name, '20') ? '20' : null);
+            $status = str_contains($name, 'EMPTY') || str_contains($name, 'KOSONG') ? 'EMPTY'
+                : (str_contains($name, 'FULL') ? 'FULL' : null);
+            $matchingAll = $size && $status
+                ? $allContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)
+                : collect();
+            $ratio = $matchingAll->isNotEmpty()
+                ? $selectedContainers->filter(fn ($container) => $container['size'] === $size && $container['status'] === $status)->count() / $matchingAll->count()
+                : $containerRatio;
+            $weightedTotal += $weight;
+            $selectedWeight += $weight * $ratio;
+        }
+
+        return $weightedTotal > 0 ? min(1.0, $selectedWeight / $weightedTotal) : $containerRatio;
+    }
+
     private function allocateTkbmRows(BiayaKapal $record, Collection $containers, string $kapal, string $voyage): Collection
     {
         $details = $record->tkbmDetails->filter(fn ($detail) => $this->shipKey($detail->kapal ?? '') === $this->shipKey($kapal)
@@ -788,6 +820,8 @@ class RekapBiayaKapalController extends Controller
 
         if ($record instanceof BiayaKapal) {
             $parentRatio = $resolver->ratio($record, $bl);
+            $allTkbmContainers = $record->tkbmDetails->isNotEmpty() ? $resolver->containerDetails() : collect();
+            $selectedTkbmContainers = $record->tkbmDetails->isNotEmpty() ? $resolver->containerDetails((array) $bl) : collect();
             $hasDetails = false;
             foreach ($this->relations as $relation) {
                 $selected->setRelation($relation, collect());
@@ -803,7 +837,9 @@ class RekapBiayaKapalController extends Controller
                     }
                     $hasDetails = true;
                     $manifestShares = null;
-                    if ($relation === 'oppOptDetails' && $detail->manifests->isNotEmpty()) {
+                    if ($relation === 'tkbmDetails' && $resolver->ratio($detail, $bl) === null && $parentRatio === null) {
+                        $ratio = $this->tkbmBlRatio($detailGroup, $allTkbmContainers, $selectedTkbmContainers);
+                    } elseif ($relation === 'oppOptDetails' && $detail->manifests->isNotEmpty()) {
                         $manifests = $detail->manifests->unique('id')->values();
                         $manifestShares = $manifests->map(fn ($manifest) => $resolver->ratio($manifest, $bl));
                         $ratio = $manifestShares->every(fn ($share) => $share === null)
