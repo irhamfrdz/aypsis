@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Bl;
 use App\Models\Manifest;
+use App\Models\Prospek;
 use Illuminate\Support\Collection;
 
 class RekapBlService
@@ -113,6 +114,52 @@ class RekapBlService
 
             return $detail;
         });
+    }
+
+    /** Container numbers eligible for the standard Full/Empty Opslag categories. */
+    public function opslagContainerDetails(?Collection $prospects = null): Collection
+    {
+        $prospects ??= Prospek::whereIn('tipe', ['LCL', 'FCL Booking'])
+            ->whereIn('no_voyage', $this->manifests->pluck('no_voyage')->filter()->unique()->all())
+            ->get();
+        $ships = $this->manifests->pluck('nama_kapal')->map(fn ($ship) => self::ship((string) $ship))->unique();
+        $voyages = $this->manifests->pluck('no_voyage')->map(fn ($voyage) => strtolower(trim((string) $voyage)))->unique();
+        $excluded = $prospects->filter(fn ($prospect) => $ships->contains(self::ship((string) $prospect->nama_kapal))
+                && $voyages->contains(strtolower(trim((string) $prospect->no_voyage)))
+                && in_array(strtoupper(trim((string) $prospect->tipe)), ['LCL', 'FCL BOOKING']))
+            ->pluck('nomor_kontainer')->map(fn ($number) => strtoupper(preg_replace('/\s+/', '', trim((string) $number))))
+            ->filter()->flip();
+
+        $containers = collect();
+        foreach ($this->manifests as $manifest) {
+            $type = strtoupper(trim((string) $manifest->tipe_kontainer));
+            $sizeRaw = strtoupper((string) $manifest->size_kontainer);
+            if ($type === 'CARGO' || $sizeRaw === '') {
+                continue;
+            }
+            $size = str_contains($sizeRaw, '40') ? '40' : '20';
+            $barang = strtoupper((string) $manifest->nama_barang);
+            $status = str_contains($barang, 'EMPTY') || ($type === 'FCL'
+                && (empty($manifest->nomor_kontainer) || str_starts_with(strtoupper((string) $manifest->nomor_kontainer), 'CARGO-')))
+                ? 'EMPTY' : 'FULL';
+            foreach (preg_split('/[,;\r\n]+/', (string) $manifest->nomor_kontainer) as $rawNumber) {
+                $number = strtoupper(preg_replace('/\s+/', '', trim($rawNumber)));
+                if ($number === '' || in_array($number, ['-', 'N/A', 'NULL'])) {
+                    continue;
+                }
+                if (str_contains($type, 'LCL') || str_contains($type, 'BOOKING')) {
+                    $excluded->put($number, true);
+                }
+                $containers->put($number, [
+                    'nomor_kontainer' => $number,
+                    'nomor_bl' => $manifest->nomor_bl ?: '-',
+                    'size' => $size,
+                    'status' => $status,
+                ]);
+            }
+        }
+
+        return $containers->reject(fn ($container, $number) => $excluded->has($number))->sortKeys()->values();
     }
 
     /** Null means no BL link; zero means a link to a different BL. */

@@ -156,7 +156,8 @@ class RekapBiayaKapalController extends Controller
                             ? $totalCents - $allocated : (int) round($totalCents / $matches->count());
                         $allocated += $amount;
                         $rows->push([
-                            'kontainer' => $container['nomor_kontainer'], 'bl' => '-',
+                            'kontainer' => $container['nomor_kontainer'],
+                            'bl' => $container['nomor_bl'] ?? '-',
                             'jenis' => $detail->klasifikasi ?: 'OPP/OPT',
                             'ukuran' => $detail->jenis_ukuran ?: '-',
                             'vendor' => $detail->vendor ?: '-', 'jumlah' => 1,
@@ -1235,7 +1236,9 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals = $filtered;
         }
 
-        $tkbmContainers = ($resolver ?? RekapBlService::forVoyage($kapal, $voyage))->containerDetails($bls);
+        $catalogResolver = $resolver ?? RekapBlService::forVoyage($kapal, $voyage);
+        $tkbmContainers = $catalogResolver->containerDetails($bls);
+        $opslagContainers = null;
         foreach ($biayaKapals as $record) {
             if (! $record instanceof BiayaKapal) {
                 continue;
@@ -1244,7 +1247,11 @@ class RekapBiayaKapalController extends Controller
                 $record->rekap_tkbm_rows = $this->allocateTkbmRows($record, $tkbmContainers, $kapal, $voyage);
             }
             if ($record->oppOptDetails->isNotEmpty()) {
-                $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $tkbmContainers, $kapal, $voyage);
+                if ($record->oppOptDetails->contains(fn ($detail) => strtolower(trim((string) $detail->klasifikasi)) === 'opslag'
+                    && $detail->manifests->isEmpty())) {
+                    $opslagContainers ??= $catalogResolver->opslagContainerDetails();
+                }
+                $record->rekap_opp_opt_rows = $this->allocateOppOptRows($record, $opslagContainers ?? collect(), $kapal, $voyage);
             }
         }
 

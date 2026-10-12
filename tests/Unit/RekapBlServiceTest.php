@@ -41,6 +41,22 @@ class RekapBlServiceTest extends TestCase
         $this->assertSame(['20', '20', '40'], $resolver->containerDetails()->pluck('size')->all());
     }
 
+    public function test_opslag_container_catalog_excludes_lcl_and_fcl_booking(): void
+    {
+        $manifests = collect([
+            new Manifest(['nama_kapal' => 'KM TEST', 'no_voyage' => 'V01', 'nomor_bl' => '01', 'nomor_kontainer' => 'CONT-A', 'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL']),
+            new Manifest(['nama_kapal' => 'KM TEST', 'no_voyage' => 'V01', 'nomor_bl' => '02', 'nomor_kontainer' => 'CONT-B', 'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL']),
+            new Manifest(['nama_kapal' => 'KM TEST', 'no_voyage' => 'V01', 'nomor_bl' => '03', 'nomor_kontainer' => 'CONT-L', 'size_kontainer' => '20ft', 'tipe_kontainer' => 'LCL']),
+            new Manifest(['nama_kapal' => 'KM TEST', 'no_voyage' => 'V01', 'nomor_bl' => '04', 'nomor_kontainer' => 'CONT-F', 'size_kontainer' => '20ft', 'tipe_kontainer' => 'FCL']),
+        ]);
+        $prospects = collect([
+            new Prospek(['nama_kapal' => 'KM TEST', 'no_voyage' => 'V01', 'tipe' => 'FCL Booking', 'nomor_kontainer' => 'CONT-F']),
+        ]);
+        $rows = (new RekapBlService(collect(), $manifests))->opslagContainerDetails($prospects);
+        $this->assertSame(['CONT-A', 'CONT-B'], $rows->pluck('nomor_kontainer')->all());
+        $this->assertSame(['01', '02'], $rows->pluck('nomor_bl')->all());
+    }
+
     public function test_tkbm_invoice_adjustment_is_counted_once_and_evenly_allocated(): void
     {
         $invoice = (new \App\Models\BiayaKapal)->forceFill(['nominal' => 1100, 'ppn' => 0]);
