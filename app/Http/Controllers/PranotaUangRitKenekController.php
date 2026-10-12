@@ -7,6 +7,8 @@ use App\Models\PranotaUangRitKenek;
 use App\Models\PranotaUangRitKenekDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
+use App\Services\RekapBlService;
+use App\Services\RekapUangRitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -771,10 +773,59 @@ class PranotaUangRitKenekController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PranotaUangRitKenek $pranotaUangRitKenek)
+    public function show(Request $request, PranotaUangRitKenek $pranotaUangRitKenek)
     {
         // Load necessary relationships
-        $pranotaUangRitKenek->load(['suratJalan', 'creator', 'updater', 'approver']);
+        $pranotaUangRitKenek->load(['suratJalan', 'suratJalanBongkaran', 'creator', 'updater', 'approver']);
+
+        if ($request->filled('surat_jalan')) {
+            $data = $request->validate([
+                'surat_jalan' => 'required|string',
+                'bongkaran' => 'nullable|boolean',
+                'kapal' => 'required|string',
+                'voyage' => 'required|string',
+                'lokasi' => 'nullable|in:jakarta,batam',
+                'bl' => 'nullable',
+            ]);
+            $ritService = new RekapUangRitService;
+            $references = $ritService->references($pranotaUangRitKenek);
+            $number = trim($data['surat_jalan']);
+            $isBongkaran = $request->boolean('bongkaran');
+            abort_unless($references->contains(fn ($reference) => $reference['number'] === $number && $reference['bongkaran'] === $isBongkaran), 404);
+
+            $muat = SuratJalan::with('prospeks')
+                ->whereIn('no_surat_jalan', $references->where('bongkaran', false)->pluck('number')->unique())
+                ->get()->keyBy('no_surat_jalan');
+            $bongkaran = SuratJalanBongkaran::whereIn('nomor_surat_jalan',
+                $references->where('bongkaran', true)->pluck('number')->unique())
+                ->get()->keyBy('nomor_surat_jalan');
+            $entry = $ritService->entries($pranotaUangRitKenek, $muat, $bongkaran,
+                $data['kapal'], $data['voyage'], $data['lokasi'] ?? '')
+                ->first(fn ($item) => $item['nomor'] === $number
+                    && ($item['surat_jalan'] instanceof SuratJalanBongkaran) === $isBongkaran);
+            abort_unless($entry, 404);
+
+            $biaya = (float) $entry['biaya'];
+            $bls = collect((array) ($data['bl'] ?? []))->filter()->values()->all();
+            if ($bls) {
+                $ratio = RekapBlService::forVoyage($data['kapal'], $data['voyage'])
+                    ->transportRatio($entry['surat_jalan'], $data['kapal'], $data['voyage'], $bls);
+                abort_unless($ratio !== null && $ratio > 0, 404);
+                $biaya *= $ratio;
+            }
+
+            $suratJalan = $entry['surat_jalan'];
+            $referenceIndex = $references->search(fn ($reference) => $reference['number'] === $number
+                && $reference['bongkaran'] === $isBongkaran);
+            $kenekNames = array_map('trim', explode(',', (string) $pranotaUangRitKenek->kenek_nama));
+            $kenekNama = $suratJalan->kenek ?: ($kenekNames[$referenceIndex] ?? $kenekNames[0] ?? '-');
+            $kapal = $data['kapal'];
+            $voyage = $data['voyage'];
+
+            return view('pranota-uang-rit-kenek.surat-jalan-detail', compact(
+                'pranotaUangRitKenek', 'suratJalan', 'kenekNama', 'kapal', 'voyage', 'biaya'
+            ));
+        }
 
         // Parse multiple surat jalan from combined field (since we now store combined data)
         $suratJalanNomors = explode(', ', $pranotaUangRitKenek->no_surat_jalan);

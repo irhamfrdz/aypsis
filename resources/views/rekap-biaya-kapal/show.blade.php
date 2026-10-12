@@ -253,7 +253,20 @@
                                             </td>
                                             <td class="px-4 py-3 text-center whitespace-nowrap no-print">
                                                 @if(isset($item->is_pranota_uang_rit))
-                                                    <a href="{{ route($item->is_pranota_uang_rit_kenek ? 'pranota-uang-rit-kenek.show' : 'pranota-uang-rit.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota Uang Rit">
+                                                    @php
+                                                        $ritDetailUrl = isset($item->is_rit_detail) && $item->is_pranota_uang_rit_kenek
+                                                            ? route('pranota-uang-rit-kenek.show', [
+                                                                'pranotaUangRitKenek' => $item->id,
+                                                                'surat_jalan' => $item->rekap_rit_items[0]['nomor'],
+                                                                'bongkaran' => $item->rekapSuratJalan instanceof \App\Models\SuratJalanBongkaran ? 1 : 0,
+                                                                'kapal' => $kapal,
+                                                                'voyage' => $voyage,
+                                                                'lokasi' => $lokasi,
+                                                                'bl' => request()->query('bl', []),
+                                                            ])
+                                                            : route($item->is_pranota_uang_rit_kenek ? 'pranota-uang-rit-kenek.show' : 'pranota-uang-rit.show', $item->id);
+                                                    @endphp
+                                                    <a href="{{ $ritDetailUrl }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota Uang Rit">
                                                         <i class="fas fa-eye text-xs"></i>
                                                     </a>
                                                 @elseif(isset($item->is_pranota_ob_muat_temas) && $item->is_pranota_ob_muat_temas)
