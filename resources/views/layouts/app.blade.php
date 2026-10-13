@@ -490,16 +490,6 @@
 
                     </div>
                 </div>
-                <!-- Chatbox -->
-                @can('chatbox-view')
-                @php
-                    $isChatbox = Request::routeIs('chat.*');
-                @endphp
-                <a href="{{ route('chat.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isChatbox ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <span class="text-xs font-medium menu-text">Chatbox</span>
-                </a>
-                @endcan
-
                 <!-- Asuransi Tanda Terima -->
                 @can('asuransi-tanda-terima-view')
                 @php
@@ -535,7 +525,8 @@
                 {{-- Monitoring Section --}}
                 @php
                     $isLiveTracking = Request::routeIs('gps-tracking.*');
-                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || $isLiveTracking;
+                    $isChatbox = Request::routeIs('chat.*');
+                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || $isLiveTracking || $isChatbox;
                     $showMonitoringSection = (bool) $user;
                 @endphp
 
@@ -551,6 +542,13 @@
                         <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ $isLiveTracking ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
                         </a>
+
+                <!-- Chatbox -->
+                @can('chatbox-view')
+                <a href="{{ route('chat.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ $isChatbox ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                    <span class="text-xs font-medium menu-text">Chatbox</span>
+                </a>
+                @endcan
 
                         @if($user && $user->can('monitoring-cek-kendaraan-view'))
                             <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
