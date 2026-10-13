@@ -350,6 +350,16 @@
         <!-- Table Section with Sticky Header -->
         <div class="table-container max-h-screen hidden md:block">
             <table class="w-full table-fixed divide-y divide-gray-200">
+                @php
+                    $columnWidths = request('show_berhenti')
+                        ? [3, 5, 6, 14, 8, 6, 6, 8, 10, 8, 8, 18]
+                        : [3, 5, 7, 16, 9, 6, 7, 9, 11, 9, 18];
+                @endphp
+                <colgroup>
+                    @foreach($columnWidths as $columnWidth)
+                        <col style="width: {{ $columnWidth }}%">
+                    @endforeach
+                </colgroup>
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
@@ -442,7 +452,6 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider" title="Departemen">DEPT.</th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
                                 <span title="Kantor Cabang AYP">CABANG</span>
@@ -477,35 +486,6 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center justify-center space-x-1">
-                                <span>PENEMPATAN</span>
-                                <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'penempatan', 'direction' => 'asc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'penempatan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan A-Z">
-                                        <i class="fas fa-sort-up text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'penempatan', 'direction' => 'desc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'penempatan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan Z-A">
-                                        <i class="fas fa-sort-down text-xs"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </th>
-                        
-                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center justify-center space-x-1">
-                                <span>GROUP</span>
-                            </div>
-                        </th>
-                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center justify-center space-x-1">
-                                <span>SUB GROUP</span>
-                            </div>
-                        </th>
-
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
                                 <span>NO HP</span>
@@ -595,9 +575,6 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                                {{ $karyawan->departemen ? strtoupper($karyawan->departemen) : '-' }}
-                            </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->cabang)
                                     {{ strtoupper($karyawan->cabang) }}
                                 @else
@@ -609,41 +586,6 @@
                                     {{ strtoupper($karyawan->pekerjaan) }}
                                 @endif
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                                @if($karyawan->penempatan)
-                                    {{ strtoupper($karyawan->penempatan) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            
-                            @php
-                                $mainGroups = [];
-                                $subGroups = [];
-                                $grupData = is_string($karyawan->grup) ? json_decode($karyawan->grup, true) : $karyawan->grup;
-                                if (is_array($grupData)) {
-                                    foreach ($grupData as $g) {
-                                        $parts = explode(':', $g, 2);
-                                        if (!empty($parts[0]) && !in_array($parts[0], $mainGroups)) $mainGroups[] = $parts[0];
-                                        if (!empty($parts[1]) && !in_array($parts[1], $subGroups)) $subGroups[] = $parts[1];
-                                    }
-                                }
-                            @endphp
-                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
-                                @if(count($mainGroups) > 0)
-                                    {{ strtoupper(implode(', ', $mainGroups)) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
-                                @if(count($subGroups) > 0)
-                                    {{ strtoupper(implode(', ', $subGroups)) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
@@ -671,15 +613,13 @@
                                         <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium"
                                            title="Checklist Kelengkapan Crew">
-                                            <i class="fas fa-clipboard-check" aria-hidden="true"></i>
-                                            <span class="sr-only">Checklist Kelengkapan Crew</span>
+                                            Checklist
                                         </a>
                                         <span class="text-gray-300">|</span>
                                         <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}"
                                            class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                            title="Checklist Baru (Simplified)">
-                                            <i class="fas fa-list-check" aria-hidden="true"></i>
-                                            <span class="sr-only">Checklist Baru</span>
+                                            Baru
                                         </a>
                                         <span class="text-gray-300">|</span>
                                     @endif
@@ -688,8 +628,7 @@
                                     <a href="{{ route('master.karyawan.show', $karyawan->id) }}"
                                        class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                                        title="Lihat Detail">
-                                        <i class="fas fa-eye" aria-hidden="true"></i>
-                                        <span class="sr-only">Lihat Detail</span>
+                                        Lihat
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -698,8 +637,7 @@
                                        target="_blank"
                                        class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                        title="Cetak Data">
-                                        <i class="fas fa-print" aria-hidden="true"></i>
-                                        <span class="sr-only">Cetak Data</span>
+                                        Cetak
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -707,8 +645,7 @@
                                     <a href="{{ route('master.karyawan.edit', $karyawan->id) }}"
                                        class="text-amber-600 hover:text-amber-800 hover:underline font-medium"
                                        title="Edit Data">
-                                        <i class="fas fa-pen-to-square" aria-hidden="true"></i>
-                                        <span class="sr-only">Edit Data</span>
+                                        Edit
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -717,8 +654,7 @@
                                             onclick="showAuditLog('{!! addslashes(get_class($karyawan)) !!}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
-                                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
-                                        <span class="sr-only">Riwayat Perubahan</span>
+                                        Riwayat
                                     </button>
                                     <span class="text-gray-300">|</span>
 
@@ -727,15 +663,14 @@
                                             onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
                                             class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer"
                                             title="Hapus Data">
-                                        <i class="fas fa-trash-can" aria-hidden="true"></i>
-                                        <span class="sr-only">Hapus Data</span>
+                                        Hapus
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '16' : '15' }}" class="px-6 py-2 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '12' : '11' }}" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-6">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -790,16 +725,8 @@
 
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-gray-600 mb-4">
                         <div>
-                            <span class="block text-gray-400 mb-0.5">Departemen</span>
-                            <span class="font-medium">{{ $karyawan->departemen ? strtoupper($karyawan->departemen) : '-' }}</span>
-                        </div>
-                        <div>
                             <span class="block text-gray-400 mb-0.5">Pekerjaan</span>
                             <span class="font-medium">{{ $karyawan->pekerjaan && $karyawan->pekerjaan !== '0' ? strtoupper($karyawan->pekerjaan) : '-' }}</span>
-                        </div>
-                        <div>
-                            <span class="block text-gray-400 mb-0.5">Penempatan</span>
-                            <span class="font-medium">{{ $karyawan->penempatan ? strtoupper($karyawan->penempatan) : '-' }}</span>
                         </div>
                         <div>
                             <span class="block text-gray-400 mb-0.5">Kantor Cabang</span>
@@ -821,27 +748,27 @@
                         @endif
                     </div>
 
-                    <div class="flex items-center justify-between border-t border-gray-100 pt-3 mt-2">
-                        <div class="flex gap-4">
+                    <div class="karyawan-mobile-actions border-t border-gray-100 pt-3 mt-2">
+                        <div class="contents">
                             <!-- View -->
                             <a href="{{ route('master.karyawan.show', $karyawan->id) }}" class="text-blue-600 hover:text-blue-800" title="Lihat">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                Lihat
                             </a>
                             <!-- Edit -->
                             <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" class="text-amber-600 hover:text-amber-800" title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Edit
                             </a>
                             <!-- History -->
                             <button onclick="showAuditLog('{!! addslashes(get_class($karyawan)) !!}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')" class="text-purple-600 hover:text-purple-800" title="Riwayat">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Riwayat
                             </button>
                             <!-- Print -->
                              <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" target="_blank" class="text-green-600 hover:text-green-800" title="Cetak">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                Cetak
                             </a>
                         </div>
                         
-                        <div class="flex items-center gap-3">
+                        <div class="contents">
                              @if(strtolower($karyawan->divisi) === 'abk')
                                 <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}" class="text-green-600 hover:text-green-800 text-xs font-medium bg-green-50 px-2 py-1 rounded" title="Checklist Baru">
                                     Checklist
@@ -849,7 +776,7 @@
                             @endif
                             <!-- Delete -->
                             <button onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')" class="text-red-600 hover:text-red-800" title="Hapus">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                Hapus
                             </button>
                         </div>
                     </div>
@@ -1737,7 +1664,7 @@ $(document).ready(function() {
 
 .table-container th,
 .table-container td {
-    padding: 0.75rem 0.375rem;
+    padding: 0.625rem 0.5rem;
     white-space: normal;
     line-height: 1.5;
     vertical-align: middle;
@@ -1752,26 +1679,21 @@ $(document).ready(function() {
 
 .table-container td {
     overflow-wrap: anywhere;
+    font-size: 11px;
 }
 
-.table-container th:first-child {
-    width: 3%;
+.table-container th:nth-child(3),
+.table-container th:nth-child(4),
+.table-container th:nth-child(5),
+.table-container th:nth-child(8) {
+    text-align: left;
 }
 
-.table-container th:nth-child(2) {
-    width: 5%;
-}
-
-.table-container th:nth-child(4) {
-    width: 14%;
-}
-
-.table-container th:nth-child(13) {
-    width: 9%;
-}
-
-.table-container th:last-child {
-    width: 9%;
+.table-container th:nth-child(3) > .flex,
+.table-container th:nth-child(4) > .flex,
+.table-container th:nth-child(5) > .flex,
+.table-container th:nth-child(8) > .flex {
+    align-items: flex-start;
 }
 
 .table-container th > .flex {
@@ -1797,7 +1719,8 @@ $(document).ready(function() {
 
 .table-container td:nth-child(3),
 .table-container td:nth-child(4),
-.table-container td:nth-child(5) {
+.table-container td:nth-child(5),
+.table-container td:nth-child(8) {
     text-align: left;
 }
 
@@ -1806,7 +1729,8 @@ $(document).ready(function() {
     color: rgb(31 41 55);
 }
 
-.table-container td:nth-child(13) {
+.table-container td:nth-child(9),
+.table-container td:nth-child(10) {
     font-variant-numeric: tabular-nums;
 }
 
@@ -1818,37 +1742,51 @@ $(document).ready(function() {
     max-width: 100%;
 }
 
-.karyawan-actions {
+.karyawan-actions,
+.karyawan-mobile-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.25rem;
+    gap: 0.375rem;
     justify-content: center;
-    justify-items: center;
+    align-items: stretch;
+}
+
+.karyawan-mobile-actions > div {
+    display: contents;
 }
 
 .karyawan-actions > a,
-.karyawan-actions > button {
+.karyawan-actions > button,
+.karyawan-mobile-actions a,
+.karyawan-mobile-actions button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 1.5rem;
-    height: 1.5rem;
-    border: 1px solid rgb(229 231 235);
+    min-width: 0;
+    min-height: 1.625rem;
+    padding: 0.25rem 0.125rem;
+    border: 1px solid currentColor;
     border-radius: 0.375rem;
     background-color: white;
-    font-size: 0.6875rem;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.25;
     text-decoration: none;
 }
 
 .karyawan-actions > a:hover,
-.karyawan-actions > button:hover {
+.karyawan-actions > button:hover,
+.karyawan-mobile-actions a:hover,
+.karyawan-mobile-actions button:hover {
     background-color: rgb(243 244 246);
     border-color: currentColor;
 }
 
 .karyawan-actions > a:focus-visible,
-.karyawan-actions > button:focus-visible {
+.karyawan-actions > button:focus-visible,
+.karyawan-mobile-actions a:focus-visible,
+.karyawan-mobile-actions button:focus-visible {
     outline: 2px solid rgb(59 130 246);
     outline-offset: 2px;
 }
@@ -1865,11 +1803,12 @@ $(document).ready(function() {
     }
 
     .table-container th {
-        font-size: 9px;
+        font-size: 10px;
     }
 
-    .karyawan-actions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .karyawan-actions > a,
+    .karyawan-actions > button {
+        font-size: 9px;
     }
 }
 
