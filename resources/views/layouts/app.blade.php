@@ -140,16 +140,93 @@
         .clean-table tbody tr:hover {
             background-color: #f8f9fa;
         }
+
+        /* Consistent navigation across all permission-based menu groups. */
+        #sidebar {
+            width: min(288px, 100vw);
+            background: #fff;
+            border-right: 1px solid #e2e8f0;
+            border-radius: 0;
+            box-shadow: 4px 0 24px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        #sidebar nav {
+            min-height: 0;
+            padding: 12px 10px 24px;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+            overscroll-behavior: contain;
+        }
+
+        #sidebar nav > * { margin-top: 0; margin-bottom: 4px; }
+        #sidebar nav > div { padding-top: 8px; }
+        #sidebar nav > div + div { border-top: 1px solid #f1f5f9; }
+
+        #sidebar nav a,
+        #sidebar nav button {
+            min-height: 36px;
+            margin: 2px 0;
+            padding: 8px 10px;
+            border-radius: 7px;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: left;
+            box-shadow: none;
+            transition: background-color 150ms, color 150ms;
+        }
+
+        #sidebar nav a:hover,
+        #sidebar nav button:hover { background: #f1f5f9; color: #1e40af; }
+        #sidebar nav a:focus-visible,
+        #sidebar nav button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+        #sidebar nav span { font-size: inherit; }
+        #sidebar nav svg { flex-shrink: 0; }
+        #sidebar .menu-text { white-space: normal; overflow: visible; }
+        #sidebar nav .truncate { white-space: normal; overflow: visible; }
+        #sidebar nav > div > button { font-weight: 600; color: #334155; }
+        #sidebar nav button[aria-expanded="true"] { background: #f8fafc; color: #1d4ed8; }
+        #sidebar nav .dropdown-content {
+            margin: 4px 0 6px 12px;
+            padding-left: 8px;
+            border-left: 1px solid #e2e8f0;
+        }
+        #sidebar .dropdown-content > div { margin-left: 0; margin-right: 0; margin-bottom: 4px; }
+        #sidebar nav [aria-current="page"],
+        #sidebar nav .sidebar-active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        #sidebar nav .sidebar-active::before { background: #2563eb; height: 18px; }
+        #sidebar .sidebar-search-highlight { padding: 0; animation: none; }
+        .sidebar-search-area { padding: 16px; border-bottom: 1px solid #e2e8f0; }
+        .sidebar-brand { padding: 20px 16px 16px; }
+        #page-content { min-width: 0; }
+
+        @media (min-width: 1024px) {
+            #sidebar { top: 0; position: relative; flex-shrink: 0; height: 100%; }
+            .sidebar-search-area { padding-top: 0; }
+            .page-content-with-sidebar { margin-left: 0; min-width: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #sidebar, #sidebar * { transition: none !important; animation: none !important; }
+        }
     </style>
     @stack('styles')
 </head>
 <body class="bg-gray-100 flex flex-col h-screen">
+    @php
+        $user = Auth::user();
+        $hasKaryawan = $user && $user->karyawan;
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isSupirRoute = Request::routeIs('supir.*');
+        $showSidebar = ($hasKaryawan || $isAdmin || $user) && !$isSupirRoute && !isset($hideSidebar);
+    @endphp
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div class="px-6 py-4 flex justify-between items-center">
             <div class="flex items-center">
                 @if($showSidebar ?? true)
-                <button id="mobile-menu-button" class="lg:hidden mr-3 p-1 text-gray-600 hover:text-gray-900 focus:outline-none">
+                <button type="button" id="mobile-menu-button" aria-label="Buka menu navigasi" aria-controls="sidebar" aria-expanded="false" class="lg:hidden mr-3 p-1 text-gray-600 hover:text-gray-900 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -207,22 +284,12 @@
 
     <!-- Main Container -->
     <div class="flex flex-1 overflow-hidden">
-    @php
-        $user = Auth::user();
-        $hasKaryawan = $user && $user->karyawan;
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-        
-        // Hide sidebar for supir routes or if specifically requested
-        $isSupirRoute = Request::routeIs('supir.*');
-        $showSidebar = ($hasKaryawan || $isAdmin || $user) && !$isSupirRoute && !isset($hideSidebar);
-    @endphp
-
     @if($showSidebar)
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden transition-opacity duration-300"></div>
     
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-80 lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col lg:top-16 rounded-r-2xl lg:rounded-r-2xl overflow-y-auto">
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
             <!-- Mobile Header with close button -->
             <div class="lg:hidden flex items-center justify-between p-4 bg-blue-600 shadow-md flex-shrink-0 sticky top-0 z-10">
                 <div class="flex items-center text-white">
@@ -236,7 +303,7 @@
                         <p class="text-xs opacity-90 font-medium">Management System</p>
                     </div>
                 </div>
-                <button id="close-sidebar" class="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors">
+                <button type="button" id="close-sidebar" aria-label="Tutup menu navigasi" class="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -244,8 +311,8 @@
             </div>
 
             <!-- Sidebar Header (Desktop Only) -->
-            <div class="hidden lg:block p-6 border-b border-gray-300 flex-shrink-0 bg-white rounded-tr-2xl shadow-md">
-                <div class="flex items-center text-gray-800 mb-4">
+            <div class="hidden lg:block sidebar-brand flex-shrink-0">
+                <div class="flex items-center text-gray-800">
                     <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -257,7 +324,11 @@
                     </div>
                 </div>
 
-                <!-- Sidebar Search -->
+            </div>
+
+            <!-- Search remains available while the menu scrolls, including on mobile. -->
+            <div class="sidebar-search-area flex-shrink-0">
+                <label for="sidebar-search" class="sr-only">Cari menu navigasi</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,10 +338,12 @@
                     <input type="text"
                            id="sidebar-search"
                            placeholder="Cari menu..."
-                           class="sidebar-search-input w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors duration-200"
+                           class="sidebar-search-input w-full pl-10 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors duration-200"
                            autocomplete="off">
                     <button type="button"
                             id="clear-search"
+                            aria-label="Hapus pencarian menu"
+                            disabled
                             class="sidebar-clear-btn absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 opacity-0 pointer-events-none transition-opacity duration-200">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -280,7 +353,7 @@
             </div>
 
             <!-- Navigation Menu -->
-            <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
+            <nav id="sidebar-navigation" aria-label="Navigasi utama" class="sidebar-scroll flex-1 overflow-y-auto">
                 @php
                     $user = Auth::user();
                     $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
@@ -338,7 +411,8 @@
                 @endcan
 
                 <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}" target="_blank" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                <a href="{{ route('dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                    <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
                     <span class="text-xs font-medium menu-text">Dashboard</span>
                 </a>
 
@@ -2998,12 +3072,13 @@
 </div>
 @endif
 
+                <p id="sidebar-empty-search" role="status" hidden class="px-3 py-6 text-sm text-gray-500 text-center">Menu tidak ditemukan. Coba kata kunci lain.</p>
             </nav>
         </div>
     @endif
 
     <!-- Page Content -->
-    <div class="flex-1 overflow-auto {{ $showSidebar ? 'lg:ml-64' : '' }}">
+    <div id="page-content" class="flex-1 overflow-auto {{ $showSidebar ? 'page-content-with-sidebar' : '' }}">
         <div class="p-6">
             @yield('content')
         </div>
@@ -3021,340 +3096,165 @@
 
     {{-- Skrip khusus untuk layout ini, seperti dropdown menu --}}
     <script>
-        // Fungsi untuk menangani toggle dropdown
-        function setupDropdown(buttonId, contentId) {
-            const toggleButton = document.getElementById(buttonId);
-            const content = document.getElementById(contentId);
+        // Sidebar navigation keeps the existing routes and permission checks.
+        const sidebar = document.getElementById('sidebar');
+        const nav = document.getElementById('sidebar-navigation');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainContent = document.getElementById('page-content');
+        const desktopSidebar = window.matchMedia('(min-width: 1024px)');
+        let sidebarOpen = false;
 
-            if (toggleButton && content) {
-                const icon = toggleButton.querySelector('.dropdown-arrow');
-                toggleButton.addEventListener('click', function() {
-                    const isVisible = content.style.display === 'block';
-                    content.style.display = isVisible ? 'none' : 'block';
-                    if(icon) icon.classList.toggle('rotate-180', !isVisible);
-                });
-            }
+        function setDropdown(toggle, content, expanded) {
+            content.style.display = expanded ? 'block' : 'none';
+            toggle.setAttribute('aria-expanded', String(expanded));
+            toggle.querySelector('.dropdown-arrow')?.classList.toggle('rotate-180', expanded);
         }
 
-        // Profile dropdown functionality
-        const profileDropdownButton = document.getElementById('profileDropdownButton');
-        const profileDropdown = document.getElementById('profileDropdown');
+        const dropdowns = nav ? [...nav.querySelectorAll('button[id$="-toggle"]')].map(toggle => {
+            const content = document.getElementById(toggle.id.replace(/-toggle$/, '-content'));
+            if (!content) return null;
+            toggle.type = 'button';
+            toggle.setAttribute('aria-controls', content.id);
+            setDropdown(toggle, content, content.style.display === 'block');
+            toggle.addEventListener('click', () => setDropdown(toggle, content, toggle.getAttribute('aria-expanded') !== 'true'));
+            return { toggle, content };
+        }).filter(Boolean) : [];
 
-        profileDropdownButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('hidden');
+        nav?.querySelectorAll('a').forEach(link => {
+            const active = [...link.classList].some(name => /^bg-(blue|green|purple|orange|indigo|pink|red|yellow|teal)-50$/.test(name))
+                || new URL(link.href, location.href).pathname === location.pathname;
+            if (active) {
+                link.classList.add('sidebar-active');
+                link.setAttribute('aria-current', 'page');
+                dropdowns.forEach(({ toggle, content }) => {
+                    if (content.contains(link)) setDropdown(toggle, content, true);
+                });
+            }
+            link.title = link.textContent.trim();
+            link.addEventListener('click', () => {
+                if (!desktopSidebar.matches) setSidebarOpen(false);
+            });
         });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!profileDropdownButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+        function setSidebarOpen(open, restoreFocus = true) {
+            if (!sidebar) return;
+            sidebarOpen = open && !desktopSidebar.matches;
+            sidebar.classList.toggle('-translate-x-full', !sidebarOpen);
+            sidebar.inert = !desktopSidebar.matches && !sidebarOpen;
+            overlay?.classList.toggle('hidden', !sidebarOpen);
+            mobileMenuButton?.setAttribute('aria-expanded', String(sidebarOpen));
+            if (mainContent) mainContent.inert = sidebarOpen;
+            if (sidebarOpen) closeSidebar?.focus();
+            else if (restoreFocus && !desktopSidebar.matches) mobileMenuButton?.focus();
+        }
+
+        mobileMenuButton?.addEventListener('click', () => setSidebarOpen(true));
+        closeSidebar?.addEventListener('click', () => setSidebarOpen(false));
+        overlay?.addEventListener('click', () => setSidebarOpen(false));
+        desktopSidebar.addEventListener('change', () => setSidebarOpen(false, false));
+        setSidebarOpen(false, false);
+
+        document.addEventListener('keydown', event => {
+            if (!sidebarOpen) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setSidebarOpen(false);
+            }
+            if (event.key === 'Tab') {
+                const focusable = [...sidebar.querySelectorAll('a, button, input')]
+                    .filter(element => !element.disabled && element.getClientRects().length);
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last?.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first?.focus();
+                }
+            }
+        });
+
+        // Profile controls are absent on guest pages.
+        const profileDropdownButton = document.getElementById('profileDropdownButton');
+        const profileDropdown = document.getElementById('profileDropdown');
+        profileDropdownButton?.addEventListener('click', event => {
+            event.stopPropagation();
+            profileDropdown?.classList.toggle('hidden');
+        });
+        document.addEventListener('click', event => {
+            if (profileDropdownButton && profileDropdown
+                && !profileDropdownButton.contains(event.target) && !profileDropdown.contains(event.target)) {
                 profileDropdown.classList.add('hidden');
             }
         });
 
-        // Mobile menu functionality
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const closeSidebar = document.getElementById('close-sidebar');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const mainContent = document.querySelector('main') || document.querySelector('.flex.flex-1');
-
-        function openSidebar() {
-            if (sidebar) {
-                sidebar.classList.remove('-translate-x-full');
-            }
-            if (overlay) {
-                overlay.classList.remove('hidden');
-            }
-            // Only prevent main content scroll, not sidebar scroll
-            if (mainContent) {
-                mainContent.style.overflow = 'hidden';
-            }
-            // Prevent background scroll on mobile
-            document.documentElement.style.overflow = 'hidden';
-        }
-
-        function closeSidebarMenu() {
-            if (sidebar) {
-                sidebar.classList.add('-translate-x-full');
-            }
-            if (overlay) {
-                overlay.classList.add('hidden');
-            }
-            // Restore main content scroll
-            if (mainContent) {
-                mainContent.style.overflow = '';
-            }
-            // Restore background scroll
-            document.documentElement.style.overflow = '';
-        }
-
-        if (mobileMenuButton) {
-            mobileMenuButton.addEventListener('click', openSidebar);
-        }
-
-        if (closeSidebar) {
-            closeSidebar.addEventListener('click', closeSidebarMenu);
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', closeSidebarMenu);
-        }
-
-        // Close sidebar when clicking on a menu item (on mobile)
-        if (sidebar && window.innerWidth < 1024) {
-            const menuLinks = sidebar.querySelectorAll('a');
-            menuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    setTimeout(closeSidebarMenu, 150); // Small delay for better UX
-                });
-            });
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                // Reset everything on desktop
-                if (mainContent) mainContent.style.overflow = '';
-                document.documentElement.style.overflow = '';
-                if (overlay) overlay.classList.add('hidden');
-            }
-        });
-
-        setupDropdown('master-menu-toggle', 'master-menu-content');
-        setupDropdown('master-umum-toggle', 'master-umum-content');
-        setupDropdown('master-akun-toggle', 'master-akun-content');
-        setupDropdown('master-penjualan-toggle', 'master-penjualan-content');
-        setupDropdown('master-karyawan-toggle', 'master-karyawan-content');
-        setupDropdown('master-tarif-toggle', 'master-tarif-content');
-        setupDropdown('master-pemasok-toggle', 'master-pemasok-content');
-        setupDropdown('order-menu-toggle', 'order-menu-content');
-        setupDropdown('input-menu-toggle', 'input-menu-content');
-        setupDropdown('aktivitas-menu-toggle', 'aktivitas-menu-content');
-        setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');
-        setupDropdown('memo-menu-toggle', 'memo-menu-content');
-        setupDropdown('surat-jalan-menu-toggle', 'surat-jalan-menu-content');
-        setupDropdown('surat-jalan-bongkaran-menu-toggle', 'surat-jalan-bongkaran-menu-content');
-        setupDropdown('rit-menu-toggle', 'rit-menu-content');
-        setupDropdown('aktivitas-kontainer-menu-toggle', 'aktivitas-kontainer-menu-content');
-        setupDropdown('aktivitas-aktivitas-kontainer-menu-toggle', 'aktivitas-aktivitas-kontainer-menu-content');
-        setupDropdown('sewa-menu-toggle', 'sewa-menu-content');
-        setupDropdown('cat-menu-toggle', 'cat-menu-content');
-        setupDropdown('aktivitas-kapal-menu-toggle', 'aktivitas-kapal-menu-content');
-        setupDropdown('aktivitas-pelabuhan-menu-toggle', 'aktivitas-pelabuhan-menu-content');
-        setupDropdown('approval-tugas-menu-toggle', 'approval-tugas-menu-content');
-        setupDropdown('aktivitas-lain-menu-toggle', 'aktivitas-lain-menu-content');
-        setupDropdown('approval-input-menu-toggle', 'approval-input-menu-content');
-        setupDropdown('uang-jalan-supir-menu-toggle', 'uang-jalan-supir-menu-content');
-        setupDropdown('permohonan-memo-menu-toggle', 'permohonan-memo-menu-content');
-        setupDropdown('pranota-supir-menu-toggle', 'pranota-supir-menu-content');
-        setupDropdown('aktiva-menu-toggle', 'aktiva-menu-content');
-        setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
-        setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
-        setupDropdown('report-menu-toggle', 'report-menu-content');
-        setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
-        setupDropdown('absensi-menu-toggle', 'absensi-menu-content');
-        setupDropdown('data-karyawan-menu-toggle', 'data-karyawan-menu-content');
-        setupDropdown('payroll-menu-toggle', 'payroll-menu-content');
-
-        // Sidebar search functionality
+        // Search literal text without replacing labels, SVGs, or dropdown arrows.
         const sidebarSearch = document.getElementById('sidebar-search');
         const clearSearch = document.getElementById('clear-search');
-        const nav = document.querySelector('nav');
-
+        const emptySearch = document.getElementById('sidebar-empty-search');
         if (sidebarSearch && nav) {
-            // Function to filter menu items
-            function filterMenuItems(searchTerm) {
-                const menuItems = nav.querySelectorAll('a, button');
-                const dropdownContents = nav.querySelectorAll('.dropdown-content');
-                let hasVisibleItems = false;
+            const items = [...nav.querySelectorAll('a, button')];
+            const groups = [...nav.querySelectorAll('div')].filter(group => group.querySelector('a, button'));
+            let savedDisplay = null;
+            let savedExpanded = null;
 
-                // Reset highlights first
-                menuItems.forEach(item => removeHighlight(item));
-                dropdownContents.forEach(content => {
-                    const subItems = content.querySelectorAll('a');
-                    subItems.forEach(subItem => removeHighlight(subItem));
-                });
-
-                // If search is empty, restore original state
-                if (searchTerm === '') {
-                    restoreOriginalState();
+            function filterMenuItems() {
+                const term = sidebarSearch.value.trim().toLocaleLowerCase();
+                if (term && !savedDisplay) {
+                    savedDisplay = new Map([...items, ...groups].map(element => [element, element.style.display]));
+                    savedExpanded = new Map(dropdowns.map(({ toggle }) => [toggle, toggle.getAttribute('aria-expanded') === 'true']));
+                }
+                clearSearch?.classList.toggle('opacity-0', !term);
+                clearSearch?.classList.toggle('pointer-events-none', !term);
+                if (clearSearch) clearSearch.disabled = !term;
+                if (!term) {
+                    savedDisplay?.forEach((display, element) => { element.style.display = display; });
+                    dropdowns.forEach(({ toggle, content }) => {
+                        if (savedExpanded) setDropdown(toggle, content, savedExpanded.get(toggle));
+                    });
+                    savedDisplay = null;
+                    savedExpanded = null;
+                    if (emptySearch) emptySearch.hidden = true;
                     return;
                 }
 
-                menuItems.forEach(item => {
-                    const text = item.textContent.toLowerCase().trim();
-                    const isVisible = text.includes(searchTerm.toLowerCase());
-
-                    if (item.tagName === 'A' || item.tagName === 'BUTTON') {
-                        // Main menu items (Dashboard, Master Data, etc.)
-                        if (isVisible) {
-                            item.style.display = '';
-                            highlightText(item, searchTerm);
-                            hasVisibleItems = true;
-
-                            // If this is a dropdown toggle, show its content
-                            const contentId = item.id?.replace('-toggle', '-content');
-                            if (contentId) {
-                                const content = document.getElementById(contentId);
-                                if (content) {
-                                    content.style.display = 'block';
-                                    // Show all submenu items
-                                    const subItems = content.querySelectorAll('a');
-                                    subItems.forEach(subItem => {
-                                        subItem.style.display = '';
-                                        const subText = subItem.textContent.toLowerCase().trim();
-                                        if (subText.includes(searchTerm.toLowerCase())) {
-                                            highlightText(subItem, searchTerm);
-                                        }
-                                    });
-                                }
-                            }
-                        } else {
-                            item.style.display = 'none';
-
-                            // Hide dropdown content if toggle is hidden
-                            const contentId = item.id?.replace('-toggle', '-content');
-                            if (contentId) {
-                                const content = document.getElementById(contentId);
-                                if (content) {
-                                    content.style.display = 'none';
-                                }
-                            }
-                        }
-                    }
+                const matches = new Set(items.filter(item => item.textContent.toLocaleLowerCase().includes(term)));
+                const matchedGroups = dropdowns.filter(({ toggle }) => matches.has(toggle));
+                items.forEach(item => {
+                    const visible = matches.has(item) || matchedGroups.some(({ content }) => content.contains(item));
+                    item.style.display = visible ? '' : 'none';
                 });
-
-                // Handle dropdown contents separately
-                dropdownContents.forEach(content => {
-                    const subItems = content.querySelectorAll('a');
-                    let hasVisibleSubItems = false;
-
-                    subItems.forEach(subItem => {
-                        const text = subItem.textContent.toLowerCase().trim();
-                        const isVisible = text.includes(searchTerm.toLowerCase());
-
-                        if (isVisible) {
-                            subItem.style.display = '';
-                            highlightText(subItem, searchTerm);
-                            hasVisibleSubItems = true;
-                        } else {
-                            subItem.style.display = 'none';
-                        }
-                    });
-
-                    // Show/hide dropdown content based on visible subitems
-                    if (hasVisibleSubItems) {
-                        content.style.display = 'block';
-                        // Also show the parent toggle
-                        const toggleId = content.id?.replace('-content', '-toggle');
-                        if (toggleId) {
-                            const toggle = document.getElementById(toggleId);
-                            if (toggle) {
-                                toggle.style.display = '';
-                                if (toggle.textContent.toLowerCase().trim().includes(searchTerm.toLowerCase())) {
-                                    highlightText(toggle, searchTerm);
-                                }
-                            }
-                        }
-                    }
+                // Children are processed first so every matching menu has visible parents.
+                [...dropdowns].reverse().forEach(({ toggle, content }) => {
+                    const visible = [...content.querySelectorAll('a, button')].some(item => item.style.display !== 'none');
+                    toggle.style.display = visible || matches.has(toggle) ? '' : 'none';
+                    setDropdown(toggle, content, visible);
                 });
-
-                // Show clear button when there's search text
-                if (clearSearch) {
-                    if (searchTerm.length > 0) {
-                        clearSearch.classList.remove('opacity-0', 'pointer-events-none');
-                        clearSearch.classList.add('opacity-100', 'pointer-events-auto');
+                groups.forEach(group => {
+                    const visible = [...group.querySelectorAll('a, button')].some(item => item.style.display !== 'none');
+                    if (group.classList.contains('dropdown-content')) {
+                        group.style.display = visible ? 'block' : 'none';
                     } else {
-                        clearSearch.classList.add('opacity-0', 'pointer-events-none');
-                        clearSearch.classList.remove('opacity-100', 'pointer-events-auto');
-                    }
-                }
-            }
-
-            function highlightText(element, searchTerm) {
-                const text = element.textContent;
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                const highlightedText = text.replace(regex, '<span class="sidebar-search-highlight">$1</span>');
-                element.innerHTML = highlightedText;
-            }
-
-            function removeHighlight(element) {
-                // Remove highlight spans and restore original text
-                const highlights = element.querySelectorAll('.sidebar-search-highlight');
-                highlights.forEach(highlight => {
-                    highlight.outerHTML = highlight.textContent;
-                });
-            }
-
-            function restoreOriginalState() {
-                // Show all menu items
-                const allItems = nav.querySelectorAll('a, button');
-                allItems.forEach(item => {
-                    item.style.display = '';
-                });
-
-                // Reset all dropdown contents to their original state (closed by default)
-                const dropdownContents = nav.querySelectorAll('.dropdown-content');
-                dropdownContents.forEach(content => {
-                    // Check if this dropdown should be open based on current route
-                    const hasActiveClass = content.hasAttribute('style') && content.getAttribute('style').includes('display: block');
-                    const hasActiveRoute = content.querySelector('a.bg-blue-50, a.bg-green-50, a.bg-purple-50, a.bg-orange-50, a.bg-indigo-50');
-                    
-                    if (hasActiveRoute) {
-                        content.style.display = 'block';
-                    } else {
-                        content.style.display = '';
-                        content.removeAttribute('style');
+                        group.style.display = visible ? '' : 'none';
                     }
                 });
-
-                // Restore dropdown arrows rotation based on active state
-                const dropdownToggles = nav.querySelectorAll('button[id$="-toggle"]');
-                dropdownToggles.forEach(toggle => {
-                    const arrow = toggle.querySelector('.dropdown-arrow');
-                    const contentId = toggle.id.replace('-toggle', '-content');
-                    const content = document.getElementById(contentId);
-                    
-                    if (arrow && content) {
-                        const isActive = toggle.classList.contains('bg-blue-50') || 
-                                        toggle.classList.contains('bg-green-50') || 
-                                        toggle.classList.contains('bg-purple-50') || 
-                                        toggle.classList.contains('bg-orange-50') ||
-                                        content.querySelector('a.bg-blue-50, a.bg-green-50, a.bg-purple-50, a.bg-orange-50, a.bg-indigo-50');
-                        
-                        if (isActive) {
-                            arrow.classList.add('rotate-180');
-                            content.style.display = 'block';
-                        } else {
-                            arrow.classList.remove('rotate-180');
-                            content.style.display = '';
-                            content.removeAttribute('style');
-                        }
-                    }
-                });
+                if (emptySearch) emptySearch.hidden = items.some(item => item.style.display !== 'none');
             }
 
-            // Search input event listener
-            sidebarSearch.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.trim();
-                filterMenuItems(searchTerm);
+            sidebarSearch.addEventListener('input', filterMenuItems);
+            clearSearch?.addEventListener('click', () => {
+                sidebarSearch.value = '';
+                filterMenuItems();
+                sidebarSearch.focus();
             });
-
-            // Clear search button
-            if (clearSearch) {
-                clearSearch.addEventListener('click', function() {
+            sidebarSearch.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && sidebarSearch.value) {
+                    event.stopPropagation();
                     sidebarSearch.value = '';
-                    sidebarSearch.focus();
-                    filterMenuItems('');
-                });
-            }
-
-            // Clear search on Escape key
-            sidebarSearch.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    sidebarSearch.value = '';
-                    filterMenuItems('');
+                    filterMenuItems();
                 }
             });
         }
