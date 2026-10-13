@@ -416,7 +416,6 @@
                 <div>
                     <button type="button" id="dashboard-menu-toggle" aria-controls="dashboard-menu-content" aria-expanded="{{ $isDashboardSection ? 'true' : 'false' }}" class="w-full flex justify-between items-center group {{ $isDashboardSection ? 'bg-blue-50 text-blue-700' : '' }}">
                         <span class="flex items-center">
-                            <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
                             <span class="font-semibold">Dashboard</span>
                         </span>
                         <svg class="w-4 h-4 dropdown-arrow transition-transform {{ $isDashboardSection ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -426,15 +425,11 @@
                     <div id="dashboard-menu-content" class="dropdown-content" @if($isDashboardSection) style="display: block;" @endif>
                         <!-- Dashboard -->
                         <a href="{{ route('dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                            <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
                             <span class="text-xs font-medium menu-text">Dashboard Utama</span>
                         </a>
 
                         <!-- Dashboard Asuransi Asset -->
                         <a href="{{ route('dashboard.asset-insurance') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAssetDashboard ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-700 hover:bg-yellow-100 hover:text-yellow-700' }}">
-                            <svg class="w-4 h-4 mr-2 {{ $isAssetDashboard ? 'text-yellow-700' : 'text-gray-500 group-hover:text-yellow-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
                             <span class="text-xs font-medium menu-text">Dashboard Asuransi Asset</span>
                         </a>
 
@@ -444,9 +439,6 @@
                             $isDokumenKapalDashboard = Request::routeIs('dashboard-dokumen-kapal-alexindo');
                         @endphp
                         <a href="{{ route('dashboard-dokumen-kapal-alexindo') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDokumenKapalDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                            <svg class="w-4 h-4 mr-2 {{ $isDokumenKapalDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
                             <span class="text-xs font-medium menu-text">Dashboard Dokumen Kapal</span>
                         </a>
                         @endcan
@@ -457,9 +449,6 @@
                             $isHrdDashboard = Request::routeIs('hrd.dashboard*');
                         @endphp
                         <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isHrdDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                            <svg class="w-4 h-4 mr-2 {{ $isHrdDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
                             <span class="text-xs font-medium menu-text">Dashboard HRD</span>
                         </a>
                         @endcan
@@ -470,7 +459,6 @@
                             $isGerakVoyageDashboard = Request::routeIs('gerak-voyage.dashboard');
                         @endphp
                         <a href="{{ route('gerak-voyage.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGerakVoyageDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                            <i class="fas fa-chart-line w-4 mr-2 {{ $isGerakVoyageDashboard ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}"></i>
                             <span class="text-xs font-medium menu-text">Dashboard Gerak Voyage</span>
                         </a>
                         @endif
@@ -508,9 +496,6 @@
                     $isChatbox = Request::routeIs('chat.*');
                 @endphp
                 <a href="{{ route('chat.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isChatbox ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isChatbox ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                    </svg>
                     <span class="text-xs font-medium menu-text">Chatbox</span>
                 </a>
                 @endcan
@@ -520,10 +505,6 @@
                     $isLiveTracking = Request::routeIs('gps-tracking.*');
                 @endphp
                 <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isLiveTracking ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isLiveTracking ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
                     <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
                 </a>
 
@@ -533,9 +514,6 @@
                     $isAsuransiTandaTerima = Request::is('asuransi-tanda-terima*');
                 @endphp
                 <a href="{{ route('asuransi-tanda-terima.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAsuransiTandaTerima ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-700 hover:bg-green-100 hover:text-green-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isAsuransiTandaTerima ? 'text-green-700' : 'text-gray-500 group-hover:text-green-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                    </svg>
                     <span class="text-xs font-medium menu-text">Asuransi Tanda Terima</span>
                 </a>
                 @endcan
@@ -546,18 +524,12 @@
                     $isAsuransiTandaTerimaMulti = Request::is('asuransi-tanda-terima-multi*');
                 @endphp
                 <a href="{{ route('asuransi-tanda-terima-multi.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAsuransiTandaTerimaMulti ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isAsuransiTandaTerimaMulti ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                    </svg>
                     <span class="text-xs font-medium menu-text">Asuransi Tanda Terima Baru</span>
                 </a>
                 @endcan
 
                 <!-- Buka Halaman Penyewaan Kontainer -->
                 <a href="{{ route('open-penyewaan-kontainer') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700">
-                    <svg class="w-4 h-4 mr-2 text-gray-500 group-hover:text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
                     <span class="text-xs font-medium menu-text text-left">Penyewaan Kontainer</span>
                 </a>
 
@@ -566,9 +538,6 @@
                     $isRekapPerbaikan = Request::routeIs('rekap-perbaikan-kontainer.*');
                 @endphp
                 <a href="{{ route('rekap-perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isRekapPerbaikan ? 'bg-red-100 text-red-700 font-bold' : 'text-gray-700 hover:bg-red-100 hover:text-red-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isRekapPerbaikan ? 'text-red-700' : 'text-gray-500 group-hover:text-red-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
                     <span class="text-xs font-medium menu-text text-left">Rekap Perbaikan Kontainer</span>
                 </a>
 
@@ -625,27 +594,27 @@
                         </a>
                         @if($user && $user->can('approval-absensi-view'))
                             <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">📋 Persetujuan Absensi</span>
+                                <span class="text-xs font-medium">Persetujuan Absensi</span>
                             </a>
                         @endif
                         @if($user && $user->can('approval-absensi-lupa-view'))
                             <a href="{{ route('master.persetujuan-absensi-lupa.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi-lupa.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">⏰ Persetujuan Absensi Lupa</span>
+                                <span class="text-xs font-medium">Persetujuan Absensi Lupa</span>
                             </a>
                         @endif
                         @if($user && $user->can('approval-absensi-lembur-view'))
                             <a href="{{ route('master.persetujuan-absensi-lembur.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi-lembur.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">🌙 Persetujuan Absen Lembur</span>
+                                <span class="text-xs font-medium">Persetujuan Absen Lembur</span>
                             </a>
                         @endif
                         @if($user && $user->can('master-lokasi-absensi-view'))
                             <a href="{{ route('master.lokasi-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.lokasi-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">📍 Kelola Lokasi (Maps)</span>
+                                <span class="text-xs font-medium">Kelola Lokasi (Maps)</span>
                             </a>
                         @endif
                         @if($user && $user->can('master-jam-kerja-view'))
                             <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">🕒 Jam Kerja (Shift)</span>
+                                <span class="text-xs font-medium">Jam Kerja (Shift)</span>
                             </a>
                         @endif
                     </div>
@@ -657,9 +626,6 @@
                     $isBeritaRoute = Request::routeIs('berita.*');
                 @endphp
                 <a href="{{ route('berita.index') }}" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isBeritaRoute ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isBeritaRoute ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                    </svg>
                     <span class="text-xs font-medium menu-text">Berita &amp; Pamflet (PWA)</span>
                 </a>
 
@@ -703,9 +669,6 @@
                 <div class="mt-4 mb-2">
                     <button id="payroll-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group text-sm font-medium {{ $isPayrollRoute ? 'bg-green-50 text-green-700 font-semibold shadow-sm' : '' }}">
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 mr-3 {{ $isPayrollRoute ? 'text-green-600' : 'text-gray-400 group-hover:text-green-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
                             <span class="text-sm font-semibold">Payroll</span>
                         </div>
                         <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isPayrollRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2151,7 +2114,6 @@
                 {{-- Tanggal Gerak Voyage --}}
                 <div class="mx-1 mb-2">
                     <a href="{{ route('gerak-voyage.index') }}" class="flex items-center py-2 px-3 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('gerak-voyage.index', 'gerak-voyage.create') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <i class="fas fa-ship w-4 text-center mr-2 {{ Request::routeIs('gerak-voyage.index', 'gerak-voyage.create') ? 'text-blue-600' : 'text-gray-400' }}"></i>
                         <span class="text-xs font-semibold">Tanggal Gerak Voyage</span>
                     </a>
                 </div>
@@ -2768,9 +2730,6 @@
                 {{-- Kontainer Dalam Perjalanan --}}
                 @if($user && ($user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')))
                     <a href="{{ route('kontainer-perjalanan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('kontainer-perjalanan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
                         <span class="text-xs">Kontainer Dalam Perjalanan</span>
                     </a>
                 @endif
@@ -2798,9 +2757,6 @@
                 {{-- Approval Tugas --}}
                 @if(Route::has('approval.dashboard'))
                     <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
                         Approval Tugas
                     </a>
                 @endif
@@ -2808,9 +2764,6 @@
                 {{-- Approval Tugas II --}}
                 @if(Route::has('approval-ii.dashboard'))
                     <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
                         Approval Tugas II
                     </a>
                 @endif
@@ -2873,18 +2826,8 @@
 <div class="mt-4 mb-4">
     <a href="{{ route('kwitansi.select-ship') }}" target="_blank" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium' : '' }}">
         <div class="flex items-center">
-            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-100' : '' }}">
-                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ Request::routeIs('kwitansi.*') ? 'text-indigo-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-            </div>
             <span class="text-xs font-medium truncate w-full">Kwitansi / Akuntansi</span>
         </div>
-        <span class="ml-auto">
-            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-            </svg>
-        </span>
     </a>
 </div>
 @endif
@@ -2903,11 +2846,6 @@
 <div class="mt-4 mb-4">
     <button id="report-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isReportRoute ? 'bg-purple-50 text-purple-700 font-medium' : '' }}">
         <div class="flex items-center">
-            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isReportRoute ? 'bg-purple-100' : '' }}">
-                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isReportRoute ? 'text-purple-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-            </div>
             <span class="text-xs font-medium truncate w-full">Report</span>
         </div>
         <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isReportRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2917,43 +2855,28 @@
     <div id="report-menu-content" class="dropdown-content ml-8 space-y-2 mt-2" @if($isReportRoute) style="display: block;" @endif>
         {{-- Report History Cuti --}}
         <a href="{{ route('report-history-cuti.select-karyawan') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report-history-cuti.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report History Cuti
         </a>
 
         {{-- Report Gaji Supir Batam --}}
         @if($user && ($isAdmin || $user->can('gaji-supir-batam-view')))
         <a href="{{ route('report-gaji-supir-batam.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report-gaji-supir-batam.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Gaji Supir Batam
         </a>
         @endif
 
         {{-- Report Tanda Terima Jakarta --}}
         <a href="{{ route('report.tanda-terima-jakarta.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tanda-terima-jakarta.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Tanda Terima Jakarta
         </a>
 
         {{-- Report Tagihan --}}
         <a href="{{ route('report.tagihan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tagihan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Tagihan
         </a>
 
         {{-- Report Pranota --}}
         <a href="{{ Route::has('report.pranota.index') ? route('report.pranota.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Pranota
             @if(!Route::has('report.pranota.index'))
                 <span class="ml-auto text-xs text-gray-400 italic">(soon)</span>
@@ -2962,9 +2885,6 @@
 
         {{-- Report Pembayaran --}}
         <a href="{{ Route::has('report.pembayaran.index') ? route('report.pembayaran.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pembayaran.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
             Report Pembayaran
             @if(!Route::has('report.pembayaran.index'))
                 <span class="ml-auto text-xs text-gray-400 italic">(soon)</span>
@@ -2974,82 +2894,53 @@
 
         {{-- Report Rit --}}
         <a href="{{ route('report.rit.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.rit.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
             Report Rit
         </a>
 
         {{-- Report Lembur/Nginap --}}
         <a href="{{ route('report.lembur.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.lembur.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
             Report Lembur/Nginap
         </a>
 
         {{-- Report Uang Jalan --}}
         <a href="{{ route('report.uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
             Report Uang Jalan
         </a>
 
         @if($user && ($isAdmin || $user->can('uang-jalan-view')))
         <a href="{{ route('laporan-harian-kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('laporan-harian-kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <i class="fas fa-file-excel mr-2 text-emerald-600"></i>
             Laporan Harian Kas Truck
         </a>
         @endif
 
         {{-- Report Pranota Uang Jalan --}}
         <a href="{{ route('report.pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota-uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Pranota Uang Jalan
         </a>
 
         {{-- Report Kas Truck --}}
         <a href="{{ route('report.kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v20m-5-5l5 5 5-5m0-10l-5-5-5 5"/>
-            </svg>
             Report Kas Trucking
         </a>
 
         {{-- Report Ongkos Truk --}}
         <a href="{{ route('report.ongkos-truk.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.ongkos-truk.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-            </svg>
             Report Ongkos Truk
         </a>
 
         {{-- Report Surat Jalan --}}
         <a href="{{ route('report.surat_jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.surat_jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Surat Jalan
         </a>
 
         {{-- Report Pranota OB --}}
         <a href="{{ route('report.pranota-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Report Pranota OB
         </a>
 
         {{-- Manifest --}}
         @if($user && ($isAdmin || $user->can('manifest-view')))
         <a href="{{ route('report.manifests.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.manifests.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Manifest
         </a>
         @endif
@@ -3057,9 +2948,6 @@
         {{-- Perincian --}}
         @if($user && ($isAdmin || $user->can('perincian-view')))
         <a href="{{ route('report.perincians.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.perincians.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
             Perincian
         </a>
         @endif
@@ -3071,18 +2959,7 @@
 @if($user && $user->can('audit-log-view'))
 <div class="mt-4">
     <a href="{{ route('audit-logs.index') }}" target="_blank" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('audit-logs.*') ? 'bg-orange-50 text-orange-700 font-medium' : '' }}">
-        <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ Request::routeIs('audit-logs.*') ? 'bg-orange-100' : '' }}">
-            <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ Request::routeIs('audit-logs.*') ? 'text-orange-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-            </svg>
-        </div>
         <span class="text-xs font-medium truncate w-full">Audit Log</span>
-        <span class="ml-auto">
-            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-        </span>
     </a>
 </div>
 @endif
