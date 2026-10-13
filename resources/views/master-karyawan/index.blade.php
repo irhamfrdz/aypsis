@@ -359,7 +359,7 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>NIK Karyawan</span>
+                                <span>NIK</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nik', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nik' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -376,7 +376,7 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>CATATAN PEKERJAAN</span>
+                                <span title="Catatan Pekerjaan">CATATAN</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'catatan_pekerjaan', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'catatan_pekerjaan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -410,7 +410,7 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>NAMA PANGGILAN</span>
+                                <span title="Nama Panggilan">PANGGILAN</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_panggilan', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nama_panggilan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -442,10 +442,10 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">DEPARTEMEN</th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider" title="Departemen">DEPT.</th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>KANTOR CABANG AYP</span>
+                                <span title="Kantor Cabang AYP">CABANG</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'cabang', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'cabang' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -525,7 +525,7 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>TANGGAL MASUK</span>
+                                <span>TGL MASUK</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_masuk', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'tanggal_masuk' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -543,7 +543,7 @@
                         @if(request('show_berhenti'))
                             <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-center space-x-1">
-                                    <span>TANGGAL BERHENTI</span>
+                                    <span>TGL BERHENTI</span>
                                     <div class="flex flex-col">
                                         <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_berhenti', 'direction' => 'asc'])) }}"
                                            class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'tanggal_berhenti' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
@@ -671,13 +671,15 @@
                                         <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium"
                                            title="Checklist Kelengkapan Crew">
-                                            Checklist
+                                            <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                                            <span class="sr-only">Checklist Kelengkapan Crew</span>
                                         </a>
                                         <span class="text-gray-300">|</span>
                                         <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}"
                                            class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                            title="Checklist Baru (Simplified)">
-                                            New
+                                            <i class="fas fa-list-check" aria-hidden="true"></i>
+                                            <span class="sr-only">Checklist Baru</span>
                                         </a>
                                         <span class="text-gray-300">|</span>
                                     @endif
@@ -686,7 +688,8 @@
                                     <a href="{{ route('master.karyawan.show', $karyawan->id) }}"
                                        class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                                        title="Lihat Detail">
-                                        Lihat
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                        <span class="sr-only">Lihat Detail</span>
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -695,7 +698,8 @@
                                        target="_blank"
                                        class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                        title="Cetak Data">
-                                        Cetak
+                                        <i class="fas fa-print" aria-hidden="true"></i>
+                                        <span class="sr-only">Cetak Data</span>
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -703,7 +707,8 @@
                                     <a href="{{ route('master.karyawan.edit', $karyawan->id) }}"
                                        class="text-amber-600 hover:text-amber-800 hover:underline font-medium"
                                        title="Edit Data">
-                                        Edit
+                                        <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                                        <span class="sr-only">Edit Data</span>
                                     </a>
                                     <span class="text-gray-300">|</span>
 
@@ -712,7 +717,8 @@
                                             onclick="showAuditLog('{!! addslashes(get_class($karyawan)) !!}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
-                                        Riwayat
+                                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                                        <span class="sr-only">Riwayat Perubahan</span>
                                     </button>
                                     <span class="text-gray-300">|</span>
 
@@ -721,7 +727,8 @@
                                             onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
                                             class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer"
                                             title="Hapus Data">
-                                        Hapus
+                                        <i class="fas fa-trash-can" aria-hidden="true"></i>
+                                        <span class="sr-only">Hapus Data</span>
                                     </button>
                                 </div>
                             </td>
@@ -1730,9 +1737,20 @@ $(document).ready(function() {
 
 .table-container th,
 .table-container td {
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
+    padding: 0.75rem 0.375rem;
     white-space: normal;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.table-container th {
+    font-weight: 600;
+    letter-spacing: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.table-container td {
     overflow-wrap: anywhere;
 }
 
@@ -1740,12 +1758,25 @@ $(document).ready(function() {
     width: 3%;
 }
 
+.table-container th:nth-child(2) {
+    width: 5%;
+}
+
 .table-container th:nth-child(4) {
-    width: 12%;
+    width: 14%;
+}
+
+.table-container th:nth-child(13) {
+    width: 9%;
 }
 
 .table-container th:last-child {
-    width: 11%;
+    width: 9%;
+}
+
+.table-container th > .flex {
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .table-container th > .flex > span {
@@ -1753,7 +1784,34 @@ $(document).ready(function() {
 }
 
 .table-container th > .flex > .flex-col {
-    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: 0;
+}
+
+.table-container th > .flex > .flex-col a {
+    margin-top: 0;
+    line-height: 1;
+}
+
+.table-container td:nth-child(3),
+.table-container td:nth-child(4),
+.table-container td:nth-child(5) {
+    text-align: left;
+}
+
+.table-container td:nth-child(4) {
+    font-weight: 600;
+    color: rgb(31 41 55);
+}
+
+.table-container td:nth-child(13) {
+    font-variant-numeric: tabular-nums;
+}
+
+.table-container tbody tr:hover {
+    background-color: rgb(239 246 255);
 }
 
 .table-container td .inline-flex {
@@ -1761,12 +1819,58 @@ $(document).ready(function() {
 }
 
 .karyawan-actions {
-    flex-wrap: wrap;
-    gap: 0.25rem 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem;
+    justify-content: center;
+    justify-items: center;
+}
+
+.karyawan-actions > a,
+.karyawan-actions > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.375rem;
+    background-color: white;
+    font-size: 0.6875rem;
+    text-decoration: none;
+}
+
+.karyawan-actions > a:hover,
+.karyawan-actions > button:hover {
+    background-color: rgb(243 244 246);
+    border-color: currentColor;
+}
+
+.karyawan-actions > a:focus-visible,
+.karyawan-actions > button:focus-visible {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: 2px;
 }
 
 .karyawan-actions > span {
     display: none;
+}
+
+@media (max-width: 1199px) {
+    .table-container th,
+    .table-container td {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    .table-container th {
+        font-size: 9px;
+    }
+
+    .karyawan-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 /* Smooth scrolling for better UX */
