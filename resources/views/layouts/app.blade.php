@@ -410,12 +410,104 @@
                     </a>
                 @endcan
 
-                <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
-                    <span class="text-xs font-medium menu-text">Dashboard</span>
-                </a>
+                <!-- Dashboard menus -->
+                @php
+                    $isDashboardSection = Request::routeIs(
+                        'dashboard', 'dashboard.*', 'dashboard-dokumen-kapal-alexindo',
+                        'hrd.dashboard*', 'gerak-voyage.dashboard',
+                        'admin.cek-kendaraan.daily', 'admin.cek-kendaraan.weekly',
+                        'stock-amprahan.dashboard-pemakaian', 'surat-jalan-bongkaran-batam.dashboard'
+                    );
+                @endphp
+                <div>
+                    <button type="button" id="dashboard-menu-toggle" aria-controls="dashboard-menu-content" aria-expanded="{{ $isDashboardSection ? 'true' : 'false' }}" class="w-full flex justify-between items-center group {{ $isDashboardSection ? 'bg-blue-50 text-blue-700' : '' }}">
+                        <span class="flex items-center">
+                            <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
+                            <span class="font-semibold">Dashboard</span>
+                        </span>
+                        <svg class="w-4 h-4 dropdown-arrow transition-transform {{ $isDashboardSection ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="dashboard-menu-content" class="dropdown-content" @if($isDashboardSection) style="display: block;" @endif>
+                        <!-- Dashboard -->
+                        <a href="{{ route('dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                            <i class="fas fa-house w-4 mr-2" aria-hidden="true"></i>
+                            <span class="text-xs font-medium menu-text">Dashboard Utama</span>
+                        </a>
 
+                        <!-- Dashboard Asuransi Asset -->
+                        <a href="{{ route('dashboard.asset-insurance') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAssetDashboard ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-700 hover:bg-yellow-100 hover:text-yellow-700' }}">
+                            <svg class="w-4 h-4 mr-2 {{ $isAssetDashboard ? 'text-yellow-700' : 'text-gray-500 group-hover:text-yellow-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-xs font-medium menu-text">Dashboard Asuransi Asset</span>
+                        </a>
+
+                        <!-- Dashboard Dokumen Kapal Alexindo -->
+                        @can('dashboard-dokumen-kapal-alexindo-view')
+                        @php
+                            $isDokumenKapalDashboard = Request::routeIs('dashboard-dokumen-kapal-alexindo');
+                        @endphp
+                        <a href="{{ route('dashboard-dokumen-kapal-alexindo') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDokumenKapalDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+                            <svg class="w-4 h-4 mr-2 {{ $isDokumenKapalDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span class="text-xs font-medium menu-text">Dashboard Dokumen Kapal</span>
+                        </a>
+                        @endcan
+
+                        <!-- Dashboard HRD -->
+                        @can('hrd-dashboard-view')
+                        @php
+                            $isHrdDashboard = Request::routeIs('hrd.dashboard*');
+                        @endphp
+                        <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isHrdDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+                            <svg class="w-4 h-4 mr-2 {{ $isHrdDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span class="text-xs font-medium menu-text">Dashboard HRD</span>
+                        </a>
+                        @endcan
+
+                        <!-- Dashboard Gerak Voyage -->
+                        @if($user && ($user->can('gerak-voyage-view') || $user->is_admin))
+                        @php
+                            $isGerakVoyageDashboard = Request::routeIs('gerak-voyage.dashboard');
+                        @endphp
+                        <a href="{{ route('gerak-voyage.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGerakVoyageDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                            <i class="fas fa-chart-line w-4 mr-2 {{ $isGerakVoyageDashboard ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}"></i>
+                            <span class="text-xs font-medium menu-text">Dashboard Gerak Voyage</span>
+                        </a>
+                        @endif
+
+                        @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
+                            <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Dashboard Cek Harian</span>
+                            </a>
+                        @endif
+
+                        @if($user && $user->can('monitoring-cek-kendaraan-weekly-view'))
+                            <a href="{{ route('admin.cek-kendaraan.weekly') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.weekly') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Dashboard Cek Mingguan</span>
+                            </a>
+                        @endif
+
+                        @can('stock-amprahan-view')
+                        <div class="mx-2 mb-3">
+                            <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 {{ Request::routeIs('stock-amprahan.dashboard-pemakaian') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">Dashboard Pemakaian Barang</a>
+                        </div>
+                        @endcan
+
+                        {{-- Dashboard Surat Jalan Bongkaran Batam --}}
+                        @if($user && ($user->can('surat-jalan-bongkaran-batam-view') || $user->can('surat-jalan-bongkaran-batam-create')))
+                            <a href="{{ route('surat-jalan-bongkaran-batam.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran-batam.dashboard') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Dashboard Bongkaran Batam</span>
+                            </a>
+                        @endif
+
+                    </div>
+                </div>
                 <!-- Chatbox -->
                 @can('chatbox-view')
                 @php
@@ -440,51 +532,6 @@
                     </svg>
                     <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
                 </a>
-
-                <!-- Dashboard Asuransi Asset -->
-                <a href="{{ route('dashboard.asset-insurance') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAssetDashboard ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-700 hover:bg-yellow-100 hover:text-yellow-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isAssetDashboard ? 'text-yellow-700' : 'text-gray-500 group-hover:text-yellow-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span class="text-xs font-medium menu-text">Dashboard Asuransi Asset</span>
-                </a>
-
-                <!-- Dashboard Dokumen Kapal Alexindo -->
-                @can('dashboard-dokumen-kapal-alexindo-view')
-                @php
-                    $isDokumenKapalDashboard = Request::routeIs('dashboard-dokumen-kapal-alexindo');
-                @endphp
-                <a href="{{ route('dashboard-dokumen-kapal-alexindo') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDokumenKapalDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isDokumenKapalDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <span class="text-xs font-medium menu-text">Dashboard Dokumen Kapal</span>
-                </a>
-                @endcan
-
-                <!-- Dashboard HRD -->
-                @can('hrd-dashboard-view')
-                @php
-                    $isHrdDashboard = Request::routeIs('hrd.dashboard*');
-                @endphp
-                <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isHrdDashboard ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isHrdDashboard ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    <span class="text-xs font-medium menu-text">Dashboard HRD</span>
-                </a>
-                @endcan
-                
-                <!-- Dashboard Gerak Voyage -->
-                @if($user && ($user->can('gerak-voyage-view') || $user->is_admin))
-                @php
-                    $isGerakVoyageDashboard = Request::routeIs('gerak-voyage.dashboard');
-                @endphp
-                <a href="{{ route('gerak-voyage.dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGerakVoyageDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <i class="fas fa-chart-line w-4 mr-2 {{ $isGerakVoyageDashboard ? 'text-blue-700' : 'text-gray-500 group-hover:text-blue-700' }}"></i>
-                    <span class="text-xs font-medium menu-text">Dashboard Gerak Voyage</span>
-                </a>
-                @endif
 
                 <!-- Asuransi Tanda Terima -->
                 @can('asuransi-tanda-terima-view')
@@ -537,8 +584,8 @@
 
                 {{-- Monitoring Section --}}
                 @php
-                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.*');
-                    $hasMonitoringPermissions = $user && ($user->can('monitoring-cek-kendaraan-view') || $user->can('monitoring-cek-kendaraan-daily-view') || $user->can('monitoring-cek-kendaraan-weekly-view'));
+                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index');
+                    $hasMonitoringPermissions = $user && $user->can('monitoring-cek-kendaraan-view');
                 @endphp
 
                 @if($hasMonitoringPermissions)
@@ -556,25 +603,15 @@
                             </a>
                         @endif
 
-                        @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
-                            <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">Dashboard Cek Harian</span>
-                            </a>
-                        @endif
 
-                        @if($user && $user->can('monitoring-cek-kendaraan-weekly-view'))
-                            <a href="{{ route('admin.cek-kendaraan.weekly') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.weekly') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">Dashboard Cek Mingguan</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
                 @endif
 
                 {{-- Kelola Absensi Section --}}
                 @php
-                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('hrd.dashboard*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
-                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('hrd-dashboard-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
+                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
+                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
                 @endphp
 
                 @if($hasAbsensiPermissions)
@@ -586,11 +623,6 @@
                         </svg>
                     </button>
                     <div id="absensi-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAbsensiRoute) style="display: block;" @endif>
-                        @if($user && $user->can('hrd-dashboard-view'))
-                            <a href="{{ route('hrd.dashboard') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('hrd.dashboard*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">👥 Dashboard HRD</span>
-                            </a>
-                        @endif
                         <a href="{{ Route::has('absensi.index') ? route('absensi.index') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Data Absensi</span>
                         </a>
@@ -1453,11 +1485,6 @@
         @endif
         
         {{-- Rekap Pemakaian Barang --}}
-        @can('stock-amprahan-view')
-        <div class="mx-2 mb-3">
-            <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 {{ Request::routeIs('stock-amprahan.dashboard-pemakaian') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">Dashboard Pemakaian Barang</a>
-        </div>
-        @endcan
         @if($user && $user->can('rekap-pemakaian-barang-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('rekap-pemakaian-barang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-pemakaian-barang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
@@ -2183,12 +2210,6 @@
                         @endif
                         --}}
 
-                        {{-- Dashboard Surat Jalan Bongkaran Batam --}}
-                        @if($user && ($user->can('surat-jalan-bongkaran-batam-view') || $user->can('surat-jalan-bongkaran-batam-create')))
-                            <a href="{{ route('surat-jalan-bongkaran-batam.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran-batam.dashboard') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Dashboard Bongkaran Batam</span>
-                            </a>
-                        @endif
 
                         {{-- Surat Jalan Bongkaran Batam --}}
                         @if($user && ($user->can('surat-jalan-bongkaran-batam-view') || $user->can('surat-jalan-bongkaran-batam-create')))
