@@ -2831,6 +2831,10 @@ Route::middleware([
             ->name('master.pekerjaan.store')
             ->middleware('can:master-pekerjaan-create');
 
+        Route::get('master/pekerjaan/export', [PekerjaanController::class, 'export'])
+            ->name('master.pekerjaan.export')
+            ->middleware('can:master-pekerjaan-view');
+
         Route::get('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'show'])
             ->name('master.pekerjaan.show')
             ->middleware('can:master-pekerjaan-view');

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Divisi;
 use App\Models\Pekerjaan;
+use App\Exports\PekerjaanExport;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PekerjaanController extends Controller
 {
@@ -29,6 +31,16 @@ class PekerjaanController extends Controller
         $pekerjaans = $query->orderBy('nama_pekerjaan')->paginate(15);
 
         return view('master-pekerjaan.index', compact('pekerjaans'));
+    }
+
+    public function export(Request $request)
+    {
+        $filename = 'master_pekerjaan_'.now()->format('Ymd_His').'.xlsx';
+
+        return Excel::download(
+            new PekerjaanExport($request->input('search'), $request->input('status')),
+            $filename,
+        );
     }
 
     /**
