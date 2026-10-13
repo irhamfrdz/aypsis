@@ -500,14 +500,6 @@
                 </a>
                 @endcan
 
-                <!-- Live Tracking GPS -->
-                @php
-                    $isLiveTracking = Request::routeIs('gps-tracking.*');
-                @endphp
-                <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isLiveTracking ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
-                </a>
-
                 <!-- Asuransi Tanda Terima -->
                 @can('asuransi-tanda-terima-view')
                 @php
@@ -542,11 +534,12 @@
 
                 {{-- Monitoring Section --}}
                 @php
-                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index');
-                    $hasMonitoringPermissions = $user && $user->can('monitoring-cek-kendaraan-view');
+                    $isLiveTracking = Request::routeIs('gps-tracking.*');
+                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || $isLiveTracking;
+                    $showMonitoringSection = (bool) $user;
                 @endphp
 
-                @if($hasMonitoringPermissions)
+                @if($showMonitoringSection)
                 <div class="mt-4 mb-6">
                     <button id="monitoring-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isMonitoringRoute ? 'bg-green-50 text-green-700' : '' }}">
                         <span class="text-sm font-semibold">Monitoring</span>
@@ -555,13 +548,15 @@
                         </svg>
                     </button>
                     <div id="monitoring-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isMonitoringRoute) style="display: block;" @endif>
+                        <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ $isLiveTracking ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
+                        </a>
+
                         @if($user && $user->can('monitoring-cek-kendaraan-view'))
                             <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Monitoring Cek Kendaraan</span>
                             </a>
                         @endif
-
-
                     </div>
                 </div>
                 @endif
