@@ -528,11 +528,6 @@
                 </a>
                 @endcan
 
-                <!-- Buka Halaman Penyewaan Kontainer -->
-                <a href="{{ route('open-penyewaan-kontainer') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-xs font-medium menu-text text-left">Penyewaan Kontainer</span>
-                </a>
-
                 <!-- Rekap Perbaikan Kontainer -->
                 @php
                     $isRekapPerbaikan = Request::routeIs('rekap-perbaikan-kontainer.*');

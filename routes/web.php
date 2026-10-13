@@ -264,10 +264,6 @@ Route::get('master/permission-templates/{template}', [UserController::class, 'ge
 // Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
 // Route::get('/fix-kapal-sumber-abadi', ...);
 
-// React Sewa Kontainer Sync API
-Route::get('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'getState'])->name('react-sewa-kontainer.sync.get');
-Route::post('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'saveState'])->name('react-sewa-kontainer.sync.post');
-
 // Chatbox API Routes
 Route::get('api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('api.chat.messages');
 Route::get('api/chat/faqs', [\App\Http\Controllers\ChatController::class, 'getFaqs'])->name('api.chat.faqs');
@@ -280,10 +276,6 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
-    Route::get('/open-penyewaan-kontainer', function () {
-        return redirect('/penyewaan-app/index.html');
-    })->name('open-penyewaan-kontainer');
-
     // Onboarding routes for authenticated users who need to create their Karyawan record.
     // These are intentionally named without the 'master.' prefix and do NOT use the
     // 'can:master-karyawan' gate so that newly created users (pending) can submit

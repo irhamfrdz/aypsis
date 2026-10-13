@@ -20,7 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: [
-            'api/sewa-kontainer/sync',
             'iclock/*',
         ]);
         $middleware->alias([
