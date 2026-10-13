@@ -902,6 +902,7 @@ class RekapBiayaKapalController extends Controller
                 $voyages[strtolower(trim($row->no_voyage))] = trim($row->no_voyage);
             }
         }
+        $voyages = array_filter($voyages, fn ($voyage) => RekapShipName::isValidVoyage($selectedShip, $voyage));
         krsort($voyages);
 
         $voyageList = array_values($voyages);

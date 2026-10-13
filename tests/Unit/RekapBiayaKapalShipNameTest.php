@@ -11,6 +11,21 @@ use ReflectionMethod;
 
 class RekapBiayaKapalShipNameTest extends TestCase
 {
+    public function test_sriwijaya_voyage_choices_exclude_reference_numbers_and_other_ships(): void
+    {
+        foreach (['KM SRIWIJAYA', 'KM. SRIWIJAYA RAYA'] as $ship) {
+            foreach (['AYP 0004632', 'MERATUSJB446', 'AP25JB25', 'SP22JB25', ''] as $voyage) {
+                $this->assertFalse(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+            foreach (['SR18JB26', 'SR17BJ26', 'SR04PJ26', 'SR04JP26', 'SR18JB25', ' sr01bj26 ', 'SR01', 'DOCK'] as $voyage) {
+                $this->assertTrue(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+        }
+
+        $this->assertTrue(RekapShipName::isValidVoyage('KM MERATUS AMPANA', 'MERATUSJB446'));
+        $this->assertTrue(RekapShipName::isValidVoyage('KM ALKEN PRINCESS', 'AP25JB25'));
+    }
+
     public function test_sriwijaya_aliases_share_one_selector_key_and_search_pattern(): void
     {
         $ships = [];

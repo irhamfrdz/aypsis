@@ -20,4 +20,18 @@ class RekapShipName
 
         return '%'.preg_replace('/[^a-z0-9]+/i', '%', $name).'%';
     }
+
+    public static function isValidVoyage(string $ship, string $voyage): bool
+    {
+        $voyage = trim($voyage);
+        if ($voyage === '') {
+            return false;
+        }
+        if (self::key($ship) !== 'sriwijaya' || strcasecmp($voyage, 'DOCK') === 0) {
+            return true;
+        }
+
+        // Sriwijaya uses SR voyage numbers, optionally followed by route and year.
+        return preg_match('/^SR\d+(?:[A-Z]{2}\d{2})?$/i', $voyage) === 1;
+    }
 }
