@@ -2548,6 +2548,10 @@ Route::middleware([
         \App\Http\Middleware\EnsureCrewChecklistComplete::class,
     ])->group(function () {
         // Master Divisi Management - Separate routes to avoid middleware conflicts
+        Route::get('master/divisi/export', [DivisiController::class, 'export'])
+            ->name('master.divisi.export')
+            ->middleware('can:master-divisi-export');
+
         Route::get('master/divisi', [DivisiController::class, 'index'])
             ->name('master.divisi.index')
             ->middleware('can:master-divisi-view');

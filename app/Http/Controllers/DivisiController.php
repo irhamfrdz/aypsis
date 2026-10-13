@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DivisiExport;
 use App\Models\Divisi;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DivisiController extends Controller
 {
@@ -13,6 +16,21 @@ class DivisiController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
+    {
+        $divisis = $this->filteredQuery($request)->paginate(15);
+
+        return view('master-divisi.index', compact('divisis'));
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new DivisiExport($this->filteredQuery($request)),
+            'master_divisi_'.now()->format('Ymd_His').'.xlsx'
+        );
+    }
+
+    private function filteredQuery(Request $request): Builder
     {
         $query = Divisi::query();
 
@@ -26,9 +44,7 @@ class DivisiController extends Controller
             $query->where('is_active', $request->status === 'active');
         }
 
-        $divisis = $query->orderBy('nama_divisi')->paginate(15);
-
-        return view('master-divisi.index', compact('divisis'));
+        return $query->orderBy('nama_divisi');
     }
 
     /**
