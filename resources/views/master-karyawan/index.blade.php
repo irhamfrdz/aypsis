@@ -348,8 +348,8 @@
         </div>
 
         <!-- Table Section with Sticky Header -->
-        <div class="table-container overflow-x-auto max-h-screen hidden md:block">
-            <table class="min-w-full divide-y divide-gray-200">
+        <div class="table-container max-h-screen hidden md:block">
+            <table class="w-full table-fixed divide-y divide-gray-200">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
@@ -577,7 +577,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-center text-[10px] text-gray-900">
-                                <div class="max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap mx-auto" title="{{ $karyawan->catatan_pekerjaan }}">
+                                <div title="{{ $karyawan->catatan_pekerjaan }}">
                                     {{ $karyawan->catatan_pekerjaan ? strtoupper($karyawan->catatan_pekerjaan) : '-' }}
                                 </div>
                             </td>
@@ -665,7 +665,7 @@
                                 </td>
                             @endif
                             <td class="px-4 py-2 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                <div class="karyawan-actions flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]">
                                     {{-- Show crew checklist links only for ABK division --}}
                                     @if(strtolower($karyawan->divisi) === 'abk')
                                         <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
@@ -728,7 +728,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '11' : '10' }}" class="px-6 py-2 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '16' : '15' }}" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-6">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -1714,12 +1714,59 @@ $(document).ready(function() {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
-/* Enhanced table container for better scrolling */
+/* Keep all employee columns within the available page width. */
 .table-container {
     max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    max-width: 100%;
     overflow-y: auto;
     border: 1px solid rgb(229 231 235); /* border-gray-200 */
     border-radius: 0.5rem;
+}
+
+.table-container table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.table-container th,
+.table-container td {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.table-container th:first-child {
+    width: 3%;
+}
+
+.table-container th:nth-child(4) {
+    width: 12%;
+}
+
+.table-container th:last-child {
+    width: 11%;
+}
+
+.table-container th > .flex > span {
+    min-width: 0;
+}
+
+.table-container th > .flex > .flex-col {
+    flex-shrink: 0;
+}
+
+.table-container td .inline-flex {
+    max-width: 100%;
+}
+
+.karyawan-actions {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+}
+
+.karyawan-actions > span {
+    display: none;
 }
 
 /* Smooth scrolling for better UX */
