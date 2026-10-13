@@ -23,19 +23,19 @@ class ReportUangJalanController extends Controller
         return array_values(array_unique(array_filter(array_map('intval', $ids))));
     }
 
-    private function invoiceUangJalan($invoice, $uangJalans)
+    private function invoiceUangJalan($invoice, $regularUangJalans, $bongkarUangJalans)
     {
-        $candidates = $uangJalans->filter(function ($uj) use ($invoice) {
-            if ($invoice->surat_jalan_source === 'bongkar') {
-                return (int) $uj->surat_jalan_bongkaran_id === (int) $invoice->surat_jalan_id;
-            }
-            if ($invoice->surat_jalan_source === 'regular') {
-                return (int) $uj->surat_jalan_id === (int) $invoice->surat_jalan_id;
-            }
+        $suratJalanId = (int) $invoice->surat_jalan_id;
+        $regularCandidates = $regularUangJalans->get($suratJalanId, collect());
+        $bongkarCandidates = $bongkarUangJalans->get($suratJalanId, collect());
 
-            return (int) $uj->surat_jalan_id === (int) $invoice->surat_jalan_id
-                || (int) $uj->surat_jalan_bongkaran_id === (int) $invoice->surat_jalan_id;
-        })->sortByDesc('tanggal_uang_jalan');
+        if ($invoice->surat_jalan_source === 'bongkar') {
+            $candidates = $bongkarCandidates;
+        } elseif ($invoice->surat_jalan_source === 'regular') {
+            $candidates = $regularCandidates;
+        } else {
+            $candidates = $regularCandidates->concat($bongkarCandidates)->sortByDesc('tanggal_uang_jalan');
+        }
         $links = $candidates->groupBy(fn ($uj) => $uj->surat_jalan_id ? 'regular:'.$uj->surat_jalan_id : 'bongkar:'.$uj->surat_jalan_bongkaran_id);
         if ($links->count() === 1) {
             return $candidates->first();
@@ -108,8 +108,19 @@ class ReportUangJalanController extends Controller
                 ->get();
         }
 
-        // Fetch direct payments that link to invoices via invoice_ids for nomor_accurate
-        $directPayments = PembayaranAktivitasLain::whereNotNull('invoice_ids')->get();
+        // Only inspect payments linked to adjustment invoices in this report.
+        $invoiceIds = $adjInvoices->modelKeys();
+        $directPayments = collect();
+        if ($invoiceIds) {
+            $directPayments = PembayaranAktivitasLain::whereNotNull('invoice_ids')
+                ->where(function ($query) use ($invoiceIds) {
+                    foreach ($invoiceIds as $invoiceId) {
+                        $query->orWhere('invoice_ids', 'like', '%'.$invoiceId.'%');
+                    }
+                })
+                ->get()
+                ->filter(fn ($payment) => array_intersect($invoiceIds, $this->invoiceIds($payment->invoice_ids)) !== []);
+        }
         $dpByInvoiceId = [];
         foreach ($directPayments as $dp) {
             $ids = $this->invoiceIds($dp->invoice_ids);
@@ -121,11 +132,15 @@ class ReportUangJalanController extends Controller
             }
         }
 
+        // Index Uang Jalan by shipment once instead of scanning the full report for every invoice.
+        $regularUangJalans = $uangJalans->filter(fn ($uj) => $uj->surat_jalan_id)->groupBy('surat_jalan_id');
+        $bongkarUangJalans = $uangJalans->filter(fn ($uj) => $uj->surat_jalan_bongkaran_id)->groupBy('surat_jalan_bongkaran_id');
+
         // Assign each invoice to one UJ, keeping regular and bongkar IDs separate.
         $adjByUjId = collect();
         $representedInvoices = [];
         foreach ($adjInvoices as $invoice) {
-            $target = $this->invoiceUangJalan($invoice, $uangJalans);
+            $target = $this->invoiceUangJalan($invoice, $regularUangJalans, $bongkarUangJalans);
             if ($target) {
                 $adjByUjId[$target->id] = ($adjByUjId[$target->id] ?? collect())->concat([$invoice]);
                 $representedInvoices[] = (int) $invoice->id;
@@ -442,6 +457,12 @@ class ReportUangJalanController extends Controller
             $payments = $paymentModel::query()
                 ->select($paymentIdsColumn, 'nomor_accurate')
                 ->whereNotNull($paymentIdsColumn)
+                ->where(function ($query) use ($pranotaIds, $paymentIdsColumn) {
+                    foreach ($pranotaIds->keys() as $pranotaId) {
+                        $query->orWhereJsonContains($paymentIdsColumn, (int) $pranotaId)
+                            ->orWhereJsonContains($paymentIdsColumn, (string) $pranotaId);
+                    }
+                })
                 ->orderByDesc('tanggal_kas')
                 ->orderByDesc('id')
                 ->cursor();
