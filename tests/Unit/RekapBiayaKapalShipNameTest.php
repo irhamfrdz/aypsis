@@ -11,6 +11,19 @@ use ReflectionMethod;
 
 class RekapBiayaKapalShipNameTest extends TestCase
 {
+    public function test_sumber_abadi_voyages_exclude_other_vessels_and_keep_historical_routes(): void
+    {
+        foreach (['KM. SUMBER ABADI 178', 'KM SUMBER ABADI 178', 'Sumber Abadi 178'] as $ship) {
+            foreach (['SR03JP26', 'SR18JB25', 'SP22JP25', 'SP22JB25', 'ST07JB25', 'AP25JB25', 'AS17JP26', ''] as $voyage) {
+                $this->assertFalse(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+            foreach (['SA17JB26', 'SA03JP26', 'SA03PJ26', 'SA04BJ26', 'SA18JT25', 'SA16BJ25', ' sa19jb25 ', 'DOCK'] as $voyage) {
+                $this->assertTrue(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+        }
+        $this->assertTrue(RekapShipName::isValidVoyage('KM SRIWIJAYA', 'SR03JP26'));
+    }
+
     public function test_alken_pesona_voyages_exclude_other_vessels_but_keep_its_own_routes_and_dock(): void
     {
         foreach (['KM ALKEN PESONA', 'KM. ALKEN PESONA', 'Alken Pesona'] as $ship) {

@@ -30,6 +30,7 @@ class RekapShipName
         $prefix = match (self::key($ship)) {
             'sriwijaya' => 'SR',
             'alkenpesona' => 'AS',
+            'sumberabadi178' => 'SA',
             default => null,
         };
         if ($prefix === null || strcasecmp($voyage, 'DOCK') === 0) {
