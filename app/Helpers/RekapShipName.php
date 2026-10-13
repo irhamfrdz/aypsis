@@ -27,11 +27,16 @@ class RekapShipName
         if ($voyage === '') {
             return false;
         }
-        if (self::key($ship) !== 'sriwijaya' || strcasecmp($voyage, 'DOCK') === 0) {
+        $prefix = match (self::key($ship)) {
+            'sriwijaya' => 'SR',
+            'alkenpesona' => 'AS',
+            default => null,
+        };
+        if ($prefix === null || strcasecmp($voyage, 'DOCK') === 0) {
             return true;
         }
 
-        // Sriwijaya uses SR voyage numbers, optionally followed by route and year.
-        return preg_match('/^SR\d+(?:[A-Z]{2}\d{2})?$/i', $voyage) === 1;
+        // Fleet voyage numbers use the vessel code, optionally followed by route and year.
+        return preg_match('/^'.$prefix.'\d+(?:[A-Z]{2}\d{2})?$/i', $voyage) === 1;
     }
 }
