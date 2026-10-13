@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\RekapShipName;
 use App\Models\BiayaKapal;
 use App\Models\Gudang;
 use App\Models\PranotaObMuatTemas;
@@ -15,7 +16,7 @@ class RekapBiayaKapalController extends Controller
 {
     private function shipKey($name): string
     {
-        return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim((string) $name))));
+        return RekapShipName::key($name);
     }
 
     private function tkbmSections($details): Collection
@@ -1269,7 +1270,7 @@ class RekapBiayaKapalController extends Controller
         }
 
         foreach ([\App\Models\SuratJalanBongkaran::class, \App\Models\SuratJalanBongkaranBatam::class] as $model) {
-            $shipLike = '%'.preg_replace('/[^a-z0-9]+/i', '%', $data['kapal']).'%';
+            $shipLike = RekapShipName::likePattern($data['kapal']);
             foreach ($model::where('nama_kapal', 'like', $shipLike)->where('no_voyage', $data['voyage'])->pluck('no_bl') as $number) {
                 foreach (preg_split('/[,;\n]+/', $number ?? '') as $part) {
                     $numbers->push($this->normalizeBl($part));
@@ -1334,7 +1335,7 @@ class RekapBiayaKapalController extends Controller
             $record->apportioned = $this->getApportionedCostForRecord($record, $kapal, $voyage);
         }
 
-        $kapalLike = '%'.preg_replace('/[^a-z0-9]+/i', '%', $kapal).'%';
+        $kapalLike = RekapShipName::likePattern($kapal);
 
         // Fetch Pranota OB
         $pranotaObs = \App\Models\PranotaOb::where('nama_kapal', 'like', $kapalLike)

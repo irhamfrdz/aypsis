@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\RekapShipName;
 use App\Models\PranotaUangRitKenek;
 use Illuminate\Support\Collection;
 
@@ -75,6 +76,6 @@ class RekapUangRitService
 
     private function ship(string $name): string
     {
-        return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim($name))));
+        return RekapShipName::key($name);
     }
 }

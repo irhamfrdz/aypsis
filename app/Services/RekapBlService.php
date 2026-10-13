@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\RekapShipName;
 use App\Models\Bl;
 use App\Models\Manifest;
 use App\Models\Prospek;
@@ -26,7 +27,7 @@ class RekapBlService
 
     private static function ship(string $name): string
     {
-        return preg_replace('/[^a-z0-9]/', '', preg_replace('/^km[.\s]+/i', '', strtolower(trim($name))));
+        return RekapShipName::key($name);
     }
 
     private static function explicitContainerStatus(string $name): ?string
