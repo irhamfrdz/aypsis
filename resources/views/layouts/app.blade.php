@@ -404,12 +404,6 @@
                     $showMasterSection = $isAdmin || $hasMasterPermissions;
                 @endphp
 
-                @can('container-billing-manage')
-                    <a href="{{ route('container-billing.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 text-xs text-gray-700 hover:bg-blue-100 hover:text-blue-700">
-                        <span class="text-xs font-medium menu-text">Container Billing Control</span>
-                    </a>
-                @endcan
-
                 <!-- Dashboard menus -->
                 @php
                     $isDashboardSection = Request::routeIs(

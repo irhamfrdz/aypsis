@@ -363,13 +363,6 @@ class UserController extends Controller
                 continue;
             }
 
-            // One checkbox grants access to the existing full-management billing module.
-            if ($permissionName === 'container-billing-manage') {
-                $matrixPermissions['container-billing']['view'] = true;
-
-                continue;
-            }
-
             // Special handling for master-karyawan-approval (exact match)
             if ($permissionName === 'master-karyawan-approval') {
                 $matrixPermissions['master-karyawan-approval']['view'] = true;
@@ -1958,17 +1951,6 @@ class UserController extends Controller
         foreach ($matrixPermissions as $module => $actions) {
             // Skip if no actions are selected for this module
             if (! is_array($actions)) {
-                continue;
-            }
-
-            if ($module === 'container-billing') {
-                if (isset($actions['view']) && ($actions['view'] == '1' || $actions['view'] === true)) {
-                    $permission = Permission::where('name', 'container-billing-manage')->first();
-                    if ($permission) {
-                        $permissionIds[] = $permission->id;
-                    }
-                }
-
                 continue;
             }
 
