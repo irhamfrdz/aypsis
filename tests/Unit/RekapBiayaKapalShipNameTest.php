@@ -11,6 +11,32 @@ use ReflectionMethod;
 
 class RekapBiayaKapalShipNameTest extends TestCase
 {
+    public function test_sekar_permata_voyages_exclude_foreign_voyages_and_keep_docking(): void
+    {
+        foreach (['KM. SEKAR PERMATA', 'KM SEKAR PERMATA', 'Sekar Permata'] as $ship) {
+            foreach (['ST01JP26', 'ST08JP25', 'SA18JT25', 'AP25JB25', 'MAJB430N25', 'MERATUSJB444N', 'SR03JP26', 'APDOCK310326', ''] as $voyage) {
+                $this->assertFalse(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+            foreach (['SP01JB26', 'SP16PJ26', 'SP16JP26', 'SP22JB25', 'SP20PJ25', ' sp22jp25 ', 'SPDOCK150726', 'DOCK'] as $voyage) {
+                $this->assertTrue(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+        }
+        $this->assertTrue(RekapShipName::isValidVoyage('KM SENTOSA 18', 'ST01JP26'));
+    }
+
+    public function test_alken_princess_voyages_exclude_other_vessels_and_preserve_docking_references(): void
+    {
+        foreach (['KM. ALKEN PRINCESS', 'KM ALKEN PRINCESS', 'Alken Princess'] as $ship) {
+            foreach (['SA01JP26', 'SA18JT25', 'SP22JB25', 'ST07JB25', 'SR03JP26', 'AS17JP26', 'SADOCK310326', ''] as $voyage) {
+                $this->assertFalse(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+            foreach (['AP14JB26', 'AP01BJ26', 'AP05JP26', 'AP05PJ26', 'AP23BJ25', ' ap25jb25 ', 'APDOCK310326', 'DOCK'] as $voyage) {
+                $this->assertTrue(RekapShipName::isValidVoyage($ship, $voyage));
+            }
+        }
+        $this->assertTrue(RekapShipName::isValidVoyage('KM. SUMBER ABADI 178', 'SA01JP26'));
+    }
+
     public function test_sumber_abadi_voyages_exclude_other_vessels_and_keep_historical_routes(): void
     {
         foreach (['KM. SUMBER ABADI 178', 'KM SUMBER ABADI 178', 'Sumber Abadi 178'] as $ship) {

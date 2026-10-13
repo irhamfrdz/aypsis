@@ -30,14 +30,16 @@ class RekapShipName
         $prefix = match (self::key($ship)) {
             'sriwijaya' => 'SR',
             'alkenpesona' => 'AS',
+            'alkenprincess' => 'AP',
             'sumberabadi178' => 'SA',
+            'sekarpermata' => 'SP',
             default => null,
         };
         if ($prefix === null || strcasecmp($voyage, 'DOCK') === 0) {
             return true;
         }
 
-        // Fleet voyage numbers use the vessel code, optionally followed by route and year.
-        return preg_match('/^'.$prefix.'\d+(?:[A-Z]{2}\d{2})?$/i', $voyage) === 1;
+        // Keep vessel voyage numbers and docking references such as APDOCK310326.
+        return preg_match('/^'.$prefix.'(?:\d+(?:[A-Z]{2}\d{2})?|DOCK\d{6})$/i', $voyage) === 1;
     }
 }
