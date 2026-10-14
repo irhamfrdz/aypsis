@@ -29,8 +29,15 @@
     <div id="rekap-groups" class="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         @foreach($groups as $category => $items)
             <section class="rekap-group rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="{{ $category }}">
-                <h2 class="border-b border-slate-200 px-3 pb-3 text-sm font-semibold text-slate-800">{{ $category }}</h2>
-                <div class="mt-3 space-y-1">
+                <h2>
+                    <button type="button" class="rekap-toggle flex w-full items-center justify-between border-b border-slate-200 px-3 pb-3 text-left text-sm font-semibold text-slate-800" aria-controls="rekap-content-{{ $loop->index }}" aria-expanded="false">
+                        <span>{{ $category }}</span>
+                        <svg class="rekap-arrow h-3 w-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                </h2>
+                <div id="rekap-content-{{ $loop->index }}" class="rekap-content mt-3 space-y-1" style="display: none;">
                     @foreach($items as $item)
                         <a href="{{ route($item['route']) }}" target="_blank" rel="noopener noreferrer" class="rekap-link block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700">{{ $item['label'] }}</a>
                     @endforeach
@@ -48,6 +55,22 @@
     const rekapGroups = [...document.querySelectorAll('.rekap-group')];
     const rekapEmpty = document.getElementById('rekap-empty');
 
+    function setRekapExpanded(group, expanded) {
+        const toggle = group.querySelector('.rekap-toggle');
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.querySelector('.rekap-arrow').classList.toggle('rotate-180', expanded);
+        group.querySelector('.rekap-content').style.display = expanded ? 'block' : 'none';
+    }
+
+    rekapGroups.forEach(group => {
+        group.dataset.manualExpanded = 'false';
+        group.querySelector('.rekap-toggle').addEventListener('click', () => {
+            const expanded = group.querySelector('.rekap-toggle').getAttribute('aria-expanded') !== 'true';
+            group.dataset.manualExpanded = String(expanded);
+            setRekapExpanded(group, expanded);
+        });
+    });
+
     rekapSearch.addEventListener('input', () => {
         const term = rekapSearch.value.trim().toLocaleLowerCase();
         let visibleGroups = 0;
@@ -60,6 +83,7 @@
                 if (visible) visibleLinks++;
             });
             group.style.display = visibleLinks ? '' : 'none';
+            setRekapExpanded(group, term ? visibleLinks > 0 : group.dataset.manualExpanded === 'true');
             if (visibleLinks) visibleGroups++;
         });
         rekapEmpty.classList.toggle('hidden', visibleGroups > 0);
