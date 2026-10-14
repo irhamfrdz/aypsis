@@ -101,6 +101,7 @@ class TrackingTransaksiController extends Controller
                         'type' => $key,
                         'label' => $config['label'],
                         'number' => $displayNumber ?: $number,
+                        'details' => $key === 'surat-jalan' ? $this->buildSuratJalanDetails($record) : null,
                         'timeline' => match ($key) {
                             'surat-jalan' => $this->buildSuratJalanTimeline($record),
                             'tanda-terima-tanpa-surat-jalan' => $this->buildTandaTerimaTanpaSuratJalanTimeline($record),
@@ -305,6 +306,41 @@ class TrackingTransaksiController extends Controller
 
             return $step;
         }, $steps);
+    }
+
+    private function buildSuratJalanDetails(SuratJalan $suratJalan): array
+    {
+        $tandaTerima = TandaTerima::query()
+            ->with('shipperJb')
+            ->where(function ($query) use ($suratJalan) {
+                $query->where('surat_jalan_id', $suratJalan->id)
+                    ->orWhere('no_surat_jalan', $suratJalan->no_surat_jalan);
+            })
+            ->latest('created_at')
+            ->first();
+
+        $containerNumbers = collect($tandaTerima?->kontainer_details ?? [])
+            ->pluck('nomor_kontainer')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($containerNumbers->isEmpty()) {
+            $containerNumbers = collect(preg_split('/[,\n]+/', (string) ($tandaTerima?->no_kontainer ?: $suratJalan->no_kontainer)))
+                ->map(fn ($number) => trim($number))
+                ->filter()
+                ->unique()
+                ->values();
+        }
+
+        $shipper = $tandaTerima?->shipperJb?->shipper
+            ?: $tandaTerima?->pengirim
+            ?: $suratJalan->pengirimRelation?->nama_pengirim;
+
+        return [
+            'container' => $containerNumbers->implode(', '),
+            'shipper' => $shipper,
+        ];
     }
 
     private function buildTandaTerimaTanpaSuratJalanTimeline(TandaTerimaTanpaSuratJalan $tandaTerima): array

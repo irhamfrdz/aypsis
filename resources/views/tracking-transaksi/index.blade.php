@@ -44,6 +44,18 @@
                 {{ collect($result['timeline'])->where('complete', true)->count() }} dari {{ count($result['timeline']) }} tahap selesai
             </span>
         </div>
+        @if($result['type'] === 'surat-jalan')
+        <dl class="mt-4 grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nomor kontainer</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-900">{{ $result['details']['container'] ?: 'Belum tercatat' }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Shipper</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-900">{{ $result['details']['shipper'] ?: 'Belum tercatat' }}</dd>
+            </div>
+        </dl>
+        @endif
         <div class="mt-6">
             <h4 class="mb-4 text-sm font-semibold text-slate-800">Timeline transaksi</h4>
             @if(count($result['timeline']))
