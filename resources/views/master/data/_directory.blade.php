@@ -348,6 +348,50 @@
                             </div>
                         @endif
 
+                        {{-- Master Aktiva --}}
+                        @php
+                            $hasMasterAktivaPermissions = $user && (
+                                $user->can('master-mobil-view') ||
+                                $user->can('master-kapal.view') ||
+                                $user->can('master-alat-berat-view') ||
+                                $user->can('asset-view') ||
+                                $user->can('master-asset-view') ||
+                                $user->can('master-stock-kontainer-view') ||
+                                $user->can('master-kontainer-view') ||
+                                $isAdmin
+                            );
+                        @endphp
+                        @if($hasMasterAktivaPermissions)
+                        <div class="mx-2 mb-3">
+                            <button id="master-aktiva-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 hover:shadow-sm transition-all duration-200 group">
+                                <span class="text-xs font-medium">Master Aktiva</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="master-aktiva-content" class="dropdown-content ml-4 mt-2 space-y-1">
+                                @if($user && $user->can('master-mobil-view'))
+                                    <a href="{{ route('master.mobil.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kendaraan</span></a>
+                                @endif
+                                @if($user && $user->can('master-kapal.view'))
+                                    <a href="{{ route('master-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kapal</span></a>
+                                @endif
+                                @if($user && $user->can('master-alat-berat-view'))
+                                    <a href="{{ route('master.alat-berat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Alat Berat</span></a>
+                                @endif
+                                @if($isAdmin || ($user && ($user->can('asset-view') || $user->can('master-asset-view'))))
+                                    <a href="{{ route('asset.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Asset</span></a>
+                                @endif
+                                @if($user && $user->can('master-stock-kontainer-view'))
+                                    <a href="{{ route('master.stock-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kontainer (Stok Kontainer)</span></a>
+                                @endif
+                                @if($user && $user->can('master-kontainer-view'))
+                                    <a href="{{ route('master.kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kontainer Sewa</span></a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
                         {{-- Master Pemasok Sub-Dropdown --}}
                         @php
                             $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.vendor-supir.*') || Request::routeIs('master.vendor-asuransi.*') || Request::routeIs('master.vendor-amprahan.*');

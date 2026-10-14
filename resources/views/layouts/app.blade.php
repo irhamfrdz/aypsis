@@ -404,6 +404,13 @@
                         $user->can('master-vendor-asuransi-view') ||
                         $user->can('master-vendor-supir-view') ||
                         $user->can('vendor-kontainer-sewa-view') ||
+                        $user->can('master-mobil-view') ||
+                        $user->can('master-kapal.view') ||
+                        $user->can('master-alat-berat-view') ||
+                        $user->can('asset-view') ||
+                        $user->can('master-asset-view') ||
+                        $user->can('master-stock-kontainer-view') ||
+                        $user->can('master-kontainer-view') ||
 
                         $user->can('master-pricelist-labuh-tambat-view') ||
                         $user->can('master-pricelist-freight-view') ||
@@ -740,7 +747,7 @@
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('pergerakan-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('rekap-biaya-kapal.*') || Request::routeIs('rekap-biaya-asset.*') || Request::routeIs('rekap-pemakaian-barang.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
-    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('asset-view') || $user->can('master-asset-view') || $user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('master-gudang-amprahan-view') || $user->can('master-type-bon-amprahan-view') || $user->can('master-alat-berat-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
+    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('master-gudang-amprahan-view') || $user->can('master-type-bon-amprahan-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -770,18 +777,6 @@
                 </svg>
             </button>
             <div id="kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isKontainerRoute) style="display: block;" @endif>
-                @if($user && $user->can('master-kontainer-view'))
-                    <a href="{{ route('master.kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Master Kontainer Sewa</span>
-                    </a>
-                @endif
-
-                @if($user && $user->can('master-stock-kontainer-view'))
-                    <a href="{{ route('master.stock-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.stock-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Stock Kontainer</span>
-                    </a>
-                @endif
-
                 @if($user && $user->can('master-stock-kontainer-view'))
                     <a href="{{ route('master.kontainer.stock-pergudang') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.kontainer.stock-pergudang') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Stock Kontainer per Gudang</span>
@@ -826,15 +821,6 @@
                     </a>
                 @endif
             </div>
-        </div>
-        @endif
-
-        {{-- Master Kapal --}}
-        @if($user && $user->can('master-kapal.view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Kapal</span>
-            </a>
         </div>
         @endif
 
@@ -910,15 +896,6 @@
         </div>
         @endif
 
-        {{-- Master Kendaraan --}}
-        @if($user && $user->can('master-mobil-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.mobil.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Kendaraan</span>
-            </a>
-        </div>
-        @endif
-
         {{-- Master Chasis Batam --}}
         @if($user && $user->can('master-chasis-batam-view'))
         <div class="mx-2 mb-3">
@@ -928,24 +905,6 @@
         </div>
         @endif
 
-
-        {{-- Master Alat Berat --}}
-        @if($user && $user->can('master-alat-berat-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.alat-berat.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.alat-berat.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Alat Berat</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Asset --}}
-        @if($isAdmin || ($user && ($user->can('asset-view') || $user->can('master-asset-view'))))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('asset.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('asset.*') || Request::routeIs('master.asset.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Asset</span>
-            </a>
-        </div>
-        @endif
 
         {{-- Master Gudang --}}
         @if($user && $user->can('master-gudang-view'))
