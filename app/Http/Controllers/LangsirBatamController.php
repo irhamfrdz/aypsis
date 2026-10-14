@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
 use App\Models\LangsirBatam;
-use App\Models\Mobil;
 use App\Models\MasterChasisBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -90,10 +89,9 @@ class LangsirBatamController extends Controller
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-        $chasisAyps = $this->chasisAyps();
         $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisAyps', 'chasisBatams'));
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisBatams'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -244,7 +242,7 @@ class LangsirBatamController extends Controller
             }
         }
 
-        $chasisAypByKir = $this->chasisAyps()->groupBy(fn (Mobil $mobil) => strtolower(trim($mobil->no_kir)));
+        $chasisBatamByKode = MasterChasisBatam::all()->keyBy(fn ($chasis) => strtolower(trim($chasis->kode)));
 
         $gudangMap = [];
         foreach (\App\Models\Gudang::where('status', 'aktif')->get() as $g) {
@@ -355,19 +353,9 @@ class LangsirBatamController extends Controller
                 $chasisMobilId = null;
                 $noChasis = $inputChasis;
                 if ($sumberChasis === 'AYP') {
-                    $matches = $chasisAypByKir->get(strtolower($inputChasis), collect());
-                    if ($matches->count() !== 1) {
-                        $errors[] = "Baris {$rowNumber}: No. KIR '{$inputChasis}' harus cocok dengan tepat satu mobil berjenis Buntut di master.";
-
-                        continue;
-                    }
-
-                    $chasisMobilId = $matches->first()->id;
-                    $noChasis = trim($matches->first()->no_kir);
-                } else {
-                    $masterChasis = MasterChasisBatam::where('kode', $inputChasis)->first();
+                    $masterChasis = $chasisBatamByKode->get(strtolower($inputChasis));
                     if (! $masterChasis) {
-                        $errors[] = "Baris {$rowNumber}: No. Chasis '{$inputChasis}' tidak terdaftar di Master Chasis Batam.";
+                        $errors[] = "Baris {$rowNumber}: No. Chasis AYP '{$inputChasis}' tidak terdaftar di Master Chasis Batam.";
 
                         continue;
                     }
@@ -502,10 +490,9 @@ class LangsirBatamController extends Controller
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
-        $chasisAyps = $this->chasisAyps();
         $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisAyps', 'chasisBatams'));
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisBatams'));
     }
 
     /**
@@ -628,36 +615,20 @@ class LangsirBatamController extends Controller
         return redirect()->route('langsir-batam.index')->with('success', count($request->ids).' Data Langsir Batam berhasil dihapus.');
     }
 
-    private function chasisAyps()
-    {
-        return Mobil::query()
-            ->where('jenis', 'like', '%buntut%')
-            ->whereNotNull('no_kir')
-            ->whereRaw("TRIM(no_kir) <> ''")
-            ->orderBy('no_kir')
-            ->get(['id', 'no_kir', 'nomor_polisi']);
-    }
-
     private function chasisRules(bool $required): array
     {
         return [
             'sumber_chasis' => [$required ? 'required' : 'nullable', Rule::in(['AYP', 'PB'])],
-            'chasis_mobil_id' => [
-                'nullable', 'integer', 'required_if:sumber_chasis,AYP',
-                Rule::exists('mobils', 'id')->where(function ($query) {
-                    $query->where('jenis', 'like', '%buntut%')
-                        ->whereNotNull('no_kir')
-                        ->whereRaw("TRIM(no_kir) <> ''");
-                }),
-            ],
-            'no_chasis_pb' => ['nullable', 'string', 'max:50', 'required_if:sumber_chasis,PB', Rule::exists('master_chasis_batams', 'kode')],
+            'no_chasis_ayp' => ['nullable', 'string', 'max:50', 'required_if:sumber_chasis,AYP', Rule::exists('master_chasis_batams', 'kode')],
+            'no_chasis_pb' => ['nullable', 'string', 'max:255', 'required_if:sumber_chasis,PB'],
         ];
     }
 
     private function resolveChasis(array &$validated): void
     {
         if (($validated['sumber_chasis'] ?? null) === 'AYP') {
-            $validated['no_chasis'] = trim(Mobil::findOrFail($validated['chasis_mobil_id'])->no_kir);
+            $validated['no_chasis'] = trim($validated['no_chasis_ayp']);
+            $validated['chasis_mobil_id'] = null;
         } elseif (($validated['sumber_chasis'] ?? null) === 'PB') {
             $validated['chasis_mobil_id'] = null;
             $validated['no_chasis'] = trim($validated['no_chasis_pb']);
@@ -666,6 +637,6 @@ class LangsirBatamController extends Controller
             $validated['no_chasis'] = null;
         }
 
-        unset($validated['no_chasis_pb']);
+        unset($validated['no_chasis_ayp'], $validated['no_chasis_pb']);
     }
 }

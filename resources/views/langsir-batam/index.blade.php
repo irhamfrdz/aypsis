@@ -409,7 +409,7 @@
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
                             SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya
                         </div>
-                        <p class="mt-1">AYP: isi nomor KIR dari master mobil berjenis Buntut. PB: isi kode yang terdaftar di Master Chasis Batam.</p>
+                        <p class="mt-1">AYP: isi kode dari Master Chasis Batam. PB: isi nomor chasis secara manual.</p>
                     </div>
                 </div>
                 <div class="mb-4">
