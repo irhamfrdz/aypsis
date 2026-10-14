@@ -71,7 +71,11 @@
                 const klasifikasiSel = section.querySelector('.opp-opt-klasifikasi-select');
                 if (klasifikasiSel && data.barang && data.barang.length > 0) {
                     klasifikasiSel.value = data.barang[0].klasifikasi || '';
-                    toggleOpslagMode(sectionIndex, klasifikasiSel.value);
+                    // Hanya perlu membangun tampilan khusus untuk Opslag. Untuk mode
+                    // biasa, biarkan baris tersimpan tetap utuh saat halaman dibuka.
+                    if (klasifikasiSel.value === 'opslag') {
+                        toggleOpslagMode(sectionIndex, klasifikasiSel.value);
+                    }
                 }
 
                 // Hidden values
@@ -386,36 +390,9 @@
             if (data.success && data.data) {
                 container.innerHTML = '';
                 section.setAttribute('data-manifests', JSON.stringify(data.data));
-                
-                // Group data by nomor_kontainer
-                const groupedManifests = {};
-                const cargoManifests = [];
-                
-                data.data.forEach(manifest => {
-                    if (manifest.nomor_kontainer) {
-                        if (!groupedManifests[manifest.nomor_kontainer]) {
-                            groupedManifests[manifest.nomor_kontainer] = [];
-                        }
-                        groupedManifests[manifest.nomor_kontainer].push(manifest.id);
-                    } else {
-                        cargoManifests.push([manifest.id]);
-                    }
-                });
-                
-                // Add rows for grouped containers
-                Object.values(groupedManifests).forEach(manifestIds => {
-                    addBarangToOppOptSection(sectionIndex, manifestIds);
-                });
-                
-                // Add rows for cargo (no container number)
-                cargoManifests.forEach(manifestIds => {
-                    addBarangToOppOptSection(sectionIndex, manifestIds);
-                });
-                
-                // If no data, add empty row
-                if (Object.keys(groupedManifests).length === 0 && cargoManifests.length === 0) {
-                    addBarangToOppOptSection(sectionIndex);
-                }
+
+                // Muat pilihan manifest tanpa memilih semua kontainer secara otomatis.
+                addBarangToOppOptSection(sectionIndex);
                 
                 calculateTotalFromAllOppOptSections();
             } else {
