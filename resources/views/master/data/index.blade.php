@@ -5,6 +5,9 @@
 
 @push('styles')
 <style>
+    #master-data-directory {
+        align-items: start;
+    }
     #master-data-directory > div {
         margin: 0;
         padding: 1rem;
