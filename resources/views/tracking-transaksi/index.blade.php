@@ -40,7 +40,9 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">{{ $result['label'] }}</p>
                 <h3 class="mt-1 text-xl font-bold text-slate-900">{{ $result['number'] }}</h3>
             </div>
-            <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">{{ count($result['timeline']) }} riwayat</span>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ collect($result['timeline'])->every(fn ($event) => $event['complete']) ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800' }}">
+                {{ collect($result['timeline'])->where('complete', true)->count() }} dari {{ count($result['timeline']) }} tahap selesai
+            </span>
         </div>
         <div class="mt-6">
             <h4 class="mb-4 text-sm font-semibold text-slate-800">Timeline transaksi</h4>
@@ -48,7 +50,7 @@
                 <ol class="relative ml-2 border-l border-slate-200">
                     @foreach($result['timeline'] as $event)
                     <li class="relative pb-6 pl-6 last:pb-0">
-                        <span class="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-blue-600 ring-1 ring-blue-200"></span>
+                        <span class="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full border-2 border-white {{ $event['complete'] ? 'bg-emerald-600 ring-emerald-200' : 'bg-slate-300 ring-slate-200' }} ring-1"></span>
                         <time class="text-xs font-medium text-slate-500">{{ $event['formatted_at'] }}</time>
                         <p class="mt-1 text-sm font-semibold text-slate-900">{{ $event['title'] }}</p>
                         @if($event['description'])<p class="mt-0.5 text-sm text-slate-600">{{ $event['description'] }}</p>@endif

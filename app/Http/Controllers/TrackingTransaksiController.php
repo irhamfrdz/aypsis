@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Bl;
+use App\Models\Manifest;
+use App\Models\NaikKapal;
+use App\Models\Prospek;
 use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaranBatam;
 use App\Models\SuratJalanBongkaran;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
@@ -96,7 +101,9 @@ class TrackingTransaksiController extends Controller
                         'type' => $key,
                         'label' => $config['label'],
                         'number' => $displayNumber ?: $number,
-                        'timeline' => $this->buildTimeline($record, $config),
+                        'timeline' => $key === 'surat-jalan'
+                            ? $this->buildSuratJalanTimeline($record)
+                            : $this->buildTimeline($record, $config),
                     ];
                 }
             }
@@ -220,8 +227,80 @@ class TrackingTransaksiController extends Controller
             ->values()
             ->map(fn (array $event) => [
                 ...$event,
+                'complete' => true,
                 'formatted_at' => Carbon::parse($event['at'])->format('d M Y H:i'),
             ])
             ->all();
+    }
+
+    private function buildSuratJalanTimeline(SuratJalan $suratJalan): array
+    {
+        $noSuratJalan = $suratJalan->no_surat_jalan;
+        $tandaTerima = TandaTerima::query()
+            ->where(function ($query) use ($suratJalan, $noSuratJalan) {
+                $query->where('surat_jalan_id', $suratJalan->id)
+                    ->orWhere('no_surat_jalan', $noSuratJalan);
+            })
+            ->latest('created_at')
+            ->first();
+
+        $prospeks = Prospek::query()
+            ->where(function ($query) use ($suratJalan, $noSuratJalan) {
+                $query->where('surat_jalan_id', $suratJalan->id)
+                    ->orWhere('no_surat_jalan', $noSuratJalan)
+                    ->orWhere('no_surat_jalan', 'like', $noSuratJalan.'-%');
+            })
+            ->when($tandaTerima, fn ($query) => $query->orWhere('tanda_terima_id', $tandaTerima->id))
+            ->get(['id']);
+        $prospekIds = $prospeks->pluck('id');
+
+        $paid = $suratJalan->status_pembayaran === 'sudah_dibayar'
+            || $suratJalan->status_pembayaran_uang_jalan === 'dibayar';
+        $paymentLog = $paid
+            ? AuditLog::query()
+                ->where('auditable_type', SuratJalan::class)
+                ->where('auditable_id', $suratJalan->id)
+                ->orderBy('created_at')
+                ->get()
+                ->first(function (AuditLog $log) {
+                    $changes = $log->new_values ?? [];
+
+                    return ($changes['status_pembayaran'] ?? null) === 'sudah_dibayar'
+                        || ($changes['status_pembayaran_uang_jalan'] ?? null) === 'dibayar';
+                })
+            : null;
+
+        $naikKapal = $prospekIds->isNotEmpty()
+            ? NaikKapal::query()->whereIn('prospek_id', $prospekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $bl = $prospekIds->isNotEmpty()
+            ? Bl::query()->whereIn('prospek_id', $prospekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $obDate = $naikKapal?->tanggal_ob ?? $bl?->tanggal_ob;
+
+        $manifestIds = $prospekIds->isNotEmpty()
+            ? Manifest::query()->whereIn('prospek_id', $prospekIds)->pluck('id')
+            : collect();
+        $suratJalanBongkaranBatam = $manifestIds->isNotEmpty()
+            ? SuratJalanBongkaranBatam::query()->whereIn('manifest_id', $manifestIds)->latest('created_at')->first()
+            : null;
+
+        $steps = [
+            ['title' => 'Surat jalan dibuat', 'at' => $suratJalan->created_at, 'complete' => (bool) $suratJalan->created_at],
+            ['title' => 'Surat jalan dibayar', 'at' => $paid ? ($paymentLog?->created_at ?? $suratJalan->updated_at) : null, 'complete' => $paid],
+            ['title' => 'Supir melakukan checkpoint', 'at' => $suratJalan->tanggal_checkpoint, 'complete' => (bool) $suratJalan->tanggal_checkpoint],
+            ['title' => 'Surat jalan diterima di pelabuhan (tanda terima dibuat)', 'at' => $tandaTerima?->created_at, 'complete' => (bool) $tandaTerima],
+            ['title' => 'Surat jalan dimuat di kapal (OB Muat)', 'at' => $obDate, 'complete' => (bool) ($naikKapal || $bl)],
+            ['title' => 'Surat jalan dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)', 'at' => $suratJalanBongkaranBatam?->created_at, 'complete' => (bool) $suratJalanBongkaranBatam],
+        ];
+
+        return array_map(function (array $step) {
+            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['formatted_at'] = $step['at']
+                ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
+                : 'Belum tercatat';
+
+            return $step;
+        }, $steps);
     }
 }
