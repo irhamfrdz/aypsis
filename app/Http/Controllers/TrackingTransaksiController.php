@@ -79,6 +79,15 @@ class TrackingTransaksiController extends Controller
 
         $number = trim((string) $request->query('number', ''));
         $results = [];
+        $matchedSuratJalanNumbers = collect();
+
+        if ($number !== '' && isset($types['surat-jalan'])) {
+            $matchedSuratJalanNumbers = SuratJalan::query()
+                ->where('no_surat_jalan', 'like', '%'.$number.'%')
+                ->pluck('no_surat_jalan')
+                ->filter()
+                ->map(fn ($value) => mb_strtolower(trim((string) $value)));
+        }
 
         if ($number !== '') {
             foreach ($types as $key => $config) {
@@ -93,6 +102,14 @@ class TrackingTransaksiController extends Controller
                     ->get();
 
                 foreach ($records as $record) {
+                    // Surat Jalan dan Tanda Terima yang terhubung adalah satu transaksi.
+                    // Timeline Surat Jalan sudah mencakup tahap checkpoint dan penerimaan pelabuhan.
+                    if ($key === 'tanda-terima' && $matchedSuratJalanNumbers->contains(
+                        mb_strtolower(trim((string) $record->no_surat_jalan))
+                    )) {
+                        continue;
+                    }
+
                     $displayNumber = collect($config['columns'])
                         ->map(fn (string $column) => $record->getAttribute($column))
                         ->first(fn ($value) => filled($value));
