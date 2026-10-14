@@ -1555,20 +1555,6 @@
                         </svg>
                     </button>
                     <div id="sewa-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isSewaRoute) style="display: block;" @endif>
-                        {{-- Tagihan Kontainer Sewa --}}
-                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
-                            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Tagihan Kontainer Sewa</span>
-                            </a>
-                        @endif
-
-                        {{-- Tagihan Kontainer Sewa 2 --}}
-                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
-                            <a href="{{ route('daftar-tagihan-kontainer-sewa-2.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Tagihan Kontainer Sewa 2</span>
-                            </a>
-                        @endif
-
                         @if($user && $user->can('tagihan-kontainer-sewa-index'))
                             <a href="{{ route('kontainer-sewa-billing.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('kontainer-sewa-billing.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Kontainer Sewa Billing (Baru)</span>
@@ -1599,20 +1585,6 @@
                         @if($user && $user->can('master-pricelist-tujuan-kontainer-sewa-view'))
                             <a href="{{ route('master-pricelist-tujuan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-tujuan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Tujuan Kontainer Sewa</span>
-                            </a>
-                        @endif
-
-                        {{-- Invoice Tagihan Sewa - menggunakan permission tagihan-kontainer-sewa-index --}}
-                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
-                            <a href="{{ route('invoice-tagihan-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('invoice-tagihan-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Invoice Tagihan Sewa</span>
-                            </a>
-                        @endif
-
-                        {{-- Pranota Kontainer Sewa --}}
-                        @if($user && $user->can('pranota-kontainer-sewa-view'))
-                            <a href="{{ route('pranota-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Pranota Kontainer Sewa</span>
                             </a>
                         @endif
 

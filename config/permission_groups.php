@@ -35,11 +35,6 @@ return [
         'prefixes' => ['laporan-'],
     ],
 
-    'tagihan-kontainer' => [
-        'label' => 'Tagihan Kontainer',
-        'prefixes' => ['tagihan-kontainer-sewa', 'tagihan-kontainer'],
-    ],
-
     'permohonan' => [
         'label' => 'Permohonan',
         'prefixes' => ['permohonan-'],

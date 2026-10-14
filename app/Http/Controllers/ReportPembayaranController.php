@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\PembayaranAktivitasLainnya;
 use App\Models\PembayaranOb;
 use App\Models\PembayaranPranotaCat;
-use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranUangMuka;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -61,7 +60,6 @@ class ReportPembayaranController extends Controller
         $paymentModels = [
             'ob' => ['model' => PembayaranOb::class, 'label' => 'Pembayaran OB', 'date_column' => 'tanggal_pembayaran'],
             'uang_muka' => ['model' => PembayaranUangMuka::class, 'label' => 'Pembayaran Uang Muka', 'date_column' => 'tanggal_pembayaran'],
-            'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],
@@ -150,7 +148,6 @@ class ReportPembayaranController extends Controller
         $paymentModels = [
             'ob' => ['model' => PembayaranOb::class, 'label' => 'Pembayaran OB', 'date_column' => 'tanggal_pembayaran'],
             'dp' => ['model' => PembayaranDpOb::class, 'label' => 'Pembayaran DP', 'date_column' => 'tanggal_pembayaran'],
-            'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],
@@ -264,7 +261,6 @@ class ReportPembayaranController extends Controller
         $paymentModels = [
             'ob' => ['model' => PembayaranOb::class, 'label' => 'Pembayaran OB', 'date_column' => 'tanggal_pembayaran'],
             'dp' => ['model' => PembayaranDpOb::class, 'label' => 'Pembayaran DP', 'date_column' => 'tanggal_pembayaran'],
-            'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],

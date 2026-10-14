@@ -52,7 +52,6 @@ use App\Http\Controllers\PembayaranAktivitasLainController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
 use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\PembayaranPranotaCatController;
-use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\PembayaranPranotaObController;
 use App\Http\Controllers\PembayaranPranotaOngkosTrukController;
 use App\Http\Controllers\PembayaranPranotaRitController;
@@ -64,7 +63,6 @@ use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PranotaBpjsController;
 use App\Http\Controllers\PranotaOngkosTrukController;
-use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PricelistCatController;
 use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\ProspekController;
@@ -273,16 +271,6 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
-    // Onboarding routes for authenticated users who need to create their Karyawan record.
-    // These are intentionally named without the 'master.' prefix and do NOT use the
-    // 'can:master-karyawan' gate so that newly created users (pending) can submit
-    // their karyawan data on first login.
-    // Route create/store karyawan untuk master/admin hanya gunakan prefix master/karyawan agar tidak bentrok dengan onboarding
-
-    // Tagihan Kontainer Sewa routes removed - controller/views refactored by request
-    // 2026-02-09: Restoring specific route for Create Next Periode functionality
-    Route::post('daftar-tagihan-kontainer-sewa/{id}/create-next-periode', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'createNextPeriode'])
-        ->name('daftar-tagihan-kontainer-sewa.create-next-periode');
 
     Route::get('/kontainer-sewa-final', [App\Http\Controllers\KontainerSewaFinalController::class, 'index'])->name('kontainer-sewa-final.index');
     Route::post('/kontainer-sewa-final/sync', [App\Http\Controllers\KontainerSewaFinalController::class, 'sync'])->name('kontainer-sewa-final.sync');
@@ -364,21 +352,7 @@ Route::middleware([
         'tanda-terima-surat-jalan-kontainer-sewa' => 'tanda_terima_sewa',
     ]);
 
-    Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
-    Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');
-    Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');
-    Route::get('daftar-tagihan-kontainer-sewa-2/groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getGroups'])->name('daftar-tagihan-kontainer-sewa-2.groups');
-    Route::post('daftar-tagihan-kontainer-sewa-2/ungroup-containers', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'ungroupContainers'])->name('daftar-tagihan-kontainer-sewa-2.ungroup-containers');
-    Route::post('daftar-tagihan-kontainer-sewa-2/delete-groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'deleteGroups'])->name('daftar-tagihan-kontainer-sewa-2.delete-groups');
-    Route::get('daftar-tagihan-kontainer-sewa-2/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'import'])->name('daftar-tagihan-kontainer-sewa-2.import');
-    Route::post('daftar-tagihan-kontainer-sewa-2/import-csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'importCsv'])->name('daftar-tagihan-kontainer-sewa-2.import-csv');
-    Route::get('daftar-tagihan-kontainer-sewa-2/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'exportTemplate'])->name('daftar-tagihan-kontainer-sewa-2.export-template');
-    Route::get('daftar-tagihan-kontainer-sewa-2/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'export'])->name('daftar-tagihan-kontainer-sewa-2.export');
-    Route::post('daftar-tagihan-kontainer-sewa-2/bulk-delete', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'bulkDelete'])->name('daftar-tagihan-kontainer-sewa-2.bulk-delete');
-    Route::post('daftar-tagihan-kontainer-sewa-2/bulk-update-status', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'bulkUpdateStatus'])->name('daftar-tagihan-kontainer-sewa-2.bulk-update-status');
-    Route::get('daftar-tagihan-kontainer-sewa-2/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'generateInvoiceNumber'])->name('daftar-tagihan-kontainer-sewa-2.generate-invoice-number');
 
-    Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
 
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
 
@@ -6017,195 +5991,59 @@ Route::middleware([
     // Minimal CRUD routes for new simplified Tagihan Kontainer Sewa (daftar)
     // Controller should be implemented as resourceful controller: index, create, store, show, edit, update, destroy
     // Download CSV template for daftar tagihan
-    Route::get('daftar-tagihan-kontainer-sewa/template/csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'downloadTemplateCsv'])
-        ->name('daftar-tagihan-kontainer-sewa.template.csv')
-        ->middleware('can:tagihan-kontainer-sewa-index');
 
     // Import page (UI for import) - GET route must come BEFORE POST route
-    Route::get('daftar-tagihan-kontainer-sewa/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importPage'])
-        ->name('daftar-tagihan-kontainer-sewa.import')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Import CSV upload endpoint (legacy - for backward compatibility)
-    Route::post('daftar-tagihan-kontainer-sewa/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importCsv'])
-        ->name('daftar-tagihan-kontainer-sewa.import.legacy')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Process import (handle file upload and processing)
-    Route::post('daftar-tagihan-kontainer-sewa/import/process', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'processImport'])
-        ->name('daftar-tagihan-kontainer-sewa.import.process')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Import CSV via modal (new AJAX endpoint)
-    Route::post('daftar-tagihan-kontainer-sewa/import-csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importCsvModal'])
-        ->name('daftar-tagihan-kontainer-sewa.import-csv')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Export data to CSV
-    Route::get('daftar-tagihan-kontainer-sewa/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'export'])
-        ->name('daftar-tagihan-kontainer-sewa.export')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Export template (Excel/CSV template download)
-    Route::get('daftar-tagihan-kontainer-sewa/export-template', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'exportTemplate'])
-        ->name('daftar-tagihan-kontainer-sewa.export-template')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Import CSV with automatic grouping (legacy route)
-    Route::post('daftar-tagihan-kontainer-sewa/import-grouped', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importWithGrouping'])
-        ->name('daftar-tagihan-kontainer-sewa.import.grouped')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Test import page (temporary debug route)
-    Route::get('test-import', function () {
-        return view('test-import');
-    })->name('test-import')->middleware('can:tagihan-kontainer-sewa-create');
 
     // Debug import endpoint
-    Route::any('debug-import', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'debugImport'])
-        ->name('debug-import');
 
     // Update adjustment endpoint
-    Route::patch('daftar-tagihan-kontainer-sewa/{id}/adjustment', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateAdjustment'])
-        ->name('daftar-tagihan-kontainer-sewa.adjustment.update')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
     // Update adjustment note endpoint
-    Route::patch('daftar-tagihan-kontainer-sewa/{id}/adjustment-note', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateAdjustmentNote'])
-        ->name('daftar-tagihan-kontainer-sewa.adjustment-note.update')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
     // Update vendor info endpoint
-    Route::patch('daftar-tagihan-kontainer-sewa/{id}/vendor-info', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateVendorInfo'])
-        ->name('daftar-tagihan-kontainer-sewa.vendor-info.update')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
     // Update group info endpoint
-    Route::patch('daftar-tagihan-kontainer-sewa/{id}/group-info', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateGroupInfo'])
-        ->name('daftar-tagihan-kontainer-sewa.group-info.update')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
     // AJAX endpoint: compute DPP from pricelist (for create/edit forms)
-    Route::get('daftar-tagihan-kontainer-sewa/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'getPricelistForDpp'])
-        ->name('daftar-tagihan-kontainer-sewa.get_pricelist')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // Generate invoice number (must be before resource routes to avoid conflict)
-    Route::get('daftar-tagihan-kontainer-sewa/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'generateInvoiceNumber'])
-        ->name('daftar-tagihan-kontainer-sewa.generate-invoice-number')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
     // Individual routes with specific middleware instead of resource
-    Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
-        ->name('daftar-tagihan-kontainer-sewa.index')
-        ->middleware('can:tagihan-kontainer-sewa-index');
 
-    Route::get('daftar-tagihan-kontainer-sewa/create', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'create'])
-        ->name('daftar-tagihan-kontainer-sewa.create')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
-    Route::get('daftar-tagihan-kontainer-sewa/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'createGroup'])
-        ->name('daftar-tagihan-kontainer-sewa.create-group')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
-    Route::post('daftar-tagihan-kontainer-sewa/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'storeGroup'])
-        ->name('daftar-tagihan-kontainer-sewa.store-group')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
-    Route::post('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'store'])
-        ->name('daftar-tagihan-kontainer-sewa.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
-    Route::get('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'show'])
-        ->name('daftar-tagihan-kontainer-sewa.show')
-        ->middleware('can:tagihan-kontainer-sewa-index');
 
-    Route::get('daftar-tagihan-kontainer-sewa/{tagihan}/edit', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'edit'])
-        ->name('daftar-tagihan-kontainer-sewa.edit')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
-    Route::put('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'update'])
-        ->name('daftar-tagihan-kontainer-sewa.update')
-        ->middleware('can:tagihan-kontainer-sewa-update');
 
-    Route::delete('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'destroy'])
-        ->name('daftar-tagihan-kontainer-sewa.destroy')
-        ->middleware('can:tagihan-kontainer-sewa-destroy');
 
     // Bulk operations for daftar tagihan kontainer sewa
-    Route::delete('daftar-tagihan-kontainer-sewa/bulk-delete', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'bulkDelete'])
-        ->name('daftar-tagihan-kontainer-sewa.bulk-delete')
-        ->middleware('can:tagihan-kontainer-sewa-destroy');
 
     // Group management routes
-    Route::get('daftar-tagihan-kontainer-sewa/groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'getGroups'])
-        ->name('daftar-tagihan-kontainer-sewa.groups')
-        ->middleware('can:tagihan-kontainer-sewa-destroy');
 
-    Route::delete('daftar-tagihan-kontainer-sewa/delete-groups', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'deleteGroups'])
-        ->name('daftar-tagihan-kontainer-sewa.delete-groups')
-        ->middleware('can:tagihan-kontainer-delete');
 
-    Route::patch('daftar-tagihan-kontainer-sewa/ungroup-containers', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'ungroupContainers'])
-        ->name('daftar-tagihan-kontainer-sewa.ungroup-containers')
-        ->middleware('can:tagihan-kontainer-delete');
 
-    Route::post('daftar-tagihan-kontainer-sewa/masukan-ke-pranota', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'masukanKePranota'])
-        ->name('daftar-tagihan-kontainer-sewa.masukan-ke-pranota')
-        ->middleware('can:pranota-create');
 
-    Route::post('daftar-tagihan-kontainer-sewa/bulk-update-status', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'bulkUpdateStatus'])
-        ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
-        ->middleware('can:tagihan-kontainer-update');
 
-    Route::get('daftar-tagihan-kontainer-sewa/get-details-by-ids', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'getDetailsByIds'])
-        ->name('daftar-tagihan-kontainer-sewa.get-details-by-ids')
-        ->middleware('can:tagihan-kontainer-view');
 
     // Invoice Kontainer Sewa routes - menggunakan permission tagihan-kontainer-sewa
-    Route::resource('invoice-tagihan-sewa', \App\Http\Controllers\InvoiceKontainerSewaController::class)
-        ->middleware('can:tagihan-kontainer-sewa-index');
-    Route::delete('invoice-tagihan-sewa-bulk-delete', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'bulkDelete'])
-        ->name('invoice-tagihan-sewa.bulk-delete')
-        ->middleware('can:tagihan-kontainer-sewa-destroy');
-    Route::post('invoice-tagihan-sewa-details', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'details'])
-        ->name('invoice-tagihan-sewa.details')
-        ->middleware('can:tagihan-kontainer-sewa-index');
-    Route::post('invoice-tagihan-sewa-store-pranota', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'storePranotaFromInvoice'])
-        ->name('invoice-tagihan-sewa.store-pranota')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-
-    // Pembayaran Pranota Kontainer routes
-    Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
-        Route::get('/', [PembayaranPranotaKontainerController::class, 'index'])->name('index')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::get('/create', [PembayaranPranotaKontainerController::class, 'create'])->name('create')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::get('/generate-nomor', [PembayaranPranotaKontainerController::class, 'generateNomorPembayaran'])->name('generate-nomor')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::get('/get-available-dp', [PembayaranPranotaKontainerController::class, 'getAvailableDP'])->name('get-available-dp')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::post('/payment-form', [PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::post('/', [PembayaranPranotaKontainerController::class, 'store'])->name('store')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::get('/{id}', [PembayaranPranotaKontainerController::class, 'show'])->name('show')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::get('/{id}/edit', [PembayaranPranotaKontainerController::class, 'edit'])->name('edit')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::put('/{id}', [PembayaranPranotaKontainerController::class, 'update'])->name('update')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::delete('/{id}', [PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy')
-            ->middleware('can:pembayaran-pranota-kontainer-delete');
-        Route::delete('/{pembayaranId}/pranota/{pranotaId}', [PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::get('/{id}/print', [PembayaranPranotaKontainerController::class, 'print'])->name('print')
-            ->middleware('can:pembayaran-pranota-kontainer-print');
-    });
 
     // API route for transaction detail modal
-    Route::get('/api/pembayaran-pranota-kontainer/detail/{nomorPembayaran}', [PembayaranPranotaKontainerController::class, 'getDetailByNomor'])
-        ->middleware(['auth', 'can:pembayaran-pranota-kontainer-view']);
 
 });
 
@@ -6542,120 +6380,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('pranota-cat.bulk-status-update')
         ->middleware('can:pranota-cat-update');
 
-    // Pranota Kontainer Sewa routes
-    Route::get('pranota-kontainer-sewa', [PranotaTagihanKontainerSewaController::class, 'index'])
-        ->name('pranota-kontainer-sewa.index')
-        ->middleware('can:pranota-kontainer-sewa-view');
-    Route::get('pranota-kontainer-sewa/import', [PranotaTagihanKontainerSewaController::class, 'importPage'])
-        ->name('pranota-kontainer-sewa.import');
-    // ->middleware('can:pranota-kontainer-sewa-create'); // Commented temporarily
-    Route::post('pranota-kontainer-sewa/import', [PranotaTagihanKontainerSewaController::class, 'importCsv'])
-        ->name('pranota-kontainer-sewa.import.process');
-    // ->middleware('can:pranota-kontainer-sewa-create'); // Commented temporarily
-    Route::get('pranota-kontainer-sewa/template/csv', [PranotaTagihanKontainerSewaController::class, 'downloadTemplateCsv'])
-        ->name('pranota-kontainer-sewa.template.csv');
-    // ->middleware('can:pranota-kontainer-sewa-create'); // Commented temporarily
-    Route::get('pranota-kontainer-sewa/create', [PranotaTagihanKontainerSewaController::class, 'create'])
-        ->name('pranota-kontainer-sewa.create')
-        ->middleware('can:pranota-kontainer-sewa-create');
-    Route::get('pranota-kontainer-sewa/{pranota}', [PranotaTagihanKontainerSewaController::class, 'show'])
-        ->name('pranota-kontainer-sewa.show')
-        ->middleware('can:pranota-kontainer-sewa-view');
-    Route::get('pranota-kontainer-sewa/{pranota}/edit', [PranotaTagihanKontainerSewaController::class, 'edit'])
-        ->name('pranota-kontainer-sewa.edit')
-        ->middleware('can:pranota-kontainer-sewa-edit');
-    Route::put('pranota-kontainer-sewa/{pranota}', [PranotaTagihanKontainerSewaController::class, 'update'])
-        ->name('pranota-kontainer-sewa.update')
-        ->middleware('can:pranota-kontainer-sewa-update');
-    Route::get('pranota-kontainer-sewa/{pranota}/print', [PranotaTagihanKontainerSewaController::class, 'print'])
-        ->name('pranota-kontainer-sewa.print')
-        ->middleware('can:pranota-kontainer-sewa-print');
-    Route::post('pranota-kontainer-sewa', [PranotaTagihanKontainerSewaController::class, 'store'])
-        ->name('pranota-kontainer-sewa.store')
-        ->middleware('can:pranota-kontainer-sewa-create');
-    Route::post('pranota-kontainer-sewa/bulk-create-from-tagihan-kontainer-sewa', [PranotaTagihanKontainerSewaController::class, 'bulkCreateFromTagihanKontainerSewa'])
-        ->name('pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa')
-        ->middleware('can:pranota-kontainer-sewa-create');
-    Route::get('pranota-kontainer-sewa/next-number', [PranotaTagihanKontainerSewaController::class, 'getNextPranotaNumber'])
-        ->name('pranota-kontainer-sewa.next-number')
-        ->middleware('can:pranota-kontainer-sewa-view');
-    Route::post('pranota-kontainer-sewa/bulk-status-update', [PranotaTagihanKontainerSewaController::class, 'bulkStatusUpdate'])
-        ->name('pranota-kontainer-sewa.bulk-update-status')
-        ->middleware('can:pranota-kontainer-sewa-update');
-    Route::patch('pranota-kontainer-sewa/{pranota}/status', [PranotaTagihanKontainerSewaController::class, 'updateStatus'])
-        ->name('pranota-kontainer-sewa.update.status')
-        ->middleware('can:pranota-kontainer-sewa-update');
-    Route::post('pranota-kontainer-sewa/{pranota}/lepas-kontainer', [PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])
-        ->name('pranota-kontainer-sewa.lepas-kontainer')
-        ->middleware('can:pranota-kontainer-sewa-update');
-    Route::delete('pranota-kontainer-sewa/{pranota}', [PranotaTagihanKontainerSewaController::class, 'destroy'])
-        ->name('pranota-kontainer-sewa.destroy')
-        ->middleware('can:pranota-kontainer-sewa-delete');
-    Route::delete('pranota-kontainer-sewa-bulk-delete', [PranotaTagihanKontainerSewaController::class, 'bulkDelete'])
-        ->name('pranota-kontainer-sewa.bulk-delete')
-        ->middleware('can:pranota-kontainer-sewa-delete');
-
-    // New routes for vendor invoice grouping
-    Route::post('pranota-kontainer-sewa/create-by-vendor-invoice-group', [PranotaTagihanKontainerSewaController::class, 'createPranotaByVendorInvoiceGroup'])
-        ->name('pranota-kontainer-sewa.create-by-vendor-invoice-group')
-        ->middleware('can:pranota-kontainer-sewa-create');
-    Route::post('pranota-kontainer-sewa/preview-vendor-invoice-grouping', [PranotaTagihanKontainerSewaController::class, 'previewVendorInvoiceGrouping'])
-        ->name('pranota-kontainer-sewa.preview-vendor-invoice-grouping')
-        ->middleware('can:pranota-kontainer-sewa-view');
-    Route::post('pranota-kontainer-sewa/add-items-to-existing', [PranotaTagihanKontainerSewaController::class, 'addItemsToExisting'])
-        ->name('pranota-kontainer-sewa.add-items-to-existing')
-        ->middleware('can:pranota-kontainer-sewa-update');
-    Route::post('pranota-kontainer-sewa/update-grand-total', [PranotaTagihanKontainerSewaController::class, 'updateGrandTotal'])
-        ->name('pranota-kontainer-sewa.update-grand-total')
-        ->middleware('can:pranota-kontainer-sewa-update');
-
-    // Pranota Sewa routes
-    Route::prefix('pranota')->name('pranota.')->group(function () {
-        Route::get('/', [PranotaTagihanKontainerSewaController::class, 'index'])->name('index')
-            ->middleware('can:pranota-view');
-        Route::get('/create', [PranotaTagihanKontainerSewaController::class, 'create'])->name('create')
-            ->middleware('can:pranota-create');
-        // Print route must be declared before the parameterized show route
-        Route::get('/{pranota}/print', [PranotaTagihanKontainerSewaController::class, 'print'])->name('print')
-            ->middleware('can:pranota-print');
-        Route::get('/{pranota}', [PranotaTagihanKontainerSewaController::class, 'show'])->name('show')
-            ->middleware('can:pranota-view');
-        Route::post('/', [PranotaTagihanKontainerSewaController::class, 'store'])->name('store')
-            ->middleware('can:pranota-create');
-        Route::post('/bulk', [PranotaTagihanKontainerSewaController::class, 'bulkStore'])->name('bulk.store')
-            ->middleware('can:pranota-create');
-        Route::patch('/{pranota}/status', [PranotaTagihanKontainerSewaController::class, 'updateStatus'])->name('update.status')
-            ->middleware('can:pranota-update');
-        Route::post('/{pranota}/lepas-kontainer', [PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('lepas-kontainer')
-            ->middleware('can:pranota-update');
-        Route::delete('/{pranota}', [PranotaTagihanKontainerSewaController::class, 'destroy'])->name('destroy')
-            ->middleware('can:pranota-delete');
-    });
-
-    // Pembayaran Pranota Kontainer routes
-    Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
-        Route::get('/', [PembayaranPranotaKontainerController::class, 'index'])->name('index')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::get('/create', [PembayaranPranotaKontainerController::class, 'create'])->name('create')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::post('/payment-form', [PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::post('/', [PembayaranPranotaKontainerController::class, 'store'])->name('store')
-            ->middleware('can:pembayaran-pranota-kontainer-create');
-        Route::get('/{id}', [PembayaranPranotaKontainerController::class, 'show'])->name('show')
-            ->middleware('can:pembayaran-pranota-kontainer-view');
-        Route::get('/{id}/edit', [PembayaranPranotaKontainerController::class, 'edit'])->name('edit')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::put('/{id}', [PembayaranPranotaKontainerController::class, 'update'])->name('update')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::delete('/{id}', [PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy')
-            ->middleware('can:pembayaran-pranota-kontainer-delete');
-        Route::delete('/{pembayaranId}/pranota/{pranotaId}', [PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota')
-            ->middleware('can:pembayaran-pranota-kontainer-update');
-        Route::get('/{id}/print', [PembayaranPranotaKontainerController::class, 'print'])->name('print')
-            ->middleware('can:pembayaran-pranota-kontainer-print');
-    });
-
     // Admin: daftar semua fitur (permissions + routes)
     Route::get('/admin/features', [\App\Http\Controllers\AdminController::class, 'features'])
         ->name('admin.features')
@@ -6675,9 +6399,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // API route for next pranota number
-Route::get('api/next-pranota-number', [PranotaTagihanKontainerSewaController::class, 'getNextPranotaNumber'])
-    ->name('api.next-pranota-number')
-    ->middleware('auth');
 
 // Pembayaran Pranota CAT routes (FINAL VERSION - with all CRUD operations)
 Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->middleware(['auth'])->group(function () {
@@ -6934,8 +6655,6 @@ Route::prefix('realisasi-uang-muka')->name('realisasi-uang-muka.')->middleware([
 // Report Routes
 Route::middleware(['auth'])->prefix('report')->name('report.')->group(function () {
     // Report Tagihan
-    Route::get('/tagihan', [App\Http\Controllers\ReportTagihanController::class, 'index'])->name('tagihan.index');
-    Route::get('/tagihan/export', [App\Http\Controllers\ReportTagihanController::class, 'export'])->name('tagihan.export');
 
     // Report Tanda Terima Jakarta
     Route::get('/tanda-terima-jakarta', [App\Http\Controllers\ReportTandaTerimaJakartaController::class, 'index'])->name('tanda-terima-jakarta.index');
