@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Karyawan;
 use App\Models\LangsirBatam;
 use App\Models\Mobil;
+use App\Models\MasterChasisBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -90,8 +91,9 @@ class LangsirBatamController extends Controller
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $chasisAyps = $this->chasisAyps();
+        $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisAyps'));
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisAyps', 'chasisBatams'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -362,6 +364,15 @@ class LangsirBatamController extends Controller
 
                     $chasisMobilId = $matches->first()->id;
                     $noChasis = trim($matches->first()->no_kir);
+                } else {
+                    $masterChasis = MasterChasisBatam::where('kode', $inputChasis)->first();
+                    if (! $masterChasis) {
+                        $errors[] = "Baris {$rowNumber}: No. Chasis '{$inputChasis}' tidak terdaftar di Master Chasis Batam.";
+
+                        continue;
+                    }
+
+                    $noChasis = $masterChasis->kode;
                 }
 
                 $rawLolo = strtolower(trim((string) ($row['menggunakan_lolo'] ?? '')));
@@ -492,8 +503,9 @@ class LangsirBatamController extends Controller
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
         $chasisAyps = $this->chasisAyps();
+        $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisAyps'));
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisAyps', 'chasisBatams'));
     }
 
     /**
@@ -638,7 +650,7 @@ class LangsirBatamController extends Controller
                         ->whereRaw("TRIM(no_kir) <> ''");
                 }),
             ],
-            'no_chasis_pb' => ['nullable', 'string', 'max:255', 'required_if:sumber_chasis,PB'],
+            'no_chasis_pb' => ['nullable', 'string', 'max:50', 'required_if:sumber_chasis,PB', Rule::exists('master_chasis_batams', 'kode')],
         ];
     }
 

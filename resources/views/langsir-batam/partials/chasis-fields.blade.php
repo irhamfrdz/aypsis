@@ -36,9 +36,16 @@
     <label for="no_chasis_pb" class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">
         Nomor Chasis PB <span class="text-red-500">*</span>
     </label>
-    <input type="text" name="no_chasis_pb" id="no_chasis_pb" value="{{ $noChasisPb }}" disabled maxlength="255"
-           placeholder="Masukkan nomor chasis PB"
-           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
+    <select name="no_chasis_pb" id="no_chasis_pb" disabled
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+        <option value="">Pilih nomor chasis PB</option>
+        @foreach($chasisBatams as $chasisBatam)
+            <option value="{{ $chasisBatam->kode }}" {{ (string) $noChasisPb === (string) $chasisBatam->kode ? 'selected' : '' }}>
+                {{ $chasisBatam->kode }}
+            </option>
+        @endforeach
+    </select>
+    <p class="mt-1 text-xs text-gray-500">Daftar nomor chasis berasal dari Master Chasis Batam.</p>
 </div>
 
 @push('scripts')
