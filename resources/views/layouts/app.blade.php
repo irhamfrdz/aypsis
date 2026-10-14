@@ -2007,11 +2007,6 @@
             Report Tanda Terima Jakarta
         </a>
 
-        {{-- Report Tagihan --}}
-        <a href="{{ route('report.tagihan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tagihan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Tagihan
-        </a>
-
         {{-- Report Pranota --}}
         <a href="{{ Route::has('report.pranota.index') ? route('report.pranota.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             Report Pranota
