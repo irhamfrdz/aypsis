@@ -554,7 +554,6 @@
 
 
 
-                {{-- Monitoring Section --}}
                 @php
                     $showTrackingTransaksi = $user && (
                         $user->can('surat-jalan-view') ||
@@ -563,18 +562,11 @@
                         $user->can('tanda-terima-tanpa-surat-jalan-view')
                     );
                 @endphp
-                @if($showTrackingTransaksi)
-                <a href="{{ route('tracking-transaksi.index') }}" class="flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-all duration-200 {{ Request::routeIs('tracking-transaksi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50 hover:text-blue-700' }}">
-                    <i class="fas fa-route w-4 text-center"></i>
-                    <span class="menu-text">Tracking Transaksi</span>
-                </a>
-                @endif
-
                 {{-- Monitoring Section --}}
                 @php
                     $isLiveTracking = Request::routeIs('gps-tracking.*');
                     $isChatbox = Request::routeIs('chat.*');
-                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || $isLiveTracking || $isChatbox;
+                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || Request::routeIs('tracking-transaksi.*') || $isLiveTracking || $isChatbox;
                     $showMonitoringSection = (bool) $user;
                 @endphp
 
@@ -587,6 +579,11 @@
                         </svg>
                     </button>
                     <div id="monitoring-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isMonitoringRoute) style="display: block;" @endif>
+                        @if($showTrackingTransaksi)
+                            <a href="{{ route('tracking-transaksi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('tracking-transaksi.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium menu-text">Tracking Transaksi</span>
+                            </a>
+                        @endif
                         <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ $isLiveTracking ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
                         </a>
@@ -753,8 +750,8 @@
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('pergerakan-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('rekap-biaya-kapal.*') || Request::routeIs('rekap-biaya-asset.*') || Request::routeIs('rekap-pemakaian-barang.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
-    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
+    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('rekap-biaya-kapal.*') || Request::routeIs('rekap-biaya-asset.*') || Request::routeIs('rekap-pemakaian-barang.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
+    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -771,8 +768,8 @@
     <div id="aktiva-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAktivaRoute) style="display: block;" @endif>
         {{-- Kontainer Sub-Dropdown --}}
         @php
-            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.kontainer.stock-pergudang') || Request::routeIs('history-kontainer.*') || Request::routeIs('gerak-kontainer.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('pergerakan-kontainer.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('perbaikan-kontainer.*');
-            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view'));
+            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.kontainer.stock-pergudang') || Request::routeIs('history-kontainer.*') || Request::routeIs('gerak-kontainer.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('perbaikan-kontainer.*');
+            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view'));
         @endphp
 
         @if($hasKontainerPermissions)
@@ -805,11 +802,6 @@
                 @if($user && $user->can('pergerakan-kapal-view'))
                     <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>
-                    </a>
-                @endif
-                @if($user && $user->can('pergerakan-kontainer-view'))
-                    <a href="{{ route('pergerakan-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pergerakan Kontainer</span>
                     </a>
                 @endif
                 @if($user && $user->can('master-pelabuhan-view'))
@@ -1795,8 +1787,8 @@
 
         {{-- Aktivitas Kapal Sub-Dropdown --}}
         @php
-            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('pergerakan-kontainer.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob-antar-gudang.*') || Request::routeIs('pranota-ob-antar-gudang.*') || Request::routeIs('pembayaran-ob.*') || (Request::routeIs('ob.*') || Request::routeIs('pranota-ob-muat-temas.*')) || Request::routeIs('ob-antar-gudang.*');
-            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('pergerakan-kontainer-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('prospek-view') || $user->can('bl-view') || $user->can('ob-view') || $user->can('ob-antar-gudang-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pranota-ob-antar-gudang-view') || $user->can('pembayaran-pranota-ob-view') || $user->can('pembayaran-ob-view'));
+            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob-antar-gudang.*') || Request::routeIs('pranota-ob-antar-gudang.*') || Request::routeIs('pembayaran-ob.*') || (Request::routeIs('ob.*') || Request::routeIs('pranota-ob-muat-temas.*')) || Request::routeIs('ob-antar-gudang.*');
+            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('prospek-view') || $user->can('bl-view') || $user->can('ob-view') || $user->can('ob-antar-gudang-view') || $user->can('tagihan-ob-view') || $user->can('pranota-ob-view') || $user->can('pranota-ob-antar-gudang-view') || $user->can('pembayaran-pranota-ob-view') || $user->can('pembayaran-ob-view'));
         @endphp
 
         @if($hasAktivitasKapalPermissions)
@@ -1917,13 +1909,6 @@
                 @if($user && $user->can('pergerakan-kapal-view'))
                     <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>
-                    </a>
-                @endif
-
-                {{-- Pergerakan Kontainer --}}
-                @if($user && $user->can('pergerakan-kontainer-view'))
-                    <a href="{{ route('pergerakan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pergerakan Kontainer</span>
                     </a>
                 @endif
 

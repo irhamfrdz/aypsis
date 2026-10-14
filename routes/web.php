@@ -3944,15 +3944,6 @@ Route::middleware([
             ->name('pergerakan-kapal.print')
             ->middleware('can:pergerakan-kapal-print');
 
-        // 📦 Pergerakan Kontainer Management
-        Route::get('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'index'])
-            ->name('pergerakan-kontainer.index')
-            ->middleware('can:pergerakan-kontainer-view');
-
-        Route::post('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'store'])
-            ->name('pergerakan-kontainer.store')
-            ->middleware('can:pergerakan-kontainer-create');
-
         Route::get('pergerakan-kapal/export', [\App\Http\Controllers\PergerakanKapalController::class, 'export'])
             ->name('pergerakan-kapal.export')
             ->middleware('can:pergerakan-kapal-export');
@@ -5334,16 +5325,6 @@ Route::middleware([
         Route::post('tanda-terima/update-manifest', [\App\Http\Controllers\TandaTerimaController::class, 'updateManifest'])
             ->name('tanda-terima.update-manifest')
             ->middleware('can:tanda-terima-update');
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 🚚 PERGERAKAN KONTAINER (CONTAINER MOVEMENT)
-        // ═══════════════════════════════════════════════════════════════════════
-        Route::get('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'index'])
-            ->name('pergerakan-kontainer.index')
-            ->middleware('can:pergerakan-kontainer-view');
-        Route::post('pergerakan-kontainer', [\App\Http\Controllers\PergerakanKontainerController::class, 'store'])
-            ->name('pergerakan-kontainer.store')
-            ->middleware('can:pergerakan-kontainer-create');
 
         // 🕒 HISTORY KONTAINER (CONTAINER HISTORY)
         // ═══════════════════════════════════════════════════════════════════════
