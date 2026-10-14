@@ -358,6 +358,13 @@
                                 $user->can('master-asset-view') ||
                                 $user->can('master-stock-kontainer-view') ||
                                 $user->can('master-kontainer-view') ||
+                                $user->can('master-chasis-batam-view') ||
+                                $user->can('master-gudang-view') ||
+                                $user->can('stock-ban-view') ||
+                                $user->can('master-gudang-ban-view') ||
+                                $user->can('master-gudang-amprahan-view') ||
+                                $user->can('master-type-bon-amprahan-view') ||
+                                $user->can('master-kartu-bensin-batam-view') ||
                                 $isAdmin
                             );
                         @endphp
@@ -387,6 +394,28 @@
                                 @endif
                                 @if($user && $user->can('master-kontainer-view'))
                                     <a href="{{ route('master.kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kontainer Sewa</span></a>
+                                @endif
+                                @if($user && $user->can('master-chasis-batam-view'))
+                                    <a href="{{ route('master.chasis-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Chasis Batam</span></a>
+                                @endif
+                                @if($user && $user->can('master-gudang-view'))
+                                    <a href="{{ route('master-gudang.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Gudang</span></a>
+                                @endif
+                                @if($isAdmin || ($user && ($user->can('stock-ban-view') || $user->can('master-gudang-ban-view'))))
+                                    <a href="{{ route('master-gudang-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Gudang Ban</span></a>
+                                @endif
+                                @if($user && $user->can('master-gudang-amprahan-view'))
+                                    <a href="{{ route('master.gudang-amprahan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Gudang Amprahan</span></a>
+                                @endif
+                                @if($user && $user->can('master-type-bon-amprahan-view'))
+                                    <a href="{{ route('master.type-bon-amprahan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Type Bon Amprahan</span></a>
+                                @endif
+                                @if($isAdmin || ($user && $user->can('stock-ban-view')))
+                                    <a href="{{ route('master.merk-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Merk Ban</span></a>
+                                    <a href="{{ route('master.tipe-stock-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Tipe Stock Ban</span></a>
+                                @endif
+                                @if($user && ($user->can('master-kartu-bensin-batam-view') || $isAdmin))
+                                    <a href="{{ route('master-kartu-bensin-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kartu Bensin Batam</span></a>
                                 @endif
                             </div>
                         </div>

@@ -411,6 +411,13 @@
                         $user->can('master-asset-view') ||
                         $user->can('master-stock-kontainer-view') ||
                         $user->can('master-kontainer-view') ||
+                        $user->can('master-chasis-batam-view') ||
+                        $user->can('master-gudang-view') ||
+                        $user->can('stock-ban-view') ||
+                        $user->can('master-gudang-ban-view') ||
+                        $user->can('master-gudang-amprahan-view') ||
+                        $user->can('master-type-bon-amprahan-view') ||
+                        $user->can('master-kartu-bensin-batam-view') ||
 
                         $user->can('master-pricelist-labuh-tambat-view') ||
                         $user->can('master-pricelist-freight-view') ||
@@ -747,7 +754,7 @@
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('pergerakan-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('rekap-biaya-kapal.*') || Request::routeIs('rekap-biaya-asset.*') || Request::routeIs('rekap-pemakaian-barang.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
-    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('master-gudang-amprahan-view') || $user->can('master-type-bon-amprahan-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
+    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('pergerakan-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -896,65 +903,10 @@
         </div>
         @endif
 
-        {{-- Master Chasis Batam --}}
-        @if($user && $user->can('master-chasis-batam-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.chasis-batam.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.chasis-batam.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Chasis Batam</span>
-            </a>
-        </div>
-        @endif
-
-
-        {{-- Master Gudang --}}
-        @if($user && $user->can('master-gudang-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master-gudang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-gudang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Gudang</span>
-            </a>
-        </div>
-        @endif
-
         @if($user && $user->can('master-gudang-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('denah-gudang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('denah-gudang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Denah Kontainer Gudang</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Gudang Ban --}}
-        @if($isAdmin || ($user && ($user->can('stock-ban-view') || $user->can('master-gudang-ban-view'))))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master-gudang-ban.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-gudang-ban.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Gudang Ban</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Gudang Amprahan --}}
-        @if($user && $user->can('master-gudang-amprahan-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.gudang-amprahan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.gudang-amprahan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Gudang Amprahan</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Type Bon Amprahan --}}
-        @if($user && $user->can('master-type-bon-amprahan-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.type-bon-amprahan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.type-bon-amprahan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Type Bon Amprahan</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Merk Ban --}}
-        @if($isAdmin || ($user && $user->can('stock-ban-view')))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.merk-ban.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.merk-ban.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Merk Ban</span>
             </a>
         </div>
         @endif
@@ -964,15 +916,6 @@
         <div class="mx-2 mb-3">
             <a href="{{ route('master.nama-stock-ban.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.nama-stock-ban.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Master Nama Stock Ban</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Tipe Stock Ban --}}
-        @if($isAdmin || ($user && $user->can('stock-ban-view')))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master.tipe-stock-ban.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.tipe-stock-ban.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Tipe Stock Ban</span>
             </a>
         </div>
         @endif
@@ -1016,15 +959,6 @@
         <div class="mx-2 mb-3">
             <a href="{{ route('pembelian-bbm-batam.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('pembelian-bbm-batam.*') ? 'bg-blue-100 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Pembelian BBM Batam</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Master Kartu Bensin Batam --}}
-        @if($user && ($user->can('master-kartu-bensin-batam-view') || $isAdmin))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('master-kartu-bensin-batam.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master-kartu-bensin-batam.*') ? 'bg-blue-100 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Master Kartu Bensin Batam</span>
             </a>
         </div>
         @endif
