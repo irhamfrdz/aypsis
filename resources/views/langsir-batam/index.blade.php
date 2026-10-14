@@ -537,7 +537,7 @@ function escapeBulkHtml(value) {
 
 const containerSizesMap = @json($containerSizes ?? []);
 
-function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
+function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan, gudangTujuan) {
     if (obDalamPelabuhan && obDalamPelabuhan.trim().toUpperCase() === 'YA') {
         return 20000;
     }
@@ -546,24 +546,23 @@ function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
     const keVal = (ke || '').trim().toUpperCase();
     const sizeVal = (size || '').trim().toUpperCase();
     const statusVal = (status || '').trim().toUpperCase();
+    const gudangTujuanVal = (gudangTujuan || '').trim().toUpperCase();
 
     const isSrimasPelabuhan = (dariVal === 'SRIMAS' && keVal === 'PELABUHAN') || (dariVal === 'PELABUHAN' && keVal === 'SRIMAS');
-    const isTpkSrimas = (dariVal === 'TPK/RTG' && keVal === 'SRIMAS') || (dariVal === 'SRIMAS' && keVal === 'TPK/RTG');
+    const isRtgRoute = dariVal === 'TPK/RTG' || keVal === 'TPK/RTG' || gudangTujuanVal === 'TPK/RTG';
 
     let price = 0;
-    if (isSrimasPelabuhan) {
+    if (isRtgRoute && statusVal === 'FULL') {
+        if (sizeVal === '20FT' || sizeVal === '20') {
+            price = 50000;
+        } else if (sizeVal === '40FT' || sizeVal === '40') {
+            price = 60000;
+        }
+    } else if (isSrimasPelabuhan) {
         if (sizeVal === '20FT' || sizeVal === '20') {
             price = statusVal === 'FULL' ? 40000 : 35000;
         } else if (sizeVal === '40FT' || sizeVal === '40') {
             price = statusVal === 'FULL' ? 50000 : 45000;
-        }
-    } else if (isTpkSrimas) {
-        if (statusVal === 'FULL') {
-            if (sizeVal === '20FT' || sizeVal === '20') {
-                price = 50000;
-            } else if (sizeVal === '40FT' || sizeVal === '40') {
-                price = 60000;
-            }
         }
     }
     return price;
@@ -643,7 +642,7 @@ function parseBulkData() {
             
             // Auto calculate biaya jika dikosongkan atau 0
             if (biayaVal === '' || biayaVal === '0') {
-                const calcBiaya = calculateLangsirBiaya(dariVal, keVal, sizeVal, statusVal, obVal);
+                const calcBiaya = calculateLangsirBiaya(dariVal, keVal, sizeVal, statusVal, obVal, gudangTujuanVal);
                 if (calcBiaya > 0) {
                     biayaVal = calcBiaya.toString();
                 } else {
