@@ -104,6 +104,7 @@ class TrackingTransaksiController extends Controller
                         'timeline' => match ($key) {
                             'surat-jalan' => $this->buildSuratJalanTimeline($record),
                             'tanda-terima-tanpa-surat-jalan' => $this->buildTandaTerimaTanpaSuratJalanTimeline($record),
+                            'tanda-terima-lcl' => $this->buildTandaTerimaLclTimeline($record),
                             default => $this->buildTimeline($record, $config),
                         },
                     ];
@@ -360,6 +361,81 @@ class TrackingTransaksiController extends Controller
             ],
             [
                 'title' => 'Tanda terima sudah dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)',
+                'at' => $suratJalanBongkaranBatam?->created_at,
+                'complete' => (bool) $suratJalanBongkaranBatam,
+            ],
+        ];
+
+        return array_map(function (array $step) {
+            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['formatted_at'] = $step['at']
+                ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
+                : 'Belum tercatat';
+
+            return $step;
+        }, $steps);
+    }
+
+    private function buildTandaTerimaLclTimeline(TandaTerimaLcl $tandaTerima): array
+    {
+        $nomorTandaTerima = $tandaTerima->nomor_tanda_terima;
+        $stuffing = $tandaTerima->kontainerPivot()
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->orderBy('assigned_at')
+            ->first();
+
+        $prospekIds = Prospek::query()
+            ->where(function ($query) use ($nomorTandaTerima) {
+                $query->where('no_surat_jalan', $nomorTandaTerima)
+                    ->orWhere('no_surat_jalan', 'like', $nomorTandaTerima.'-%')
+                    ->orWhere('no_surat_jalan', 'like', '%'.$nomorTandaTerima.'%');
+            })
+            ->pluck('id');
+
+        $manifests = Manifest::query()
+            ->where(function ($query) use ($nomorTandaTerima, $prospekIds) {
+                if ($prospekIds->isNotEmpty()) {
+                    $query->whereIn('prospek_id', $prospekIds)
+                        ->orWhere('nomor_tanda_terima', 'like', '%'.$nomorTandaTerima.'%');
+                } else {
+                    $query->where('nomor_tanda_terima', 'like', '%'.$nomorTandaTerima.'%');
+                }
+            })
+            ->get(['id', 'prospek_id']);
+
+        $relatedProspekIds = $prospekIds->merge($manifests->pluck('prospek_id'))->filter()->unique();
+        $naikKapal = $relatedProspekIds->isNotEmpty()
+            ? NaikKapal::query()->whereIn('prospek_id', $relatedProspekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $bl = $relatedProspekIds->isNotEmpty()
+            ? Bl::query()->whereIn('prospek_id', $relatedProspekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $obDate = $naikKapal?->tanggal_ob ?? $naikKapal?->updated_at ?? $bl?->tanggal_ob ?? $bl?->updated_at;
+
+        $manifestIds = $manifests->pluck('id');
+        $suratJalanBongkaranBatam = $manifestIds->isNotEmpty()
+            ? SuratJalanBongkaranBatam::query()->whereIn('manifest_id', $manifestIds)->latest('created_at')->first()
+            : null;
+
+        $steps = [
+            [
+                'title' => 'Tanda terima LCL dibuat',
+                'at' => $tandaTerima->created_at,
+                'complete' => (bool) $tandaTerima->created_at,
+            ],
+            [
+                'title' => 'Tanda terima LCL sudah di-stuffing ke kontainer',
+                'at' => $stuffing?->assigned_at ?? $stuffing?->created_at,
+                'complete' => (bool) $stuffing,
+            ],
+            [
+                'title' => 'Tanda terima LCL sudah dimuat di kapal (OB Muat)',
+                'at' => $obDate,
+                'complete' => (bool) ($naikKapal || $bl),
+            ],
+            [
+                'title' => 'Tanda terima LCL sudah dilakukan dooring (Surat Jalan Bongkaran Batam dibuat)',
                 'at' => $suratJalanBongkaranBatam?->created_at,
                 'complete' => (bool) $suratJalanBongkaranBatam,
             ],
