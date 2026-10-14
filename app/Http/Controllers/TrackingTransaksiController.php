@@ -118,7 +118,11 @@ class TrackingTransaksiController extends Controller
                         'type' => $key,
                         'label' => $config['label'],
                         'number' => $displayNumber ?: $number,
-                        'details' => $key === 'surat-jalan' ? $this->buildSuratJalanDetails($record) : null,
+                        'details' => match ($key) {
+                            'surat-jalan' => $this->buildSuratJalanDetails($record),
+                            'tanda-terima-lcl' => $this->buildTandaTerimaLclDetails($record),
+                            default => null,
+                        },
                         'timeline' => match ($key) {
                             'surat-jalan' => $this->buildSuratJalanTimeline($record),
                             'tanda-terima-tanpa-surat-jalan' => $this->buildTandaTerimaTanpaSuratJalanTimeline($record),
@@ -357,6 +361,30 @@ class TrackingTransaksiController extends Controller
         return [
             'container' => $containerNumbers->implode(', '),
             'shipper' => $shipper,
+        ];
+    }
+
+    private function buildTandaTerimaLclDetails(TandaTerimaLcl $tandaTerima): array
+    {
+        $tandaTerima->loadMissing(['shipperJb', 'kontainerPivot']);
+
+        $containerNumbers = $tandaTerima->kontainerPivot
+            ->pluck('nomor_kontainer')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($containerNumbers->isEmpty() && filled($tandaTerima->nomor_kontainer)) {
+            $containerNumbers = collect(preg_split('/[,\n]+/', (string) $tandaTerima->nomor_kontainer))
+                ->map(fn ($number) => trim($number))
+                ->filter()
+                ->unique()
+                ->values();
+        }
+
+        return [
+            'container' => $containerNumbers->implode(', '),
+            'shipper' => $tandaTerima->shipperJb?->shipper ?: $tandaTerima->nama_pengirim,
         ];
     }
 
