@@ -6632,8 +6632,28 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            $manifests = \App\Models\Manifest::where('nama_kapal', $kapal)
-                ->where('no_voyage', $voyage)
+            // Nama kapal di manifest bisa berbeda pada prefix, titik, atau spasi.
+            $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $kapal)));
+            $ignorePrefixes = ['km', 'mv', 'mt', 'tb', 'spob', 'klm', 'lp', 'mp'];
+            $keywords = array_values(array_filter(explode(' ', $normalizedKapal), function ($word) use ($ignorePrefixes) {
+                return $word !== '' && ! in_array($word, $ignorePrefixes, true);
+            }));
+            if (empty($keywords)) {
+                $keywords = array_values(array_filter(explode(' ', $normalizedKapal)));
+            }
+
+            $manifestsQuery = \App\Models\Manifest::where('no_voyage', trim($voyage));
+            if (! empty($keywords)) {
+                $manifestsQuery->where(function ($query) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        $query->where('nama_kapal', 'like', "%{$keyword}%");
+                    }
+                });
+            } else {
+                $manifestsQuery->where('nama_kapal', $kapal);
+            }
+
+            $manifests = $manifestsQuery
                 ->select('id', 'nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer')
                 ->orderBy('nomor_kontainer')
                 ->get()
