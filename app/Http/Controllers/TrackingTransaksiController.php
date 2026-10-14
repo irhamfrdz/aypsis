@@ -101,9 +101,11 @@ class TrackingTransaksiController extends Controller
                         'type' => $key,
                         'label' => $config['label'],
                         'number' => $displayNumber ?: $number,
-                        'timeline' => $key === 'surat-jalan'
-                            ? $this->buildSuratJalanTimeline($record)
-                            : $this->buildTimeline($record, $config),
+                        'timeline' => match ($key) {
+                            'surat-jalan' => $this->buildSuratJalanTimeline($record),
+                            'tanda-terima-tanpa-surat-jalan' => $this->buildTandaTerimaTanpaSuratJalanTimeline($record),
+                            default => $this->buildTimeline($record, $config),
+                        },
                     ];
                 }
             }
@@ -292,6 +294,75 @@ class TrackingTransaksiController extends Controller
             ['title' => 'Surat jalan diterima di pelabuhan (tanda terima dibuat)', 'at' => $tandaTerima?->created_at, 'complete' => (bool) $tandaTerima],
             ['title' => 'Surat jalan dimuat di kapal (OB Muat)', 'at' => $obDate, 'complete' => (bool) ($naikKapal || $bl)],
             ['title' => 'Surat jalan dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)', 'at' => $suratJalanBongkaranBatam?->created_at, 'complete' => (bool) $suratJalanBongkaranBatam],
+        ];
+
+        return array_map(function (array $step) {
+            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['formatted_at'] = $step['at']
+                ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
+                : 'Belum tercatat';
+
+            return $step;
+        }, $steps);
+    }
+
+    private function buildTandaTerimaTanpaSuratJalanTimeline(TandaTerimaTanpaSuratJalan $tandaTerima): array
+    {
+        $nomorTandaTerima = collect([$tandaTerima->no_tanda_terima, $tandaTerima->nomor_tanda_terima])
+            ->filter()
+            ->unique()
+            ->values();
+
+        $prospekIds = Prospek::query()
+            ->where(function ($query) use ($nomorTandaTerima) {
+                foreach ($nomorTandaTerima as $number) {
+                    $query->orWhere('no_surat_jalan', $number)
+                        ->orWhere('no_surat_jalan', 'like', $number.'-%');
+                }
+            })
+            ->pluck('id');
+
+        $manifests = Manifest::query()
+            ->where(function ($query) use ($nomorTandaTerima, $prospekIds) {
+                if ($prospekIds->isNotEmpty()) {
+                    $query->whereIn('prospek_id', $prospekIds)
+                        ->orWhereIn('nomor_tanda_terima', $nomorTandaTerima);
+                } else {
+                    $query->whereIn('nomor_tanda_terima', $nomorTandaTerima);
+                }
+            })
+            ->get(['id', 'prospek_id']);
+
+        $relatedProspekIds = $prospekIds->merge($manifests->pluck('prospek_id'))->filter()->unique();
+        $naikKapal = $relatedProspekIds->isNotEmpty()
+            ? NaikKapal::query()->whereIn('prospek_id', $relatedProspekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $bl = $relatedProspekIds->isNotEmpty()
+            ? Bl::query()->whereIn('prospek_id', $relatedProspekIds)->where('sudah_ob', true)->latest('tanggal_ob')->first()
+            : null;
+        $obDate = $naikKapal?->tanggal_ob ?? $naikKapal?->updated_at ?? $bl?->tanggal_ob ?? $bl?->updated_at;
+
+        $manifestIds = $manifests->pluck('id');
+        $suratJalanBongkaranBatam = $manifestIds->isNotEmpty()
+            ? SuratJalanBongkaranBatam::query()->whereIn('manifest_id', $manifestIds)->latest('created_at')->first()
+            : null;
+
+        $steps = [
+            [
+                'title' => 'Tanda terima diterima di pelabuhan',
+                'at' => $tandaTerima->tanggal_tanda_terima ?? $tandaTerima->created_at,
+                'complete' => true,
+            ],
+            [
+                'title' => 'Tanda terima sudah dimuat di kapal (OB Muat)',
+                'at' => $obDate,
+                'complete' => (bool) ($naikKapal || $bl),
+            ],
+            [
+                'title' => 'Tanda terima sudah dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)',
+                'at' => $suratJalanBongkaranBatam?->created_at,
+                'complete' => (bool) $suratJalanBongkaranBatam,
+            ],
         ];
 
         return array_map(function (array $step) {
