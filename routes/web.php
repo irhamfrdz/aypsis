@@ -1313,6 +1313,8 @@ Route::middleware([
 
     Route::prefix('master')->name('master.')->group(function () {
 
+        Route::view('data', 'master.data.index')->name('data.index');
+
         Route::get('tarif', function () {
             $user = auth()->user();
             $items = collect(config('master_tarif'))->filter(fn ($item) =>
