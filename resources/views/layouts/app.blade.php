@@ -524,6 +524,55 @@
 
                 {{-- Monitoring Section --}}
                 @php
+                    $isTrackingTransaksi = Request::routeIs(
+                        'surat-jalan.*', 'surat-jalan-bongkaran.*', 'tanda-terima.*',
+                        'tanda-terima-tanpa-surat-jalan.*', 'tanda-terima-lcl.*'
+                    );
+                    $showTrackingTransaksi = $user && (
+                        $user->can('surat-jalan-view') ||
+                        $user->can('surat-jalan-bongkaran-view') ||
+                        $user->can('tanda-terima-view') ||
+                        $user->can('tanda-terima-tanpa-surat-jalan-view')
+                    );
+                @endphp
+                @if($showTrackingTransaksi)
+                <div class="mt-4 mb-6">
+                    <button type="button" id="tracking-transaksi-menu-toggle" aria-controls="tracking-transaksi-menu-content" aria-expanded="{{ $isTrackingTransaksi ? 'true' : 'false' }}" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isTrackingTransaksi ? 'bg-blue-50 text-blue-700' : '' }}">
+                        <span class="text-sm font-semibold">Tracking Transaksi</span>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isTrackingTransaksi ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="tracking-transaksi-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isTrackingTransaksi) style="display: block;" @endif>
+                        @can('surat-jalan-view')
+                        <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <span class="text-xs font-medium menu-text">Pilih Nomor Surat Jalan</span>
+                        </a>
+                        @endcan
+                        @can('surat-jalan-bongkaran-view')
+                        <a href="{{ route('surat-jalan-bongkaran.list') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <span class="text-xs font-medium menu-text">Surat Jalan Bongkaran</span>
+                        </a>
+                        @endcan
+                        @can('tanda-terima-view')
+                        <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <span class="text-xs font-medium menu-text">Tanda Terima</span>
+                        </a>
+                        @endcan
+                        @can('tanda-terima-tanpa-surat-jalan-view')
+                        <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <span class="text-xs font-medium menu-text">Tanda Terima Tanpa Surat Jalan</span>
+                        </a>
+                        <a href="{{ route('tanda-terima-lcl.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-lcl.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <span class="text-xs font-medium menu-text">Tanda Terima LCL</span>
+                        </a>
+                        @endcan
+                    </div>
+                </div>
+                @endif
+
+                {{-- Monitoring Section --}}
+                @php
                     $isLiveTracking = Request::routeIs('gps-tracking.*');
                     $isChatbox = Request::routeIs('chat.*');
                     $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.index') || $isLiveTracking || $isChatbox;
