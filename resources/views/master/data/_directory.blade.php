@@ -322,15 +322,29 @@
                         @endif
                         {{-- Master Tarif --}}
                         @php
-                            $hasTarifPermissions = $user && collect(config('master_tarif'))->contains(fn ($item) =>
+                            $tarifItems = collect(config('master_tarif'));
+                            $hasTarifPermissions = $user && $tarifItems->contains(fn ($item) =>
                                 $item['permission'] && ($user->can($item['permission']) || (!empty($item['admin']) && $isAdmin))
                             );
+                            $tarifItems = $hasTarifPermissions ? $tarifItems->filter(fn ($item) =>
+                                !$item['permission'] || $user->can($item['permission']) || (!empty($item['admin']) && $isAdmin)
+                            ) : collect();
                         @endphp
                         @if($hasTarifPermissions)
                             <div class="mx-2 mb-3">
-                                <a href="{{ route('master.tarif.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs transition-all duration-200 {{ Request::routeIs('master.tarif.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:bg-purple-50 hover:text-purple-700 hover:shadow-sm' }}">
+                                <button id="master-tarif-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group text-gray-600 hover:shadow-sm">
                                     <span class="text-xs font-medium">Master Tarif</span>
-                                </a>
+                                    <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div id="master-tarif-content" class="dropdown-content ml-4 mt-2 space-y-1">
+                                    @foreach($tarifItems as $item)
+                                        <a href="{{ route($item['route']) }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-all duration-200">
+                                            <span class="text-xs">{{ $item['label'] }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
 
