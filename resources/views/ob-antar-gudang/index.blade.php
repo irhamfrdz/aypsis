@@ -3,6 +3,10 @@
 @section('title', 'OB Antar Gudang' . ($gudang ? ' - ' . $gudang->nama_gudang : ' - Semua Gudang'))
 @section('page_title', 'OB Antar Gudang')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
     {{-- Header --}}
@@ -491,7 +495,7 @@
                                 </div>
                                 <div>
                                     <label for="tanggal_ob" class="block text-sm font-medium text-gray-700 mb-1">Tanggal OB <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tanggal_ob" id="tanggal_ob" value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                    <input type="text" name="tanggal_ob" id="tanggal_ob" value="{{ date('Y-m-d') }}" placeholder="dd/mm/yyyy" autocomplete="off" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                 </div>
 
                                 <div>
@@ -621,7 +625,14 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+    flatpickr('#tanggal_ob', {
+        altInput: true,
+        altFormat: 'd/m/Y',
+        dateFormat: 'Y-m-d',
+    });
+
     function openTagihanModal(nomor, ukuran, source, gudangId, namaGudang) {
         document.getElementById('modal_nomor_kontainer').value = nomor;
         document.getElementById('modal_ukuran').value = ukuran;
