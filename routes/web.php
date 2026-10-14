@@ -6389,6 +6389,9 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated routes group (continued)
 Route::middleware(['auth'])->group(function () {
+    Route::get('tracking-transaksi', [\App\Http\Controllers\TrackingTransaksiController::class, 'index'])
+        ->name('tracking-transaksi.index');
+
     // GPS Tracking Routes
     Route::prefix('gps-tracking')->name('gps-tracking.')->group(function () {
         Route::get('/', [\App\Http\Controllers\GpsTrackingController::class, 'index'])->name('index');
