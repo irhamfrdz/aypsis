@@ -15,7 +15,7 @@ class TrackingTransaksiController extends Controller
 {
     private const TYPES = [
         'surat-jalan' => [
-            'label' => 'Pilih Nomor Surat Jalan', 'number_label' => 'Nomor Surat Jalan',
+            'label' => 'Surat Jalan', 'number_label' => 'Nomor Surat Jalan',
             'columns' => ['no_surat_jalan'], 'model' => SuratJalan::class,
             'milestones' => [
                 'tanggal_surat_jalan' => 'Surat jalan diterbitkan',
@@ -103,6 +103,51 @@ class TrackingTransaksiController extends Controller
         }
 
         return view('tracking-transaksi.index', compact('types', 'number', 'results'));
+    }
+
+    public function suggestions(Request $request)
+    {
+        $term = trim((string) $request->query('q', ''));
+        if (mb_strlen($term) < 2) {
+            return response()->json([]);
+        }
+
+        $types = collect(self::TYPES)
+            ->filter(fn (array $config) => $request->user()->can($config['permission']))
+            ->all();
+        $suggestions = collect();
+
+        foreach ($types as $config) {
+            $records = $config['model']::query()
+                ->where(function ($query) use ($config, $term) {
+                    foreach ($config['columns'] as $column) {
+                        $query->orWhere($column, 'like', '%'.$term.'%');
+                    }
+                })
+                ->orderByDesc('created_at')
+                ->limit(8)
+                ->get();
+
+            foreach ($records as $record) {
+                foreach ($config['columns'] as $column) {
+                    $number = trim((string) $record->getAttribute($column));
+                    if ($number !== '' && mb_stripos($number, $term) !== false) {
+                        $suggestions->push([
+                            'number' => $number,
+                            'type' => $config['label'],
+                        ]);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return response()->json(
+            $suggestions
+                ->unique(fn (array $suggestion) => mb_strtolower($suggestion['type'].'|'.$suggestion['number']))
+                ->take(10)
+                ->values()
+        );
     }
 
     private function buildTimeline($record, array $config): array

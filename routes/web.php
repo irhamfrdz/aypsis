@@ -6389,6 +6389,8 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated routes group (continued)
 Route::middleware(['auth'])->group(function () {
+    Route::get('tracking-transaksi/suggestions', [\App\Http\Controllers\TrackingTransaksiController::class, 'suggestions'])
+        ->name('tracking-transaksi.suggestions');
     Route::get('tracking-transaksi', [\App\Http\Controllers\TrackingTransaksiController::class, 'index'])
         ->name('tracking-transaksi.index');
 
