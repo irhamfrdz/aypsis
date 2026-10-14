@@ -3,6 +3,42 @@
 @section('title', 'Rekap')
 @section('page_title', 'Rekap')
 
+@push('styles')
+<style>
+    #rekap-groups {
+        align-items: start;
+    }
+    #rekap-groups > section {
+        margin: 0;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    #rekap-groups > section > button {
+        width: 100%;
+        min-height: 2.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    #rekap-groups > section > button span { font-size: inherit; }
+    #rekap-groups > section > .dropdown-content {
+        margin: 0.75rem 0 0;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 0;
+    }
+    #rekap-groups .dropdown-content a {
+        min-height: 2rem;
+        margin: 0.125rem 0;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+    }
+    #rekap-groups .dropdown-content a:hover { background: #f1f5f9; }
+</style>
+@endpush
+
 @section('content')
 @php
     $user = Auth::user();
@@ -26,20 +62,18 @@
     <label for="rekap-search" class="sr-only">Cari rekap</label>
     <input id="rekap-search" type="search" autocomplete="off" placeholder="Cari rekap..." class="mb-5 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
 
-    <div id="rekap-groups" class="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div id="rekap-groups" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         @foreach($groups as $category => $items)
-            <section class="rekap-group rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="{{ $category }}">
-                <h2>
-                    <button type="button" class="rekap-toggle flex w-full items-center justify-between border-b border-slate-200 px-3 pb-3 text-left text-sm font-semibold text-slate-800" aria-controls="rekap-content-{{ $loop->index }}" aria-expanded="false">
-                        <span>{{ $category }}</span>
-                        <svg class="rekap-arrow h-3 w-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                </h2>
-                <div id="rekap-content-{{ $loop->index }}" class="rekap-content mt-3 space-y-1" style="display: none;">
+            <section class="rekap-group mx-2 mb-3" aria-label="{{ $category }}">
+                <button type="button" class="rekap-toggle w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 hover:shadow-sm transition-all duration-200 group" aria-controls="rekap-content-{{ $loop->index }}" aria-expanded="false">
+                    <span class="text-xs font-medium">{{ $category }}</span>
+                    <svg class="rekap-arrow w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="rekap-content-{{ $loop->index }}" class="rekap-content dropdown-content ml-4 mt-2 space-y-1" style="display: none;">
                     @foreach($items as $item)
-                        <a href="{{ route($item['route']) }}" target="_blank" rel="noopener noreferrer" class="rekap-link block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700">{{ $item['label'] }}</a>
+                        <a href="{{ route($item['route']) }}" target="_blank" rel="noopener noreferrer" class="rekap-link flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">{{ $item['label'] }}</span></a>
                     @endforeach
                 </div>
             </section>
@@ -75,7 +109,7 @@
         const term = rekapSearch.value.trim().toLocaleLowerCase();
         let visibleGroups = 0;
         rekapGroups.forEach(group => {
-            const categoryMatches = group.querySelector('h2').textContent.toLocaleLowerCase().includes(term);
+            const categoryMatches = group.querySelector('.rekap-toggle').textContent.toLocaleLowerCase().includes(term);
             let visibleLinks = 0;
             group.querySelectorAll('.rekap-link').forEach(link => {
                 const visible = categoryMatches || link.textContent.toLocaleLowerCase().includes(term);
