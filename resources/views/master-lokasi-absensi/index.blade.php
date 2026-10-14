@@ -41,6 +41,21 @@
             background-color: #eff6ff !important;
             border-left: 3px solid #3b82f6 !important;
         }
+        .location-name-tooltip {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+            color: #0f172a;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.2;
+            padding: 5px 8px;
+            white-space: nowrap;
+        }
+        .location-name-tooltip::before {
+            border-top-color: rgba(255, 255, 255, 0.96);
+        }
     </style>
 @endpush
 
@@ -424,6 +439,35 @@
         let currentPenugasanType = 'semua';
         let currentModalKaryawans = [];
 
+        // Keep permanent location labels readable when markers are close together.
+        function updateLocationLabelVisibility() {
+            const showLabels = map.getZoom() >= 13;
+            const labeledMarkers = mapMarkers.filter(marker => marker.locationLabel);
+            const points = labeledMarkers.map(marker => ({
+                marker,
+                point: map.latLngToContainerPoint(marker.getLatLng())
+            }));
+
+            points.forEach(({ marker, point }) => {
+                const nearby = points
+                    .filter(item => point.distanceTo(item.point) < 140)
+                    .sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || a.marker.locationId - b.marker.locationId);
+                const rank = nearby.findIndex(item => item.marker === marker);
+                const offsetX = (rank - (nearby.length - 1) / 2) * 150;
+                const tooltip = marker.getTooltip();
+                tooltip.options.offset = L.point(offsetX, -30);
+                tooltip.update();
+
+                if (showLabels) {
+                    marker.openTooltip();
+                } else {
+                    marker.closeTooltip();
+                }
+            });
+        }
+
+        map.on('zoomend', updateLocationLabelVisibility);
+
         // Elements
         const form = document.getElementById('location-form');
         const formTitle = document.getElementById('form-title');
@@ -576,6 +620,16 @@
                 locations.forEach(loc => {
                     const marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
                     marker.locationId = loc.id;
+                    const label = document.createElement('span');
+                    label.textContent = loc.nama_lokasi || 'Lokasi tanpa nama';
+                    marker.bindTooltip(label, {
+                        permanent: true,
+                        direction: 'top',
+                        offset: L.point(0, -30),
+                        className: 'location-name-tooltip',
+                        opacity: 0.98
+                    });
+                    marker.locationLabel = true;
                     const isActive = loc.is_active == 1;
                     const penugasanBadge = loc.tipe_penugasan === 'khusus'
                         ? `<span class="font-medium text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">${(loc.assigned_karyawans?.length || 0)} Karyawan</span>`
@@ -609,6 +663,7 @@
                     mapMarkers.push(marker);
                     mapMarkers.push(circle);
                 });
+                updateLocationLabelVisibility();
 
             } catch (err) {
                 console.error('Failed to load locations:', err);
