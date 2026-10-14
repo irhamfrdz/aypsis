@@ -41,7 +41,7 @@ class TrackingTransaksiController extends Controller
         ],
         'tanda-terima' => [
             'label' => 'Tanda Terima', 'number_label' => 'Nomor Surat Jalan / Tanda Terima',
-            'columns' => ['no_surat_jalan', 'nomor_tanda_terima'], 'model' => TandaTerima::class,
+            'columns' => ['no_surat_jalan'], 'model' => TandaTerima::class,
             'milestones' => [
                 'tanggal' => 'Tanda terima dibuat',
                 'tanggal_checkpoint_supir' => 'Checkpoint supir',

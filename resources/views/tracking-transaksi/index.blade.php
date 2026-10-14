@@ -112,6 +112,16 @@ document.addEventListener('DOMContentLoaded', () => {
         input.setAttribute('aria-expanded', 'true');
     };
 
+    const showMessage = (message) => {
+        list.replaceChildren();
+        const item = document.createElement('li');
+        item.className = 'px-4 py-3 text-sm text-slate-500';
+        item.textContent = message;
+        list.appendChild(item);
+        list.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+    };
+
     input.addEventListener('input', () => {
         clearTimeout(timer);
         activeRequest?.abort();
@@ -134,7 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const suggestions = await response.json();
                 if (input.value.trim() === term) showSuggestions(suggestions);
             } catch (error) {
-                if (error.name !== 'AbortError') closeSuggestions();
+                if (error.name !== 'AbortError') {
+                    showMessage('Saran nomor tidak dapat dimuat. Tekan Lacak Transaksi untuk mencari.');
+                }
             }
         }, 250);
     });
