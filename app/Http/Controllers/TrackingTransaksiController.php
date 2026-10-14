@@ -72,34 +72,37 @@ class TrackingTransaksiController extends Controller
             ->all();
         abort_if($types === [], 403);
 
-        $selectedType = $request->query('type');
         $number = trim((string) $request->query('number', ''));
-        $record = null;
-        $timeline = [];
-        $notFound = false;
+        $results = [];
 
-        if ($selectedType && ! array_key_exists($selectedType, $types)) {
-            abort(403);
-        }
-
-        if ($selectedType && $number !== '') {
-            $config = $types[$selectedType];
-            $record = $config['model']::query()
-                ->where(function ($query) use ($config, $number) {
+        if ($number !== '') {
+            foreach ($types as $key => $config) {
+                $records = $config['model']::query()
+                    ->where(function ($query) use ($config, $number) {
                     foreach ($config['columns'] as $column) {
-                        $query->orWhere($column, $number);
-                    }
-                })
-                ->first();
+                            $query->orWhere($column, 'like', '%'.$number.'%');
+                        }
+                    })
+                    ->orderByDesc('created_at')
+                    ->limit(20)
+                    ->get();
 
-            if (! $record) {
-                $notFound = true;
-            } else {
-                $timeline = $this->buildTimeline($record, $config);
+                foreach ($records as $record) {
+                    $displayNumber = collect($config['columns'])
+                        ->map(fn (string $column) => $record->getAttribute($column))
+                        ->first(fn ($value) => filled($value));
+
+                    $results[] = [
+                        'type' => $key,
+                        'label' => $config['label'],
+                        'number' => $displayNumber ?: $number,
+                        'timeline' => $this->buildTimeline($record, $config),
+                    ];
+                }
             }
         }
 
-        return view('tracking-transaksi.index', compact('types', 'selectedType', 'number', 'record', 'timeline', 'notFound'));
+        return view('tracking-transaksi.index', compact('types', 'number', 'results'));
     }
 
     private function buildTimeline($record, array $config): array
