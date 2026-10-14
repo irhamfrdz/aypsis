@@ -121,6 +121,7 @@ class TrackingTransaksiController extends Controller
                         'details' => match ($key) {
                             'surat-jalan' => $this->buildSuratJalanDetails($record),
                             'tanda-terima-lcl' => $this->buildTandaTerimaLclDetails($record),
+                            'tanda-terima-tanpa-surat-jalan' => $this->buildTandaTerimaTanpaSuratJalanDetails($record),
                             default => null,
                         },
                         'timeline' => match ($key) {
@@ -385,6 +386,22 @@ class TrackingTransaksiController extends Controller
         return [
             'container' => $containerNumbers->implode(', '),
             'shipper' => $tandaTerima->shipperJb?->shipper ?: $tandaTerima->nama_pengirim,
+        ];
+    }
+
+    private function buildTandaTerimaTanpaSuratJalanDetails(TandaTerimaTanpaSuratJalan $tandaTerima): array
+    {
+        $tandaTerima->loadMissing('shipperJb');
+
+        $containerNumbers = collect(preg_split('/[,\n]+/', (string) $tandaTerima->no_kontainer))
+            ->map(fn ($number) => trim($number))
+            ->filter()
+            ->unique()
+            ->values();
+
+        return [
+            'container' => $containerNumbers->implode(', '),
+            'shipper' => $tandaTerima->shipperJb?->shipper ?: $tandaTerima->pengirim,
         ];
     }
 

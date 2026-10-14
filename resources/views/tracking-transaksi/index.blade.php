@@ -44,7 +44,7 @@
                 {{ collect($result['timeline'])->where('complete', true)->count() }} dari {{ count($result['timeline']) }} tahap selesai
             </span>
         </div>
-        @if(in_array($result['type'], ['surat-jalan', 'tanda-terima-lcl'], true))
+        @if(in_array($result['type'], ['surat-jalan', 'tanda-terima-lcl', 'tanda-terima-tanpa-surat-jalan'], true))
         <dl class="mt-4 grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
             <div>
                 <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nomor kontainer</dt>
