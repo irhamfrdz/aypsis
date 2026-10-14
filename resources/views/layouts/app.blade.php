@@ -9,8 +9,23 @@
     
     <!-- Vite Assets (Works Offline) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script>
+        if (window.parent !== window && window.name === 'master-tarif-frame') {
+            document.documentElement.classList.add('master-tarif-embedded');
+        }
+    </script>
     
     <style>
+        html.master-tarif-embedded,
+        html.master-tarif-embedded body { height: auto; overflow: auto; }
+        html.master-tarif-embedded body { display: block; }
+        html.master-tarif-embedded body > header,
+        html.master-tarif-embedded #sidebar,
+        html.master-tarif-embedded #sidebar-overlay { display: none; }
+        html.master-tarif-embedded #page-content { margin: 0; overflow: visible; }
+        html.master-tarif-embedded #page-content > div { padding: 0.75rem; }
+
         html, body {
             height: 100%;
             overflow: hidden;
@@ -396,7 +411,10 @@
                         $user->can('master-shipper-consignee-view') ||
                         $user->can('master-wa-templates-view') ||
                         $user->can('master-wa-broadcast-view') ||
-                        $user->can('master-customer-buruh-view')
+                        $user->can('master-customer-buruh-view') ||
+                        collect(config('master_tarif'))->contains(fn ($item) =>
+                            $item['permission'] && ($user->can($item['permission']) || (!empty($item['admin']) && $isAdmin))
+                        )
                     );
 
 
@@ -711,7 +729,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*');
+                    $isMasterRoute = Request::routeIs('master.tarif.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -1050,185 +1068,18 @@
                             </div>
                         </div>
                         @endif
-                        {{-- Master Tarif Sub-Dropdown --}}
-        @php
-            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master.pricelist-ob.*') || Request::routeIs('master.pricelist-ob-antar-gudang.*') || Request::routeIs('pricelist-uang-jalan-batam.*') || Request::routeIs('master.pricelist-uang-jalan.*') || Request::routeIs('master.pricelist-rit.*') || Request::routeIs('master-pelayanan-pelabuhan.*') || Request::routeIs('master.pricelist-biaya-dokumen.*') || Request::routeIs('ongkos-truck.*') || Request::routeIs('master.pricelist-air-tawar.*') || Request::routeIs('pricelist-tkbm.*') || Request::routeIs('master.pricelist-opp-opt.*') || Request::routeIs('master.pricelist-biaya-trucking.*') || Request::routeIs('master.pricelist-lembur.*') || Request::routeIs('master.pricelist-vendor-supir.*') || Request::routeIs('master.pricelist-freight.*') || Request::routeIs('master.pricelist-lolo.*') || Request::routeIs('master.pricelist-lolo-batam.*') || Request::routeIs('master.pricelist-biaya-storage.*') || Request::routeIs('master.pricelist-perijinan.*') || Request::routeIs('master.pricelist-meratus.*') || Request::routeIs('master.pricelist-temas.*') || Request::routeIs('master.pricelist-tanto.*') || Request::routeIs('master.pricelist-pelindo.*');
-            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view') || $user->can('master-pricelist-ob-view') || $user->can('master-pricelist-ob-antar-gudang-view') || $user->can('master-pricelist-uang-jalan-batam-view') || $user->can('master-pricelist-uang-jalan-view') || $user->can('master-pricelist-rit-view') || $user->can('master-pelayanan-pelabuhan-view') || $user->can('master-pricelist-biaya-dokumen-view') || $user->can('ongkos-truck-view') || $user->can('master-pricelist-air-tawar-view') || $user->can('master-pricelist-biaya-trucking-view') || $user->can('master-pricelist-tujuan-kontainer-sewa-view') || $user->can('master-pricelist-lembur-view') || $user->can('master-pricelist-vendor-supir-view') || $user->can('master-pricelist-opp-opt-view') || $user->can('master-pricelist-freight-view') || $user->can('master-pricelist-lolo-view') || $user->can('master-pricelist-lolo-batam-view') || $user->can('master-pricelist-biaya-storage-view') || $user->can('master-pricelist-perijinan-view') || $user->can('master-pricelist-meratus-view') || $user->can('master-pricelist-temas-view') || $user->can('master-pricelist-tanto-view') || $user->can('master-pricelist-pelindo-view'));
-        @endphp
+                        {{-- Master Tarif --}}
+                        @php
+                            $hasTarifPermissions = $user && collect(config('master_tarif'))->contains(fn ($item) =>
+                                $item['permission'] && ($user->can($item['permission']) || (!empty($item['admin']) && $isAdmin))
+                            );
+                        @endphp
                         @if($hasTarifPermissions)
-                        <div class="mx-2 mb-3">
-                            <button id="master-tarif-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isTarifRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">Master Tarif</span>
-                                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isTarifRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-                            <div id="master-tarif-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isTarifRoute) style="display: block;" @endif>
-                                @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
-                                    <a href="{{ route('master.master.pricelist-sewa-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master.pricelist-sewa-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Kontainer Sewa</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-cat-view'))
-                                    <a href="{{ route('master.pricelist-cat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist CAT Kontainer</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-gate-in-view'))
-                                    <a href="{{ route('master.pricelist-gate-in.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Gate In</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-ob-view'))
-                                    <a href="{{ route('master.pricelist-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist OB</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-ob-antar-gudang-view'))
-                                    <a href="{{ route('master.pricelist-ob-antar-gudang.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-ob-antar-gudang.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist OB Antar Gudang</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pelayanan-pelabuhan-view'))
-                                    <a href="{{ route('master.master-pelayanan-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master-pelayanan-pelabuhan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Master Pelayanan Pelabuhan</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-uang-jalan-view'))
-                                    <a href="{{ route('master-pricelist-uang-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Uang Jalan</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-uang-jalan-batam-view'))
-                                    <a href="{{ route('pricelist-uang-jalan-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pricelist-uang-jalan-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Uang Jalan Batam</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-rit-view'))
-                                    <a href="{{ route('master.pricelist-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Rit</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-air-tawar-view'))
-                                    <a href="{{ route('master.pricelist-air-tawar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-air-tawar.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Air Tawar</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-buruh-view'))
-                                    <a href="{{ route('master.pricelist-buruh.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-buruh.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Buruh</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-buruh-bongkar-view'))
-                                    <a href="{{ route('master.pricelist-buruh-bongkar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-buruh-bongkar.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Buruh Bongkar</span>
-                                    </a>
-                                @endif
-                                 <a href="{{ route('master.pricelist-tkbm.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-tkbm.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                     <span class="text-xs">Pricelist TKBM</span>
-                                 </a>
-                                 @if($user && $user->can('master-pricelist-opp-opt-view'))
-                                     <a href="{{ route('master.pricelist-opp-opt.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-opp-opt.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist OPP/OPT</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-thc-view'))
-                                     <a href="{{ route('master.pricelist-thc.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-thc.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist Biaya THC</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-meratus-view'))
-                                     <a href="{{ route('master.pricelist-meratus.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-meratus.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist Meratus</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-temas-view'))
-                                     <a href="{{ route('master.pricelist-temas.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-temas.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs font-bold text-blue-600">Pricelist Temas</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-tanto-view'))
-                                     <a href="{{ route('master.pricelist-tanto.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-tanto.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs font-bold text-purple-600">Pricelist Tanto</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-lolo-view'))
-                                     <a href="{{ route('master.pricelist-lolo.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-lolo.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist Biaya LOLO</span>
-                                     </a>
-                                 @endif
-                                 @if($user && ($user->can('master-pricelist-lolo-batam-view') || $isAdmin))
-                                     <a href="{{ route('master.pricelist-lolo-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-lolo-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs font-semibold text-purple-700">Pricelist LOLO Batam</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-biaya-storage-view'))
-                                     <a href="{{ route('master-pricelist-biaya-storage.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-biaya-storage.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist Biaya Storage</span>
-                                     </a>
-                                 @endif
-                                 @if($user && $user->can('master-pricelist-kanisir-ban-view'))
-                                     <a href="{{ route('master.pricelist-kanisir-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-kanisir-ban.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                         <span class="text-xs">Pricelist Kanisir Ban</span>
-                                     </a>
-                                 @endif
-                                @if($user && $user->can('master-pricelist-biaya-dokumen-view'))
-                                    <a href="{{ route('master.pricelist-biaya-dokumen.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-biaya-dokumen.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Biaya Dokumen</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-biaya-trucking-view'))
-                                    <a href="{{ route('master.pricelist-biaya-trucking.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-biaya-trucking.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Biaya Trucking</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-tujuan-kontainer-sewa-view'))
-                                    <a href="{{ route('master-pricelist-tujuan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-tujuan-kontainer-sewa.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Tujuan Kontainer Sewa</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-lembur-view'))
-                                    <a href="{{ route('master.pricelist-lembur.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-lembur.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Master Pricelist Lembur</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-vendor-supir-view'))
-                                    <a href="{{ route('master.pricelist-vendor-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-vendor-supir.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Vendor Supir</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-labuh-tambat-view'))
-                                    <a href="{{ route('master.master-pricelist-labuh-tambat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master-pricelist-labuh-tambat.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Labuh Tambat</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-freight-view'))
-                                    <a href="{{ route('master-pricelist-freight.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-freight.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Freight (Fright)</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-kelola-bbm-view'))
-                                    <a href="{{ route('kelola-bbm.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('kelola-bbm.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Kelola BBM</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('ongkos-truck-view'))
-                                    <a href="{{ route('master.ongkos-truck.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.ongkos-truck.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Ongkos Truck</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-perijinan-view'))
-                                    <a href="{{ route('master.pricelist-perijinan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-perijinan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Perijinan</span>
-                                    </a>
-                                @endif
-                                @if($user && $user->can('master-pricelist-pelindo-view'))
-                                    <a href="{{ route('master.pricelist-pelindo.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-pelindo.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Pelindo</span>
-                                    </a>
-                                @endif
+                            <div class="mx-2 mb-3">
+                                <a href="{{ route('master.tarif.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs transition-all duration-200 {{ Request::routeIs('master.tarif.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:bg-purple-50 hover:text-purple-700 hover:shadow-sm' }}">
+                                    <span class="text-xs font-medium">Master Tarif</span>
+                                </a>
                             </div>
-                        </div>
                         @endif
 
                         {{-- Master Pemasok Sub-Dropdown --}}

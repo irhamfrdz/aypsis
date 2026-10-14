@@ -1313,6 +1313,21 @@ Route::middleware([
 
     Route::prefix('master')->name('master.')->group(function () {
 
+        Route::get('tarif', function () {
+            $user = auth()->user();
+            $items = collect(config('master_tarif'))->filter(fn ($item) =>
+                $item['permission'] && ($user->can($item['permission']) || (!empty($item['admin']) && $user->hasRole('admin')))
+            );
+
+            abort_if($items->isEmpty(), 403);
+
+            $items = collect(config('master_tarif'))->filter(fn ($item) =>
+                !$item['permission'] || $user->can($item['permission']) || (!empty($item['admin']) && $user->hasRole('admin'))
+            );
+
+            return view('master.tarif.index', compact('items'));
+        })->name('tarif.index');
+
         Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
 
         // Master Nama Barang Amprahan
