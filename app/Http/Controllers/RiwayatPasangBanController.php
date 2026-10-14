@@ -16,7 +16,7 @@ class RiwayatPasangBanController extends Controller
     public function index(Request $request)
     {
         $query = TireInstallationLog::with([
-            'mobil',
+            'mobil.karyawan',
             'alatBerat',
             'stockBan.namaStockBan',
             'stockBan.merkBan',

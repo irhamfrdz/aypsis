@@ -193,6 +193,9 @@
                                                     <span class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60 text-[10px]">{{ $log->mobil->jenis }}</span>
                                                 @endif
                                             </div>
+                                            <div class="text-[11px] text-gray-500 mt-0.5">
+                                                Supir: {{ $log->mobil->karyawan->nama_lengkap ?? $log->mobil->karyawan->nama_panggilan ?? '-' }}
+                                            </div>
                                         @else
                                             <span class="font-semibold text-gray-800 text-xs">{{ $log->mobil_id ? 'Mobil #'.$log->mobil_id : '-' }}</span>
                                         @endif
