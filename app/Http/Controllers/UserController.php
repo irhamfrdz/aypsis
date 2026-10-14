@@ -726,7 +726,6 @@ class UserController extends Controller
                 'asuransi-tanda-terima-multi' => 'asuransi-tanda-terima-multi',
                 'aktivitas-lainnya' => 'aktivitas-lainnya',
                 'audit-log' => 'audit-log',
-                'belanja-amprahan' => 'belanja-amprahan',
                 'biaya-kapal' => 'biaya-kapal',
                 'pembayaran-biaya-kapal' => 'pembayaran-biaya-kapal',
                 'bl' => 'bl',
@@ -3404,7 +3403,7 @@ class UserController extends Controller
                     }
 
                     // Handle amprahan permissions explicitly
-                    if (($module === 'stock-amprahan' || $module === 'belanja-amprahan') && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                    if ($module === 'stock-amprahan' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         $actionMap = [
                             'view' => $module.'-view',
                             'create' => $module.'-create',

@@ -740,8 +740,8 @@
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
-    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
+    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*');
+    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -900,15 +900,6 @@
         </div>
         @endif
         
-        {{-- Belanja Amprahan --}}
-        @if($user && $user->can('belanja-amprahan-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('belanja-amprahan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('belanja-amprahan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Belanja Amprahan</span>
-            </a>
-        </div>
-        @endif
-
         {{-- Pembelian BBM Batam --}}
         @if($user && $user->can('pembelian-bbm-batam-view'))
         <div class="mx-2 mb-3">

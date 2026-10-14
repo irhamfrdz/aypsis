@@ -7222,19 +7222,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('audit-logs/model', [AuditLogController::class, 'getModelAuditLogs'])->name('audit-logs.model');
     Route::get('audit-logs/export/csv', [AuditLogController::class, 'export'])->name('audit-logs.export');
 
-    // 🛒 Belanja Amprahan (simple CRUD)
-    Route::resource('belanja-amprahan', \App\Http\Controllers\BelanjaAmprahanController::class)
-        ->names('belanja-amprahan')
-        ->middleware([
-            'index' => 'can:belanja-amprahan-view',
-            'show' => 'can:belanja-amprahan-view',
-            'create' => 'can:belanja-amprahan-create',
-            'store' => 'can:belanja-amprahan-create',
-            'edit' => 'can:belanja-amprahan-update',
-            'update' => 'can:belanja-amprahan-update',
-            'destroy' => 'can:belanja-amprahan-delete',
-        ]);
-
     // 📦 Stock Amprahan
     Route::post('stock-amprahan/nama-toko', [\App\Http\Controllers\StockAmprahanController::class, 'storeNamaToko'])
         ->name('stock-amprahan.nama-toko.store')

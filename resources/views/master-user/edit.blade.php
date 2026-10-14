@@ -3468,23 +3468,6 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Belanja Amprahan --}}
-                            <tr class="submodule-row" data-parent="aktivitas">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Belanja Amprahan</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[belanja-amprahan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['view']) && $userMatrixPermissions['belanja-amprahan']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[belanja-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['create']) && $userMatrixPermissions['belanja-amprahan']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[belanja-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['update']) && $userMatrixPermissions['belanja-amprahan']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[belanja-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['belanja-amprahan']['delete']) && $userMatrixPermissions['belanja-amprahan']['delete']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                            </tr>
-
                             {{-- Stock Amprahan --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
