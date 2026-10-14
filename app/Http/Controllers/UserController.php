@@ -540,31 +540,6 @@ class UserController extends Controller
                 }
             }
 
-            // Special handling for approval-tugas permissions (dot notation)
-            if (strpos($permissionName, 'approval-tugas-') === 0 && strpos($permissionName, '.') !== false) {
-                $parts = explode('.', $permissionName);
-                if (count($parts) >= 2) {
-                    $module = $parts[0]; // approval-tugas-1 or approval-tugas-2
-                    $action = $parts[1]; // view or approve
-
-                    // Initialize module array if not exists
-                    if (! isset($matrixPermissions[$module])) {
-                        $matrixPermissions[$module] = [];
-                    }
-
-                    // Map database actions to matrix actions
-                    $actionMap = [
-                        'view' => 'view',
-                        'approve' => 'approve',
-                    ];
-
-                    $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
-                    $matrixPermissions[$module][$mappedAction] = true;
-
-                    continue; // Skip other patterns
-                }
-            }
-
             // Special handling for approval-surat-jalan permissions (dash notation)
             if (strpos($permissionName, 'approval-surat-jalan-') === 0) {
                 $module = 'approval-surat-jalan';
@@ -749,7 +724,6 @@ class UserController extends Controller
                 'pembayaran-pranota-kontainer' => 'pembayaran-pranota-kontainer',
                 'pembayaran-pranota-ob' => 'pembayaran-pranota-ob',
                 'pembayaran-pranota-perbaikan-kontainer' => 'pembayaran-pranota-perbaikan-kontainer',
-                'pembayaran-pranota-supir' => 'pembayaran-pranota-supir',
                 'pembayaran-pranota-surat-jalan' => 'pembayaran-pranota-surat-jalan',
                 'pembayaran-pranota-uang-jalan-bongkaran' => 'pembayaran-pranota-uang-jalan-bongkaran',
                 'pembayaran-pranota-uang-jalan-batam' => 'pembayaran-pranota-uang-jalan-batam',
@@ -760,7 +734,6 @@ class UserController extends Controller
                 'pembayaran-pranota-rit' => 'pembayaran-pranota-rit',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
-                'permohonan-memo' => 'permohonan-memo',
                 'pranota-cat' => 'pranota-cat',
                 'pranota-kontainer-sewa' => 'pranota-kontainer-sewa',
                 'pranota-lolo-batam' => 'pranota-lolo-batam',
@@ -768,7 +741,6 @@ class UserController extends Controller
                 'pranota-perbaikan-kontainer' => 'pranota-perbaikan-kontainer',
                 'pranota-rit-kenek' => 'pranota-rit-kenek',
                 'pranota-rit' => 'pranota-rit',
-                'pranota-supir' => 'pranota-supir',
                 'pranota-uang-rit-kenek' => 'pranota-uang-rit-kenek',
                 'pranota-uang-rit-batam' => 'pranota-uang-rit-batam',
                 'pranota-uang-rit' => 'pranota-uang-rit',
@@ -1473,12 +1445,6 @@ class UserController extends Controller
                         $module = 'tagihan-kontainer'; // Set module to tagihan-kontainer
                     }
 
-                    // Special handling for pranota-supir-* permissions
-                    if ($module === 'pranota' && strpos($action, 'supir-') === 0) {
-                        $action = str_replace('supir-', '', $action);
-                        $module = 'pranota-supir';
-                    }
-
                     // Special handling for pranota-uang-rit-* permissions
                     if ($module === 'pranota' && strpos($action, 'uang-rit-') === 0) {
                         if (strpos($action, 'uang-rit-batam-') === 0) {
@@ -1506,12 +1472,6 @@ class UserController extends Controller
                     if ($module === 'pranota' && strpos($action, 'uang-jalan-batam-') === 0) {
                         $action = str_replace('uang-jalan-batam-', '', $action);
                         $module = 'pranota-uang-jalan-batam';
-                    }
-
-                    // Special handling for pembayaran-pranota-supir-* permissions
-                    if ($module === 'pembayaran' && strpos($action, 'pranota-supir-') === 0) {
-                        $action = str_replace('pranota-supir-', '', $action);
-                        $module = 'pembayaran-pranota-supir';
                     }
 
                     // Special handling for pembayaran-pranota-kontainer-* permissions
@@ -1669,17 +1629,6 @@ class UserController extends Controller
                         continue; // Skip processing this permission
                     }
 
-                    // Special handling for permohonan-* permissions
-                    if ($module === 'permohonan' && in_array($action, ['create', 'view', 'edit', 'delete'])) {
-                        $module = 'permohonan';
-                        // Action remains the same
-                    }
-
-                    // Special handling for permohonan-memo-* permissions
-                    if ($module === 'permohonan' && strpos($action, 'memo-') === 0) {
-                        $action = str_replace('memo-', '', $action);
-                        $module = 'permohonan-memo';
-                    }
                     // Special handling for payroll-uang-karyawan-* and payroll-perhitungan-lembur-* permissions
                     if ($module === 'payroll') {
                         if (strpos($action, 'uang-karyawan-') === 0) {
@@ -1911,23 +1860,6 @@ class UserController extends Controller
 
                 continue; // Skip other patterns
             }
-        }
-
-        // Special handling: If user has approval-dashboard, also show approval-tugas permissions in matrix
-        if (in_array('approval-dashboard', $permissionNames)) {
-            // Initialize approval-tugas-1 if not exists
-            if (! isset($matrixPermissions['approval-tugas-1'])) {
-                $matrixPermissions['approval-tugas-1'] = [];
-            }
-            // Set view permission for approval-tugas-1
-            $matrixPermissions['approval-tugas-1']['view'] = true;
-
-            // Initialize approval-tugas-2 if not exists
-            if (! isset($matrixPermissions['approval-tugas-2'])) {
-                $matrixPermissions['approval-tugas-2'] = [];
-            }
-            // Set view permission for approval-tugas-2
-            $matrixPermissions['approval-tugas-2']['view'] = true;
         }
 
         return $matrixPermissions;
@@ -3522,24 +3454,6 @@ class UserController extends Controller
                         }
                     }
 
-                    // Special handling for pranota-supir and pembayaran-pranota-supir
-                    if (in_array($module, ['pranota-supir', 'pembayaran-pranota-supir'])) {
-                        foreach ($possibleActions as $dbAction) {
-                            // Only process if the action from form matches the current dbAction
-                            if ($action === $dbAction) {
-                                // Use dash notation (pranota-supir-view)
-                                $permissionName = $module.'-'.$dbAction;
-                                $permission = Permission::where('name', $permissionName)->first();
-
-                                if ($permission) {
-                                    $permissionIds[] = $permission->id;
-                                    $found = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
                     // Special handling for pranota-rit-kenek
                     if ($module === 'pranota-rit-kenek') {
                         foreach ($possibleActions as $dbAction) {
@@ -3979,53 +3893,6 @@ class UserController extends Controller
                         }
                     }
 
-                    // Special handling for permohonan-memo module
-                    if ($module === 'permohonan-memo') {
-                        // For permohonan-memo, map matrix actions directly to permission names
-                        $directActionMap = [
-                            'view' => 'view',
-                            'create' => 'create',
-                            'update' => 'update',
-                            'delete' => 'delete',
-                            'print' => 'print',
-                            'export' => 'export',
-                        ];
-
-                        if (isset($directActionMap[$action])) {
-                            $permissionName = 'permohonan-memo-'.$directActionMap[$action];
-                            $permission = Permission::where('name', $permissionName)->first();
-
-                            if ($permission) {
-                                $permissionIds[] = $permission->id;
-                                $found = true;
-                            }
-                        }
-                    }
-
-                    // Special handling for permohonan module
-                    if ($module === 'permohonan') {
-                        foreach ($possibleActions as $dbAction) {
-                            // Use dash notation (permohonan-create)
-                            $permissionName = $module.'-'.$dbAction;
-                            $permission = Permission::where('name', $permissionName)->first();
-
-                            if ($permission) {
-                                $permissionIds[] = $permission->id;
-                                $found = true;
-                                break;
-                            }
-                        }
-
-                        // Also add the simple 'permohonan' permission if any action is checked
-                        if (! $found) {
-                            $simplePermission = Permission::where('name', $module)->first();
-                            if ($simplePermission) {
-                                $permissionIds[] = $simplePermission->id;
-                                $found = true;
-                            }
-                        }
-                    }
-
                     // Special handling for profile module
                     if ($module === 'profile') {
                         foreach ($possibleActions as $dbAction) {
@@ -4109,46 +3976,6 @@ class UserController extends Controller
                                 $permissionIds[] = $permission->id;
                                 $found = true;
                                 break;
-                            }
-                        }
-                    }
-
-                    // DIRECT FIX: Handle approval-tugas-1 permissions explicitly
-                    if ($module === 'approval-tugas-1' && in_array($action, ['view', 'approve'])) {
-                        // Map action to correct permission name
-                        $actionMap = [
-                            'view' => 'approval-tugas-1.view',
-                            'approve' => 'approval-tugas-1.approve',
-                        ];
-
-                        if (isset($actionMap[$action])) {
-                            $permissionName = $actionMap[$action];
-                            $directPermission = Permission::where('name', $permissionName)->first();
-                            if ($directPermission) {
-                                $permissionIds[] = $directPermission->id;
-                                $found = true;
-
-                                continue; // Skip to next action
-                            }
-                        }
-                    }
-
-                    // DIRECT FIX: Handle approval-tugas-2 permissions explicitly
-                    if ($module === 'approval-tugas-2' && in_array($action, ['view', 'approve'])) {
-                        // Map action to correct permission name
-                        $actionMap = [
-                            'view' => 'approval-tugas-2.view',
-                            'approve' => 'approval-tugas-2.approve',
-                        ];
-
-                        if (isset($actionMap[$action])) {
-                            $permissionName = $actionMap[$action];
-                            $directPermission = Permission::where('name', $permissionName)->first();
-                            if ($directPermission) {
-                                $permissionIds[] = $directPermission->id;
-                                $found = true;
-
-                                continue; // Skip to next action
                             }
                         }
                     }
@@ -5577,61 +5404,6 @@ class UserController extends Controller
                         }
                     }
                 }
-            }
-        }
-
-        // Special handling: Add simple permissions for modules that need them
-        if (isset($matrixPermissions['permohonan']) && is_array($matrixPermissions['permohonan'])) {
-            // Check if any permohonan action is checked
-            $hasPermohonanAction = false;
-            foreach ($matrixPermissions['permohonan'] as $action => $value) {
-                if ($value == '1' || $value === true) {
-                    $hasPermohonanAction = true;
-                    break;
-                }
-            }
-
-            // If any permohonan action is checked, also add the simple 'permohonan' permission
-            if ($hasPermohonanAction) {
-                $simplePermission = Permission::where('name', 'permohonan')->first();
-                if ($simplePermission && ! in_array($simplePermission->id, $permissionIds)) {
-                    $permissionIds[] = $simplePermission->id;
-                }
-            }
-        }
-
-        // Special handling: Add approval-dashboard permission when user has approval-tugas permissions
-        $hasApprovalTugasPermission = false;
-        if (isset($matrixPermissions['approval-tugas-1']) && is_array($matrixPermissions['approval-tugas-1'])) {
-            foreach ($matrixPermissions['approval-tugas-1'] as $action => $value) {
-                if ($value == '1' || $value === true) {
-                    $hasApprovalTugasPermission = true;
-                    break;
-                }
-            }
-        }
-        if (! $hasApprovalTugasPermission && isset($matrixPermissions['approval-tugas-2']) && is_array($matrixPermissions['approval-tugas-2'])) {
-            foreach ($matrixPermissions['approval-tugas-2'] as $action => $value) {
-                if ($value == '1' || $value === true) {
-                    $hasApprovalTugasPermission = true;
-                    break;
-                }
-            }
-        }
-        if (! $hasApprovalTugasPermission && isset($matrixPermissions['approval-tanda-terima']) && is_array($matrixPermissions['approval-tanda-terima'])) {
-            foreach ($matrixPermissions['approval-tanda-terima'] as $action => $value) {
-                if ($value == '1' || $value === true) {
-                    $hasApprovalTugasPermission = true;
-                    break;
-                }
-            }
-        }
-
-        // If user has any approval-tugas permission, also give them approval-dashboard
-        if ($hasApprovalTugasPermission) {
-            $dashboardPermission = Permission::where('name', 'approval-dashboard')->first();
-            if ($dashboardPermission && ! in_array($dashboardPermission->id, $permissionIds)) {
-                $permissionIds[] = $dashboardPermission->id;
             }
         }
 

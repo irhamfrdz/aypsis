@@ -8,9 +8,6 @@
  * - master-data: Akses semua menu master data
  * - user-approval: Persetujuan user baru
  * - tagihan-kontainer: Menu tagihan kontainer sewa
- * - permohonan: Menu permohonan memo
- * - pranota-supir: Menu pranota memo
- * - pembayaran-pranota-supir: Menu pembayaran pranota memo
  *
  * Sub-permissions untuk master data:
  * - master-karyawan
@@ -78,21 +75,6 @@ return [
         'tagihan-kontainer' => [
             'name' => 'Tagihan Kontainer Sewa',
             'description' => 'Menu tagihan kontainer sewa',
-            'required' => true,
-        ],
-        'permohonan' => [
-            'name' => 'Permohonan Memo',
-            'description' => 'Menu permohonan memo',
-            'required' => true,
-        ],
-        'pranota-supir' => [
-            'name' => 'Pranota Memo',
-            'description' => 'Menu pranota memo',
-            'required' => true,
-        ],
-        'pembayaran-pranota-supir' => [
-            'name' => 'Pembayaran Pranota Memo',
-            'description' => 'Menu pembayaran pranota memo',
             'required' => true,
         ],
         'pembayaran-pranota-ongkos-truk' => [
@@ -368,15 +350,6 @@ return [
 
         // Tagihan Kontainer - butuh tagihan-kontainer
         'tagihan-kontainer' => ['tagihan-kontainer'],
-
-        // Permohonan - butuh permohonan
-        'permohonan' => ['permohonan'],
-
-        // Pranota Memo - butuh pranota-supir
-        'pranota-supir' => ['pranota-supir'],
-
-        // Pembayaran Pranota Memo - butuh pembayaran-pranota-supir
-        'pembayaran-pranota-supir' => ['pembayaran-pranota-supir'],
 
         // Pembayaran Pranota Ongkos Truk - butuh pembayaran-pranota-ongkos-truk-view
         'pembayaran-pranota-ongkos-truk' => ['pembayaran-pranota-ongkos-truk-view'],

@@ -968,11 +968,8 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('surat-jalan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || (Request::routeIs('ob.*') || Request::routeIs('pranota-ob-muat-temas.*')) || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob-antar-gudang.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('approval-tanda-terima-2.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('realisasi-uang-muka.*') || Request::routeIs('surat-jalan-bongkaran-batam.*') || Request::routeIs('penarikan-surat-jalan-batam.*');
+    $isAktivitasRoute = Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('surat-jalan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || (Request::routeIs('ob.*') || Request::routeIs('pranota-ob-muat-temas.*')) || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('pembayaran-pranota-ob-antar-gudang.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('approval-tanda-terima-2.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('realisasi-uang-muka.*') || Request::routeIs('surat-jalan-bongkaran-batam.*') || Request::routeIs('penarikan-surat-jalan-batam.*');
     $hasAktivitasPermissions = $user && (
-        $user->can('permohonan-memo-view') ||
-        $user->can('pranota-supir-view') ||
-        $user->can('pembayaran-pranota-supir-view') ||
         $user->can('order-view') ||
         $user->can('order-create') ||
         $user->can('order-update') ||
@@ -1054,12 +1051,6 @@
         $user->can('prospek-edit') ||
         $user->can('prospek-view') ||
         $user->can('bl-view') ||
-        $user->can('approval-view') ||
-        $user->can('approval-approve') ||
-        $user->can('approval-print') ||
-        $user->can('approval-dashboard') ||
-        $user->can('approval') ||
-        $user->can('permohonan.approve') ||
         $user->can('pembayaran-aktivitas-lain-view') ||
         $user->can('pembayaran-aktivitas-lain-create') ||
         $user->can('pembayaran-aktivitas-lain-update') ||
@@ -1088,10 +1079,9 @@
 
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
-            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::routeIs('biaya-bensin.*') || Request::is('pranota-ongkos-truk*') || Request::routeIs('pranota-biaya-bensin.*');
+            $isAktivitasSupirRoute = Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::routeIs('biaya-bensin.*') || Request::is('pranota-ongkos-truk*') || Request::routeIs('pranota-biaya-bensin.*');
 
             $hasAktivitasSupirPermissions = $user && (
-                $user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || 
                 $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || 
                 $user->can('pranota-uang-jalan-view') || $user->can('uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view') || 
                 $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('pembayaran-pranota-rit-view') || 
@@ -1116,8 +1106,8 @@
                 
                 {{-- Memo Sub-Dropdown --}}
                 @php
-                    $isMemoRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::is('pranota-ongkos-truk*');
-                    $hasMemoPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || true);
+                    $isMemoRoute = Request::is('pranota-ongkos-truk*');
+                    $hasMemoPermissions = $user && Route::has('pranota-ongkos-truk.index');
                 @endphp
 
                 @if($hasMemoPermissions)
@@ -1129,49 +1119,13 @@
                         </svg>
                     </button>
                     <div id="memo-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isMemoRoute) style="display: block;" @endif>
-                        {{-- Permohonan Memo --}}
-                        @if($user && $user->can('permohonan-memo-view'))
-                            <a href="{{ route('permohonan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('permohonan.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Permohonan Memo</span>
-                            </a>
-                        @endif
-
-                        {{-- Pranota Memo --}}
-                        @if($user && $user->can('pranota-supir-view'))
-                            <a href="{{ route('pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Pranota Memo</span>
-                            </a>
-                        @endif
-
-                        {{-- Bayar Pranota Memo --}}
-                        @if(Route::has('pembayaran-pranota-supir.index') && $user && $user->can('pembayaran-pranota-supir-view'))
-                            <a href="{{ route('pembayaran-pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Bayar Pranota Memo</span>
-                            </a>
-                        @endif
-
                         {{-- Pranota Ongkos Truk --}}
                         <a href="{{ route('pranota-ongkos-truk.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::is('pranota-ongkos-truk*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                             <span class="text-xs">Pranota Ongkos Truk</span>
                         </a>
-
-                        {{-- Approval Tugas 1 Memo --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 1</span>
-                            </a>
-                        @endif
-
-                        {{-- Approval Tugas 2 Memo --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 2</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
                 @endif
-
 
                 {{-- Rit Sub-Dropdown --}}
                 @php
@@ -1662,19 +1616,6 @@
                             </a>
                         @endif
 
-                        {{-- Approval Tugas 1 Sewa --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 1</span>
-                            </a>
-                        @endif
-
-                        {{-- Approval Tugas 2 Sewa --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 2</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
                 @endif
@@ -1715,19 +1656,6 @@
                             </a>
                         @endif
 
-                        {{-- Approval Tugas 1 Cat --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 1</span>
-                            </a>
-                        @endif
-
-                        {{-- Approval Tugas 2 Cat --}}
-                        @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Approval Tugas 2</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
                 @endif
@@ -2002,40 +1930,6 @@
                 @if($user && ($user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')))
                     <a href="{{ route('kontainer-perjalanan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('kontainer-perjalanan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Kontainer Dalam Perjalanan</span>
-                    </a>
-                @endif
-
-
-            </div>
-        </div>
-        @endif
-
-        {{-- Approval Tugas Sub-Dropdown --}}
-        @php
-            $isApprovalTugasRoute = Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
-            $hasApprovalTugasPermissions = $user && ($user->can('approval-view') || $user->can('approval-approve') || $user->can('approval-print') || $user->can('approval-dashboard') || $user->can('approval') || $user->can('permohonan.approve'));
-        @endphp
-
-        @if($hasApprovalTugasPermissions)
-        <div class="mx-2 mb-3">
-            <button id="approval-tugas-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 group {{ $isApprovalTugasRoute ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Approval Tugas</span>
-                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isApprovalTugasRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div id="approval-tugas-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isApprovalTugasRoute) style="display: block;" @endif>
-                {{-- Approval Tugas --}}
-                @if(Route::has('approval.dashboard'))
-                    <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                        Approval Tugas
-                    </a>
-                @endif
-
-                {{-- Approval Tugas II --}}
-                @if(Route::has('approval-ii.dashboard'))
-                    <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                        Approval Tugas II
                     </a>
                 @endif
 

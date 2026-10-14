@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permohonan;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use Illuminate\Http\Request;
@@ -18,18 +17,11 @@ class SupirDashboardController extends Controller
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
-        $supirId = $user->karyawan->id ?? null;
         $supirUsername = $user->username;
         $supirName = $user->name;  // This will use the accessor
 
         // Get the karyawan record to get nama_lengkap
         $supirNamaLengkap = $user->karyawan->nama_lengkap ?? $supirUsername;
-
-        // Ambil permohonan yang sedang berjalan (menggunakan supir_id)
-        $permohonans = Permohonan::where('supir_id', $supirId)
-            ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
-            ->latest()
-            ->get();
 
         // Ambil surat jalan yang perlu checkpoint atau sedang berjalan (menggunakan nama_lengkap karyawan)
         // Untuk kegiatan bongkar tidak perlu cek pembayaran uang jalan
@@ -81,18 +73,8 @@ class SupirDashboardController extends Controller
             'surat_jalan_ids' => $suratJalans->pluck('id')->toArray(),
         ]);
 
-        // Build kegiatan map (kode => nama) so view can display human-friendly names
-        $kegiatanRows = \App\Models\MasterKegiatan::all();
-        $kegiatanMap = $kegiatanRows->pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
-
         // Hitung report kerja 1 minggu terakhir
         $startOfWeek = now()->subDays(7)->startOfDay();
-
-        $listPermohonan = Permohonan::where('supir_id', $supirId)
-            ->where('status', 'Selesai')
-            ->where('updated_at', '>=', $startOfWeek)
-            ->latest('updated_at')
-            ->get();
 
         $listSuratJalan = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
             $query->where('supir', $supirNamaLengkap)
@@ -117,12 +99,11 @@ class SupirDashboardController extends Controller
         $listSuratJalanMerged = $listSuratJalan->concat($listBongkaran)->sortByDesc('tanggal_checkpoint');
 
         $reportMingguan = [
-            'permohonan' => $listPermohonan->count(),
             'surat_jalan' => $listSuratJalanMerged->count(),
-            'total' => $listPermohonan->count() + $listSuratJalanMerged->count(),
+            'total' => $listSuratJalanMerged->count(),
         ];
 
-        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap', 'reportMingguan', 'listPermohonan', 'listSuratJalanMerged'));
+        return view('supir.dashboard', compact('suratJalans', 'reportMingguan', 'listSuratJalanMerged'));
     }
 
     public function obMuat()

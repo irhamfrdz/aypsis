@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Checkpoint;
 use App\Models\SuratJalan;
 use Illuminate\Console\Command;
 
@@ -51,15 +50,6 @@ class TestUploadGambar extends Command
         $this->info('Checking database columns...');
 
         try {
-            // Test checkpoints table
-            $checkpoint = new Checkpoint;
-            $fillable = $checkpoint->getFillable();
-            if (in_array('gambar', $fillable)) {
-                $this->info('✅ Checkpoints table has gambar field in fillable');
-            } else {
-                $this->error('❌ Checkpoints table missing gambar in fillable');
-            }
-
             // Test surat_jalans table
             $suratJalan = new SuratJalan;
             $fillable = $suratJalan->getFillable();

@@ -1147,20 +1147,6 @@
                             </tr>
 
                             {{-- Uang Jalan Supir Sub-modules --}}
-                            <tr class="submodule-row" data-parent="uang-jalan-supir">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span>Permohonan Memo</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][delete]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][print]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][export]" value="1" class="permission-checkbox"></td>
-                            </tr>
                             
                             {{-- Permintaan Amprahan --}}
                             <tr class="submodule-row" data-parent="aktivitas">
@@ -1179,49 +1165,7 @@
                                 <td><input type="checkbox" name="permissions[permohonan-amprahan][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
-                            <tr class="submodule-row" data-parent="uang-jalan-supir">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span>Pranota Supir</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][create]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][print]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                            </tr>
 
-                            <tr class="submodule-row" data-parent="uang-jalan-supir">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span>Pembayaran Pranota Supir</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][delete]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][print]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][export]" value="1" class="permission-checkbox"></td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="uang-jalan-supir">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span>Approval Tugas</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[approval][view]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[approval][approve]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[approval][print]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                            </tr>
 
                             {{-- Master Tarif --}}
                             <tr class="module-row" data-module="master-tarif">

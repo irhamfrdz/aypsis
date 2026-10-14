@@ -3417,22 +3417,6 @@
                             </tr>
 
                             {{-- Aktivitas Sub-modules --}}
-                            {{-- Permohonan Memo --}}
-                            <tr class="submodule-row" data-parent="aktivitas">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Permohonan Memo</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['view']) && $userMatrixPermissions['permohonan-memo']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['create']) && $userMatrixPermissions['permohonan-memo']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['update']) && $userMatrixPermissions['permohonan-memo']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['delete']) && $userMatrixPermissions['permohonan-memo']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['approve']) && $userMatrixPermissions['permohonan-memo']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['print']) && $userMatrixPermissions['permohonan-memo']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[permohonan-memo][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan-memo']['export']) && $userMatrixPermissions['permohonan-memo']['export']) checked @endif></td>
-                            </tr>
 
                             {{-- Permintaan Amprahan --}}
                             <tr class="submodule-row" data-parent="aktivitas">
@@ -3606,22 +3590,6 @@
                             </tr>
 
 
-                            {{-- Pranota Supir --}}
-                            <tr class="submodule-row" data-parent="aktivitas">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Pranota Supir</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['view']) && $userMatrixPermissions['pranota-supir']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['create']) && $userMatrixPermissions['pranota-supir']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['update']) && $userMatrixPermissions['pranota-supir']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['delete']) && $userMatrixPermissions['pranota-supir']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['approve']) && $userMatrixPermissions['pranota-supir']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['print']) && $userMatrixPermissions['pranota-supir']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['export']) && $userMatrixPermissions['pranota-supir']['export']) checked @endif></td>
-                            </tr>
 
                             {{-- Biaya Bensin --}}
                             <tr class="submodule-row" data-parent="aktivitas">
@@ -4129,22 +4097,6 @@
                             </tr>
 
                             {{-- Pembayaran Sub-modules --}}
-                            {{-- Pembayaran Pranota Supir --}}
-                            <tr class="submodule-row" data-parent="pembayaran">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Pembayaran Pranota Supir</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['view']) && $userMatrixPermissions['pembayaran-pranota-supir']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['create']) && $userMatrixPermissions['pembayaran-pranota-supir']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['update']) && $userMatrixPermissions['pembayaran-pranota-supir']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['delete']) && $userMatrixPermissions['pembayaran-pranota-supir']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['approve']) && $userMatrixPermissions['pembayaran-pranota-supir']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['print']) && $userMatrixPermissions['pembayaran-pranota-supir']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['export']) && $userMatrixPermissions['pembayaran-pranota-supir']['export']) checked @endif></td>
-                            </tr>
 
                             {{-- Pembayaran Pranota Kontainer --}}
                             <tr class="submodule-row" data-parent="pembayaran">
@@ -4864,35 +4816,7 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Approval Tugas 1 --}}
-                            <tr class="submodule-row" data-parent="approval">
-                                <td class="submodule">
-                                    <span class="module-icon">🔐</span>
-                                    Approval Tugas 1 (Supervisor/Manager)
-                                </td>
-                                <td><input type="checkbox" name="permissions[approval-tugas-1][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-1']['view']) && $userMatrixPermissions['approval-tugas-1']['view']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td><input type="checkbox" name="permissions[approval-tugas-1][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-1']['approve']) && $userMatrixPermissions['approval-tugas-1']['approve']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                            </tr>
 
-                            {{-- Approval Tugas 2 --}}
-                            <tr class="submodule-row" data-parent="approval">
-                                <td class="submodule">
-                                    <span class="module-icon">🔒</span>
-                                    Approval Tugas 2 (General Manager)
-                                </td>
-                                <td><input type="checkbox" name="permissions[approval-tugas-2][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-2']['view']) && $userMatrixPermissions['approval-tugas-2']['view']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td><input type="checkbox" name="permissions[approval-tugas-2][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-2']['approve']) && $userMatrixPermissions['approval-tugas-2']['approve']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                            </tr>
 
                             {{-- Approval Surat Jalan --}}
                             <tr class="submodule-row" data-parent="approval">

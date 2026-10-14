@@ -19,11 +19,4 @@ class Pembayaran extends Model
         'catatan_pembayaran',
     ];
 
-    /**
-     * Pranota Supir yang termasuk dalam pembayaran ini.
-     */
-    public function pranotaSupirs()
-    {
-        return $this->belongsToMany(PranotaSupir::class, 'pembayaran_pranota_supir');
-    }
 }

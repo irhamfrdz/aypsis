@@ -141,12 +141,6 @@ class Kontainer extends Model
         }
     }
 
-    // Relasi ke permohonan melalui pivot
-    public function permohonans()
-    {
-        return $this->belongsToMany(Permohonan::class, 'permohonan_kontainers');
-    }
-
     // Gate In relationships
     public function gateIn()
     {

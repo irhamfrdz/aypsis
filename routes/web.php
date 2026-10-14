@@ -56,17 +56,14 @@ use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\PembayaranPranotaObController;
 use App\Http\Controllers\PembayaranPranotaOngkosTrukController;
 use App\Http\Controllers\PembayaranPranotaRitController;
-use App\Http\Controllers\PembayaranPranotaSupirController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PenerimaController;
 use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\PranotaBpjsController;
 use App\Http\Controllers\PranotaOngkosTrukController;
-use App\Http\Controllers\PranotaSupirController;
 use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PricelistCatController;
 use App\Http\Controllers\ProspekBatamController;
@@ -5621,99 +5618,8 @@ Route::middleware([
     */
 
     // ═══════════════════════════════════════════════════════════════════════
-    // 📝 PERMOHONAN (REQUEST) MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════════════
-
-    // CSV export/import for permohonan (declare before resource to avoid routing conflict with parameterized routes)
-    Route::get('permohonan/export', [PermohonanController::class, 'export'])
-        ->name('permohonan.export')
-        ->middleware('can:permohonan');
-
-    // Excel (XLSX) export for permohonan - filter-aware
-    Route::get('permohonan/export-excel', [PermohonanController::class, 'exportExcel'])
-        ->name('permohonan.export-excel')
-        ->middleware('can:permohonan');
-
-    Route::post('permohonan/import', [PermohonanController::class, 'import'])
-        ->name('permohonan.import')
-        ->middleware('can:permohonan');
-
-    // Print single permohonan memo (declare before resource routes)
-    Route::get('permohonan/{permohonan}/print', [PermohonanController::class, 'print'])
-        ->name('permohonan.print')
-        ->middleware('can:permohonan-memo-print');
-
-    // Print permohonan by date range
-    Route::get('permohonan/print/by-date', [PermohonanController::class, 'printByDate'])
-        ->name('permohonan.print.by-date')
-        ->middleware('can:permohonan-memo-print');
-
-    // Bulk delete permohonan (declare before resource routes)
-    Route::delete('permohonan/bulk-delete', [PermohonanController::class, 'bulkDelete'])
-        ->name('permohonan.bulk-delete')
-        ->middleware('can:permohonan-memo-delete');
-
-    // Individual routes for permohonan with specific permissions
-    Route::get('permohonan', [PermohonanController::class, 'index'])
-        ->name('permohonan.index')
-        ->middleware('can:permohonan-memo-view');
-    Route::get('permohonan/create', [PermohonanController::class, 'create'])
-        ->name('permohonan.create')
-        ->middleware('can:permohonan-memo-create');
-    Route::post('permohonan', [PermohonanController::class, 'store'])
-        ->name('permohonan.store')
-        ->middleware('can:permohonan-memo-create');
-    Route::get('permohonan/{permohonan}', [PermohonanController::class, 'show'])
-        ->name('permohonan.show')
-        ->middleware('can:permohonan-memo-view');
-    Route::get('permohonan/{permohonan}/edit', [PermohonanController::class, 'edit'])
-        ->name('permohonan.edit')
-        ->middleware('can:permohonan-memo-update');
-    Route::put('permohonan/{permohonan}', [PermohonanController::class, 'update'])
-        ->name('permohonan.update')
-        ->middleware('can:permohonan-memo-update');
-    Route::delete('permohonan/{permohonan}', [PermohonanController::class, 'destroy'])
-        ->name('permohonan.destroy')
-        ->middleware('can:permohonan-memo-delete');
-
-    // ═══════════════════════════════════════════════════════════════════════
     // 📋 PRANOTA (INVOICE) MANAGEMENT - Granular Permissions
     // ═══════════════════════════════════════════════════════════════════════
-
-    // 🚚 Pranota Supir (Driver Invoice) - HYBRID Resource with additional routes
-    Route::prefix('pranota-supir')->name('pranota-supir.')->middleware(['auth'])->group(function () {
-        Route::get('/', [PranotaSupirController::class, 'index'])
-            ->name('index')
-            ->middleware('can:pranota-supir-view');
-        Route::get('/create', [PranotaSupirController::class, 'create'])
-            ->name('create')
-            ->middleware('can:pranota-supir-create');
-        Route::post('/', [PranotaSupirController::class, 'store'])
-            ->name('store')
-            ->middleware('can:pranota-supir-create');
-        Route::get('/{pranotaSupir}', [PranotaSupirController::class, 'show'])
-            ->name('show')
-            ->middleware('can:pranota-supir-view');
-        Route::get('/{pranotaSupir}/edit', [PranotaSupirController::class, 'edit'])
-            ->name('edit')
-            ->middleware('can:pranota-supir-update');
-        Route::put('/{pranotaSupir}', [PranotaSupirController::class, 'update'])
-            ->name('update')
-            ->middleware('can:pranota-supir-update');
-        Route::delete('/{pranotaSupir}', [PranotaSupirController::class, 'destroy'])
-            ->name('destroy')
-            ->middleware('can:pranota-supir-delete');
-
-        // Additional granular routes
-        Route::get('/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])
-            ->name('print')
-            ->middleware('can:pranota-supir-print');
-
-        // Print pranota by date range
-        Route::get('/print/by-date', [PranotaSupirController::class, 'printByDate'])
-            ->name('print.by-date')
-            ->middleware('can:pranota-supir-print');
-    });
 
     // Pranota Ongkos Truk
     Route::prefix('pranota-ongkos-truk')->name('pranota-ongkos-truk.')->middleware(['auth'])->group(function () {
@@ -5740,42 +5646,6 @@ Route::middleware([
     |===========================================================================
     | All payment processing with detailed permission control
     */
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🚚 PEMBAYARAN PRANOTA SUPIR (Driver Payment) - Full CRUD + Print
-    // ═══════════════════════════════════════════════════════════════════════
-
-    Route::prefix('pembayaran-pranota-supir')->name('pembayaran-pranota-supir.')->middleware(['auth'])->group(function () {
-        Route::get('/', [PembayaranPranotaSupirController::class, 'index'])
-            ->name('index')
-            ->middleware('can:pembayaran-pranota-supir-view');
-        Route::get('/create', [PembayaranPranotaSupirController::class, 'create'])
-            ->name('create')
-            ->middleware('can:pembayaran-pranota-supir-create');
-        Route::get('/generate-nomor', [PembayaranPranotaSupirController::class, 'generateNomorPembayaran'])
-            ->name('generate-nomor')
-            ->middleware('can:pembayaran-pranota-supir-create');
-        Route::post('/', [PembayaranPranotaSupirController::class, 'store'])
-            ->name('store')
-            ->middleware('can:pembayaran-pranota-supir-create');
-        Route::get('/{pembayaran}', [PembayaranPranotaSupirController::class, 'show'])
-            ->name('show')
-            ->middleware('can:pembayaran-pranota-supir-view');
-        Route::get('/{pembayaran}/edit', [PembayaranPranotaSupirController::class, 'edit'])
-            ->name('edit')
-            ->middleware('can:pembayaran-pranota-supir-update');
-        Route::put('/{pembayaran}', [PembayaranPranotaSupirController::class, 'update'])
-            ->name('update')
-            ->middleware('can:pembayaran-pranota-supir-update');
-        Route::delete('/{pembayaran}', [PembayaranPranotaSupirController::class, 'destroy'])
-            ->name('destroy')
-            ->middleware('can:pembayaran-pranota-supir-delete');
-
-        // Additional granular routes
-        Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])
-            ->name('print')
-            ->middleware('can:pembayaran-pranota-supir-print');
-    });
 
     // 💰 PEMBAYARAN PRANOTA ONGKOS TRUK
     Route::prefix('pembayaran-pranota-ongkos-truk')->name('pembayaran-pranota-ongkos-truk.')->middleware(['auth'])->group(function () {
@@ -6111,11 +5981,6 @@ Route::middleware([
             ->name('ob-bongkar.process');
 
         // Checkpoint management for drivers
-        Route::get('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'create'])
-            ->name('checkpoint.create');
-        Route::post('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'store'])
-            ->name('checkpoint.store');
-
         // Checkpoint management for surat jalan
         Route::get('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'createSuratJalan'])
             ->name('checkpoint.create-surat-jalan');
@@ -6147,37 +6012,6 @@ Route::middleware([
             ->name('isi-bensin');
         Route::post('/isi-bensin', [SupirDashboardController::class, 'isiBensinStore'])
             ->name('isi-bensin.store');
-    });
-
-    // --- Rute Penyelesaian Tugas ---
-    // Menggunakan PenyelesaianController yang sudah kita kembangkan
-    Route::prefix('approval')->name('approval.')->middleware('can:approval-tugas-1.view')->group(function () {
-        // Dashboard untuk melihat tugas yang perlu diselesaikan
-        Route::get('/', [\App\Http\Controllers\PenyelesaianController::class, 'index'])->name('dashboard');
-        // Riwayat approval yang sudah selesai
-        Route::get('/riwayat', [\App\Http\Controllers\PenyelesaianController::class, 'riwayat'])->name('riwayat');
-        // Proses masal permohonan (define before parameterized routes to avoid route-model binding conflicts)
-        Route::post('/mass-process', [\App\Http\Controllers\PenyelesaianController::class, 'massProcess'])->name('mass_process');
-
-        // Menampilkan form approval untuk permohonan tertentu
-        Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'create'])->name('create');
-        // Menyimpan data dari form approval
-        Route::post('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'store'])->name('store');
-    });
-
-    // --- Rute Penyelesaian Tugas II (Duplicate dari Approval) ---
-    // Menggunakan PenyelesaianIIController untuk sistem approval kedua
-    Route::prefix('approval-ii')->name('approval-ii.')->middleware('can:approval-dashboard')->group(function () {
-        // Dashboard untuk melihat tugas yang perlu diselesaikan
-        Route::get('/', [\App\Http\Controllers\PenyelesaianIIController::class, 'index'])->name('dashboard');
-        // Riwayat approval yang sudah selesai
-        Route::get('/riwayat', [\App\Http\Controllers\PenyelesaianIIController::class, 'riwayat'])->name('riwayat');
-        // Proses masal permohonan (define before parameterized routes to avoid route-model binding conflicts)
-        Route::post('/mass-process', [\App\Http\Controllers\PenyelesaianIIController::class, 'massProcess'])->name('mass_process');
-        // Menampilkan form approval untuk permohonan tertentu
-        Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianIIController::class, 'create'])->name('create');
-        // Menyimpan data dari form approval
-        Route::post('/{permohonan}', [\App\Http\Controllers\PenyelesaianIIController::class, 'store'])->name('store');
     });
 
     // Minimal CRUD routes for new simplified Tagihan Kontainer Sewa (daftar)

@@ -144,9 +144,6 @@ class PermissionHelper
             'master-data',
             'user-approval',
             'tagihan-kontainer',
-            'permohonan',
-            'pranota-supir',
-            'pembayaran-pranota-supir',
         ];
     }
 
@@ -167,9 +164,6 @@ class PermissionHelper
             'master-data' => 'Akses semua menu master data',
             'user-approval' => 'Persetujuan user baru',
             'tagihan-kontainer' => 'Akses menu tagihan kontainer sewa',
-            'permohonan' => 'Akses menu permohonan memo',
-            'pranota-supir' => 'Akses menu pranota supir',
-            'pembayaran-pranota-supir' => 'Akses menu pembayaran pranota supir',
         ];
 
         return $descriptions[$permission] ?? 'Permission '.$permission;

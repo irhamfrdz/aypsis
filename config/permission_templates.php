@@ -18,21 +18,13 @@ return [
             'biaya-bensin-view', 'biaya-bensin-create', 'biaya-bensin-update', 'biaya-bensin-delete',
 
             // Pranota
-            'pranota-supir.index', 'pranota-supir.create', 'pranota-supir.show', 'pranota-supir.edit',
             'pranota.index', 'pranota.show', 'pranota.create', 'pranota.edit',
 
             // Pembayaran
-            'pembayaran-pranota-supir.index', 'pembayaran-pranota-supir.create',
             'pembayaran-pranota-kontainer.index', 'pembayaran-pranota-kontainer.create',
 
             // Tagihan
             'tagihan-kontainer-sewa.index', 'tagihan-kontainer-sewa.create',
-
-            // Permohonan
-            'permohonan.index', 'permohonan.create', 'permohonan.edit',
-
-            // Approval
-            'approval.dashboard', 'approval.create', 'approval.store',
 
             // Laporan
             'laporan.index',
@@ -47,18 +39,14 @@ return [
             'master-karyawan', 'master-kontainer',
 
             // Pranota operations
-            'pranota-supir.index', 'pranota-supir.create',
             'pranota.index', 'pranota.create',
 
             // Pembayaran
-            'pembayaran-pranota-supir.index', 'pembayaran-pranota-supir.create',
             'pembayaran-pranota-kontainer.index', 'pembayaran-pranota-kontainer.create',
 
             // Tagihan
             'tagihan-kontainer-sewa.index', 'tagihan-kontainer-sewa.create',
 
-            // Permohonan
-            'permohonan.index', 'permohonan.create',
             'biaya-bensin-view', 'biaya-bensin-create',
         ],
     ],
@@ -71,22 +59,15 @@ return [
             'master-karyawan', 'master-kontainer', 'master-tujuan',
 
             // Full pranota access
-            'pranota-supir.index', 'pranota-supir.create', 'pranota-supir.show', 'pranota-supir.edit',
             'pranota.index', 'pranota.show', 'pranota.create', 'pranota.edit',
 
             // Full pembayaran access
-            'pembayaran-pranota-supir.index', 'pembayaran-pranota-supir.create', 'pembayaran-pranota-supir.edit',
             'pembayaran-pranota-kontainer.index', 'pembayaran-pranota-kontainer.create', 'pembayaran-pranota-kontainer.edit',
 
             // Full tagihan access
             'tagihan-kontainer-sewa.index', 'tagihan-kontainer-sewa.create', 'tagihan-kontainer-sewa.edit',
 
-            // Full permohonan access
-            'permohonan.index', 'permohonan.create', 'permohonan.edit', 'permohonan.show',
             'biaya-bensin-view', 'biaya-bensin-create', 'biaya-bensin-update', 'biaya-bensin-delete',
-
-            // Approval access
-            'approval.dashboard', 'approval.create', 'approval.store',
 
             // Laporan
             'laporan.index',
@@ -99,10 +80,9 @@ return [
         'permissions' => [
             // View permissions only
             'master-karyawan', 'master-kontainer', 'master-tujuan',
-            'pranota-supir.index', 'pranota.index',
-            'pembayaran-pranota-supir.index', 'pembayaran-pranota-kontainer.index',
+            'pranota.index',
+            'pembayaran-pranota-kontainer.index',
             'tagihan-kontainer-sewa.index',
-            'permohonan.index',
             'biaya-bensin-view',
             'laporan.index',
         ],

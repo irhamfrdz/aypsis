@@ -185,7 +185,6 @@
                                 $badges = [
                                     'PembayaranOb' => ['label' => 'Pembayaran OB', 'color' => 'purple'],
                                     'PembayaranDpOb' => ['label' => 'DP OB', 'color' => 'orange'],
-                                    'PembayaranPranotaSupir' => ['label' => 'Pranota Supir', 'color' => 'indigo'],
                                     'PembayaranPranotaKontainer' => ['label' => 'Pranota Kontainer', 'color' => 'pink'],
                                     'PembayaranPranotaCat' => ['label' => 'Pranota CAT', 'color' => 'cyan'],
 
