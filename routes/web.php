@@ -1311,6 +1311,8 @@ Route::middleware([
     | All master data CRUD operations organized alphabetically for easy navigation
     */
 
+    Route::view('rekap', 'rekap.index')->name('rekap.index');
+
     Route::prefix('master')->name('master.')->group(function () {
 
         Route::view('data', 'master.data.index')->name('data.index');

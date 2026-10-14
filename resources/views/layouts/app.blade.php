@@ -542,18 +542,6 @@
                 </a>
                 @endcan
 
-                <!-- Rekap Perbaikan Kontainer -->
-                @php
-                    $isRekapPerbaikan = Request::routeIs('rekap-perbaikan-kontainer.*');
-                @endphp
-                <a href="{{ route('rekap-perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isRekapPerbaikan ? 'bg-red-100 text-red-700 font-bold' : 'text-gray-700 hover:bg-red-100 hover:text-red-700' }}">
-                    <span class="text-xs font-medium menu-text text-left">Rekap Perbaikan Kontainer</span>
-                </a>
-
-
-
-
-
                 @php
                     $showTrackingTransaksi = $user && (
                         $user->can('surat-jalan-view') ||
@@ -621,9 +609,6 @@
                     <div id="absensi-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAbsensiRoute) style="display: block;" @endif>
                         <a href="{{ Route::has('absensi.index') ? route('absensi.index') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Data Absensi</span>
-                        </a>
-                        <a href="{{ Route::has('absensi.rekap') ? route('absensi.rekap') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.rekap') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                            <span class="text-xs font-medium">Rekap Absensi</span>
                         </a>
                         @if($user && $user->can('approval-absensi-view'))
                             <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
@@ -746,12 +731,17 @@
                     </a>
                 </div>
                 @endif
+                <div>
+                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
+                        Rekap
+                    </a>
+                </div>
 {{-- User Dropdown has been completely moved to Master Data > Master Karyawan --}}
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('rekap-biaya-kapal.*') || Request::routeIs('rekap-biaya-asset.*') || Request::routeIs('rekap-pemakaian-barang.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
-    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('rekap-biaya-asset-view') || $user->can('rekap-pemakaian-barang-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
+    $isAktivaRoute = Request::routeIs('asset.*') || Request::routeIs('master.asset.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('history-kontainer.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*') || Request::routeIs('master-jadwal-kapal-berlabuh.*') || Request::routeIs('master-gudang.*') || Request::routeIs('stock-ban.*') || Request::routeIs('master.merk-ban.*') || Request::routeIs('master.nama-stock-ban.*') || Request::routeIs('master.tipe-stock-ban.*') || Request::routeIs('master.gudang-amprahan.*') || Request::routeIs('master.type-bon-amprahan.*') || Request::routeIs('master.alat-berat.*') || Request::routeIs('master-dokumen-kapal-alexindo.*') || Request::routeIs('biaya-kapal.*') || Request::routeIs('pembayaran-biaya-kapal.*') || Request::routeIs('pembayaran-pranota-stock.*') || Request::routeIs('stock-amprahan.*') || Request::routeIs('pranota-stock.*') || Request::routeIs('belanja-amprahan.*');
+    $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('belanja-amprahan-view') || $user->can('master-dokumen-kapal-alexindo-view')));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -864,33 +854,6 @@
         <div class="mx-2 mb-3">
             <a href="{{ route('pembayaran-biaya-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pembayaran-biaya-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Bayar Biaya Kapal</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Rekap Biaya Kapal --}}
-        @if($user && $user->can('biaya-kapal-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('rekap-biaya-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-biaya-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Rekap Biaya Kapal</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- Rekap Biaya Asset --}}
-        @if($user && $user->can('rekap-biaya-asset-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('rekap-biaya-asset.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-biaya-asset.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Rekap Biaya Asset</span>
-            </a>
-        </div>
-        @endif
-        
-        {{-- Rekap Pemakaian Barang --}}
-        @if($user && $user->can('rekap-pemakaian-barang-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('rekap-pemakaian-barang.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-pemakaian-barang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Rekap Pemakaian Barang</span>
             </a>
         </div>
         @endif
@@ -1881,27 +1844,6 @@
                 @if($user && $user->can('bl-view'))
                     <a href="{{ route('bl.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') && !Request::routeIs('bl.rekap-bongkaran*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">BL (Bill of Lading)</span>
-                    </a>
-                @endif
-
-                {{-- Rekap Bongkaran --}}
-                @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.rekap-bongkaran.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.rekap-bongkaran*') && !Request::routeIs('bl.rekap-bongkaran-perincian*') && !Request::routeIs('bl.rekap-bongkaran-kontainer*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Rekap Bongkar/Muat</span>
-                    </a>
-                @endif
-
-                                {{-- Rekap Bongkaran Kontainer --}}
-                @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.rekap-bongkaran-kontainer.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.rekap-bongkaran-kontainer*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Rekap Bongkar/Muat Kontainer</span>
-                    </a>
-                @endif
-
-                {{-- Rekap Bongkaran Perincian --}}
-                @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.rekap-bongkaran-perincian.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.rekap-bongkaran-perincian*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Rekap Bongkar/Muat Perincian</span>
                     </a>
                 @endif
 
