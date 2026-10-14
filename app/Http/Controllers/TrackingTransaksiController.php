@@ -316,12 +316,12 @@ class TrackingTransaksiController extends Controller
             ['title' => 'Surat jalan dibayar', 'at' => $paid ? ($paymentLog?->created_at ?? $suratJalan->updated_at) : null, 'complete' => $paid],
             ['title' => 'Supir melakukan checkpoint', 'at' => $suratJalan->tanggal_checkpoint, 'complete' => (bool) $suratJalan->tanggal_checkpoint],
             ['title' => 'Surat jalan diterima di pelabuhan (tanda terima dibuat)', 'at' => $tandaTerima?->created_at, 'complete' => (bool) $tandaTerima],
-            ['title' => 'Surat jalan dimuat di kapal (OB Muat)', 'at' => $obDate, 'complete' => (bool) ($naikKapal || $bl)],
+            ['title' => 'Surat jalan dimuat di kapal (OB Muat)', 'at' => $obDate, 'complete' => (bool) ($naikKapal || $bl), 'description' => $this->formatObDescription($naikKapal, $bl)],
             ['title' => 'Surat jalan dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)', 'at' => $suratJalanBongkaranBatam?->created_at, 'complete' => (bool) $suratJalanBongkaranBatam],
         ];
 
         return array_map(function (array $step) {
-            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['description'] = $step['description'] ?? ($step['complete'] ? 'Selesai' : 'Belum dilakukan');
             $step['formatted_at'] = $step['at']
                 ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
                 : 'Belum tercatat';
@@ -456,6 +456,7 @@ class TrackingTransaksiController extends Controller
                 'title' => 'Tanda terima sudah dimuat di kapal (OB Muat)',
                 'at' => $obDate,
                 'complete' => (bool) ($naikKapal || $bl),
+                'description' => $this->formatObDescription($naikKapal, $bl),
             ],
             [
                 'title' => 'Tanda terima sudah dilakukan dooring di Batam (Surat Jalan Bongkaran Batam dibuat)',
@@ -465,7 +466,7 @@ class TrackingTransaksiController extends Controller
         ];
 
         return array_map(function (array $step) {
-            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['description'] = $step['description'] ?? ($step['complete'] ? 'Selesai' : 'Belum dilakukan');
             $step['formatted_at'] = $step['at']
                 ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
                 : 'Belum tercatat';
@@ -531,6 +532,7 @@ class TrackingTransaksiController extends Controller
                 'title' => 'Tanda terima LCL sudah dimuat di kapal (OB Muat)',
                 'at' => $obDate,
                 'complete' => (bool) ($naikKapal || $bl),
+                'description' => $this->formatObDescription($naikKapal, $bl),
             ],
             [
                 'title' => 'Tanda terima LCL sudah dilakukan dooring (Surat Jalan Bongkaran Batam dibuat)',
@@ -540,12 +542,28 @@ class TrackingTransaksiController extends Controller
         ];
 
         return array_map(function (array $step) {
-            $step['description'] = $step['complete'] ? 'Selesai' : 'Belum dilakukan';
+            $step['description'] = $step['description'] ?? ($step['complete'] ? 'Selesai' : 'Belum dilakukan');
             $step['formatted_at'] = $step['at']
                 ? Carbon::parse($step['at'])->format('d M Y'.(Carbon::parse($step['at'])->format('H:i:s') === '00:00:00' ? '' : ' H:i'))
                 : 'Belum tercatat';
 
             return $step;
         }, $steps);
+    }
+
+    private function formatObDescription(?NaikKapal $naikKapal, ?Bl $bl): string
+    {
+        if (! $naikKapal && ! $bl) {
+            return 'Belum dilakukan';
+        }
+
+        $shipName = $naikKapal?->nama_kapal ?: $bl?->nama_kapal;
+        $voyageNumber = $naikKapal?->no_voyage ?: $bl?->no_voyage;
+        $details = collect([
+            $shipName ? 'Nama kapal: '.$shipName : null,
+            $voyageNumber ? 'Nomor voyage: '.$voyageNumber : null,
+        ])->filter()->implode(' · ');
+
+        return $details ? 'Selesai · '.$details : 'Selesai';
     }
 }
