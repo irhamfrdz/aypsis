@@ -258,7 +258,7 @@
                 </div>
 
                 <!-- Keterangan -->
-                <div class="md:col-span-2">
+                <div id="keterangan_wrapper" class="md:col-span-2">
                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
                         Keterangan
                     </label>
@@ -273,7 +273,7 @@
                 </div>
 
                 <!-- Upload Bukti -->
-                <div class="md:col-span-2">
+                <div id="bukti_wrapper" class="md:col-span-2">
                     <label for="bukti" class="block text-sm font-medium text-gray-700 mb-2">
                         Upload Bukti
                     </label>

@@ -627,10 +627,19 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
             
-            // Show DP fields for Biaya OPP/OPT
-            dpWrapper.classList.remove('hidden');
-            sisaPembayaranWrapper.classList.remove('hidden');
-            calculateSisaPembayaran();
+            // OPP/OPT stores payment details per vessel, so hide the generic fields.
+            nominalWrapper.classList.add('hidden');
+            if (nominalInput) nominalInput.removeAttribute('required');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            if (penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if (penerimaInput) penerimaInput.removeAttribute('required');
+            if (namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if (nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            const keteranganWrapper = document.getElementById('keterangan_wrapper');
+            const buktiWrapper = document.getElementById('bukti_wrapper');
+            if (keteranganWrapper) keteranganWrapper.classList.add('hidden');
+            if (buktiWrapper) buktiWrapper.classList.add('hidden');
         }
         // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {
