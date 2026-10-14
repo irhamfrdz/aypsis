@@ -594,8 +594,8 @@ function parseBulkData() {
     lines.forEach((line, lineIndex) => {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
-        if (cols.length !== 16) {
-            formatErrors.push(`Baris ${lineIndex + 1}: harus berisi 16 kolom.`);
+        if (cols.length !== 17) {
+            formatErrors.push(`Baris ${lineIndex + 1}: harus berisi 17 kolom.`);
             return;
         }
         {
