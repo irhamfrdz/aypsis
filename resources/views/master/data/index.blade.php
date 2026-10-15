@@ -38,6 +38,19 @@
         border-radius: 0.375rem;
     }
     #master-data-directory .dropdown-content a:hover { background: #f1f5f9; }
+    #master-data-directory .dropdown-content a.master-search-match,
+    #master-data-directory .dropdown-content a.master-search-match:hover {
+        background: #fef3c7;
+        color: #92400e;
+        box-shadow: inset 3px 0 0 #f59e0b;
+    }
+    #master-data-directory .dropdown-content a.master-search-match > span:first-child {
+        color: inherit;
+    }
+    #master-data-directory button.master-search-match {
+        background: #fef3c7;
+        color: #92400e;
+    }
 </style>
 @endpush
 
@@ -94,14 +107,19 @@
             const content = toggle && document.getElementById(toggle.id.replace(/-toggle$/, '-content'));
             const links = [...card.querySelectorAll('a')];
             const categoryMatches = toggle?.textContent.toLocaleLowerCase().includes(term);
+            toggle?.classList.toggle('master-search-match', !!term && !!categoryMatches);
             let visibleLinks = 0;
             links.forEach(link => {
-                const visible = !term || categoryMatches || link.textContent.toLocaleLowerCase().includes(term);
+                const linkMatches = !!term && link.textContent.toLocaleLowerCase().includes(term);
+                const visible = !term || categoryMatches || linkMatches;
                 link.hidden = !visible;
+                link.style.display = visible ? '' : 'none';
+                link.classList.toggle('master-search-match', linkMatches);
                 if (visible) visibleLinks++;
             });
             const visible = !term || categoryMatches || visibleLinks > 0;
             card.hidden = !visible;
+            card.style.display = visible ? '' : 'none';
             if (visible) visibleCards++;
             if (content && term) {
                 content.style.display = 'block';
