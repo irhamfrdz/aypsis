@@ -50,7 +50,7 @@ class ReportGajiSupirBatamFilterTest extends TestCase
         $request = Request::create('/report-gaji-supir-batam', 'GET', [
             'start_date' => '2026-09-15',
             'end_date' => '2026-09-16',
-            'karyawan_id' => '',
+            'karyawan_id' => null,
         ]);
 
         $view = (new ReportGajiSupirBatamController)->index($request);
@@ -71,6 +71,23 @@ class ReportGajiSupirBatamFilterTest extends TestCase
             'start_date' => '2026-09-15',
             'end_date' => '2026-09-16',
             'karyawan_id' => '2',
+        ]);
+
+        (new ReportGajiSupirBatamController)->export($request);
+    }
+
+    public function test_export_all_drivers_accepts_a_null_filter_value(): void
+    {
+        Excel::shouldReceive('download')->once()->withArgs(function ($export) {
+            $this->assertEqualsCanonicalizing([1, 2], $export->view()->getData()['gajiList']->pluck('id')->all());
+
+            return true;
+        })->andReturn(response('export'));
+
+        $request = Request::create('/report-gaji-supir-batam/export', 'GET', [
+            'start_date' => '2026-09-15',
+            'end_date' => '2026-09-16',
+            'karyawan_id' => null,
         ]);
 
         (new ReportGajiSupirBatamController)->export($request);

@@ -16,10 +16,10 @@ class ReportGajiSupirBatamController extends Controller
      */
     public function index(Request $request)
     {
-        $startDate = $request->get('start_date', '');
-        $endDate = $request->get('end_date', '');
-        $karyawanId = $request->get('karyawan_id', '');
-        $statusPembayaran = $request->get('status_pembayaran', '');
+        $startDate = $request->input('start_date') ?? '';
+        $endDate = $request->input('end_date') ?? '';
+        $karyawanId = $request->input('karyawan_id') ?? '';
+        $statusPembayaran = $request->input('status_pembayaran') ?? '';
 
         // Get list of Batam supir for filter dropdown
         $supirList = Karyawan::where('cabang', 'BATAM')
@@ -53,10 +53,10 @@ class ReportGajiSupirBatamController extends Controller
      */
     public function export(Request $request)
     {
-        $startDate = $request->get('start_date', '');
-        $endDate = $request->get('end_date', '');
-        $karyawanId = $request->get('karyawan_id', '');
-        $statusPembayaran = $request->get('status_pembayaran', '');
+        $startDate = $request->input('start_date') ?? '';
+        $endDate = $request->input('end_date') ?? '';
+        $karyawanId = $request->input('karyawan_id') ?? '';
+        $statusPembayaran = $request->input('status_pembayaran') ?? '';
 
         if (! $startDate || ! $endDate) {
             return back()->with('error', 'Silakan pilih rentang tanggal terlebih dahulu untuk export.');
