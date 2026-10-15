@@ -396,6 +396,7 @@
                         $user->can('master-pricelist-biaya-dokumen-view') ||
                         $user->can('master-user-view') ||
                         $user->can('master-karyawan-view') ||
+                        $user->can('master-jam-kerja-view') ||
                         $user->can('master-divisi-view') ||
                         $user->can('master-pekerjaan-view') ||
                         $user->can('master-pajak-view') ||
@@ -594,8 +595,8 @@
 
                 {{-- Kelola Absensi Section --}}
                 @php
-                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
-                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
+                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
+                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
                 @endphp
 
                 @if($hasAbsensiPermissions)
@@ -628,11 +629,6 @@
                         @if($user && $user->can('master-lokasi-absensi-view'))
                             <a href="{{ route('master.lokasi-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.lokasi-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Kelola Lokasi (Maps)</span>
-                            </a>
-                        @endif
-                        @if($user && $user->can('master-jam-kerja-view'))
-                            <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">Jam Kerja (Shift)</span>
                             </a>
                         @endif
                     </div>
@@ -729,6 +725,11 @@
                     <a href="{{ route('master.data.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('master.data.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('master.data.index')) aria-current="page" @endif>
                         Master Data
                     </a>
+                    @if($user && $user->can('master-jam-kerja-view'))
+                    <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('master.jam-kerja.*')) aria-current="page" @endif>
+                        Jam Kerja (Shift)
+                    </a>
+                    @endif
                 </div>
                 @endif
                 <div>
