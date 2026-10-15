@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ReportGajiSupirBatamExport;
 use App\Models\GajiSupirBatam;
 use App\Models\Karyawan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -31,21 +32,7 @@ class ReportGajiSupirBatamController extends Controller
 
         $query = GajiSupirBatam::with('karyawan');
 
-        if ($karyawanId !== '') {
-            $query->where('karyawan_id', $karyawanId);
-        }
-
-        if ($statusPembayaran !== '') {
-            $query->where('status_pembayaran', $statusPembayaran);
-        }
-
-        if ($startDate !== '') {
-            $query->where('tanggal_mulai', '>=', $startDate);
-        }
-
-        if ($endDate !== '') {
-            $query->where('tanggal_selesai', '<=', $endDate);
-        }
+        $this->applyFilters($query, $karyawanId, $statusPembayaran, $startDate, $endDate);
 
         $query->orderBy('tanggal_mulai', 'desc');
 
@@ -77,21 +64,7 @@ class ReportGajiSupirBatamController extends Controller
 
         $query = GajiSupirBatam::with('karyawan');
 
-        if ($karyawanId !== '') {
-            $query->where('karyawan_id', $karyawanId);
-        }
-
-        if ($statusPembayaran !== '') {
-            $query->where('status_pembayaran', $statusPembayaran);
-        }
-
-        if ($startDate !== '') {
-            $query->where('tanggal_mulai', '>=', $startDate);
-        }
-
-        if ($endDate !== '') {
-            $query->where('tanggal_selesai', '<=', $endDate);
-        }
+        $this->applyFilters($query, $karyawanId, $statusPembayaran, $startDate, $endDate);
 
         $query->orderBy('tanggal_mulai', 'asc');
         $gajiList = $query->get();
@@ -100,5 +73,25 @@ class ReportGajiSupirBatamController extends Controller
             new ReportGajiSupirBatamExport($gajiList, $startDate, $endDate),
             'Report_Gaji_Supir_Batam_'.$startDate.'_sd_'.$endDate.'.xlsx'
         );
+    }
+
+    private function applyFilters(Builder $query, $karyawanId, $statusPembayaran, $startDate, $endDate): void
+    {
+        if ($karyawanId !== '') {
+            $query->where('karyawan_id', $karyawanId);
+        }
+
+        if ($statusPembayaran !== '') {
+            $query->where('status_pembayaran', $statusPembayaran);
+        }
+
+        // Include every salary period that intersects the selected date range.
+        if ($startDate !== '') {
+            $query->whereDate('tanggal_selesai', '>=', $startDate);
+        }
+
+        if ($endDate !== '') {
+            $query->whereDate('tanggal_mulai', '<=', $endDate);
+        }
     }
 }
