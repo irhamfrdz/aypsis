@@ -150,9 +150,9 @@ class GajiSupirBatamTarikKosongRingTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $workbook = IOFactory::load($response->getFile()->getPathname());
-        $this->assertSame(['Gaji 2', 'Gaji 1'], $workbook->getSheetNames());
-        $this->assertSame('Budi Santoso', $workbook->getSheetByName('Gaji 1')->getCell('B3')->getValue());
-        $this->assertSame('TK-1', $workbook->getSheetByName('Gaji 1')->getCell('C8')->getValue());
+        $this->assertSame(['Budi Santoso - 2', 'Budi Santoso - 1'], $workbook->getSheetNames());
+        $this->assertSame('Budi Santoso', $workbook->getSheetByName('Budi Santoso - 1')->getCell('B3')->getValue());
+        $this->assertSame('TK-1', $workbook->getSheetByName('Budi Santoso - 1')->getCell('C8')->getValue());
 
         $allDrivers = (new GajiSupirBatamController)->exportFiltered(Request::create('/gaji-supir-batam/export-filtered', 'GET', [
             'karyawan_id' => null,
@@ -160,6 +160,6 @@ class GajiSupirBatamTarikKosongRingTest extends TestCase
             'end_date' => '2026-10-05',
         ]));
         $allWorkbook = IOFactory::load($allDrivers->getFile()->getPathname());
-        $this->assertSame(['Gaji 2', 'Gaji 3', 'Gaji 1'], $allWorkbook->getSheetNames());
+        $this->assertSame(['Budi Santoso - 2', 'Doni Saputra - 3', 'Budi Santoso - 1'], $allWorkbook->getSheetNames());
     }
 }

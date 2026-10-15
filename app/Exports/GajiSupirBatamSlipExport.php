@@ -28,6 +28,9 @@ class GajiSupirBatamSlipExport implements FromView, ShouldAutoSize, WithTitle
 
     public function title(): string
     {
-        return 'Gaji '.$this->gaji->id;
+        $name = trim(str_replace(['\\', '/', '?', '*', '[', ']', ':'], '', $this->gaji->karyawan->nama_lengkap ?? ''));
+        $suffix = ' - '.$this->gaji->id;
+
+        return mb_substr($name ?: 'Supir', 0, 31 - strlen($suffix)).$suffix;
     }
 }
