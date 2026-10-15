@@ -87,6 +87,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Detail Pembayaran -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Informasi Pembayaran -->
@@ -164,6 +170,9 @@
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                @can('pembayaran-pranota-uang-jalan-delete')
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                @endcan
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -192,6 +201,20 @@
                                 <td class="px-4 py-2 text-sm text-right font-medium">
                                     Rp {{ number_format($pranota->pivot->subtotal, 0, ',', '.') }}
                                 </td>
+                                @can('pembayaran-pranota-uang-jalan-delete')
+                                    <td class="px-4 py-2 text-sm text-right">
+                                        @if(!$pembayaranPranotaUangJalan->isCancelled() && $pembayaranPranotaUangJalan->pranotaUangJalans->count() > 1)
+                                            <form method="POST" action="{{ route('pembayaran-pranota-uang-jalan.remove-pranota', [$pembayaranPranotaUangJalan, $pranota]) }}"
+                                                  onsubmit="return confirm('Keluarkan pranota ini dari pembayaran? Status pranota akan dikembalikan dan total pembayaran serta jurnal COA akan diperbarui.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 font-medium">Keluarkan</button>
+                                            </form>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                @endcan
                             </tr>
                             @endforeach
                         </tbody>

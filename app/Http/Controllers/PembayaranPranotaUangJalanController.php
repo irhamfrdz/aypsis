@@ -27,7 +27,7 @@ class PembayaranPranotaUangJalanController extends Controller
         $this->middleware('can:pembayaran-pranota-uang-jalan-view')->only(['index', 'show']);
         $this->middleware('can:pembayaran-pranota-uang-jalan-create')->only(['create', 'store']);
         $this->middleware('can:pembayaran-pranota-uang-jalan-edit')->only(['edit', 'update']);
-        $this->middleware('can:pembayaran-pranota-uang-jalan-delete')->only(['destroy']);
+        $this->middleware('can:pembayaran-pranota-uang-jalan-delete')->only(['destroy', 'removePranota']);
     }
 
     /**
@@ -500,6 +500,104 @@ class PembayaranPranotaUangJalanController extends Controller
             Log::error('Error deleting pembayaran pranota uang jalan: '.$e->getMessage());
 
             return back()->with('error', 'Gagal menghapus pembayaran: '.$e->getMessage());
+        }
+    }
+
+    public function removePranota(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan, PranotaUangJalan $pranotaUangJalan)
+    {
+        try {
+            return DB::transaction(function () use ($pembayaranPranotaUangJalan, $pranotaUangJalan) {
+                $payment = PembayaranPranotaUangJalan::whereKey($pembayaranPranotaUangJalan->id)
+                    ->lockForUpdate()->firstOrFail();
+
+                if ($payment->isCancelled()) {
+                    return back()->with('error', 'Pembayaran yang dibatalkan tidak dapat diubah.');
+                }
+
+                $pranotas = $payment->pranotaUangJalans;
+                if (! $pranotas->contains('id', $pranotaUangJalan->id)) {
+                    return back()->with('error', 'Pranota tidak terdaftar pada pembayaran ini.');
+                }
+                if ($pranotas->count() <= 1) {
+                    return back()->with('error', 'Pranota terakhir tidak dapat dikeluarkan. Hapus/koreksi pembayaran seluruhnya jika diperlukan.');
+                }
+
+                $payment->pranotaUangJalans()->detach($pranotaUangJalan->id);
+
+                $hasOtherPaidPayment = $pranotaUangJalan->pembayaranPranotaUangJalans()
+                    ->where('pembayaran_pranota_uang_jalans.status_pembayaran', PembayaranPranotaUangJalan::STATUS_PAID)
+                    ->exists();
+
+                if (! $hasOtherPaidPayment) {
+                    $pranotaUangJalan->update([
+                        'status_pembayaran' => PranotaUangJalan::STATUS_UNPAID,
+                        'updated_by' => Auth::id(),
+                    ]);
+
+                    foreach ($pranotaUangJalan->uangJalans as $uangJalan) {
+                        $uangJalan->forceFill([
+                            'status' => 'sudah_masuk_pranota',
+                            'updated_by' => Auth::id(),
+                        ])->save();
+                        if ($uangJalan->suratJalan) {
+                            $uangJalan->suratJalan->forceFill([
+                                'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan',
+                                'updated_by' => Auth::id(),
+                            ])->save();
+                        }
+                    }
+
+                    Prospek::whereNull('tanda_terima_id')
+                        ->where('keterangan', 'like', '%Pranota: '.$pranotaUangJalan->nomor_pranota.'%')
+                        ->delete();
+                }
+
+                $newTotal = (float) $payment->pranotaUangJalans()
+                    ->sum('pembayaran_pranota_uang_jalan_items.subtotal');
+                $newFinal = $newTotal + (float) ($payment->total_tagihan_penyesuaian ?? 0);
+                if ($newFinal < 0) {
+                    throw new \RuntimeException('Total akhir pembayaran menjadi negatif. Periksa penyesuaian pembayaran terlebih dahulu.');
+                }
+
+                $payment->update([
+                    'total_pembayaran' => $newTotal,
+                    'total_tagihan_setelah_penyesuaian' => $newFinal,
+                    'updated_by' => Auth::id(),
+                ]);
+
+                if (CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->exists()) {
+                    if (! Coa::where('nama_akun', $payment->bank)->exists()
+                        || ! Coa::where('nama_akun', 'Biaya Uang Jalan Muat')->exists()) {
+                        throw new \RuntimeException('Akun COA pembayaran tidak ditemukan.');
+                    }
+                    if (! $this->coaTransactionService->deleteTransactionByReference($payment->nomor_pembayaran)) {
+                        throw new \RuntimeException('Jurnal COA lama gagal dibatalkan.');
+                    }
+
+                    $debit = $payment->jenis_transaksi === 'Debit' ? $payment->bank : 'Biaya Uang Jalan Muat';
+                    $credit = $payment->jenis_transaksi === 'Debit' ? 'Biaya Uang Jalan Muat' : $payment->bank;
+                    if (! $this->coaTransactionService->recordDoubleEntry(
+                        ['nama_akun' => $debit, 'jumlah' => $newFinal],
+                        ['nama_akun' => $credit, 'jumlah' => $newFinal],
+                        $payment->tanggal_pembayaran->format('Y-m-d'),
+                        $payment->nomor_pembayaran,
+                        'Pembayaran Pranota Uang Jalan',
+                        'Pembayaran Pranota Uang Jalan - '.$payment->nomor_pembayaran
+                    )) {
+                        throw new \RuntimeException('Jurnal COA baru gagal dicatat.');
+                    }
+                    if (CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->count() !== 2) {
+                        throw new \RuntimeException('Jurnal COA baru tidak lengkap.');
+                    }
+                }
+
+                return redirect()->route('pembayaran-pranota-uang-jalan.show', $payment)
+                    ->with('success', 'Pranota '.$pranotaUangJalan->nomor_pranota.' dikeluarkan dari pembayaran dan total diperbarui.');
+            });
+        } catch (\Exception $e) {
+            Log::error('Error removing pranota from pembayaran uang jalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal mengeluarkan pranota: '.$e->getMessage());
         }
     }
 

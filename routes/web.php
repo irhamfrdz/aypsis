@@ -5682,6 +5682,9 @@ Route::middleware([
             Route::delete('/{pembayaranPranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:pembayaran-pranota-uang-jalan-delete');
+            Route::delete('/{pembayaranPranotaUangJalan}/pranota/{pranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'removePranota'])
+                ->name('remove-pranota')
+                ->middleware('can:pembayaran-pranota-uang-jalan-delete');
             Route::post('/update-date', [PembayaranPranotaUangJalanController::class, 'updateDate'])
                 ->name('update-date')
                 ->middleware('can:pembayaran-pranota-uang-jalan-edit');
