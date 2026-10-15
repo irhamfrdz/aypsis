@@ -4883,7 +4883,7 @@
             </div>
 
             {{-- Copy Permission Feature --}}
-            <div class="rounded-xl shadow-lg p-6 mb-8 mt-4 border border-indigo-200 relative" 
+            <div class="copy-permission-section rounded-xl shadow-lg p-6 mb-8 mt-4 border border-indigo-200 relative"
                  style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white !important;">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full pointer-events-none"></div>
                 <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -4903,21 +4903,22 @@
                         <div class="min-w-[280px]">
                             <style>
                                 /* Localized fix for Choices.js dropdown inside the blue section */
-                                #copy_user_select + .choices .choices__list--dropdown {
+                                .copy-permission-section .choices__list--dropdown {
                                     background-color: white !important;
                                     color: #374151 !important;
                                     border: 1px solid #e5e7eb !important;
                                     border-radius: 0.5rem !important;
                                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
                                 }
-                                #copy_user_select + .choices .choices__list--dropdown .choices__item--selectable {
+                                .copy-permission-section .choices__list--dropdown .choices__item {
                                     color: #374151 !important;
+                                    background-color: white !important;
                                 }
-                                #copy_user_select + .choices .choices__list--dropdown .choices__item--selectable.is-highlighted {
+                                .copy-permission-section .choices__list--dropdown .choices__item--selectable.is-highlighted {
                                     background-color: #f3f4f6 !important;
                                     color: #111827 !important;
                                 }
-                                #copy_user_select + .choices .choices__inner {
+                                .copy-permission-section .choices__inner {
                                     background-color: white !important;
                                     color: #111827 !important;
                                     border-radius: 0.5rem !important;
@@ -4925,7 +4926,7 @@
                                     min-height: 42px !important;
                                     padding: 4px 8px !important;
                                 }
-                                #copy_user_select + .choices .choices__list--single {
+                                .copy-permission-section .choices__list--single {
                                     color: #111827 !important;
                                     font-weight: 500 !important;
                                 }
