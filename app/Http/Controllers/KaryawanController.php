@@ -1122,6 +1122,7 @@ class KaryawanController extends Controller
     public function create()
     {
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+        $departemens = \App\Models\Departemen::where('is_active', true)->orderBy('nama_departemen')->get();
         $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $pajaks = Pajak::orderBy('nama_status')->get();
         $cabangs = Cabang::orderBy('nama_cabang')->get();
@@ -1146,7 +1147,7 @@ class KaryawanController extends Controller
         // Generate next NIK for auto-fill (Optional, but user want to remove automatic feature)
         $nextNik = ''; // Karyawan::generateNextNik();
 
-        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis'));
+        return view('master-karyawan.create', compact('divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis'));
     }
 
     /**
@@ -1333,6 +1334,7 @@ class KaryawanController extends Controller
 
         // Ambil data untuk dropdown di form edit
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+        $departemens = \App\Models\Departemen::where('is_active', true)->orWhere('nama_departemen', $karyawan->departemen)->orderBy('nama_departemen')->get();
         $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $pajaks = Pajak::orderBy('nama_status')->get();
         $cabangs = Cabang::orderBy('nama_cabang')->get();
@@ -1349,7 +1351,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis'));
+        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis'));
     }
 
     /**

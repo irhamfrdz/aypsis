@@ -200,8 +200,15 @@
 
                 <div>
                     <label for="departemen" class="{{ $labelClasses }}">Departemen</label>
-                    <input type="text" name="departemen" id="departemen" value="{{ old('departemen', $karyawan->departemen) }}" maxlength="255"
-                           class="{{ $inputClasses }}" placeholder="Masukkan departemen karyawan">
+                    <select name="departemen" id="departemen" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Departemen --</option>
+                        @foreach($departemens as $departemen)
+                            <option value="{{ $departemen->nama_departemen }}" @selected(old('departemen', $karyawan->departemen) === $departemen->nama_departemen)>{{ $departemen->nama_departemen }}</option>
+                        @endforeach
+                        @if($karyawan->departemen && !$departemens->contains('nama_departemen', $karyawan->departemen))
+                            <option value="{{ $karyawan->departemen }}" selected>{{ $karyawan->departemen }} (lama)</option>
+                        @endif
+                    </select>
                 </div>
 
                 <div>

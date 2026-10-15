@@ -14,6 +14,7 @@ use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\KaryawanController;
@@ -2503,6 +2504,15 @@ Route::middleware([
         Route::post('master/divisi/import', [DivisiController::class, 'import'])
             ->name('master.divisi.import')
             ->middleware('can:master-divisi-create');
+
+        Route::get('master/departemen', [DepartemenController::class, 'index'])
+            ->name('master.departemen.index')->middleware('can:master-divisi-view');
+        Route::post('master/departemen', [DepartemenController::class, 'store'])
+            ->name('master.departemen.store')->middleware('can:master-divisi-create');
+        Route::put('master/departemen/{departemen}', [DepartemenController::class, 'update'])
+            ->name('master.departemen.update')->middleware('can:master-divisi-update');
+        Route::delete('master/departemen/{departemen}', [DepartemenController::class, 'destroy'])
+            ->name('master.departemen.destroy')->middleware('can:master-divisi-delete');
 
         // Master Mesin Management
         Route::get('master/mesin', [MesinController::class, 'index'])
