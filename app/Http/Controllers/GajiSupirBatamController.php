@@ -417,6 +417,7 @@ class GajiSupirBatamController extends Controller
                 'type' => 'Bongkaran',
                 'no_surat_jalan' => $sj->nomor_surat_jalan,
                 'no_kontainer' => $sj->no_kontainer ?? '-',
+                'size' => $sj->size ?: ($sj->manifest?->size_kontainer ?: '-'),
                 'shipper' => $sj->pengirim ?: '-',
                 'nama_barang' => $sj->jenis_barang ?: '-',
                 'voyage' => $sj->manifest?->no_voyage ?: ($sj->no_voyage ?: '-'),
