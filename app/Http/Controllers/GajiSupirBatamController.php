@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\GajiSupirBatamFilteredExport;
 use App\Exports\GajiSupirBatamSlipExport;
 use App\Models\GajiSupirBatam;
 use App\Models\Karyawan;
 use App\Models\PricelistUangJalanBatam;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -25,7 +27,36 @@ class GajiSupirBatamController extends Controller
         $startDate = $request->input('start_date') ?? '';
         $endDate = $request->input('end_date') ?? '';
 
-        $query = GajiSupirBatam::with('karyawan');
+        $query = $this->filteredSalaryQuery($request)->with('karyawan');
+
+        $gajiList = $query->orderBy('tanggal_mulai', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($request->get('per_page', 15))
+            ->withQueryString();
+
+        // Get list of Batam supir for filter dropdown
+        $supirList = Karyawan::where('cabang', 'BATAM')
+            ->where(function ($q) {
+                $q->where('pekerjaan', 'like', 'SUPIR%')
+                    ->orWhere('pekerjaan', 'like', '%DRIVER%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('gaji-supir-batam.index', compact('gajiList', 'supirList', 'search', 'bulan', 'tahun', 'karyawanId', 'statusPembayaran', 'startDate', 'endDate'));
+    }
+
+    private function filteredSalaryQuery(Request $request): Builder
+    {
+        $search = $request->input('search') ?? '';
+        $bulan = $request->input('bulan') ?? '';
+        $tahun = $request->input('tahun') ?? '';
+        $karyawanId = $request->input('karyawan_id') ?? '';
+        $statusPembayaran = $request->input('status_pembayaran') ?? '';
+        $startDate = $request->input('start_date') ?? '';
+        $endDate = $request->input('end_date') ?? '';
+
+        $query = GajiSupirBatam::query();
 
         if ($search) {
             $query->whereHas('karyawan', function ($q) use ($search) {
@@ -59,20 +90,7 @@ class GajiSupirBatamController extends Controller
             $query->whereDate('tanggal_mulai', '<=', $endDate);
         }
 
-        $gajiList = $query->orderBy('tanggal_mulai', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate($request->get('per_page', 15));
-
-        // Get list of Batam supir for filter dropdown
-        $supirList = Karyawan::where('cabang', 'BATAM')
-            ->where(function ($q) {
-                $q->where('pekerjaan', 'like', 'SUPIR%')
-                    ->orWhere('pekerjaan', 'like', '%DRIVER%');
-            })
-            ->orderBy('nama_lengkap')
-            ->get();
-
-        return view('gaji-supir-batam.index', compact('gajiList', 'supirList', 'search', 'bulan', 'tahun', 'karyawanId', 'statusPembayaran', 'startDate', 'endDate'));
+        return $query;
     }
 
     /**
@@ -297,6 +315,29 @@ class GajiSupirBatamController extends Controller
         return Excel::download(
             new GajiSupirBatamSlipExport($data['gaji'], $data['waybills'], $data['bensinList']),
             'gaji-supir-batam-'.$data['gaji']->id.'.xlsx'
+        );
+    }
+
+    public function exportFiltered(Request $request)
+    {
+        $ids = $this->filteredSalaryQuery($request)
+            ->orderBy('tanggal_mulai', 'desc')
+            ->orderBy('id', 'desc')
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return back()->with('error', 'Tidak ada data gaji supir sesuai filter untuk diunduh.');
+        }
+
+        $slips = [];
+        foreach ($ids as $id) {
+            $data = $this->salarySlipData($id);
+            $slips[] = new GajiSupirBatamSlipExport($data['gaji'], $data['waybills'], $data['bensinList']);
+        }
+
+        return Excel::download(
+            new GajiSupirBatamFilteredExport($slips),
+            'gaji-supir-batam-filtered-'.now()->format('Ymd-His').'.xlsx'
         );
     }
 

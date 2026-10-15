@@ -107,6 +107,12 @@
     </div>
 
     <div class="flex justify-end space-x-3 mt-4">
+        @can('gaji-supir-batam-export')
+            <button type="submit" formaction="{{ route('gaji-supir-batam.export-filtered') }}" formmethod="GET"
+                    class="inline-flex items-center px-4 py-2 border border-emerald-600 text-sm font-medium rounded-md shadow-sm text-emerald-700 bg-white hover:bg-emerald-50 transition-colors duration-200">
+                <i class="fas fa-file-excel mr-2"></i>Download Excel
+            </button>
+        @endcan
         <button type="submit" 
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
             <i class="fas fa-search mr-2"></i>

@@ -132,4 +132,34 @@ class GajiSupirBatamTarikKosongRingTest extends TestCase
         $this->assertSame('TK-1', $sheet->getCell('C8')->getValue());
         $this->assertSame('3', (string) $sheet->getCell('F8')->getValue());
     }
+
+    public function test_filtered_excel_download_contains_one_slip_sheet_per_matching_salary(): void
+    {
+        DB::table('karyawans')->insert(['id' => 2, 'nama_panggilan' => 'Doni', 'nama_lengkap' => 'Doni Saputra']);
+        DB::table('gaji_supir_batams')->insert([
+            ['id' => 2, 'karyawan_id' => 1, 'tanggal_mulai' => '2026-10-04', 'tanggal_selesai' => '2026-10-06'],
+            ['id' => 3, 'karyawan_id' => 2, 'tanggal_mulai' => '2026-10-02', 'tanggal_selesai' => '2026-10-05'],
+            ['id' => 4, 'karyawan_id' => 1, 'tanggal_mulai' => '2026-11-01', 'tanggal_selesai' => '2026-11-03'],
+        ]);
+
+        $response = (new GajiSupirBatamController)->exportFiltered(Request::create('/gaji-supir-batam/export-filtered', 'GET', [
+            'karyawan_id' => 1,
+            'start_date' => '2026-10-02',
+            'end_date' => '2026-10-05',
+        ]));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $workbook = IOFactory::load($response->getFile()->getPathname());
+        $this->assertSame(['Gaji 2', 'Gaji 1'], $workbook->getSheetNames());
+        $this->assertSame('Budi Santoso', $workbook->getSheetByName('Gaji 1')->getCell('B3')->getValue());
+        $this->assertSame('TK-1', $workbook->getSheetByName('Gaji 1')->getCell('C8')->getValue());
+
+        $allDrivers = (new GajiSupirBatamController)->exportFiltered(Request::create('/gaji-supir-batam/export-filtered', 'GET', [
+            'karyawan_id' => null,
+            'start_date' => '2026-10-02',
+            'end_date' => '2026-10-05',
+        ]));
+        $allWorkbook = IOFactory::load($allDrivers->getFile()->getPathname());
+        $this->assertSame(['Gaji 2', 'Gaji 3', 'Gaji 1'], $allWorkbook->getSheetNames());
+    }
 }

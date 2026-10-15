@@ -4461,6 +4461,9 @@ Route::middleware([
         Route::get('gaji-supir-batam/calculate', [\App\Http\Controllers\GajiSupirBatamController::class, 'calculate'])
             ->name('gaji-supir-batam.calculate')
             ->middleware('can:gaji-supir-batam-view');
+        Route::get('gaji-supir-batam/export-filtered', [\App\Http\Controllers\GajiSupirBatamController::class, 'exportFiltered'])
+            ->name('gaji-supir-batam.export-filtered')
+            ->middleware('can:gaji-supir-batam-export');
         Route::get('gaji-supir-batam/{id}/print', [\App\Http\Controllers\GajiSupirBatamController::class, 'print'])
             ->name('gaji-supir-batam.print')
             ->middleware('can:gaji-supir-batam-view');
