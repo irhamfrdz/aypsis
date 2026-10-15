@@ -235,12 +235,12 @@
                                     <a href="{{ route('master.karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Data Karyawan</span>
                                     </a>
-                                    <a href="{{ route('master.pelamar-karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pelamar-karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 font-bold' }}">
+                                    <a href="{{ route('master.pelamar-karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pelamar-karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Data Pelamar</span>
                                     </a>
                                     @if($user && $user->can('master-karyawan-abk-view'))
                                         <a href="{{ route('master.karyawan.abk-index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.abk-index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                            <span class="text-xs text-blue-600 font-bold">Data Karyawan (ABK)</span>
+                                            <span class="text-xs">Data Karyawan (ABK)</span>
                                         </a>
                                     @endif
                                 @endif
@@ -248,8 +248,8 @@
                                     @php
                                         $pendingApprovalCount = \App\Models\KaryawanApprovalRequest::where('status', 'pending')->count();
                                     @endphp
-                                    <a href="{{ route('master.karyawan.approval.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.approval.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs font-bold uppercase italic text-amber-600">Persetujuan Edit Karyawan</span>
+                                    <a href="{{ route('master.karyawan.approval.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.approval.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Persetujuan Edit Karyawan</span>
                                         @if($pendingApprovalCount > 0)
                                             <span class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">{{ $pendingApprovalCount }}</span>
                                         @endif
@@ -316,8 +316,8 @@
                                 @endif
 
                                 @can('master-buruh-view')
-                                <a href="{{ route('master.buruh.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.buruh.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 font-bold text-indigo-600' }}">
-                                    <span class="text-xs font-bold text-indigo-600 italic">Data Buruh</span>
+                                <a href="{{ route('master.buruh.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.buruh.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <span class="text-xs">Data Buruh</span>
                                 </a>
                                 @endcan
 
