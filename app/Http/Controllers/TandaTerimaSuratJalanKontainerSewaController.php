@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BtmSewaTransaction;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\SuratJalanKontainerSewa;
@@ -401,7 +400,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     }
 
     /**
-     * Sync or create container in kontainers and btm_sewa_transactions table
+     * Sync or create container in kontainers table
      */
     private function syncKontainer($nomorKontainer, $tanggalMulaiSewa, $ukuran = null, $tipeKontainer = null, $vendor = null, $kegiatan = 'pengambilan')
     {
@@ -435,42 +434,5 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             ]);
         }
 
-        // 2. Sync BtmSewaTransaction Table
-        if ($kegiatan === 'pengambilan') {
-            $activeTrx = BtmSewaTransaction::where('unit_number', $nomor)
-                ->whereNull('date_out')
-                ->first();
-
-            if ($activeTrx) {
-                $activeTrx->update([
-                    'date_in' => $tanggalMulaiSewa,
-                ]);
-            } else {
-                BtmSewaTransaction::create([
-                    'unit_number' => $nomor,
-                    'date_in' => $tanggalMulaiSewa,
-                    'date_out' => null,
-                    'billing_mode' => 'B',
-                ]);
-            }
-        } elseif ($kegiatan === 'pengembalian') {
-            $activeTrx = BtmSewaTransaction::where('unit_number', $nomor)
-                ->whereNull('date_out')
-                ->first();
-
-            if ($activeTrx) {
-                $activeTrx->update([
-                    'date_out' => $tanggalMulaiSewa,
-                ]);
-            } else {
-                // If there's no active transaction (maybe manually deleted or missing), create a closed one
-                BtmSewaTransaction::create([
-                    'unit_number' => $nomor,
-                    'date_in' => $tanggalMulaiSewa,
-                    'date_out' => $tanggalMulaiSewa,
-                    'billing_mode' => 'B',
-                ]);
-            }
-        }
     }
 }

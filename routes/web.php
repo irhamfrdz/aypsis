@@ -9,7 +9,6 @@ use App\Http\Controllers\AsuransiTandaTerimaController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BiayaBensinController;
-use App\Http\Controllers\BtmKontainerSewaController;
 use App\Http\Controllers\BuruhController;
 use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CheckpointController;
@@ -272,20 +271,6 @@ Route::middleware([
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
 
-    Route::get('/kontainer-sewa-final', [App\Http\Controllers\KontainerSewaFinalController::class, 'index'])->name('kontainer-sewa-final.index');
-    Route::post('/kontainer-sewa-final/sync', [App\Http\Controllers\KontainerSewaFinalController::class, 'sync'])->name('kontainer-sewa-final.sync');
-    Route::post('/kontainer-sewa-final/submit-pranota', [App\Http\Controllers\KontainerSewaFinalController::class, 'submitPranota'])->name('kontainer-sewa-final.submit-pranota');
-    Route::get('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'showPranota'])->name('kontainer-sewa-final.show-pranota');
-    Route::post('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'updatePranota'])->name('kontainer-sewa-final.update-pranota');
-    Route::delete('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyPranota'])->name('kontainer-sewa-final.destroy-pranota');
-    Route::delete('/kontainer-sewa-final/transaction/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyTransaction'])->name('kontainer-sewa-final.destroy-transaction');
-    Route::delete('/kontainer-sewa-final/audit/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyAudit'])->name('kontainer-sewa-final.destroy-audit');
-    Route::get('/kontainer-sewa-final/print-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPranota'])->name('kontainer-sewa-final.print-pranota');
-    Route::get('/kontainer-sewa-final/generate-payment-number', [App\Http\Controllers\KontainerSewaFinalController::class, 'generatePaymentNumber'])->name('kontainer-sewa-final.generate-payment-number');
-    Route::post('/kontainer-sewa-final/submit-payment', [App\Http\Controllers\KontainerSewaFinalController::class, 'submitPayment'])->name('kontainer-sewa-final.submit-payment');
-    Route::post('/kontainer-sewa-final/pay-transfer/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'payTransfer'])->name('kontainer-sewa-final.pay-transfer');
-    Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
-    Route::get('/kontainer-sewa-final/print-permohonan/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPermohonan'])->name('kontainer-sewa-final.print-permohonan');
 
     // Denah gudang uses the existing warehouse view/edit permissions.
     Route::middleware('can:master-gudang-view')->group(function () {
@@ -362,37 +347,6 @@ Route::middleware([
     Route::resource('master-group-bp-jamsostek', \App\Http\Controllers\MasterGroupBpJamsostekController::class);
 
     Route::resource('master-rumus-bpjs', \App\Http\Controllers\MasterRumusBpjsController::class)->except(['create', 'show', 'edit']);
-
-    Route::get('kontainer-sewa-billing', [BtmKontainerSewaController::class, 'index'])
-        ->name('kontainer-sewa-billing.index')
-        ->middleware('can:tagihan-kontainer-sewa-index');
-    Route::get('kontainer-sewa-billing/snapshot', [BtmKontainerSewaController::class, 'snapshot'])
-        ->name('kontainer-sewa-billing.snapshot')
-        ->middleware('can:tagihan-kontainer-sewa-index');
-    Route::post('kontainer-sewa-billing/vendors', [BtmKontainerSewaController::class, 'storeVendor'])
-        ->name('kontainer-sewa-billing.vendors.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/types', [BtmKontainerSewaController::class, 'storeType'])
-        ->name('kontainer-sewa-billing.types.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/sizes', [BtmKontainerSewaController::class, 'storeSize'])
-        ->name('kontainer-sewa-billing.sizes.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/units', [BtmKontainerSewaController::class, 'storeUnit'])
-        ->name('kontainer-sewa-billing.units.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/rates', [BtmKontainerSewaController::class, 'storeRate'])
-        ->name('kontainer-sewa-billing.rates.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/transactions', [BtmKontainerSewaController::class, 'storeTransaction'])
-        ->name('kontainer-sewa-billing.transactions.store')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/import-units', [BtmKontainerSewaController::class, 'importUnits'])
-        ->name('kontainer-sewa-billing.import-units')
-        ->middleware('can:tagihan-kontainer-sewa-create');
-    Route::post('kontainer-sewa-billing/import-transactions', [BtmKontainerSewaController::class, 'importTransactions'])
-        ->name('kontainer-sewa-billing.import-transactions')
-        ->middleware('can:tagihan-kontainer-sewa-create');
 
     // The old routes and resource controller were deleted to allow a full rewrite.
     // If you want them restored later, use your backup or reintroduce new routes/controllers.

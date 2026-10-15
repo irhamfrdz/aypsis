@@ -64,32 +64,6 @@ class Kontainer extends Model
             self::validateNomorSeriUniqueness($kontainer);
         });
 
-        static::saved(function ($kontainer) {
-            if (! empty($kontainer->nomor_seri_gabungan)) {
-                $vendorName = strtoupper($kontainer->vendor ?? 'ZONA');
-                $typeName = strtoupper($kontainer->tipe_kontainer ?? 'DRY');
-                $sizeName = strtoupper($kontainer->ukuran ?? '20');
-
-                $vendor = BtmSewaVendor::firstOrCreate(['name' => $vendorName]);
-                $type = BtmSewaType::firstOrCreate(['name' => $typeName]);
-                $size = BtmSewaSize::firstOrCreate(['name' => $sizeName]);
-
-                BtmSewaUnit::updateOrCreate(
-                    ['unit_number' => $kontainer->nomor_seri_gabungan],
-                    [
-                        'vendor_id' => $vendor->id,
-                        'type_id' => $type->id,
-                        'size_id' => $size->id,
-                    ]
-                );
-            }
-        });
-
-        static::deleted(function ($kontainer) {
-            if (! empty($kontainer->nomor_seri_gabungan)) {
-                BtmSewaUnit::where('unit_number', $kontainer->nomor_seri_gabungan)->delete();
-            }
-        });
     }
 
     /**
