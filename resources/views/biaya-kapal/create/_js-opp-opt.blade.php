@@ -34,10 +34,20 @@
 
     function initializeOppOptManifestSearch(inputGroup) {
         const select = inputGroup.querySelector('.opp-opt-barang-select-item');
-        const searchInput = inputGroup.querySelector('.opp-opt-manifest-search');
-        const selectMatchesButton = inputGroup.querySelector('.opp-opt-select-search-results');
-        const resultsCount = inputGroup.querySelector('.opp-opt-manifest-search-count');
-        if (!select || !searchInput) return;
+        if (!select) return;
+
+        const searchControls = document.createElement('div');
+        searchControls.className = 'opp-opt-manifest-search-controls flex flex-wrap items-center gap-2 mb-3';
+        searchControls.innerHTML = `
+            <input type="search" class="opp-opt-manifest-search w-full max-w-sm px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Cari kontainer atau BL">
+            <button type="button" class="opp-opt-select-search-results text-xs text-purple-700 hover:text-purple-900 disabled:text-gray-400" disabled>Pilih semua hasil</button>
+            <span class="opp-opt-manifest-search-count text-[10px] text-gray-500"></span>
+        `;
+        inputGroup.insertAdjacentElement('afterend', searchControls);
+
+        const searchInput = searchControls.querySelector('.opp-opt-manifest-search');
+        const selectMatchesButton = searchControls.querySelector('.opp-opt-select-search-results');
+        const resultsCount = searchControls.querySelector('.opp-opt-manifest-search-count');
 
         const allOptions = Array.from(select.options).map(option => option.cloneNode(true));
         if (!select.multiple && selectMatchesButton) selectMatchesButton.classList.add('hidden');
@@ -625,9 +635,6 @@
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         ${barangOptions}
                     </select>
-                    <input type="search" class="opp-opt-manifest-search mt-1 w-full px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Cari kontainer atau BL">
-                    <button type="button" class="opp-opt-select-search-results mt-1 text-xs text-purple-700 hover:text-purple-900 disabled:text-gray-400" disabled>Pilih semua hasil</button>
-                    <span class="opp-opt-manifest-search-count ml-1 text-[10px] text-gray-500"></span>
                 </div>
                 <div class="w-[15%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
@@ -801,9 +808,6 @@
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         ${barangOptions}
                     </select>
-                    <input type="search" class="opp-opt-manifest-search mt-1 w-full px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Cari kontainer atau BL">
-                    <button type="button" class="opp-opt-select-search-results mt-1 text-xs text-purple-700 hover:text-purple-900 disabled:text-gray-400" disabled>Pilih semua hasil</button>
-                    <span class="opp-opt-manifest-search-count ml-1 text-[10px] text-gray-500"></span>
                 </div>
                 <div class="w-[15%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
@@ -865,7 +869,9 @@
         const row = button.closest('.opp-opt-item-row');
         const parent = row.parentNode;
         
-        if (parent.children.length > 1) {
+        if (parent.querySelectorAll('.opp-opt-item-row').length > 1) {
+            const searchControls = row.nextElementSibling;
+            if (searchControls?.classList.contains('opp-opt-manifest-search-controls')) searchControls.remove();
             row.remove();
             
             // Reindex all barang inputs after removal
