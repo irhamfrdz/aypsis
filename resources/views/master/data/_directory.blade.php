@@ -417,6 +417,7 @@
                                 @endif
                                 @if($isAdmin || ($user && $user->can('stock-ban-view')))
                                     <a href="{{ route('master.merk-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Merk Ban</span></a>
+                                    <a href="{{ route('master.nama-stock-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Nama Stock Ban</span></a>
                                     <a href="{{ route('master.tipe-stock-ban.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Tipe Stock Ban</span></a>
                                 @endif
                                 @if($user && ($user->can('master-kartu-bensin-batam-view') || $isAdmin))
