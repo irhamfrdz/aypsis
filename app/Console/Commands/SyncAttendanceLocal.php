@@ -6,6 +6,7 @@ use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Models\Mesin;
 use App\Services\ZkTecoService;
+use App\Services\AbsensiDeletionGuard;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -57,9 +58,12 @@ class SyncAttendanceLocal extends Command
                     ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
 
-                return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
+                return [AbsensiDeletionGuard::key($item->nik, $timeStr, $item->tipe) => true];
             })
             ->toArray();
+
+        // Scans deliberately deleted in Data Absensi must not return on the next sync.
+        $existingLogs += AbsensiDeletionGuard::deletedKeys();
 
         // Cache employees
         $employees = Karyawan::select('id', 'nik')
@@ -97,7 +101,7 @@ class SyncAttendanceLocal extends Command
                                 }
                                 $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
-                                $key = $nik.'_'.$logTime.'_'.$type;
+                                $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                                 if (isset($existingLogs[$key])) {
                                     continue;
                                 }
@@ -111,6 +115,7 @@ class SyncAttendanceLocal extends Command
                                     'keterangan' => 'Auto-sync mesin '.$mesin->nama_mesin,
                                 ]);
 
+                                $existingLogs[$key] = true;
                                 $syncedCount++;
                             }
                             $this->info("Berhasil! {$syncedCount} data absensi baru diimpor langsung dari mesin.");
@@ -219,7 +224,7 @@ class SyncAttendanceLocal extends Command
 
                         $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
-                        $key = $nik.'_'.$logTime.'_'.$type;
+                        $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                         if (isset($existingLogs[$key])) {
                             continue;
                         }
@@ -233,6 +238,7 @@ class SyncAttendanceLocal extends Command
                             'keterangan' => 'Auto-sync database lokal '.$mesin->nama_mesin,
                         ]);
 
+                        $existingLogs[$key] = true;
                         $syncedCount++;
                     }
 

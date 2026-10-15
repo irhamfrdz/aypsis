@@ -2,5 +2,6 @@
 builder = "nixpacks"
 
 [deploy]
+preDeployCommand = ["php artisan migrate --force --path=database/migrations/2026_10_15_110000_create_absensi_deletion_marks_table.php"]
 healthcheckPath = "/"
 restartPolicyType = "on_failure"

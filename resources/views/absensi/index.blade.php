@@ -358,7 +358,7 @@
                                         </button>
                                         @endcan
                                         @can('absensi-delete')
-                                        <form action="{{ route('absensi.destroy_day') }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus seluruh absensi untuk karyawan ini di tanggal {{ $absensi->tanggal }}?')">
+                                        <form action="{{ route('absensi.destroy_day') }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus seluruh log absensi karyawan ini pada {{ $absensi->tanggal }} dari database? Log yang dihapus tidak akan diimpor ulang oleh sinkronisasi mesin.')">
                                             @csrf
                                             @method('DELETE')
                                             <input type="hidden" name="nik" value="{{ $absensi->nik }}">

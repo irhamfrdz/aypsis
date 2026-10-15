@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Models\Mesin;
+use App\Services\AbsensiDeletionGuard;
 use App\Services\ZkTecoService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -262,9 +263,10 @@ class MesinController extends Controller
                             ? $item->waktu->format('Y-m-d H:i:s')
                             : \Carbon\Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
 
-                        return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
+                        return [AbsensiDeletionGuard::key($item->nik, $timeStr, $item->tipe) => true];
                     })
                     ->toArray();
+                $existingLogs += AbsensiDeletionGuard::deletedKeys();
 
                 // Cache employees to avoid querying Karyawan table inside the loop
                 $employees = Karyawan::select('id', 'nik')
@@ -302,7 +304,7 @@ class MesinController extends Controller
                     $type = (in_array(strtoupper($log['CHECKTYPE']), ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
                     $logTime = \Carbon\Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s');
 
-                    $key = $nik.'_'.$logTime.'_'.$type;
+                    $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                     if (isset($existingLogs[$key])) {
                         continue;
                     }
@@ -316,6 +318,7 @@ class MesinController extends Controller
                         'keterangan' => 'Sinkronisasi database lokal '.$mesin->nama_mesin,
                     ]);
 
+                    $existingLogs[$key] = true;
                     $syncedCount++;
                 }
 
@@ -350,6 +353,10 @@ class MesinController extends Controller
             $nik = trim($log['pin']);
             if (is_numeric($nik)) {
                 $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
+            }
+
+            if (AbsensiDeletionGuard::isDeleted($nik, $log['timestamp'], $log['type'])) {
+                continue;
             }
 
             // Find employee by NIK

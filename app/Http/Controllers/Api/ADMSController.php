@@ -7,6 +7,7 @@ use App\Models\Absensi;
 use App\Models\AdmsCommand;
 use App\Models\Karyawan;
 use App\Models\MesinUser;
+use App\Services\AbsensiDeletionGuard;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -284,7 +285,7 @@ class ADMSController extends Controller
                     ->where('waktu', $logTime)
                     ->exists();
 
-                if (! $exists) {
+                if (! $exists && ! AbsensiDeletionGuard::isDeleted($nik, $logTime, $type)) {
                     Absensi::create([
                         'nik' => $nik,
                         'waktu' => $logTime,

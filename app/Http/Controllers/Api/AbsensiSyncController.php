@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\AbsensiDeletionGuard;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -41,9 +42,10 @@ class AbsensiSyncController extends Controller
                     ? $item->waktu->format('Y-m-d H:i:s')
                     : Carbon::parse($item->waktu)->format('Y-m-d H:i:s');
 
-                return [$item->nik.'_'.$timeStr.'_'.$item->tipe => true];
+                return [AbsensiDeletionGuard::key($item->nik, $timeStr, $item->tipe) => true];
             })
             ->toArray();
+        $existingLogs += AbsensiDeletionGuard::deletedKeys();
 
         // Cache employees
         $employees = Karyawan::select('id', 'nik')
@@ -62,7 +64,7 @@ class AbsensiSyncController extends Controller
             $type = $log['tipe'];
             $logTime = Carbon::parse($log['waktu'])->format('Y-m-d H:i:s');
 
-            $key = $nik.'_'.$logTime.'_'.$type;
+            $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
             if (isset($existingLogs[$key])) {
                 continue; // Skip if already exists
             }

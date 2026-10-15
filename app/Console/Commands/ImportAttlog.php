@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Karyawan;
+use App\Services\AbsensiDeletionGuard;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -43,6 +44,7 @@ class ImportAttlog extends Command
 
         // Load semua karyawan ke memory untuk mempercepat pencarian ID
         $karyawans = Karyawan::pluck('id', 'nik')->toArray();
+        $deletedLogs = AbsensiDeletionGuard::deletedTimestampKeys();
 
         $inserted = 0;
         $skipped = 0;
@@ -69,6 +71,13 @@ class ImportAttlog extends Command
 
             // Validasi waktu
             if (! strtotime($logTime)) {
+                $skipped++;
+                $bar->advance();
+
+                continue;
+            }
+
+            if (isset($deletedLogs[$nik.'_'.date('Y-m-d H:i:s', strtotime($logTime))])) {
                 $skipped++;
                 $bar->advance();
 

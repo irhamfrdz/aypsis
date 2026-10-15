@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Imports\AbsensiImport;
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\AbsensiDeletionGuard;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -72,6 +73,7 @@ class AbsensiImportController extends Controller
                 return [$item->nik.'_'.$timeStr => true];
             })
             ->toArray();
+        $existingLogs += AbsensiDeletionGuard::deletedTimestampKeys();
 
         // Cache employees
         $employees = Karyawan::select('id', 'nik')

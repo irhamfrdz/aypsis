@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Services\WorkingHoursService;
+use App\Services\AbsensiDeletionGuard;
 use App\Models\Mesin;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AbsensiController extends Controller
 {
@@ -767,12 +770,15 @@ class AbsensiController extends Controller
         $nik = $request->nik;
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
 
-        $ids = Absensi::where('nik', $nik)
-            ->workDates($tanggal)
-            ->pluck('id');
-        Absensi::whereIn('id', $ids)->delete();
+        $deletedCount = $this->deleteLogsAndRemember(
+            Absensi::where('nik', $nik)->workDates($tanggal)
+        );
 
-        return back()->with('success', 'Semua data absensi pada tanggal tersebut berhasil dihapus.');
+        if ($deletedCount === 0) {
+            return back()->with('error', 'Data absensi karyawan pada tanggal tersebut tidak ditemukan di database.');
+        }
+
+        return back()->with('success', "{$deletedCount} log absensi karyawan pada tanggal tersebut berhasil dihapus dari database.");
     }
 
     /**
@@ -841,13 +847,39 @@ class AbsensiController extends Controller
             'lembur_pulang' => ['lembur pulang', 'selesai lembur', 'lembur keluar'],
             default => [str_replace('_', ' ', $request->tipe)],
         };
-        $ids = Absensi::where('nik', $request->nik)
-            ->workDates($request->tanggal)
-            ->whereIn(\DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), $types)
-            ->pluck('id');
-        Absensi::whereIn('id', $ids)->delete();
+        $deletedCount = $this->deleteLogsAndRemember(
+            Absensi::where('nik', $request->nik)
+                ->workDates($request->tanggal)
+                ->whereIn(DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), $types)
+        );
 
-        return back()->with('success', "Data jam {$request->tipe} berhasil dihapus dari sistem.");
+        if ($deletedCount === 0) {
+            return back()->with('error', 'Log absensi yang dipilih tidak ditemukan di database.');
+        }
+
+        return back()->with('success', "{$deletedCount} log jam {$request->tipe} berhasil dihapus dari database.");
+    }
+
+    /** Hard-delete attendance rows while remembering scans that must not be re-synced. */
+    private function deleteLogsAndRemember(Builder $query): int
+    {
+        return DB::transaction(function () use ($query) {
+            $logs = $query->get(['id', 'nik', 'waktu', 'tipe']);
+            if ($logs->isEmpty()) {
+                return 0;
+            }
+
+            $now = now();
+            DB::table('absensi_deletion_marks')->insertOrIgnore($logs->map(fn ($log) => [
+                'nik' => $log->nik,
+                'waktu' => $log->waktu->format('Y-m-d H:i:s'),
+                'tipe' => AbsensiDeletionGuard::normalizeType($log->tipe),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all());
+
+            return Absensi::whereIn('id', $logs->pluck('id'))->delete();
+        });
     }
 
     /**

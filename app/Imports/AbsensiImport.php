@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Services\AbsensiDeletionGuard;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -37,6 +38,7 @@ class AbsensiImport implements ToCollection
                 return [$item->nik.'_'.$timeStr => true];
             })
             ->toArray();
+        $existingLogs += AbsensiDeletionGuard::deletedTimestampKeys();
 
         foreach ($rows as $index => $row) {
             // Lewati baris kosong
