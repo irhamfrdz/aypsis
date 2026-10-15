@@ -9,9 +9,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KontainerImportController extends Controller
 {
+    public function exportExcel(Request $request)
+    {
+        $filename = 'export_master_kontainer_'.date('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download(new \App\Exports\MasterKontainerExport($request->only([
+            'search', 'vendor', 'ukuran', 'status', 'tanggal_sewa',
+        ])), $filename);
+    }
+
     /**
      * Download template CSV untuk import kontainer
      */

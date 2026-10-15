@@ -1506,6 +1506,9 @@ Route::middleware([
         Route::get('kontainer/export', [KontainerImportController::class, 'export'])
             ->name('kontainer.export')
             ->middleware('can:master-kontainer-view');
+        Route::get('kontainer/export-excel', [KontainerImportController::class, 'exportExcel'])
+            ->name('kontainer.export-excel')
+            ->middleware('can:master-kontainer-view');
         Route::get('kontainer/export-tanpa-tanggal-sewa', [KontainerImportController::class, 'exportKontainerTanpaTanggalSewa'])
             ->name('kontainer.export-tanpa-tanggal-sewa')
             ->middleware(['can:master-kontainer-view', 'only.kiky']);
