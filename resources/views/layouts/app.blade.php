@@ -754,7 +754,7 @@
     <div id="aktiva-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAktivaRoute) style="display: block;" @endif>
         {{-- Kontainer Sub-Dropdown --}}
         @php
-            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.kontainer.stock-pergudang') || Request::routeIs('history-kontainer.*') || Request::routeIs('gerak-kontainer.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('perbaikan-kontainer.*');
+            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.kontainer.stock-pergudang') || Request::routeIs('history-kontainer.*') || Request::routeIs('gerak-kontainer.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('perbaikan-kontainer.*');
             $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view'));
         @endphp
 
@@ -788,11 +788,6 @@
                 @if($user && $user->can('pergerakan-kapal-view'))
                     <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>
-                    </a>
-                @endif
-                @if($user && $user->can('master-pelabuhan-view'))
-                    <a href="{{ route('master-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Master Pelabuhan</span>
                     </a>
                 @endif
                 @if($user && $user->can('perbaikan-kontainer-view'))

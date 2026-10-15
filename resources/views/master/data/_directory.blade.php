@@ -39,8 +39,8 @@
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pelabuhan-view'))
-                                    <a href="{{ route('master-pelabuhan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pelabuhan</span>
+                                    <a href="{{ route('master-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Master Pelabuhan</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-dokumen-perijinan-kapal-view'))
