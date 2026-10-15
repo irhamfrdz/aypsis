@@ -135,10 +135,9 @@ class PayrollController extends Controller
             }
         }
 
-        // Fetch all unique groups and subgroups for the view
+        // Group options follow employee assignments; Sub Group options follow Master Departemen.
         $allKaryawans = \App\Models\Karyawan::where('status', 'active')->get(['grup']);
         $allGroups = [];
-        $allSubGroups = [];
         foreach ($allKaryawans as $k) {
             $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
             if (is_array($kGrup)) {
@@ -147,14 +146,13 @@ class PayrollController extends Controller
                     if ($parts[0] !== '' && ! in_array($parts[0], $allGroups)) {
                         $allGroups[] = $parts[0];
                     }
-                    if (isset($parts[1]) && $parts[1] !== '' && ! in_array($parts[1], $allSubGroups)) {
-                        $allSubGroups[] = $parts[1];
-                    }
                 }
             }
         }
         sort($allGroups);
-        sort($allSubGroups);
+        $allSubGroups = \App\Models\Departemen::where('is_active', true)
+            ->orderBy('nama_departemen')
+            ->pluck('nama_departemen');
 
         $allCabang = \App\Models\Karyawan::where('status', 'active')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang')->sort()->values();
 
