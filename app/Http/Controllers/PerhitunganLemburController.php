@@ -8,6 +8,7 @@ use App\Models\Karyawan;
 use App\Models\UangLembur;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PerhitunganLemburController extends Controller
 {
@@ -33,9 +34,19 @@ class PerhitunganLemburController extends Controller
 
         $startDate = $this->parseDateSafe($startDateStr, $defaultStart);
         $endDate = $this->parseDateSafe($endDateStr, $defaultEnd);
+        $workStart = $startDate->copy()->startOfDay();
+        $workEnd = $endDate->copy()->addDays(2)->startOfDay();
 
-        // Get all active employees (exclude those who have resigned)
-        $karyawanQuery = Karyawan::whereNull('tanggal_berhenti');
+        $lemburStarts = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
+        $lemburEnds = "LOWER(REPLACE(absensis.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
+
+        // Only employees with overtime logs can appear in the calculated result.
+        $karyawanQuery = Karyawan::whereNull('tanggal_berhenti')
+            ->whereHas('absensi', function ($query) use ($workStart, $workEnd, $lemburStarts, $lemburEnds) {
+                $query->where('waktu', '>=', $workStart)
+                    ->where('waktu', '<', $workEnd)
+                    ->whereRaw("($lemburStarts OR $lemburEnds)");
+            });
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -115,17 +126,7 @@ class PerhitunganLemburController extends Controller
         $rekapData = [];
 
         if ($karyawanIds->isNotEmpty()) {
-            // Ambil nominal uang makan terbaru langsung dari tabel uang_makans per karyawan_id
-            $uangMakanMap = \App\Models\UangMakan::whereIn('karyawan_id', $karyawanIds)
-                ->where(function ($q) {
-                    $q->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
-                        ->orWhereNull('tipe_karyawan');
-                })
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('id', 'desc')
-                ->get()
-                ->groupBy('karyawan_id')
-                ->map(fn ($items) => (float) $items->first()->nominal);
+            $uangMakanMap = self::latestUangMakanMap($karyawanIds);
 
             // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
             // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
@@ -137,9 +138,6 @@ class PerhitunganLemburController extends Controller
             $lemburEndsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
             $lemburStartsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
             $lemburEndsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
-
-            $workStart = $startDate->copy()->startOfDay();
-            $workEnd = $endDate->copy()->addDays(2)->startOfDay();
 
             // Inner subquery: satu baris per log absensi, HANYA untuk karyawan yang terfilter
             $inner = \DB::table(\DB::raw('absensis a'))
@@ -641,16 +639,7 @@ class PerhitunganLemburController extends Controller
 
         $karyawans = Karyawan::whereIn('id', $karyawanIds)->get();
 
-        $uangMakanMap = \App\Models\UangMakan::whereIn('karyawan_id', $karyawanIds)
-            ->where(function ($q) {
-                $q->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
-                    ->orWhereNull('tipe_karyawan');
-            })
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('id', 'desc')
-            ->get()
-            ->groupBy('karyawan_id')
-            ->map(fn ($items) => (float) $items->first()->nominal);
+        $uangMakanMap = self::latestUangMakanMap($karyawanIds);
 
         $driver = \DB::connection()->getDriverName();
         $workDateExprAlias = \App\Helpers\AttendanceWorkDate::sql($driver, 'a');
@@ -880,5 +869,24 @@ class PerhitunganLemburController extends Controller
         }
 
         return $results;
+    }
+
+    private static function latestUangMakanMap($karyawanIds): \Illuminate\Support\Collection
+    {
+        // Select one row per employee in SQL instead of loading every historical rate into PHP.
+        $ranked = DB::table('uang_makans')
+            ->select('karyawan_id', 'nominal')
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY karyawan_id ORDER BY tanggal DESC, id DESC) as rate_rank')
+            ->whereIn('karyawan_id', $karyawanIds)
+            ->where(function ($query) {
+                $query->where('tipe_karyawan', 'NOT LIKE', '%TidakTetap%')
+                    ->orWhereNull('tipe_karyawan');
+            });
+
+        return DB::query()
+            ->fromSub($ranked, 'latest_uang_makan')
+            ->where('rate_rank', 1)
+            ->pluck('nominal', 'karyawan_id')
+            ->map(fn ($nominal) => (float) $nominal);
     }
 }
