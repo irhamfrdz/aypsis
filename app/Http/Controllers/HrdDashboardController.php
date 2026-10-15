@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\HrdAbsensiExport;
+use App\Exports\HrdDashboardDetailExport;
 use App\Models\Absensi;
 use App\Models\Cabang;
 use App\Models\Cuti;
@@ -144,12 +145,53 @@ class HrdDashboardController extends Controller
         $workingHours = new WorkingHoursService;
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
 
-        // 3. Karyawan Belum Absen
-        // Yaitu karyawan aktif yang id-nya belum ada di daftar absen masuk dalam periode
+        // 3. Karyawan Belum Absen Masuk
+        // Pada rentang tanggal, satu scan masuk di hari lain tidak boleh menutupi
+        // hari yang memiliki aktivitas absensi tetapi tidak memiliki scan masuk.
         $karyawanBelumAbsen = (clone $karyawanBaseQuery)
-            ->whereNotIn('id', $karyawanIdsAbsen)
             ->orderBy('nama_lengkap', 'asc')
             ->get();
+
+        if (! $isSingleDay && $activeKaryawanIds) {
+            $logsByEmployee = Absensi::select('karyawan_id', 'tipe', 'waktu')
+                ->whereIn('karyawan_id', $activeKaryawanIds)
+                ->whereBetween('waktu', [
+                    $startDate->copy()->subDay()->setTime(6, 0),
+                    $endDate->copy()->addDay()->setTime(5, 59, 59),
+                ])
+                ->get()
+                ->groupBy('karyawan_id');
+
+            $karyawanBelumAbsen = $karyawanBelumAbsen
+                ->filter(function ($karyawan) use ($logsByEmployee, $karyawanIdsAbsen, $startDateStr, $endDateStr) {
+                    $days = $logsByEmployee->get($karyawan->id, collect())
+                        ->groupBy(function ($log) {
+                            // Sama dengan tanggal kerja scan biasa di rekap absensi.
+                            return Carbon::parse($log->waktu)->subHours(6)->toDateString();
+                        });
+
+                    $missingDates = $days->filter(function ($logs, $date) use ($startDateStr, $endDateStr) {
+                        if ($date < $startDateStr || $date > $endDateStr) {
+                            return false;
+                        }
+
+                        return ! $logs->contains(function ($log) {
+                            $type = strtolower(trim(str_replace('_', ' ', $log->tipe ?? '')));
+
+                            return in_array($type, ['masuk', 'check in', 'in']);
+                        });
+                    })->keys()->sort()->values()->all();
+
+                    $karyawan->tanggal_belum_masuk = $missingDates;
+
+                    return $missingDates !== [] || ! in_array($karyawan->id, $karyawanIdsAbsen);
+                })
+                ->values();
+        } else {
+            $karyawanBelumAbsen = $karyawanBelumAbsen
+                ->whereNotIn('id', $karyawanIdsAbsen)
+                ->values();
+        }
 
         // 4. Karyawan Absen Terlambat
         // Evaluasi per absensi berdasarkan jam kerja aktif karyawan.
@@ -319,6 +361,7 @@ class HrdDashboardController extends Controller
             'isSingleDay',
             'jamBatas',
             'totalKaryawanAktif',
+            'activeKaryawanIds',
             'karyawanBelumAbsen',
             'karyawanTerlambat',
             'karyawanHadirNormal',
@@ -347,5 +390,91 @@ class HrdDashboardController extends Controller
         $fileName = 'Rekap_Absensi_HRD_'.str_replace('-', '', $startDate).'_'.str_replace('-', '', $endDate).'.xlsx';
 
         return Excel::download(new HrdAbsensiExport($startDate, $endDate), $fileName);
+    }
+
+    /** Export the same rows and filters shown in one dashboard detail table. */
+    public function exportDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'kategori' => 'required|in:belum-masuk,hadir-normal,belum-pulang,terlambat,luar-radius',
+            'q' => 'nullable|string|max:255',
+        ]);
+
+        $data = $this->index($request)->getData();
+        $search = mb_strtolower(trim($validated['q'] ?? ''));
+        $employee = static fn ($karyawan) => [
+            $karyawan->nik ?? '-',
+            $karyawan->nama_lengkap ?? '-',
+            $karyawan->divisi ?? '-',
+            $karyawan->cabang ?? '-',
+        ];
+        $employeeSearch = static fn ($karyawan) => implode(' ', $employee($karyawan));
+        $entry = static fn (array $row, string $searchText) => [
+            'row' => $row,
+            'search' => mb_strtolower($searchText),
+        ];
+
+        [$label, $headings, $items] = match ($validated['kategori']) {
+            'belum-masuk' => [
+                'Belum_Absen_Masuk',
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang', 'Tanggal Tanpa Scan Masuk'],
+                $data['karyawanBelumAbsen']->map(function ($karyawan) use ($employee, $employeeSearch, $entry) {
+                    $dates = collect($karyawan->tanggal_belum_masuk ?? [])
+                        ->map(fn ($date) => Carbon::parse($date)->format('d-m-Y'))
+                        ->implode(', ');
+
+                    return $entry(array_merge($employee($karyawan), [
+                        $dates ?: 'Tidak ada scan masuk dalam periode',
+                    ]), $employeeSearch($karyawan).' '.implode(' ', $karyawan->tanggal_belum_masuk ?? []));
+                }),
+            ],
+            'hadir-normal' => [
+                'Hadir_Normal',
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang', 'Waktu Tapping Masuk', 'Jarak (meter)', 'Radius (meter)', 'Lokasi'],
+                $data['karyawanHadirNormal']->map(fn ($absen) => $entry(array_merge($employee($absen->karyawan), [
+                    Carbon::parse($absen->waktu)->format('d-m-Y H:i:s'),
+                    $absen->jarak_absen_meter,
+                    $absen->radius_absensi_meter,
+                    $absen->nama_lokasi_absensi ?? 'GPS tidak tersedia',
+                ]), $employeeSearch($absen->karyawan))),
+            ],
+            'belum-pulang' => [
+                'Belum_Absen_Pulang',
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang'],
+                $data['karyawanBelumAbsenPulang']->map(fn ($karyawan) => $entry($employee($karyawan), $employeeSearch($karyawan))),
+            ],
+            'terlambat' => [
+                'Absen_Terlambat',
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang', 'Waktu Tapping Masuk'],
+                $data['karyawanTerlambat']->map(fn ($absen) => $entry(array_merge($employee($absen->karyawan), [
+                    Carbon::parse($absen->waktu)->format('d-m-Y H:i:s'),
+                ]), $employeeSearch($absen->karyawan))),
+            ],
+            'luar-radius' => [
+                'Absen_Luar_Radius',
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang', 'Waktu', 'Tipe', 'Detail Lokasi'],
+                $data['absensiLuarRadius']->map(fn ($absen) => $entry(array_merge($employee($absen->karyawan), [
+                    Carbon::parse($absen->waktu)->format('d-m-Y H:i:s'),
+                    $absen->tipe,
+                    $absen->detail_lokasi ?: 'Koordinat di luar radius',
+                ]), implode(' ', [
+                    $absen->karyawan->nik ?? '',
+                    $absen->karyawan->nama_lengkap ?? '',
+                    $absen->tipe ?? '',
+                    $absen->detail_lokasi ?? '',
+                    $absen->karyawan->cabang ?? '',
+                ]))),
+            ],
+        };
+
+        $rows = $items
+            ->filter(fn ($item) => $search === '' || str_contains($item['search'], $search))
+            ->values()
+            ->map(fn ($item, $index) => array_merge([$index + 1], $item['row']))
+            ->all();
+
+        $fileName = $label.'_'.$data['startDate']->format('Ymd').'_'.$data['endDate']->format('Ymd').'.xlsx';
+
+        return Excel::download(new HrdDashboardDetailExport($headings, $rows), $fileName);
     }
 }

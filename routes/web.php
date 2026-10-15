@@ -370,6 +370,10 @@ Route::middleware([
         ->name('hrd.dashboard.export')
         ->middleware('can:hrd-dashboard-export');
 
+    Route::get('/hrd-dashboard/export-detail', [\App\Http\Controllers\HrdDashboardController::class, 'exportDetail'])
+        ->name('hrd.dashboard.export-detail')
+        ->middleware('can:hrd-dashboard-export');
+
     // Dashboard asuransi asset
     Route::get('/dashboard/asset-insurance', [AssetDashboardController::class, 'index'])
         ->middleware(['auth'])
