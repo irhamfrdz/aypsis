@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\GajiSupirBatam;
 use App\Models\Karyawan;
+use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class GajiSupirBatamController extends Controller
 {
@@ -194,6 +196,7 @@ class GajiSupirBatamController extends Controller
         $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
+        $tarikKosongRings = $tarikKosongSJs->isNotEmpty() ? $this->tarikKosongRingLookup() : [];
 
         $obList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', '!=', 'ANTAR GUDANG')
@@ -238,7 +241,7 @@ class GajiSupirBatamController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_kontainer' => $sj->no_kontainer ?? '-',
                 'tujuan' => $sj->tujuan_pengambilan ?: ($sj->tujuan_alamat ?: '-'),
-                'ring' => '-',
+                'ring' => $this->ringForTarikKosong($sj->tujuan_pengambilan, $tarikKosongRings),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -321,6 +324,7 @@ class GajiSupirBatamController extends Controller
         $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
+        $tarikKosongRings = $tarikKosongSJs->isNotEmpty() ? $this->tarikKosongRingLookup() : [];
 
         $obList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', '!=', 'ANTAR GUDANG')
@@ -365,7 +369,7 @@ class GajiSupirBatamController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_kontainer' => $sj->no_kontainer ?? '-',
                 'tujuan' => $sj->tujuan_pengambilan ?: ($sj->tujuan_alamat ?: '-'),
-                'ring' => '-',
+                'ring' => $this->ringForTarikKosong($sj->tujuan_pengambilan, $tarikKosongRings),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -558,6 +562,7 @@ class GajiSupirBatamController extends Controller
         $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
+        $tarikKosongRings = $tarikKosongSJs->isNotEmpty() ? $this->tarikKosongRingLookup() : [];
 
         $obList = \App\Models\TagihanOb::whereIn('nama_supir', $supirNames)
             ->where('kegiatan', '!=', 'ANTAR GUDANG')
@@ -615,7 +620,7 @@ class GajiSupirBatamController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_kontainer' => $sj->no_kontainer ?? '-',
                 'tujuan' => $sj->tujuan_pengambilan ?: ($sj->tujuan_alamat ?: '-'),
-                'ring' => '-',
+                'ring' => $this->ringForTarikKosong($sj->tujuan_pengambilan, $tarikKosongRings),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
@@ -694,5 +699,36 @@ class GajiSupirBatamController extends Controller
             'total_biaya_bensin' => $totalBiayaBensin,
             'bensin_items' => $bensinItems,
         ]);
+    }
+
+    private function tarikKosongRingLookup(): array
+    {
+        $rings = [];
+
+        // Tarik kosong stores the pickup location, while its ring comes from the active pricelist.
+        foreach (PricelistUangJalanBatam::activeBbm()->orderBy('ring')->get(['ring', 'expedisi', 'wilayah']) as $pricelist) {
+            foreach (explode(',', (string) $pricelist->wilayah) as $wilayah) {
+                $name = trim($wilayah);
+                if ($name === '') {
+                    continue;
+                }
+
+                foreach ([$name, $name.' ('.$pricelist->expedisi.')'] as $location) {
+                    $key = Str::lower(trim($location));
+                    if (! array_key_exists($key, $rings)) {
+                        $rings[$key] = $pricelist->ring;
+                    }
+                }
+            }
+        }
+
+        return $rings;
+    }
+
+    private function ringForTarikKosong(?string $location, array $rings): string
+    {
+        $key = Str::lower(trim((string) $location));
+
+        return $rings[$key] ?? '-';
     }
 }
