@@ -42,7 +42,15 @@
 
                         <div>
                             <label for="sub_group" class="block text-sm font-medium text-gray-700">Sub Group <span class="text-red-500">*</span></label>
-                            <input type="text" name="sub_group" id="sub_group" value="{{ old('sub_group', $uangLembur->sub_group) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <select name="sub_group" id="sub_group" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <option value="">-- Pilih Departemen --</option>
+                                @foreach($departemens as $departemen)
+                                    <option value="{{ $departemen->nama_departemen }}" @selected(old('sub_group', $uangLembur->sub_group) === $departemen->nama_departemen)>{{ $departemen->nama_departemen }}</option>
+                                @endforeach
+                                @if($uangLembur->sub_group && !$departemens->contains('nama_departemen', $uangLembur->sub_group))
+                                    <option value="{{ $uangLembur->sub_group }}" selected>{{ $uangLembur->sub_group }} (lama)</option>
+                                @endif
+                            </select>
                         </div>
 
                         <div>

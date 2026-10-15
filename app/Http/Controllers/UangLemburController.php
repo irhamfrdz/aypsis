@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Departemen;
 use App\Models\UangLembur;
 use App\Models\UangLemburRule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class UangLemburController extends Controller
@@ -27,7 +29,9 @@ class UangLemburController extends Controller
 
     public function create()
     {
-        return view('uang-lembur.create');
+        $departemens = Departemen::where('is_active', true)->orderBy('nama_departemen')->get();
+
+        return view('uang-lembur.create', compact('departemens'));
     }
 
     public function store(Request $request)
@@ -68,6 +72,7 @@ class UangLemburController extends Controller
             }
 
             DB::commit();
+            Cache::forget('uang_lemburs_with_rules');
 
             return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur dan aturan jam berhasil ditambahkan.');
         } catch (\Exception $e) {
@@ -80,8 +85,11 @@ class UangLemburController extends Controller
     public function edit(UangLembur $uangLembur)
     {
         $uangLembur->load('rules');
+        $departemens = Departemen::where('is_active', true)
+            ->orWhere('nama_departemen', $uangLembur->sub_group)
+            ->orderBy('nama_departemen')->get();
 
-        return view('uang-lembur.edit', compact('uangLembur'));
+        return view('uang-lembur.edit', compact('uangLembur', 'departemens'));
     }
 
     public function update(Request $request, UangLembur $uangLembur)
@@ -126,6 +134,7 @@ class UangLemburController extends Controller
             }
 
             DB::commit();
+            Cache::forget('uang_lemburs_with_rules');
 
             return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur dan aturan jam berhasil diupdate.');
         } catch (\Exception $e) {
@@ -138,6 +147,7 @@ class UangLemburController extends Controller
     public function destroy(UangLembur $uangLembur)
     {
         $uangLembur->delete(); // Rules will cascade delete
+        Cache::forget('uang_lemburs_with_rules');
 
         return redirect()->route('uang-lembur.index')->with('success', 'Master tarif lembur berhasil dihapus.');
     }
