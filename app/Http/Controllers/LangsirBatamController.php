@@ -223,6 +223,11 @@ class LangsirBatamController extends Controller
         $successCount = 0;
         $errors = [];
 
+        $knownContainerNumbers = collect([
+            ...\App\Models\StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->all(),
+            ...\App\Models\Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->all(),
+        ])->map(fn ($number) => strtoupper(trim($number)))->flip();
+
         // Map valid karyawans (separated by division) and kendaraans to validate and auto-correct bulk data
         $supirMap = [];
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
@@ -268,6 +273,14 @@ class LangsirBatamController extends Controller
 
                     continue;
                 }
+
+                $containerNumber = trim($row['no_kontainer']);
+                if (! $knownContainerNumbers->has(strtoupper($containerNumber))) {
+                    $errors[] = "Baris {$rowNumber}: Nomor kontainer '{$containerNumber}' tidak ditemukan di Master Stock Kontainer maupun Master Kontainer.";
+
+                    continue;
+                }
+                $row['no_kontainer'] = $containerNumber;
 
                 // Validasi Unik Nomor Surat Jalan jika diisi
                 if (! empty($row['no_surat_jalan'])) {
