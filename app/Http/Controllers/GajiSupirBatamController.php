@@ -377,7 +377,7 @@ class GajiSupirBatamController extends Controller
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
-        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::whereIn('supir', $supirNames)
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::with('manifest')->whereIn('supir', $supirNames)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
@@ -419,6 +419,8 @@ class GajiSupirBatamController extends Controller
                 'no_kontainer' => $sj->no_kontainer ?? '-',
                 'shipper' => $sj->pengirim ?: '-',
                 'nama_barang' => $sj->jenis_barang ?: '-',
+                'voyage' => $sj->manifest?->no_voyage ?: ($sj->no_voyage ?: '-'),
+                'tanggal_berangkat' => $sj->manifest?->tanggal_berangkat?->format('d/m/Y') ?? '-',
                 'tujuan' => $sj->tujuan_pengambilan ?: ($sj->tujuan_alamat ?: '-'),
                 'ring' => $sj->ring ?? '-',
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
