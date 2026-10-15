@@ -81,7 +81,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($pranota->pembayaranPranotaUangJalans->count() > 0)
                                 @foreach($pranota->pembayaranPranotaUangJalans as $pembayaran)
-                                    <div>{{ $pembayaran->nomor_accurate ?: '-' }}</div>
+                                    <div>{{ $pembayaran->nomor_accurate ?? '-' }}</div>
                                 @endforeach
                             @else
                                 <span class="text-gray-400">-</span>
@@ -115,7 +115,7 @@
                                     @foreach($pranota->pembayaranPranotaUangJalans as $pembayaran)
                                         <a href="{{ route('pembayaran-pranota-uang-jalan.show', $pembayaran->id) }}" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">Detail</a>
                                         @can('pembayaran-pranota-uang-jalan-edit')
-                                        <a href="{{ route('pembayaran-pranota-uang-jalan.edit', ['pembayaranPranotaUangJalan' => $pembayaran->id, 'pranota_id' => $pranota->id]) }}" class="text-yellow-600 hover:text-yellow-800 text-xs bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded">Edit</a>
+                                        <a href="{{ route('pembayaran-pranota-uang-jalan.edit', $pembayaran->id) }}" class="text-yellow-600 hover:text-yellow-800 text-xs bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded">Edit</a>
                                         <button type="button" 
                                                 onclick="openUpdateDateModal('{{ $pembayaran->id }}', '{{ $pembayaran->nomor_pembayaran }}', '{{ $pembayaran->tanggal_pembayaran->format('Y-m-d') }}')" 
                                                 class="text-purple-600 hover:text-purple-800 text-xs bg-purple-50 hover:bg-purple-100 px-2 py-1 rounded">

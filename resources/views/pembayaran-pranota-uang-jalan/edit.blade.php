@@ -58,7 +58,6 @@
             @method('PUT')
 
             @if($pembayaranPranotaUangJalan->isPaid())
-                <input type="hidden" name="pranota_id" value="{{ $selectedPranota->id }}">
                 <!-- Alert for paid payment - only nomor accurate can be edited -->
                 <div class="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
                     <div class="flex items-start">
@@ -67,7 +66,7 @@
                         </svg>
                         <div>
                             <strong>Pembayaran Sudah Dibayar</strong><br>
-                            Nomor Accurate untuk pranota {{ $selectedPranota->nomor_pranota }} dapat diubah di sini. Perubahan tanggal pembayaran berlaku untuk seluruh pranota dalam pembayaran ini.
+                            Hanya nomor accurate yang dapat diubah untuk pembayaran yang sudah lunas.
                         </div>
                     </div>
                 </div>
@@ -78,7 +77,7 @@
                         <div>
                             <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
                             <input type="text" name="nomor_accurate" id="nomor_accurate"
-                                value="{{ old('nomor_accurate', $selectedPranota->pivot->nomor_accurate ?? $pembayaranPranotaUangJalan->nomor_accurate) }}"
+                                value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
                                 class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                         </div>
                         <div class="mt-2">

@@ -111,7 +111,7 @@
                     </div>
                     <div>
                         <label class="{{ $labelClasses }}">Nomor Accurate</label>
-                        <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->pranotaUangJalans->count() > 1 ? 'Lihat rincian per pranota' : ($pembayaranPranotaUangJalan->pranotaUangJalans->first()?->pivot->nomor_accurate ?? $pembayaranPranotaUangJalan->nomor_accurate ?? '-') }}</div>
+                        <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->nomor_accurate ?? '-' }}</div>
                     </div>
                     <div>
                         <label class="{{ $labelClasses }}">Status Pembayaran</label>
@@ -161,7 +161,6 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nomor Pranota</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nomor Accurate</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
@@ -180,7 +179,6 @@
                                         {{ $pranota->nomor_pranota }}
                                     @endcan
                                 </td>
-                                <td class="px-4 py-2 text-sm">{{ $pranota->pivot->nomor_accurate ?? $pembayaranPranotaUangJalan->nomor_accurate ?? '-' }}</td>
                                 <td class="px-4 py-2 text-sm">
                                     {{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') : '-' }}
                                 </td>

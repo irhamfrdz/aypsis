@@ -61,13 +61,7 @@ class PembayaranPranotaUangJalanController extends Controller
                         $sq->where('supir', 'like', "%{$search}%");
                     })
                     ->orWhereHas('pembayaranPranotaUangJalans', function ($pq) use ($search) {
-                        $pq->where(function ($q) use ($search) {
-                            $q->where('pembayaran_pranota_uang_jalan_items.nomor_accurate', 'like', "%{$search}%")
-                                ->orWhere(function ($q) use ($search) {
-                                    $q->whereNull('pembayaran_pranota_uang_jalan_items.nomor_accurate')
-                                        ->where('pembayaran_pranota_uang_jalans.nomor_accurate', 'like', "%{$search}%");
-                                });
-                        });
+                        $pq->where('nomor_accurate', 'like', "%{$search}%");
                     });
             });
         }
@@ -315,7 +309,7 @@ class PembayaranPranotaUangJalanController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request, PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
+    public function edit(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
     {
         // Cancelled payments cannot be edited at all
         if ($pembayaranPranotaUangJalan->isCancelled()) {
@@ -330,32 +324,16 @@ class PembayaranPranotaUangJalanController extends Controller
             'pranotaUangJalans.uangJalans.suratJalan.tujuanPengirimanRelation',
         ]);
 
-        $selectedPranota = null;
-        if ($pembayaranPranotaUangJalan->isPaid()) {
-            $selectedPranota = $pembayaranPranotaUangJalan->pranotaUangJalans
-                ->firstWhere('id', $request->query('pranota_id'));
-            if (! $selectedPranota && $pembayaranPranotaUangJalan->pranotaUangJalans->count() === 1 && ! $request->has('pranota_id')) {
-                $selectedPranota = $pembayaranPranotaUangJalan->pranotaUangJalans->first();
-            }
-            if (! $selectedPranota) {
-                return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                    ->with('error', 'Pilih pranota yang ingin diubah nomor Accurate-nya.');
-            }
-        }
-
         // Get akun COA for bank selection (only needed for unpaid payments)
-        $akunCoa = collect();
-        if (! $pembayaranPranotaUangJalan->isPaid()) {
-            $akunCoa = Coa::where(function ($query) {
-                $query->where('tipe_akun', 'LIKE', '%bank%')
-                    ->orWhere('nama_akun', 'LIKE', '%bank%')
-                    ->orWhere('nama_akun', 'LIKE', '%kas%');
-            })
-                ->orderBy('nama_akun')
-                ->get();
-        }
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%kas%');
+        })
+            ->orderBy('nama_akun')
+            ->get();
 
-        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa', 'selectedPranota'));
+        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa'));
     }
 
     /**
@@ -372,29 +350,18 @@ class PembayaranPranotaUangJalanController extends Controller
         // If payment is already paid, only allow updating nomor_accurate
         if ($pembayaranPranotaUangJalan->isPaid()) {
             $request->validate([
-                'pranota_id' => 'required|integer',
                 'nomor_accurate' => 'nullable|string|max:255',
                 'tanggal_pembayaran' => 'nullable|date',
             ]);
 
-            $pranota = $pembayaranPranotaUangJalan->pranotaUangJalans()
-                ->whereKey($request->integer('pranota_id'))->firstOrFail();
-
             DB::beginTransaction();
 
             try {
-                $pembayaranPranotaUangJalan->pranotaUangJalans()->updateExistingPivot($pranota->id, [
+                $pembayaranPranotaUangJalan->update([
                     'nomor_accurate' => $request->nomor_accurate,
-                ]);
-
-                $data = [
                     'tanggal_pembayaran' => $request->tanggal_pembayaran ?: $pembayaranPranotaUangJalan->tanggal_pembayaran,
                     'updated_by' => Auth::id(),
-                ];
-                if ($pembayaranPranotaUangJalan->pranotaUangJalans()->count() === 1) {
-                    $data['nomor_accurate'] = $request->nomor_accurate;
-                }
-                $pembayaranPranotaUangJalan->update($data);
+                ]);
 
                 // Synchronize date to CoaTransactions
                 if ($request->filled('tanggal_pembayaran')) {
