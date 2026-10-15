@@ -32,6 +32,55 @@
         updateVisibility();
     }
 
+    function initializeOppOptManifestSearch(inputGroup) {
+        const select = inputGroup.querySelector('.opp-opt-barang-select-item');
+        const searchInput = inputGroup.querySelector('.opp-opt-manifest-search');
+        const selectMatchesButton = inputGroup.querySelector('.opp-opt-select-search-results');
+        const resultsCount = inputGroup.querySelector('.opp-opt-manifest-search-count');
+        if (!select || !searchInput) return;
+
+        const allOptions = Array.from(select.options).map(option => option.cloneNode(true));
+        if (!select.multiple && selectMatchesButton) selectMatchesButton.classList.add('hidden');
+
+        const refreshOptions = () => {
+            const query = searchInput.value.trim().toLocaleLowerCase();
+            const selectedValues = new Set(Array.from(select.selectedOptions).map(option => option.value));
+            const matches = allOptions.filter(option => option.value && option.textContent.toLocaleLowerCase().includes(query));
+            const visibleOptions = allOptions.filter(option => !option.value || !query || option.textContent.toLocaleLowerCase().includes(query) || selectedValues.has(option.value));
+
+            select.replaceChildren(...visibleOptions.map(option => {
+                const clone = option.cloneNode(true);
+                clone.selected = selectedValues.has(clone.value);
+                return clone;
+            }));
+
+            if (resultsCount) resultsCount.textContent = query ? `${matches.length} hasil` : '';
+            if (selectMatchesButton) selectMatchesButton.disabled = !query || matches.length === 0;
+            if (typeof jQuery !== 'undefined' && jQuery(select).data('select2')) {
+                jQuery(select).trigger('change.select2');
+            }
+        };
+
+        searchInput.addEventListener('input', refreshOptions);
+        selectMatchesButton?.addEventListener('click', () => {
+            const query = searchInput.value.trim().toLocaleLowerCase();
+            if (!query) return;
+
+            const matchingValues = new Set(allOptions
+                .filter(option => option.value && option.textContent.toLocaleLowerCase().includes(query))
+                .map(option => option.value));
+
+            Array.from(select.options).forEach(option => {
+                if (matchingValues.has(option.value)) option.selected = true;
+            });
+
+            if (typeof jQuery !== 'undefined') jQuery(select).trigger('change');
+            refreshOptions();
+        });
+
+        refreshOptions();
+    }
+
     function getOppOptTarif(namaBarang, isBongkaran) {
         if (!namaBarang) return null;
         namaBarang = namaBarang.toLowerCase();
@@ -576,6 +625,9 @@
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id][]" multiple="multiple" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         ${barangOptions}
                     </select>
+                    <input type="search" class="opp-opt-manifest-search mt-1 w-full px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Cari kontainer atau BL">
+                    <button type="button" class="opp-opt-select-search-results mt-1 text-xs text-purple-700 hover:text-purple-900 disabled:text-gray-400" disabled>Pilih semua hasil</button>
+                    <span class="opp-opt-manifest-search-count ml-1 text-[10px] text-gray-500"></span>
                 </div>
                 <div class="w-[15%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
@@ -609,6 +661,7 @@
         targetContainer.appendChild(inputGroup);
         
         syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
+        initializeOppOptManifestSearch(inputGroup);
 
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
@@ -748,6 +801,9 @@
                     <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                         ${barangOptions}
                     </select>
+                    <input type="search" class="opp-opt-manifest-search mt-1 w-full px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Cari kontainer atau BL">
+                    <button type="button" class="opp-opt-select-search-results mt-1 text-xs text-purple-700 hover:text-purple-900 disabled:text-gray-400" disabled>Pilih semua hasil</button>
+                    <span class="opp-opt-manifest-search-count ml-1 text-[10px] text-gray-500"></span>
                 </div>
                 <div class="w-[15%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
@@ -780,6 +836,7 @@
         targetContainer.appendChild(inputGroup);
         
         syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
+        initializeOppOptManifestSearch(inputGroup);
 
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
