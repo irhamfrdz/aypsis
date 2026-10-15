@@ -622,7 +622,7 @@ class SuratJalan extends Model
             ->join('pranota_uang_jalan_items as puji', 'ppuji.pranota_uang_jalan_id', '=', 'puji.pranota_uang_jalan_id')
             ->join('uang_jalans as uj', 'puji.uang_jalan_id', '=', 'uj.id')
             ->where('uj.surat_jalan_id', $this->id)
-            ->select('pembayaran_pranota_uang_jalans.*', 'ppuji.nomor_accurate as pranota_nomor_accurate')
+            ->select('pembayaran_pranota_uang_jalans.*')
             ->orderBy('pembayaran_pranota_uang_jalans.tanggal_pembayaran', 'desc')
             ->first();
     }

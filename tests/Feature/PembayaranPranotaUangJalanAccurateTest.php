@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Models\PembayaranPranotaUangJalan;
 use App\Models\PranotaUangJalan;
-use App\Models\SuratJalan;
 use App\Services\CoaTransactionService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -72,29 +71,6 @@ class PembayaranPranotaUangJalanAccurateTest extends TestCase
         $this->assertSame('BTJ26 1000179', $payment->fresh()->nomor_accurate);
         $this->assertSame('BTJ26 1000181', PranotaUangJalan::findOrFail(1)->pembayaranPranotaUangJalans->first()->nomor_accurate);
         $this->assertSame('BTJ26 1000179', PranotaUangJalan::findOrFail(2)->pembayaranPranotaUangJalans->first()->nomor_accurate);
-    }
-
-    public function test_joined_surat_jalan_payment_uses_its_pranota_number(): void
-    {
-        Schema::create('uang_jalans', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('surat_jalan_id');
-        });
-        Schema::create('pranota_uang_jalan_items', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('uang_jalan_id');
-            $table->unsignedBigInteger('pranota_uang_jalan_id');
-        });
-        DB::table('uang_jalans')->insert(['id' => 1, 'surat_jalan_id' => 1]);
-        DB::table('pranota_uang_jalan_items')->insert([
-            'uang_jalan_id' => 1, 'pranota_uang_jalan_id' => 1,
-        ]);
-        DB::table('pembayaran_pranota_uang_jalan_items')->where('pranota_uang_jalan_id', 1)
-            ->update(['nomor_accurate' => 'BTJ26 1000181']);
-
-        $suratJalan = new SuratJalan;
-        $suratJalan->id = 1;
-        $this->assertSame('BTJ26 1000181', $suratJalan->pembayaranPranotaUangJalan->nomor_accurate);
     }
 
     public function test_edit_rejects_a_pranota_outside_the_payment(): void
