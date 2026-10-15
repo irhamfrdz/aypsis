@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\GajiSupirBatamSlipExport;
 use App\Models\GajiSupirBatam;
 use App\Models\Karyawan;
 use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GajiSupirBatamController extends Controller
 {
@@ -285,6 +287,21 @@ class GajiSupirBatamController extends Controller
 
     public function print($id)
     {
+        return view('gaji-supir-batam.print', $this->salarySlipData($id));
+    }
+
+    public function export($id)
+    {
+        $data = $this->salarySlipData($id);
+
+        return Excel::download(
+            new GajiSupirBatamSlipExport($data['gaji'], $data['waybills'], $data['bensinList']),
+            'gaji-supir-batam-'.$data['gaji']->id.'.xlsx'
+        );
+    }
+
+    private function salarySlipData($id): array
+    {
         $gaji = GajiSupirBatam::with('karyawan')->findOrFail($id);
 
         $karyawan = $gaji->karyawan;
@@ -413,7 +430,7 @@ class GajiSupirBatamController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-        return view('gaji-supir-batam.print', compact('gaji', 'waybills', 'bensinList'));
+        return compact('gaji', 'waybills', 'bensinList');
     }
 
     /**

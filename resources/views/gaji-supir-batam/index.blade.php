@@ -211,6 +211,14 @@
                                     <i class="fas fa-print"></i>
                                 </a>
 
+                                @can('gaji-supir-batam-export')
+                                    <a href="{{ route('gaji-supir-batam.export', $gaji->id) }}"
+                                       class="text-emerald-600 hover:text-emerald-900 p-1.5 rounded-full hover:bg-emerald-50 transition-colors"
+                                       title="Download Excel" aria-label="Download Excel gaji supir">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                @endcan
+
                                 @can('gaji-supir-batam-delete')
                                     <form action="{{ route('gaji-supir-batam.destroy', $gaji->id) }}" method="POST" class="inline">
                                         @csrf

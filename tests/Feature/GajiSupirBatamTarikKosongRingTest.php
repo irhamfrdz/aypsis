@@ -7,6 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
 
 class GajiSupirBatamTarikKosongRingTest extends TestCase
@@ -117,5 +118,18 @@ class GajiSupirBatamTarikKosongRingTest extends TestCase
 
         $this->assertSame('3', $waybills['TK-1']['ring']);
         $this->assertSame('-', $waybills['TK-3']['ring']);
+    }
+
+    public function test_excel_download_contains_the_same_waybill_details_as_print(): void
+    {
+        $controller = new GajiSupirBatamController;
+        $response = $controller->export(1);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('gaji-supir-batam-1.xlsx', $response->headers->get('Content-Disposition'));
+
+        $sheet = IOFactory::load($response->getFile()->getPathname())->getActiveSheet();
+        $this->assertSame('TK-1', $sheet->getCell('C8')->getValue());
+        $this->assertSame('3', (string) $sheet->getCell('F8')->getValue());
     }
 }
