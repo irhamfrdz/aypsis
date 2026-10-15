@@ -537,12 +537,10 @@ class PembayaranPranotaUangJalanController extends Controller
                     foreach ($pranotaUangJalan->uangJalans as $uangJalan) {
                         $uangJalan->forceFill([
                             'status' => 'sudah_masuk_pranota',
-                            'updated_by' => Auth::id(),
                         ])->save();
                         if ($uangJalan->suratJalan) {
                             $uangJalan->suratJalan->forceFill([
                                 'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan',
-                                'updated_by' => Auth::id(),
                             ])->save();
                         }
                     }
