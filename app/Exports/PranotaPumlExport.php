@@ -55,12 +55,12 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
     }
 
     /**
-     * Force NIK (col B) and No REK (col D) as text strings to preserve leading zeros
+     * Force NIK (col B) and No REK (col E) as text strings to preserve leading zeros
      * and suppress Excel's "number stored as text" warning triangle.
      */
     public function bindValue(Cell $cell, $value)
     {
-        if (in_array($cell->getColumn(), ['B', 'D']) && $cell->getRow() >= 6) {
+        if (in_array($cell->getColumn(), ['B', 'E']) && $cell->getRow() >= 6) {
             $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
             $cell->getIgnoredErrors()->setNumberStoredAsText(true);
 
@@ -74,14 +74,14 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
     {
         return [
             'B' => NumberFormat::FORMAT_TEXT,
-            'D' => NumberFormat::FORMAT_TEXT,
-            'F' => '#,##0',
-            'H' => '#,##0',
+            'E' => NumberFormat::FORMAT_TEXT,
+            'G' => '#,##0',
             'I' => '#,##0',
             'J' => '#,##0',
             'K' => '#,##0',
             'L' => '#,##0',
             'M' => '#,##0',
+            'N' => '#,##0',
         ];
     }
 
@@ -229,19 +229,20 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
         $rows = [];
 
         // Row 1: Blank
-        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = array_fill(0, 14, '');
         // Row 2: Title (merged in AfterSheet)
-        $rows[] = ['PERINCIAN UANG MAKAN', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = array_merge(['PERINCIAN UANG MAKAN'], array_fill(0, 13, ''));
         // Row 3: Periode (merged in AfterSheet)
-        $rows[] = ['PERIODE '.$periodeStr, '', '', '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = array_merge(['PERIODE '.$periodeStr], array_fill(0, 13, ''));
         // Row 4: Blank
-        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = array_fill(0, 14, '');
 
         // Row 5: Column header
         $rows[] = [
             'NO',
             'NIK',
             'NAMA',
+            'DEPARTEMEN',
             'No REK',
             'HADIR',
             'RP/HARI',
@@ -262,6 +263,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             $kar = $data['karyawan'];
             $nik = $kar ? trim((string) ($kar->nik ?? '')) : '';
             $nama = $kar ? strtoupper(trim((string) ($kar->nama_lengkap ?? ''))) : '-';
+            $departemen = $kar ? strtoupper(trim((string) ($kar->departemen ?? ''))) : '';
             $noRek = $kar ? trim((string) ($kar->akun_bank ?: ($kar->no_rekening ?? ''))) : '';
 
             $hadir = $data['hadir'] > 0 ? (int) $data['hadir'] : null;
@@ -296,6 +298,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                 $no++,
                 $nik,
                 $nama,
+                $departemen,
                 $noRek,
                 $hadir,
                 $rpHari,
@@ -315,6 +318,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             '',
             'TOTAL',
             '',
+            '',
             $sumHadir > 0 ? (int) $sumHadir : null,
             null,
             $sumLemburCount > 0 ? (int) $sumLemburCount : null,
@@ -327,12 +331,12 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
         ];
 
         // 2 blank spacer rows
-        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', '', ''];
-        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $rows[] = array_fill(0, 14, '');
+        $rows[] = array_fill(0, 14, '');
 
         // Footer: kota & tanggal, then nama pembuat
-        $rows[] = ['', '', '', '', '', '', '', $tanggalFormatted, '', '', '', '', ''];
-        $rows[] = ['', '', '', '', '', '', '', $creatorName, '', '', '', '', ''];
+        $rows[] = ['', '', '', '', '', '', '', '', $tanggalFormatted, '', '', '', '', ''];
+        $rows[] = ['', '', '', '', '', '', '', '', $creatorName, '', '', '', '', ''];
 
         // Store counters for AfterSheet
         $this->dataRowCount = count($karyawanRekap);
@@ -363,20 +367,21 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                 $sheet->getColumnDimension('A')->setWidth(6);
                 $sheet->getColumnDimension('B')->setWidth(11);
                 $sheet->getColumnDimension('C')->setWidth(34);
-                $sheet->getColumnDimension('D')->setWidth(18);
-                $sheet->getColumnDimension('E')->setWidth(9);
-                $sheet->getColumnDimension('F')->setWidth(14);
-                $sheet->getColumnDimension('G')->setWidth(11);
-                $sheet->getColumnDimension('H')->setWidth(15);
-                $sheet->getColumnDimension('I')->setWidth(17);
-                $sheet->getColumnDimension('J')->setWidth(15);
+                $sheet->getColumnDimension('D')->setWidth(22);
+                $sheet->getColumnDimension('E')->setWidth(18);
+                $sheet->getColumnDimension('F')->setWidth(9);
+                $sheet->getColumnDimension('G')->setWidth(14);
+                $sheet->getColumnDimension('H')->setWidth(11);
+                $sheet->getColumnDimension('I')->setWidth(15);
+                $sheet->getColumnDimension('J')->setWidth(17);
                 $sheet->getColumnDimension('K')->setWidth(15);
                 $sheet->getColumnDimension('L')->setWidth(15);
-                $sheet->getColumnDimension('M')->setWidth(16);
+                $sheet->getColumnDimension('M')->setWidth(15);
+                $sheet->getColumnDimension('N')->setWidth(16);
 
                 // ── Title / Periode (rows 2 & 3) ──────────────────────
-                $sheet->mergeCells('A2:M2');
-                $sheet->mergeCells('A3:M3');
+                $sheet->mergeCells('A2:N2');
+                $sheet->mergeCells('A3:N3');
 
                 $sheet->getStyle('A2')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
@@ -395,7 +400,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                 // ── Column header (row 5) ─────────────────────────────
                 $sheet->getRowDimension(5)->setRowHeight(42);
-                $sheet->getStyle('A5:M5')->applyFromArray([
+                $sheet->getStyle('A5:N5')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 10,
@@ -421,10 +426,10 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                 if ($this->dataRowCount > 0) {
                     // AutoFilter hanya sampai data (exclude total row)
-                    $sheet->setAutoFilter("A5:M{$dataLast}");
+                    $sheet->setAutoFilter("A5:N{$dataLast}");
 
                     // ── Data rows (6 .. dataLast) ─────────────────────
-                    $sheet->getStyle("A6:M{$dataLast}")->applyFromArray([
+                    $sheet->getStyle("A6:N{$dataLast}")->applyFromArray([
                         'font' => ['size' => 10, 'name' => 'Calibri'],
                         'borders' => [
                             'allBorders' => [
@@ -438,8 +443,8 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                         $sheet->getRowDimension($r)->setRowHeight(21);
                     }
 
-                    // Currency: F, H, I, J, K, L, M (data rows)
-                    foreach (['F', 'H', 'I', 'J', 'K', 'L', 'M'] as $col) {
+                    // Currency: G, I, J, K, L, M, N (data rows)
+                    foreach (['G', 'I', 'J', 'K', 'L', 'M', 'N'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
                             ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
@@ -448,8 +453,8 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                             ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
-                    // Text format: B (NIK), D (No REK)
-                    foreach (['B', 'D'] as $col) {
+                    // Text format: B (NIK), E (No REK)
+                    foreach (['B', 'E'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
                             ->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
                     }
@@ -457,19 +462,19 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                     // Suppress Excel green warning triangle for numbers stored as text
                     for ($r = 6; $r <= $dataLast; $r++) {
                         $sheet->getCell("B{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
-                        $sheet->getCell("D{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
+                        $sheet->getCell("E{$r}")->getIgnoredErrors()->setNumberStoredAsText(true);
                     }
 
-                    // Left: C, D
-                    foreach (['C', 'D'] as $col) {
+                    // Left: C (Nama), D (Departemen), E (No REK)
+                    foreach (['C', 'D', 'E'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
                             ->getAlignment()
                             ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                             ->setVertical(Alignment::VERTICAL_CENTER);
                     }
 
-                    // Center: A, B, E, G
-                    foreach (['A', 'B', 'E', 'G'] as $col) {
+                    // Center: A, B, F, H
+                    foreach (['A', 'B', 'F', 'H'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
                             ->getAlignment()
                             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
@@ -478,7 +483,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                     // ── TOTAL row ─────────────────────────────────────
                     $sheet->getRowDimension($totalRow)->setRowHeight(22);
-                    $sheet->getStyle("A{$totalRow}:M{$totalRow}")->applyFromArray([
+                    $sheet->getStyle("A{$totalRow}:N{$totalRow}")->applyFromArray([
                         'font' => [
                             'bold' => true,
                             'size' => 10,
@@ -507,7 +512,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                     // Currency format for TOTAL row numeric columns
-                    foreach (['E', 'G', 'H', 'I', 'J', 'K', 'L', 'M'] as $col) {
+                    foreach (['F', 'H', 'I', 'J', 'K', 'L', 'M', 'N'] as $col) {
                         $sheet->getStyle("{$col}{$totalRow}")
                             ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}{$totalRow}")
@@ -517,12 +522,12 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                     }
 
                     // ── Footer rows ───────────────────────────────────
-                    // Merge H:M for kota/tanggal and nama
-                    $sheet->mergeCells("H{$footerKota}:M{$footerKota}");
-                    $sheet->mergeCells("H{$footerNama}:M{$footerNama}");
+                    // Merge I:N for kota/tanggal and nama
+                    $sheet->mergeCells("I{$footerKota}:N{$footerKota}");
+                    $sheet->mergeCells("I{$footerNama}:N{$footerNama}");
 
                     foreach ([$footerKota, $footerNama] as $fr) {
-                        $sheet->getStyle("H{$fr}")->applyFromArray([
+                        $sheet->getStyle("I{$fr}")->applyFromArray([
                             'font' => ['bold' => true, 'size' => 10, 'name' => 'Calibri'],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
