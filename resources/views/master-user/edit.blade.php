@@ -4882,71 +4882,6 @@
                 </div>
             </div>
 
-            {{-- Role Template Feature --}}
-            <div class="rounded-xl shadow-lg p-6 mb-6 mt-4 border border-blue-200 relative" 
-                 style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important;">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full pointer-events-none"></div>
-                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex-shrink-0 bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-lg font-bold text-white tracking-wide" style="margin:0; color: white !important;">Terapkan Template Peran (Role Template)</h4>
-                            <p class="text-blue-100 text-sm mt-0.5" style="margin:0; color: #dbeafe !important; opacity: 0.9;">Pilih peran untuk mencentang otomatis set permission standar.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <div class="min-w-[280px]">
-                            <style>
-                                #role_template_select + .choices .choices__list--dropdown {
-                                    background-color: white !important;
-                                    color: #374151 !important;
-                                    border: 1px solid #e5e7eb !important;
-                                    border-radius: 0.5rem !important;
-                                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-                                }
-                                #role_template_select + .choices .choices__list--dropdown .choices__item--selectable {
-                                    color: #374151 !important;
-                                }
-                                #role_template_select + .choices .choices__list--dropdown .choices__item--selectable.is-highlighted {
-                                    background-color: #f3f4f6 !important;
-                                    color: #111827 !important;
-                                }
-                                #role_template_select + .choices .choices__inner {
-                                    background-color: white !important;
-                                    color: #111827 !important;
-                                    border-radius: 0.5rem !important;
-                                    border: none !important;
-                                    min-height: 42px !important;
-                                    padding: 4px 8px !important;
-                                }
-                                #role_template_select + .choices .choices__list--single {
-                                    color: #111827 !important;
-                                    font-weight: 500 !important;
-                                }
-                            </style>
-                            <select id="role_template_select" class="block w-full text-gray-900 border-0 rounded-lg focus:ring-2 focus:ring-white">
-                                <option value="">-- Pilih Peran / Role Template --</option>
-                                @foreach($templates as $key => $template)
-                                    <option value="{{ $key }}">
-                                        {{ $template['label'] }} ({{ $template['description'] }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="button" id="apply_template_btn" 
-                                class="inline-flex items-center justify-center px-6 py-2.5 bg-white font-bold rounded-lg hover:bg-slate-50 active:scale-95 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                style="color: #1d4ed8 !important; border: none !important; min-width: 180px;">
-                            <span class="mr-2">⚡</span> Terapkan Peran
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             {{-- Copy Permission Feature --}}
             <div class="rounded-xl shadow-lg p-6 mb-8 mt-4 border border-indigo-200 relative" 
                  style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white !important;">
@@ -5346,9 +5281,6 @@
 
                 // Initialize copy permission feature
                 initializeCopyPermissions();
-
-                // Initialize role templates feature
-                initializeRoleTemplates();
 
                 // Initialize check all permissions
                 initializeCheckAllPermissions();
