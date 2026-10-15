@@ -74,7 +74,7 @@ class PembayaranPranotaUangJalan extends Model
     /** Use the pranota-specific number when this payment was loaded through a pranota. */
     public function getNomorAccurateAttribute(?string $value): ?string
     {
-        return $this->pivot?->nomor_accurate ?? $value;
+        return $this->pivot?->nomor_accurate ?? $this->attributes['pranota_nomor_accurate'] ?? $value;
     }
 
     /**
