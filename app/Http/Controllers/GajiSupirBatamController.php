@@ -29,10 +29,14 @@ class GajiSupirBatamController extends Controller
 
         $query = $this->filteredSalaryQuery($request)->with('karyawan');
 
-        $gajiList = $query->orderBy('tanggal_mulai', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate($request->get('per_page', 15))
-            ->withQueryString();
+        $query->orderBy('tanggal_mulai', 'desc')->orderBy('id', 'desc');
+        $requestedPerPage = (string) $request->input('per_page', '15');
+        $perPage = in_array($requestedPerPage, ['15', '30', '50', 'all'], true)
+            ? $requestedPerPage
+            : '15';
+        $gajiList = $perPage === 'all'
+            ? $query->get()
+            : $query->paginate((int) $perPage)->withQueryString();
 
         // Get list of Batam supir for filter dropdown
         $supirList = Karyawan::where('cabang', 'BATAM')

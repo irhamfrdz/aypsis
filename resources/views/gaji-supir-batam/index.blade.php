@@ -52,7 +52,7 @@
 
 <!-- Search & Filter Form -->
 <form method="GET" action="{{ route('gaji-supir-batam.index') }}" class="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-100">
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
         <!-- Search -->
         <div>
             <label for="search" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Cari Supir</label>
@@ -102,6 +102,16 @@
                 <option value="PENDING" {{ $statusPembayaran == 'PENDING' ? 'selected' : '' }}>PENDING</option>
                 <option value="PAID" {{ $statusPembayaran == 'PAID' ? 'selected' : '' }}>PAID</option>
                 <option value="CANCELLED" {{ $statusPembayaran == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="per_page" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tampilkan</label>
+            <select name="per_page" id="per_page" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                <option value="15" {{ request('per_page', '15') === '15' ? 'selected' : '' }}>15 data</option>
+                <option value="30" {{ request('per_page') === '30' ? 'selected' : '' }}>30 data</option>
+                <option value="50" {{ request('per_page') === '50' ? 'selected' : '' }}>50 data</option>
+                <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua data</option>
             </select>
         </div>
     </div>
@@ -252,7 +262,7 @@
         </table>
     </div>
 
-    @if ($gajiList->hasPages())
+    @if ($gajiList instanceof \Illuminate\Pagination\LengthAwarePaginator && $gajiList->hasPages())
         <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
             {{ $gajiList->links() }}
         </div>
