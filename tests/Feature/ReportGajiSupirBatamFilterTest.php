@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Exports\ReportGajiSupirBatamExport;
 use App\Http\Controllers\ReportGajiSupirBatamController;
+use App\Http\Controllers\GajiSupirBatamController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,20 @@ class ReportGajiSupirBatamFilterTest extends TestCase
         $view = (new ReportGajiSupirBatamController)->index($request);
 
         $this->assertEqualsCanonicalizing([1, 2], $view->getData()['gajiList']->pluck('id')->all());
+    }
+
+    public function test_salary_index_all_drivers_includes_overlapping_periods(): void
+    {
+        $request = Request::create('/gaji-supir-batam', 'GET', [
+            'start_date' => '2026-09-24',
+            'end_date' => '2026-10-10',
+            'karyawan_id' => null,
+            'status_pembayaran' => null,
+        ]);
+
+        $view = (new GajiSupirBatamController)->index($request);
+
+        $this->assertEqualsCanonicalizing([2, 3], $view->getData()['gajiList']->pluck('id')->all());
     }
 
     public function test_export_uses_the_same_date_and_driver_filters(): void

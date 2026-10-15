@@ -17,13 +17,13 @@ class GajiSupirBatamController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('search', '');
-        $bulan = $request->get('bulan', '');
-        $tahun = $request->get('tahun', '');
-        $karyawanId = $request->get('karyawan_id', '');
-        $statusPembayaran = $request->get('status_pembayaran', '');
-        $startDate = $request->get('start_date', '');
-        $endDate = $request->get('end_date', '');
+        $search = $request->input('search') ?? '';
+        $bulan = $request->input('bulan') ?? '';
+        $tahun = $request->input('tahun') ?? '';
+        $karyawanId = $request->input('karyawan_id') ?? '';
+        $statusPembayaran = $request->input('status_pembayaran') ?? '';
+        $startDate = $request->input('start_date') ?? '';
+        $endDate = $request->input('end_date') ?? '';
 
         $query = GajiSupirBatam::with('karyawan');
 
@@ -52,11 +52,11 @@ class GajiSupirBatamController extends Controller
         }
 
         if ($startDate !== '') {
-            $query->whereDate('tanggal_mulai', '>=', $startDate);
+            $query->whereDate('tanggal_selesai', '>=', $startDate);
         }
 
         if ($endDate !== '') {
-            $query->whereDate('tanggal_selesai', '<=', $endDate);
+            $query->whereDate('tanggal_mulai', '<=', $endDate);
         }
 
         $gajiList = $query->orderBy('tanggal_mulai', 'desc')
