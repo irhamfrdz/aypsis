@@ -274,11 +274,13 @@
                         <label class="{{ $labelClasses }}">Group</label>
                         <div id="grup-container" class="space-y-2">
                             @php
+                                $departemenSubGroups = $departemens->pluck('nama_departemen')->all();
                                 $subGroups = [
                                     'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
-                                    'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                    'UANG MAKAN' => $departemenSubGroups,
                                     'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                                    'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                    'LEMBUR' => $departemenSubGroups,
+                                    'LEMBURAN' => $departemenSubGroups,
                                     'CUTI' => []
                                 ];
                                 $defaultGrups = array_keys($subGroups);
@@ -324,15 +326,17 @@
                                     <div class="flex-1">
                                         <select class="{{ $selectClasses }} grup-sub" onchange="handleGrupChange(this)">
                                             <option value="">-- Sub Group (Opsional) --</option>
-                                            @if(isset($subGroups[$sgMain]))
-                                                @foreach($subGroups[$sgMain] as $sub)
+                                            @if(isset($subGroups[strtoupper(trim($sgMain))]))
+                                                @foreach($subGroups[strtoupper(trim($sgMain))] as $sub)
                                                     <option value="{{ $sub }}" {{ $sub == $sgSub ? 'selected' : '' }}>{{ $sub }}</option>
                                                 @endforeach
                                             @endif
-                                            @if($sgSub && (!isset($subGroups[$sgMain]) || !in_array($sgSub, $subGroups[$sgMain])))
+                                            @if($sgSub && (!isset($subGroups[strtoupper(trim($sgMain))]) || !in_array($sgSub, $subGroups[strtoupper(trim($sgMain))])))
                                                 <option value="{{ $sgSub }}" selected>{{ $sgSub }}</option>
                                             @endif
-                                            <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
+                                            @if(!in_array(strtoupper(trim($sgMain)), ['UANG MAKAN', 'LEMBUR', 'LEMBURAN']))
+                                                <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
+                                            @endif
                                         </select>
                                         <input type="text" class="{{ str_replace('bg-gray-100', 'bg-white', $selectClasses) }} grup-sub-input" style="display:none;" placeholder="Ketik sub group baru..." onblur="handleGrupInputBlur(this)">
                                     </div>
@@ -1098,9 +1102,10 @@
                 // Sub Group mapping for JS
                 const subGroupsMap = {
                     'GAJI': ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
-                    'UANG MAKAN': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                    'UANG MAKAN': @json($departemenSubGroups),
                     'TRANSPORTASI': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                    'LEMBUR': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM']
+                    'LEMBUR': @json($departemenSubGroups),
+                    'LEMBURAN': @json($departemenSubGroups)
                 };
 
                 window.handleGrupChange = function(select) {
@@ -1116,12 +1121,17 @@
                         let subInput = row.querySelector('.grup-sub-input');
                         
                         // Reset sub group
-                        subSelect.innerHTML = '<option value="">-- Sub Group (Opsional) --</option>';
-                        let subs = subGroupsMap[select.value] || [];
+                        subSelect.replaceChildren(new Option('-- Sub Group (Opsional) --', ''));
+                        const mainGroup = select.value.trim().toUpperCase();
+                        let subs = subGroupsMap[mainGroup] || [];
                         subs.forEach(function(sub) {
-                            subSelect.innerHTML += '<option value="' + sub + '">' + sub + '</option>';
+                            subSelect.add(new Option(sub, sub));
                         });
-                        subSelect.innerHTML += '<option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>';
+                        if (!['UANG MAKAN', 'LEMBUR', 'LEMBURAN'].includes(mainGroup)) {
+                            const newOption = new Option('+ KETIK SUB GROUP BARU...', '__baru__');
+                            newOption.className = 'font-bold text-blue-600';
+                            subSelect.add(newOption);
+                        }
                         
                         subSelect.style.display = 'block';
                         subSelect.value = '';

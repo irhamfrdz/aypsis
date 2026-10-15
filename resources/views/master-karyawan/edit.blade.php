@@ -258,7 +258,7 @@
                             $departemenSubGroups = $departemens->where('is_active', true)->pluck('nama_departemen')->values()->all();
                             $subGroups = [
                                 'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
-                                'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                'UANG MAKAN' => $departemenSubGroups,
                                 'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
                                 'LEMBUR' => $departemenSubGroups,
                                 'LEMBURAN' => $departemenSubGroups,
@@ -322,7 +322,7 @@
                                         @if($sgSub && (!isset($subGroups[strtoupper(trim($sgMain))]) || !in_array($sgSub, $subGroups[strtoupper(trim($sgMain))])))
                                             <option value="{{ $sgSub }}" selected>{{ $sgSub }}</option>
                                         @endif
-                                        @if(!in_array(strtoupper(trim($sgMain)), ['LEMBUR', 'LEMBURAN']))
+                                        @if(!in_array(strtoupper(trim($sgMain)), ['UANG MAKAN', 'LEMBUR', 'LEMBURAN']))
                                             <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
                                         @endif
                                     </select>
@@ -1119,7 +1119,7 @@
                 // Sub Group mapping for JS
                 const subGroupsMap = {
                     'GAJI': ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
-                    'UANG MAKAN': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                    'UANG MAKAN': @json($departemenSubGroups),
                     'TRANSPORTASI': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
                     'LEMBUR': @json($departemenSubGroups),
                     'LEMBURAN': @json($departemenSubGroups)
@@ -1144,7 +1144,7 @@
                         subs.forEach(function(sub) {
                             subSelect.add(new Option(sub, sub));
                         });
-                        if (mainGroup !== 'LEMBUR' && mainGroup !== 'LEMBURAN') {
+                        if (!['UANG MAKAN', 'LEMBUR', 'LEMBURAN'].includes(mainGroup)) {
                             const newOption = new Option('+ KETIK SUB GROUP BARU...', '__baru__');
                             newOption.className = 'font-bold text-blue-600';
                             subSelect.add(newOption);
