@@ -1,11 +1,3 @@
-@if($user && $user->can('master-jam-kerja-view'))
-<div>
-    <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700' : '' }}" @if(Request::routeIs('master.jam-kerja.*')) aria-current="page" @endif>
-        <span>Jam Kerja (Shift)</span>
-    </a>
-</div>
-@endif
-
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
                             $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*') || Request::routeIs('master.wa-broadcast.*') || Request::routeIs('master.wa-gateway.*') || Request::routeIs('master-customer-buruh.*');
@@ -200,8 +192,8 @@
 
                         {{-- Master Karyawan Sub-Dropdown --}}
                             @php
-                                $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('karyawan-tidak-tetap.*') || Request::routeIs('master-group-bp-jamsostek.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master.tunjangan.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.permission.*') || Request::routeIs('master.karyawan.approval.*') || Request::routeIs('master.pelamar-karyawan.*') || Request::routeIs('master-rumus-bpjs.*');
-                                $hasUserPermissions = $user && ($user->can('master-user-view') || $user->can('master-karyawan-view') || $user->can('karyawan-tidak-tetap-view') || $user->can('master-divisi-view') || $user->can('master-pekerjaan-view') || $user->can('master-pajak-view') || $user->can('master-tunjangan') || $user->can('master-bank-view') || $user->can('master-permission-view'));
+                                $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('karyawan-tidak-tetap.*') || Request::routeIs('master-group-bp-jamsostek.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master.tunjangan.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.permission.*') || Request::routeIs('master.karyawan.approval.*') || Request::routeIs('master.pelamar-karyawan.*') || Request::routeIs('master-rumus-bpjs.*');
+                                $hasUserPermissions = $user && ($user->can('master-user-view') || $user->can('master-karyawan-view') || $user->can('master-jam-kerja-view') || $user->can('karyawan-tidak-tetap-view') || $user->can('master-divisi-view') || $user->can('master-pekerjaan-view') || $user->can('master-pajak-view') || $user->can('master-tunjangan') || $user->can('master-bank-view') || $user->can('master-permission-view'));
                                 $hasUserApprovalAccess = $isAdmin ||
                                     auth()->user()->can('master-user') ||
                                     auth()->user()->can('user-approval') ||
@@ -224,6 +216,11 @@
                                 </svg>
                             </button>
                             <div id="master-karyawan-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isUserRoute) style="display: block;" @endif>
+                                @if($user && $user->can('master-jam-kerja-view'))
+                                    <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Jam Kerja (Shift)</span>
+                                    </a>
+                                @endif
                                 @if($user && $user->can('master-user-view'))
                                     <a href="{{ route('master.user.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.index') || Request::routeIs('master.user.create') || Request::routeIs('master.user.edit') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master User</span>
