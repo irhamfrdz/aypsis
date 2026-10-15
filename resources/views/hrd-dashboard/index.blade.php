@@ -875,6 +875,14 @@
                         <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
                     </div>
 
+                    @can('hrd-dashboard-export')
+                    <a id="detail-export-button" href="{{ route('hrd.dashboard.export-detail') }}" onclick="return prepareDetailExport(this)"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold whitespace-nowrap shadow-xs"
+                       title="Export tabel yang sedang ditampilkan ke Excel">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </a>
+                    @endcan
+
                     <span id="detail-badge" class="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-xs"></span>
 
                     <button onclick="closeDetailPanel()"
@@ -1551,6 +1559,20 @@
     }
 
     var _activeTable = null;
+
+    function prepareDetailExport(link) {
+        if (!_activeTable) return false;
+
+        var params = new URLSearchParams(window.location.search);
+        params.set('kategori', _activeTable);
+        params.delete('page');
+        params.delete('q');
+        var search = document.getElementById('detail_search_input').value.trim();
+        if (search) params.set('q', search);
+
+        link.href = @json(route('hrd.dashboard.export-detail')) + '?' + params.toString();
+        return true;
+    }
 
     // Konfigurasi tiap kategori kartu
     var DETAIL_CONFIG = {
