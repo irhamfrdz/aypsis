@@ -767,6 +767,13 @@
 
         
         syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
+        if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
+            $(inputGroup).find('.opp-opt-biaya-select-item').select2({
+                width: '100%',
+                placeholder: 'Cari biaya...',
+                minimumResultsForSearch: 0
+            });
+        }
         initializeOppOptManifestSearch(inputGroup);
 
 
@@ -984,6 +991,13 @@
         }
 
         
+        if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
+            $(inputGroup).find('.opp-opt-biaya-select-item').select2({
+                width: '100%',
+                placeholder: 'Cari biaya...',
+                minimumResultsForSearch: 0
+            });
+        }
         syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
         initializeOppOptManifestSearch(inputGroup);
 
