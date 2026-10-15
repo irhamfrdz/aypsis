@@ -1,3 +1,11 @@
+@if($user && $user->can('master-jam-kerja-view'))
+<div>
+    <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700' : '' }}" @if(Request::routeIs('master.jam-kerja.*')) aria-current="page" @endif>
+        <span>Jam Kerja (Shift)</span>
+    </a>
+</div>
+@endif
+
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
                             $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*') || Request::routeIs('master.wa-templates.*') || Request::routeIs('master.wa-broadcast.*') || Request::routeIs('master.wa-gateway.*') || Request::routeIs('master-customer-buruh.*');

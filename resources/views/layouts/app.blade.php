@@ -725,11 +725,6 @@
                     <a href="{{ route('master.data.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('master.data.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('master.data.index')) aria-current="page" @endif>
                         Master Data
                     </a>
-                    @if($user && $user->can('master-jam-kerja-view'))
-                    <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('master.jam-kerja.*')) aria-current="page" @endif>
-                        Jam Kerja (Shift)
-                    </a>
-                    @endif
                 </div>
                 @endif
                 <div>
