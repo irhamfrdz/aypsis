@@ -63,7 +63,7 @@
 
     @php
         $totalKaryawan = $totalKaryawanAktif;
-        $totalKaryawanMasuk = max(0, $totalKaryawan - $karyawanBelumAbsen->count());
+        $totalKaryawanMasuk = count(array_intersect($activeKaryawanIds, $absensiMasuk->pluck('karyawan_id')->filter()->unique()->all()));
 
         // 1. Hadir Normal (Tepat waktu)
         $cntHadirNormal = $karyawanHadirNormal->count();
@@ -258,7 +258,7 @@
         <div class="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
             <div class="bg-emerald-50/50 rounded-xl p-3.5 border border-emerald-100/80 shadow-xs">
                 <div class="flex items-center justify-between text-slate-500">
-                    <span class="text-[11px] font-semibold uppercase tracking-wider">Tingkat Kehadiran</span>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Pernah Absen Masuk di Periode</span>
                     <i class="fas fa-chart-line text-xs text-emerald-600"></i>
                 </div>
                 <div class="flex items-baseline gap-2 mt-1">
@@ -535,7 +535,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-gray-800 text-sm group-hover:text-red-600 transition-colors">Belum Absen Masuk</h4>
-                                <p class="text-[11px] text-gray-500">Belum tapping masuk hari ini</p>
+                                <p class="text-[11px] text-gray-500">Ada tanggal tanpa scan masuk dalam periode</p>
                             </div>
                         </div>
                         <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
@@ -566,9 +566,9 @@
                     <div class="flex items-center justify-between text-gray-600">
                         <span class="flex items-center gap-1.5">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Sudah Absen Masuk
+                            Tanpa Kekurangan Scan Masuk
                         </span>
-                        <span class="font-bold text-gray-800">{{ number_format($totalKaryawanMasuk) }}</span>
+                        <span class="font-bold text-gray-800">{{ number_format(max(0, $totalKaryawan - $cntBelumMasuk)) }}</span>
                     </div>
                     <div class="mt-2 text-[11px] text-red-600 bg-red-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium group-hover:bg-red-100/70 transition-colors">
                         <span><i class="fas fa-hand-pointer mr-1"></i> Klik untuk lihat daftar</span>
@@ -917,11 +917,14 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
+                                @if(! $isSingleDay)
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tanggal Tanpa Scan Masuk</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach($karyawanBelumAbsen as $i => $k)
-                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '') . ' ' . ($k->cabang ?? '')) }}">
+                            <tr class="hover:bg-rose-50/40 transition-colors" data-grup="{{ is_array($k->grup) ? implode(',', $k->grup) : ($k->grup ?? '') }}" data-search="{{ strtolower($k->nik . ' ' . $k->nama_lengkap . ' ' . ($k->divisi ?? '') . ' ' . ($k->cabang ?? '') . ' ' . implode(' ', $k->tanggal_belum_masuk ?? [])) }}">
                                 <td class="px-6 py-3.5 text-slate-400 text-xs font-medium">{{ $i + 1 }}</td>
                                 <td class="px-6 py-3.5">
                                     <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">{{ $k->nik }}</span>
@@ -950,6 +953,15 @@
                                         @endif
                                     </div>
                                 </td>
+                                @if(! $isSingleDay)
+                                <td class="px-6 py-3.5 text-xs text-rose-700 font-semibold">
+                                    @forelse($k->tanggal_belum_masuk ?? [] as $tanggal)
+                                        <span class="inline-block mr-1 mb-1 px-2 py-0.5 rounded bg-rose-50 border border-rose-200">{{ \Carbon\Carbon::parse($tanggal)->format('d-m-Y') }}</span>
+                                    @empty
+                                        <span class="text-slate-500">Tidak ada scan masuk dalam periode</span>
+                                    @endforelse
+                                </td>
+                                @endif
                             </tr>
                             @endforeach
                         </tbody>
@@ -1444,7 +1456,7 @@
         // 1. Hadir Normal
         createMiniDonut('chartVarHadirNormal', {{ $cntHadirNormal }}, {{ $totalKaryawan }}, '#22c55e', 'Hadir Tepat Waktu', 'Lainnya');
         // 2. Belum Absen Masuk
-        createMiniDonut('chartVarBelumMasuk', {{ $cntBelumMasuk }}, {{ $totalKaryawan }}, '#ef4444', 'Belum Absen Masuk', 'Sudah Masuk');
+        createMiniDonut('chartVarBelumMasuk', {{ $cntBelumMasuk }}, {{ $totalKaryawan }}, '#ef4444', 'Belum Absen Masuk', 'Tanpa Kekurangan Scan');
         // 3. Belum Absen Pulang
         createMiniDonut('chartVarBelumPulang', {{ $cntBelumPulang }}, {{ max(1, $totalKaryawanMasuk) }}, '#eab308', 'Belum Absen Pulang', 'Sudah Absen Pulang');
         // 4. Absen Terlambat
@@ -1544,7 +1556,7 @@
     var DETAIL_CONFIG = {
         'belum-masuk': {
             title: 'Karyawan Belum Absen Masuk',
-            subtitle: 'Daftar karyawan yang belum melakukan absensi masuk hari ini',
+            subtitle: 'Daftar karyawan dengan tanggal tanpa scan masuk dalam periode terpilih',
             icon: 'fa-user-times',
             iconBg: '#fee2e2',
             iconColor: '#dc2626',

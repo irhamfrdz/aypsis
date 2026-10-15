@@ -144,12 +144,53 @@ class HrdDashboardController extends Controller
         $workingHours = new WorkingHoursService;
         $karyawanIdsAbsen = $absensiMasuk->pluck('karyawan_id')->filter()->unique()->toArray();
 
-        // 3. Karyawan Belum Absen
-        // Yaitu karyawan aktif yang id-nya belum ada di daftar absen masuk dalam periode
+        // 3. Karyawan Belum Absen Masuk
+        // Pada rentang tanggal, satu scan masuk di hari lain tidak boleh menutupi
+        // hari yang memiliki aktivitas absensi tetapi tidak memiliki scan masuk.
         $karyawanBelumAbsen = (clone $karyawanBaseQuery)
-            ->whereNotIn('id', $karyawanIdsAbsen)
             ->orderBy('nama_lengkap', 'asc')
             ->get();
+
+        if (! $isSingleDay && $activeKaryawanIds) {
+            $logsByEmployee = Absensi::select('karyawan_id', 'tipe', 'waktu')
+                ->whereIn('karyawan_id', $activeKaryawanIds)
+                ->whereBetween('waktu', [
+                    $startDate->copy()->subDay()->setTime(6, 0),
+                    $endDate->copy()->addDay()->setTime(5, 59, 59),
+                ])
+                ->get()
+                ->groupBy('karyawan_id');
+
+            $karyawanBelumAbsen = $karyawanBelumAbsen
+                ->filter(function ($karyawan) use ($logsByEmployee, $karyawanIdsAbsen, $startDateStr, $endDateStr) {
+                    $days = $logsByEmployee->get($karyawan->id, collect())
+                        ->groupBy(function ($log) {
+                            // Sama dengan tanggal kerja scan biasa di rekap absensi.
+                            return Carbon::parse($log->waktu)->subHours(6)->toDateString();
+                        });
+
+                    $missingDates = $days->filter(function ($logs, $date) use ($startDateStr, $endDateStr) {
+                        if ($date < $startDateStr || $date > $endDateStr) {
+                            return false;
+                        }
+
+                        return ! $logs->contains(function ($log) {
+                            $type = strtolower(trim(str_replace('_', ' ', $log->tipe ?? '')));
+
+                            return in_array($type, ['masuk', 'check in', 'in']);
+                        });
+                    })->keys()->sort()->values()->all();
+
+                    $karyawan->tanggal_belum_masuk = $missingDates;
+
+                    return $missingDates !== [] || ! in_array($karyawan->id, $karyawanIdsAbsen);
+                })
+                ->values();
+        } else {
+            $karyawanBelumAbsen = $karyawanBelumAbsen
+                ->whereNotIn('id', $karyawanIdsAbsen)
+                ->values();
+        }
 
         // 4. Karyawan Absen Terlambat
         // Evaluasi per absensi berdasarkan jam kerja aktif karyawan.
@@ -319,6 +360,7 @@ class HrdDashboardController extends Controller
             'isSingleDay',
             'jamBatas',
             'totalKaryawanAktif',
+            'activeKaryawanIds',
             'karyawanBelumAbsen',
             'karyawanTerlambat',
             'karyawanHadirNormal',
