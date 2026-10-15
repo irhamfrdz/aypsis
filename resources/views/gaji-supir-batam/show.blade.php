@@ -128,9 +128,27 @@
 
     <!-- Waybills List / Breakdown -->
     <div class="mx-8 mb-6">
+        @php
+            $waybillTypeCounts = collect($waybills)->countBy('type');
+            $waybillTypeLabels = [
+                'Regular' => 'Surat Jalan Batam',
+                'Bongkaran' => 'Surat Jalan Bongkaran',
+                'Tarik Kosong' => 'Surat Jalan Tarik Kosong',
+                'OB' => 'OB',
+                'OB Antar Gudang' => 'OB Antar Gudang',
+                'Langsir Batam' => 'Langsir Batam',
+            ];
+        @endphp
         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pb-1 border-b border-gray-200">
             RINCIAN SURAT JALAN YANG DIMASUKKAN
         </h4>
+        <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
+            <span class="font-semibold text-gray-600">Jumlah pada periode:</span>
+            <span class="rounded-full bg-indigo-100 px-3 py-1 font-semibold text-indigo-900">Total: {{ count($waybills) }}</span>
+            @foreach($waybillTypeLabels as $type => $label)
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{{ $label }}: {{ $waybillTypeCounts->get($type, 0) }}</span>
+            @endforeach
+        </div>
         <div class="overflow-hidden border border-gray-200 rounded-lg">
             <table class="min-w-full divide-y divide-gray-200 text-xs">
                 <thead class="bg-gray-100">

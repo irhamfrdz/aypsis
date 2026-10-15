@@ -163,6 +163,9 @@
                     <i class="fas fa-route mr-2 text-indigo-600"></i> Pilih Surat Jalan untuk Dimasukkan
                 </h4>
             </div>
+            <div id="waybill_type_counts" class="flex flex-wrap items-center gap-2 mb-4 text-xs" aria-live="polite">
+                <span class="text-gray-500">Jumlah dipilih akan tampil setelah supir dan periode ditentukan.</span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-100">
@@ -290,10 +293,38 @@
 
         function updateGajiPokok() {
             let sum = 0;
+            const counts = {
+                'Regular': 0,
+                'Bongkaran': 0,
+                'Tarik Kosong': 0,
+                'OB': 0,
+                'OB Antar Gudang': 0,
+                'Langsir Batam': 0
+            };
             document.querySelectorAll('.waybill-checkbox:checked').forEach(cb => {
                 const row = cb.closest('tr');
                 sum += parseFloat(row.dataset.rit) || 0;
+                if (Object.prototype.hasOwnProperty.call(counts, row.dataset.type)) counts[row.dataset.type]++;
             });
+
+            const labels = {
+                'Regular': 'Surat Jalan Batam',
+                'Bongkaran': 'Surat Jalan Bongkaran',
+                'Tarik Kosong': 'Surat Jalan Tarik Kosong',
+                'OB': 'OB',
+                'OB Antar Gudang': 'OB Antar Gudang',
+                'Langsir Batam': 'Langsir Batam'
+            };
+            const summary = document.getElementById('waybill_type_counts');
+            const title = document.createElement('span');
+            title.className = 'font-semibold text-gray-600';
+            title.textContent = 'Jumlah dipilih:';
+            summary.replaceChildren(title, ...Object.entries(counts).map(([type, count]) => {
+                const badge = document.createElement('span');
+                badge.className = 'rounded-full bg-indigo-50 border border-indigo-100 px-3 py-1 text-indigo-800';
+                badge.textContent = `${labels[type]}: ${count}`;
+                return badge;
+            }));
             
             document.getElementById('gaji_pokok').value = sum;
             breakdownTotal.textContent = 'Rp ' + sum.toLocaleString('id-ID');
@@ -309,6 +340,7 @@
                 breakdownRows.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-gray-500 font-medium"><i class="fas fa-info-circle mr-2 text-indigo-500"></i> Silakan pilih Supir, Tanggal Mulai, dan Tanggal Selesai untuk memuat daftar surat jalan.</td></tr>`;
                 document.getElementById('gaji_pokok').value = 0;
                 breakdownTotal.textContent = 'Rp 0';
+                updateGajiPokok();
                 calculateSalary();
                 return;
             }
@@ -324,6 +356,7 @@
                             const row = document.createElement('tr');
                             row.className = 'hover:bg-gray-50 transition-colors waybill-row';
                             row.dataset.rit = wb.rit;
+                            row.dataset.type = wb.type;
                             row.innerHTML = `
                                 <td class="px-4 py-2.5 text-center">
                                     <input type="checkbox" name="selected_waybills[]" value="${wb.id}" class="waybill-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>

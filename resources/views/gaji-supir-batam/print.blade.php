@@ -115,7 +115,24 @@
         </tr>
     </table>
 
+    @php
+        $waybillTypeCounts = collect($waybills)->countBy('type');
+        $waybillTypeLabels = [
+            'Regular' => 'Surat Jalan Batam',
+            'Bongkaran' => 'Surat Jalan Bongkaran',
+            'Tarik Kosong' => 'Surat Jalan Tarik Kosong',
+            'OB' => 'OB',
+            'OB Antar Gudang' => 'OB Antar Gudang',
+            'Langsir Batam' => 'Langsir Batam',
+        ];
+    @endphp
     <div style="font-weight: bold; margin-bottom: 5px;">Rincian Surat Jalan :</div>
+    <div style="font-size: 9pt; margin-bottom: 10px;">
+        Jumlah pada periode — Total: {{ count($waybills) }}
+        @foreach($waybillTypeLabels as $type => $label)
+            &nbsp;|&nbsp; {{ $label }}: {{ $waybillTypeCounts->get($type, 0) }}
+        @endforeach
+    </div>
     <table class="rincian-table">
         <thead>
             <tr>
