@@ -222,6 +222,8 @@
                                  'manifest_label' => implode(' | ', $manifestLabels),
                                  'tarif' => (float)$i->tarif,
                                  'vendor' => $i->vendor ?? '',
+                                 'tanggal_mulai_penumpukan' => $i->tanggal_mulai_penumpukan?->format('Y-m-d'),
+                                 'tanggal_selesai_penumpukan' => $i->tanggal_selesai_penumpukan?->format('Y-m-d'),
                                  'catatan' => $i->catatan ?? ''
                              ];
                          })->values()

@@ -883,6 +883,7 @@
                                 <thead class="bg-gray-100">
                                     <tr>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kontainer / BL</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Periode Penumpukan</th>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
                                         <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
@@ -905,6 +906,13 @@
                                         @endphp
                                         <tr>
                                             <td class="px-4 py-2 text-sm text-gray-900">{!! implode('<br>', $manifestLabels) !!}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">
+                                                @if($item->tanggal_mulai_penumpukan && $item->tanggal_selesai_penumpukan)
+                                                    {{ $item->tanggal_mulai_penumpukan->format('d/m/Y') }} s.d. {{ $item->tanggal_selesai_penumpukan->format('d/m/Y') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                             <td class="px-4 py-2 text-sm text-gray-600">{{ $item->vendor ?: '-' }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600">{{ $item->catatan ?: '-' }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
@@ -914,21 +922,21 @@
                                     @endforeach
                                     @if(!isset($details->first()->manifests) || $details->sum(function($item) { return $item->manifests ? $item->manifests->count() : 0; }) == 0)
                                         <tr>
-                                            <td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
+                                            <td colspan="6" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
                                         </tr>
                                     @endif
                                 </tbody>
                                 <tfoot class="bg-gray-50 font-bold">
                                     <tr class="bg-blue-50">
-                                        <td colspan="4" class="px-4 py-2 text-sm text-right">Total Nominal Kapal</td>
+                                        <td colspan="5" class="px-4 py-2 text-sm text-right">Total Nominal Kapal</td>
                                         <td class="px-4 py-2 text-sm text-right font-black text-blue-700">Rp {{ number_format($first->total_nominal, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="px-4 py-2 text-sm text-right">DP</td>
+                                        <td colspan="5" class="px-4 py-2 text-sm text-right">DP</td>
                                         <td class="px-4 py-2 text-sm text-right text-emerald-600">Rp {{ number_format($first->dp, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr class="bg-purple-100">
-                                        <td colspan="4" class="px-4 py-2 text-sm text-right">Sisa Pembayaran</td>
+                                        <td colspan="5" class="px-4 py-2 text-sm text-right">Sisa Pembayaran</td>
                                         <td class="px-4 py-2 text-sm text-right font-black text-purple-700">Rp {{ number_format($first->sisa_pembayaran, 0, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>

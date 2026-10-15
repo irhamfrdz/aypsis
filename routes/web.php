@@ -321,22 +321,6 @@ Route::middleware([
         ->middleware('can:chatbox-delete');
 
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
-    Route::get('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'index'])->name('surat-jalan-kontainer-sewa.index');
-    Route::get('/surat-jalan-kontainer-sewa/create', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'create'])->name('surat-jalan-kontainer-sewa.create');
-    Route::get('/surat-jalan-kontainer-sewa/api/kontainer-by-vendor', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'getKontainerByVendor'])->name('surat-jalan-kontainer-sewa.kontainer-by-vendor');
-    Route::post('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'store'])->name('surat-jalan-kontainer-sewa.store');
-    Route::get('/surat-jalan-kontainer-sewa/{id}', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'show'])->name('surat-jalan-kontainer-sewa.show');
-    Route::get('/surat-jalan-kontainer-sewa/{id}/print', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'print'])->name('surat-jalan-kontainer-sewa.print');
-    Route::patch('/surat-jalan-kontainer-sewa/{id}/status', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'updateStatus'])->name('surat-jalan-kontainer-sewa.update-status');
-    Route::delete('/surat-jalan-kontainer-sewa/{id}', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'destroy'])->name('surat-jalan-kontainer-sewa.destroy');
-
-    // 📦 Tanda Terima Surat Jalan Kontainer Sewa
-    Route::get('/tanda-terima-surat-jalan-kontainer-sewa-next-number', [\App\Http\Controllers\TandaTerimaSuratJalanKontainerSewaController::class, 'getNextNumber'])->name('tanda-terima-surat-jalan-kontainer-sewa.get-next-number');
-    Route::get('/tanda-terima-surat-jalan-kontainer-sewa/{id}/print', [\App\Http\Controllers\TandaTerimaSuratJalanKontainerSewaController::class, 'print'])->name('tanda-terima-surat-jalan-kontainer-sewa.print');
-    Route::resource('tanda-terima-surat-jalan-kontainer-sewa', \App\Http\Controllers\TandaTerimaSuratJalanKontainerSewaController::class)->parameters([
-        'tanda-terima-surat-jalan-kontainer-sewa' => 'tanda_terima_sewa',
-    ]);
-
 
 
     Route::resource('pranota-bpjs', PranotaBpjsController::class);

@@ -747,6 +747,10 @@ class BiayaKapalController extends Controller
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'opp_opt_sections' => 'nullable|array',
+            'opp_opt_sections.*.barang' => 'nullable|array',
+            'opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan' => 'nullable|date',
+            'opp_opt_sections.*.barang.*.tanggal_selesai_penumpukan' => 'nullable|date|after_or_equal:opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan',
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
@@ -1184,6 +1188,8 @@ class BiayaKapalController extends Controller
             'tanto.*.tanggal_invoice_vendor' => 'nullable|date',
             'tanto.*.keterangan' => 'nullable|string',
         ]);
+
+        $this->validateOppOptPenumpukanDateRanges($request);
 
         $validated['perijinan_sections'] = $this->resolvePerijinanKarantinaSections(
             $validated['perijinan_sections'] ?? []
@@ -2625,6 +2631,8 @@ class BiayaKapalController extends Controller
                                 'vendor' => $vendor,
                                 'jenis_ukuran' => $jenisUkuran,
                                 'catatan' => $catatan,
+                                'tanggal_mulai_penumpukan' => $item['tanggal_mulai_penumpukan'] ?? null,
+                                'tanggal_selesai_penumpukan' => $item['tanggal_selesai_penumpukan'] ?? null,
                                 'jumlah' => $jumlah,
                                 'tarif' => $tarif,
                                 'subtotal' => $subtotal,
@@ -4369,6 +4377,10 @@ class BiayaKapalController extends Controller
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'opp_opt_sections' => 'nullable|array',
+            'opp_opt_sections.*.barang' => 'nullable|array',
+            'opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan' => 'nullable|date',
+            'opp_opt_sections.*.barang.*.tanggal_selesai_penumpukan' => 'nullable|date|after_or_equal:opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan',
             'nomor_invoice' => 'required|string|max:50|unique:biaya_kapals,nomor_invoice,'.$biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
@@ -4734,6 +4746,8 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.items.*.tarif' => 'nullable|numeric|min:0',
         ]);
 
+        $this->validateOppOptPenumpukanDateRanges($request);
+
         $validated['perijinan_sections'] = $this->resolvePerijinanKarantinaSections(
             $validated['perijinan_sections'] ?? []
         );
@@ -4956,6 +4970,8 @@ class BiayaKapalController extends Controller
                                     'vendor' => $vendor,
                                     'jenis_ukuran' => $jenisUkuran,
                                     'catatan' => $catatan,
+                                    'tanggal_mulai_penumpukan' => $item['tanggal_mulai_penumpukan'] ?? null,
+                                    'tanggal_selesai_penumpukan' => $item['tanggal_selesai_penumpukan'] ?? null,
                                     'jumlah' => $jumlah,
                                     'tarif' => $tarif,
                                     'subtotal' => $subtotal,
@@ -6218,6 +6234,38 @@ class BiayaKapalController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    private function validateOppOptPenumpukanDateRanges(Request $request): void
+    {
+        $errors = [];
+
+        foreach ($request->input('opp_opt_sections', []) as $sectionIndex => $section) {
+            foreach ($section['barang'] ?? [] as $itemIndex => $item) {
+                $klasifikasi = \App\Models\KlasifikasiBiaya::find($item['klasifikasi_biaya_id'] ?? null);
+                if (! $klasifikasi || stripos($klasifikasi->nama, 'biaya penumpukan') === false) {
+                    continue;
+                }
+
+                $tanggalMulai = $item['tanggal_mulai_penumpukan'] ?? null;
+                $tanggalSelesai = $item['tanggal_selesai_penumpukan'] ?? null;
+                $prefix = "opp_opt_sections.{$sectionIndex}.barang.{$itemIndex}";
+
+                if (empty($tanggalMulai)) {
+                    $errors["{$prefix}.tanggal_mulai_penumpukan"] = 'Tanggal mulai penumpukan wajib diisi.';
+                }
+
+                if (empty($tanggalSelesai)) {
+                    $errors["{$prefix}.tanggal_selesai_penumpukan"] = 'Tanggal selesai penumpukan wajib diisi.';
+                } elseif (! empty($tanggalMulai) && $tanggalSelesai < $tanggalMulai) {
+                    $errors["{$prefix}.tanggal_selesai_penumpukan"] = 'Tanggal selesai harus sama atau setelah tanggal mulai.';
+                }
+            }
+        }
+
+        if ($errors !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
+    }
+
     public function destroy(BiayaKapal $biayaKapal)
     {
         DB::beginTransaction();

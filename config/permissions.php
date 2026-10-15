@@ -146,17 +146,6 @@ return [
                 'pranota-biaya-bensin-print' => 'Cetak Pranota Biaya Bensin',
             ],
         ],
-        'tanda-terima-surat-jalan-kontainer-sewa' => [
-            'name' => 'Tanda Terima SJ Kontainer Sewa',
-            'description' => 'Menu tanda terima surat jalan kontainer sewa',
-            'required' => true,
-            'sub_modules' => [
-                'tanda-terima-surat-jalan-kontainer-sewa-view' => 'View Tanda Terima',
-                'tanda-terima-surat-jalan-kontainer-sewa-create' => 'Buat Tanda Terima',
-                'tanda-terima-surat-jalan-kontainer-sewa-update' => 'Edit Tanda Terima',
-                'tanda-terima-surat-jalan-kontainer-sewa-delete' => 'Hapus Tanda Terima',
-            ],
-        ],
         'tagihan-pelindo' => [
             'name' => 'Tagihan Pelindo',
             'description' => 'Menu tagihan pelindo',
@@ -368,9 +357,6 @@ return [
 
         // Pranota Biaya Bensin - butuh pranota-biaya-bensin-view
         'pranota-biaya-bensin' => ['pranota-biaya-bensin-view'],
-
-        // Tanda Terima SJ Kontainer Sewa - butuh tanda-terima-surat-jalan-kontainer-sewa-view
-        'tanda-terima-surat-jalan-kontainer-sewa' => ['tanda-terima-surat-jalan-kontainer-sewa-view'],
 
         // Tagihan Pelindo - butuh tagihan-pelindo-view
         'tagihan-pelindo' => ['tagihan-pelindo-view'],

@@ -9,6 +9,29 @@
 @endphp
     const oppOptTarifsFull = @json($oppOptTarifsRaw);
 
+    function syncOppOptPenumpukanDates(inputGroup, existingValues = null) {
+        const biayaSelect = inputGroup.querySelector('.opp-opt-biaya-select-item');
+        const dateRange = inputGroup.querySelector('.opp-opt-date-range');
+        if (!biayaSelect || !dateRange) return;
+
+        const mulaiInput = dateRange.querySelector('.opp-opt-tanggal-mulai-input');
+        const selesaiInput = dateRange.querySelector('.opp-opt-tanggal-selesai-input');
+        if (existingValues) {
+            if (mulaiInput) mulaiInput.value = existingValues.tanggal_mulai_penumpukan || '';
+            if (selesaiInput) selesaiInput.value = existingValues.tanggal_selesai_penumpukan || '';
+        }
+
+        const updateVisibility = () => {
+            const namaBiaya = biayaSelect.selectedOptions[0]?.textContent?.trim().toLowerCase() || '';
+            const tampilkanTanggal = namaBiaya.includes('biaya penumpukan');
+            dateRange.classList.toggle('hidden', !tampilkanTanggal);
+            [mulaiInput, selesaiInput].filter(Boolean).forEach(input => input.required = tampilkanTanggal);
+        };
+
+        biayaSelect.addEventListener('change', updateVisibility);
+        updateVisibility();
+    }
+
     function getOppOptTarif(namaBarang, isBongkaran) {
         if (!namaBarang) return null;
         namaBarang = namaBarang.toLowerCase();
@@ -591,7 +614,7 @@
             `;
         } else {
             inputGroup = document.createElement('div');
-            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
+            inputGroup.className = 'flex flex-wrap items-end gap-2 mb-2 opp-opt-item-row';
             inputGroup.innerHTML = `
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
@@ -613,6 +636,18 @@
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
                 </div>
+                <div class="hidden opp-opt-date-range w-full md:w-1/2 flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                        <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_mulai_penumpukan]" class="opp-opt-tanggal-mulai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_selesai_penumpukan]" class="opp-opt-tanggal-selesai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                    </div>
+                </div>
+
+
                 <div class="flex-1">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
@@ -672,6 +707,9 @@
         }
 
         
+        syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
+
+
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({
@@ -795,7 +833,7 @@
             `;
         } else {
             inputGroup = document.createElement('div');
-            inputGroup.className = 'flex items-end gap-2 mb-2 opp-opt-item-row';
+            inputGroup.className = 'flex flex-wrap items-end gap-2 mb-2 opp-opt-item-row';
             inputGroup.innerHTML = `
                 <div class="w-[20%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
@@ -816,6 +854,16 @@
                 <div class="w-[15%]">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+                </div>
+                <div class="hidden opp-opt-date-range w-full md:w-1/2 flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                        <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_mulai_penumpukan]" class="opp-opt-tanggal-mulai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_selesai_penumpukan]" class="opp-opt-tanggal-selesai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                    </div>
                 </div>
                 <div class="flex-1">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
@@ -876,6 +924,9 @@
         }
 
         
+        syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
+
+
         // Initialize select2 if available
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
             $(inputGroup).find('.opp-opt-barang-select-item').select2({

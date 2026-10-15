@@ -18,6 +18,8 @@ class BiayaKapalOppOpt extends Model
         'vendor',
         'jenis_ukuran',
         'catatan',
+        'tanggal_mulai_penumpukan',
+        'tanggal_selesai_penumpukan',
         'jumlah',
         'tarif',
         'subtotal',
@@ -32,6 +34,8 @@ class BiayaKapalOppOpt extends Model
         'total_nominal' => 'decimal:2',
         'dp' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',
+        'tanggal_mulai_penumpukan' => 'date:Y-m-d',
+        'tanggal_selesai_penumpukan' => 'date:Y-m-d',
     ];
 
     // Relationship to BiayaKapal
