@@ -63,7 +63,7 @@ class PranotaUangJalan extends Model
             'pembayaran_pranota_uang_jalan_items',
             'pranota_uang_jalan_id',
             'pembayaran_pranota_uang_jalan_id'
-        )->withPivot('subtotal')->withTimestamps();
+        )->withPivot('subtotal', 'nomor_accurate')->withTimestamps();
     }
 
     /**

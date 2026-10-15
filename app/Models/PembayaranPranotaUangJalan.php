@@ -68,7 +68,13 @@ class PembayaranPranotaUangJalan extends Model
             'pembayaran_pranota_uang_jalan_items',
             'pembayaran_pranota_uang_jalan_id',
             'pranota_uang_jalan_id'
-        )->withPivot('subtotal')->withTimestamps();
+        )->withPivot('subtotal', 'nomor_accurate')->withTimestamps();
+    }
+
+    /** Use the pranota-specific number when this payment was loaded through a pranota. */
+    public function getNomorAccurateAttribute(?string $value): ?string
+    {
+        return $this->pivot?->nomor_accurate ?? $value;
     }
 
     /**

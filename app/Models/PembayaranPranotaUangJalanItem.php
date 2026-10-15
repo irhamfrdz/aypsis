@@ -15,6 +15,7 @@ class PembayaranPranotaUangJalanItem extends Model
         'pembayaran_pranota_uang_jalan_id',
         'pranota_uang_jalan_id',
         'subtotal',
+        'nomor_accurate',
     ];
 
     protected $casts = [
