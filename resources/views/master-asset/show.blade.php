@@ -86,6 +86,16 @@
                     </div>
 
                     <div>
+                        <span class="text-gray-400 block font-medium">Nomor Seri / Nomor Mesin</span>
+                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_seri ?: '-' }}</span>
+                    </div>
+
+                    <div>
+                        <span class="text-gray-400 block font-medium">Lokasi</span>
+                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->lokasi ?: '-' }}</span>
+                    </div>
+
+                    <div>
                         <span class="text-gray-400 block font-medium">Tanggal Perolehan</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->tanggal_perolehan ? $asset->tanggal_perolehan->format('d M Y') : '-' }}</span>
                     </div>

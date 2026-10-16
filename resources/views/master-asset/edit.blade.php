@@ -96,6 +96,16 @@
                 </div>
 
                 <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Seri / Nomor Mesin</label>
+                    <input type="text" name="nomor_seri" value="{{ old('nomor_seri', $asset->nomor_seri) }}" maxlength="100" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
+                    <input type="text" name="lokasi" value="{{ old('lokasi', $asset->lokasi) }}" maxlength="150" placeholder="Contoh: Kantor Jakarta" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori Asset <span class="text-rose-500">*</span></label>
                     <select name="kategori" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         @foreach($kategoris as $kat)

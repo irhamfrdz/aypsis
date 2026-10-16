@@ -23,6 +23,8 @@ class Asset extends Model
         'status',
         'karyawan_id',
         'tanggal_tanda_terima',
+        'nomor_seri',
+        'lokasi',
         'vendor',
         'nomor_faktur',
         'foto',
