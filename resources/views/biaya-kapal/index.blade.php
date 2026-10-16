@@ -80,7 +80,7 @@
                                name="search"
                                id="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-                               placeholder="Kapal, invoice, jenis biaya, ket..."
+                               placeholder="Kapal, invoice, nomor kontainer..."
                                value="{{ request('search') }}">
                     </div>
                     <div class="md:col-span-3 lg:col-span-2">

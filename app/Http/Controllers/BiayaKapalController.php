@@ -66,6 +66,9 @@ class BiayaKapalController extends Controller
                     ->orWhereHas('klasifikasiBiaya', function ($subQ) use ($search) {
                         $subQ->where('nama', 'like', "%{$search}%")
                             ->orWhere('kode', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('buruhBatamDetails', function ($subQ) use ($search) {
+                        $subQ->where('kontainer_ids', 'like', "%{$search}%");
                     });
             });
         }
