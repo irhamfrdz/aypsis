@@ -96,7 +96,12 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
-                    <input type="text" name="lokasi" value="{{ old('lokasi') }}" maxlength="150" placeholder="Contoh: Kantor Jakarta" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select name="lokasi" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Lokasi</option>
+                        @foreach($lokasis as $lokasi)
+                            <option value="{{ $lokasi }}" {{ old('lokasi') === $lokasi ? 'selected' : '' }}>{{ $lokasi }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>

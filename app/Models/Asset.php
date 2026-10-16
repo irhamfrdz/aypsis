@@ -65,6 +65,13 @@ class Asset extends Model
         'Dihapuskan',
     ];
 
+    public const LOKASI_OPTIONS = [
+        'Jakarta',
+        'Batam',
+        'Di kapal',
+        'Di bawa oleh karyawan',
+    ];
+
     /**
      * Relationship to Karyawan pemegang asset
      */

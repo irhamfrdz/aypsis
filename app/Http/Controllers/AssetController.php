@@ -80,11 +80,12 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
+        $lokasis = Asset::LOKASI_OPTIONS;
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
 
-        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
+        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans'));
     }
 
     /**
@@ -102,7 +103,7 @@ class AssetController extends Controller
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
-            'lokasi' => 'nullable|string|max:150',
+            'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -159,12 +160,13 @@ class AssetController extends Controller
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
         $kondisis = Asset::KONDISI_OPTIONS;
+        $lokasis = Asset::LOKASI_OPTIONS;
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orWhere('id', $asset->karyawan_id)
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
 
-        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'karyawans'));
+        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans'));
     }
 
     /**
@@ -182,7 +184,7 @@ class AssetController extends Controller
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
-            'lokasi' => 'nullable|string|max:150',
+            'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
