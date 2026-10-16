@@ -361,6 +361,7 @@
                             $hasMasterAktivaPermissions = $user && (
                                 $user->can('master-mobil-view') ||
                                 $user->can('master-kapal.view') ||
+                                $user->can('master-dokumen-kapal-alexindo-view') ||
                                 $user->can('master-alat-berat-view') ||
                                 $user->can('asset-view') ||
                                 $user->can('master-asset-view') ||
@@ -390,6 +391,9 @@
                                 @endif
                                 @if($user && $user->can('master-kapal.view'))
                                     <a href="{{ route('master-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kapal</span></a>
+                                @endif
+                                @if($user && $user->can('master-dokumen-kapal-alexindo-view'))
+                                    <a href="{{ route('master-dokumen-kapal-alexindo.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Dok. Kapal Alexindo</span></a>
                                 @endif
                                 @if($user && $user->can('master-alat-berat-view'))
                                     <a href="{{ route('master.alat-berat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Alat Berat</span></a>
