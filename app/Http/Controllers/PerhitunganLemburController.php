@@ -128,38 +128,8 @@ class PerhitunganLemburController extends Controller
         if ($karyawanIds->isNotEmpty()) {
             $uangMakanMap = self::latestUangMakanMap($karyawanIds);
 
-            // Gunakan subquery dua tahap agar kompatibel dengan MySQL only_full_group_by:
-            // Inner: label setiap baris dengan tanggal kerja menggunakan AttendanceWorkDate
-            // Outer: GROUP BY karyawan_id dan tanggal (kolom sederhana, bukan ekspresi kompleks)
-            $driver = \DB::connection()->getDriverName();
-            $workDateExprAlias = \App\Helpers\AttendanceWorkDate::sql($driver, 'a');
-
-            $lemburStartsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
-            $lemburEndsSub = "LOWER(REPLACE(a.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
-            $lemburStartsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')";
-            $lemburEndsOut = "LOWER(REPLACE(sub.tipe, '_', ' ')) IN ('lembur pulang', 'selesai lembur', 'lembur keluar')";
-
-            // Inner subquery: satu baris per log absensi, HANYA untuk karyawan yang terfilter
-            $inner = \DB::table(\DB::raw('absensis a'))
-                ->selectRaw("a.karyawan_id, a.tipe, a.waktu, ($workDateExprAlias) as tanggal")
-                ->whereIn('a.karyawan_id', $karyawanIds)
-                ->where('a.waktu', '>=', $workStart)
-                ->where('a.waktu', '<', $workEnd)
-                ->whereRaw("($lemburStartsSub OR $lemburEndsSub)");
-
-            // Outer query: GROUP BY karyawan_id dan tanggal
-            $attendance = \DB::table(\DB::raw("({$inner->toSql()}) as sub"))
-                ->mergeBindings($inner)
-                ->selectRaw("
-                    sub.karyawan_id,
-                    sub.tanggal,
-                    MIN(CASE WHEN $lemburStartsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_masuk,
-                    MAX(CASE WHEN $lemburEndsOut THEN sub.waktu ELSE NULL END) as waktu_lembur_pulang
-                ")
-                ->whereBetween('sub.tanggal', [$startDate->toDateString(), $endDate->toDateString()])
-                ->groupBy('sub.karyawan_id', 'sub.tanggal')
-                ->get()
-                ->groupBy('karyawan_id');
+            $attendance = app(\App\Services\OvertimeAttendanceService::class)
+                ->dailyForEmployees($karyawans, $startDate, $endDate);
 
             // Fetch all UangLembur and Rules (cached)
             $uangLemburs = \Illuminate\Support\Facades\Cache::remember('uang_lemburs_with_rules', 600, function () {
