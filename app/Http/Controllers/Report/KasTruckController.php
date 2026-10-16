@@ -7,6 +7,7 @@ use App\Models\Coa;
 use App\Models\CoaTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class KasTruckController extends Controller
 {
@@ -78,6 +79,8 @@ class KasTruckController extends Controller
             // -------------------------------------------------------
             $referensiList = $transactions->pluck('nomor_referensi')->filter()->unique()->values()->toArray();
             $nomorAccurateMap = [];
+            $akunPembayaranMap = [];
+            $akunPembayaranIds = [];
 
             if (! empty($referensiList)) {
                 // Tabel yang menggunakan kolom 'nomor' sebagai primary key referensi
@@ -87,14 +90,24 @@ class KasTruckController extends Controller
                 ];
                 foreach ($tablesWithNomor as $tbl) {
                     try {
-                        $rows = DB::table($tbl)
-                            ->whereIn('nomor', $referensiList)
-                            ->whereNotNull('nomor_accurate')
-                            ->where('nomor_accurate', '!=', '')
-                            ->pluck('nomor_accurate', 'nomor');
-                        foreach ($rows as $key => $accurate) {
-                            if (! isset($nomorAccurateMap[$key])) {
-                                $nomorAccurateMap[$key] = $accurate;
+                        $columns = ['nomor', 'nomor_accurate'];
+                        foreach (['akun_coa_id', 'akun_bank_id', 'kas_bank_id', 'bank'] as $column) {
+                            if (Schema::hasColumn($tbl, $column)) {
+                                $columns[] = $column;
+                            }
+                        }
+                        $rows = DB::table($tbl)->whereIn('nomor', $referensiList)->get($columns);
+                        foreach ($rows as $row) {
+                            $key = $row->nomor;
+                            if (! empty($row->nomor_accurate) && ! isset($nomorAccurateMap[$key])) {
+                                $nomorAccurateMap[$key] = $row->nomor_accurate;
+                            }
+                            if (! isset($akunPembayaranMap[$key])) {
+                                $akunPembayaranMap[$key] = $row->akun_coa_id ?? $row->akun_bank_id ?? $row->kas_bank_id ?? $row->bank ?? null;
+                                $akunId = $row->akun_coa_id ?? $row->akun_bank_id ?? $row->kas_bank_id ?? null;
+                                if ($akunId) {
+                                    $akunPembayaranIds[] = $akunId;
+                                }
                             }
                         }
                     } catch (\Exception $e) {
@@ -124,14 +137,24 @@ class KasTruckController extends Controller
                 ];
                 foreach ($tablesWithNomorPembayaran as $tbl) {
                     try {
-                        $rows = DB::table($tbl)
-                            ->whereIn('nomor_pembayaran', $referensiList)
-                            ->whereNotNull('nomor_accurate')
-                            ->where('nomor_accurate', '!=', '')
-                            ->pluck('nomor_accurate', 'nomor_pembayaran');
-                        foreach ($rows as $key => $accurate) {
-                            if (! isset($nomorAccurateMap[$key])) {
-                                $nomorAccurateMap[$key] = $accurate;
+                        $columns = ['nomor_pembayaran', 'nomor_accurate'];
+                        foreach (['akun_coa_id', 'akun_bank_id', 'kas_bank_id', 'bank'] as $column) {
+                            if (Schema::hasColumn($tbl, $column)) {
+                                $columns[] = $column;
+                            }
+                        }
+                        $rows = DB::table($tbl)->whereIn('nomor_pembayaran', $referensiList)->get($columns);
+                        foreach ($rows as $row) {
+                            $key = $row->nomor_pembayaran;
+                            if (! empty($row->nomor_accurate) && ! isset($nomorAccurateMap[$key])) {
+                                $nomorAccurateMap[$key] = $row->nomor_accurate;
+                            }
+                            if (! isset($akunPembayaranMap[$key])) {
+                                $akunPembayaranMap[$key] = $row->akun_coa_id ?? $row->akun_bank_id ?? $row->kas_bank_id ?? $row->bank ?? null;
+                                $akunId = $row->akun_coa_id ?? $row->akun_bank_id ?? $row->kas_bank_id ?? null;
+                                if ($akunId) {
+                                    $akunPembayaranIds[] = $akunId;
+                                }
                             }
                         }
                     } catch (\Exception $e) {
@@ -153,14 +176,16 @@ class KasTruckController extends Controller
                     try {
                         $rows = DB::table('pembayaran_obs')
                             ->whereIn('id', $numericReferensiList)
-                            ->whereNotNull('nomor_accurate')
-                            ->where('nomor_accurate', '!=', '')
-                            ->select('id', 'nomor_accurate')
+                            ->select('id', 'nomor_accurate', 'akun_coa_id')
                             ->get();
                         foreach ($rows as $row) {
                             $idKey = (string) $row->id;
-                            if (! isset($nomorAccurateMap[$idKey])) {
+                            if (! empty($row->nomor_accurate) && ! isset($nomorAccurateMap[$idKey])) {
                                 $nomorAccurateMap[$idKey] = $row->nomor_accurate;
+                            }
+                            if (! isset($akunPembayaranMap[$idKey]) && $row->akun_coa_id) {
+                                $akunPembayaranMap[$idKey] = $row->akun_coa_id;
+                                $akunPembayaranIds[] = $row->akun_coa_id;
                             }
                         }
                     } catch (\Exception $e) {
@@ -173,8 +198,13 @@ class KasTruckController extends Controller
             // -------------------------------------------------------
             // Attach nomor_accurate dan Sortir
             // -------------------------------------------------------
+            $namaAkunMap = Coa::whereIn('id', array_unique($akunPembayaranIds))
+                ->pluck('nama_akun', 'id');
+
             foreach ($transactions as $t) {
                 $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
+                $akun = $akunPembayaranMap[$t->nomor_referensi] ?? null;
+                $t->akun_pembayaran = $namaAkunMap[$akun] ?? $akun;
             }
 
             // Urutkan: TOP UP SALDO AWAL paling atas, sisanya by nomor_accurate
