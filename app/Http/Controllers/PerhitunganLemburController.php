@@ -65,33 +65,6 @@ class PerhitunganLemburController extends Controller
             $karyawanQuery->where('divisi', $request->divisi);
         }
 
-        if ($request->filled('kehadiran')) {
-            $kehadiran = $request->kehadiran;
-            $startObj = $startDate->copy()->setTime(6, 0, 0);
-            $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
-
-            if ($kehadiran === '0_hari') {
-                $karyawanQuery->whereDoesntHave('absensi', function ($q) use ($startObj, $endObj) {
-                    $q->whereBetween('waktu', [$startObj, $endObj]);
-                });
-            } elseif ($kehadiran === 'ada_absen') {
-                $karyawanQuery->whereHas('absensi', function ($q) use ($startObj, $endObj) {
-                    $q->whereBetween('waktu', [$startObj, $endObj]);
-                });
-            } elseif ($kehadiran === 'tidak_lengkap') {
-                $driver = \DB::connection()->getDriverName();
-                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : 'DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))';
-
-                $karyawanQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
-                    $q->select(\DB::raw($dateExpr))
-                        ->whereBetween('waktu', [$startObj, $endObj])
-                        ->whereIn('tipe', ['Masuk', 'Pulang'])
-                        ->groupBy(\DB::raw($dateExpr))
-                        ->havingRaw('COUNT(DISTINCT tipe) = 1');
-                });
-            }
-        }
-
         if ($request->filled('grup')) {
             $grupReq = $request->grup;
             if ($request->filled('sub_grup')) {
@@ -102,20 +75,6 @@ class PerhitunganLemburController extends Controller
                 $karyawanQuery->where(function ($q) use ($grupReq) {
                     $q->where('grup', 'LIKE', '%"'.$grupReq.':%')
                         ->orWhere('grup', 'LIKE', '%"'.$grupReq.'"%');
-                });
-            }
-        }
-
-        if ($request->filled('grup_bpjs')) {
-            $grupBpjsReq = $request->grup_bpjs;
-            if ($request->filled('sub_grup_bpjs')) {
-                $subGrupBpjsReq = $request->sub_grup_bpjs;
-                $searchStr = $grupBpjsReq.':'.$subGrupBpjsReq;
-                $karyawanQuery->where('grup_bpjs', 'LIKE', '%"'.$searchStr.'"%');
-            } else {
-                $karyawanQuery->where(function ($q) use ($grupBpjsReq) {
-                    $q->where('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.':%')
-                        ->orWhere('grup_bpjs', 'LIKE', '%"'.$grupBpjsReq.'"%');
                 });
             }
         }
@@ -481,9 +440,9 @@ class PerhitunganLemburController extends Controller
         }
 
         // Master Dropdowns — di-cache 5 menit untuk mempercepat reload filter/search
-        $dropdownData = \Illuminate\Support\Facades\Cache::remember('perhitungan_lembur_dropdowns_v2', 300, function () {
+        $dropdownData = \Illuminate\Support\Facades\Cache::remember('perhitungan_lembur_dropdowns_v3', 300, function () {
             $allActiveKaryawans = Karyawan::whereNull('tanggal_berhenti')
-                ->select(['pekerjaan', 'divisi', 'cabang', 'penempatan', 'grup', 'grup_bpjs'])
+                ->select(['pekerjaan', 'divisi', 'cabang', 'penempatan', 'grup'])
                 ->get();
 
             $pekerjaans = $allActiveKaryawans->pluck('pekerjaan')->filter()->unique()->sort()->values();
@@ -521,33 +480,6 @@ class PerhitunganLemburController extends Controller
             }
             $grupsList = array_keys($grupMap);
 
-            $grupBpjsMap = [
-                'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-                'BPJS-JKN' => ['BPU REIMBURSMENT'],
-            ];
-            foreach ($allActiveKaryawans->pluck('grup_bpjs') as $grupBpjsArray) {
-                if (is_array($grupBpjsArray)) {
-                    foreach ($grupBpjsArray as $g) {
-                        $parts = explode(':', $g, 2);
-                        $main = $parts[0];
-                        $sub = $parts[1] ?? '';
-                        if ($main !== '') {
-                            if (! isset($grupBpjsMap[$main])) {
-                                $grupBpjsMap[$main] = [];
-                            }
-                            if ($sub !== '' && ! in_array($sub, $grupBpjsMap[$main])) {
-                                $grupBpjsMap[$main][] = $sub;
-                            }
-                        }
-                    }
-                }
-            }
-            ksort($grupBpjsMap);
-            foreach ($grupBpjsMap as &$subsBpjs) {
-                sort($subsBpjs);
-            }
-            $grupsBpjsList = array_keys($grupBpjsMap);
-
             return [
                 'pekerjaans' => $pekerjaans,
                 'divisis' => $divisis,
@@ -555,8 +487,6 @@ class PerhitunganLemburController extends Controller
                 'penempatans' => $penempatans,
                 'grupMap' => $grupMap,
                 'grupsList' => $grupsList,
-                'grupBpjsMap' => $grupBpjsMap,
-                'grupsBpjsList' => $grupsBpjsList,
             ];
         });
 
@@ -566,8 +496,6 @@ class PerhitunganLemburController extends Controller
         $penempatans = $dropdownData['penempatans'];
         $grupMap = $dropdownData['grupMap'];
         $grupsList = $dropdownData['grupsList'];
-        $grupBpjsMap = $dropdownData['grupBpjsMap'];
-        $grupsBpjsList = $dropdownData['grupsBpjsList'];
 
         // Riwayat Pranota Lembur Karyawan yang dibuat di sistem
         // Dibatasi 50 terbaru untuk menghindari eager load berlebihan
@@ -591,8 +519,6 @@ class PerhitunganLemburController extends Controller
             'cabangs',
             'grupMap',
             'grupsList',
-            'grupBpjsMap',
-            'grupsBpjsList',
             'riwayatPranotaUser'
         ));
     }
