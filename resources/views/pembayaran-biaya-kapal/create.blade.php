@@ -113,6 +113,18 @@
                                     <option value="debit" {{ old('jenis_transaksi') == 'debit' ? 'selected' : '' }}>Debit (Menambah Kas/Bank)</option>
                                 </select>
                             </div>
+                            <div class="md:col-span-2">
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Akun dari COA --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -261,6 +273,9 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    if ($.fn.select2) {
+        $('#akun_coa_id').select2({ width: '100%', placeholder: '-- Pilih Akun dari COA --' });
+    }
     function calculateTotal() {
         let subtotal = 0;
         let count = 0;
@@ -427,6 +442,12 @@ $(document).ready(function() {
         if (!bank) {
             e.preventDefault();
             alert('Silakan pilih bank terlebih dahulu.');
+            return;
+        }
+
+        if (!$('#akun_coa_id').val()) {
+            e.preventDefault();
+            alert('Silakan pilih akun biaya terlebih dahulu.');
             return;
         }
 

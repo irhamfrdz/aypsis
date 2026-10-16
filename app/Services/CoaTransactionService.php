@@ -27,9 +27,10 @@ class CoaTransactionService
         string $tanggalTransaksi,
         string $nomorReferensi,
         string $jenisTransaksi,
-        ?string $keterangan = null
+        ?string $keterangan = null,
+        ?int $coaId = null
     ): ?CoaTransaction {
-        $coa = Coa::where('nama_akun', $namaAkun)->first();
+        $coa = $coaId ? Coa::find($coaId) : Coa::where('nama_akun', $namaAkun)->first();
 
         if (! $coa) {
             \Log::warning("COA tidak ditemukan: {$namaAkun}");
@@ -78,26 +79,32 @@ class CoaTransactionService
 
         try {
             // Catat transaksi debit
-            $this->recordTransaction(
+            $debitTransaction = $this->recordTransaction(
                 $debitAccount['nama_akun'],
                 $debitAccount['jumlah'],
                 0,
                 $tanggalTransaksi,
                 $nomorReferensi,
                 $jenisTransaksi,
-                $keterangan
+                $keterangan,
+                $debitAccount['coa_id'] ?? null
             );
 
             // Catat transaksi kredit
-            $this->recordTransaction(
+            $creditTransaction = $this->recordTransaction(
                 $kreditAccount['nama_akun'],
                 0,
                 $kreditAccount['jumlah'],
                 $tanggalTransaksi,
                 $nomorReferensi,
                 $jenisTransaksi,
-                $keterangan
+                $keterangan,
+                $kreditAccount['coa_id'] ?? null
             );
+
+            if (! $debitTransaction || ! $creditTransaction) {
+                throw new \RuntimeException('Akun COA untuk jurnal debit atau kredit tidak ditemukan.');
+            }
 
             DB::commit();
 
@@ -154,7 +161,7 @@ class CoaTransactionService
             foreach ($pembayaran->biayaKapals as $biaya) {
                 $nominal = $biaya->pivot->nominal ?? $biaya->total_biaya ?? $biaya->nominal;
 
-                // Determine expense account based on classification
+                // Use the account selected on the payment; retain legacy mapping for older payments.
                 $namaAkunBiaya = 'Biaya Kapal Lain-Lain'; // Fallback
                 $klasifikasi = $biaya->klasifikasiBiaya->nama ?? '';
 
@@ -169,27 +176,36 @@ class CoaTransactionService
                 } elseif (stripos($klasifikasi, 'pelumas') !== false) {
                     $namaAkunBiaya = 'Biaya Pelumas Kapal';
                 }
+                $namaAkunBiaya = $pembayaran->akunCoa?->nama_akun ?? $namaAkunBiaya;
+                $akunBiaya = ['nama_akun' => $namaAkunBiaya, 'jumlah' => $nominal];
+                if ($pembayaran->akun_coa_id) {
+                    $akunBiaya['coa_id'] = $pembayaran->akun_coa_id;
+                }
 
                 if ($pembayaran->jenis_transaksi == 'debit') {
                     // DEBIT bank (increase), KREDIT expense (decrease) - typically for refunds/corrections
-                    $this->recordDoubleEntry(
+                    if (! $this->recordDoubleEntry(
                         ['nama_akun' => $pembayaran->bank, 'jumlah' => $nominal],
-                        ['nama_akun' => $namaAkunBiaya, 'jumlah' => $nominal],
+                        $akunBiaya,
                         $pembayaran->tanggal_pembayaran,
                         $pembayaran->nomor_pembayaran,
                         'pembayaran_biaya_kapal',
                         "Penerimaan (Refund/Koreksi) {$biaya->nomor_invoice} - {$biaya->display_nama_kapal} ({$klasifikasi})"
-                    );
+                    )) {
+                        throw new \RuntimeException('Jurnal biaya kapal gagal dicatat.');
+                    }
                 } else {
                     // DEBIT expense (increase), KREDIT bank (decrease) - normal payment
-                    $this->recordDoubleEntry(
-                        ['nama_akun' => $namaAkunBiaya, 'jumlah' => $nominal],
+                    if (! $this->recordDoubleEntry(
+                        $akunBiaya,
                         ['nama_akun' => $pembayaran->bank, 'jumlah' => $nominal],
                         $pembayaran->tanggal_pembayaran,
                         $pembayaran->nomor_pembayaran,
                         'pembayaran_biaya_kapal',
                         "Pembayaran {$biaya->nomor_invoice} - {$biaya->display_nama_kapal} ({$klasifikasi})"
-                    );
+                    )) {
+                        throw new \RuntimeException('Jurnal biaya kapal gagal dicatat.');
+                    }
                 }
             }
 
@@ -200,15 +216,19 @@ class CoaTransactionService
                 $absPenyesuaian = abs($penyesuaian);
 
                 // Adjustment account (usually mapping to Biaya Kapal Lain-Lain or similar)
-                $namaAkunPenyesuaian = 'Biaya Kapal Lain-Lain';
+                $namaAkunPenyesuaian = $pembayaran->akunCoa?->nama_akun ?? 'Biaya Kapal Lain-Lain';
+                $akunPenyesuaian = ['nama_akun' => $namaAkunPenyesuaian, 'jumlah' => $absPenyesuaian];
+                if ($pembayaran->akun_coa_id) {
+                    $akunPenyesuaian['coa_id'] = $pembayaran->akun_coa_id;
+                }
 
                 if ($pembayaran->jenis_transaksi == 'debit') {
                     // Logic for debit transaction adjustments
                     if ($isDebitAdjustment) {
                         // Increase bank, decrease expense
-                        $this->recordDoubleEntry(
+                        $recorded = $this->recordDoubleEntry(
                             ['nama_akun' => $pembayaran->bank, 'jumlah' => $absPenyesuaian],
-                            ['nama_akun' => $namaAkunPenyesuaian, 'jumlah' => $absPenyesuaian],
+                            $akunPenyesuaian,
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
@@ -216,8 +236,8 @@ class CoaTransactionService
                         );
                     } else {
                         // Decrease bank, increase expense (negative adjustment in a refund context)
-                        $this->recordDoubleEntry(
-                            ['nama_akun' => $namaAkunPenyesuaian, 'jumlah' => $absPenyesuaian],
+                        $recorded = $this->recordDoubleEntry(
+                            $akunPenyesuaian,
                             ['nama_akun' => $pembayaran->bank, 'jumlah' => $absPenyesuaian],
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
@@ -229,8 +249,8 @@ class CoaTransactionService
                     // Logic for credit (normal payment) transaction adjustments
                     if ($isDebitAdjustment) {
                         // Increase expense, decrease bank (positive adjustment: extra cost)
-                        $this->recordDoubleEntry(
-                            ['nama_akun' => $namaAkunPenyesuaian, 'jumlah' => $absPenyesuaian],
+                        $recorded = $this->recordDoubleEntry(
+                            $akunPenyesuaian,
                             ['nama_akun' => $pembayaran->bank, 'jumlah' => $absPenyesuaian],
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
@@ -239,15 +259,18 @@ class CoaTransactionService
                         );
                     } else {
                         // Decrease expense, increase bank (negative adjustment: discount/reduction)
-                        $this->recordDoubleEntry(
+                        $recorded = $this->recordDoubleEntry(
                             ['nama_akun' => $pembayaran->bank, 'jumlah' => $absPenyesuaian],
-                            ['nama_akun' => $namaAkunPenyesuaian, 'jumlah' => $absPenyesuaian],
+                            $akunPenyesuaian,
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
                             'Penyesuaian (-) Pembayaran Biaya Kapal: '.($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
                         );
                     }
+                }
+                if (! $recorded) {
+                    throw new \RuntimeException('Jurnal penyesuaian biaya kapal gagal dicatat.');
                 }
             }
 

@@ -69,11 +69,20 @@ class TemasPaymentTest extends TestCase
             }
             $table->decimal('total_pembayaran', 15, 2)->default(0);
             $table->decimal('total_tagihan_penyesuaian', 15, 2)->default(0);
+            $table->unsignedBigInteger('akun_coa_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
+        Schema::create('akun_coa', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_akun');
+        });
+        DB::table('akun_coa')->insert([
+            ['id' => 1, 'nama_akun' => 'BANK TEST'],
+            ['id' => 2, 'nama_akun' => 'BIAYA TEST'],
+        ]);
         Schema::create('pembayaran_biaya_kapal_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pembayaran_biaya_kapal_id');
@@ -218,6 +227,7 @@ class TemasPaymentTest extends TestCase
         try {
             $controller->store(Request::create('/', 'POST', [
                 'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22',
+                'bank' => 'BANK TEST', 'akun_coa_id' => 2,
                 'jenis_transaksi' => 'kredit', 'payment_mode' => 'dp',
                 'nominal_dp' => 300000, 'total_pembayaran' => 1,
             ]));
@@ -238,6 +248,7 @@ class TemasPaymentTest extends TestCase
         $controller = new PembayaranBiayaKapalController($coa);
         $controller->store(Request::create('/', 'POST', [
             'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22', 'bank' => 'BANK TEST',
+            'akun_coa_id' => 2,
             'jenis_transaksi' => 'kredit', 'payment_mode' => 'dp',
             'nominal_dp' => 300000, 'total_pembayaran' => 300000,
         ]));
@@ -255,7 +266,7 @@ class TemasPaymentTest extends TestCase
         $controller = new PembayaranBiayaKapalController($coa);
         $common = [
             'biaya_kapal_ids' => [$invoice->id], 'tanggal_pembayaran' => '2026-09-22',
-            'bank' => 'BANK TEST', 'jenis_transaksi' => 'kredit',
+            'bank' => 'BANK TEST', 'akun_coa_id' => 2, 'jenis_transaksi' => 'kredit',
         ];
         $controller->store(Request::create('/', 'POST', $common + [
             'payment_mode' => 'dp', 'nominal_dp' => 300000, 'total_pembayaran' => 300000,
@@ -324,7 +335,7 @@ class TemasPaymentTest extends TestCase
         try {
             (new PembayaranBiayaKapalController($coa))->store(Request::create('/', 'POST', [
                 'biaya_kapal_ids' => [$temas->id, $other->id], 'tanggal_pembayaran' => '2026-09-22',
-                'bank' => 'BANK TEST', 'jenis_transaksi' => 'kredit', 'total_pembayaran' => 1100000,
+                'bank' => 'BANK TEST', 'akun_coa_id' => 2, 'jenis_transaksi' => 'kredit', 'total_pembayaran' => 1100000,
             ]));
             $this->fail('Mixed invoices must be rejected.');
         } catch (ValidationException $e) {
@@ -549,6 +560,7 @@ class TemasPaymentTest extends TestCase
             'kapal' => 'TEMAS 1', 'voyage' => $voyage, 'payment_mode' => 'dp',
             'tanggal_dp' => '2026-09-22', 'nama_bank' => 'BANK TEST', 'nominal_dibayar' => $amount,
         ]]);
+
         return \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->firstOrFail();
     }
 

@@ -105,10 +105,11 @@ class PembayaranBiayaKapalController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
         $nomorPembayaran = $this->generateNomorPembayaran();
 
-        return view('pembayaran-biaya-kapal.create', compact('biayaKapals', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-biaya-kapal.create', compact('biayaKapals', 'nomorPembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -124,6 +125,8 @@ class PembayaranBiayaKapalController extends Controller
             'nominal_dp' => 'required_if:payment_mode,dp|nullable|numeric|decimal:0,2|gt:0',
             'dp_item_id' => 'required_if:payment_mode,pelunasan_dp|nullable|integer|exists:pembayaran_biaya_kapal_items,id',
             'jenis_transaksi' => ['required', Rule::in(['debit', 'kredit'])],
+            'bank' => 'required|string|max:255|exists:akun_coa,nama_akun',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
@@ -134,6 +137,9 @@ class PembayaranBiayaKapalController extends Controller
         DB::beginTransaction();
 
         try {
+            if (Coa::whereKey($validated['akun_coa_id'])->value('nama_akun') === $validated['bank']) {
+                throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari Kas/Bank.']);
+            }
             $temasPayments = app(TemasPaymentService::class);
             $mode = $validated['payment_mode'] ?? 'lunas';
             $invoices = BiayaKapal::whereIn('id', $validated['biaya_kapal_ids'])
@@ -187,6 +193,7 @@ class PembayaranBiayaKapalController extends Controller
                 'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'bank' => $request->bank,
+                'akun_coa_id' => $validated['akun_coa_id'],
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'total_pembayaran' => $hasTemas ? $paymentTotal / 100 : $request->total_pembayaran,
                 'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
@@ -208,7 +215,9 @@ class PembayaranBiayaKapalController extends Controller
 
             // TEMAS payments track invoice balances without posting COA transactions.
             if (! $hasTemas && method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
-                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+                if (! $this->coaTransactionService->pembayaranBiayaKapal($pembayaran)) {
+                    throw new \RuntimeException('Jurnal COA pembayaran gagal dicatat.');
+                }
             }
 
             DB::commit();
@@ -256,8 +265,9 @@ class PembayaranBiayaKapalController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembayaran-biaya-kapal.edit', compact('pembayaran', 'akunCoa'));
+        return view('pembayaran-biaya-kapal.edit', compact('pembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -270,6 +280,7 @@ class PembayaranBiayaKapalController extends Controller
         $validated = $request->validate([
             'tanggal_pembayaran' => 'required|date',
             'bank' => 'required|string',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => ['required', Rule::in(['debit', 'kredit'])],
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
@@ -280,6 +291,9 @@ class PembayaranBiayaKapalController extends Controller
         DB::beginTransaction();
 
         try {
+            if ($validated['akun_coa_id'] && Coa::whereKey($validated['akun_coa_id'])->value('nama_akun') === $validated['bank']) {
+                throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari Kas/Bank.']);
+            }
             $invoices = BiayaKapal::whereIn('id', $pembayaran->items()->pluck('biaya_kapal_id'))
                 ->orderBy('id')->lockForUpdate()->get();
             $pembayaran = PembayaranBiayaKapal::whereKey($id)->lockForUpdate()->firstOrFail();
@@ -296,6 +310,7 @@ class PembayaranBiayaKapalController extends Controller
                 'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'bank' => $request->bank,
+                'akun_coa_id' => $validated['akun_coa_id'],
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'total_pembayaran' => $hasTemas ? $pembayaran->total_pembayaran : $pembayaran->items()->sum('nominal'),
                 'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
@@ -306,7 +321,10 @@ class PembayaranBiayaKapalController extends Controller
 
             // Re-run accounting if exists
             if (! $hasTemas && method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
-                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+                if (! $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran)
+                    || ! $this->coaTransactionService->pembayaranBiayaKapal($pembayaran)) {
+                    throw new \RuntimeException('Jurnal COA pembayaran gagal diperbarui.');
+                }
             }
 
             DB::commit();
@@ -402,7 +420,9 @@ class PembayaranBiayaKapalController extends Controller
 
             // 2. Re-run integration
             if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
-                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+                if (! $this->coaTransactionService->pembayaranBiayaKapal($pembayaran)) {
+                    throw new \RuntimeException('Jurnal COA pembayaran gagal disinkronkan.');
+                }
             }
 
             DB::commit();

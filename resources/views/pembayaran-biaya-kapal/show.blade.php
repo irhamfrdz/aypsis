@@ -74,6 +74,10 @@
                             <dd class="mt-1 text-sm text-gray-900">{{ $pembayaran->bank }}</dd>
                         </div>
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase">Akun Biaya</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $pembayaran->akunCoa?->nama_akun ?? 'Otomatis berdasarkan jenis biaya' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase">Metode</dt>
                             <dd class="mt-1 text-sm text-gray-900 capitalize">{{ $pembayaran->jenis_transaksi }}</dd>
                         </div>

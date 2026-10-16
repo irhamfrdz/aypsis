@@ -17,6 +17,7 @@ class PembayaranBiayaKapal extends Model
         'nomor_accurate',
         'tanggal_pembayaran',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -36,6 +37,11 @@ class PembayaranBiayaKapal extends Model
     public function items()
     {
         return $this->hasMany(PembayaranBiayaKapalItem::class, 'pembayaran_biaya_kapal_id');
+    }
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
     public function creator()
