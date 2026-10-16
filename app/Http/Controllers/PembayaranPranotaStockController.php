@@ -65,10 +65,11 @@ class PembayaranPranotaStockController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-stock.create', compact('pranotaStocks', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-stock.create', compact('pranotaStocks', 'nomorPembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     public function store(Request $request)
@@ -81,6 +82,7 @@ class PembayaranPranotaStockController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -138,25 +140,31 @@ class PembayaranPranotaStockController extends Controller
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
             $desc = 'Pembayaran Pranota Stock - '.$nomorPembayaran;
+            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
+            $costEntry = ['nama_akun' => $costAccount->nama_akun, 'coa_id' => $costAccount->id, 'jumlah' => $totalFinal];
 
             if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                    $costEntry,
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Stock',
                     $desc
                 );
             } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
+                    $costEntry,
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Stock',
                     $desc
                 );
+            }
+
+            if (! $recorded) {
+                throw new \RuntimeException('Jurnal pembayaran tidak dapat dicatat. Periksa akun bank dan akun biaya yang dipilih.');
             }
 
             DB::commit();
@@ -197,8 +205,9 @@ class PembayaranPranotaStockController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembayaran-pranota-stock.edit', compact('item', 'pranotaStocks', 'akunCoa', 'selectedPranotaIds'));
+        return view('pembayaran-pranota-stock.edit', compact('item', 'pranotaStocks', 'akunCoa', 'akunBiaya', 'selectedPranotaIds'));
     }
 
     public function update(Request $request, $id)
@@ -213,6 +222,7 @@ class PembayaranPranotaStockController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -229,7 +239,9 @@ class PembayaranPranotaStockController extends Controller
             }
 
             // Revert accounting
-            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            if (! $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal pembayaran lama tidak dapat dibatalkan.');
+            }
 
             // Update main record
             $paymentData = $validated;
@@ -267,25 +279,31 @@ class PembayaranPranotaStockController extends Controller
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
             $desc = 'Update Pembayaran Pranota Stock - '.$pembayaran->nomor_pembayaran;
+            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
+            $costEntry = ['nama_akun' => $costAccount->nama_akun, 'coa_id' => $costAccount->id, 'jumlah' => $totalFinal];
 
             if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                    $costEntry,
                     $validated['tanggal_pembayaran'],
                     $pembayaran->nomor_pembayaran,
                     'Pembayaran Pranota Stock',
                     $desc
                 );
             } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
+                    $costEntry,
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
                     $validated['tanggal_pembayaran'],
                     $pembayaran->nomor_pembayaran,
                     'Pembayaran Pranota Stock',
                     $desc
                 );
+            }
+
+            if (! $recorded) {
+                throw new \RuntimeException('Jurnal pembayaran tidak dapat dicatat. Periksa akun bank dan akun biaya yang dipilih.');
             }
 
             DB::commit();
@@ -303,7 +321,7 @@ class PembayaranPranotaStockController extends Controller
 
     public function show($id)
     {
-        $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy'])->findOrFail($id);
+        $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy', 'akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-stock.show', compact('item'));
     }
@@ -320,7 +338,9 @@ class PembayaranPranotaStockController extends Controller
             }
 
             // Delete accounting entries
-            $this->coaTransactionService->deleteTransactionByReference($item->nomor_pembayaran);
+            if (! $this->coaTransactionService->deleteTransactionByReference($item->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal pembayaran tidak dapat dibatalkan.');
+            }
 
             $item->delete();
             DB::commit();

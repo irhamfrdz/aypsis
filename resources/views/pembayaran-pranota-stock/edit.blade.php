@@ -86,8 +86,20 @@
                                 <option value="Debit" {{ $item->jenis_transaksi == 'Debit' ? 'selected' : '' }}>Debit (Bank bertambah, Biaya berkurang)</option>
                             </select>
                         </div>
+                        <div>
+                            <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                            <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                <option value="">-- Pilih Akun dari COA --</option>
+                                @foreach($akunBiaya as $akun)
+                                    <option value="{{ $akun->id }}" {{ old('akun_coa_id', $item->akun_coa_id) == $akun->id ? 'selected' : '' }}>
+                                        {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
                         <div class="text-[10px] text-blue-600 bg-blue-50 p-2 rounded">
-                            <strong>Info:</strong> Otomatis jurnal ke akun <strong>"Biaya Amprahan"</strong>.
+                            <strong>Info:</strong> Jurnal otomatis menggunakan akun biaya yang dipilih.
                         </div>
                     </div>
                 </div>
@@ -198,6 +210,14 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (window.jQuery && jQuery.fn.select2) {
+                jQuery('#akun_coa_id').select2({
+                    width: '100%',
+                    placeholder: '-- Pilih Akun dari COA --',
+                    minimumResultsForSearch: 0
+                });
+            }
+
             // Searchable Dropdown Logic (Vanilla JS)
             const bankSearch = document.getElementById('bankSearch');
             const bankList = document.getElementById('bankList');
