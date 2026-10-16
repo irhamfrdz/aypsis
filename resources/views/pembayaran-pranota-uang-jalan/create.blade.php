@@ -441,6 +441,16 @@
 
 {{-- Script --}}
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.jQuery && jQuery.fn.select2) {
+            jQuery('#akun_coa_id').select2({
+                width: '100%',
+                placeholder: '-- Pilih Akun dari COA --',
+                minimumResultsForSearch: 0
+            });
+        }
+    });
+
     // Auto-generate nomor pembayaran functionality using SIS modul
     document.addEventListener('DOMContentLoaded', function () {
         const nomorPembayaranInput = document.getElementById('nomor_pembayaran');

@@ -316,6 +316,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (window.jQuery && jQuery.fn.select2 && document.getElementById('akun_coa_id')) {
+                jQuery('#akun_coa_id').select2({
+                    width: '100%',
+                    placeholder: '-- Pilih Akun dari COA --',
+                    minimumResultsForSearch: 0
+                });
+            }
             const isPaid = {{ $pembayaranPranotaUangJalan->isPaid() ? 'true' : 'false' }};
             
             // Only initialize bank search for unpaid payments
