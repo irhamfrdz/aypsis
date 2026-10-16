@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mobil;
+use App\Models\GpsDailyDistance;
 use App\Services\GpsIdService;
 use Illuminate\Http\Request;
 
@@ -26,9 +27,13 @@ class GpsTrackingController extends Controller
             ->where('imei_gps', '!=', '')
             ->get();
 
+        $todayDistances = GpsDailyDistance::whereIn('mobil_id', $mobils->pluck('id'))
+            ->whereDate('date', today())
+            ->pluck('distance_km', 'mobil_id');
+
         $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY', '');
 
-        return view('gps-tracking.index', compact('mobils', 'googleMapsApiKey'));
+        return view('gps-tracking.index', compact('mobils', 'googleMapsApiKey', 'todayDistances'));
     }
 
     /**
@@ -40,6 +45,10 @@ class GpsTrackingController extends Controller
             ->whereNotNull('imei_gps')
             ->where('imei_gps', '!=', '')
             ->get();
+
+        $todayDistances = GpsDailyDistance::whereIn('mobil_id', $mobils->pluck('id'))
+            ->whereDate('date', today())
+            ->pluck('distance_km', 'mobil_id');
 
         $imeis = $mobils->pluck('imei_gps')->filter()->toArray();
         $bulkGpsData = ! empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
@@ -129,6 +138,7 @@ class GpsTrackingController extends Controller
                     'lat' => $payload['latitude'] ?? null,
                     'lng' => $payload['longitude'] ?? null,
                     'speed' => $payload['speed'] ?? 0,
+                    'distance_today_km' => (float) ($todayDistances[$mobil->id] ?? 0),
                     'status' => $statusText,
                     'alamat' => $payload['address'] ?? $payload['location'] ?? null,
                     'last_update' => $payload['last_update'] ?? now()->format('Y-m-d H:i:s'),
@@ -157,6 +167,11 @@ class GpsTrackingController extends Controller
             ->orderBy('recorded_at', 'asc')
             ->get();
 
+        $dailyDistances = GpsDailyDistance::where('mobil_id', $mobil_id)
+            ->whereDate('date', '>=', today()->subDays(13))
+            ->orderByDesc('date')
+            ->get(['date', 'distance_km', 'point_count']);
+
         // Logika untuk mendeteksi berapa hari mobil tidak bergerak dari posisi terakhir
         $lastLocation = $history->last();
         $daysNotMoving = 0;
@@ -183,6 +198,11 @@ class GpsTrackingController extends Controller
                     'merek' => $mobil->merek,
                 ],
                 'days_not_moving' => floor($daysNotMoving),
+                'daily_distances' => $dailyDistances->map(fn ($daily) => [
+                    'date' => $daily->date,
+                    'distance_km' => (float) $daily->distance_km,
+                    'point_count' => $daily->point_count,
+                ]),
                 'history' => $history->map(function ($item) {
                     return [
                         'lat' => $item->lat,

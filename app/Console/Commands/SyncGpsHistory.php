@@ -23,7 +23,7 @@ class SyncGpsHistory extends Command
     /**
      * Execute the console command.
      */
-    public function handle(\App\Services\GpsIdService $gpsService)
+    public function handle(\App\Services\GpsIdService $gpsService, \App\Services\GpsDailyDistanceService $dailyDistanceService)
     {
         $this->info('Memulai sinkronisasi riwayat GPS...');
 
@@ -43,6 +43,7 @@ class SyncGpsHistory extends Command
         $bulkGpsData = $gpsService->getLatestLocationsBulk($imeis);
 
         $insertedCount = 0;
+        $changedDays = [];
 
         foreach ($mobils as $mobil) {
             $gpsData = $bulkGpsData[$mobil->imei_gps] ?? null;
@@ -78,8 +79,15 @@ class SyncGpsHistory extends Command
                             'recorded_at' => $recordedAt,
                         ]);
                         $insertedCount++;
+                        $changedDays[$mobil->id][$recordedAt->toDateString()] = true;
                     }
                 }
+            }
+        }
+
+        foreach ($changedDays as $mobilId => $dates) {
+            foreach (array_keys($dates) as $date) {
+                $dailyDistanceService->recalculate($mobilId, $date);
             }
         }
 

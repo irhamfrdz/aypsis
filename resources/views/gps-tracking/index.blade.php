@@ -69,6 +69,7 @@
                                     <i class="fas fa-user-tie text-gray-400 mr-1"></i> {{ $mobil->karyawan ? ($mobil->karyawan->nama_panggilan ?? $mobil->karyawan->nama_lengkap) : 'Tidak Ada Supir' }}
                                 </p>
                                 <p class="truncate text-[10px] leading-4 text-gray-400 mt-0.5">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
+                                <p class="text-xs font-medium text-indigo-700 mt-1">Jarak hari ini: <span id="distance-{{ $mobil->id }}">{{ number_format((float) ($todayDistances[$mobil->id] ?? 0), 2, ',', '.') }}</span> km</p>
                                 <!-- Tempat Info Surat Jalan / Aktifitas -->
                                 <div id="sj-info-sidebar-{{ $mobil->id }}" class="mt-2 hidden flex-col gap-0.5">
                                 </div>
@@ -117,6 +118,10 @@
                         <div class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
                             <span class="text-gray-700 font-medium">Status Pergerakan:</span>
                             <span id="history-idle" class="font-bold text-indigo-600 px-2 py-1 bg-indigo-50 rounded">Aktif</span>
+                        </div>
+                        <div class="border-t pt-2">
+                            <div class="font-medium text-gray-700 mb-1">Jarak harian (perkiraan GPS, 14 hari terakhir)</div>
+                            <div id="history-distances" class="max-h-32 overflow-y-auto space-y-1 text-xs">-</div>
                         </div>
                     </div>
                     <!-- List Titik Koordinat -->
@@ -226,6 +231,7 @@
 
                 // Update UI Sidebar
                 $(`#speed-${loc.mobil_id}`).text(`${loc.speed} km/h`);
+                $(`#distance-${loc.mobil_id}`).text(Number(loc.distance_today_km || 0).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                 
                 let isBerjalan = loc.speed > 0;
                 let statusHtml = '';
@@ -286,6 +292,10 @@
                     <div class="flex justify-between">
                         <span class="text-gray-500">Kecepatan:</span>
                         <span class="font-medium">${loc.speed} km/h</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Jarak hari ini:</span>
+                        <span class="font-medium">${Number(loc.distance_today_km || 0).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} km</span>
                     </div>
                     ${loc.info_sjs && loc.info_sjs.length > 0 ? `
                     <div class="mt-2 pt-2 border-t border-gray-100 max-h-48 overflow-y-auto pr-1">
@@ -467,6 +477,7 @@
         $('#history-title').html('<i class="fas fa-spinner fa-spin mr-2"></i>Memuat Riwayat...');
         $('#history-count').text('-');
         $('#history-idle').text('-');
+        $('#history-distances').text('Memuat...');
 
         try {
             const response = await fetch(`{{ route('gps-tracking.index') }}/history/${mobilId}`);
@@ -478,6 +489,9 @@
 
                 $('#history-title').html(`<i class="fas fa-history mr-2 text-indigo-600"></i>${data.mobil.nomor_polisi}`);
                 $('#history-count').text(history.length);
+                $('#history-distances').html((data.daily_distances || []).length
+                    ? data.daily_distances.map(day => `<div class="flex justify-between"><span>${day.date}</span><span class="font-semibold">${Number(day.distance_km).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} km</span></div>`).join('')
+                    : '<span class="text-gray-400">Belum ada jarak tersimpan.</span>');
 
                 let idleText = '';
                 if (data.days_not_moving >= 14) {
