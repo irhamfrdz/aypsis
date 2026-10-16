@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Rekap')
-@section('page_title', 'Rekap')
+@section('title', 'Rekap dan Laporan')
+@section('page_title', 'Rekap dan Laporan')
 
 @push('styles')
 <style>
@@ -51,16 +51,21 @@
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat', 'route' => 'bl.rekap-bongkaran.select', 'permission' => 'bl-view'],
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat Kontainer', 'route' => 'bl.rekap-bongkaran-kontainer.select', 'permission' => 'bl-view'],
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat Perincian', 'route' => 'bl.rekap-bongkaran-perincian.select', 'permission' => 'bl-view'],
+        ['category' => 'Laporan', 'label' => 'Report Tanda Terima Jakarta', 'route' => 'report.tanda-terima-jakarta.index', 'permission' => null],
+        ['category' => 'Laporan', 'label' => 'Report Uang Jalan', 'route' => 'report.uang-jalan.index', 'permission' => null],
+        ['category' => 'Laporan', 'label' => 'Report Pranota Uang Jalan', 'route' => 'report.pranota-uang-jalan.index', 'permission' => null],
+        ['category' => 'Laporan', 'label' => 'Report Surat Jalan', 'route' => 'report.surat_jalan.index', 'permission' => null],
+        ['category' => 'Laporan', 'label' => 'Report Pranota OB', 'route' => 'report.pranota-ob.index', 'permission' => null],
     ])->filter(fn ($item) => !$item['permission'] || $user->can($item['permission']))->groupBy('category');
 @endphp
 <div class="mx-auto max-w-6xl px-4 py-6">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-900">Rekap</h1>
-        <p class="mt-1 text-sm text-slate-600">Pilih rekap yang ingin Anda buka.</p>
+        <h1 class="text-2xl font-bold text-slate-900">Rekap dan Laporan</h1>
+        <p class="mt-1 text-sm text-slate-600">Pilih rekap atau laporan yang ingin Anda buka.</p>
     </div>
 
-    <label for="rekap-search" class="sr-only">Cari rekap</label>
-    <input id="rekap-search" type="search" autocomplete="off" placeholder="Cari rekap..." class="mb-5 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
+    <label for="rekap-search" class="sr-only">Cari rekap atau laporan</label>
+    <input id="rekap-search" type="search" autocomplete="off" placeholder="Cari rekap atau laporan..." class="mb-5 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
 
     <div id="rekap-groups" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         @foreach($groups as $category => $items)
@@ -79,7 +84,7 @@
             </section>
         @endforeach
     </div>
-    <p id="rekap-empty" class="hidden py-8 text-center text-sm text-slate-500">Rekap tidak ditemukan.</p>
+    <p id="rekap-empty" class="hidden py-8 text-center text-sm text-slate-500">Rekap atau laporan tidak ditemukan.</p>
 </div>
 @endsection
 

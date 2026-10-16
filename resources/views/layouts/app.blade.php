@@ -728,8 +728,8 @@
                 </div>
                 @endif
                 <div>
-                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
-                        Rekap
+                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
+                        Rekap dan Laporan
                     </a>
                 </div>
 {{-- User Dropdown has been completely moved to Master Data > Master Karyawan --}}
@@ -1929,8 +1929,8 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.tanda-terima-jakarta.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.uang-jalan.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
-    // Report Uang Jalan dan menu Report dapat diakses oleh semua user yang login
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
+    // Menu Report dapat diakses oleh semua user yang login
     $hasReportPermission = (bool) $user;
 @endphp
 @if($hasReportPermission)
@@ -1955,11 +1955,6 @@
             Report Gaji Supir Batam
         </a>
         @endif
-
-        {{-- Report Tanda Terima Jakarta --}}
-        <a href="{{ route('report.tanda-terima-jakarta.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tanda-terima-jakarta.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Tanda Terima Jakarta
-        </a>
 
         {{-- Report Pranota --}}
         <a href="{{ Route::has('report.pranota.index') ? route('report.pranota.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
@@ -1988,21 +1983,11 @@
             Report Lembur/Nginap
         </a>
 
-        {{-- Report Uang Jalan --}}
-        <a href="{{ route('report.uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Uang Jalan
-        </a>
-
         @if($user && ($isAdmin || $user->can('uang-jalan-view')))
         <a href="{{ route('laporan-harian-kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('laporan-harian-kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             Laporan Harian Kas Truck
         </a>
         @endif
-
-        {{-- Report Pranota Uang Jalan --}}
-        <a href="{{ route('report.pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota-uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Pranota Uang Jalan
-        </a>
 
         {{-- Report Kas Truck --}}
         <a href="{{ route('report.kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
@@ -2012,16 +1997,6 @@
         {{-- Report Ongkos Truk --}}
         <a href="{{ route('report.ongkos-truk.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.ongkos-truk.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             Report Ongkos Truk
-        </a>
-
-        {{-- Report Surat Jalan --}}
-        <a href="{{ route('report.surat_jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.surat_jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Surat Jalan
-        </a>
-
-        {{-- Report Pranota OB --}}
-        <a href="{{ route('report.pranota-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Pranota OB
         </a>
 
         {{-- Manifest --}}
