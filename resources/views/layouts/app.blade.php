@@ -533,16 +533,6 @@
                 </a>
                 @endcan
 
-                <!-- Asuransi Tanda Terima Baru (Multi) -->
-                @can('asuransi-tanda-terima-multi-view')
-                @php
-                    $isAsuransiTandaTerimaMulti = Request::is('asuransi-tanda-terima-multi*');
-                @endphp
-                <a href="{{ route('asuransi-tanda-terima-multi.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAsuransiTandaTerimaMulti ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <span class="text-xs font-medium menu-text">Asuransi Tanda Terima Baru</span>
-                </a>
-                @endcan
-
                 @php
                     $showTrackingTransaksi = $user && (
                         $user->can('surat-jalan-view') ||

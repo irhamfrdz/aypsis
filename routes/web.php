@@ -2883,17 +2883,6 @@ Route::middleware([
                 'destroy' => 'can:asuransi-tanda-terima-delete',
             ]);
 
-        Route::resource('asuransi-tanda-terima-multi', \App\Http\Controllers\AsuransiTandaTerimaBatchController::class)
-            ->middleware([
-                'index' => 'can:asuransi-tanda-terima-multi-view',
-                'show' => 'can:asuransi-tanda-terima-multi-view',
-                'create' => 'can:asuransi-tanda-terima-multi-create',
-                'store' => 'can:asuransi-tanda-terima-multi-create',
-                'edit' => 'can:asuransi-tanda-terima-multi-update',
-                'update' => 'can:asuransi-tanda-terima-multi-update',
-                'destroy' => 'can:asuransi-tanda-terima-multi-delete',
-            ]);
-
         // 🚐 Master Vendor Supir
         Route::resource('master/vendor-supir', \App\Http\Controllers\VendorSupirController::class)
             ->names('master.vendor-supir')
