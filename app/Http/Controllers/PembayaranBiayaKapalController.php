@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BiayaKapal;
 use App\Models\Coa;
+use App\Models\KlasifikasiBiaya;
 use App\Models\NomorTerakhir;
 use App\Models\PembayaranBiayaKapal;
 use App\Services\CoaTransactionService;
@@ -41,6 +42,10 @@ class PembayaranBiayaKapalController extends Controller
             $query->where('status_pembayaran', $request->status);
         }
 
+        if ($request->filled('jenis_biaya')) {
+            $query->where('jenis_biaya', $request->jenis_biaya);
+        }
+
         // Filter by date range
         if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
             $query->whereBetween('tanggal', [$request->tanggal_dari, $request->tanggal_sampai]);
@@ -64,8 +69,9 @@ class PembayaranBiayaKapalController extends Controller
             'paid' => 'Lunas',
             'cancelled' => 'Dibatalkan',
         ];
+        $klasifikasiBiayas = KlasifikasiBiaya::orderBy('nama')->get(['kode', 'nama']);
 
-        return view('pembayaran-biaya-kapal.index', compact('biayaKapalList', 'statuses'));
+        return view('pembayaran-biaya-kapal.index', compact('biayaKapalList', 'statuses', 'klasifikasiBiayas'));
     }
 
     /**

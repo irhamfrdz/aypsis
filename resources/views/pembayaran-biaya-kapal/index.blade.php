@@ -24,7 +24,7 @@
 
         <!-- Filters -->
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Nomor invoice, kapal, vendor..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -35,6 +35,15 @@
                         <option value="">Semua Status</option>
                         @foreach($statuses as $value => $label)
                             <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="jenis_biaya" class="block text-sm font-medium text-gray-700 mb-1">Jenis Biaya</label>
+                    <select name="jenis_biaya" id="jenis_biaya" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Semua Jenis Biaya</option>
+                        @foreach($klasifikasiBiayas as $klasifikasi)
+                            <option value="{{ $klasifikasi->kode }}" {{ request('jenis_biaya') == $klasifikasi->kode ? 'selected' : '' }}>{{ $klasifikasi->nama }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -58,6 +67,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Invoice</th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Biaya</th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal / Vendor</th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
@@ -70,6 +80,9 @@
                     <tr class="hover:bg-gray-50 {{ $biaya->status_pembayaran == 'pending' ? 'bg-yellow-50' : '' }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ $biaya->nomor_invoice }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            {{ $biaya->jenis_biaya_label ?: '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $biaya->tanggal ? \Carbon\Carbon::parse($biaya->tanggal)->format('d/m/Y') : '-' }}
@@ -114,7 +127,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
+                        <td colspan="7" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -132,7 +145,7 @@
         <!-- Pagination -->
         @if($biayaKapalList->hasPages())
         <div class="px-6 py-4 border-t border-gray-200">
-            {{ $biayaKapalList->links() }}
+            {{ $biayaKapalList->appends(request()->except('page'))->links() }}
         </div>
         @endif
     </div>
