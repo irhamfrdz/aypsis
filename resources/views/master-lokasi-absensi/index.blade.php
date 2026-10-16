@@ -258,7 +258,7 @@
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1">
                                     <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
-                                    <input type="text" id="karyawan-search-input" oninput="filterKaryawanChecklist(this.value)" placeholder="Cari nama, NIK, divisi..." 
+                                    <input type="text" id="karyawan-search-input" oninput="filterKaryawanChecklist()" placeholder="Cari nama, NIK, divisi..."
                                         class="w-full pl-7 pr-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 placeholder-slate-400">
                                 </div>
                                 <button type="button" onclick="selectAllKaryawan(true)" class="px-2 py-1.5 text-[10px] font-bold text-purple-700 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition shrink-0 shadow-2xs">
@@ -268,6 +268,12 @@
                                     Reset
                                 </button>
                             </div>
+
+                            <select id="karyawan-cabang-filter" onchange="filterKaryawanChecklist()"
+                                aria-label="Filter karyawan berdasarkan cabang"
+                                class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20">
+                                <option value="">Semua Cabang</option>
+                            </select>
 
                             <!-- Scrollable Employee Checklist -->
                             <div id="karyawan-checklist-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-lg bg-white divide-y divide-slate-100">
@@ -497,13 +503,18 @@
         const karyawanChecklistList = document.getElementById('karyawan-checklist-list');
         const selectedKaryawanBadge = document.getElementById('selected-karyawan-count-badge');
         const karyawanSearchInput = document.getElementById('karyawan-search-input');
+        const karyawanCabangFilter = document.getElementById('karyawan-cabang-filter');
 
         // Load Karyawan List dari Backend API
         async function loadKaryawans() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/lokasi-absensi/karyawans`);
                 allKaryawansData = await response.json();
-                renderKaryawanChecklist(allKaryawansData);
+                const cabangs = [...new Set(allKaryawansData.map(k => (k.cabang || '').trim()).filter(Boolean))]
+                    .sort((a, b) => a.localeCompare(b, 'id'));
+                karyawanCabangFilter.replaceChildren(new Option('Semua Cabang', ''));
+                cabangs.forEach(cabang => karyawanCabangFilter.add(new Option(cabang, cabang)));
+                filterKaryawanChecklist();
             } catch (err) {
                 console.error('Failed to load karyawans:', err);
                 karyawanChecklistList.innerHTML = `
@@ -542,19 +553,20 @@
         }
 
         // Filter Karyawan Checklist saat mengetik pencarian
-        function filterKaryawanChecklist(query) {
-            query = (query || '').toLowerCase().trim();
-            if (!query) {
-                renderKaryawanChecklist(allKaryawansData);
-                return;
-            }
-            const filtered = allKaryawansData.filter(k => {
+        function getFilteredKaryawans() {
+            const query = (karyawanSearchInput.value || '').toLowerCase().trim();
+            const cabang = karyawanCabangFilter.value;
+            return allKaryawansData.filter(k => {
+                if (cabang && (k.cabang || '').trim() !== cabang) return false;
                 const nama = (k.nama_lengkap || '').toLowerCase();
                 const nik = (k.nik || '').toLowerCase();
                 const div = (k.divisi || '').toLowerCase();
-                return nama.includes(query) || nik.includes(query) || div.includes(query);
+                return !query || nama.includes(query) || nik.includes(query) || div.includes(query);
             });
-            renderKaryawanChecklist(filtered);
+        }
+
+        function filterKaryawanChecklist() {
+            renderKaryawanChecklist(getFilteredKaryawans());
         }
 
         function toggleKaryawanSelected(id, checked) {
@@ -568,17 +580,12 @@
         }
 
         function selectAllKaryawan(selectAll) {
-            const query = (karyawanSearchInput.value || '').toLowerCase().trim();
-            const targets = query 
-                ? allKaryawansData.filter(k => (k.nama_lengkap || '').toLowerCase().includes(query) || (k.nik || '').toLowerCase().includes(query))
-                : allKaryawansData;
-
-            targets.forEach(k => {
+            getFilteredKaryawans().forEach(k => {
                 if (selectAll) selectedKaryawanIds.add(Number(k.id));
                 else selectedKaryawanIds.delete(Number(k.id));
             });
 
-            filterKaryawanChecklist(karyawanSearchInput.value);
+            filterKaryawanChecklist();
             updateSelectedKaryawanBadge();
         }
 
@@ -977,7 +984,8 @@
             }
 
             if (karyawanSearchInput) karyawanSearchInput.value = '';
-            filterKaryawanChecklist('');
+            karyawanCabangFilter.value = '';
+            filterKaryawanChecklist();
             updateSelectedKaryawanBadge();
 
             // Sembunyikan marker lama milik lokasi ini saat sedang diedit agar tidak bertumpuk
@@ -1035,7 +1043,8 @@
             karyawanPickerContainer.classList.add('hidden');
             selectedKaryawanIds.clear();
             if (karyawanSearchInput) karyawanSearchInput.value = '';
-            filterKaryawanChecklist('');
+            karyawanCabangFilter.value = '';
+            filterKaryawanChecklist();
             updateSelectedKaryawanBadge();
 
             // Kembalikan marker yang sempat disembunyikan saat mode edit

@@ -131,6 +131,7 @@ Route::get('/lokasi-absensi/karyawans', function () {
             'karyawans.nik',
             'karyawans.nama_lengkap',
             'karyawans.nama_panggilan',
+            'karyawans.cabang',
             'karyawans.divisi',
             'karyawans.pekerjaan',
             'users.id as user_id',
