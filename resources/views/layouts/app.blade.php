@@ -1495,32 +1495,6 @@
                 </svg>
             </button>
             <div id="aktivitas-aktivitas-kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKontainerRoute) style="display: block;" @endif>
-                {{-- Sewa Sub-Dropdown --}}
-                @php
-                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('pranota-kontainer-sewa.*');
-                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota-kontainer-sewa-view'));
-                @endphp
-
-                @if($hasSewaPermissions)
-                <div class="mb-2">
-                    <button id="sewa-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isSewaRoute ? 'bg-cyan-50 text-cyan-700 font-medium' : '' }}">
-                        <span class="text-xs font-medium">Sewa</span>
-                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isSewaRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <div id="sewa-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isSewaRoute) style="display: block;" @endif>
-                        {{-- Tujuan Kontainer Sewa --}}
-                        @if($user && $user->can('master-pricelist-tujuan-kontainer-sewa-view'))
-                            <a href="{{ route('master-pricelist-tujuan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-tujuan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Tujuan Kontainer Sewa</span>
-                            </a>
-                        @endif
-
-                    </div>
-                </div>
-                @endif
-
                 {{-- CAT Sub-Dropdown --}}
                 @php
                     $isCatRoute = Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');

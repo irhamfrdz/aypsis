@@ -25,7 +25,6 @@ return [
     ['label' => 'Pricelist Kanisir Ban', 'route' => 'master.pricelist-kanisir-ban.index', 'permission' => 'master-pricelist-kanisir-ban-view'],
     ['label' => 'Pricelist Biaya Dokumen', 'route' => 'master.pricelist-biaya-dokumen.index', 'permission' => 'master-pricelist-biaya-dokumen-view'],
     ['label' => 'Pricelist Biaya Trucking', 'route' => 'master.pricelist-biaya-trucking.index', 'permission' => 'master-pricelist-biaya-trucking-view'],
-    ['label' => 'Tujuan Kontainer Sewa', 'route' => 'master-pricelist-tujuan-kontainer-sewa.index', 'permission' => 'master-pricelist-tujuan-kontainer-sewa-view'],
     ['label' => 'Master Pricelist Lembur', 'route' => 'master.pricelist-lembur.index', 'permission' => 'master-pricelist-lembur-view'],
     ['label' => 'Pricelist Vendor Supir', 'route' => 'master.pricelist-vendor-supir.index', 'permission' => 'master-pricelist-vendor-supir-view'],
     ['label' => 'Pricelist Labuh Tambat', 'route' => 'master.master-pricelist-labuh-tambat.index', 'permission' => 'master-pricelist-labuh-tambat-view'],
