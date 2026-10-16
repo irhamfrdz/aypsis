@@ -32,11 +32,14 @@ class MovePranotaRitToDriverIncentiveAccountTest extends TestCase
         Schema::create('coa_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('coa_id');
+            $table->date('tanggal_transaksi')->nullable();
             $table->string('nomor_referensi');
             $table->string('jenis_transaksi');
+            $table->text('keterangan')->nullable();
             $table->decimal('debit', 15, 2);
             $table->decimal('kredit', 15, 2);
             $table->decimal('saldo', 15, 2);
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
 
@@ -98,5 +101,27 @@ class MovePranotaRitToDriverIncentiveAccountTest extends TestCase
         $this->assertNull(DB::table('pembayaran_pranota_rits')->where('nomor_pembayaran', 'SIS-001')->value('akun_coa_id'));
         $this->assertEquals(2, DB::table('coa_transactions')->where('id', 2)->value('coa_id'));
         $this->assertEquals(20, DB::table('akun_coa')->where('id', 1)->value('saldo'));
+    }
+
+    public function test_bank_only_journal_gets_missing_expense_entry_without_changing_bank(): void
+    {
+        DB::table('coa_transactions')->where('id', 2)->delete();
+
+        $command = 'pembayaran-pranota-rit:akun-insentif-supir-truck-jakarta';
+        $this->artisan($command)->assertSuccessful();
+        $this->assertEquals(1, DB::table('coa_transactions')->where('nomor_referensi', 'SIS-001')->count());
+
+        $this->artisan($command.' --execute')->assertSuccessful();
+        $this->assertEquals(1, DB::table('pembayaran_pranota_rits')->value('akun_coa_id'));
+        $this->assertEquals(2, DB::table('coa_transactions')->where('nomor_referensi', 'SIS-001')->count());
+        $this->assertEquals(3, DB::table('coa_transactions')->where('id', 3)->value('coa_id'));
+        $this->assertEquals(100, DB::table('coa_transactions')->where('nomor_referensi', 'SIS-001')->where('coa_id', 1)->value('debit'));
+        $this->assertEquals(120, DB::table('akun_coa')->where('id', 1)->value('saldo'));
+        $this->assertEquals(150, DB::table('akun_coa')->where('id', 2)->value('saldo'));
+        $this->assertEquals(-100, DB::table('akun_coa')->where('id', 3)->value('saldo'));
+
+        $this->artisan($command.' --execute')->assertSuccessful();
+        $this->assertEquals(2, DB::table('coa_transactions')->where('nomor_referensi', 'SIS-001')->count());
+        $this->assertEquals(120, DB::table('akun_coa')->where('id', 1)->value('saldo'));
     }
 }

@@ -33,7 +33,7 @@ class MovePranotaRitToDriverIncentiveAccount extends Command
         }
 
         $execute = (bool) $this->option('execute');
-        $summary = ['pembayaran' => 0, 'akun_diubah' => 0, 'jurnal_dipindah' => 0, 'tanpa_jurnal' => 0];
+        $summary = ['pembayaran' => 0, 'akun_diubah' => 0, 'jurnal_dipindah' => 0, 'jurnal_dibuat' => 0, 'tanpa_jurnal' => 0];
         $openingBalances = [];
         $balanceChanges = [];
 
@@ -49,7 +49,7 @@ class MovePranotaRitToDriverIncentiveAccount extends Command
                     if ($execute) {
                         $journalQuery->lockForUpdate();
                     }
-                    $journals = $journalQuery->get(['id', 'nomor_referensi', 'jenis_transaksi', 'coa_id', 'debit', 'kredit'])
+                    $journals = $journalQuery->get(['id', 'nomor_referensi', 'jenis_transaksi', 'coa_id', 'tanggal_transaksi', 'keterangan', 'created_by', 'debit', 'kredit'])
                         ->groupBy('nomor_referensi');
 
                     foreach ($payments as $payment) {
@@ -60,7 +60,7 @@ class MovePranotaRitToDriverIncentiveAccount extends Command
                         if ($journal->isEmpty()) {
                             $summary['tanpa_jurnal']++;
                         } else {
-                            if ($journal->count() !== 2
+                            if (! in_array($journal->count(), [1, 2], true)
                                 || ! in_array($payment->jenis_transaksi, ['Debit', 'Kredit'], true)
                                 || $journal->contains(fn ($entry) => $entry->jenis_transaksi !== 'Pembayaran Pranota Rit')) {
                                 throw new RuntimeException("Jurnal {$reference} tidak memiliki pasangan pembayaran pranota rit yang valid.");
@@ -74,30 +74,60 @@ class MovePranotaRitToDriverIncentiveAccount extends Command
                             $bankId = (int) $bankIds->first();
                             $bankEntries = $journal->where('coa_id', $bankId);
                             $expenseEntries = $journal->reject(fn ($entry) => (int) $entry->coa_id === $bankId);
-                            if ($bankEntries->count() !== 1 || $expenseEntries->count() !== 1) {
+                            if ($bankEntries->count() !== 1 || $expenseEntries->count() !== $journal->count() - 1) {
                                 throw new RuntimeException("Akun biaya pada jurnal {$reference} tidak dapat dikenali dengan pasti.");
                             }
 
                             $amount = self::toCents($payment->total_tagihan_setelah_penyesuaian);
-                            $bankNet = self::toCents($bankEntries->first()->debit) - self::toCents($bankEntries->first()->kredit);
-                            $expense = $expenseEntries->first();
-                            $expenseNet = self::toCents($expense->debit) - self::toCents($expense->kredit);
+                            $bankEntry = $bankEntries->first();
+                            $bankNet = self::toCents($bankEntry->debit) - self::toCents($bankEntry->kredit);
                             $expectedBankNet = $payment->jenis_transaksi === 'Debit' ? $amount : -$amount;
-                            if ($bankNet !== $expectedBankNet || $expenseNet !== -$expectedBankNet) {
+                            if ($bankNet !== $expectedBankNet) {
                                 throw new RuntimeException("Nominal atau arah jurnal {$reference} tidak sesuai pembayaran.");
                             }
 
-                            if ((int) $expense->coa_id !== (int) $target->id) {
-                                $oldId = (int) $expense->coa_id;
-                                $this->rememberOpeningBalance($openingBalances, $oldId, $execute);
+                            if ($expenseEntries->isEmpty()) {
+                                // Data lama dapat berisi hanya jurnal bank. Lengkapi sisi biaya
+                                // dengan tanggal dan metadata yang sama setelah jurnal bank tervalidasi.
                                 $this->rememberOpeningBalance($openingBalances, (int) $target->id, $execute);
-
-                                $balanceChanges[$oldId] = ($balanceChanges[$oldId] ?? 0) - $expenseNet;
+                                $expenseNet = -$bankNet;
                                 $balanceChanges[$target->id] = ($balanceChanges[$target->id] ?? 0) + $expenseNet;
-                                $summary['jurnal_dipindah']++;
+                                $summary['jurnal_dibuat']++;
 
                                 if ($execute) {
-                                    DB::table('coa_transactions')->where('id', $expense->id)->update(['coa_id' => $target->id]);
+                                    DB::table('coa_transactions')->insert([
+                                        'coa_id' => $target->id,
+                                        'tanggal_transaksi' => $bankEntry->tanggal_transaksi,
+                                        'nomor_referensi' => $reference,
+                                        'jenis_transaksi' => 'Pembayaran Pranota Rit',
+                                        'keterangan' => $bankEntry->keterangan,
+                                        'debit' => self::fromCents(max(0, $expenseNet)),
+                                        'kredit' => self::fromCents(max(0, -$expenseNet)),
+                                        'saldo' => '0.00',
+                                        'created_by' => $bankEntry->created_by,
+                                        'created_at' => now(),
+                                        'updated_at' => now(),
+                                    ]);
+                                }
+                            } else {
+                                $expense = $expenseEntries->first();
+                                $expenseNet = self::toCents($expense->debit) - self::toCents($expense->kredit);
+                                if ($expenseNet !== -$expectedBankNet) {
+                                    throw new RuntimeException("Nominal atau arah jurnal {$reference} tidak sesuai pembayaran.");
+                                }
+
+                                if ((int) $expense->coa_id !== (int) $target->id) {
+                                    $oldId = (int) $expense->coa_id;
+                                    $this->rememberOpeningBalance($openingBalances, $oldId, $execute);
+                                    $this->rememberOpeningBalance($openingBalances, (int) $target->id, $execute);
+
+                                    $balanceChanges[$oldId] = ($balanceChanges[$oldId] ?? 0) - $expenseNet;
+                                    $balanceChanges[$target->id] = ($balanceChanges[$target->id] ?? 0) + $expenseNet;
+                                    $summary['jurnal_dipindah']++;
+
+                                    if ($execute) {
+                                        DB::table('coa_transactions')->where('id', $expense->id)->update(['coa_id' => $target->id]);
+                                    }
                                 }
                             }
                         }
@@ -139,8 +169,8 @@ class MovePranotaRitToDriverIncentiveAccount extends Command
             return self::FAILURE;
         }
 
-        $this->table(['Pembayaran', 'Akun diubah', 'Jurnal dipindah', 'Tanpa jurnal'], [[
-            $summary['pembayaran'], $summary['akun_diubah'], $summary['jurnal_dipindah'], $summary['tanpa_jurnal'],
+        $this->table(['Pembayaran', 'Akun diubah', 'Jurnal dipindah', 'Jurnal biaya dibuat', 'Tanpa jurnal'], [[
+            $summary['pembayaran'], $summary['akun_diubah'], $summary['jurnal_dipindah'], $summary['jurnal_dibuat'], $summary['tanpa_jurnal'],
         ]]);
         $this->info($execute ? 'Selesai. Perubahan tersimpan.' : 'Pratinjau selesai. Jalankan lagi dengan --execute untuk menyimpan.');
 
