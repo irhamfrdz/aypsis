@@ -25,27 +25,14 @@ class AbsensiExport implements \Maatwebsite\Excel\Concerns\WithStyles, FromColle
 
     public function headings(): array
     {
-        $statusAbsenMap = [
-            'tidak_masuk' => 'Tidak Absen Masuk',
-            'tidak_pulang' => 'Tidak Absen Pulang',
-            'tidak_istirahat' => 'Tidak Absen Istirahat',
-            'ada_istirahat' => 'Ada Absen Istirahat',
-            'lengkap' => 'Masuk & Pulang Lengkap',
-            'ada_lembur' => 'Ada Absen Lembur',
-            'luar_radius' => 'Di Luar Radius',
-        ];
-
-        $statusAbsenLabel = ! empty($this->filters['status_absen']) ? ($statusAbsenMap[$this->filters['status_absen']] ?? $this->filters['status_absen']) : '-';
-
         return [
             ['LAPORAN DATA ABSENSI KARYAWAN'],
             ['Periode', ': '.($this->filters['start_date'] ?? '-').' s/d '.($this->filters['end_date'] ?? '-')],
             ['Pencarian', ': '.(! empty($this->filters['search']) ? $this->filters['search'] : '-')],
             ['Pekerjaan', ': '.(! empty($this->filters['pekerjaan']) ? $this->filters['pekerjaan'] : '-')],
-            ['Penempatan', ': '.(! empty($this->filters['penempatan']) ? strtoupper($this->filters['penempatan']) : '-')],
+            ['Departemen', ': '.(! empty($this->filters['departemen']) ? strtoupper($this->filters['departemen']) : '-')],
             ['Cabang', ': '.(! empty($this->filters['cabang']) ? strtoupper($this->filters['cabang']) : '-')],
             ['Divisi', ': '.(! empty($this->filters['divisi']) ? strtoupper($this->filters['divisi']) : '-')],
-            ['Status Absen', ': '.$statusAbsenLabel],
             [],
             [
                 'NIK',
@@ -68,7 +55,7 @@ class AbsensiExport implements \Maatwebsite\Excel\Concerns\WithStyles, FromColle
     {
         return [
             1 => ['font' => ['bold' => true, 'size' => 12]],
-            10 => ['font' => ['bold' => true]],
+            9 => ['font' => ['bold' => true]],
         ];
     }
 

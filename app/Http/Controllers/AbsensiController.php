@@ -179,11 +179,11 @@ class AbsensiController extends Controller
             });
         }
 
-        // Filter by Penempatan
-        if ($request->filled('penempatan')) {
-            $penempatan = $request->penempatan;
-            $query->whereHas('karyawan', function ($kQ) use ($penempatan) {
-                $kQ->where('penempatan', $penempatan);
+        // Filter by Departemen
+        if ($request->filled('departemen')) {
+            $departemen = $request->departemen;
+            $query->whereHas('karyawan', function ($kQ) use ($departemen) {
+                $kQ->where('departemen', $departemen);
             });
         }
 
@@ -235,36 +235,16 @@ class AbsensiController extends Controller
         ')
             ->groupBy('karyawan_id', 'nik', 'tanggal');
 
-        // Filter by Status Absen (Tidak Masuk/Tidak Pulang/Lengkap/Lembur) on aggregate having clause
-        if ($request->filled('status_absen')) {
-            $status_absen = $request->status_absen;
-            if ($status_absen === 'tidak_masuk') {
-                $query->havingRaw('waktu_masuk IS NULL');
-            } elseif ($status_absen === 'tidak_pulang') {
-                $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL'); // Jika tidak masuk, tidak dihitung tidak pulang
-            } elseif ($status_absen === 'tidak_istirahat') {
-                $query->havingRaw('(waktu_istirahat_keluar IS NULL OR waktu_istirahat_masuk IS NULL) AND waktu_masuk IS NOT NULL');
-            } elseif ($status_absen === 'ada_istirahat') {
-                $query->havingRaw('waktu_istirahat_keluar IS NOT NULL OR waktu_istirahat_masuk IS NOT NULL');
-            } elseif ($status_absen === 'lengkap') {
-                $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
-            } elseif ($status_absen === 'ada_lembur') {
-                $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
-            } elseif ($status_absen === 'luar_radius') {
-                $query->havingRaw('lokasi_masuk LIKE "%(Di luar radius%" OR lokasi_pulang LIKE "%(Di luar radius%"');
-            }
-        }
-
         $absensis = $query->orderBy('tanggal', 'desc')->paginate(25)->withQueryString();
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
-        $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+        $departemens = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('departemen')->where('departemen', '!=', '')->distinct()->orderBy('departemen')->pluck('departemen');
         $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $mesins = Mesin::all()->keyBy('id');
         $karyawanList = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
         $nonKaryawanList = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
 
-        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'cabangs', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
+        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'departemens', 'cabangs', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
     }
 
     /**
@@ -323,11 +303,11 @@ class AbsensiController extends Controller
             });
         }
 
-        // Filter by Penempatan
-        if ($request->filled('penempatan')) {
-            $penempatan = $request->penempatan;
-            $query->whereHas('karyawan', function ($kQ) use ($penempatan) {
-                $kQ->where('penempatan', $penempatan);
+        // Filter by Departemen
+        if ($request->filled('departemen')) {
+            $departemen = $request->departemen;
+            $query->whereHas('karyawan', function ($kQ) use ($departemen) {
+                $kQ->where('departemen', $departemen);
             });
         }
 
@@ -363,24 +343,6 @@ class AbsensiController extends Controller
         ')
             ->groupBy('karyawan_id', 'nik', 'tanggal');
 
-        // Filter by Status Absen
-        if ($request->filled('status_absen')) {
-            $status_absen = $request->status_absen;
-            if ($status_absen === 'tidak_masuk') {
-                $query->havingRaw('waktu_masuk IS NULL');
-            } elseif ($status_absen === 'tidak_pulang') {
-                $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL');
-            } elseif ($status_absen === 'tidak_istirahat') {
-                $query->havingRaw('(waktu_istirahat_keluar IS NULL OR waktu_istirahat_masuk IS NULL) AND waktu_masuk IS NOT NULL');
-            } elseif ($status_absen === 'ada_istirahat') {
-                $query->havingRaw('waktu_istirahat_keluar IS NOT NULL OR waktu_istirahat_masuk IS NOT NULL');
-            } elseif ($status_absen === 'lengkap') {
-                $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
-            } elseif ($status_absen === 'ada_lembur') {
-                $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
-            }
-        }
-
         $absensis = $query->orderBy('tanggal', 'desc')->get();
 
         $filters = [
@@ -388,10 +350,9 @@ class AbsensiController extends Controller
             'end_date' => $endDateObj->format('d-m-Y'),
             'search' => $request->input('search'),
             'pekerjaan' => $request->input('pekerjaan'),
-            'penempatan' => $request->input('penempatan'),
+            'departemen' => $request->input('departemen'),
             'divisi' => $request->input('divisi'),
             'cabang' => $request->input('cabang'),
-            'status_absen' => $request->input('status_absen'),
         ];
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($absensis, $filters), 'Laporan_Absensi_Karyawan_'.date('Ymd_His').'.xlsx');
@@ -433,11 +394,11 @@ class AbsensiController extends Controller
             });
         }
 
-        // Filter by Penempatan
-        if ($request->filled('penempatan')) {
-            $penempatan = $request->penempatan;
-            $query->whereHas('karyawan', function ($kQ) use ($penempatan) {
-                $kQ->where('penempatan', $penempatan);
+        // Filter by Departemen
+        if ($request->filled('departemen')) {
+            $departemen = $request->departemen;
+            $query->whereHas('karyawan', function ($kQ) use ($departemen) {
+                $kQ->where('departemen', $departemen);
             });
         }
 
@@ -472,24 +433,6 @@ class AbsensiController extends Controller
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
             ->groupBy('karyawan_id', 'nik', 'tanggal');
-
-        // Filter by Status Absen
-        if ($request->filled('status_absen')) {
-            $status_absen = $request->status_absen;
-            if ($status_absen === 'tidak_masuk') {
-                $query->havingRaw('waktu_masuk IS NULL');
-            } elseif ($status_absen === 'tidak_pulang') {
-                $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL');
-            } elseif ($status_absen === 'tidak_istirahat') {
-                $query->havingRaw('(waktu_istirahat_keluar IS NULL OR waktu_istirahat_masuk IS NULL) AND waktu_masuk IS NOT NULL');
-            } elseif ($status_absen === 'ada_istirahat') {
-                $query->havingRaw('waktu_istirahat_keluar IS NOT NULL OR waktu_istirahat_masuk IS NOT NULL');
-            } elseif ($status_absen === 'lengkap') {
-                $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
-            } elseif ($status_absen === 'ada_lembur') {
-                $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
-            }
-        }
 
         $absensis = $query->orderBy('tanggal', 'asc')->get();
 
@@ -529,8 +472,8 @@ class AbsensiController extends Controller
         }
 
         $titleParts = [];
-        if ($request->filled('penempatan')) {
-            $titleParts[] = strtoupper($request->penempatan);
+        if ($request->filled('departemen')) {
+            $titleParts[] = strtoupper($request->departemen);
         }
         if ($request->filled('pekerjaan')) {
             $titleParts[] = strtoupper($request->pekerjaan);

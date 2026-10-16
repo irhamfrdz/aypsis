@@ -109,7 +109,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     <!-- Search Karyawan -->
                     <div>
                         <label for="search" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="m20 20-4-4"/></svg>Cari Karyawan / NIK</label>
@@ -130,14 +130,14 @@
                         </select>
                     </div>
 
-                    <!-- Penempatan -->
+                    <!-- Departemen -->
                     <div>
-                        <label for="penempatan" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5" stroke-width="1.8"/></svg>Penempatan</label>
-                        <select name="penempatan" id="penempatan"
+                        <label for="departemen" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5" stroke-width="1.8"/></svg>Departemen</label>
+                        <select name="departemen" id="departemen"
                                 class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
-                            <option value="">Semua Penempatan</option>
-                            @foreach($penempatans as $penempatan)
-                                <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
+                            <option value="">Semua Departemen</option>
+                            @foreach($departemens as $departemen)
+                                <option value="{{ $departemen }}" {{ request('departemen') == $departemen ? 'selected' : '' }}>{{ strtoupper($departemen) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -154,22 +154,6 @@
                         </select>
                     </div>
 
-                    <!-- Status Absen -->
-                    <div>
-                        <label for="status_absen" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m8 12 2.5 2.5L16 9"/></svg>Status Absen</label>
-                        <select name="status_absen" id="status_absen"
-                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
-                            <option value="">Semua Status</option>
-                            <option value="tidak_masuk" {{ request('status_absen') == 'tidak_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
-                            <option value="tidak_pulang" {{ request('status_absen') == 'tidak_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
-                            <option value="tidak_istirahat" {{ request('status_absen') == 'tidak_istirahat' ? 'selected' : '' }}>Tidak Absen Istirahat</option>
-                            <option value="ada_istirahat" {{ request('status_absen') == 'ada_istirahat' ? 'selected' : '' }}>Ada Absen Istirahat</option>
-                            <option value="lengkap" {{ request('status_absen') == 'lengkap' ? 'selected' : '' }}>Masuk & Pulang Lengkap</option>
-                            <option value="ada_lembur" {{ request('status_absen') == 'ada_lembur' ? 'selected' : '' }}>Ada Absen Lembur</option>
-                            <option value="luar_radius" {{ request('status_absen') == 'luar_radius' ? 'selected' : '' }}>Di Luar Radius</option>
-                        </select>
-                    </div>
-
                     <!-- Tanggal -->
                     <div>
                         <label for="start_date" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="M16 3v4M8 3v4M3 10h18"/></svg>Tanggal</label>
@@ -183,7 +167,7 @@
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" /></svg>
                         Filter Data
                     </button>
-                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'cabang', 'status_absen', 'start_date']))
+                    @if(request()->anyFilled(['search', 'pekerjaan', 'departemen', 'cabang', 'start_date']))
                         <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 focus:outline-none transition shadow-sm">
                             Reset
                         </a>
