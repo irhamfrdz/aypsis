@@ -675,8 +675,8 @@
 
                 <!-- Payroll Section -->
                 @php
-                    $isPayrollRoute = Request::routeIs('payroll.*') || Request::routeIs('pranota-bpjs.*') || Request::routeIs('pranota-puml.*');
-                    $showPayrollSection = $user && ($user->can('payroll-view') || $user->can('payroll-perhitungan-lembur-view') || $user->can('pranota-bpjs-view') || $user->can('pranota-puml-view') || $user->can('pranota-uang-makan-view') || $isAdmin);
+                    $isPayrollRoute = Request::routeIs('payroll.*') || Request::routeIs('pranota-bpjs.*');
+                    $showPayrollSection = $user && ($user->can('payroll-view') || $user->can('payroll-perhitungan-lembur-view') || $user->can('pranota-bpjs-view') || $isAdmin);
                 @endphp
 
                 @if($showPayrollSection)
@@ -702,13 +702,6 @@
                         </a>
                         @endif
 
-                        {{-- Riwayat Pranota PUML --}}
-                        @if($user && ($user->can('pranota-puml-view') || $user->can('pranota-uang-makan-view') || $isAdmin))
-                        <a href="{{ route('pranota-puml.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-puml.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                            <span class="text-xs font-medium">Riwayat Pranota PUML</span>
-                        </a>
-                        @endif
-
                         {{-- Pranota BPJS --}}
                         @if($user && ($user->can('pranota-bpjs-view') || $isAdmin))
                         <a href="{{ route('pranota-bpjs.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-bpjs.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
@@ -728,7 +721,7 @@
                 </div>
                 @endif
                 <div>
-                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
+                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'pranota-puml.*', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
                         Rekap dan Laporan
                     </a>
                 </div>
@@ -1929,7 +1922,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
     // Menu Report dapat diakses oleh semua user yang login
     $hasReportPermission = (bool) $user;
 @endphp
@@ -1955,14 +1948,6 @@
             Report Gaji Supir Batam
         </a>
         @endif
-
-        {{-- Report Pranota --}}
-        <a href="{{ Route::has('report.pranota.index') ? route('report.pranota.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pranota.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Pranota
-            @if(!Route::has('report.pranota.index'))
-                <span class="ml-auto text-xs text-gray-400 italic">(soon)</span>
-            @endif
-        </a>
 
         {{-- Report Pembayaran --}}
         <a href="{{ Route::has('report.pembayaran.index') ? route('report.pembayaran.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pembayaran.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
