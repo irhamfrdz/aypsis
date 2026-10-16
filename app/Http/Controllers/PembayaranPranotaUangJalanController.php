@@ -117,11 +117,12 @@ class PembayaranPranotaUangJalanController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
         // Generate nomor pembayaran using SIS modul
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-uang-jalan.create', compact('pranotaUangJalans', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-uang-jalan.create', compact('pranotaUangJalans', 'nomorPembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -137,6 +138,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -214,27 +216,28 @@ class PembayaranPranotaUangJalanController extends Controller
             // Catat transaksi menggunakan double-entry COA untuk semua pembayaran
             $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
             $bankName = $validated['bank'];
+            $akunBiayaName = Coa::findOrFail($validated['akun_coa_id'])->nama_akun;
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $keterangan = 'Pembayaran Pranota Uang Jalan - '.$validated['nomor_pembayaran'];
+            $keterangan = 'Pembayaran Pranota Uang Jalan - '.$nomorPembayaran;
 
             // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
             if ($jenisTransaksi == 'Debit') {
                 // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan berkurang (Kredit)
                 $doubleEntryResult = $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
+                    ['nama_akun' => $akunBiayaName, 'jumlah' => $totalPembayaran], // KREDIT Biaya
                     $validated['tanggal_pembayaran'],
-                    $validated['nomor_pembayaran'],
+                    $nomorPembayaran,
                     'Pembayaran Pranota Uang Jalan',
                     $keterangan
                 );
             } else {
                 // Jenis Kredit: Biaya Uang Jalan bertambah (Debit), Bank berkurang (Kredit)
                 $doubleEntryResult = $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
+                    ['nama_akun' => $akunBiayaName, 'jumlah' => $totalPembayaran], // DEBIT Biaya
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
                     $validated['tanggal_pembayaran'],
-                    $validated['nomor_pembayaran'],
+                    $nomorPembayaran,
                     'Pembayaran Pranota Uang Jalan',
                     $keterangan
                 );
@@ -242,11 +245,11 @@ class PembayaranPranotaUangJalanController extends Controller
 
             // Log accounting entry
             Log::info('Double Entry Accounting recorded for Pembayaran Pranota Uang Jalan', [
-                'nomor_pembayaran' => $validated['nomor_pembayaran'],
+                'nomor_pembayaran' => $nomorPembayaran,
                 'total_pembayaran' => $totalPembayaran,
                 'bank' => $bankName,
                 'jenis_transaksi' => $jenisTransaksi,
-                'biaya_account' => 'Biaya Uang Jalan Muat',
+                'biaya_account' => $akunBiayaName,
                 'double_entry_success' => $doubleEntryResult,
                 'pranota_count' => count($validated['pranota_uang_jalan_ids']),
             ]);
@@ -332,8 +335,9 @@ class PembayaranPranotaUangJalanController extends Controller
         })
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa'));
+        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -393,6 +397,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'nullable|exists:akun_coa,id',
             'keterangan' => 'nullable|string',
             'bukti_pembayaran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
@@ -409,6 +414,7 @@ class PembayaranPranotaUangJalanController extends Controller
                 'total_tagihan_setelah_penyesuaian' => $request->total_tagihan_setelah_penyesuaian,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'bank' => $request->bank,
+                'akun_coa_id' => $request->akun_coa_id,
                 'keterangan' => $request->keterangan,
                 'updated_by' => Auth::id(),
             ];
@@ -564,16 +570,17 @@ class PembayaranPranotaUangJalanController extends Controller
                 ]);
 
                 if (CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->exists()) {
+                    $akunBiayaName = $payment->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat';
                     if (! Coa::where('nama_akun', $payment->bank)->exists()
-                        || ! Coa::where('nama_akun', 'Biaya Uang Jalan Muat')->exists()) {
+                        || ! Coa::where('nama_akun', $akunBiayaName)->exists()) {
                         throw new \RuntimeException('Akun COA pembayaran tidak ditemukan.');
                     }
                     if (! $this->coaTransactionService->deleteTransactionByReference($payment->nomor_pembayaran)) {
                         throw new \RuntimeException('Jurnal COA lama gagal dibatalkan.');
                     }
 
-                    $debit = $payment->jenis_transaksi === 'Debit' ? $payment->bank : 'Biaya Uang Jalan Muat';
-                    $credit = $payment->jenis_transaksi === 'Debit' ? 'Biaya Uang Jalan Muat' : $payment->bank;
+                    $debit = $payment->jenis_transaksi === 'Debit' ? $payment->bank : $akunBiayaName;
+                    $credit = $payment->jenis_transaksi === 'Debit' ? $akunBiayaName : $payment->bank;
                     if (! $this->coaTransactionService->recordDoubleEntry(
                         ['nama_akun' => $debit, 'jumlah' => $newFinal],
                         ['nama_akun' => $credit, 'jumlah' => $newFinal],
@@ -865,6 +872,7 @@ class PembayaranPranotaUangJalanController extends Controller
             // 2. Prepare data for re-sync
             $totalPembayaran = $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian ?? $pembayaranPranotaUangJalan->total_pembayaran;
             $bankName = $pembayaranPranotaUangJalan->bank;
+            $akunBiayaName = $pembayaranPranotaUangJalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat';
             $jenisTransaksi = $pembayaranPranotaUangJalan->jenis_transaksi;
             $keterangan = 'Pembayaran Pranota Uang Jalan - '.$pembayaranPranotaUangJalan->nomor_pembayaran.' (Synced)';
 
@@ -873,7 +881,7 @@ class PembayaranPranotaUangJalanController extends Controller
                 // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan berkurang (Kredit)
                 $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
+                    ['nama_akun' => $akunBiayaName, 'jumlah' => $totalPembayaran], // KREDIT Biaya
                     $pembayaranPranotaUangJalan->tanggal_pembayaran,
                     $pembayaranPranotaUangJalan->nomor_pembayaran,
                     'Pembayaran Pranota Uang Jalan',
@@ -882,7 +890,7 @@ class PembayaranPranotaUangJalanController extends Controller
             } else {
                 // Jenis Kredit: Biaya Uang Jalan bertambah (Debit), Bank berkurang (Kredit)
                 $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
+                    ['nama_akun' => $akunBiayaName, 'jumlah' => $totalPembayaran], // DEBIT Biaya
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
                     $pembayaranPranotaUangJalan->tanggal_pembayaran,
                     $pembayaranPranotaUangJalan->nomor_pembayaran,

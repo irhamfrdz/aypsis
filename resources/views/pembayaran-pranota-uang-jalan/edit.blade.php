@@ -106,6 +106,10 @@
                             <p class="font-medium">{{ $pembayaranPranotaUangJalan->bank }}</p>
                         </div>
                         <div>
+                            <span class="text-gray-600">Akun Biaya:</span>
+                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat' }}</p>
+                        </div>
+                        <div>
                             <span class="text-gray-600">Total Pembayaran:</span>
                             <p class="font-medium">Rp {{ number_format($pembayaranPranotaUangJalan->total_pembayaran, 0, ',', '.') }}</p>
                         </div>
@@ -178,6 +182,18 @@
                                     <option value="Debit" {{ old('jenis_transaksi', $pembayaranPranotaUangJalan->jenis_transaksi) == 'Debit' ? 'selected' : '' }}>Debit (Bank bertambah, Biaya berkurang)</option>
                                     <option value="Kredit" {{ old('jenis_transaksi', $pembayaranPranotaUangJalan->jenis_transaksi) == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
                                 </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya</label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}">
+                                    <option value="">-- Biaya Uang Jalan Muat (data lama) --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" {{ old('akun_coa_id', $pembayaranPranotaUangJalan->akun_coa_id) == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
                         </div>
                         <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">

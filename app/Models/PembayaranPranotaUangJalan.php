@@ -18,6 +18,7 @@ class PembayaranPranotaUangJalan extends Model
         'nomor_cetakan',
         'tanggal_pembayaran',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -69,6 +70,11 @@ class PembayaranPranotaUangJalan extends Model
             'pembayaran_pranota_uang_jalan_id',
             'pranota_uang_jalan_id'
         )->withPivot('subtotal')->withTimestamps();
+    }
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
     /**

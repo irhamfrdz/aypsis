@@ -180,6 +180,18 @@
                                     <option value="Kredit" {{ old('jenis_transaksi', 'Kredit') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
                                 </select>
                             </div>
+                            <div class="md:col-span-2">
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Akun dari COA --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                         <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
                             <div class="flex items-start">
@@ -188,8 +200,8 @@
                                 </svg>
                                 <div>
                                     <strong>Jurnal Akuntansi:</strong><br>
-                                    • <strong>Debit:</strong> Bank bertambah (Dr), Biaya Uang Jalan Muat berkurang (Cr)<br>
-                                    • <strong>Kredit:</strong> Biaya Uang Jalan Muat bertambah (Dr), Bank berkurang (Cr)
+                                    • <strong>Debit:</strong> Bank bertambah (Dr), akun biaya yang dipilih berkurang (Cr)<br>
+                                    • <strong>Kredit:</strong> Akun biaya yang dipilih bertambah (Dr), Bank berkurang (Cr)
                                 </div>
                             </div>
                         </div>
@@ -211,7 +223,7 @@
                         <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
-                        <strong>Info:</strong> Pembayaran akan otomatis dicatat ke akun "Biaya Uang Jalan Muat" dan Bank yang dipilih menggunakan sistem double book accounting.
+                        <strong>Info:</strong> Pembayaran akan otomatis dicatat ke akun biaya dan Bank yang dipilih menggunakan sistem double book accounting.
                     </p>
                 </div>
                 <div class="overflow-x-auto max-h-60">
@@ -651,6 +663,7 @@
             pembayaranForm.addEventListener('submit', function(e) {
                 const checkedCheckboxes = document.querySelectorAll('.pranota-checkbox:checked');
                 const bankSelect = document.getElementById('bank');
+                const akunCoaSelect = document.getElementById('akun_coa_id');
                 const jenisTransaksiSelect = document.getElementById('jenis_transaksi');
                 const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
 
@@ -676,6 +689,13 @@
                     return false;
                 }
 
+                if (!akunCoaSelect.value) {
+                    e.preventDefault();
+                    showWarning('Silakan pilih akun biaya terlebih dahulu.', 'warning');
+                    akunCoaSelect.focus();
+                    return false;
+                }
+
                 // Validasi jenis transaksi
                 if (!jenisTransaksiSelect.value) {
                     e.preventDefault();
@@ -687,9 +707,10 @@
                 // Konfirmasi sebelum submit
                 const totalPembayaran = parseFloat(document.getElementById('total_tagihan_setelah_penyesuaian')?.value) || 0;
                 const bankName = bankSelect.options[bankSelect.selectedIndex].text;
+                const akunCoaName = akunCoaSelect.options[akunCoaSelect.selectedIndex].text.trim();
                 const jenisTransaksi = jenisTransaksiSelect.value;
 
-                const confirmMessage = `Konfirmasi pembayaran:\n\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\nBank: ${bankName}\nJenis: ${jenisTransaksi}\nPranota terpilih: ${checkedCheckboxes.length} item\n\nLanjutkan pembayaran?`;
+                const confirmMessage = `Konfirmasi pembayaran:\n\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\nBank: ${bankName}\nAkun Biaya: ${akunCoaName}\nJenis: ${jenisTransaksi}\nPranota terpilih: ${checkedCheckboxes.length} item\n\nLanjutkan pembayaran?`;
 
                 if (!confirm(confirmMessage)) {
                     e.preventDefault();

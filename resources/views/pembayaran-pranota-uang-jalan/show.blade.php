@@ -112,6 +112,10 @@
                         <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->bank ?? '-' }}</div>
                     </div>
                     <div>
+                        <label class="{{ $labelClasses }}">Akun Biaya</label>
+                        <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat' }}</div>
+                    </div>
+                    <div>
                         <label class="{{ $labelClasses }}">Jenis Transaksi</label>
                         <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->jenis_transaksi ?? '-' }}</div>
                     </div>
