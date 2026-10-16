@@ -20,14 +20,31 @@ class PembayaranPranotaCatController extends Controller
         $this->coaTransactionService = $coaTransactionService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Get all pembayaran_pranota_cat
-        $pembayaranList = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $search = trim((string) $request->query('search', ''));
 
-        return view('pembayaran-pranota-cat.index', compact('pembayaranList'));
+        $pembayaranList = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])
+            ->when($search !== '', function ($query) use ($search) {
+                $term = '%'.$search.'%';
+
+                $query->where(function ($query) use ($term) {
+                    $query->where('nomor_pembayaran', 'like', $term)
+                        ->orWhere('nomor_accurate', 'like', $term)
+                        ->orWhere('bank', 'like', $term)
+                        ->orWhereHas('pranotaTagihanCats', function ($query) use ($term) {
+                            $query->where('no_invoice', 'like', $term);
+                        })
+                        ->orWhereHas('pranotaPerbaikanKontainers', function ($query) use ($term) {
+                            $query->where('nomor_pranota', 'like', $term);
+                        });
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pembayaran-pranota-cat.index', compact('pembayaranList', 'search'));
     }
 
     public function show($id)

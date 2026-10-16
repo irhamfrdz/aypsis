@@ -37,6 +37,21 @@
             </div>
         @endif
 
+        <form method="GET" action="{{ route('pembayaran-pranota-cat.index') }}" class="px-6 py-4 flex flex-col sm:flex-row sm:items-end gap-3">
+            <div class="w-full sm:max-w-md">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari pembayaran</label>
+                <input type="search" id="search" name="search" value="{{ $search }}"
+                       placeholder="Nomor pembayaran, Accurate, bank, invoice, atau pranota"
+                       class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+                <i class="fas fa-search mr-2"></i>Cari
+            </button>
+            @if($search !== '')
+                <a href="{{ route('pembayaran-pranota-cat.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200">Reset</a>
+            @endif
+        </form>
+
         <!-- Table -->
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pembayaranPranotaCatTable">
@@ -142,7 +157,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                Tidak ada data pembayaran pranota CAT kontainer.
+                                {{ $search !== '' ? 'Tidak ada pembayaran yang cocok dengan pencarian.' : 'Tidak ada data pembayaran pranota CAT kontainer.' }}
                             </td>
                         </tr>
                     @endforelse
