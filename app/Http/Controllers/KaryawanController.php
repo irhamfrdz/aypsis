@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bank;
 use App\Models\Cabang;
 use App\Models\CrewEquipment;
+use App\Models\Departemen;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\KaryawanApprovalRequest;
@@ -103,6 +104,9 @@ class KaryawanController extends Controller
         if ($request->filled('penempatan')) {
             $query->where('penempatan', $request->penempatan);
         }
+        if ($request->filled('departemen')) {
+            $query->where('departemen', $request->departemen);
+        }
         if ($request->filled('grup')) {
             $grups = (array) $request->grup;
             $query->where(function ($q) use ($grups) {
@@ -112,16 +116,6 @@ class KaryawanController extends Controller
                 }
             });
         }
-        if ($request->filled('sub_grup')) {
-            $subGrups = (array) $request->sub_grup;
-            $query->where(function ($q) use ($subGrups) {
-                foreach ($subGrups as $sg) {
-                    // Match format "GROUP:SUB_GROUP"
-                    $q->orWhere('grup', 'LIKE', '%:'.$sg.'"%');
-                }
-            });
-        }
-
         // Filter: Tanggal Masuk range
         if ($request->filled('tanggal_masuk_start')) {
             $query->whereDate('tanggal_masuk', '>=', $request->tanggal_masuk_start);
@@ -231,6 +225,7 @@ class KaryawanController extends Controller
         $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
         $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
         $penempatanOptions = Karyawan::whereNotNull('penempatan')->distinct()->orderBy('penempatan')->pluck('penempatan');
+        $departemenOptions = Departemen::orderBy('nama_departemen')->pluck('nama_departemen');
 
         // Apply common filters and sorting
         $this->applyKaryawanFilters($query, $request);
@@ -248,7 +243,7 @@ class KaryawanController extends Controller
         // Menggunakan paginate dengan per_page yang dinamis
         $karyawans = $query->paginate($perPage)->appends($request->query());
 
-        return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions', 'penempatanOptions'));
+        return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions', 'penempatanOptions', 'departemenOptions'));
     }
 
     /**
