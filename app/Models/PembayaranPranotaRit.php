@@ -16,6 +16,7 @@ class PembayaranPranotaRit extends Model
         'nomor_accurate',
         'tanggal_pembayaran',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -52,5 +53,10 @@ class PembayaranPranotaRit extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function akunCoa(): BelongsTo
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 }

@@ -80,10 +80,11 @@ class PembayaranPranotaRitController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-rit.create', compact('pranotaRits', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-rit.create', compact('pranotaRits', 'nomorPembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     public function store(Request $request)
@@ -96,6 +97,7 @@ class PembayaranPranotaRitController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -147,14 +149,17 @@ class PembayaranPranotaRitController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $desc = 'Pembayaran Pranota Rit - '.$nomorPembayaran;
 
-            // Typically for "Rit", it might go to "Biaya Ritasi" or similar COA
-            // Let's check if 'Biaya Ritasi' exists or use a generic one
-            $costAccount = 'Biaya Ritasi';
+            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
+            $costEntry = [
+                'nama_akun' => $costAccount->nama_akun,
+                'coa_id' => $costAccount->id,
+                'jumlah' => $totalFinal,
+            ];
 
             if ($jenisTransaksi == 'Debit') {
                 $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => $costAccount, 'jumlah' => $totalFinal],
+                    $costEntry,
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Rit',
@@ -162,7 +167,7 @@ class PembayaranPranotaRitController extends Controller
                 );
             } else {
                 $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $costAccount, 'jumlah' => $totalFinal],
+                    $costEntry,
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
@@ -186,7 +191,7 @@ class PembayaranPranotaRitController extends Controller
 
     public function show($id)
     {
-        $item = PembayaranPranotaRit::with(['pranotaUangRits.creator', 'createdBy'])->findOrFail($id);
+        $item = PembayaranPranotaRit::with(['pranotaUangRits.creator', 'createdBy', 'akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-rit.show', compact('item'));
     }
