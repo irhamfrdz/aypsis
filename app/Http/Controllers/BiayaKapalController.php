@@ -45,7 +45,14 @@ class BiayaKapalController extends Controller
      */
     public function index(Request $request)
     {
+        $showBuruhBatamContainers = $request->input('jenis_biaya') === 'KB024'
+            && $request->input('lokasi') === 'batam';
+
         $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'operasionalDetails', 'meratusDetails', 'temasDetails', 'tantoDetails']);
+
+        if ($showBuruhBatamContainers) {
+            $query->with('buruhBatamDetails');
+        }
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -89,7 +96,7 @@ class BiayaKapalController extends Controller
         // Get all active klasifikasi biaya for filter dropdown
         $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
 
-        return view('biaya-kapal.index', compact('biayaKapals', 'klasifikasiBiayas'));
+        return view('biaya-kapal.index', compact('biayaKapals', 'klasifikasiBiayas', 'showBuruhBatamContainers'));
     }
 
     /**

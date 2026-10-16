@@ -139,6 +139,9 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Invoice</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kapal</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Voyage</th>
+                            @if($showBuruhBatamContainers)
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer Diinput</th>
+                            @endif
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Biaya</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
@@ -160,7 +163,9 @@
                             <td class="px-3 py-2">
                                 @php
                                     // Untuk biaya buruh (KB024), ambil kapal dari barangDetails
-                                    if ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
+                                    if ($showBuruhBatamContainers && $biaya->buruhBatamDetails->isNotEmpty()) {
+                                        $namaKapals = $biaya->buruhBatamDetails->pluck('kapal')->filter()->unique()->values()->toArray();
+                                    } elseif ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
                                         $namaKapals = $biaya->barangDetails->pluck('kapal')->unique()->filter()->values()->toArray();
                                     } 
                                     // Untuk biaya air, ambil kapal dari airDetails
@@ -187,7 +192,9 @@
                             <td class="px-3 py-2">
                                 @php
                                     // Untuk biaya buruh (KB024), ambil voyage dari barangDetails
-                                    if ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
+                                    if ($showBuruhBatamContainers && $biaya->buruhBatamDetails->isNotEmpty()) {
+                                        $noVoyages = $biaya->buruhBatamDetails->pluck('voyage')->filter()->unique()->values()->toArray();
+                                    } elseif ($biaya->jenis_biaya === 'KB024' && $biaya->barangDetails && $biaya->barangDetails->count() > 0) {
                                         $noVoyages = $biaya->barangDetails->pluck('voyage')->unique()->filter()->values()->toArray();
                                     } 
                                     // Untuk biaya air, ambil voyage dari airDetails
@@ -211,6 +218,26 @@
                                     <span class="text-xs text-gray-500">-</span>
                                 @endif
                             </td>
+                            @if($showBuruhBatamContainers)
+                            <td class="px-3 py-2 text-xs text-gray-700">
+                                @php
+                                    $kontainers = $biaya->buruhBatamDetails
+                                        ->flatMap(fn ($detail) => $detail->kontainer_ids ?? [])
+                                        ->filter(fn ($kontainer) => filled(data_get($kontainer, 'nomor_kontainer')))
+                                        ->unique(fn ($kontainer) => data_get($kontainer, 'nomor_kontainer'));
+                                @endphp
+                                @if($kontainers->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1 min-w-48">
+                                        @foreach($kontainers as $kontainer)
+                                            <span class="inline-flex px-2 py-0.5 rounded bg-sky-50 border border-sky-200 font-mono text-sky-800 whitespace-nowrap">{{ data_get($kontainer, 'nomor_kontainer') }}</span>
+                                        @endforeach
+                                    </div>
+                                    <span class="block mt-1 text-gray-500">{{ $kontainers->count() }} kontainer</span>
+                                @else
+                                    <span class="text-gray-400">Belum ada kontainer tercatat</span>
+                                @endif
+                            </td>
+                            @endif
                             <td class="px-3 py-2 whitespace-nowrap text-xs">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {{ $biaya->jenis_biaya_label }}
@@ -303,7 +330,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-3 py-8 text-center">
+                            <td colspan="{{ $showBuruhBatamContainers ? 10 : 9 }}" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-ship text-gray-300 text-4xl mb-3"></i>
                                     <p class="text-gray-500 text-base font-medium">Tidak ada data biaya kapal</p>
