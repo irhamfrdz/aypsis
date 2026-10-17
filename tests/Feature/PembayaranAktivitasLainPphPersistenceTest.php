@@ -17,6 +17,7 @@ class PembayaranAktivitasLainPphPersistenceTest extends TestCase
             $table->string('jenis_aktivitas');
             $table->decimal('jumlah', 15, 2);
             $table->decimal('pph_persen', 3, 1)->nullable();
+            $table->text('keterangan')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -29,6 +30,8 @@ class PembayaranAktivitasLainPphPersistenceTest extends TestCase
 
         $migration = require base_path('database/migrations/2026_10_17_000003_add_pph_totals_to_pembayaran_aktivitas_lains_table.php');
         $migration->up();
+        $manualMigration = require base_path('database/migrations/2026_10_17_000004_add_pph_manual_to_pembayaran_aktivitas_lains_table.php');
+        $manualMigration->up();
 
         $existing = PembayaranAktivitasLain::findOrFail($existingId);
         $this->assertSame(2500, $existing->pph_nominal);
@@ -48,8 +51,19 @@ class PembayaranAktivitasLainPphPersistenceTest extends TestCase
         $this->assertSame(4000, $payment->fresh()->pph_nominal);
         $this->assertSame(196000, $payment->fresh()->grand_total);
 
+        $payment->update(['pph_manual' => true, 'pph_nominal' => 3500]);
+        $this->assertSame(3500, $payment->fresh()->pph_nominal);
+        $this->assertSame(196500, $payment->fresh()->grand_total);
+
+        $payment->update(['keterangan' => 'Revisi keterangan']);
+        $this->assertSame(3500, $payment->fresh()->pph_nominal);
+
+        $payment->update(['jumlah' => 300000, 'pph_manual' => false]);
+        $this->assertSame(6000, $payment->fresh()->pph_nominal);
+        $this->assertSame(294000, $payment->fresh()->grand_total);
+
         $payment->update(['jenis_aktivitas' => 'Pembayaran Kapal']);
         $this->assertSame(0, $payment->fresh()->pph_nominal);
-        $this->assertSame(200000, $payment->fresh()->grand_total);
+        $this->assertSame(300000, $payment->fresh()->grand_total);
     }
 }

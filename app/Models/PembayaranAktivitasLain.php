@@ -16,6 +16,8 @@ class PembayaranAktivitasLain extends Model
         'jenis_aktivitas',
         'lokasi',
         'pph_persen',
+        'pph_nominal',
+        'pph_manual',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
         'tipe_penyesuaian_detail',
@@ -43,6 +45,7 @@ class PembayaranAktivitasLain extends Model
         'jumlah' => 'integer',
         'pph_persen' => 'decimal:1',
         'pph_nominal' => 'integer',
+        'pph_manual' => 'boolean',
         'grand_total' => 'integer',
         'tipe_penyesuaian' => 'array',
         'tipe_penyesuaian_detail' => 'array',
@@ -53,10 +56,15 @@ class PembayaranAktivitasLain extends Model
     protected static function booted(): void
     {
         static::saving(function (self $payment): void {
+            $manual = $payment->jenis_aktivitas === 'Pembayaran Kendaraan'
+                && (float) $payment->pph_persen > 0
+                && (bool) $payment->pph_manual;
+            $payment->pph_manual = $manual;
             $totals = self::calculateTotals(
                 (int) $payment->jumlah,
                 $payment->jenis_aktivitas,
-                $payment->pph_persen === null ? null : (float) $payment->pph_persen
+                $payment->pph_persen === null ? null : (float) $payment->pph_persen,
+                $manual ? (int) $payment->pph_nominal : null
             );
 
             $payment->pph_nominal = $totals['pph_nominal'];
@@ -64,11 +72,15 @@ class PembayaranAktivitasLain extends Model
         });
     }
 
-    public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen): array
+    public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen, ?int $manualPphNominal = null): array
     {
         $pphNominal = $jenisAktivitas === 'Pembayaran Kendaraan'
-            ? (int) round($jumlah * ($pphPersen ?? 0) / 100)
+            ? ($manualPphNominal ?? (int) round($jumlah * ($pphPersen ?? 0) / 100))
             : 0;
+
+        if ($pphNominal < 0 || $pphNominal > $jumlah) {
+            throw new \InvalidArgumentException('Nominal PPh harus berada antara 0 dan jumlah pembayaran.');
+        }
 
         return [
             'pph_nominal' => $pphNominal,

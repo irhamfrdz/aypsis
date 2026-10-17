@@ -385,6 +385,8 @@ class PembayaranAktivitasLainController extends Controller
             'jenis_aktivitas' => 'required|string|max:255',
             'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
             'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
+            'pph_manual' => 'nullable|boolean',
+            'pph_nominal' => 'required_if:pph_manual,1|nullable|integer|min:0|lte:jumlah',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -411,6 +413,8 @@ class PembayaranAktivitasLainController extends Controller
         $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['pph_persen']
             : null;
+        $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            && (bool) ($validated['pph_manual'] ?? false);
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
                 ? array_values($validated['nomor_polisi_list'])
@@ -773,6 +777,8 @@ class PembayaranAktivitasLainController extends Controller
             'jenis_aktivitas' => 'required|string|max:255',
             'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
             'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
+            'pph_manual' => 'nullable|boolean',
+            'pph_nominal' => 'required_if:pph_manual,1|nullable|integer|min:0|lte:jumlah',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -799,6 +805,8 @@ class PembayaranAktivitasLainController extends Controller
         $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['pph_persen']
             : null;
+        $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            && (bool) ($validated['pph_manual'] ?? false);
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
                 ? array_values($validated['nomor_polisi_list'])
@@ -889,7 +897,7 @@ class PembayaranAktivitasLainController extends Controller
             }
 
             // Update main record
-            $pembayaranAktivitasLain->update(['jumlah' => $newJumlah]);
+            $pembayaranAktivitasLain->update(['jumlah' => $newJumlah, 'pph_manual' => false]);
 
             // Update related CoaTransactions and Coa balances
             $transactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();

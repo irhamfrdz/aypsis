@@ -38,4 +38,19 @@ class PembayaranAktivitasLainPphTest extends TestCase
             PembayaranAktivitasLain::calculateTotals(100000, 'Pembayaran Kapal', 2.5)
         );
     }
+
+    public function test_manual_pph_nominal_overrides_percentage(): void
+    {
+        $this->assertSame(
+            ['pph_nominal' => 1500, 'grand_total' => 98500],
+            PembayaranAktivitasLain::calculateTotals(100000, 'Pembayaran Kendaraan', 2, 1500)
+        );
+    }
+
+    public function test_manual_pph_nominal_cannot_exceed_jumlah(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        PembayaranAktivitasLain::calculateTotals(100000, 'Pembayaran Kendaraan', 2, 100001);
+    }
 }

@@ -318,7 +318,17 @@
                 </div>
 
                 <div id="pph_summary_field" class="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
-                    <div class="flex justify-between text-gray-700"><span>Potongan PPh</span><span id="pph_nominal_display">-</span></div>
+                    <label for="pph_nominal_input" class="block text-gray-700 mb-2">Nominal PPh (Rp)</label>
+                    <div class="flex gap-2">
+                        <input type="number" name="pph_nominal" id="pph_nominal_input" min="0" step="1" value="{{ old('pph_nominal') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right @error('pph_nominal') border-red-500 @enderror">
+                        <button type="button" id="pph_auto_button" class="whitespace-nowrap px-3 py-2 rounded-md bg-white border border-blue-300 text-blue-700">Hitung otomatis</button>
+                    </div>
+                    <input type="hidden" name="pph_manual" id="pph_manual_input" value="{{ old('pph_manual', '0') }}">
+                    <p class="text-xs text-gray-600 mt-1">Nominal terisi otomatis dari persentase PPh dan dapat diubah manual.</p>
+                    @error('pph_nominal')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    <p id="pph_nominal_error" class="hidden text-red-500 text-xs mt-1">Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.</p>
                     <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
                 </div>
 
@@ -680,24 +690,55 @@ function initializeSelect2() {
     const jumlahDisplay = document.getElementById('jumlah_input_display');
     const pphSummary = document.getElementById('pph_summary_field');
     const pphSelect = document.getElementById('pph_kendaraan_select');
-    function updatePphSummary() {
+    const pphInput = document.getElementById('pph_nominal_input');
+    const pphManualInput = document.getElementById('pph_manual_input');
+    const pphAutoButton = document.getElementById('pph_auto_button');
+    const pphError = document.getElementById('pph_nominal_error');
+    function updatePphSummary(recalculate = false) {
         const isVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan';
         pphSummary.classList.toggle('hidden', !isVehicle);
+        const hasRate = isVehicle && pphSelect.value !== '';
+        const canEdit = hasRate && Number(pphSelect.value) > 0;
+        pphInput.disabled = !canEdit;
+        pphInput.required = canEdit;
+        pphAutoButton.disabled = !canEdit;
+        pphInput.setCustomValidity('');
+        pphError.classList.add('hidden');
         if (!isVehicle || pphSelect.value === '') {
-            document.getElementById('pph_nominal_display').textContent = '-';
+            pphInput.value = '';
+            pphManualInput.value = '0';
             document.getElementById('grand_total_display').textContent = '-';
             return;
         }
 
         const jumlah = Number(jumlahDisplay.value.replace(/[^\d]/g, '')) || 0;
-        const pphNominal = Math.round(jumlah * Number(pphSelect.value) / 100);
-        document.getElementById('pph_nominal_display').textContent = 'Rp ' + pphNominal.toLocaleString('id-ID');
+        pphInput.max = String(jumlah);
+        if (recalculate || !canEdit || (pphManualInput.value !== '1' && pphInput.value === '')) {
+            pphInput.value = Math.round(jumlah * Number(pphSelect.value) / 100);
+            pphManualInput.value = '0';
+        }
+        if (pphInput.value === '') {
+            document.getElementById('grand_total_display').textContent = '-';
+            return;
+        }
+        const pphNominal = Number(pphInput.value);
+        if (!Number.isInteger(pphNominal) || pphNominal < 0 || pphNominal > jumlah) {
+            pphInput.setCustomValidity('Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.');
+            pphError.classList.remove('hidden');
+            document.getElementById('grand_total_display').textContent = '-';
+            return;
+        }
         document.getElementById('grand_total_display').textContent = 'Rp ' + (jumlah - pphNominal).toLocaleString('id-ID');
     }
-    jumlahDisplay.addEventListener('input', updatePphSummary);
-    pphSelect.addEventListener('change', updatePphSummary);
-    jenisAktivitas.addEventListener('change', updatePphSummary);
-    updatePphSummary();
+    jumlahDisplay.addEventListener('input', () => updatePphSummary(true));
+    pphSelect.addEventListener('change', () => updatePphSummary(true));
+    jenisAktivitas.addEventListener('change', () => updatePphSummary(true));
+    pphInput.addEventListener('input', () => {
+        pphManualInput.value = '1';
+        updatePphSummary();
+    });
+    pphAutoButton.addEventListener('click', () => updatePphSummary(true));
+    updatePphSummary(pphManualInput.value !== '1');
 
     function initializeJumlahInput() {
         const displayInput = document.getElementById('jumlah_input_display');
@@ -1379,6 +1420,17 @@ function initializeSelect2() {
             if (!element || !value) {
                 showErrorMessage(`${field.name} harus diisi!`);
                 if (element) element.focus();
+                return false;
+            }
+        }
+
+        if (jenisAktivitas === 'Pembayaran Kendaraan' && Number(document.getElementById('pph_kendaraan_select').value) > 0) {
+            const pphInput = document.getElementById('pph_nominal_input');
+            const pphNominal = Number(pphInput.value);
+            const jumlah = Number(document.getElementById('jumlah_input_value').value);
+            if (pphInput.value === '' || !Number.isInteger(pphNominal) || pphNominal < 0 || pphNominal > jumlah) {
+                showErrorMessage('Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.');
+                pphInput.focus();
                 return false;
             }
         }

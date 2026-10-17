@@ -172,6 +172,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-500">Potongan PPh</label>
                             <p class="mt-1 text-base text-gray-900">Rp {{ number_format($pembayaranAktivitasLain->pph_nominal, 0, ',', '.') }}</p>
+                            @if($pembayaranAktivitasLain->pph_manual)
+                                <p class="text-xs text-gray-500">Nominal disesuaikan manual</p>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-500">Grand Total</label>
