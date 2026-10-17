@@ -114,6 +114,10 @@
                             <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->lokasi ? ucfirst($pembayaranAktivitasLain->lokasi) : '-' }}</p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-500">PPh</label>
+                            <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->pph_persen === null || (float) $pembayaranAktivitasLain->pph_persen === 0.0 ? 'Tidak menggunakan PPh' : ((float) $pembayaranAktivitasLain->pph_persen === 2.0 ? '2%' : '2,5%') }}</p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-500">Kendaraan</label>
                             @php
                                 $nomorPolisiList = $pembayaranAktivitasLain->sub_jenis_kendaraan === 'Lain Lain'

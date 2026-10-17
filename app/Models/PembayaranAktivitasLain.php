@@ -15,6 +15,7 @@ class PembayaranAktivitasLain extends Model
         'tanggal',
         'jenis_aktivitas',
         'lokasi',
+        'pph_persen',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
         'tipe_penyesuaian_detail',
@@ -40,6 +41,7 @@ class PembayaranAktivitasLain extends Model
     protected $casts = [
         'tanggal' => 'date',
         'jumlah' => 'integer',
+        'pph_persen' => 'decimal:1',
         'tipe_penyesuaian' => 'array',
         'tipe_penyesuaian_detail' => 'array',
         'nomor_polisi_list' => 'array',

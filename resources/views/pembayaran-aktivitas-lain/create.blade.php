@@ -156,6 +156,20 @@
                     @enderror
                 </div>
 
+                <!-- PPh untuk pembayaran kendaraan -->
+                <div id="pph_kendaraan_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">PPh <span class="text-red-500">*</span></label>
+                    <select name="pph_persen" id="pph_kendaraan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('pph_persen') border-red-500 @enderror" {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? 'required' : '' }}>
+                        <option value="">Pilih PPh</option>
+                        <option value="0" {{ old('pph_persen') === '0' ? 'selected' : '' }}>Tidak menggunakan PPh</option>
+                        <option value="2" {{ old('pph_persen') === '2' ? 'selected' : '' }}>2%</option>
+                        <option value="2.5" {{ old('pph_persen') === '2.5' ? 'selected' : '' }}>2,5%</option>
+                    </select>
+                    @error('pph_persen')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Surat Jalan (Hidden by default) -->
                 <div id="surat_jalan_field" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Surat Jalan <span class="text-red-500">*</span></label>
@@ -708,10 +722,14 @@ function initializeSelect2() {
         const jenisVal = (jenisAktivitas.value || '').trim();
         const lokasiField = document.getElementById('lokasi_kendaraan_field');
         const lokasiSelect = document.getElementById('lokasi_kendaraan_select');
+        const pphField = document.getElementById('pph_kendaraan_field');
+        const pphSelect = document.getElementById('pph_kendaraan_select');
         console.debug('toggleSubJenisKendaraan called, jenisVal=', jenisVal);
         if (jenisVal === 'Pembayaran Kendaraan') {
             lokasiField.classList.remove('hidden');
             lokasiSelect.required = true;
+            pphField.classList.remove('hidden');
+            pphSelect.required = true;
             subJenisKendaraan.classList.remove('hidden');
             subJenisSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -726,6 +744,9 @@ function initializeSelect2() {
             lokasiField.classList.add('hidden');
             lokasiSelect.required = false;
             lokasiSelect.value = '';
+            pphField.classList.add('hidden');
+            pphSelect.required = false;
+            pphSelect.value = '';
             subJenisKendaraan.classList.add('hidden');
             subJenisSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan_select').val('').trigger('change');
@@ -1291,6 +1312,7 @@ function initializeSelect2() {
         // Add conditional required fields
         if (jenisAktivitas === 'Pembayaran Kendaraan') {
             requiredFields.push({ id: 'lokasi_kendaraan_select', name: 'Lokasi' });
+            requiredFields.push({ id: 'pph_kendaraan_select', name: 'PPh' });
             requiredFields.push({ id: 'sub_jenis_kendaraan_select', name: 'Sub Jenis Kendaraan' });
             
             const subJenis = document.getElementById('sub_jenis_kendaraan_select').value;

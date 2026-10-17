@@ -384,6 +384,7 @@ class PembayaranAktivitasLainController extends Controller
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
+            'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -406,6 +407,9 @@ class PembayaranAktivitasLainController extends Controller
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['lokasi']
+            : null;
+        $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            ? $validated['pph_persen']
             : null;
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
@@ -768,6 +772,7 @@ class PembayaranAktivitasLainController extends Controller
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
+            'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -790,6 +795,9 @@ class PembayaranAktivitasLainController extends Controller
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['lokasi']
+            : null;
+        $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            ? $validated['pph_persen']
             : null;
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
