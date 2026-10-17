@@ -48,6 +48,7 @@ return [
                 'master-chasis-batam' => 'Manajemen Chasis Batam',
                 'master-tunjangan' => 'Manajemen Tunjangan',
                 'master-shipper-consignee' => 'Manajemen Shipper Consignee',
+                'master-penerima-bukti-potong-pph' => 'Manajemen Penerima Bukti Potong PPh',
                 'master-wa-templates' => 'Manajemen WA Templates',
                 'master-wa-broadcast' => 'Manajemen WA Broadcast',
                 'master-type-bon-amprahan' => 'Manajemen Type Bon Amprahan',

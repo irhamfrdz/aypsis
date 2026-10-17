@@ -400,6 +400,7 @@
                         $user->can('master-divisi-view') ||
                         $user->can('master-pekerjaan-view') ||
                         $user->can('master-pajak-view') ||
+                        $user->can('master-penerima-bukti-potong-pph-view') ||
                         $user->can('master-bank-view') ||
                         $user->can('master-vendor-bengkel.view') ||
                         $user->can('master-vendor-asuransi-view') ||

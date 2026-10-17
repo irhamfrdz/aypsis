@@ -30,6 +30,7 @@ use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
 use App\Http\Controllers\MasterPengirimPenerimaController;
+use App\Http\Controllers\MasterPenerimaBuktiPotongPphController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPricelistObAntarGudangController;
@@ -2687,6 +2688,15 @@ Route::middleware([
         Route::post('master/pajak/import', [PajakController::class, 'import'])
             ->name('master.pajak.import')
             ->middleware('can:master-pajak-create');
+
+        Route::prefix('master/penerima-bukti-potong-pph')->name('master.penerima-bukti-potong-pph.')->group(function () {
+            Route::get('/', [MasterPenerimaBuktiPotongPphController::class, 'index'])->name('index')->middleware('can:master-penerima-bukti-potong-pph-view');
+            Route::get('/create', [MasterPenerimaBuktiPotongPphController::class, 'create'])->name('create')->middleware('can:master-penerima-bukti-potong-pph-create');
+            Route::post('/', [MasterPenerimaBuktiPotongPphController::class, 'store'])->name('store')->middleware('can:master-penerima-bukti-potong-pph-create');
+            Route::get('/{penerimaBuktiPotongPph}/edit', [MasterPenerimaBuktiPotongPphController::class, 'edit'])->name('edit')->middleware('can:master-penerima-bukti-potong-pph-update');
+            Route::put('/{penerimaBuktiPotongPph}', [MasterPenerimaBuktiPotongPphController::class, 'update'])->name('update')->middleware('can:master-penerima-bukti-potong-pph-update');
+            Route::delete('/{penerimaBuktiPotongPph}', [MasterPenerimaBuktiPotongPphController::class, 'destroy'])->name('destroy')->middleware('can:master-penerima-bukti-potong-pph-delete');
+        });
 
         // ═══════════════════════════════════════════════════════════════════════
         // 🏗️ CORE MASTER DATA (SIMPLE RESOURCES) - Alphabetical Order
