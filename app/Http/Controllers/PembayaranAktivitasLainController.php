@@ -379,6 +379,7 @@ class PembayaranAktivitasLainController extends Controller
 
     public function store(Request $request)
     {
+        $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
@@ -402,9 +403,9 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => 'required|integer|min:0',
-            'debit_kredit' => 'required|in:debit,kredit',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
-            'akun_bank_id' => 'required|exists:akun_coa,id',
+            'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
+            'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
         ]);
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
@@ -415,6 +416,11 @@ class PembayaranAktivitasLainController extends Controller
             : null;
         $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && (bool) ($validated['pph_manual'] ?? false);
+        if (! $requiresDoubleBook) {
+            $validated['debit_kredit'] = null;
+            $validated['akun_coa_id'] = null;
+            $validated['akun_bank_id'] = null;
+        }
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
                 ? array_values($validated['nomor_polisi_list'])
@@ -436,7 +442,9 @@ class PembayaranAktivitasLainController extends Controller
                 $pembayaran = PembayaranAktivitasLain::create($validated);
 
                 // Implement Double Book Accounting
-                $this->createDoubleBookJournal($pembayaran, $validated);
+                if ($requiresDoubleBook) {
+                    $this->createDoubleBookJournal($pembayaran, $validated);
+                }
 
                 // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" / "Pembayaran Adjustment Uang Jalan" and "pengembalian penuh"
                 $isAdjustment = in_array($validated['jenis_aktivitas'], ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']);
@@ -449,7 +457,7 @@ class PembayaranAktivitasLainController extends Controller
                 DB::commit();
 
                 return redirect()->route('pembayaran-aktivitas-lain.index')
-                    ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting'.
+                    ->with('success', 'Data pembayaran berhasil disimpan'.($requiresDoubleBook ? ' dengan jurnal double book accounting' : '').
                         (($isAdjustment && ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') ? ' dan Data Prospek dihapus' : ''));
 
             } catch (\Illuminate\Database\QueryException $e) {
@@ -771,6 +779,7 @@ class PembayaranAktivitasLainController extends Controller
 
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
+        $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
@@ -794,9 +803,9 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => 'required|integer|min:0',
-            'debit_kredit' => 'required|in:debit,kredit',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
-            'akun_bank_id' => 'required|exists:akun_coa,id',
+            'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
+            'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
         ]);
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
@@ -807,6 +816,11 @@ class PembayaranAktivitasLainController extends Controller
             : null;
         $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && (bool) ($validated['pph_manual'] ?? false);
+        if (! $requiresDoubleBook) {
+            $validated['debit_kredit'] = null;
+            $validated['akun_coa_id'] = null;
+            $validated['akun_bank_id'] = null;
+        }
         $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
                 ? array_values($validated['nomor_polisi_list'])
@@ -836,7 +850,9 @@ class PembayaranAktivitasLainController extends Controller
             $pembayaranAktivitasLain->update($validated);
 
             // Re-create journal entries
-            $this->createDoubleBookJournal($pembayaranAktivitasLain, $validated);
+            if ($requiresDoubleBook) {
+                $this->createDoubleBookJournal($pembayaranAktivitasLain, $validated);
+            }
 
             // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" / "Pembayaran Adjustment Uang Jalan" and "pengembalian penuh"
             $isAdjustment = in_array($validated['jenis_aktivitas'], ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']);

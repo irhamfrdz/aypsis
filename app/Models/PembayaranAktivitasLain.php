@@ -88,6 +88,16 @@ class PembayaranAktivitasLain extends Model
         ];
     }
 
+    public static function requiresDoubleBook(?string $jenisAktivitas, ?string $lokasi): bool
+    {
+        return ! ($jenisAktivitas === 'Pembayaran Kendaraan' && $lokasi === 'batam');
+    }
+
+    public function usesDoubleBook(): bool
+    {
+        return self::requiresDoubleBook($this->jenis_aktivitas, $this->lokasi);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

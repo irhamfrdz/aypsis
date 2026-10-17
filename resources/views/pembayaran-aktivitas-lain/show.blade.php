@@ -189,6 +189,7 @@
                         <p class="mt-1 text-base text-gray-900">{{ ucfirst($pembayaranAktivitasLain->metode_pembayaran) }}</p>
                     </div>
 
+                    @if($pembayaranAktivitasLain->usesDoubleBook())
                     <div>
                         <label class="block text-sm font-medium text-gray-500">Debit/Kredit</label>
                         <p class="mt-1 text-base text-gray-900">{{ ucfirst($pembayaranAktivitasLain->debit_kredit ?? '-') }}</p>
@@ -207,6 +208,9 @@
                             @endif
                         </p>
                     </div>
+                    @else
+                    <p class="text-sm text-gray-600">Double book tidak diperlukan untuk pembayaran kendaraan Batam.</p>
+                    @endif
 
                     <div>
                         <label class="block text-sm font-medium text-gray-500">Dibuat Oleh</label>

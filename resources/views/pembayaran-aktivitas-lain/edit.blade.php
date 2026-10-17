@@ -339,14 +339,14 @@
                 </div>
 
                 <!-- Debit/Kredit (Double Book) -->
-                <div>
+                <div id="debit_kredit_field" class="{{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Jenis Transaksi (Double Book) <span class="text-red-500">*</span>
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-1">
                             📊 Auto Jurnal
                         </span>
                     </label>
-                    <select name="debit_kredit" id="debit_kredit" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
+                    <select name="debit_kredit" id="debit_kredit" {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? '' : 'required' }} class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
                         <option value="">Pilih Jenis Transaksi</option>
                         <option value="debit" {{ old('debit_kredit', $pembayaranAktivitasLain->debit_kredit) == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
                         <option value="kredit" {{ old('debit_kredit', $pembayaranAktivitasLain->debit_kredit) == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
@@ -365,9 +365,9 @@
                 </div>
 
                 <!-- Akun Biaya -->
-                <div>
+                <div id="akun_coa_field" class="{{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun Biaya <span class="text-red-500">*</span></label>
-                    <select name="akun_coa_id" id="akun_coa_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_coa_id') border-red-500 @enderror">
+                    <select name="akun_coa_id" id="akun_coa_select" {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? '' : 'required' }} class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_coa_id') border-red-500 @enderror">
                         <option value="">Pilih Akun COA</option>
                         @foreach($akunBiaya as $akun)
                             <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_coa_id', $pembayaranAktivitasLain->akun_coa_id) == $akun->id ? 'selected' : '' }}>
@@ -381,9 +381,9 @@
                 </div>
 
                 <!-- Akun Bank -->
-                <div>
+                <div id="akun_bank_field" class="{{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bank/Kas <span class="text-red-500">*</span></label>
-                    <select name="akun_bank_id" id="akun_bank_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_bank_id') border-red-500 @enderror">
+                    <select name="akun_bank_id" id="akun_bank_select" {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? '' : 'required' }} class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_bank_id') border-red-500 @enderror">
                         <option value="">Pilih Bank/Kas</option>
                         @foreach($akunBank as $akun)
                             <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_bank_id', $pembayaranAktivitasLain->akun_bank_id) == $akun->id ? 'selected' : '' }}>
@@ -1181,8 +1181,32 @@ function initializeSelect2() {
     const displayJumlahInput = document.getElementById('jumlah_input_display');
     const journalPreview = document.getElementById('journal_preview');
     const journalContent = document.getElementById('journal_content');
+
+    function toggleDoubleBookFields() {
+        const isBatamVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan'
+            && document.getElementById('lokasi_kendaraan_select').value === 'batam';
+        [
+            ['debit_kredit_field', debitKreditSelect],
+            ['akun_coa_field', akunBiayaSelect],
+            ['akun_bank_field', akunBankSelect]
+        ].forEach(([fieldId, select]) => {
+            document.getElementById(fieldId).classList.toggle('hidden', isBatamVehicle);
+            select.required = !isBatamVehicle;
+            select.disabled = isBatamVehicle;
+            if (isBatamVehicle) $(select).val('').trigger('change');
+        });
+        if (isBatamVehicle) journalPreview.classList.add('hidden');
+        else updateJournalPreview();
+    }
+    jenisAktivitas.addEventListener('change', toggleDoubleBookFields);
+    document.getElementById('lokasi_kendaraan_select').addEventListener('change', toggleDoubleBookFields);
+    toggleDoubleBookFields();
     
     function updateJournalPreview() {
+        if (jenisAktivitas.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam') {
+            journalPreview.classList.add('hidden');
+            return;
+        }
         const jenisTransaksi = debitKreditSelect.value;
         const akunBiaya = akunBiayaSelect.selectedOptions[0];
         const akunBank = akunBankSelect.selectedOptions[0];
@@ -1271,11 +1295,14 @@ function initializeSelect2() {
         const requiredFields = [
             { id: 'tanggal', name: 'Tanggal' },
             { id: 'jenis_aktivitas', name: 'Jenis Aktivitas' },
-            { id: 'debit_kredit', name: 'Jenis Transaksi' },
-            { id: 'akun_coa_select', name: 'Akun Biaya' },
-            { id: 'akun_bank_select', name: 'Bank/Kas' },
             { id: 'penerima_input', name: 'Penerima' }
         ];
+
+        if (document.getElementById('jenis_aktivitas').value !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
+            requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
+            requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
+            requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
+        }
 
         if (document.getElementById('jenis_aktivitas').value === 'Pembayaran Kendaraan') {
             requiredFields.push({ id: 'lokasi_kendaraan_select', name: 'Lokasi' });
