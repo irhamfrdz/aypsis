@@ -143,6 +143,19 @@
                     @enderror
                 </div>
 
+                <!-- Lokasi untuk pembayaran kendaraan -->
+                <div id="lokasi_kendaraan_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
+                    <select name="lokasi" id="lokasi_kendaraan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('lokasi') border-red-500 @enderror" {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? 'required' : '' }}>
+                        <option value="">Pilih Lokasi</option>
+                        <option value="jakarta" {{ old('lokasi') === 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                        <option value="batam" {{ old('lokasi') === 'batam' ? 'selected' : '' }}>Batam</option>
+                    </select>
+                    @error('lokasi')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Surat Jalan (Hidden by default) -->
                 <div id="surat_jalan_field" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Surat Jalan <span class="text-red-500">*</span></label>
@@ -244,6 +257,24 @@
                     @error('nomor_polisi')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <div id="nomor_polisi_list_field" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kendaraan <span class="text-red-500">*</span></label>
+                    <select name="nomor_polisi_list[]" id="nomor_polisi_list_select" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_polisi_list') border-red-500 @enderror">
+                        @foreach($mobils as $mobil)
+                            @php
+                                $val = $mobil->nomor_polisi ?: $mobil->no_kir;
+                                $label = ($val ?: 'Tanpa Plat/KIR') . ' - ' . $mobil->merek . ' ' . $mobil->jenis;
+                            @endphp
+                            @if($val)
+                                <option value="{{ $val }}" {{ in_array($val, (array) old('nomor_polisi_list', [])) ? 'selected' : '' }}>{{ $label }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Pilih satu atau lebih kendaraan.</p>
+                    @error('nomor_polisi_list')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error('nomor_polisi_list.*')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <!-- Nomor Voyage (Hidden by default) -->
@@ -675,8 +706,12 @@ function initializeSelect2() {
 
     function toggleSubJenisKendaraan() {
         const jenisVal = (jenisAktivitas.value || '').trim();
+        const lokasiField = document.getElementById('lokasi_kendaraan_field');
+        const lokasiSelect = document.getElementById('lokasi_kendaraan_select');
         console.debug('toggleSubJenisKendaraan called, jenisVal=', jenisVal);
         if (jenisVal === 'Pembayaran Kendaraan') {
+            lokasiField.classList.remove('hidden');
+            lokasiSelect.required = true;
             subJenisKendaraan.classList.remove('hidden');
             subJenisSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -688,6 +723,9 @@ function initializeSelect2() {
                 });
             }, 100);
         } else {
+            lokasiField.classList.add('hidden');
+            lokasiSelect.required = false;
+            lokasiSelect.value = '';
             subJenisKendaraan.classList.add('hidden');
             subJenisSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan_select').val('').trigger('change');
@@ -781,7 +819,17 @@ function initializeSelect2() {
 
     function toggleNomorPolisi() {
         const subJenis = subJenisSelect.value;
-        if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR' || subJenis === 'Lain Lain') {
+        const nomorPolisiListField = document.getElementById('nomor_polisi_list_field');
+        const nomorPolisiListSelect = document.getElementById('nomor_polisi_list_select');
+        if (jenisAktivitas.value === 'Pembayaran Kendaraan' && subJenis === 'Lain Lain') {
+            nomorPolisiField.classList.add('hidden');
+            nomorPolisiSelect.removeAttribute('required');
+            $(nomorPolisiSelect).val('').trigger('change');
+            nomorPolisiListField.classList.remove('hidden');
+            $(nomorPolisiListSelect).select2({ placeholder: 'Pilih Kendaraan', width: '100%' });
+        } else if (jenisAktivitas.value === 'Pembayaran Kendaraan' && (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR')) {
+            nomorPolisiListField.classList.add('hidden');
+            $(nomorPolisiListSelect).val(null).trigger('change');
             nomorPolisiField.classList.remove('hidden');
             nomorPolisiSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -793,6 +841,8 @@ function initializeSelect2() {
                 });
             }, 100);
         } else {
+            nomorPolisiListField.classList.add('hidden');
+            $(nomorPolisiListSelect).val(null).trigger('change');
             nomorPolisiField.classList.add('hidden');
             nomorPolisiSelect.removeAttribute('required');
             $('select[name="nomor_polisi"]').val('').trigger('change');
@@ -1240,9 +1290,13 @@ function initializeSelect2() {
         
         // Add conditional required fields
         if (jenisAktivitas === 'Pembayaran Kendaraan') {
+            requiredFields.push({ id: 'lokasi_kendaraan_select', name: 'Lokasi' });
             requiredFields.push({ id: 'sub_jenis_kendaraan_select', name: 'Sub Jenis Kendaraan' });
             
             const subJenis = document.getElementById('sub_jenis_kendaraan_select').value;
+            if (subJenis === 'Lain Lain') {
+                requiredFields.push({ id: 'nomor_polisi_list_select', name: 'Kendaraan' });
+            }
             if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR') {
                 requiredFields.push({ name: 'nomor_polisi', name: 'Nomor Polisi' });
             }

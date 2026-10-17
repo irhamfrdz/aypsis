@@ -14,11 +14,13 @@ class PembayaranAktivitasLain extends Model
         'nomor_accurate',
         'tanggal',
         'jenis_aktivitas',
+        'lokasi',
         'jenis_penyesuaian',
         'tipe_penyesuaian',
         'tipe_penyesuaian_detail',
         'sub_jenis_kendaraan',
         'nomor_polisi',
+        'nomor_polisi_list',
         'nomor_voyage',
         'no_surat_jalan',
         'penerima',
@@ -40,6 +42,7 @@ class PembayaranAktivitasLain extends Model
         'jumlah' => 'integer',
         'tipe_penyesuaian' => 'array',
         'tipe_penyesuaian_detail' => 'array',
+        'nomor_polisi_list' => 'array',
         'approved_at' => 'datetime',
     ];
 

@@ -383,6 +383,7 @@ class PembayaranAktivitasLainController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
+            'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -391,6 +392,8 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
+            'nomor_polisi_list' => 'required_if:sub_jenis_kendaraan,Lain Lain|nullable|array|min:1',
+            'nomor_polisi_list.*' => 'required|string|max:255|distinct',
             'nomor_voyage' => 'nullable|string|max:255',
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
@@ -400,6 +403,17 @@ class PembayaranAktivitasLainController extends Controller
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'akun_bank_id' => 'required|exists:akun_coa,id',
         ]);
+
+        $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            ? $validated['lokasi']
+            : null;
+        $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
+                ? array_values($validated['nomor_polisi_list'])
+                : null;
+        if ($validated['nomor_polisi_list']) {
+            $validated['nomor_polisi'] = $validated['nomor_polisi_list'][0];
+        }
 
         $maxAttempts = 3;
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
@@ -753,6 +767,7 @@ class PembayaranAktivitasLainController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
+            'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
             'jenis_penyesuaian' => 'nullable|string|max:255',
             'tipe_penyesuaian' => 'nullable|array',
             'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
@@ -761,6 +776,8 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
+            'nomor_polisi_list' => 'required_if:sub_jenis_kendaraan,Lain Lain|nullable|array|min:1',
+            'nomor_polisi_list.*' => 'required|string|max:255|distinct',
             'nomor_voyage' => 'nullable|string|max:255',
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
@@ -770,6 +787,17 @@ class PembayaranAktivitasLainController extends Controller
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'akun_bank_id' => 'required|exists:akun_coa,id',
         ]);
+
+        $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            ? $validated['lokasi']
+            : null;
+        $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+            && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
+                ? array_values($validated['nomor_polisi_list'])
+                : null;
+        if ($validated['nomor_polisi_list']) {
+            $validated['nomor_polisi'] = $validated['nomor_polisi_list'][0];
+        }
 
         try {
             DB::beginTransaction();

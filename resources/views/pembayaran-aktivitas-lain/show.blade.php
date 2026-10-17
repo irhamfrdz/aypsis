@@ -104,6 +104,26 @@
                         <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->jenis_aktivitas }}</p>
                     </div>
 
+                    @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Kendaraan')
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Sub Jenis Kendaraan</label>
+                            <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->sub_jenis_kendaraan ?: '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Lokasi</label>
+                            <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->lokasi ? ucfirst($pembayaranAktivitasLain->lokasi) : '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Kendaraan</label>
+                            @php
+                                $nomorPolisiList = $pembayaranAktivitasLain->sub_jenis_kendaraan === 'Lain Lain'
+                                    ? ($pembayaranAktivitasLain->nomor_polisi_list ?: array_filter([$pembayaranAktivitasLain->nomor_polisi]))
+                                    : array_filter([$pembayaranAktivitasLain->nomor_polisi]);
+                            @endphp
+                            <p class="mt-1 text-base text-gray-900">{{ $nomorPolisiList ? implode(', ', $nomorPolisiList) : '-' }}</p>
+                        </div>
+                    @endif
+
                     <div>
                         <label class="block text-sm font-medium text-gray-500">Jumlah</label>
                         <div class="flex items-center gap-2 mt-1">
