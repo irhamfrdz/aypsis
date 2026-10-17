@@ -323,6 +323,11 @@
                     @enderror
                 </div>
 
+                <div id="pph_summary_field" class="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                    <div class="flex justify-between text-gray-700"><span>Potongan PPh</span><span id="pph_nominal_display">-</span></div>
+                    <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
+                </div>
+
                 <!-- Debit/Kredit (Double Book) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -676,6 +681,28 @@ function initializeSelect2() {
     
     // Initialize jumlah input formatting
     initializeJumlahInput();
+
+    const jumlahDisplay = document.getElementById('jumlah_input_display');
+    const pphSummary = document.getElementById('pph_summary_field');
+    const pphSelect = document.getElementById('pph_kendaraan_select');
+    function updatePphSummary() {
+        const isVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan';
+        pphSummary.classList.toggle('hidden', !isVehicle);
+        if (!isVehicle || pphSelect.value === '') {
+            document.getElementById('pph_nominal_display').textContent = '-';
+            document.getElementById('grand_total_display').textContent = '-';
+            return;
+        }
+
+        const jumlah = Number(jumlahDisplay.value.replace(/[^\d]/g, '')) || 0;
+        const pphNominal = Math.round(jumlah * Number(pphSelect.value) / 100);
+        document.getElementById('pph_nominal_display').textContent = 'Rp ' + pphNominal.toLocaleString('id-ID');
+        document.getElementById('grand_total_display').textContent = 'Rp ' + (jumlah - pphNominal).toLocaleString('id-ID');
+    }
+    jumlahDisplay.addEventListener('input', updatePphSummary);
+    pphSelect.addEventListener('change', updatePphSummary);
+    jenisAktivitas.addEventListener('change', updatePphSummary);
+    updatePphSummary();
 
     function initializeJumlahInput() {
         const displayInput = document.getElementById('jumlah_input_display');

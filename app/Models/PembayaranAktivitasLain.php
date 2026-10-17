@@ -42,11 +42,39 @@ class PembayaranAktivitasLain extends Model
         'tanggal' => 'date',
         'jumlah' => 'integer',
         'pph_persen' => 'decimal:1',
+        'pph_nominal' => 'integer',
+        'grand_total' => 'integer',
         'tipe_penyesuaian' => 'array',
         'tipe_penyesuaian_detail' => 'array',
         'nomor_polisi_list' => 'array',
         'approved_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $payment): void {
+            $totals = self::calculateTotals(
+                (int) $payment->jumlah,
+                $payment->jenis_aktivitas,
+                $payment->pph_persen === null ? null : (float) $payment->pph_persen
+            );
+
+            $payment->pph_nominal = $totals['pph_nominal'];
+            $payment->grand_total = $totals['grand_total'];
+        });
+    }
+
+    public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen): array
+    {
+        $pphNominal = $jenisAktivitas === 'Pembayaran Kendaraan'
+            ? (int) round($jumlah * ($pphPersen ?? 0) / 100)
+            : 0;
+
+        return [
+            'pph_nominal' => $pphNominal,
+            'grand_total' => $jumlah - $pphNominal,
+        ];
+    }
 
     public function creator()
     {

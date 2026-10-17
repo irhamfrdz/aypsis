@@ -168,6 +168,16 @@
                             @endif
                         @endcan
                     </div>
+                    @if($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Kendaraan')
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Potongan PPh</label>
+                            <p class="mt-1 text-base text-gray-900">Rp {{ number_format($pembayaranAktivitasLain->pph_nominal, 0, ',', '.') }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Grand Total</label>
+                            <p class="mt-1 text-lg font-bold text-blue-600">Rp {{ number_format($pembayaranAktivitasLain->grand_total, 0, ',', '.') }}</p>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="space-y-4">
