@@ -6,6 +6,7 @@ use App\Models\Absensi;
 use App\Models\HariLibur;
 use App\Models\Karyawan;
 use App\Models\UangLembur;
+use App\Models\UangLemburRule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -198,8 +199,10 @@ class PerhitunganLemburController extends Controller
 
                             // Find in DB
                             $ul = $uangLemburs->first(function ($item) use ($group, $sub_group) {
-                                return strtoupper($item->group) === $group && strtoupper($item->sub_group) === $sub_group;
+                                return strtoupper(trim($item->group)) === $group && strtoupper(trim($item->sub_group)) === $sub_group;
                             });
+                            $ul ??= $uangLemburs->first(fn ($item) => strtoupper(trim($item->group)) === $group
+                                && self::normalizeOvertimeSubgroup($item->sub_group) === self::normalizeOvertimeSubgroup($sub_group));
 
                             if ($ul) {
                                 $matchingUangLemburs[] = $ul;
@@ -258,7 +261,7 @@ class PerhitunganLemburController extends Controller
                     $ruleApplied = null;
 
                     foreach ($matchingUangLemburs as $ul) {
-                        $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
+                        $isPelabuhan1 = self::normalizeOvertimeSubgroup($ul->sub_group) === 'PELABUHAN 1';
 
                         foreach ($ul->rules as $rule) {
                             if ($rule->tipe_hari === $tipeHari) {
@@ -278,7 +281,10 @@ class PerhitunganLemburController extends Controller
                                     if ($rule->jam_mulai) {
                                         $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
 
-                                        if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                        // A session starting after midnight can still use last night's tariff.
+                                        if (self::usesPreviousNightRule($rule, $lm)) {
+                                            $ruleMulai->subDay();
+                                        } elseif ($ruleMulai->copy()->addHours(6) < $lm) {
                                             $ruleMulai->addDay();
                                         }
 
@@ -622,8 +628,10 @@ class PerhitunganLemburController extends Controller
                         $sub_group = trim(strtoupper($parts[1]));
 
                         $ul = $uangLemburs->first(function ($item) use ($group, $sub_group) {
-                            return strtoupper($item->group) === $group && strtoupper($item->sub_group) === $sub_group;
+                            return strtoupper(trim($item->group)) === $group && strtoupper(trim($item->sub_group)) === $sub_group;
                         });
+                        $ul ??= $uangLemburs->first(fn ($item) => strtoupper(trim($item->group)) === $group
+                            && self::normalizeOvertimeSubgroup($item->sub_group) === self::normalizeOvertimeSubgroup($sub_group));
 
                         if ($ul) {
                             $matchingUangLemburs[] = $ul;
@@ -676,7 +684,7 @@ class PerhitunganLemburController extends Controller
                 $nominalHariIni = 0;
 
                 foreach ($matchingUangLemburs as $ul) {
-                    $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
+                    $isPelabuhan1 = self::normalizeOvertimeSubgroup($ul->sub_group) === 'PELABUHAN 1';
 
                     foreach ($ul->rules as $rule) {
                         if ($rule->tipe_hari === $tipeHari) {
@@ -696,7 +704,9 @@ class PerhitunganLemburController extends Controller
                                 if ($rule->jam_mulai) {
                                     $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
 
-                                    if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                    if (self::usesPreviousNightRule($rule, $lm)) {
+                                        $ruleMulai->subDay();
+                                    } elseif ($ruleMulai->copy()->addHours(6) < $lm) {
                                         $ruleMulai->addDay();
                                     }
 
@@ -765,6 +775,22 @@ class PerhitunganLemburController extends Controller
         }
 
         return $results;
+    }
+
+    private static function normalizeOvertimeSubgroup(string $subgroup): string
+    {
+        $subgroup = strtoupper(trim($subgroup));
+
+        return $subgroup === 'JAKARTA PELABUHAN 1' ? 'PELABUHAN 1' : $subgroup;
+    }
+
+    private static function usesPreviousNightRule(UangLemburRule $rule, Carbon $start): bool
+    {
+        $startTime = $start->format('H:i:s');
+
+        return $rule->jam_mulai && $startTime < $rule->jam_mulai
+            && (($rule->jam_selesai && $rule->jam_selesai < $rule->jam_mulai && $startTime <= $rule->jam_selesai)
+                || ($rule->is_sampai_selesai && $start->hour < 6));
     }
 
     private static function latestUangMakanMap($karyawanIds): \Illuminate\Support\Collection
