@@ -2385,6 +2385,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Penerima Bukti Potong PPh --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Penerima Bukti Potong PPh</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-penerima-bukti-potong-pph][view]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-penerima-bukti-potong-pph']['view'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-penerima-bukti-potong-pph][create]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-penerima-bukti-potong-pph']['create'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-penerima-bukti-potong-pph][update]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-penerima-bukti-potong-pph']['update'] ?? false)></td>
+                                <td><input type="checkbox" name="permissions[master-penerima-bukti-potong-pph][delete]" value="1" class="permission-checkbox" @checked($userMatrixPermissions['master-penerima-bukti-potong-pph']['delete'] ?? false)></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Bank --}}
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
