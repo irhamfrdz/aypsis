@@ -1358,20 +1358,26 @@
                 }
             }
 
-            // Hide standard fields
-            if(nominalWrapper) nominalWrapper.classList.add('hidden');
-            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
-            if(namaVendorWrapper) {
-                namaVendorWrapper.classList.add('hidden');
-                const vendorInput = document.getElementById('nama_vendor');
-                if (vendorInput) vendorInput.value = '';
+            // Perlengkapan uses the same payment fields as the create form.
+            if(nominalWrapper) {
+                nominalWrapper.classList.remove('hidden');
+                const nominalLabel = nominalWrapper.querySelector('label');
+                if (nominalLabel) nominalLabel.innerHTML = 'Total Biaya Keseluruhan';
             }
-            if(nomorRekeningWrapper) {
-                nomorRekeningWrapper.classList.add('hidden');
-                const rekInput = document.getElementById('nomor_rekening');
-                if (rekInput) rekInput.value = '';
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+                nominalInput.removeAttribute('required');
             }
-            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+            if(penerimaInput) penerimaInput.setAttribute('required', 'required');
+            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+            const keteranganWrapper = document.getElementById('keterangan_wrapper');
+            const buktiWrapper = document.getElementById('bukti_wrapper');
+            if(keteranganWrapper) keteranganWrapper.classList.remove('hidden');
+            if(buktiWrapper) buktiWrapper.classList.remove('hidden');
             kapalWrapper.classList.add('hidden');
             voyageWrapper.classList.add('hidden');
             blWrapper.classList.add('hidden');
