@@ -363,6 +363,19 @@ Route::middleware([
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+    Route::get('/dashboard-armada', [\App\Http\Controllers\DashboardArmadaController::class, 'index'])
+        ->name('dashboard-armada.index')
+        ->middleware('can:master-mobil-view');
+    Route::post('/dashboard-armada/availability', [\App\Http\Controllers\ArmadaAvailabilityController::class, 'store'])
+        ->name('dashboard-armada.availability.store')
+        ->middleware('can:master-mobil-update');
+    Route::delete('/dashboard-armada/availability/{availability}', [\App\Http\Controllers\ArmadaAvailabilityController::class, 'destroy'])
+        ->name('dashboard-armada.availability.destroy')
+        ->middleware('can:master-mobil-update');
+    Route::patch('/dashboard-armada/availability/{availability}', [\App\Http\Controllers\ArmadaAvailabilityController::class, 'update'])
+        ->name('dashboard-armada.availability.update')
+        ->middleware('can:master-mobil-update');
+
     // Dashboard khusus divisi HRD
     Route::get('/hrd-dashboard', [\App\Http\Controllers\HrdDashboardController::class, 'index'])
         ->name('hrd.dashboard')
@@ -1728,6 +1741,13 @@ Route::middleware([
         Route::get('permission/{permission}/users', [PermissionController::class, 'getUsers'])
             ->name('permission.users')
             ->middleware('can:master-permission-view');
+
+        Route::get('armada', [\App\Http\Controllers\MasterArmadaController::class, 'index'])
+            ->name('armada.index')
+            ->middleware('can:master-mobil-view');
+        Route::patch('armada/{armada}/km', [\App\Http\Controllers\MasterArmadaController::class, 'updateKm'])
+            ->name('armada.update-km')
+            ->middleware('can:master-mobil-update');
 
         // Master mobil routes - CONVERTED TO RESOURCE (7 routes → 1 line) with permissions
         // Specific routes MUST come before resource routes to avoid conflicts

@@ -725,6 +725,10 @@
     $hasAktivaPermissions = $isAdmin || ($user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('perbaikan-kontainer-view') || $user->can('master-jadwal-kapal-berlabuh-view') || $user->can('master-gudang-view') || $user->can('stock-ban-view') || $user->can('master-merk-ban-view') || $user->can('master-nama-stock-ban-view') || $user->can('master-tipe-stock-ban-view') || $user->can('biaya-kapal-view') || $user->can('pembayaran-biaya-kapal-view') || $user->can('pembayaran-pranota-stock-view') || $user->can('pranota-stock-view') || $user->can('stock-amprahan-view') || $user->can('tagihan-service-kendaraan-batam-view') || $user->can('pranota-tagihan-lain-lain-batam-view')));
 @endphp
 
+@php
+    $hasAktivaPermissions = $hasAktivaPermissions || ($user && $user->can('master-mobil-view'));
+    $isAktivaRoute = $isAktivaRoute || Request::routeIs('master.armada.*') || Request::routeIs('dashboard-armada.*');
+@endphp
 @if($hasAktivaPermissions)
 @php
     $isAktivaRoute = $isAktivaRoute || Request::routeIs('denah-gudang.*');
@@ -737,6 +741,14 @@
         </svg>
     </button>
     <div id="aktiva-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAktivaRoute) style="display: block;" @endif>
+        @can('master-mobil-view')
+            <a href="{{ route('dashboard-armada.index') }}" class="flex items-center py-2 px-3 mx-2 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('dashboard-armada.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                <span class="text-xs font-medium">Dashboard Armada</span>
+            </a>
+            <a href="{{ route('master.armada.index') }}" class="flex items-center py-2 px-3 mx-2 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.armada.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                <span class="text-xs font-medium">Master Armada</span>
+            </a>
+        @endcan
         {{-- Kontainer Sub-Dropdown --}}
         @php
             $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.kontainer.stock-pergudang') || Request::routeIs('history-kontainer.*') || Request::routeIs('gerak-kontainer.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('perbaikan-kontainer.*');

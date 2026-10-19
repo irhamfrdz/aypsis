@@ -392,6 +392,7 @@
                             </button>
                             <div id="master-aktiva-content" class="dropdown-content ml-4 mt-2 space-y-1">
                                 @if($user && $user->can('master-mobil-view'))
+                                    <a href="{{ route('master.armada.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Armada</span></a>
                                     <a href="{{ route('master.mobil.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200"><span class="text-xs">Master Kendaraan</span></a>
                                 @endif
                                 @if($user && $user->can('master-kapal.view'))

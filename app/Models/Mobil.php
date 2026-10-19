@@ -47,6 +47,7 @@ class Mobil extends Model
         'catatan',
         'karyawan_id',
         'imei_gps',
+        'km',
     ];
 
     /**
@@ -55,6 +56,7 @@ class Mobil extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'km' => 'decimal:3',
         'pajak_stnk' => 'date',
         'pajak_plat' => 'date',
         'pajak_kir' => 'date',
