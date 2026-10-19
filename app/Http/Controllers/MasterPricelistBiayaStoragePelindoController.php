@@ -12,12 +12,6 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
     {
         $query = MasterPricelistBiayaStoragePelindo::with('tarifMassa');
 
-        foreach (['vendor', 'lokasi'] as $field) {
-            if ($request->filled($field)) {
-                $query->where($field, 'like', '%'.$request->input($field).'%');
-            }
-        }
-
         if ($request->filled('size_kontainer')) {
             $query->where('size_kontainer', $request->input('size_kontainer'));
         }
@@ -30,7 +24,7 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
             $query->where('status_kontainer', $request->input('status_kontainer'));
         }
 
-        $pricelists = $query->orderBy('vendor')->orderBy('lokasi')->orderBy('size_kontainer')->paginate(20)->withQueryString();
+        $pricelists = $query->orderBy('size_kontainer')->orderBy('status_kontainer')->paginate(20)->withQueryString();
 
         return view('master-pricelist-biaya-storage-pelindo.index', compact('pricelists'));
     }
@@ -83,8 +77,6 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
     private function validated(Request $request): array
     {
         return $request->validate([
-            'vendor' => ['required', 'string', 'max:255'],
-            'lokasi' => ['required', 'string', 'max:255'],
             'size_kontainer' => ['required', 'string', 'max:50'],
             'status_kontainer' => ['required', 'in:full,empty'],
             'tarif_massa' => ['required', 'array', 'min:1'],

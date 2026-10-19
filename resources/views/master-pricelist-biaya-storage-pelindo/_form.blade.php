@@ -1,15 +1,5 @@
 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
     <div>
-        <label for="vendor" class="mb-1 block text-sm font-medium text-gray-700">Vendor / Terminal <span class="text-red-500">*</span></label>
-        <input id="vendor" name="vendor" value="{{ old('vendor', $pricelist->vendor ?? '') }}" required maxlength="255" class="w-full rounded-lg border-gray-300 text-sm">
-        @error('vendor')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-    </div>
-    <div>
-        <label for="lokasi" class="mb-1 block text-sm font-medium text-gray-700">Lokasi <span class="text-red-500">*</span></label>
-        <input id="lokasi" name="lokasi" value="{{ old('lokasi', $pricelist->lokasi ?? '') }}" required maxlength="255" class="w-full rounded-lg border-gray-300 text-sm">
-        @error('lokasi')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-    </div>
-    <div>
         <label for="size_kontainer" class="mb-1 block text-sm font-medium text-gray-700">Ukuran Kontainer <span class="text-red-500">*</span></label>
         <select id="size_kontainer" name="size_kontainer" required class="w-full rounded-lg border-gray-300 text-sm">
             @foreach (['20', '40', '45'] as $size)
