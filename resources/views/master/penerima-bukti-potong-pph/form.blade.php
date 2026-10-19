@@ -21,45 +21,23 @@
             @error('nama') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid gap-5 sm:grid-cols-2">
-            <div>
-                <label for="npwp" class="mb-1 block text-sm font-medium text-gray-700">NPWP</label>
-                <input id="npwp" name="npwp" type="text" maxlength="32" value="{{ old('npwp', $penerima->npwp ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
-                @error('npwp') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label for="nik" class="mb-1 block text-sm font-medium text-gray-700">NIK</label>
-                <input id="nik" name="nik" type="text" maxlength="20" value="{{ old('nik', $penerima->nik ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
-                @error('nik') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-        </div>
-
         <div>
-            <label for="alamat" class="mb-1 block text-sm font-medium text-gray-700">Alamat</label>
-            <textarea id="alamat" name="alamat" rows="3" class="w-full rounded-lg border-gray-300 text-sm">{{ old('alamat', $penerima->alamat ?? '') }}</textarea>
-            @error('alamat') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            <label for="nik_npwp" class="mb-1 block text-sm font-medium text-gray-700">NIK/NPWP</label>
+            <input id="nik_npwp" name="nik_npwp" type="text" maxlength="64" value="{{ old('nik_npwp', $penerima->nik_npwp ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
+            @error('nik_npwp') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="email" class="mb-1 block text-sm font-medium text-gray-700">Email</label>
-                <input id="email" name="email" type="email" maxlength="255" value="{{ old('email', $penerima->email ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
-                @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <label for="pph" class="mb-1 block text-sm font-medium text-gray-700">PPh</label>
+                <input id="pph" name="pph" type="text" maxlength="100" value="{{ old('pph', $penerima->pph ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
+                @error('pph') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label for="telepon" class="mb-1 block text-sm font-medium text-gray-700">Telepon</label>
-                <input id="telepon" name="telepon" type="text" maxlength="30" value="{{ old('telepon', $penerima->telepon ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
-                @error('telepon') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <label for="grup" class="mb-1 block text-sm font-medium text-gray-700">Grup</label>
+                <input id="grup" name="grup" type="text" maxlength="100" value="{{ old('grup', $penerima->grup ?? '') }}" class="w-full rounded-lg border-gray-300 text-sm">
+                @error('grup') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
-        </div>
-
-        <div>
-            <label for="is_active" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
-            <select id="is_active" name="is_active" class="w-full rounded-lg border-gray-300 text-sm">
-                <option value="1" @selected((string) old('is_active', isset($penerima) ? (int) $penerima->is_active : 1) === '1')>Aktif</option>
-                <option value="0" @selected((string) old('is_active', isset($penerima) ? (int) $penerima->is_active : 1) === '0')>Nonaktif</option>
-            </select>
-            @error('is_active') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div class="flex justify-end gap-3 border-t border-gray-100 pt-5">

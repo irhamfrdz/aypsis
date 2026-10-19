@@ -38,11 +38,14 @@ class PenerimaBuktiPotongPphTest extends TestCase
 
         $migration = require database_path('migrations/2026_10_17_000006_create_master_penerima_bukti_potong_pph_table.php');
         $migration->up();
+        $migration = require database_path('migrations/2026_10_19_000001_add_pph_and_grup_to_master_penerima_bukti_potong_pph.php');
+        $migration->up();
     }
 
     public function test_migration_registers_table_and_permissions(): void
     {
         $this->assertTrue(Schema::hasTable('master_penerima_bukti_potong_pph'));
+        $this->assertTrue(Schema::hasColumns('master_penerima_bukti_potong_pph', ['nama', 'nik_npwp', 'pph', 'grup']));
         $this->assertSame(4, DB::table('permissions')->where('name', 'like', 'master-penerima-bukti-potong-pph-%')->count());
     }
 
@@ -122,23 +125,28 @@ class PenerimaBuktiPotongPphTest extends TestCase
 
         $controller->store(Request::create('/', 'POST', [
             'nama' => 'PT Contoh',
-            'npwp' => '1234567890123456',
-            'alamat' => 'Jakarta',
-            'is_active' => '1',
+            'nik_npwp' => '1234567890123456',
+            'pph' => 'PPh 23',
+            'grup' => 'Vendor',
         ]));
 
         $penerima = PenerimaBuktiPotongPph::firstOrFail();
         $this->assertSame('PT Contoh', $penerima->nama);
-        $this->assertTrue($penerima->is_active);
+        $this->assertSame('1234567890123456', $penerima->nik_npwp);
+        $this->assertSame('PPh 23', $penerima->pph);
+        $this->assertSame('Vendor', $penerima->grup);
 
         $controller->update(Request::create('/', 'PUT', [
             'nama' => 'PT Contoh Baru',
-            'nik' => '1234567890123456',
-            'is_active' => '0',
+            'nik_npwp' => '9876543210987654',
+            'pph' => 'PPh 21',
+            'grup' => 'Karyawan',
         ]), $penerima);
 
         $this->assertSame('PT Contoh Baru', $penerima->fresh()->nama);
-        $this->assertFalse($penerima->fresh()->is_active);
+        $this->assertSame('9876543210987654', $penerima->fresh()->nik_npwp);
+        $this->assertSame('PPh 21', $penerima->fresh()->pph);
+        $this->assertSame('Karyawan', $penerima->fresh()->grup);
 
         $controller->destroy($penerima);
         $this->assertSoftDeleted('master_penerima_bukti_potong_pph', ['id' => $penerima->id]);
@@ -154,14 +162,34 @@ class PenerimaBuktiPotongPphTest extends TestCase
             Authorize::class,
         ]);
 
-        $penerima = PenerimaBuktiPotongPph::create(['nama' => 'Penerima Awal', 'is_active' => true]);
+        $penerima = PenerimaBuktiPotongPph::create(['nama' => 'Penerima Awal']);
 
         $this->put(route('master.penerima-bukti-potong-pph.update', $penerima), [
             'nama' => 'Penerima Baru',
-            'is_active' => '0',
+            'grup' => 'Vendor',
         ])->assertRedirect(route('master.penerima-bukti-potong-pph.index'));
 
         $this->assertSame('Penerima Baru', $penerima->fresh()->nama);
-        $this->assertFalse($penerima->fresh()->is_active);
+        $this->assertSame('Vendor', $penerima->fresh()->grup);
+    }
+
+    public function test_migration_copies_existing_identity(): void
+    {
+        $migration = require database_path('migrations/2026_10_19_000001_add_pph_and_grup_to_master_penerima_bukti_potong_pph.php');
+        $migration->down();
+
+        DB::table('master_penerima_bukti_potong_pph')->insert([
+            'nama' => 'Penerima Lama',
+            'npwp' => '1234567890123456',
+            'nik' => '9876543210987654',
+        ]);
+
+        $migration->up();
+
+        $this->assertDatabaseHas('master_penerima_bukti_potong_pph', [
+            'nama' => 'Penerima Lama',
+            'nik_npwp' => '1234567890123456',
+            'nik' => '9876543210987654',
+        ]);
     }
 }

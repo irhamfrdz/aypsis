@@ -13,15 +13,8 @@ class PenerimaBuktiPotongPph extends Model
 
     protected $fillable = [
         'nama',
-        'npwp',
-        'nik',
-        'alamat',
-        'email',
-        'telepon',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
+        'nik_npwp',
+        'pph',
+        'grup',
     ];
 }
