@@ -2,6 +2,7 @@
     let bbSectionCounter = 0;
     const bbSectionsContainer = document.getElementById('buruh_bongkar_sections_container');
     const addBbSectionBtn = document.getElementById('add_buruh_bongkar_section_btn');
+    const bbPphRecipients = @json($penerimaBuktiPotongPphs);
 
     function initializeBuruhBongkarSections() {
         if (!bbSectionsContainer) return;
@@ -170,6 +171,16 @@
                             <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
                             <input type="text" name="kapal_sections[${sectionIndex}][pph_amount]" class="pph-amount-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm bg-gray-100" placeholder="0" readonly>
                         </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Penerima Bukti Potong PPh</label>
+                            <select name="kapal_sections[${sectionIndex}][penerima_bukti_potong_pph_id]" class="pph-recipient-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 text-sm">
+                                <option value="">-- Pilih Penerima --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">NPWP</label>
+                            <input type="text" name="kapal_sections[${sectionIndex}][npwp]" class="pph-npwp-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" maxlength="64" placeholder="NPWP penerima">
+                        </div>
                     </div>
                 </div>
 
@@ -181,6 +192,37 @@
         `;
         
         bbSectionsContainer.appendChild(section);
+
+        const pphRecipientSelect = section.querySelector('.pph-recipient-select');
+        const pphNpwpInput = section.querySelector('.pph-npwp-input');
+        bbPphRecipients.forEach(recipient => {
+            pphRecipientSelect.add(new Option(recipient.nama, recipient.id));
+        });
+        pphRecipientSelect.addEventListener('change', function() {
+            const recipient = bbPphRecipients.find(item => String(item.id) === this.value);
+            pphNpwpInput.value = recipient?.nik_npwp || '';
+            if (sectionIndex === 1) {
+                bbSectionsContainer.querySelectorAll('.kapal-section').forEach(otherSection => {
+                    if (otherSection !== section) {
+                        otherSection.querySelector('.pph-recipient-select').value = this.value;
+                        otherSection.querySelector('.pph-npwp-input').value = pphNpwpInput.value;
+                    }
+                });
+            }
+        });
+        pphNpwpInput.addEventListener('input', function() {
+            if (sectionIndex === 1) {
+                bbSectionsContainer.querySelectorAll('.kapal-section').forEach(otherSection => {
+                    if (otherSection !== section) otherSection.querySelector('.pph-npwp-input').value = this.value;
+                });
+            }
+        });
+
+        if (sectionIndex > 1) {
+            const firstSection = bbSectionsContainer.querySelector('[data-section-index="1"]');
+            pphRecipientSelect.value = firstSection.querySelector('.pph-recipient-select').value;
+            pphNpwpInput.value = firstSection.querySelector('.pph-npwp-input').value;
+        }
         
         const kapalSelect = section.querySelector('.kapal-select');
         const voyageSelect = section.querySelector('.voyage-select');
@@ -515,4 +557,3 @@
         });
         if (typeof calculateTotalFromAllSections === 'function') calculateTotalFromAllSections();
     };
-

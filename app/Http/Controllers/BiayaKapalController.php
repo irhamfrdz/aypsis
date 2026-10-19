@@ -254,8 +254,12 @@ class BiayaKapalController extends Controller
 
         $masterCustomerBuruhs = \App\Models\MasterCustomerBuruh::where('is_active', true)->orderBy('nama_customer')->get();
 
+        $penerimaBuktiPotongPphs = \App\Models\PenerimaBuktiPotongPph::where('is_active', true)
+            ->orderBy('nama')->get(['id', 'nama', 'nik_npwp']);
+
         return view('biaya-kapal.create', compact(
             'masterCustomerBuruhs',
+            'penerimaBuktiPotongPphs',
             'kapals',
             'klasifikasiBiayas',
             'pricelistBuruh',
@@ -821,6 +825,8 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
             'kapal_sections.*.pph_percent' => 'nullable|numeric',
             'kapal_sections.*.pph_amount' => 'nullable|numeric',
+            'kapal_sections.*.penerima_bukti_potong_pph_id' => 'nullable|exists:master_penerima_bukti_potong_pph,id',
+            'kapal_sections.*.npwp' => 'nullable|string|max:64',
             // Batam shared fields (UI baru: 1 tabel bersama & 1 nominal total)
             'batam_shared' => 'nullable|array',
             'batam_shared.nominal' => 'nullable|numeric|min:0',
@@ -2220,6 +2226,8 @@ class BiayaKapalController extends Controller
                             'notes_adjustment' => $notesAdjustment,
                             'pph_percent' => $pphPercent,
                             'pph_amount' => $pphAmount,
+                            'penerima_bukti_potong_pph_id' => $section['penerima_bukti_potong_pph_id'] ?? null,
+                            'npwp' => $section['npwp'] ?? null,
                             'total_nominal' => $totalNominal,
                             'nomor_bukti' => $section['nomor_bukti'] ?? null,
                             'penerima' => $section['penerima'] ?? null,
@@ -3965,8 +3973,12 @@ class BiayaKapalController extends Controller
 
         $masterCustomerBuruhs = \App\Models\MasterCustomerBuruh::where('is_active', true)->orderBy('nama_customer')->get();
 
+        $penerimaBuktiPotongPphs = \App\Models\PenerimaBuktiPotongPph::where('is_active', true)
+            ->orderBy('nama')->get(['id', 'nama', 'nik_npwp']);
+
         return view('biaya-kapal.edit', compact(
             'masterCustomerBuruhs',
+            'penerimaBuktiPotongPphs',
             'biayaKapal',
             'kapals',
             'klasifikasiBiayas',
@@ -4447,6 +4459,8 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.nomor_bukti' => 'nullable|string|max:255',
             'kapal_sections.*.pph_percent' => 'nullable|numeric',
             'kapal_sections.*.pph_amount' => 'nullable|numeric',
+            'kapal_sections.*.penerima_bukti_potong_pph_id' => 'nullable|exists:master_penerima_bukti_potong_pph,id',
+            'kapal_sections.*.npwp' => 'nullable|string|max:64',
 
             // Biaya Umum sections
             'umum_sections' => 'nullable|array',
@@ -6040,7 +6054,9 @@ class BiayaKapalController extends Controller
                             $nominal = $cleanNum($section['nominal_manual'] ?? 0);
                             $adjustment = $cleanNum($section['adjustment'] ?? 0);
                             $notesAdjustment = $section['notes_adjustment'] ?? null;
-                            $totalNominal = $nominal + $adjustment;
+                            $pphPercent = (float) str_replace(',', '.', (string) ($section['pph_percent'] ?? 0));
+                            $pphAmount = $cleanNum($section['pph_amount'] ?? 0);
+                            $totalNominal = ($nominal + $adjustment) - $pphAmount;
 
                             \App\Models\BiayaKapalBuruhBongkar::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -6050,7 +6066,11 @@ class BiayaKapalController extends Controller
                                 'nominal' => $nominal,
                                 'adjustment' => $adjustment,
                                 'notes_adjustment' => $notesAdjustment,
+                                'pph_percent' => $pphPercent,
+                                'pph_amount' => $pphAmount,
                                 'total_nominal' => $totalNominal,
+                                'penerima_bukti_potong_pph_id' => $section['penerima_bukti_potong_pph_id'] ?? null,
+                                'npwp' => $section['npwp'] ?? null,
                                 'nomor_bukti' => $section['nomor_bukti'] ?? null,
                                 'penerima' => $section['penerima'] ?? null,
                                 'master_customer_buruh_id' => $section['master_customer_buruh_id'] ?? null,

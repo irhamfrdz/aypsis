@@ -16,6 +16,8 @@ class BiayaKapalBuruhBongkar extends Model
         'notes_adjustment',
         'pph_percent',
         'pph_amount',
+        'penerima_bukti_potong_pph_id',
+        'npwp',
         'total_nominal',
         'nomor_bukti',
         'penerima',
@@ -41,5 +43,10 @@ class BiayaKapalBuruhBongkar extends Model
     public function masterCustomerBuruh()
     {
         return $this->belongsTo(MasterCustomerBuruh::class, 'master_customer_buruh_id');
+    }
+
+    public function penerimaBuktiPotongPph()
+    {
+        return $this->belongsTo(PenerimaBuktiPotongPph::class, 'penerima_bukti_potong_pph_id');
     }
 }

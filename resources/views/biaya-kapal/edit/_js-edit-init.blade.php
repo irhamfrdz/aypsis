@@ -81,6 +81,30 @@
             }
         }
 
+        if ($biayaKapal->jenis_biaya === 'KB054') {
+            foreach ($biayaKapal->buruhBongkarDetails as $item) {
+                $editKapalSections[] = [
+                    'kapal' => $item->kapal,
+                    'voyage' => $item->voyage,
+                    'is_batam' => true,
+                    'kontainer' => $item->kontainer_ids ?? [],
+                    'nominal' => $item->nominal,
+                    'adjustment' => $item->adjustment,
+                    'notes_adjustment' => $item->notes_adjustment,
+                    'total_nominal' => $item->total_nominal,
+                    'nomor_bukti' => $item->nomor_bukti,
+                    'penerima' => $item->penerima,
+                    'master_customer_buruh_id' => $item->master_customer_buruh_id,
+                    'bank_id' => $item->bank_id,
+                    'nomor_rekening' => $item->nomor_rekening,
+                    'pph_percent' => $item->pph_percent,
+                    'pph_amount' => $item->pph_amount,
+                    'penerima_bukti_potong_pph_id' => $item->penerima_bukti_potong_pph_id,
+                    'npwp' => $item->npwp,
+                ];
+            }
+        }
+
         // Map Air
         if($biayaKapal->airDetails->count() > 0) {
             $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
@@ -808,6 +832,11 @@
 
                                 const pphPercent = section.querySelector('.pph-percent-select');
                                 restoreEditSelectValue(pphPercent, myData.pph_percent ?? '0');
+
+                                const pphRecipient = section.querySelector('.pph-recipient-select');
+                                restoreEditSelectValue(pphRecipient, myData.penerima_bukti_potong_pph_id);
+                                const pphNpwp = section.querySelector('.pph-npwp-input');
+                                if (pphNpwp) pphNpwp.value = myData.npwp || '';
 
                                 const pphAmount = section.querySelector('.pph-amount-input');
                                 if (pphAmount && myData.pph_amount !== null && myData.pph_amount !== undefined) {

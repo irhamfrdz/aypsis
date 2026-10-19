@@ -3,6 +3,8 @@
     const kapalSectionsContainer = document.getElementById('kapal_sections_container');
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
     const allBuruhsData = @json($allBuruhs ?? []);
+    const editPphRecipients = @json($penerimaBuktiPotongPphs);
+    const isBuruhBongkarEdit = @json($biayaKapal->jenis_biaya === 'KB054');
     
     let customerOptions = '<option value="">-- Pilih Customer Buruh --</option>';
     let customerData = {};
@@ -181,6 +183,17 @@
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Nominal PPh</label>
                                 <input type="text" name="kapal_sections[${sectionIndex}][pph_amount]" class="pph-amount-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm bg-gray-100" placeholder="0" readonly>
                             </div>
+                            ${isBuruhBongkarEdit ? `
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Penerima Bukti Potong PPh</label>
+                                <select name="kapal_sections[${sectionIndex}][penerima_bukti_potong_pph_id]" class="pph-recipient-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 text-sm">
+                                    <option value="">-- Pilih Penerima --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">NPWP</label>
+                                <input type="text" name="kapal_sections[${sectionIndex}][npwp]" class="pph-npwp-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" maxlength="64" placeholder="NPWP penerima">
+                            </div>` : ''}
                         </div>
                     </div>
 
@@ -273,6 +286,15 @@
         
         kapalSectionsContainer.appendChild(section);
         
+        const pphRecipientSelect = section.querySelector('.pph-recipient-select');
+        if (pphRecipientSelect) {
+            editPphRecipients.forEach(recipient => pphRecipientSelect.add(new Option(recipient.nama, recipient.id)));
+            pphRecipientSelect.addEventListener('change', function() {
+                const recipient = editPphRecipients.find(item => String(item.id) === this.value);
+                section.querySelector('.pph-npwp-input').value = recipient?.nik_npwp || '';
+            });
+        }
+
         // Setup kapal change listener - use data attribute to get correct section
         const kapalSelect = section.querySelector('.kapal-select');
         const voyageSelect = section.querySelector('.voyage-select');
