@@ -7431,6 +7431,21 @@ Route::middleware(['auth',
             'destroy' => 'can:master-pricelist-biaya-storage-delete',
         ]);
 
+    Route::resource('pricelist-biaya-storage-pelindo', \App\Http\Controllers\MasterPricelistBiayaStoragePelindoController::class)
+        ->names('master-pricelist-biaya-storage-pelindo')
+        ->except(['show'])
+        ->parameters([
+            'pricelist-biaya-storage-pelindo' => 'masterPricelistBiayaStoragePelindo',
+        ])
+        ->middleware([
+            'index' => 'can:master-pricelist-biaya-storage-pelindo-view',
+            'create' => 'can:master-pricelist-biaya-storage-pelindo-create',
+            'store' => 'can:master-pricelist-biaya-storage-pelindo-create',
+            'edit' => 'can:master-pricelist-biaya-storage-pelindo-update',
+            'update' => 'can:master-pricelist-biaya-storage-pelindo-update',
+            'destroy' => 'can:master-pricelist-biaya-storage-pelindo-delete',
+        ]);
+
     Route::resource('pricelist-perijinan', \App\Http\Controllers\MasterPricelistPerijinanController::class)
         ->names('master.pricelist-perijinan')
         ->middleware([

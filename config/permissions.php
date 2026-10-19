@@ -40,6 +40,7 @@ return [
                 'master-pricelist-cat' => 'Pricelist CAT',
                 'master-pricelist-lolo-batam' => 'Pricelist LOLO Batam',
                 'master-pricelist-pelindo' => 'Pricelist Pelindo',
+                'master-pricelist-biaya-storage-pelindo' => 'Pricelist Biaya Storage Pelindo',
                 'master-pricelist-buruh-bongkar' => 'Pricelist Buruh Bongkar',
                 'master-tujuan' => 'Manajemen Tujuan',
                 'master-kegiatan' => 'Manajemen Kegiatan',

@@ -22,6 +22,7 @@ return [
     ['label' => 'Pricelist Biaya LOLO', 'route' => 'master.pricelist-lolo.index', 'permission' => 'master-pricelist-lolo-view'],
     ['label' => 'Pricelist LOLO Batam', 'route' => 'master.pricelist-lolo-batam.index', 'permission' => 'master-pricelist-lolo-batam-view', 'admin' => true],
     ['label' => 'Pricelist Biaya Storage', 'route' => 'master-pricelist-biaya-storage.index', 'permission' => 'master-pricelist-biaya-storage-view'],
+    ['label' => 'Pricelist Biaya Storage Pelindo', 'route' => 'master-pricelist-biaya-storage-pelindo.index', 'permission' => 'master-pricelist-biaya-storage-pelindo-view'],
     ['label' => 'Pricelist Kanisir Ban', 'route' => 'master.pricelist-kanisir-ban.index', 'permission' => 'master-pricelist-kanisir-ban-view'],
     ['label' => 'Pricelist Biaya Dokumen', 'route' => 'master.pricelist-biaya-dokumen.index', 'permission' => 'master-pricelist-biaya-dokumen-view'],
     ['label' => 'Pricelist Biaya Trucking', 'route' => 'master.pricelist-biaya-trucking.index', 'permission' => 'master-pricelist-biaya-trucking-view'],

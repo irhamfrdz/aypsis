@@ -363,6 +363,14 @@ class UserController extends Controller
                 continue;
             }
 
+            if (strpos($permissionName, 'master-pricelist-biaya-storage-pelindo-') === 0) {
+                $module = 'master-pricelist-biaya-storage-pelindo';
+                $action = str_replace('master-pricelist-biaya-storage-pelindo-', '', $permissionName);
+                $matrixPermissions[$module][$action] = true;
+
+                continue;
+            }
+
             // Special handling for master-karyawan-approval (exact match)
             if ($permissionName === 'master-karyawan-approval') {
                 $matrixPermissions['master-karyawan-approval']['view'] = true;
@@ -1316,6 +1324,11 @@ class UserController extends Controller
                             // For master-pricelist-lolo-view, extract the action
                             $action = str_replace('pricelist-lolo-', '', $action);
                             $module = 'master-pricelist-lolo';
+                        }
+                        // Special handling for master-pricelist-biaya-storage-pelindo permissions
+                        elseif (strpos($action, 'pricelist-biaya-storage-pelindo-') === 0) {
+                            $action = str_replace('pricelist-biaya-storage-pelindo-', '', $action);
+                            $module = 'master-pricelist-biaya-storage-pelindo';
                         }
                         // Special handling for master-pricelist-biaya-storage permissions
                         elseif (strpos($action, 'pricelist-biaya-storage-') === 0) {
@@ -3094,6 +3107,15 @@ class UserController extends Controller
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
                             }
+                        }
+                    }
+
+                    if ($module === 'master-pricelist-biaya-storage-pelindo' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $permissionName = 'master-pricelist-biaya-storage-pelindo-'.$action;
+                        $directPermission = Permission::where('name', $permissionName)->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
                         }
                     }
 

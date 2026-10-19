@@ -1331,6 +1331,16 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Biaya Storage Pelindo --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">â””â”€</span><span>Pricelist Biaya Storage Pelindo</span></div></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage-pelindo][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage-pelindo][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage-pelindo][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage-pelindo][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Vendor Supir --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">
