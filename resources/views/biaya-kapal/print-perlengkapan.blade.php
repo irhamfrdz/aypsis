@@ -53,11 +53,14 @@
 
         html, body {
             width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
             font-family: 'Arial', sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
-            line-height: 1.4;
+            line-height: 1.3;
             color: #000;
             background: white;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
@@ -69,58 +72,48 @@
             min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
-        /* ---- Header ---- */
         .header {
             text-align: center;
-            margin-bottom: 12px;
-            border-bottom: 3px double #000;
-            padding-bottom: 8px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 10px;
         }
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .header .subtitle { font-size: {{ $currentPaper['fontSize'] }}; color: #444; }
 
-        /* ---- Doc Info ---- */
-        .doc-info {
+        .document-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
-            margin-bottom: 14px;
+            gap: 0;
+            margin-bottom: 15px;
+            padding: 0;
+            border: none;
             font-size: {{ $currentPaper['fontSize'] }};
         }
-        .doc-info .row { display: flex; padding: 2px 0; }
-        .doc-info .lbl { width: 130px; flex-shrink: 0; }
-        .doc-info .sep { margin: 0 6px; }
-        .doc-info .val { flex: 1; }
-
-        /* ---- Detail Table ---- */
-        .section-title {
-            background: #f0f0f0;
-            font-weight: bold;
-            padding: 5px 8px;
-            font-size: {{ $currentPaper['fontSize'] }};
-            border: 1px solid #ccc;
-            border-bottom: none;
-        }
+        .document-info .info-row { display: flex; padding: 2px 0; }
+        .document-info .label { font-weight: normal; width: 140px; flex-shrink: 0; }
+        .document-info .separator { margin: 0 8px; flex-shrink: 0; }
+        .document-info .value { flex: 1; font-weight: normal; }
 
         .detail-table {
             width: 100%;
             border-collapse: collapse;
             font-size: {{ $currentPaper['tableFont'] }};
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .detail-table th, .detail-table td {
-            border: 1px solid #aaa;
-            padding: 5px 8px;
+            border: 1px solid #333;
+            padding: 5px;
             vertical-align: top;
         }
         .detail-table th {
-            background: #ececec;
+            background-color: #f2f2f2;
             font-weight: bold;
             text-align: center;
         }
@@ -128,7 +121,7 @@
         .detail-table td.center { text-align: center; }
         .detail-table tr.total-row td {
             font-weight: bold;
-            background: #f5f5f5;
+            background: #f2f2f2;
         }
 
         /* ---- Keterangan ---- */
@@ -176,7 +169,7 @@
             <option value="A4"         {{ $paperSize == 'A4'         ? 'selected' : '' }}>A4</option>
         </select>
         <button onclick="window.print()" style="width:100%;padding:5px;background:#007bff;color:white;border:none;border-radius:3px;cursor:pointer;">
-            Cetak
+            🖨️ Cetak
         </button>
     </div>
 
@@ -189,53 +182,52 @@
         </div>
 
         <!-- Document Info -->
-        <div class="doc-info">
+        <div class="document-info">
             <div>
-                <div class="row">
-                    <span class="lbl">Tanggal</span>
-                    <span class="sep">:</span>
-                    <span class="val">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</span>
+                <div class="info-row">
+                    <span class="label">Tanggal</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</span>
                 </div>
-                <div class="row">
-                    <span class="lbl">Nomor Invoice</span>
-                    <span class="sep">:</span>
-                    <span class="val"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
+                <div class="info-row">
+                    <span class="label">Nomor Invoice</span>
+                    <span class="separator">:</span>
+                    <span class="value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
                 </div>
                 @if($biayaKapal->nomor_referensi)
-                <div class="row">
-                    <span class="lbl">Nomor Referensi</span>
-                    <span class="sep">:</span>
-                    <span class="val">{{ $biayaKapal->nomor_referensi }}</span>
+                <div class="info-row">
+                    <span class="label">Nomor Referensi</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ $biayaKapal->nomor_referensi }}</span>
                 </div>
                 @endif
             </div>
             <div>
                 @if($biayaKapal->penerima)
-                <div class="row">
-                    <span class="lbl">Penerima</span>
-                    <span class="sep">:</span>
-                    <span class="val">{{ $biayaKapal->penerima }}</span>
+                <div class="info-row">
+                    <span class="label">Penerima</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ $biayaKapal->penerima }}</span>
                 </div>
                 @endif
                 @if($biayaKapal->nama_vendor)
-                <div class="row">
-                    <span class="lbl">Nama Vendor</span>
-                    <span class="sep">:</span>
-                    <span class="val">{{ $biayaKapal->nama_vendor }}</span>
+                <div class="info-row">
+                    <span class="label">Nama Vendor</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ $biayaKapal->nama_vendor }}</span>
                 </div>
                 @endif
                 @if($biayaKapal->nomor_rekening)
-                <div class="row">
-                    <span class="lbl">Nomor Rekening</span>
-                    <span class="sep">:</span>
-                    <span class="val">{{ $biayaKapal->nomor_rekening }}</span>
+                <div class="info-row">
+                    <span class="label">Nomor Rekening</span>
+                    <span class="separator">:</span>
+                    <span class="value">{{ $biayaKapal->nomor_rekening }}</span>
                 </div>
                 @endif
             </div>
         </div>
 
         <!-- Detail Table -->
-        <div class="section-title">Detail Biaya Perlengkapan</div>
         <table class="detail-table">
             <thead>
                 <tr>
