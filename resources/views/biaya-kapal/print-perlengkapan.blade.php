@@ -48,7 +48,6 @@
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             font-family: 'Arial', sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
             line-height: 1.2;
@@ -64,7 +63,6 @@
             padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
