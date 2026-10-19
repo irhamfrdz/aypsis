@@ -54,7 +54,7 @@
                 @forelse ($tagihan as $item)
                     <tr>
                         @php($pranotaItem = $item->pranotaItems->first())
-                        @can('pranota-tagihan-lain-lain-batam-create')<td class="px-4 py-3">@if (!$pranotaItem)<input type="checkbox" class="tagihan-checkbox h-4 w-4 rounded border-gray-300 text-blue-600" value="{{ $item->id }}" aria-label="Pilih tagihan {{ $item->nomor_tagihan }}">@endif</td>@endcan
+                        @can('pranota-tagihan-lain-lain-batam-create')<td class="px-4 py-3">@if (!$pranotaItem)<input type="checkbox" class="tagihan-checkbox h-4 w-4 rounded border-gray-300 text-blue-600" value="{{ $item->id }}" data-nomor="{{ $item->nomor_tagihan }}" data-jenis="{{ $item->jenis_tagihan === 'kendaraan' ? 'Kendaraan' : 'Lain Lain' }}" data-vendor="{{ $item->bengkel }}" data-biaya="{{ $item->biaya }}" data-pph="{{ $item->pph_rate }}" data-total="{{ $item->total_biaya }}" aria-label="Pilih tagihan {{ $item->nomor_tagihan }}">@endif</td>@endcan
                         <td class="whitespace-nowrap px-4 py-3">{{ $item->tanggal_service->format('d/m/Y') }}</td>
                         <td class="px-4 py-3">{{ $item->nomor_tagihan ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $item->jenis_tagihan === 'kendaraan' ? 'Tagihan Kendaraan' : 'Tagihan Lain Lain' }}</td>
@@ -86,31 +86,61 @@
     <div class="mt-4">{{ $tagihan->links() }}</div>
 </div>
 
-<div id="pranota-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="pranota-modal-title">
-    <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <div class="mb-5 flex items-start justify-between gap-4">
-            <div>
-                <h2 id="pranota-modal-title" class="text-xl font-bold text-gray-900">Masukkan Tagihan ke Pranota</h2>
-                <p class="mt-1 text-sm text-gray-600"><span id="modal-selected-count">0</span> tagihan dipilih. Tagihan yang dimasukkan tidak dapat dipilih kembali.</p>
-            </div>
-            <button type="button" id="close-pranota-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800" aria-label="Tutup">&times;</button>
+<div id="pranota-modal" class="fixed inset-0 z-50 hidden overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="pranota-modal-title">
+    <div id="pranota-backdrop" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative z-10 flex min-h-full items-center justify-center py-4">
+        <div class="w-full max-w-4xl overflow-hidden rounded-2xl bg-white text-left shadow-2xl">
+            <form id="pranota-form" action="{{ route('tagihan-lain-lain-batam.pranota.store') }}" method="POST">
+                @csrf
+                <div id="selected-tagihan-inputs"></div>
+                <div class="flex items-center justify-between gap-4 bg-indigo-600 px-6 py-4 text-white">
+                    <div>
+                        <h2 id="pranota-modal-title" class="text-lg font-bold">Buat Pranota Tagihan Lain Lain Batam</h2>
+                        <p class="mt-1 text-xs text-indigo-100">Penerbitan pranota dari tagihan yang dipilih</p>
+                    </div>
+                    <button type="button" id="close-pranota-modal" class="rounded-lg px-2 text-2xl leading-none hover:bg-white/20" aria-label="Tutup">&times;</button>
+                </div>
+
+                <div class="max-h-[70vh] space-y-5 overflow-y-auto p-6">
+                    <div class="grid gap-4 rounded-xl border bg-gray-50 p-4 sm:grid-cols-2">
+                        <div>
+                            <label for="nomor_pranota_preview" class="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-700">Nomor Pranota</label>
+                            <input id="nomor_pranota_preview" value="Dibuat otomatis saat disimpan" readonly class="w-full rounded-lg border-gray-300 bg-gray-100 text-sm font-medium text-gray-600">
+                        </div>
+                        <div>
+                            <label for="tanggal_pranota" class="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-700">Tanggal Pranota <span class="text-red-600">*</span></label>
+                            <input type="date" id="tanggal_pranota" name="tanggal_pranota" value="{{ old('tanggal_pranota', now()->format('Y-m-d')) }}" required class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-gray-700">Rincian Tagihan Terpilih (<span id="modal-selected-count">0</span>)</h3>
+                        <div class="overflow-x-auto rounded-xl border">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
+                                    <tr><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis</th><th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total</th></tr>
+                                </thead>
+                                <tbody id="modal-tagihan-rows" class="divide-y divide-gray-100"></tbody>
+                                <tfoot class="bg-gray-50"><tr><td colspan="5" class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-600">Grand Total</td><td id="modal-grand-total" class="whitespace-nowrap px-4 py-3 text-right text-base font-bold text-indigo-700">Rp 0</td></tr></tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="keterangan_pranota" class="mb-1 block text-sm font-medium text-gray-700">Keterangan</label>
+                        <textarea id="keterangan_pranota" name="keterangan_pranota" rows="2" maxlength="2000" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Catatan pranota (opsional)">{{ old('keterangan_pranota') }}</textarea>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t bg-gray-50 px-6 py-4">
+                    <p class="text-xs text-gray-500">Periksa rincian tagihan sebelum menerbitkan pranota.</p>
+                    <div class="flex gap-2">
+                        <button type="button" id="cancel-pranota-modal" class="rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>
+                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan &amp; Terbitkan Pranota</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <form id="pranota-form" action="{{ route('tagihan-lain-lain-batam.pranota.store') }}" method="POST" class="space-y-4">
-            @csrf
-            <div id="selected-tagihan-inputs"></div>
-            <div>
-                <label for="tanggal_pranota" class="mb-1 block text-sm font-medium text-gray-700">Tanggal Pranota <span class="text-red-600">*</span></label>
-                <input type="date" id="tanggal_pranota" name="tanggal_pranota" value="{{ now()->format('Y-m-d') }}" required class="w-full rounded-lg border-gray-300 text-sm">
-            </div>
-            <div>
-                <label for="keterangan_pranota" class="mb-1 block text-sm font-medium text-gray-700">Keterangan</label>
-                <textarea id="keterangan_pranota" name="keterangan_pranota" rows="3" maxlength="2000" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Catatan pranota (opsional)"></textarea>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button type="button" id="cancel-pranota-modal" class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700">Batal</button>
-                <button type="submit" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Buat Pranota</button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -123,6 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('pranota-modal');
     const modalCount = document.getElementById('modal-selected-count');
     const selectedInputs = document.getElementById('selected-tagihan-inputs');
+    const modalRows = document.getElementById('modal-tagihan-rows');
+    const modalGrandTotal = document.getElementById('modal-grand-total');
+    const formatRupiah = (amount) => `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(amount)}`;
     const updateSelection = () => {
         const selected = checkboxes.filter((checkbox) => checkbox.checked);
         count.textContent = selected.length;
@@ -146,16 +179,36 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value = checkbox.value;
             return input;
         }));
+        let grandTotal = 0;
+        modalRows.replaceChildren(...selected.map((checkbox) => {
+            const row = document.createElement('tr');
+            const total = Number.parseFloat(checkbox.dataset.total) || 0;
+            grandTotal += total;
+            [
+                checkbox.dataset.nomor || '-',
+                checkbox.dataset.jenis || '-',
+                checkbox.dataset.vendor || '-',
+                formatRupiah(Number.parseFloat(checkbox.dataset.biaya) || 0),
+                `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number.parseFloat(checkbox.dataset.pph) || 0)}%`,
+                formatRupiah(total),
+            ].forEach((value, index) => {
+                const cell = document.createElement('td');
+                cell.className = `px-4 py-3${index === 3 || index === 5 ? ' text-right whitespace-nowrap' : ''}`;
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            return row;
+        }));
+        modalGrandTotal.textContent = formatRupiah(grandTotal);
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
     });
     const closeModal = () => {
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
     };
     document.getElementById('close-pranota-modal')?.addEventListener('click', closeModal);
     document.getElementById('cancel-pranota-modal')?.addEventListener('click', closeModal);
-    modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+    document.getElementById('pranota-backdrop')?.addEventListener('click', closeModal);
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
 });
 </script>
 @endsection
