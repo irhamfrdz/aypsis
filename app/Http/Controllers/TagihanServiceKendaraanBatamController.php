@@ -154,7 +154,7 @@ class TagihanServiceKendaraanBatamController extends Controller
             $data['nomor_polisi'] = null;
         }
 
-        $data['total_biaya'] = round((float) $data['biaya'] * (1 + ((float) $data['pph_rate'] / 100)), 2);
+        $data['total_biaya'] = round((float) $data['biaya'] * (1 - ((float) $data['pph_rate'] / 100)), 2);
 
         return $data;
     }
