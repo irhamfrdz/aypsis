@@ -9,20 +9,28 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('master_pricelist_biaya_storage_pelindos', function (Blueprint $table) {
-            $table->string('status_kontainer', 10)->default('full')->after('size_kontainer');
-        });
+        if (! Schema::hasColumn('master_pricelist_biaya_storage_pelindos', 'status_kontainer')) {
+            Schema::table('master_pricelist_biaya_storage_pelindos', function (Blueprint $table) {
+                $table->string('status_kontainer', 10)->default('full')->after('size_kontainer');
+            });
+        }
 
-        Schema::create('master_pricelist_biaya_storage_pelindo_tarif_massas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('pricelist_id')->constrained('master_pricelist_biaya_storage_pelindos')->cascadeOnDelete();
-            $table->decimal('massa', 10, 2);
-            $table->decimal('tarif', 15, 2);
-            $table->timestamps();
-            $table->unique(['pricelist_id', 'massa']);
-        });
+        if (! Schema::hasTable('master_pricelist_biaya_storage_pelindo_tarif_massas')) {
+            Schema::create('master_pricelist_biaya_storage_pelindo_tarif_massas', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('pricelist_id');
+                $table->foreign('pricelist_id', 'pelindo_mass_pricelist_fk')
+                    ->references('id')->on('master_pricelist_biaya_storage_pelindos')->cascadeOnDelete();
+                $table->decimal('massa', 10, 2);
+                $table->decimal('tarif', 15, 2);
+                $table->timestamps();
+                $table->unique(['pricelist_id', 'massa'], 'pelindo_mass_pricelist_unique');
+            });
+        }
 
-        foreach (DB::table('master_pricelist_biaya_storage_pelindos')->get() as $pricelist) {
+        foreach (DB::table('master_pricelist_biaya_storage_pelindos')
+            ->whereNotIn('id', DB::table('master_pricelist_biaya_storage_pelindo_tarif_massas')->select('pricelist_id'))
+            ->get() as $pricelist) {
             $now = now();
             $rows = [[
                 'pricelist_id' => $pricelist->id,
