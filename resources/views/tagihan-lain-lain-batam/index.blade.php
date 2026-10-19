@@ -69,8 +69,13 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_biaya, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3">@if ($pranotaItem?->pranota)<span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">Sudah dibuat pranota</span><div class="mt-1 text-xs text-gray-500">@can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranotaItem->pranota) }}" class="text-blue-700 hover:underline">{{ $pranotaItem->pranota->nomor_pranota }}</a>@else{{ $pranotaItem->pranota->nomor_pranota }}@endcan</div>@else<span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">Belum dibuat pranota</span>@endif</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">
+                            @if ($item->jenis_tagihan === 'kendaraan' && $item->mobil_id)
+                                @can('rekap-biaya-asset-view')
+                                    <a href="{{ route('rekap-biaya-asset.show', ['asset_type' => 'mobil', 'asset_id' => $item->mobil_id, 'bulan' => $item->tanggal_service->month, 'tahun' => $item->tanggal_service->year]) }}" class="font-medium text-emerald-700 hover:underline">Lihat rekap</a>
+                                @endcan
+                            @endif
                             @can('tagihan-service-kendaraan-batam-update')
-                                <a href="{{ route('tagihan-lain-lain-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
+                                <a href="{{ route('tagihan-lain-lain-batam.edit', $item) }}" class="ml-3 font-medium text-blue-700 hover:underline">Edit</a>
                             @endcan
                             @can('tagihan-service-kendaraan-batam-delete')
                                 @if ($pranotaItem)

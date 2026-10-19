@@ -40,7 +40,7 @@
                     <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Periode: <strong>Semua Waktu</strong></span>
                 @endif
                 <span class="flex items-center"><i class="fas fa-clock mr-2 text-emerald-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
-                <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-emerald-400"></i> Total Records: <strong>{{ $usages->count() + $suratJalans->count() }}</strong></span>
+                <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-emerald-400"></i> Total Records: <strong>{{ $usages->count() + $suratJalans->count() + $tagihanKendaraan->count() }}</strong></span>
             </div>
         </div>
     </div>
@@ -281,6 +281,66 @@
             </div>
         @endforeach
 
+        @if($type === 'mobil' && $tagihanKendaraan->isNotEmpty())
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
+                <button type="button" class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion" data-target="#accordion-tagihan-kendaraan-batam">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mr-4">
+                            <i class="fas fa-file-invoice-dollar text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-gray-800 text-base">Tagihan Kendaraan Batam</h3>
+                            <p class="text-xs text-gray-500 font-medium">{{ $tagihanKendaraan->count() }} Transaksi</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</span>
+                        <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
+                        </div>
+                    </div>
+                </button>
+                <div id="accordion-tagihan-kendaraan-batam" class="accordion-body" style="display: none;">
+                    <div class="border-t border-gray-200 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">No. Tagihan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Bengkel</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Rincian Service</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Biaya</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">PPh</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @foreach($tagihanKendaraan as $tagihan)
+                                    <tr>
+                                        <td class="px-4 py-3 text-xs text-gray-500">{{ $loop->iteration }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{{ $tagihan->tanggal_service?->format('d/M/Y') ?? '-' }}</td>
+                                        <td class="px-4 py-3 text-xs font-bold text-gray-800">{{ $tagihan->nomor_tagihan ?: '-' }}</td>
+                                        <td class="px-4 py-3 text-xs text-gray-700">{{ $tagihan->bengkel }}</td>
+                                        <td class="px-4 py-3 text-xs text-gray-700">{{ $tagihan->rincian_service }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs text-gray-700">Rp {{ number_format((float) $tagihan->biaya, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs text-gray-700">{{ number_format((float) $tagihan->pph_rate, 1, ',', '') }}%<br>Rp {{ number_format((float) $tagihan->biaya - (float) $tagihan->total_biaya, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-bold text-gray-900">Rp {{ number_format((float) $tagihan->total_biaya, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-3 text-right text-xs text-gray-500 uppercase">Subtotal Tagihan Kendaraan Batam</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($type === 'mobil' && $suratJalans->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
                 <button type="button" class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion" data-target="#accordion-surat-jalan-bongkaran-batam">
@@ -351,7 +411,7 @@
             </div>
         @endif
 
-        @if($usages->count() === 0 && $suratJalans->isEmpty())
+        @if($usages->count() === 0 && $suratJalans->isEmpty() && $tagihanKendaraan->isEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500">
                 <i class="fas fa-truck-moving text-gray-300 text-5xl mb-4 block"></i>
                 <p class="font-semibold text-lg">Tidak ada data biaya yang ditemukan</p>

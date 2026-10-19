@@ -7,6 +7,7 @@ use App\Models\Mobil;
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
 use App\Models\SuratJalanBongkaranBatam;
+use App\Models\TagihanServiceKendaraanBatam;
 use Illuminate\Http\Request;
 
 class RekapBiayaAssetController extends Controller
@@ -76,6 +77,25 @@ class RekapBiayaAssetController extends Controller
         $usages = $query->orderBy('tanggal_pengambilan', 'desc')->get();
 
         $suratJalans = collect();
+        $tagihanKendaraan = collect();
+        if ($type === 'mobil' && $mobil) {
+            $tagihanQuery = TagihanServiceKendaraanBatam::query()
+                ->where('jenis_tagihan', 'kendaraan')
+                ->where('mobil_id', $mobil->id);
+
+            if ($bulan) {
+                $tagihanQuery->whereMonth('tanggal_service', $bulan);
+            }
+            if ($tahun) {
+                $tagihanQuery->whereYear('tanggal_service', $tahun);
+            }
+
+            $tagihanKendaraan = $tagihanQuery->orderByDesc('tanggal_service')->orderByDesc('id')->get();
+            foreach ($tagihanKendaraan as $tagihan) {
+                $tagihan->apportioned = ['total_biaya' => (float) $tagihan->total_biaya];
+            }
+        }
+
         if ($mobil && $mobil->nomor_polisi) {
             $normalizedPlate = strtoupper(str_replace([' ', '-', '.'], '', $mobil->nomor_polisi));
             $suratJalanQuery = SuratJalanBongkaranBatam::whereRaw(
@@ -242,11 +262,14 @@ class RekapBiayaAssetController extends Controller
         $usages = $usages->sortByDesc('tanggal')->values();
 
         $totalSuratJalan = $suratJalans->sum(fn ($suratJalan) => $suratJalan->apportioned['total_biaya']);
+        $totalTagihanNominal = $tagihanKendaraan->sum(fn ($tagihan) => (float) $tagihan->biaya);
+        $totalTagihan = $tagihanKendaraan->sum(fn ($tagihan) => (float) $tagihan->total_biaya);
+        $totalTagihanPph = $totalTagihanNominal - $totalTagihan;
         $summary = [
-            'total_nominal' => $totalNominal + $totalSuratJalan,
+            'total_nominal' => $totalNominal + $totalSuratJalan + $totalTagihanNominal,
             'total_ppn' => 0,
-            'total_pph' => 0,
-            'grand_total' => $totalNominal + $totalSuratJalan,
+            'total_pph' => $totalTagihanPph,
+            'grand_total' => $totalNominal + $totalSuratJalan + $totalTagihan,
         ];
 
         // Group by classification/jenis_biaya (excluding Ban)
@@ -260,6 +283,10 @@ class RekapBiayaAssetController extends Controller
             $grouped->put('Surat Jalan Bongkaran Batam', $suratJalans);
         }
 
-        return view('rekap-biaya-asset.show', compact('usages', 'suratJalans', 'totalSuratJalan', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
+        if ($tagihanKendaraan->isNotEmpty()) {
+            $grouped->put('Tagihan Kendaraan Batam', $tagihanKendaraan);
+        }
+
+        return view('rekap-biaya-asset.show', compact('usages', 'suratJalans', 'tagihanKendaraan', 'totalSuratJalan', 'totalTagihan', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
     }
 }
