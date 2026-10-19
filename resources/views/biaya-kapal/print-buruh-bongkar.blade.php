@@ -270,12 +270,12 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">Nama Kapal</th>
-                        <th style="width: 15%;">Voyage</th>
-                        <th style="width: 25%;">Detail Kontainer</th>
-                        <th style="width: 10%;">Adjusment</th>
-                        <th style="width: 15%;">PPh</th>
-                        <th style="width: 15%;">Grand Total</th>
+                        <th style="width: 12%;">Nama Kapal</th>
+                        <th style="width: 12%;">Voyage</th>
+                        <th style="width: 22%;">Detail Kontainer</th>
+                        <th style="width: 8%;">Adjustment</th>
+                        <th style="width: 25%;">PPh / Penerima Bukti Potong</th>
+                        <th style="width: 16%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -308,6 +308,10 @@
                                         (-{{ number_format($detail->pph_amount, 0, ',', '.') }})
                                     @else
                                         -
+                                    @endif
+                                    @if($detail->penerimaBuktiPotongPph || $detail->npwp)
+                                        <br><span style="font-weight: normal;">Penerima: {{ $detail->penerimaBuktiPotongPph?->nama ?? '-' }}</span>
+                                        <br><span style="font-weight: normal;">NPWP: {{ $detail->npwp ?? '-' }}</span>
                                     @endif
                                 </td>
                                 <td class="text-right">Rp {{ number_format($detail->total_nominal, 0, ',', '.') }}</td>

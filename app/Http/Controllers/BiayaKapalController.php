@@ -3791,7 +3791,7 @@ class BiayaKapalController extends Controller
      */
     public function printBuruhBongkar(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'buruhBongkarDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'buruhBongkarDetails.penerimaBuktiPotongPph']);
 
         return view('biaya-kapal.print-buruh-bongkar', compact('biayaKapal'));
     }
