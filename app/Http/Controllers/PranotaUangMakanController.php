@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\PranotaUangMakanAutoTransferExport;
+use App\Helpers\UangMakanHelper;
 use App\Models\Karyawan;
 use App\Models\KaryawanTidakTetap;
 use App\Models\PranotaUangMakan;
@@ -147,7 +148,8 @@ class PranotaUangMakanController extends Controller
         foreach ($allEmployees as $k) {
             $key = class_basename($k).'_'.$k->id;
 
-            $isSatpam = false;
+            $isNominalTetap = UangMakanHelper::isNominalTetap($k);
+            $isSatpam = $isNominalTetap;
             $isSatpamPelabuhan = false;
             if ($k instanceof Karyawan) {
                 $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
@@ -181,7 +183,7 @@ class PranotaUangMakanController extends Controller
 
             // Multiplier
             $multiplier = 1;
-            if (strcasecmp(trim($k->penempatan ?? ''), 'Pelabuhan 1') === 0 || ($k->penempatan ?? '') == '1') {
+            if (! $isNominalTetap && (strcasecmp(trim($k->penempatan ?? ''), 'Pelabuhan 1') === 0 || ($k->penempatan ?? '') == '1')) {
                 $multiplier = 2;
             }
 
@@ -193,12 +195,16 @@ class PranotaUangMakanController extends Controller
                 $oldNominal = (int) str_replace(['.', ',', ' '], '', $rowMap[$key]['nominal_awal'] ?? 0);
                 preg_match('/\d+/', $rowMap[$key]['kehadiran'] ?? '', $matches);
                 $oldDays = isset($matches[0]) ? (int) $matches[0] : 0;
-                if ($oldDays > 0) {
+                if ($isNominalTetap) {
+                    $nominalPerHari = $oldNominal;
+                } elseif ($oldDays > 0) {
                     $nominalPerHari = round($oldNominal / ($oldDays * $multiplier));
                 }
             }
 
-            if ($isSatpamPelabuhan) {
+            if ($isNominalTetap) {
+                $totalPayout = $nominalPerHari;
+            } elseif ($isSatpamPelabuhan) {
                 $totalPayout = $multiplier * $nominalPerHari;
             } else {
                 $totalPayout = $uniqueDays * $multiplier * $nominalPerHari;

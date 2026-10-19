@@ -11,7 +11,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div class="mb-4 sm:mb-0">
                     <h1 class="text-3xl font-bold text-gray-900">Data Uang Makan</h1>
-                    <p class="mt-1 text-sm text-gray-600">Daftar pencatatan uang makan harian karyawan</p>
+                    <p class="mt-1 text-sm text-gray-600">Daftar pencatatan uang makan harian karyawan berdasarkan departemen</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     @can('data-uang-makan-create')
@@ -44,8 +44,8 @@
 
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-            <form action="{{ route('uang-makan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-4">
-                <div class="w-full sm:w-1/3">
+            <form action="{{ route('uang-makan.index') }}" method="GET" class="flex flex-col sm:flex-row sm:flex-wrap items-center gap-4">
+                <div class="w-full sm:flex-1">
                     <label for="search" class="sr-only">Cari Karyawan</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -54,13 +54,14 @@
                         <input type="text" name="search" id="search" value="{{ request('search') }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Cari nama atau NIK...">
                     </div>
                 </div>
-                <div class="w-full sm:w-1/3">
-                    <label for="penempatan" class="sr-only">Filter Penempatan</label>
-                    <select id="penempatan" name="penempatan" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="this.form.submit()">
-                        <option value="">Semua Penempatan</option>
-                        @foreach($penempatans as $pen)
-                            <option value="{{ $pen }}" {{ request('penempatan') == $pen ? 'selected' : '' }}>{{ $pen }}</option>
+                <div class="w-full sm:flex-1">
+                    <label for="departemen" class="sr-only">Filter Departemen</label>
+                    <select id="departemen" name="departemen" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                        <option value="">Semua Departemen</option>
+                        @foreach($departemens as $departemen)
+                            <option value="{{ $departemen }}" @selected(request('departemen') === $departemen)>{{ $departemen }}</option>
                         @endforeach
+                        <option value="__blank__" @selected(request('departemen') === '__blank__')>BLANK (Tanpa Departemen)</option>
                     </select>
                 </div>
                 <div class="w-full sm:w-auto">
@@ -68,7 +69,7 @@
                         Cari
                     </button>
                 </div>
-                @if(request('penempatan') || request('search'))
+                @if(request('search') || request('departemen'))
                 <div>
                     <a href="{{ route('uang-makan.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900">Reset Filter</a>
                 </div>
@@ -79,21 +80,29 @@
         <!-- Table Section -->
         <form action="{{ route('uang-makan.bulk-delete') }}" method="POST" id="bulk-delete-form">
             @csrf
+        </form>
             <div class="mb-4 flex justify-between items-center">
                 <div></div>
                 @can('data-uang-makan-delete')
-                <button type="submit" id="btn-bulk-delete" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md text-sm hidden shadow-sm transition-colors duration-200" onclick="return confirm('Apakah Anda yakin ingin menghapus data yang dipilih?')">
+                <button type="submit" form="bulk-delete-form" id="btn-bulk-delete" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md text-sm hidden shadow-sm transition-colors duration-200" onclick="return confirm('Apakah Anda yakin ingin menghapus data yang dipilih?')">
                     Hapus Data Terpilih (<span id="selected-count">0</span>)
                 </button>
                 @endcan
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <p class="mb-4 text-sm text-gray-600">Data pada halaman ini dikelompokkan berdasarkan departemen. Karyawan tanpa departemen masuk ke BLANK.</p>
+            @php($rowNumber = $uangMakans->firstItem() ?? 1)
+            @forelse($uangMakansPerDepartemen as $departemen => $items)
+            <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900">{{ $departemen }}</h2>
+                    <span class="text-sm text-gray-600">{{ $items->count() }} data pada halaman ini</span>
+                </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
-                                <input type="checkbox" id="check-all" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                                <input type="checkbox" aria-label="Pilih semua data departemen {{ $departemen }}" class="check-all h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
@@ -104,16 +113,24 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse ($uangMakans as $index => $uangMakan)
+                        @foreach ($items as $uangMakan)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <input type="checkbox" name="ids[]" value="{{ $uangMakan->id }}" class="row-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                                    <input type="checkbox" form="bulk-delete-form" name="ids[]" value="{{ $uangMakan->id }}" class="row-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $uangMakans->firstItem() + $index }}
+                                    {{ $rowNumber++ }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $uangMakan->karyawan->nama_lengkap ?? '-' }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-900">{{ $uangMakan->karyawan->nama_lengkap ?? '-' }}</span>
+                                        @if($uangMakan->karyawan?->tanggal_berhenti)
+                                            <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">Sudah Berhenti</span>
+                                        @endif
+                                    </div>
+                                    @if($uangMakan->karyawan?->tanggal_berhenti)
+                                        <div class="mt-1 text-xs text-red-600">Tanggal berhenti: {{ $uangMakan->karyawan->tanggal_berhenti->format('d M Y') }}</div>
+                                    @endif
                                     <div class="text-sm text-gray-500">{{ $uangMakan->karyawan->nik ?? '-' }}</div>
                                     <div class="text-xs text-gray-400 mt-1">
                                         @if($uangMakan->karyawan && $uangMakan->karyawan->akun_bank)
@@ -145,21 +162,19 @@
                                     @endcan
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Belum ada data uang makan.</td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+            </section>
+            @empty
+                <div class="bg-white rounded-xl border border-gray-200 p-6 text-sm text-gray-500 text-center">Belum ada data uang makan yang sesuai dengan filter.</div>
+            @endforelse
             @if($uangMakans->hasPages())
                 <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                     {{ $uangMakans->links() }}
                 </div>
             @endif
-        </div>
-        </form>
     </div>
 </div>
 
@@ -214,7 +229,7 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const checkAll = document.getElementById('check-all');
+        const checkAllBoxes = document.querySelectorAll('.check-all');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox');
         const btnBulkDelete = document.getElementById('btn-bulk-delete');
         const selectedCount = document.getElementById('selected-count');
@@ -231,19 +246,22 @@
                 }
             }
 
-            if(checkAll) {
-                checkAll.checked = (checkedCount === rowCheckboxes.length && rowCheckboxes.length > 0);
-            }
+            checkAllBoxes.forEach(checkAll => {
+                const rows = checkAll.closest('table').querySelectorAll('.row-checkbox');
+                const selected = Array.from(rows).filter(cb => cb.checked).length;
+                checkAll.checked = rows.length > 0 && selected === rows.length;
+                checkAll.indeterminate = selected > 0 && selected < rows.length;
+            });
         }
 
-        if(checkAll) {
+        checkAllBoxes.forEach(checkAll => {
             checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(cb => {
+                checkAll.closest('table').querySelectorAll('.row-checkbox').forEach(cb => {
                     cb.checked = checkAll.checked;
                 });
                 updateBulkDeleteButton();
             });
-        }
+        });
 
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', updateBulkDeleteButton);

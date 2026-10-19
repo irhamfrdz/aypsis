@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Karyawan;
+use App\Models\KaryawanTidakTetap;
 use Illuminate\Http\Request;
 
 class UangMakanController extends Controller
@@ -10,26 +12,45 @@ class UangMakanController extends Controller
     {
         $query = \App\Models\UangMakan::with('karyawan')->latest();
 
-        if ($request->filled('penempatan') || $request->filled('search')) {
-            $query->whereHas('karyawan', function ($q) use ($request) {
-                if ($request->filled('penempatan')) {
-                    $q->where('penempatan', $request->penempatan);
-                }
-                if ($request->filled('search')) {
-                    $q->where(function ($sub) use ($request) {
-                        $sub->where('nama_lengkap', 'like', '%'.$request->search.'%')
-                            ->orWhere('nik', 'like', '%'.$request->search.'%');
-                    });
-                }
+        if ($request->filled('search')) {
+            $query->whereHasMorph('karyawan', [Karyawan::class, KaryawanTidakTetap::class], function ($q) use ($request) {
+                $q->where(function ($sub) use ($request) {
+                    $sub->where('nama_lengkap', 'like', '%'.$request->search.'%')
+                        ->orWhere('nik', 'like', '%'.$request->search.'%');
+                });
             });
         }
 
-        $uangMakans = $query->paginate(10)->withQueryString();
-        $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
-        $penempatans2 = \App\Models\KaryawanTidakTetap::whereNotNull('penempatan')->distinct()->pluck('penempatan');
-        $penempatans = $penempatans->merge($penempatans2)->unique()->values();
+        if ($request->filled('departemen')) {
+            $karyawansWithDepartemen = Karyawan::query()
+                ->whereNotNull('departemen')
+                ->whereRaw("TRIM(departemen) <> ''");
 
-        return view('uang-makan.index', compact('uangMakans', 'penempatans'));
+            if ($request->departemen === '__blank__') {
+                // Karyawan tidak tetap belum memiliki kolom departemen.
+                $query->where(function ($q) use ($karyawansWithDepartemen) {
+                    $q->where('tipe_karyawan', '!=', (new Karyawan)->getMorphClass())
+                        ->orWhereNotIn('karyawan_id', $karyawansWithDepartemen->select('id'));
+                });
+            } else {
+                $query->where('tipe_karyawan', (new Karyawan)->getMorphClass())
+                    ->whereIn('karyawan_id', $karyawansWithDepartemen
+                        ->whereRaw('TRIM(departemen) = ?', [trim($request->departemen)])
+                        ->select('id'));
+            }
+        }
+
+        $uangMakans = $query->paginate(10)->appends($request->only('search', 'departemen'));
+        $uangMakansPerDepartemen = $uangMakans->getCollection()
+            ->groupBy(fn ($uangMakan) => trim($uangMakan->karyawan?->departemen ?? '') ?: 'BLANK')
+            ->sortKeys();
+        if ($uangMakansPerDepartemen->has('BLANK')) {
+            $blank = $uangMakansPerDepartemen->pull('BLANK');
+            $uangMakansPerDepartemen->put('BLANK', $blank);
+        }
+        $departemens = Karyawan::whereNotNull('departemen')->distinct()->pluck('departemen')
+            ->map(fn ($departemen) => trim($departemen))->filter()->unique()->sort()->values();
+        return view('uang-makan.index', compact('uangMakans', 'departemens', 'uangMakansPerDepartemen'));
     }
 
     public function create()

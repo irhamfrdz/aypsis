@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\UangMakanHelper;
 use Illuminate\Http\Request;
 
 class PayrollController extends Controller
@@ -76,7 +77,8 @@ class PayrollController extends Controller
             }
 
             foreach ($allKaryawans as $k) {
-                $isSatpam = false;
+                $isNominalTetap = UangMakanHelper::isNominalTetap($k);
+                $isSatpam = $isNominalTetap;
                 $isSatpamPelabuhan = false;
                 if ($k instanceof \App\Models\Karyawan) {
                     $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
@@ -110,13 +112,15 @@ class PayrollController extends Controller
                 if ($uniqueDays > 0) {
                     // Determine multiplier based on penempatan
                     $multiplier = 1;
-                    if (strcasecmp(trim($k->penempatan), 'Pelabuhan 1') === 0 || $k->penempatan == '1') {
+                    if (! $isNominalTetap && (strcasecmp(trim($k->penempatan ?? ''), 'Pelabuhan 1') === 0 || $k->penempatan == '1')) {
                         $multiplier = 2;
                     }
 
                     $karyawanNominalDasar = $k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0);
 
-                    if ($isSatpamPelabuhan) {
+                    if ($isNominalTetap) {
+                        $totalPayout = $karyawanNominalDasar;
+                    } elseif ($isSatpamPelabuhan) {
                         $totalPayout = $multiplier * $karyawanNominalDasar;
                     } else {
                         $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
@@ -130,6 +134,7 @@ class PayrollController extends Controller
                         'nominal_per_hari' => $karyawanNominalDasar,
                         'total_payout' => $totalPayout,
                         'is_satpam_pelabuhan' => $isSatpamPelabuhan,
+                        'is_nominal_tetap' => $isNominalTetap,
                     ];
                 }
             }
@@ -262,7 +267,8 @@ class PayrollController extends Controller
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
         foreach ($allKaryawans as $k) {
-            $isSatpam = false;
+            $isNominalTetap = UangMakanHelper::isNominalTetap($k);
+            $isSatpam = $isNominalTetap;
             $isSatpamPelabuhan = false;
             $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
             if (is_array($kGrup)) {
@@ -290,7 +296,7 @@ class PayrollController extends Controller
 
             if ($uniqueDays > 0) {
                 $multiplier = 1;
-                if (strcasecmp(trim($k->penempatan), 'Pelabuhan 1') === 0 || $k->penempatan == '1') {
+                if (! $isNominalTetap && (strcasecmp(trim($k->penempatan ?? ''), 'Pelabuhan 1') === 0 || $k->penempatan == '1')) {
                     $multiplier = 2;
                 }
 
@@ -300,7 +306,9 @@ class PayrollController extends Controller
                 // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
                 $karyawanNominalDasar = $submittedPayrolls[$formKey]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
 
-                if ($isSatpamPelabuhan) {
+                if ($isNominalTetap) {
+                    $totalPayout = $karyawanNominalDasar;
+                } elseif ($isSatpamPelabuhan) {
                     $totalPayout = $multiplier * $karyawanNominalDasar;
                 } else {
                     $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;

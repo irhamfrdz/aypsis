@@ -94,8 +94,7 @@
                     <div class="md:col-span-1">
                         <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group</label>
                         <select name="grup" id="grup"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs"
-                                onchange="handleGrupFilterChange()">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                             <option value="">Semua Group</option>
                             @foreach($grupsList as $g)
                                 <option value="{{ $g }}" {{ request('grup') == $g ? 'selected' : '' }}>{{ $g }}</option>
@@ -109,28 +108,9 @@
                         <select name="sub_grup" id="sub_grup"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                             <option value="">Semua Sub Group</option>
-                        </select>
-                    </div>
-
-                    <!-- Group BPJS -->
-                    <div class="md:col-span-1">
-                        <label for="grup_bpjs" class="block text-xs font-semibold text-gray-700 mb-1">Group BPJS</label>
-                        <select name="grup_bpjs" id="grup_bpjs"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs"
-                                onchange="handleGrupBpjsFilterChange()">
-                            <option value="">Semua Group BPJS</option>
-                            @foreach($grupsBpjsList as $g)
-                                <option value="{{ $g }}" {{ request('grup_bpjs') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                            @foreach($departemens as $departemen)
+                                <option value="{{ $departemen }}" @selected(request('sub_grup') == $departemen)>{{ $departemen }}</option>
                             @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Sub Group BPJS -->
-                    <div class="md:col-span-1">
-                        <label for="sub_grup_bpjs" class="block text-xs font-semibold text-gray-700 mb-1">Sub Group BPJS</label>
-                        <select name="sub_grup_bpjs" id="sub_grup_bpjs"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Sub Group BPJS</option>
                         </select>
                     </div>
 
@@ -142,30 +122,6 @@
                             <option value="">Semua Cabang</option>
                             @foreach($cabangs as $cabang)
                                 <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ strtoupper($cabang) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Penempatan -->
-                    <div class="md:col-span-1">
-                        <label for="penempatan" class="block text-xs font-semibold text-gray-700 mb-1">Penempatan</label>
-                        <select name="penempatan" id="penempatan"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Penempatan</option>
-                            @foreach($penempatans as $penempatan)
-                                <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Pekerjaan -->
-                    <div class="md:col-span-1">
-                        <label for="pekerjaan" class="block text-xs font-semibold text-gray-700 mb-1">Pekerjaan</label>
-                        <select name="pekerjaan" id="pekerjaan"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Pekerjaan</option>
-                            @foreach($pekerjaans as $pekerjaan)
-                                <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ strtoupper($pekerjaan) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -213,7 +169,7 @@
 
                     <!-- Action Buttons -->
                     <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
-                        @if(request()->anyFilled(['search', 'cabang', 'penempatan', 'pekerjaan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran', 'start_date', 'end_date']))
+                        @if(request()->anyFilled(['search', 'cabang', 'grup', 'sub_grup', 'kehadiran', 'start_date', 'end_date']))
                             <a href="{{ route('absensi.rekap') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
@@ -501,14 +457,10 @@
 
                             {{-- ===== SEMUA FILTER AKTIF DARI HALAMAN (diteruskan ke ekspor) ===== --}}
                             <input type="hidden" name="search"          value="{{ request('search') }}">
-                            <input type="hidden" name="penempatan"      value="{{ request('penempatan') }}">
-                            <input type="hidden" name="pekerjaan"       value="{{ request('pekerjaan') }}">
                             <input type="hidden" name="divisi"          value="{{ request('divisi') }}">
                             <input type="hidden" name="cabang"          value="{{ request('cabang') }}">
                             <input type="hidden" name="grup"            value="{{ request('grup') }}">
                             <input type="hidden" name="sub_grup"        value="{{ request('sub_grup') }}">
-                            <input type="hidden" name="grup_bpjs"       value="{{ request('grup_bpjs') }}">
-                            <input type="hidden" name="sub_grup_bpjs"   value="{{ request('sub_grup_bpjs') }}">
                             <input type="hidden" name="kehadiran"       value="{{ request('kehadiran') }}">
                             <input type="hidden" name="status_karyawan" value="{{ request('status_karyawan', 'aktif') }}">
 
@@ -529,11 +481,8 @@
                                 @php
                                     $activeFilters = [];
                                     if (request('search'))          $activeFilters[] = 'Cari: "'.request('search').'"';
-                                    if (request('penempatan'))      $activeFilters[] = 'Penempatan: '.strtoupper(request('penempatan'));
-                                    if (request('pekerjaan'))       $activeFilters[] = 'Pekerjaan: '.strtoupper(request('pekerjaan'));
                                     if (request('divisi'))          $activeFilters[] = 'Divisi: '.strtoupper(request('divisi'));
                                     if (request('grup'))            $activeFilters[] = 'Group: '.request('grup').(request('sub_grup') ? ' / '.request('sub_grup') : '');
-                                    if (request('grup_bpjs'))       $activeFilters[] = 'BPJS: '.request('grup_bpjs').(request('sub_grup_bpjs') ? ' / '.request('sub_grup_bpjs') : '');
                                     if (request('kehadiran'))       $activeFilters[] = 'Kehadiran: '.request('kehadiran');
                                     $statusLabel = match(request('status_karyawan', 'aktif')) { 'berhenti' => 'Berhenti', 'semua' => 'Semua', default => 'Aktif' };
                                     $activeFilters[] = 'Status: '.$statusLabel;
@@ -980,101 +929,7 @@
 
 @push('scripts')
 <script>
-    const grupMap = @json($grupMap ?? []);
-    const oldSubGrup = '{{ request('sub_grup') }}';
-    const oldGrup = '{{ request('grup') }}';
-
-    const grupBpjsMap = @json($grupBpjsMap ?? []);
-    const oldSubGrupBpjs = '{{ request('sub_grup_bpjs') }}';
-    const oldGrupBpjs = '{{ request('grup_bpjs') }}';
-
-    function handleGrupFilterChange() {
-        const grupSelect = document.getElementById('grup');
-        const subGrupSelect = document.getElementById('sub_grup');
-        const selectedGrup = grupSelect.value;
-        
-        // Reset Sub Group options
-        subGrupSelect.innerHTML = '<option value="">Semua Sub Group</option>';
-        
-        if (selectedGrup && grupMap[selectedGrup]) {
-            const subs = grupMap[selectedGrup];
-            subs.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.text = sub;
-                subGrupSelect.appendChild(option);
-            });
-        } else {
-            // Populate all sub groups if no group is selected
-            let allSubs = new Set();
-            for (const key in grupMap) {
-                grupMap[key].forEach(sub => allSubs.add(sub));
-            }
-            // Sort
-            allSubs = Array.from(allSubs).sort();
-            allSubs.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.text = sub;
-                subGrupSelect.appendChild(option);
-            });
-        }
-    }
-
-    function handleGrupBpjsFilterChange() {
-        const grupBpjsSelect = document.getElementById('grup_bpjs');
-        const subGrupBpjsSelect = document.getElementById('sub_grup_bpjs');
-        const selectedGrupBpjs = grupBpjsSelect.value;
-        
-        // Reset Sub Group options
-        subGrupBpjsSelect.innerHTML = '<option value="">Semua Sub Group BPJS</option>';
-        
-        if (selectedGrupBpjs && grupBpjsMap[selectedGrupBpjs]) {
-            const subs = grupBpjsMap[selectedGrupBpjs];
-            subs.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.text = sub;
-                subGrupBpjsSelect.appendChild(option);
-            });
-        } else {
-            // Populate all sub groups bpjs if no group is selected
-            let allSubs = new Set();
-            for (const key in grupBpjsMap) {
-                grupBpjsMap[key].forEach(sub => allSubs.add(sub));
-            }
-            // Sort
-            allSubs = Array.from(allSubs).sort();
-            allSubs.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.text = sub;
-                subGrupBpjsSelect.appendChild(option);
-            });
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
-        // Run once on load to populate sub_grup if a grup was selected
-        handleGrupFilterChange();
-        handleGrupBpjsFilterChange();
-        
-        // If there was an old sub_grup selected, re-select it
-        if (oldSubGrup) {
-            const subGrupSelect = document.getElementById('sub_grup');
-            if (Array.from(subGrupSelect.options).some(opt => opt.value === oldSubGrup)) {
-                subGrupSelect.value = oldSubGrup;
-            }
-        }
-        
-        // If there was an old sub_grup_bpjs selected, re-select it
-        if (oldSubGrupBpjs) {
-            const subGrupBpjsSelect = document.getElementById('sub_grup_bpjs');
-            if (Array.from(subGrupBpjsSelect.options).some(opt => opt.value === oldSubGrupBpjs)) {
-                subGrupBpjsSelect.value = oldSubGrupBpjs;
-            }
-        }
-
         // Initialize Select2 for the Izin Modal
         if ($('#karyawan_id_izin').length) {
             $('#karyawan_id_izin').select2({
@@ -1490,8 +1345,8 @@
         const params = new URLSearchParams();
 
         const fields = [
-            'search', 'cabang', 'penempatan', 'pekerjaan', 'grup', 'sub_grup',
-            'grup_bpjs', 'sub_grup_bpjs', 'kehadiran', 'status_karyawan',
+            'search', 'cabang', 'grup', 'sub_grup',
+            'kehadiran', 'status_karyawan',
             'start_date', 'end_date'
         ];
 

@@ -1008,6 +1008,9 @@ class AbsensiController extends Controller
             sort($subs);
         }
         $grupsList = array_keys($grupMap);
+        $departemens = \App\Models\Departemen::where('is_active', true)
+            ->orderBy('nama_departemen')
+            ->pluck('nama_departemen');
 
         $grupBpjsMap = [
             'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
@@ -1423,7 +1426,7 @@ class AbsensiController extends Controller
 
         $allHariLiburs = \App\Models\HariLibur::orderBy('tanggal', 'desc')->get();
 
-        return view('absensi.rekap', compact('karyawans', 'allKaryawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap', 'allHariLiburs'));
+        return view('absensi.rekap', compact('karyawans', 'allKaryawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'departemens', 'grupsBpjsList', 'grupBpjsMap', 'allHariLiburs'));
     }
 
     /**
