@@ -14,6 +14,10 @@ class TagihanServiceKendaraanBatamController extends Controller
     {
         $query = TagihanServiceKendaraanBatam::query();
 
+        if (in_array($request->input('jenis_tagihan'), ['kendaraan', 'lain_lain'], true)) {
+            $query->where('jenis_tagihan', $request->input('jenis_tagihan'));
+        }
+
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
             $query->where(function ($builder) use ($search) {
