@@ -779,6 +779,8 @@ class BiayaKapalController extends Controller
             'opp_opt_sections.*.barang' => 'nullable|array',
             'opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan' => 'nullable|date',
             'opp_opt_sections.*.barang.*.tanggal_selesai_penumpukan' => 'nullable|date|after_or_equal:opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan',
+            'opp_opt_sections.*.barang.*.massa' => 'nullable|integer|min:1',
+            'opp_opt_sections.*.barang.*.status_kontainer' => 'nullable|in:full,empty',
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
@@ -2666,6 +2668,8 @@ class BiayaKapalController extends Controller
                                 'catatan' => $catatan,
                                 'tanggal_mulai_penumpukan' => $item['tanggal_mulai_penumpukan'] ?? null,
                                 'tanggal_selesai_penumpukan' => $item['tanggal_selesai_penumpukan'] ?? null,
+                                'massa' => $this->oppOptPenumpukanMassa($item),
+                                'status_kontainer' => $item['status_kontainer'] ?? null,
                                 'jumlah' => $jumlah,
                                 'tarif' => $tarif,
                                 'subtotal' => $subtotal,
@@ -4433,6 +4437,8 @@ class BiayaKapalController extends Controller
             'opp_opt_sections.*.barang' => 'nullable|array',
             'opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan' => 'nullable|date',
             'opp_opt_sections.*.barang.*.tanggal_selesai_penumpukan' => 'nullable|date|after_or_equal:opp_opt_sections.*.barang.*.tanggal_mulai_penumpukan',
+            'opp_opt_sections.*.barang.*.massa' => 'nullable|integer|min:1',
+            'opp_opt_sections.*.barang.*.status_kontainer' => 'nullable|in:full,empty',
             'nomor_invoice' => 'required|string|max:50|unique:biaya_kapals,nomor_invoice,'.$biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
             'nama_kapal' => 'nullable|array',
@@ -5027,6 +5033,8 @@ class BiayaKapalController extends Controller
                                     'catatan' => $catatan,
                                     'tanggal_mulai_penumpukan' => $item['tanggal_mulai_penumpukan'] ?? null,
                                     'tanggal_selesai_penumpukan' => $item['tanggal_selesai_penumpukan'] ?? null,
+                                    'massa' => $this->oppOptPenumpukanMassa($item),
+                                    'status_kontainer' => $item['status_kontainer'] ?? null,
                                     'jumlah' => $jumlah,
                                     'tarif' => $tarif,
                                     'subtotal' => $subtotal,
@@ -6320,12 +6328,29 @@ class BiayaKapalController extends Controller
                 } elseif (! empty($tanggalMulai) && $tanggalSelesai < $tanggalMulai) {
                     $errors["{$prefix}.tanggal_selesai_penumpukan"] = 'Tanggal selesai harus sama atau setelah tanggal mulai.';
                 }
+
+                if (! in_array($item['status_kontainer'] ?? null, ['full', 'empty'], true)) {
+                    $errors["{$prefix}.status_kontainer"] = 'Status kontainer Full atau Empty wajib dipilih.';
+                }
+
             }
         }
 
         if ($errors !== []) {
             throw \Illuminate\Validation\ValidationException::withMessages($errors);
         }
+    }
+
+    private function oppOptPenumpukanMassa(array $item): ?int
+    {
+        if (empty($item['tanggal_mulai_penumpukan']) || empty($item['tanggal_selesai_penumpukan'])) {
+            return null;
+        }
+
+        $hari = (int) \Carbon\Carbon::parse($item['tanggal_mulai_penumpukan'])
+            ->diffInDays(\Carbon\Carbon::parse($item['tanggal_selesai_penumpukan'])) + 1;
+
+        return (int) ceil($hari / 3);
     }
 
     public function destroy(BiayaKapal $biayaKapal)
@@ -6797,7 +6822,7 @@ class BiayaKapalController extends Controller
             }
 
             $manifests = $manifestsQuery
-                ->select('id', 'nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer')
+                ->select('id', 'nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer', 'nama_barang')
                 ->orderBy('nomor_kontainer')
                 ->get()
                 ->map(function ($item) {
@@ -6812,10 +6837,19 @@ class BiayaKapalController extends Controller
                         $label = 'Manifest ID: '.$item->id;
                     }
 
+                    $namaBarang = strtolower(trim((string) $item->nama_barang));
+                    $isEmpty = $namaBarang === '' || $namaBarang === 'mt' || $namaBarang === 'mty'
+                        || str_contains($namaBarang, 'empty') || str_contains($namaBarang, 'kosong')
+                        || (strtoupper((string) $item->tipe_kontainer) === 'FCL'
+                            && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
+
                     return [
                         'id' => $item->id,
                         'nomor_kontainer' => $item->nomor_kontainer,
                         'label' => $label.' ('.($item->size_kontainer ?: '-').' '.($item->tipe_kontainer ?: '-').')',
+                        'size_kontainer' => $item->size_kontainer,
+                        'tipe_kontainer' => $item->tipe_kontainer,
+                        'status_kontainer' => $isEmpty ? 'empty' : 'full',
                     ];
                 });
 

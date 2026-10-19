@@ -6,8 +6,18 @@
             'tarif' => $item->tarif
         ];
     })->toArray();
+    $pelindoStorageTarifsRaw = \App\Models\MasterPricelistBiayaStoragePelindo::with('tarifMassa')
+        ->where('status', 'aktif')->get()->map(fn ($item) => [
+            'size' => $item->size_kontainer,
+            'status' => $item->status_kontainer,
+            'tarif_massa' => $item->tarifMassa->map(fn ($tarif) => [
+                'massa' => (float) $tarif->massa,
+                'tarif' => (float) $tarif->tarif,
+            ])->all(),
+        ])->all();
 @endphp
     const oppOptTarifsFull = @json($oppOptTarifsRaw);
+    const pelindoStorageTarifs = @json($pelindoStorageTarifsRaw);
 
     function syncOppOptPenumpukanDates(inputGroup, existingValues = null) {
         const biayaSelect = inputGroup.querySelector('.opp-opt-biaya-select-item');
@@ -16,19 +26,121 @@
 
         const mulaiInput = dateRange.querySelector('.opp-opt-tanggal-mulai-input');
         const selesaiInput = dateRange.querySelector('.opp-opt-tanggal-selesai-input');
+        const massaInput = dateRange.querySelector('.opp-opt-massa-input');
+        const statusSelect = dateRange.querySelector('.opp-opt-status-kontainer-select');
+        const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
+        const manifestSelect = inputGroup.querySelector('.opp-opt-barang-select-item');
+        const tarifHint = dateRange.querySelector('.opp-opt-penumpukan-tarif-hint');
         if (existingValues) {
             if (mulaiInput) mulaiInput.value = existingValues.tanggal_mulai_penumpukan || '';
             if (selesaiInput) selesaiInput.value = existingValues.tanggal_selesai_penumpukan || '';
+            if (massaInput) massaInput.value = existingValues.massa || '';
+            if (statusSelect) statusSelect.value = existingValues.status_kontainer || '';
         }
 
-        const updateVisibility = () => {
+        const updateStatusFromManifests = () => {
+            const section = inputGroup.closest('.opp-opt-section');
+            const manifests = JSON.parse(section?.getAttribute('data-manifests') || '[]');
+            const selectedIds = Array.from(manifestSelect.selectedOptions).map(option => option.value).filter(Boolean);
+            const statuses = selectedIds.map(id =>
+                manifests.find(item => String(item.id) === id)?.status_kontainer
+            );
+            statusSelect.value = statuses.length && statuses.every(status =>
+                status && status === statuses[0]
+            ) ? statuses[0] : '';
+        };
+
+        const clearAutoTarif = () => {
+            if (tarifInput && tarifInput.dataset.pelindoAutoRate === tarifInput.value) {
+                tarifInput.value = '';
+                calculateTotalFromAllOppOptSections();
+            }
+            if (tarifInput) delete tarifInput.dataset.pelindoAutoRate;
+        };
+
+        const updateMassaAndTarif = (updateTarif = true) => {
+            if (!biayaSelect.selectedOptions[0]?.textContent?.trim().toLowerCase().includes('biaya penumpukan')) return;
+            const start = mulaiInput.value;
+            const end = selesaiInput.value;
+            const days = start && end
+                ? Math.round((Date.parse(end + 'T00:00:00Z') - Date.parse(start + 'T00:00:00Z')) / 86400000) + 1
+                : 0;
+            const massa = days > 0 ? Math.ceil(days / 3) : null;
+            massaInput.value = massa || '';
+            if (!updateTarif) return;
+            if (!massa || !tarifInput || !manifestSelect) {
+                clearAutoTarif();
+                return;
+            }
+
+            const section = inputGroup.closest('.opp-opt-section');
+            const manifests = JSON.parse(section?.getAttribute('data-manifests') || '[]');
+            const selectedIds = Array.from(manifestSelect.selectedOptions)
+                .map(option => option.value).filter(Boolean);
+            if (!selectedIds.length) {
+                clearAutoTarif();
+                return;
+            }
+            if (!statusSelect.value) {
+                clearAutoTarif();
+                if (tarifHint) tarifHint.textContent = 'Pilih Full atau Empty untuk menentukan tarif.';
+                return;
+            }
+
+            const rates = selectedIds.map(id => {
+                const manifest = manifests.find(item => String(item.id) === id);
+                if (!manifest) return null;
+                const size = String(manifest.size_kontainer || '').match(/20|40|45/)?.[0];
+                const pricelist = pelindoStorageTarifs.find(item =>
+                    String(item.size).includes(size) && item.status === statusSelect.value
+                );
+                return pricelist?.tarif_massa.find(item => Number(item.massa) === massa)?.tarif ?? null;
+            });
+
+            if (rates.every(rate => rate !== null && Number(rate) === Number(rates[0]))) {
+                tarifInput.value = rates[0];
+                tarifInput.dataset.pelindoAutoRate = String(rates[0]);
+                if (tarifHint) tarifHint.textContent = '';
+                calculateTotalFromAllOppOptSections();
+            } else {
+                clearAutoTarif();
+                if (tarifHint) {
+                    tarifHint.textContent = rates.some(rate => rate === null)
+                        ? 'Tarif massa ini belum tersedia untuk kontainer terpilih; isi tarif manual.'
+                        : 'Tarif kontainer berbeda; pisahkan ke baris biaya lain.';
+                }
+            }
+        };
+
+        const updateVisibility = (event = null) => {
             const namaBiaya = biayaSelect.selectedOptions[0]?.textContent?.trim().toLowerCase() || '';
             const tampilkanTanggal = namaBiaya.includes('biaya penumpukan');
             dateRange.classList.toggle('hidden', !tampilkanTanggal);
-            [mulaiInput, selesaiInput].filter(Boolean).forEach(input => input.required = tampilkanTanggal);
+            dateRange.style.display = tampilkanTanggal ? 'flex' : 'none';
+            [mulaiInput, selesaiInput, massaInput, statusSelect].filter(Boolean).forEach(input => {
+                input.required = tampilkanTanggal;
+                input.disabled = !tampilkanTanggal;
+            });
+            if (tampilkanTanggal) updateMassaAndTarif(Boolean(event));
         };
 
-        biayaSelect.addEventListener('change', updateVisibility);
+        if (typeof $ !== 'undefined') {
+            $(biayaSelect).on('change', updateVisibility);
+            $(manifestSelect).on('change', () => {
+                updateStatusFromManifests();
+                updateMassaAndTarif();
+            });
+        } else {
+            biayaSelect.addEventListener('change', updateVisibility);
+            manifestSelect.addEventListener('change', () => {
+                updateStatusFromManifests();
+                updateMassaAndTarif();
+            });
+        }
+        statusSelect.addEventListener('change', () => updateMassaAndTarif());
+        mulaiInput.addEventListener('change', () => updateMassaAndTarif());
+        selesaiInput.addEventListener('change', () => updateMassaAndTarif());
+        if (!existingValues?.status_kontainer) updateStatusFromManifests();
         updateVisibility();
     }
 
@@ -695,7 +807,7 @@
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
                 </div>
-                <div class="hidden opp-opt-date-range w-full md:w-1/2 flex gap-2">
+                <div class="hidden opp-opt-date-range w-full flex flex-wrap gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] font-medium text-gray-700 mb-1">Dari Tanggal</label>
                         <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_mulai_penumpukan]" class="opp-opt-tanggal-mulai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
@@ -704,6 +816,19 @@
                         <label class="block text-[10px] font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                         <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_selesai_penumpukan]" class="opp-opt-tanggal-selesai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
                     </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Massa</label>
+                        <input type="number" min="1" readonly name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][massa]" class="opp-opt-massa-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-gray-50" placeholder="Otomatis dari tanggal">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Status Kontainer</label>
+                        <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][status_kontainer]" class="opp-opt-status-kontainer-select w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-white">
+                            <option value="">Pilih Status</option>
+                            <option value="full">Full</option>
+                            <option value="empty">Empty</option>
+                        </select>
+                    </div>
+                    <p class="opp-opt-penumpukan-tarif-hint w-full text-xs text-amber-700"></p>
                 </div>
 
 
@@ -922,7 +1047,7 @@
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                     <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
                 </div>
-                <div class="hidden opp-opt-date-range w-full md:w-1/2 flex gap-2">
+                <div class="hidden opp-opt-date-range w-full flex flex-wrap gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] font-medium text-gray-700 mb-1">Dari Tanggal</label>
                         <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_mulai_penumpukan]" class="opp-opt-tanggal-mulai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
@@ -931,6 +1056,19 @@
                         <label class="block text-[10px] font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                         <input type="date" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tanggal_selesai_penumpukan]" class="opp-opt-tanggal-selesai-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
                     </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Massa</label>
+                        <input type="number" min="1" readonly name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][massa]" class="opp-opt-massa-input w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-gray-50" placeholder="Otomatis dari tanggal">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-medium text-gray-700 mb-1">Status Kontainer</label>
+                        <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][status_kontainer]" class="opp-opt-status-kontainer-select w-full px-2 py-1.5 border border-gray-300 rounded text-sm bg-white">
+                            <option value="">Pilih Status</option>
+                            <option value="full">Full</option>
+                            <option value="empty">Empty</option>
+                        </select>
+                    </div>
+                    <p class="opp-opt-penumpukan-tarif-hint w-full text-xs text-amber-700"></p>
                 </div>
                 <div class="flex-1">
                     <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
@@ -1047,6 +1185,10 @@
         const inputGroups = container.querySelectorAll('.opp-opt-item-row');
         
         inputGroups.forEach((group, newIndex) => {
+            const biayaSelect = group.querySelector('.opp-opt-biaya-select-item');
+            if (biayaSelect) {
+                biayaSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][klasifikasi_biaya_id]`;
+            }
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
             if (barangSelect) {
                 barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id][]`;
@@ -1070,6 +1212,15 @@
             const catatanInput = group.querySelector('.opp-opt-catatan-input-item');
             if (catatanInput) {
                 catatanInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][catatan]`;
+            }
+            for (const [selector, key] of [
+                ['.opp-opt-tanggal-mulai-input', 'tanggal_mulai_penumpukan'],
+                ['.opp-opt-tanggal-selesai-input', 'tanggal_selesai_penumpukan'],
+                ['.opp-opt-massa-input', 'massa'],
+                ['.opp-opt-status-kontainer-select', 'status_kontainer']
+            ]) {
+                const input = group.querySelector(selector);
+                if (input) input.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][${key}]`;
             }
         });
     }
