@@ -327,7 +327,7 @@
              onclick="showDetailTable('belum-masuk')"
              title="Klik untuk melihat daftar karyawan yang belum absen masuk">
             <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Masuk</span>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Absen Masuk</span>
                 <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center ring-1 ring-rose-500/15 group-hover:scale-105 transition-transform">
                     <i class="fas fa-user-times text-lg"></i>
                 </div>
@@ -351,7 +351,7 @@
              onclick="showDetailTable('belum-pulang')"
              title="Klik untuk melihat daftar karyawan yang belum absen pulang">
             <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Pulang</span>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Belum Absen Pulang</span>
                 <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center ring-1 ring-amber-500/15 group-hover:scale-105 transition-transform">
                     <i class="fas fa-running text-lg"></i>
                 </div>
