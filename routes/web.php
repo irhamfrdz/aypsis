@@ -6067,10 +6067,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-cat.destroy')
         ->middleware('can:tagihan-cat-delete');
 
-    Route::resource('tagihan-service-kendaraan-batam', \App\Http\Controllers\TagihanServiceKendaraanBatamController::class)
-        ->names('tagihan-service-kendaraan-batam')
+    Route::resource('tagihan-lain-lain-batam', \App\Http\Controllers\TagihanServiceKendaraanBatamController::class)
+        ->names('tagihan-lain-lain-batam')
         ->except(['show'])
-        ->parameters(['tagihan-service-kendaraan-batam' => 'serviceTagihan'])
+        ->parameters(['tagihan-lain-lain-batam' => 'serviceTagihan'])
         ->middleware([
             'index' => 'can:tagihan-service-kendaraan-batam-view',
             'create' => 'can:tagihan-service-kendaraan-batam-create',
@@ -6079,6 +6079,10 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'can:tagihan-service-kendaraan-batam-update',
             'destroy' => 'can:tagihan-service-kendaraan-batam-delete',
         ]);
+
+    Route::get('tagihan-service-kendaraan-batam/{path?}', function () {
+        return redirect()->route('tagihan-lain-lain-batam.index', [], 301);
+    })->where('path', '.*')->name('tagihan-service-kendaraan-batam.legacy');
 
     // Tagihan Pelindo routes
     Route::get('tagihan-pelindo', [\App\Http\Controllers\TagihanPelindoController::class, 'index'])

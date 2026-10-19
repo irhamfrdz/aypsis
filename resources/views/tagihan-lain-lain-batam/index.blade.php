@@ -10,7 +10,7 @@
             <p class="mt-1 text-sm text-gray-600">Kelola tagihan lain lain Batam.</p>
         </div>
         @can('tagihan-service-kendaraan-batam-create')
-            <a href="{{ route('tagihan-service-kendaraan-batam.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Tagihan</a>
+            <a href="{{ route('tagihan-lain-lain-batam.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Tagihan</a>
         @endcan
     </div>
 
@@ -18,13 +18,13 @@
         <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>
     @endif
 
-    <form method="GET" action="{{ route('tagihan-service-kendaraan-batam.index') }}" class="mb-5 grid grid-cols-1 gap-3 rounded-lg border bg-white p-4 md:grid-cols-4">
+    <form method="GET" action="{{ route('tagihan-lain-lain-batam.index') }}" class="mb-5 grid grid-cols-1 gap-3 rounded-lg border bg-white p-4 md:grid-cols-4">
         <input name="search" value="{{ request('search') }}" placeholder="No. tagihan, polisi, bengkel" class="rounded-lg border-gray-300 text-sm">
         <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="rounded-lg border-gray-300 text-sm" aria-label="Tanggal service dari">
         <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="rounded-lg border-gray-300 text-sm" aria-label="Tanggal service sampai">
         <div class="flex gap-2">
             <button class="rounded-lg bg-gray-800 px-4 py-2 text-sm font-semibold text-white">Filter</button>
-            <a href="{{ route('tagihan-service-kendaraan-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700">Reset</a>
+            <a href="{{ route('tagihan-lain-lain-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700">Reset</a>
         </div>
     </form>
 
@@ -48,10 +48,10 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_biaya, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">
                             @can('tagihan-service-kendaraan-batam-update')
-                                <a href="{{ route('tagihan-service-kendaraan-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
+                                <a href="{{ route('tagihan-lain-lain-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
                             @endcan
                             @can('tagihan-service-kendaraan-batam-delete')
-                                <form action="{{ route('tagihan-service-kendaraan-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan ini?')">
+                                <form action="{{ route('tagihan-lain-lain-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan ini?')">
                                     @csrf @method('DELETE')
                                     <button class="font-medium text-red-700 hover:underline">Hapus</button>
                                 </form>

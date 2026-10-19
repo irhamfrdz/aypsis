@@ -34,12 +34,12 @@ class TagihanServiceKendaraanBatamController extends Controller
 
         $tagihan = $query->latest('tanggal_service')->latest('id')->paginate(20)->withQueryString();
 
-        return view('tagihan-service-kendaraan-batam.index', compact('tagihan'));
+        return view('tagihan-lain-lain-batam.index', compact('tagihan'));
     }
 
     public function create()
     {
-        return view('tagihan-service-kendaraan-batam.create', [
+        return view('tagihan-lain-lain-batam.create', [
             'tagihan' => new TagihanServiceKendaraanBatam,
             'nomorTagihan' => $this->previewNomorTagihan(),
             'mobils' => $this->getMobilsForSelect(),
@@ -74,7 +74,7 @@ class TagihanServiceKendaraanBatamController extends Controller
             TagihanServiceKendaraanBatam::create($data);
         });
 
-        return redirect()->route('tagihan-service-kendaraan-batam.index')
+        return redirect()->route('tagihan-lain-lain-batam.index')
             ->with('success', 'Tagihan lain lain Batam berhasil ditambahkan.');
     }
 
@@ -85,7 +85,7 @@ class TagihanServiceKendaraanBatamController extends Controller
             return $this->mobilDisplayNumber($mobil) === $serviceTagihan->nomor_polisi;
         })?->id;
 
-        return view('tagihan-service-kendaraan-batam.edit', compact('serviceTagihan', 'mobils', 'selectedMobilId') + [
+        return view('tagihan-lain-lain-batam.edit', compact('serviceTagihan', 'mobils', 'selectedMobilId') + [
             'tagihan' => $serviceTagihan,
         ]);
     }
@@ -97,7 +97,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         $data['updated_by'] = Auth::id();
         $serviceTagihan->update($data);
 
-        return redirect()->route('tagihan-service-kendaraan-batam.index')
+        return redirect()->route('tagihan-lain-lain-batam.index')
             ->with('success', 'Tagihan lain lain Batam berhasil diperbarui.');
     }
 
@@ -105,7 +105,7 @@ class TagihanServiceKendaraanBatamController extends Controller
     {
         $serviceTagihan->delete();
 
-        return redirect()->route('tagihan-service-kendaraan-batam.index')
+        return redirect()->route('tagihan-lain-lain-batam.index')
             ->with('success', 'Tagihan lain lain Batam berhasil dihapus.');
     }
 
