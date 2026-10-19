@@ -19,6 +19,20 @@
     const oppOptTarifsFull = @json($oppOptTarifsRaw);
     const pelindoStorageTarifs = @json($pelindoStorageTarifsRaw);
 
+    function arrangeOppOptItemFields(inputGroup) {
+        const dateRange = inputGroup.querySelector('.opp-opt-date-range');
+        const tarifField = inputGroup.querySelector('.opp-opt-tarif-input-item')?.parentElement;
+        if (!dateRange || !tarifField) return;
+
+        inputGroup.insertBefore(dateRange, tarifField);
+        inputGroup.querySelector('.opp-opt-biaya-select-item').parentElement.className = 'w-full md:w-[49%]';
+        inputGroup.querySelector('.opp-opt-barang-select-item').parentElement.className = 'w-full md:w-[49%]';
+        tarifField.className = 'w-full md:w-[18%]';
+        inputGroup.querySelector('.opp-opt-vendor-input-item').parentElement.className = 'w-full md:w-[25%]';
+        inputGroup.querySelector('.opp-opt-catatan-input-item').parentElement.className = 'w-full md:flex-1';
+        dateRange.querySelectorAll(':scope > div').forEach(field => field.classList.add('min-w-[150px]'));
+    }
+
     function syncOppOptPenumpukanDates(inputGroup, existingValues = null) {
         const biayaSelect = inputGroup.querySelector('.opp-opt-biaya-select-item');
         const dateRange = inputGroup.querySelector('.opp-opt-date-range');
@@ -790,6 +804,7 @@
             `;
         }
         
+        arrangeOppOptItemFields(inputGroup);
         targetContainer.appendChild(inputGroup);
         
         syncOppOptPenumpukanDates(inputGroup, typeof existingValues !== 'undefined' ? existingValues : null);
@@ -982,6 +997,7 @@
             `;
         }
         
+        arrangeOppOptItemFields(inputGroup);
         targetContainer.appendChild(inputGroup);
         
         if (!isOpslag && typeof $ !== 'undefined' && $.fn.select2) {
