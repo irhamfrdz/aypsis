@@ -6461,6 +6461,24 @@ class BiayaKapalController extends Controller
             );
             $voyagesFromManifests = $voyagesFromManifestsQuery->groupBy('no_voyage')->get();
 
+            // Include voyages entered directly in the Pergerakan Kapal module.
+            $voyagesFromPergerakanKapalQuery = DB::table('pergerakan_kapal')
+                ->whereNotNull('voyage')
+                ->where('voyage', '!=', '');
+
+            $voyagesFromPergerakanKapalQuery->where(function ($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+
+            $voyagesFromPergerakanKapalQuery->select(
+                'voyage as no_voyage',
+                DB::raw('MIN(COALESCE(tanggal_sandar, tanggal_labuh, tanggal_berangkat, created_at)) as min_tanggal'),
+                DB::raw('MAX(COALESCE(tanggal_sandar, tanggal_labuh, tanggal_berangkat, created_at)) as max_tanggal')
+            );
+            $voyagesFromPergerakanKapal = $voyagesFromPergerakanKapalQuery->groupBy('voyage')->get();
+
             // Merge and get unique voyages with dates
             $voyageDates = [];
             foreach ($voyagesFromNaikKapal as $row) {
@@ -6485,6 +6503,21 @@ class BiayaKapalController extends Controller
                 }
             }
             foreach ($voyagesFromManifests as $row) {
+                if (! isset($voyageDates[$row->no_voyage])) {
+                    $voyageDates[$row->no_voyage] = [
+                        'min' => $row->min_tanggal,
+                        'max' => $row->max_tanggal,
+                    ];
+                } else {
+                    if ($row->min_tanggal && (! $voyageDates[$row->no_voyage]['min'] || $row->min_tanggal < $voyageDates[$row->no_voyage]['min'])) {
+                        $voyageDates[$row->no_voyage]['min'] = $row->min_tanggal;
+                    }
+                    if ($row->max_tanggal && (! $voyageDates[$row->no_voyage]['max'] || $row->max_tanggal > $voyageDates[$row->no_voyage]['max'])) {
+                        $voyageDates[$row->no_voyage]['max'] = $row->max_tanggal;
+                    }
+                }
+            }
+            foreach ($voyagesFromPergerakanKapal as $row) {
                 if (! isset($voyageDates[$row->no_voyage])) {
                     $voyageDates[$row->no_voyage] = [
                         'min' => $row->min_tanggal,
