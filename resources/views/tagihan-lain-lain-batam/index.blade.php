@@ -17,6 +17,9 @@
     @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>
     @endif
+    @if (session('error'))
+        <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">{{ session('error') }}</div>
+    @endif
     @if ($errors->any())
         <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">{{ $errors->first() }}</div>
     @endif
@@ -70,10 +73,14 @@
                                 <a href="{{ route('tagihan-lain-lain-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
                             @endcan
                             @can('tagihan-service-kendaraan-batam-delete')
-                                <form action="{{ route('tagihan-lain-lain-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan ini?')">
-                                    @csrf @method('DELETE')
-                                    <button class="font-medium text-red-700 hover:underline">Hapus</button>
-                                </form>
+                                @if ($pranotaItem)
+                                    <span class="ml-3 text-xs text-gray-500" title="Hapus pranotanya terlebih dahulu">Hapus pranota dulu</span>
+                                @else
+                                    <form action="{{ route('tagihan-lain-lain-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan ini?')">
+                                        @csrf @method('DELETE')
+                                        <button class="font-medium text-red-700 hover:underline">Hapus</button>
+                                    </form>
+                                @endif
                             @endcan
                         </td>
                     </tr>

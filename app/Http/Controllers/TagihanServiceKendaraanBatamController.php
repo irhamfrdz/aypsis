@@ -111,7 +111,23 @@ class TagihanServiceKendaraanBatamController extends Controller
 
     public function destroy(TagihanServiceKendaraanBatam $serviceTagihan)
     {
-        $serviceTagihan->delete();
+        $nomorPranota = DB::transaction(function () use ($serviceTagihan) {
+            $tagihan = TagihanServiceKendaraanBatam::whereKey($serviceTagihan->id)->lockForUpdate()->firstOrFail();
+            $pranotaItem = $tagihan->pranotaItems()->with('pranota')->first();
+
+            if ($pranotaItem) {
+                return $pranotaItem->pranota?->nomor_pranota ?? 'terkait';
+            }
+
+            $tagihan->delete();
+
+            return null;
+        });
+
+        if ($nomorPranota) {
+            return redirect()->route('tagihan-lain-lain-batam.index')
+                ->with('error', "Tagihan ini sudah masuk pranota {$nomorPranota}. Hapus pranotanya terlebih dahulu sebelum menghapus tagihan.");
+        }
 
         return redirect()->route('tagihan-lain-lain-batam.index')
             ->with('success', 'Tagihan lain lain Batam berhasil dihapus.');
