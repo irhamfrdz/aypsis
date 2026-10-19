@@ -12,6 +12,7 @@
     }
     .service-batam-control:hover { border-color: #94a3b8; }
     .service-batam-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 15%); }
+    .service-batam-control--readonly { background-color: #f8fafc; color: #475569; cursor: not-allowed; }
     .service-batam-control::placeholder { color: #94a3b8; }
     textarea.service-batam-control { min-height: 6rem; resize: vertical; }
     textarea.service-batam-control.service-batam-control--short { min-height: 4.5rem; }
@@ -23,7 +24,8 @@
 <div class="service-batam-form-grid">
     <div class="service-batam-field">
         <label for="nomor_tagihan" class="service-batam-label">Nomor Tagihan</label>
-        <input id="nomor_tagihan" name="nomor_tagihan" value="{{ old('nomor_tagihan', $tagihan->nomor_tagihan) }}" maxlength="100" placeholder="Contoh: INV-SVC-001" class="service-batam-control">
+        <input id="nomor_tagihan" name="nomor_tagihan" value="{{ $tagihan->nomor_tagihan ?: ($nomorTagihan ?? '') }}" readonly class="service-batam-control service-batam-control--readonly">
+        <p class="mt-1 text-xs text-slate-500">Nomor dibuat otomatis saat tagihan disimpan.</p>
         @error('nomor_tagihan')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">

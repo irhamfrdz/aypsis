@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TagihanServiceKendaraanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TagihanServiceKendaraanBatamController extends Controller
 {
@@ -41,15 +42,38 @@ class TagihanServiceKendaraanBatamController extends Controller
 
     public function create()
     {
-        return view('tagihan-service-kendaraan-batam.create', ['tagihan' => new TagihanServiceKendaraanBatam]);
+        return view('tagihan-service-kendaraan-batam.create', [
+            'tagihan' => new TagihanServiceKendaraanBatam,
+            'nomorTagihan' => $this->previewNomorTagihan(),
+        ]);
     }
 
     public function store(Request $request)
     {
         $data = $this->validated($request);
-        $data['created_by'] = Auth::id();
+        DB::transaction(function () use (&$data) {
+            $prefix = '001'.now()->format('dm');
+            DB::table('tagihan_service_kendaraan_batam_sequences')->insertOrIgnore([
+                'kode_tanggal_bulan' => $prefix,
+                'nomor_terakhir' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        TagihanServiceKendaraanBatam::create($data);
+            $sequence = DB::table('tagihan_service_kendaraan_batam_sequences')
+                ->where('kode_tanggal_bulan', $prefix)
+                ->lockForUpdate()
+                ->first();
+            $nextNumber = $sequence->nomor_terakhir + 1;
+
+            DB::table('tagihan_service_kendaraan_batam_sequences')
+                ->where('kode_tanggal_bulan', $prefix)
+                ->update(['nomor_terakhir' => $nextNumber, 'updated_at' => now()]);
+
+            $data['nomor_tagihan'] = $prefix.str_pad((string) $nextNumber, 6, '0', STR_PAD_LEFT);
+            $data['created_by'] = Auth::id();
+            TagihanServiceKendaraanBatam::create($data);
+        });
 
         return redirect()->route('tagihan-service-kendaraan-batam.index')
             ->with('success', 'Tagihan service kendaraan Batam berhasil ditambahkan.');
@@ -90,5 +114,15 @@ class TagihanServiceKendaraanBatamController extends Controller
             'status' => ['required', 'in:pending,paid,cancelled'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ]);
+    }
+
+    private function previewNomorTagihan(): string
+    {
+        $prefix = '001'.now()->format('dm');
+        $lastNumber = DB::table('tagihan_service_kendaraan_batam_sequences')
+            ->where('kode_tanggal_bulan', $prefix)
+            ->value('nomor_terakhir') ?? 0;
+
+        return $prefix.str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
     }
 }
