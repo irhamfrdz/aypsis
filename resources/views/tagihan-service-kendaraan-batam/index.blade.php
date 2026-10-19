@@ -18,16 +18,10 @@
         <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>
     @endif
 
-    <form method="GET" action="{{ route('tagihan-service-kendaraan-batam.index') }}" class="mb-5 grid grid-cols-1 gap-3 rounded-lg border bg-white p-4 md:grid-cols-5">
+    <form method="GET" action="{{ route('tagihan-service-kendaraan-batam.index') }}" class="mb-5 grid grid-cols-1 gap-3 rounded-lg border bg-white p-4 md:grid-cols-4">
         <input name="search" value="{{ request('search') }}" placeholder="No. tagihan, polisi, bengkel" class="rounded-lg border-gray-300 text-sm">
         <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="rounded-lg border-gray-300 text-sm" aria-label="Tanggal service dari">
         <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="rounded-lg border-gray-300 text-sm" aria-label="Tanggal service sampai">
-        <select name="status" class="rounded-lg border-gray-300 text-sm">
-            <option value="">Semua status</option>
-            <option value="pending" @selected(request('status') === 'pending')>Pending</option>
-            <option value="paid" @selected(request('status') === 'paid')>Dibayar</option>
-            <option value="cancelled" @selected(request('status') === 'cancelled')>Dibatalkan</option>
-        </select>
         <div class="flex gap-2">
             <button class="rounded-lg bg-gray-800 px-4 py-2 text-sm font-semibold text-white">Filter</button>
             <a href="{{ route('tagihan-service-kendaraan-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700">Reset</a>
@@ -38,7 +32,7 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">No. Polisi</th><th class="px-4 py-3">Bengkel</th><th class="px-4 py-3">Rincian Service</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Aksi</th>
+                    <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">No. Polisi / KIR</th><th class="px-4 py-3">Bengkel</th><th class="px-4 py-3">Rincian Service</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -50,7 +44,8 @@
                         <td class="px-4 py-3">{{ $item->bengkel }}</td>
                         <td class="max-w-sm px-4 py-3">{{ $item->rincian_service }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $item->biaya, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3"><span class="rounded-full px-2 py-1 text-xs {{ $item->status === 'paid' ? 'bg-green-100 text-green-800' : ($item->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">{{ ['pending' => 'Pending', 'paid' => 'Dibayar', 'cancelled' => 'Dibatalkan'][$item->status] ?? $item->status }}</span></td>
+                        <td class="whitespace-nowrap px-4 py-3">{{ (float) $item->pph_rate == 0 ? 'Tanpa PPh' : rtrim(rtrim(number_format((float) $item->pph_rate, 1, ',', ''), '0'), ',').'%' }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_biaya, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">
                             @can('tagihan-service-kendaraan-batam-update')
                                 <a href="{{ route('tagihan-service-kendaraan-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
@@ -64,7 +59,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan service kendaraan Batam.</td></tr>
+                    <tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan service kendaraan Batam.</td></tr>
                 @endforelse
             </tbody>
         </table>

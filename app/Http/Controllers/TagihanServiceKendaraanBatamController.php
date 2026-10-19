@@ -24,10 +24,6 @@ class TagihanServiceKendaraanBatamController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
         if ($request->filled('tanggal_dari')) {
             $query->whereDate('tanggal_service', '>=', $request->input('tanggal_dari'));
         }
@@ -122,7 +118,7 @@ class TagihanServiceKendaraanBatamController extends Controller
             'bengkel' => ['required', 'string', 'max:255'],
             'rincian_service' => ['required', 'string', 'max:2000'],
             'biaya' => ['required', 'numeric', 'min:0'],
-            'status' => ['required', 'in:pending,paid,cancelled'],
+            'pph_rate' => ['required', 'numeric', 'in:0,2,2.5'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ]);
     }
@@ -151,6 +147,7 @@ class TagihanServiceKendaraanBatamController extends Controller
     {
         $mobil = Mobil::findOrFail($data['mobil_id']);
         $data['nomor_polisi'] = $this->mobilDisplayNumber($mobil);
+        $data['total_biaya'] = round((float) $data['biaya'] * (1 + ((float) $data['pph_rate'] / 100)), 2);
 
         return $data;
     }

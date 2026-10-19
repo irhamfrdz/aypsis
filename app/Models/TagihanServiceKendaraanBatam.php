@@ -16,7 +16,8 @@ class TagihanServiceKendaraanBatam extends Model
         'bengkel',
         'rincian_service',
         'biaya',
-        'status',
+        'pph_rate',
+        'total_biaya',
         'keterangan',
         'created_by',
         'updated_by',
@@ -25,6 +26,8 @@ class TagihanServiceKendaraanBatam extends Model
     protected $casts = [
         'tanggal_service' => 'date',
         'biaya' => 'decimal:2',
+        'pph_rate' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
     ];
 
     public function mobil()

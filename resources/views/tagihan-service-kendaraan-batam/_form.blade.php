@@ -14,6 +14,10 @@
     .service-batam-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 15%); }
     .service-batam-control--readonly { background-color: #f8fafc; color: #475569; cursor: not-allowed; }
     .service-batam-control::placeholder { color: #94a3b8; }
+    .service-batam-select2 + .select2-container { width: 100% !important; }
+    .service-batam-select2 + .select2-container .select2-selection--single { height: 2.75rem; border: 1px solid #cbd5e1; border-radius: .625rem; }
+    .service-batam-select2 + .select2-container .select2-selection__rendered { line-height: 2.625rem; padding-left: .75rem; color: #0f172a; font-size: .875rem; }
+    .service-batam-select2 + .select2-container .select2-selection__arrow { height: 2.625rem; right: .4rem; }
     textarea.service-batam-control { min-height: 6rem; resize: vertical; }
     textarea.service-batam-control.service-batam-control--short { min-height: 4.5rem; }
     .service-batam-error { margin-top: .375rem; color: #dc2626; font-size: .75rem; }
@@ -35,7 +39,7 @@
     </div>
     <div class="service-batam-field">
         <label for="mobil_id" class="service-batam-label">Nomor Polisi / KIR <span>*</span></label>
-        <select id="mobil_id" name="mobil_id" required class="service-batam-control">
+        <select id="mobil_id" name="mobil_id" required class="service-batam-control service-batam-select2">
             <option value="">Pilih nomor polisi atau KIR</option>
             @foreach ($mobils as $mobil)
                 @php
@@ -54,18 +58,22 @@
         @error('bengkel')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
-        <label for="biaya" class="service-batam-label">Biaya (Rp) <span>*</span></label>
+        <label for="biaya" class="service-batam-label">Biaya sebelum PPh (Rp) <span>*</span></label>
         <input id="biaya" type="number" name="biaya" value="{{ old('biaya', $tagihan->biaya ?? 0) }}" required min="0" step="0.01" placeholder="0" class="service-batam-control">
         @error('biaya')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
-        <label for="status" class="service-batam-label">Status <span>*</span></label>
-        <select id="status" name="status" required class="service-batam-control">
-            <option value="pending" @selected(old('status', $tagihan->status ?? 'pending') === 'pending')>Pending</option>
-            <option value="paid" @selected(old('status', $tagihan->status ?? 'pending') === 'paid')>Dibayar</option>
-            <option value="cancelled" @selected(old('status', $tagihan->status ?? 'pending') === 'cancelled')>Dibatalkan</option>
+        <label for="pph_rate" class="service-batam-label">PPh <span>*</span></label>
+        <select id="pph_rate" name="pph_rate" required class="service-batam-control">
+            <option value="0" @selected((string) old('pph_rate', $tagihan->pph_rate ?? '0') === '0')>Tidak menggunakan PPh (0%)</option>
+            <option value="2" @selected((string) old('pph_rate', $tagihan->pph_rate ?? '') === '2')>2%</option>
+            <option value="2.5" @selected((string) old('pph_rate', $tagihan->pph_rate ?? '') === '2.5')>2,5%</option>
         </select>
-        @error('status')<p class="service-batam-error">{{ $message }}</p>@enderror
+        @error('pph_rate')<p class="service-batam-error">{{ $message }}</p>@enderror
+    </div>
+    <div class="service-batam-field">
+        <label for="total_biaya_preview" class="service-batam-label">Total biaya setelah PPh (Rp)</label>
+        <input id="total_biaya_preview" value="{{ old('total_biaya', $tagihan->total_biaya ?? $tagihan->biaya ?? 0) }}" readonly class="service-batam-control service-batam-control--readonly">
     </div>
     <div class="service-batam-field service-batam-field--wide">
         <label for="rincian_service" class="service-batam-label">Rincian Service <span>*</span></label>
@@ -78,3 +86,20 @@
         @error('keterangan')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.jQuery && jQuery.fn.select2) {
+        jQuery('#mobil_id').select2({ placeholder: 'Cari nomor polisi atau KIR', allowClear: true, width: '100%' });
+    }
+    const biaya = document.getElementById('biaya');
+    const pph = document.getElementById('pph_rate');
+    const total = document.getElementById('total_biaya_preview');
+    const updateTotal = () => {
+        total.value = ((Number.parseFloat(biaya.value) || 0) * (1 + (Number.parseFloat(pph.value) || 0) / 100)).toFixed(2);
+    };
+    biaya.addEventListener('input', updateTotal);
+    pph.addEventListener('change', updateTotal);
+    updateTotal();
+});
+</script>
