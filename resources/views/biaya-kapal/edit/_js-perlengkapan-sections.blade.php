@@ -53,6 +53,10 @@
                     </select>
                     <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk memuat daftar voyage</p>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" name="perlengkapan_sections[${idx}][tanggal]" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
                     <textarea name="perlengkapan_sections[${idx}][keterangan]"
@@ -197,7 +201,7 @@
     }
 
     // SPECIAL FUNCTION FOR EDIT MODE
-    window.addPerlengkapanSectionWithValue = function(id, namaKapal, noVoyage, keterangan, jumlahBiaya) {
+    window.addPerlengkapanSectionWithValue = function(id, namaKapal, noVoyage, keterangan, jumlahBiaya, tanggal = '') {
         perlengkapanSectionCounter++;
         const idx = perlengkapanSectionCounter;
 
@@ -242,6 +246,10 @@
                         <option value="${noVoyage}">${noVoyage}</option>
                     </select>
                     <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk memuat daftar voyage</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" name="perlengkapan_sections[${idx}][tanggal]" value="${tanggal || ''}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
@@ -300,7 +308,8 @@
                 p.nama_kapal,
                 p.no_voyage,
                 p.keterangan,
-                parseInt(p.jumlah_biaya || 0)
+                parseInt(p.jumlah_biaya || 0),
+                p.tanggal || ''
             );
         });
     };

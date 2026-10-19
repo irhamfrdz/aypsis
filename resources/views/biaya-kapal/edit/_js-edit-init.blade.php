@@ -589,6 +589,7 @@
                     'id' => $prl->id,
                     'nama_kapal' => $prl->nama_kapal,
                     'no_voyage' => $prl->no_voyage,
+                    'tanggal' => $prl->tanggal?->format('Y-m-d'),
                     'keterangan' => $prl->keterangan,
                     'jumlah_biaya' => $prl->jumlah_biaya
                 ];

@@ -242,8 +242,9 @@
                     <th style="width:5%;">No</th>
                     <th style="width:30%;">Nama Kapal</th>
                     <th style="width:20%;">Nomor Voyage</th>
+                    <th style="width:12%;">Tanggal</th>
                     <th style="width:30%;">Keterangan</th>
-                    <th style="width:15%;">Jumlah Biaya</th>
+                    <th style="width:13%;">Jumlah Biaya</th>
                 </tr>
             </thead>
             <tbody>
@@ -252,6 +253,7 @@
                     <td class="center">{{ $i + 1 }}</td>
                     <td>{{ $item->nama_kapal ?? '-' }}</td>
                     <td>{{ $item->no_voyage ?? '-' }}</td>
+                    <td>{{ $item->tanggal?->format('d/m/Y') ?? '-' }}</td>
                     <td>{{ $item->keterangan ?? '-' }}</td>
                     <td class="right">Rp {{ number_format($item->jumlah_biaya, 0, ',', '.') }}</td>
                 </tr>
@@ -275,13 +277,14 @@
                         @endphp
                         {{ $nv }}
                     </td>
+                    <td>-</td>
                     <td>{{ $biayaKapal->keterangan ?? '-' }}</td>
                     <td class="right">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @endforelse
                 <!-- Total row -->
                 <tr class="total-row">
-                    <td colspan="4" class="right">TOTAL:</td>
+                    <td colspan="5" class="right">TOTAL:</td>
                     <td class="right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>

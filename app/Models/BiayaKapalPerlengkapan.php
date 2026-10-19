@@ -12,12 +12,14 @@ class BiayaKapalPerlengkapan extends Model
         'biaya_kapal_id',
         'nama_kapal',
         'no_voyage',
+        'tanggal',
         'keterangan',
         'jumlah_biaya',
     ];
 
     protected $casts = [
         'jumlah_biaya' => 'decimal:2',
+        'tanggal' => 'date',
     ];
 
     /**

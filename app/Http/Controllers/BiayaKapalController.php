@@ -1043,6 +1043,7 @@ class BiayaKapalController extends Controller
             'perlengkapan_sections' => 'nullable|array',
             'perlengkapan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perlengkapan_sections.*.no_voyage' => 'nullable|string|max:255',
+            'perlengkapan_sections.*.tanggal' => 'nullable|date',
             'perlengkapan_sections.*.keterangan' => 'nullable|string',
             'perlengkapan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
 
@@ -3042,6 +3043,7 @@ class BiayaKapalController extends Controller
                         'biaya_kapal_id' => $biayaKapal->id,
                         'nama_kapal' => $section['nama_kapal'] ?? null,
                         'no_voyage' => $section['no_voyage'] ?? null,
+                        'tanggal' => $section['tanggal'] ?? null,
                         'keterangan' => $section['keterangan'] ?? null,
                         'jumlah_biaya' => $jumlah,
                     ]);
@@ -4478,6 +4480,7 @@ class BiayaKapalController extends Controller
             'perlengkapan_sections' => 'nullable|array',
             'perlengkapan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perlengkapan_sections.*.no_voyage' => 'nullable|string|max:255',
+            'perlengkapan_sections.*.tanggal' => 'nullable|date',
             'perlengkapan_sections.*.keterangan' => 'nullable|string',
             'perlengkapan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
 
@@ -5934,6 +5937,7 @@ class BiayaKapalController extends Controller
                             'biaya_kapal_id' => $biayaKapal->id,
                             'nama_kapal' => $section['nama_kapal'] ?? null,
                             'no_voyage' => $section['no_voyage'] ?? null,
+                            'tanggal' => $section['tanggal'] ?? null,
                             'keterangan' => $section['keterangan'] ?? null,
                             'jumlah_biaya' => $jumlah,
                         ]);
