@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistBiayaStoragePelindo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class MasterPricelistBiayaStoragePelindoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MasterPricelistBiayaStoragePelindo::query();
+        $query = MasterPricelistBiayaStoragePelindo::with('tarifMassa');
 
         foreach (['vendor', 'lokasi'] as $field) {
             if ($request->filled($field)) {
@@ -25,6 +26,10 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('status_kontainer')) {
+            $query->where('status_kontainer', $request->input('status_kontainer'));
+        }
+
         $pricelists = $query->orderBy('vendor')->orderBy('lokasi')->orderBy('size_kontainer')->paginate(20)->withQueryString();
 
         return view('master-pricelist-biaya-storage-pelindo.index', compact('pricelists'));
@@ -37,7 +42,11 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
 
     public function store(Request $request)
     {
-        MasterPricelistBiayaStoragePelindo::create($this->validated($request));
+        $data = $this->validated($request);
+        DB::transaction(function () use ($data) {
+            $pricelist = MasterPricelistBiayaStoragePelindo::create($data);
+            $pricelist->tarifMassa()->createMany($data['tarif_massa']);
+        });
 
         return redirect()->route('master-pricelist-biaya-storage-pelindo.index')
             ->with('success', 'Pricelist Biaya Storage Pelindo berhasil ditambahkan.');
@@ -45,14 +54,19 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
 
     public function edit(MasterPricelistBiayaStoragePelindo $masterPricelistBiayaStoragePelindo)
     {
-        $pricelist = $masterPricelistBiayaStoragePelindo;
+        $pricelist = $masterPricelistBiayaStoragePelindo->load('tarifMassa');
 
         return view('master-pricelist-biaya-storage-pelindo.edit', compact('pricelist'));
     }
 
     public function update(Request $request, MasterPricelistBiayaStoragePelindo $masterPricelistBiayaStoragePelindo)
     {
-        $masterPricelistBiayaStoragePelindo->update($this->validated($request));
+        $data = $this->validated($request);
+        DB::transaction(function () use ($masterPricelistBiayaStoragePelindo, $data) {
+            $masterPricelistBiayaStoragePelindo->update(collect($data)->except('tarif_massa')->all());
+            $masterPricelistBiayaStoragePelindo->tarifMassa()->delete();
+            $masterPricelistBiayaStoragePelindo->tarifMassa()->createMany($data['tarif_massa']);
+        });
 
         return redirect()->route('master-pricelist-biaya-storage-pelindo.index')
             ->with('success', 'Pricelist Biaya Storage Pelindo berhasil diperbarui.');
@@ -72,8 +86,10 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
             'vendor' => ['required', 'string', 'max:255'],
             'lokasi' => ['required', 'string', 'max:255'],
             'size_kontainer' => ['required', 'string', 'max:50'],
-            'tarif_massa_1' => ['required', 'numeric', 'min:0'],
-            'tarif_massa_2' => ['nullable', 'numeric', 'min:0'],
+            'status_kontainer' => ['required', 'in:full,empty'],
+            'tarif_massa' => ['required', 'array', 'min:1'],
+            'tarif_massa.*.massa' => ['required', 'numeric', 'gt:0', 'distinct'],
+            'tarif_massa.*.tarif' => ['required', 'numeric', 'min:0'],
             'status' => ['required', 'in:aktif,non-aktif'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ]);

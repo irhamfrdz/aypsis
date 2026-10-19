@@ -12,14 +12,13 @@ class MasterPricelistBiayaStoragePelindo extends Model
         'vendor',
         'lokasi',
         'size_kontainer',
-        'tarif_massa_1',
-        'tarif_massa_2',
+        'status_kontainer',
         'status',
         'keterangan',
     ];
 
-    protected $casts = [
-        'tarif_massa_1' => 'decimal:2',
-        'tarif_massa_2' => 'decimal:2',
-    ];
+    public function tarifMassa()
+    {
+        return $this->hasMany(MasterPricelistBiayaStoragePelindoTarifMassa::class, 'pricelist_id')->orderBy('massa');
+    }
 }
