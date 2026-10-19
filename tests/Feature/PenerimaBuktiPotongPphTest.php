@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exports\PenerimaBuktiPotongPphTemplateExport;
 use App\Http\Controllers\MasterPenerimaBuktiPotongPphController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureCrewChecklistComplete;
@@ -12,8 +13,11 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
 
 class PenerimaBuktiPotongPphTest extends TestCase
@@ -191,5 +195,104 @@ class PenerimaBuktiPotongPphTest extends TestCase
             'nik_npwp' => '1234567890123456',
             'nik' => '9876543210987654',
         ]);
+    }
+
+    public function test_template_has_four_expected_columns(): void
+    {
+        $this->assertSame(['Nama', 'NIK/NPWP', 'PPh', 'Grup'], (new PenerimaBuktiPotongPphTemplateExport)->headings());
+    }
+
+    public function test_template_can_be_downloaded_from_the_page_route(): void
+    {
+        $this->withoutMiddleware([
+            Authenticate::class,
+            EnsureKaryawanPresent::class,
+            EnsureUserApproved::class,
+            EnsureCrewChecklistComplete::class,
+            Authorize::class,
+        ]);
+
+        $this->get(route('master.penerima-bukti-potong-pph.template'))
+            ->assertOk()
+            ->assertDownload('template_penerima_bukti_potong_pph.xlsx');
+    }
+
+    public function test_excel_import_creates_recipients(): void
+    {
+        $file = $this->excelFile([
+            ['Nama', 'NIK/NPWP', 'PPh', 'Grup'],
+            ['PT Contoh', '0012345678901234', 'PPh 23', 'Vendor'],
+        ]);
+
+        $response = (new MasterPenerimaBuktiPotongPphController)->import(
+            Request::create('/', 'POST', [], [], ['file' => $file])
+        );
+
+        $this->assertSame(route('master.penerima-bukti-potong-pph.index'), $response->getTargetUrl());
+        $this->assertDatabaseHas('master_penerima_bukti_potong_pph', [
+            'nama' => 'PT Contoh',
+            'nik_npwp' => '0012345678901234',
+            'pph' => 'PPh 23',
+            'grup' => 'Vendor',
+        ]);
+    }
+
+    public function test_excel_upload_works_from_the_page_route(): void
+    {
+        $this->withoutMiddleware([
+            Authenticate::class,
+            EnsureKaryawanPresent::class,
+            EnsureUserApproved::class,
+            EnsureCrewChecklistComplete::class,
+            Authorize::class,
+        ]);
+
+        $this->post(route('master.penerima-bukti-potong-pph.import'), [
+            'file' => $this->excelFile([
+                ['Nama', 'NIK/NPWP', 'PPh', 'Grup'],
+                ['PT Contoh', '0012345678901234', 'PPh 23', 'Vendor'],
+            ]),
+        ])->assertRedirect(route('master.penerima-bukti-potong-pph.index'))
+            ->assertSessionHas('success', '1 penerima bukti potong PPh berhasil diimpor.');
+
+        $this->assertDatabaseHas('master_penerima_bukti_potong_pph', [
+            'nama' => 'PT Contoh',
+            'nik_npwp' => '0012345678901234',
+        ]);
+    }
+
+    public function test_excel_import_rejects_all_rows_when_one_is_invalid(): void
+    {
+        $file = $this->excelFile([
+            ['Nama', 'NIK/NPWP', 'PPh', 'Grup'],
+            ['PT Contoh', '1234567890123456', 'PPh 23', 'Vendor'],
+            ['', '9876543210987654', 'PPh 21', 'Karyawan'],
+        ]);
+
+        try {
+            (new MasterPenerimaBuktiPotongPphController)->import(
+                Request::create('/', 'POST', [], [], ['file' => $file])
+            );
+            $this->fail('Expected validation error for missing recipient name.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertStringContainsString('Baris 3', $e->errors()['file'][0]);
+        }
+
+        $this->assertSame(0, PenerimaBuktiPotongPph::count());
+    }
+
+    private function excelFile(array $rows): UploadedFile
+    {
+        $export = new class($rows) implements FromArray
+        {
+            public function __construct(private array $rows) {}
+
+            public function array(): array
+            {
+                return $this->rows;
+            }
+        };
+
+        return UploadedFile::fake()->createWithContent('penerima.xlsx', Excel::raw($export, \Maatwebsite\Excel\Excel::XLSX));
     }
 }

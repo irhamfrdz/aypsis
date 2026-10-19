@@ -2691,6 +2691,8 @@ Route::middleware([
 
         Route::prefix('master/penerima-bukti-potong-pph')->name('master.penerima-bukti-potong-pph.')->group(function () {
             Route::get('/', [MasterPenerimaBuktiPotongPphController::class, 'index'])->name('index')->middleware('can:master-penerima-bukti-potong-pph-view');
+            Route::get('/template', [MasterPenerimaBuktiPotongPphController::class, 'downloadTemplate'])->name('template')->middleware('can:master-penerima-bukti-potong-pph-create');
+            Route::post('/import', [MasterPenerimaBuktiPotongPphController::class, 'import'])->name('import')->middleware('can:master-penerima-bukti-potong-pph-create');
             Route::get('/create', [MasterPenerimaBuktiPotongPphController::class, 'create'])->name('create')->middleware('can:master-penerima-bukti-potong-pph-create');
             Route::post('/', [MasterPenerimaBuktiPotongPphController::class, 'store'])->name('store')->middleware('can:master-penerima-bukti-potong-pph-create');
             Route::get('/{penerimaBuktiPotongPph}/edit', [MasterPenerimaBuktiPotongPphController::class, 'edit'])->name('edit')->middleware('can:master-penerima-bukti-potong-pph-update');

@@ -11,13 +11,31 @@
             <p class="mt-1 text-sm text-gray-600">Kelola identitas penerima bukti potong PPh.</p>
         </div>
         @can('master-penerima-bukti-potong-pph-create')
-            <a href="{{ route('master.penerima-bukti-potong-pph.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Penerima</a>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('master.penerima-bukti-potong-pph.template') }}" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Download Template Excel</a>
+                <a href="{{ route('master.penerima-bukti-potong-pph.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Penerima</a>
+            </div>
         @endcan
     </div>
 
     @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>
     @endif
+
+    @can('master-penerima-bukti-potong-pph-create')
+        <form method="POST" action="{{ route('master.penerima-bukti-potong-pph.import') }}" enctype="multipart/form-data" class="mb-5 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+            @csrf
+            <div class="min-w-64 flex-1">
+                <label for="file" class="mb-1 block text-sm font-medium text-gray-700">Upload Excel penerima</label>
+                <input id="file" name="file" type="file" accept=".xlsx,.xls" required class="block w-full rounded-lg border border-gray-300 p-2 text-sm">
+                <p class="mt-1 text-xs text-gray-500">Gunakan template dengan kolom Nama, NIK/NPWP, PPh, dan Grup. Maksimal 10 MB.</p>
+                @foreach ($errors->get('file') as $error)
+                    <p class="mt-1 text-sm text-red-600">{{ $error }}</p>
+                @endforeach
+            </div>
+            <button type="submit" class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Upload Excel</button>
+        </form>
+    @endcan
 
     <form method="GET" action="{{ route('master.penerima-bukti-potong-pph.index') }}" class="mb-5 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
         <div class="min-w-64 flex-1">

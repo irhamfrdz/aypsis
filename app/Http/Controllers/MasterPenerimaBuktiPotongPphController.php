@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PenerimaBuktiPotongPphTemplateExport;
+use App\Imports\PenerimaBuktiPotongPphImport;
 use App\Models\PenerimaBuktiPotongPph;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterPenerimaBuktiPotongPphController extends Controller
 {
@@ -33,6 +37,25 @@ class MasterPenerimaBuktiPotongPphController extends Controller
     public function create()
     {
         return view('master.penerima-bukti-potong-pph.form');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new PenerimaBuktiPotongPphTemplateExport, 'template_penerima_bukti_potong_pph.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
+        ]);
+
+        $import = new PenerimaBuktiPotongPphImport;
+
+        DB::transaction(fn () => Excel::import($import, $request->file('file')));
+
+        return redirect()->route('master.penerima-bukti-potong-pph.index')
+            ->with('success', "{$import->count} penerima bukti potong PPh berhasil diimpor.");
     }
 
     public function store(Request $request)
