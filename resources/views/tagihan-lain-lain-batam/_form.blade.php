@@ -67,7 +67,8 @@
     </div>
     <div class="service-batam-field">
         <label for="biaya" class="service-batam-label">Biaya sebelum PPh (Rp) <span>*</span></label>
-        <input id="biaya" type="number" name="biaya" value="{{ old('biaya', $tagihan->biaya ?? 0) }}" required min="0" step="0.01" placeholder="0" class="service-batam-control">
+        <input id="biaya" type="text" inputmode="decimal" value="{{ old('biaya', $tagihan->biaya ?? 0) }}" required placeholder="0" class="service-batam-control">
+        <input id="biaya_value" type="hidden" name="biaya" value="{{ old('biaya', $tagihan->biaya ?? 0) }}">
         @error('biaya')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
@@ -101,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         jQuery('#mobil_id').select2({ placeholder: 'Cari nomor polisi atau KIR', allowClear: true, width: '100%' });
     }
     const biaya = document.getElementById('biaya');
+    const biayaValue = document.getElementById('biaya_value');
     const pph = document.getElementById('pph_rate');
     const total = document.getElementById('total_biaya_preview');
     const jenis = document.getElementById('jenis_tagihan');
@@ -117,13 +119,25 @@ document.addEventListener('DOMContentLoaded', function () {
         bengkelLabel.innerHTML = `${isVehicle ? 'Bengkel' : 'Vendor / Penerima'} <span>*</span>`;
         rincianLabel.innerHTML = `${isVehicle ? 'Rincian Service' : 'Rincian Tagihan'} <span>*</span>`;
     };
+    const parseAmount = (value) => {
+        const normalized = value.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+        return Number.parseFloat(normalized) || 0;
+    };
+    const formatAmount = (value) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
     const updateTotal = () => {
-        total.value = ((Number.parseFloat(biaya.value) || 0) * (1 + (Number.parseFloat(pph.value) || 0) / 100)).toFixed(2);
+        const biayaAmount = parseAmount(biaya.value);
+        biayaValue.value = biayaAmount;
+        total.value = formatAmount(biayaAmount * (1 + (Number.parseFloat(pph.value) || 0) / 100));
     };
     biaya.addEventListener('input', updateTotal);
+    biaya.addEventListener('blur', () => {
+        biaya.value = formatAmount(parseAmount(biaya.value));
+        updateTotal();
+    });
     pph.addEventListener('change', updateTotal);
     jenis.addEventListener('change', updateBillType);
     updateBillType();
+    biaya.value = formatAmount(parseAmount(biaya.value));
     updateTotal();
 });
 </script>
