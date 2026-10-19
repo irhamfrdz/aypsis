@@ -257,7 +257,7 @@
                             <th class="px-6 py-3 text-left">No</th>
                             <th class="px-6 py-3 text-left">NIK</th>
                             <th class="px-6 py-3 text-left">Nama Lengkap</th>
-                            <th class="px-6 py-3 text-left">Penempatan</th>
+                            <th class="px-6 py-3 text-left">Departemen</th>
                             <th class="px-6 py-3 text-center">Hadir</th>
                             <th class="px-6 py-3 text-center">Terlambat</th>
                             <th class="px-6 py-3 text-center">Pulang Cpt</th>
@@ -296,7 +296,7 @@
                                     {{ $karyawan->nama_lengkap }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
-                                    {{ $karyawan->penempatan ?: '-' }}
+                                    {{ $karyawan->departemen ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_hadir'] ?? []) }}" class="btn-detail-hadir inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
