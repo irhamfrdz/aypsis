@@ -125,7 +125,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book Accounting)</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
                                 <div class="relative">
@@ -154,6 +154,16 @@
                                 </div>
                             </div>
                             <div>
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Akun COA --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" @selected((string) old('akun_coa_id') === (string) $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
                                 <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis --</option>
@@ -169,8 +179,8 @@
                                 </svg>
                                 <div>
                                     <strong>Jurnal Akuntansi:</strong><br>
-                                    • <strong>Debit:</strong> Bank bertambah (Dr), Biaya Uang Jalan Muat berkurang (Cr)<br>
-                                    • <strong>Kredit:</strong> Biaya Uang Jalan Muat bertambah (Dr), Bank berkurang (Cr)
+                                    • <strong>Debit:</strong> Bank bertambah (Dr), akun biaya yang dipilih berkurang (Cr)<br>
+                                    • <strong>Kredit:</strong> Akun biaya yang dipilih bertambah (Dr), Bank berkurang (Cr)
                                 </div>
                             </div>
                         </div>
@@ -383,6 +393,10 @@
         const tanggalPembayaranInput = document.getElementById('tanggal_pembayaran');
         const bankSearch = document.getElementById('bankSearch');
         const bankSelect = document.getElementById('bank');
+        const akunBiayaSelect = document.getElementById('akun_coa_id');
+        if (window.jQuery && jQuery.fn.select2) {
+            jQuery(akunBiayaSelect).select2({ width: '100%', placeholder: '-- Pilih Akun COA --' });
+        }
         const bankDropdown = document.getElementById('bankDropdown');
         const bankOptions = document.getElementById('bankOptions');
         const noBankResults = document.getElementById('noBankResults');
@@ -610,6 +624,12 @@
                     return false;
                 }
 
+                if (!akunBiayaSelect?.value) {
+                    e.preventDefault();
+                    showWarning('Silakan pilih akun biaya terlebih dahulu.', 'warning');
+                    return false;
+                }
+
                 const jenisTransaksi = document.getElementById('jenis_transaksi');
                 if (!jenisTransaksi?.value) {
                     e.preventDefault();
@@ -620,7 +640,8 @@
                 const selectedNo = selectedText.value || '-';
                 const totalPembayaran = parseFloat(totalSetelahInput?.value) || 0;
                 const bankName = bankSelect.options[bankSelect.selectedIndex]?.text || '-';
-                const confirmRes = confirm(`Konfirmasi pembatalan:\n\nNo Surat Jalan: ${selectedNo}\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\nBank: ${bankName}\nJenis: ${jenisTransaksi.value}\n\nStatus akan otomatis berubah menjadi Cancelled.\nLanjutkan pembatalan?`);
+                const akunBiayaName = akunBiayaSelect.options[akunBiayaSelect.selectedIndex]?.text || '-';
+                const confirmRes = confirm(`Konfirmasi pembatalan:\n\nNo Surat Jalan: ${selectedNo}\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\nBank: ${bankName}\nAkun Biaya: ${akunBiayaName}\nJenis: ${jenisTransaksi.value}\n\nStatus akan otomatis berubah menjadi Cancelled.\nLanjutkan pembatalan?`);
                 if (!confirmRes) {
                     e.preventDefault();
                     return false;

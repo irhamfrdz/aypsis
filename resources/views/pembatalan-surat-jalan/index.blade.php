@@ -40,6 +40,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. SJ</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pembayaran</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akun Biaya</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl. Kas</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Akhir</th>
@@ -76,6 +77,7 @@
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
                             {{ $pembatalan->bank ?? '-' }}
                         </td>
+                        <td class="px-6 py-4 text-gray-700 whitespace-nowrap">{{ $pembatalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat (data lama)' }}</td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
                             {{ $pembatalan->tanggal_kas ? $pembatalan->tanggal_kas->format('d/m/Y') : '-' }}
                         </td>
@@ -119,7 +121,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">Belum ada riwayat pembatalan</td>
+                        <td colspan="11" class="px-6 py-8 text-center text-sm text-gray-500">Belum ada riwayat pembatalan</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -18,6 +18,7 @@ class PembatalanSuratJalan extends Model
         'tanggal_kas',
         'tanggal_pembayaran',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -51,5 +52,10 @@ class PembatalanSuratJalan extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 }

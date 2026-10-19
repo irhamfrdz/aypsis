@@ -53,6 +53,10 @@
                         <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->bank ?? '-' }}</span>
                     </div>
                     <div>
+                        <span class="block text-gray-500">Akun Biaya</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->akunCoa ? $pembatalanSuratJalan->akunCoa->nomor_akun.' - '.$pembatalanSuratJalan->akunCoa->nama_akun : 'Biaya Uang Jalan Muat (data lama)' }}</span>
+                    </div>
+                    <div>
                         <span class="block text-gray-500">Jenis Transaksi</span>
                         <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->jenis_transaksi ?? '-' }}</span>
                     </div>

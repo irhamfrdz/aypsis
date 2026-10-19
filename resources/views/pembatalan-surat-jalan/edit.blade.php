@@ -45,7 +45,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
                     <div>
                         <label for="tanggal_kas" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Kas</label>
                         <input type="date" id="tanggal_kas" name="tanggal_kas" value="{{ old('tanggal_kas', optional($pembatalanSuratJalan->tanggal_kas)->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
@@ -64,6 +64,16 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                    <div>
+                        <label for="akun_coa_id" class="block text-sm font-semibold text-gray-700 mb-1">Akun Biaya <span class="text-red-500">*</span></label>
+                        <select id="akun_coa_id" name="akun_coa_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                            <option value="">-- Pilih Akun COA --</option>
+                            @foreach($akunBiaya as $akun)
+                                <option value="{{ $akun->id }}" @selected((string) old('akun_coa_id', $pembatalanSuratJalan->akun_coa_id) === (string) $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            @endforeach
+                        </select>
+                        @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
 

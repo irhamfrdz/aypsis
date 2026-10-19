@@ -9,6 +9,7 @@ use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PembatalanSuratJalanController extends Controller
 {
@@ -21,7 +22,7 @@ class PembatalanSuratJalanController extends Controller
 
     public function index(Request $request)
     {
-        $query = PembatalanSuratJalan::with(['suratJalan', 'suratJalanBongkaran']);
+        $query = PembatalanSuratJalan::with(['suratJalan', 'suratJalanBongkaran', 'akunCoa']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -151,8 +152,9 @@ class PembatalanSuratJalanController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembatalan-surat-jalan.create', compact('suratJalans', 'akunCoa'));
+        return view('pembatalan-surat-jalan.create', compact('suratJalans', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -168,7 +170,8 @@ class PembatalanSuratJalanController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_kas' => 'required|date',
             'tanggal_pembayaran' => 'required|date',
-            'bank' => 'required|string|max:255',
+            'bank' => 'required|string|max:255|exists:akun_coa,nama_akun',
+            'akun_coa_id' => 'required|integer|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
@@ -176,6 +179,11 @@ class PembatalanSuratJalanController extends Controller
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        $akunBiaya = Coa::findOrFail($validated['akun_coa_id']);
+        if ($akunBiaya->nama_akun === $validated['bank']) {
+            throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari akun Kas/Bank.']);
+        }
 
         // Fallback generation if client-side generator did not run
         if (empty($validated['nomor_pembayaran'])) {
@@ -211,6 +219,7 @@ class PembatalanSuratJalanController extends Controller
                 'tanggal_kas' => $validated['tanggal_kas'],
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'bank' => $validated['bank'],
+                'akun_coa_id' => $validated['akun_coa_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'total_pembayaran' => $validated['total_pembayaran'],
                 'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
@@ -258,46 +267,14 @@ class PembatalanSuratJalanController extends Controller
             // Hapus surat jalan yang dibatalkan
             $suratJalan->delete();
 
-            // ==========================================
-            // DOUBLE BOOK ACCOUNTING LOGIC (CORE)
-            // ==========================================
-            $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
-            $bankName = $validated['bank'];
-            $jenisTransaksi = $validated['jenis_transaksi'] ?? 'Debit';
-            $noPbl = $validated['nomor_pembayaran'];
-            $keterangan = 'Pembatalan SJ '.$noSuratJalan.' - '.$noPbl;
-            if (! empty($validated['keterangan'])) {
-                $keterangan .= ' | '.$validated['keterangan'];
-            }
-
-            // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
-            if ($jenisTransaksi == 'Debit') {
-                // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan berkurang (Kredit)
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
-                    $validated['tanggal_pembayaran'],
-                    $noPbl,
-                    'Pembatalan Surat Jalan',
-                    $keterangan
-                );
-            } else {
-                // Jenis Kredit: Biaya Uang Jalan bertambah (Debit), Bank berkurang (Kredit)
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
-                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
-                    $validated['tanggal_pembayaran'],
-                    $noPbl,
-                    'Pembatalan Surat Jalan',
-                    $keterangan
-                );
-            }
+            $this->recordCancellationJournal($pbl);
 
             Log::info('Double Entry Accounting recorded for Pembatalan Surat Jalan', [
-                'nomor_pembayaran' => $noPbl,
+                'nomor_pembayaran' => $pbl->nomor_pembayaran,
                 'no_surat_jalan' => $noSuratJalan,
-                'total' => $totalPembayaran,
-                'bank' => $bankName,
+                'total' => $pbl->total_tagihan_setelah_penyesuaian,
+                'bank' => $pbl->bank,
+                'akun_coa_id' => $pbl->akun_coa_id,
             ]);
         });
 
@@ -309,7 +286,7 @@ class PembatalanSuratJalanController extends Controller
      */
     public function show(PembatalanSuratJalan $pembatalanSuratJalan)
     {
-        $pembatalanSuratJalan->load(['suratJalan', 'suratJalanBongkaran']);
+        $pembatalanSuratJalan->load(['suratJalan', 'suratJalanBongkaran', 'akunCoa']);
 
         return view('pembatalan-surat-jalan.show', compact('pembatalanSuratJalan'));
     }
@@ -324,8 +301,9 @@ class PembatalanSuratJalanController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembatalan-surat-jalan.edit', compact('pembatalanSuratJalan', 'akunCoa'));
+        return view('pembatalan-surat-jalan.edit', compact('pembatalanSuratJalan', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -338,38 +316,12 @@ class PembatalanSuratJalanController extends Controller
             // Check if transaction already exists in COA
             $existing = \App\Models\CoaTransaction::where('nomor_referensi', $pembatalan->nomor_pembayaran)->first();
             if ($existing) {
+                DB::rollBack();
+
                 return back()->with('error', 'Data ini sudah ada di jurnal COA.');
             }
 
-            $totalPembayaran = $pembatalan->total_tagihan_setelah_penyesuaian ?? $pembatalan->total_pembayaran;
-            $bankName = $pembatalan->bank;
-            $jenisTransaksi = $pembatalan->jenis_transaksi ?? 'Debit';
-            $noPbl = $pembatalan->nomor_pembayaran;
-            $keterangan = 'Pembatalan SJ '.$pembatalan->no_surat_jalan.' - '.$noPbl;
-            if (! empty($pembatalan->keterangan)) {
-                $keterangan .= ' | '.$pembatalan->keterangan;
-            }
-
-            // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
-            if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran],
-                    $pembatalan->tanggal_pembayaran ? $pembatalan->tanggal_pembayaran->toDateString() : now()->toDateString(),
-                    $noPbl,
-                    'Pembatalan Surat Jalan',
-                    $keterangan
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran],
-                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
-                    $pembatalan->tanggal_pembayaran ? $pembatalan->tanggal_pembayaran->toDateString() : now()->toDateString(),
-                    $noPbl,
-                    'Pembatalan Surat Jalan',
-                    $keterangan
-                );
-            }
+            $this->recordCancellationJournal($pembatalan);
 
             DB::commit();
 
@@ -392,13 +344,19 @@ class PembatalanSuratJalanController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_kas' => 'required|date',
             'tanggal_pembayaran' => 'required|date',
-            'bank' => 'required|string|max:255',
+            'bank' => 'required|string|max:255|exists:akun_coa,nama_akun',
+            'akun_coa_id' => 'required|integer|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        $akunBiaya = Coa::findOrFail($validated['akun_coa_id']);
+        if ($akunBiaya->nama_akun === $validated['bank']) {
+            throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari akun Kas/Bank.']);
+        }
 
         DB::beginTransaction();
         try {
@@ -407,11 +365,18 @@ class PembatalanSuratJalanController extends Controller
             $totalPenyesuaian = (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
             $totalAkhir = (float) ($validated['total_tagihan_setelah_penyesuaian'] ?? ($totalPembayaran + $totalPenyesuaian));
 
+            $nomorPembayaran = $pembatalanSuratJalan->nomor_pembayaran;
+            $hasJournal = $nomorPembayaran && CoaTransaction::where('nomor_referensi', $nomorPembayaran)->exists();
+            if ($hasJournal && ! $this->coaTransactionService->deleteTransactionByReference($nomorPembayaran)) {
+                throw new \RuntimeException('Jurnal COA lama gagal dihapus.');
+            }
+
             $pembatalanSuratJalan->update([
                 'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_kas' => $validated['tanggal_kas'],
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'bank' => $validated['bank'],
+                'akun_coa_id' => $validated['akun_coa_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
                 'total_tagihan_setelah_penyesuaian' => $totalAkhir,
@@ -421,10 +386,8 @@ class PembatalanSuratJalanController extends Controller
                 'updated_by' => auth()->id(),
             ]);
 
-            // Sync with CoaTransactions (Update date and reference if needed, though usually just date)
-            if ($pembatalanSuratJalan->nomor_pembayaran) {
-                CoaTransaction::where('nomor_referensi', $pembatalanSuratJalan->nomor_pembayaran)
-                    ->update(['tanggal_transaksi' => $validated['tanggal_pembayaran']]);
+            if ($hasJournal) {
+                $this->recordCancellationJournal($pembatalanSuratJalan);
             }
 
             DB::commit();
@@ -444,5 +407,43 @@ class PembatalanSuratJalanController extends Controller
     public function destroy(PembatalanSuratJalan $pembatalanSuratJalan)
     {
         return redirect()->route('pembatalan-surat-jalan.index')->with('error', 'Penghapusan transaksional dibatasi.');
+    }
+
+    private function recordCancellationJournal(PembatalanSuratJalan $pembatalan): void
+    {
+        $akunBiaya = $pembatalan->akunCoa()->first();
+        if ($pembatalan->akun_coa_id && ! $akunBiaya) {
+            throw new \RuntimeException('Akun COA yang dipilih tidak ditemukan.');
+        }
+
+        $biayaEntry = [
+            'nama_akun' => $akunBiaya?->nama_akun ?? 'Biaya Uang Jalan Muat',
+            'jumlah' => (float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? $pembatalan->total_pembayaran),
+        ];
+        if ($akunBiaya) {
+            $biayaEntry['coa_id'] = $akunBiaya->id;
+        }
+
+        $bankEntry = [
+            'nama_akun' => $pembatalan->bank,
+            'jumlah' => $biayaEntry['jumlah'],
+        ];
+        $keterangan = 'Pembatalan SJ '.$pembatalan->no_surat_jalan.' - '.$pembatalan->nomor_pembayaran;
+        if ($pembatalan->keterangan) {
+            $keterangan .= ' | '.$pembatalan->keterangan;
+        }
+
+        $debit = $pembatalan->jenis_transaksi === 'Debit' ? $bankEntry : $biayaEntry;
+        $kredit = $pembatalan->jenis_transaksi === 'Debit' ? $biayaEntry : $bankEntry;
+        if (! $this->coaTransactionService->recordDoubleEntry(
+            $debit,
+            $kredit,
+            $pembatalan->tanggal_pembayaran?->toDateString() ?? now()->toDateString(),
+            $pembatalan->nomor_pembayaran,
+            'Pembatalan Surat Jalan',
+            $keterangan
+        )) {
+            throw new \RuntimeException('Jurnal COA pembatalan gagal dibuat.');
+        }
     }
 }
