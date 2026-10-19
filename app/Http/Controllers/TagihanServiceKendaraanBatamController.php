@@ -52,20 +52,20 @@ class TagihanServiceKendaraanBatamController extends Controller
         $data = $this->applyMobilNumber($data);
         DB::transaction(function () use (&$data) {
             $prefix = '001'.now()->format('dm');
-            DB::table('tagihan_service_kendaraan_batam_sequences')->insertOrIgnore([
+            DB::table('tagihan_lain_lain_batam_sequences')->insertOrIgnore([
                 'kode_tanggal_bulan' => $prefix,
                 'nomor_terakhir' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            $sequence = DB::table('tagihan_service_kendaraan_batam_sequences')
+            $sequence = DB::table('tagihan_lain_lain_batam_sequences')
                 ->where('kode_tanggal_bulan', $prefix)
                 ->lockForUpdate()
                 ->first();
             $nextNumber = $sequence->nomor_terakhir + 1;
 
-            DB::table('tagihan_service_kendaraan_batam_sequences')
+            DB::table('tagihan_lain_lain_batam_sequences')
                 ->where('kode_tanggal_bulan', $prefix)
                 ->update(['nomor_terakhir' => $nextNumber, 'updated_at' => now()]);
 
@@ -75,7 +75,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         });
 
         return redirect()->route('tagihan-service-kendaraan-batam.index')
-            ->with('success', 'Tagihan service kendaraan Batam berhasil ditambahkan.');
+            ->with('success', 'Tagihan lain lain Batam berhasil ditambahkan.');
     }
 
     public function edit(TagihanServiceKendaraanBatam $serviceTagihan)
@@ -98,7 +98,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         $serviceTagihan->update($data);
 
         return redirect()->route('tagihan-service-kendaraan-batam.index')
-            ->with('success', 'Tagihan service kendaraan Batam berhasil diperbarui.');
+            ->with('success', 'Tagihan lain lain Batam berhasil diperbarui.');
     }
 
     public function destroy(TagihanServiceKendaraanBatam $serviceTagihan)
@@ -106,7 +106,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         $serviceTagihan->delete();
 
         return redirect()->route('tagihan-service-kendaraan-batam.index')
-            ->with('success', 'Tagihan service kendaraan Batam berhasil dihapus.');
+            ->with('success', 'Tagihan lain lain Batam berhasil dihapus.');
     }
 
     private function validated(Request $request): array
@@ -155,7 +155,7 @@ class TagihanServiceKendaraanBatamController extends Controller
     private function previewNomorTagihan(): string
     {
         $prefix = '001'.now()->format('dm');
-        $lastNumber = DB::table('tagihan_service_kendaraan_batam_sequences')
+        $lastNumber = DB::table('tagihan_lain_lain_batam_sequences')
             ->where('kode_tanggal_bulan', $prefix)
             ->value('nomor_terakhir') ?? 0;
 

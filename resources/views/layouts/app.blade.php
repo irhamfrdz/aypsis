@@ -867,11 +867,11 @@
         </div>
         @endif
 
-        {{-- Tagihan Service Kendaraan Batam --}}
+        {{-- Tagihan Lain Lain Batam --}}
         @if($user && ($user->can('tagihan-service-kendaraan-batam-view') || $isAdmin))
         <div class="mx-2 mb-3">
             <a href="{{ route('tagihan-service-kendaraan-batam.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('tagihan-service-kendaraan-batam.*') ? 'bg-blue-100 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Tagihan Service Kendaraan Batam</span>
+                <span class="text-xs font-medium">Tagihan Lain Lain Batam</span>
             </a>
         </div>
         @endif

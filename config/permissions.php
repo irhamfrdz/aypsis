@@ -174,14 +174,14 @@ return [
             ],
         ],
         'tagihan-service-kendaraan-batam' => [
-            'name' => 'Tagihan Service Kendaraan Batam',
-            'description' => 'Menu tagihan service kendaraan Batam',
+            'name' => 'Tagihan Lain Lain Batam',
+            'description' => 'Menu tagihan lain lain Batam',
             'required' => true,
             'sub_modules' => [
-                'tagihan-service-kendaraan-batam-view' => 'Lihat Tagihan Service Kendaraan Batam',
-                'tagihan-service-kendaraan-batam-create' => 'Tambah Tagihan Service Kendaraan Batam',
-                'tagihan-service-kendaraan-batam-update' => 'Edit Tagihan Service Kendaraan Batam',
-                'tagihan-service-kendaraan-batam-delete' => 'Hapus Tagihan Service Kendaraan Batam',
+                'tagihan-service-kendaraan-batam-view' => 'Lihat Tagihan Lain Lain Batam',
+                'tagihan-service-kendaraan-batam-create' => 'Tambah Tagihan Lain Lain Batam',
+                'tagihan-service-kendaraan-batam-update' => 'Edit Tagihan Lain Lain Batam',
+                'tagihan-service-kendaraan-batam-delete' => 'Hapus Tagihan Lain Lain Batam',
             ],
         ],
         'pranota-lolo-batam' => [
@@ -377,7 +377,7 @@ return [
         // Tagihan LOLO Batam - butuh tagihan-lolo-batam-view
         'tagihan-lolo-batam' => ['tagihan-lolo-batam-view'],
 
-        // Tagihan Service Kendaraan Batam
+        // Tagihan Lain Lain Batam
         'tagihan-service-kendaraan-batam' => ['tagihan-service-kendaraan-batam-view'],
 
         // Pranota LOLO Batam - butuh pranota-lolo-batam-view

@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Tagihan Service Kendaraan Batam')
+@section('title', 'Tagihan Lain Lain Batam')
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-6">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Tagihan Service Kendaraan Batam</h1>
-            <p class="mt-1 text-sm text-gray-600">Kelola tagihan perawatan dan perbaikan kendaraan Batam.</p>
+            <h1 class="text-2xl font-bold text-gray-900">Tagihan Lain Lain Batam</h1>
+            <p class="mt-1 text-sm text-gray-600">Kelola tagihan lain lain Batam.</p>
         </div>
         @can('tagihan-service-kendaraan-batam-create')
             <a href="{{ route('tagihan-service-kendaraan-batam.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Tambah Tagihan</a>
@@ -51,7 +51,7 @@
                                 <a href="{{ route('tagihan-service-kendaraan-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
                             @endcan
                             @can('tagihan-service-kendaraan-batam-delete')
-                                <form action="{{ route('tagihan-service-kendaraan-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan service ini?')">
+                                <form action="{{ route('tagihan-service-kendaraan-batam.destroy', $item) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus tagihan ini?')">
                                     @csrf @method('DELETE')
                                     <button class="font-medium text-red-700 hover:underline">Hapus</button>
                                 </form>
@@ -59,7 +59,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan service kendaraan Batam.</td></tr>
+                    <tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan lain lain Batam.</td></tr>
                 @endforelse
             </tbody>
         </table>
