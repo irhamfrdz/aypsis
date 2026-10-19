@@ -24,4 +24,13 @@ class PranotaTagihanLainLainBatamController extends Controller
             'pranota' => $pranotaTagihanLainLainBatam,
         ]);
     }
+
+    public function print(PranotaTagihanLainLainBatam $pranotaTagihanLainLainBatam)
+    {
+        $pranotaTagihanLainLainBatam->load(['items.tagihan', 'createdBy.karyawan']);
+
+        return view('pranota-tagihan-lain-lain-batam.print', [
+            'pranota' => $pranotaTagihanLainLainBatam,
+        ]);
+    }
 }

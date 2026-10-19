@@ -25,7 +25,10 @@
                         <td class="px-4 py-3">{{ $pranota->items_count }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $pranota->total_biaya, 0, ',', '.') }}</td>
                         <td class="max-w-md px-4 py-3">{{ $pranota->keterangan ?: '—' }}</td>
-                        <td class="whitespace-nowrap px-4 py-3 text-right"><a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranota) }}" class="font-medium text-blue-700 hover:underline">Lihat rincian</a></td>
+                        <td class="whitespace-nowrap px-4 py-3 text-right">
+                            <a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranota) }}" class="font-medium text-blue-700 hover:underline">Lihat rincian</a>
+                            <a href="{{ route('pranota-tagihan-lain-lain-batam.print', $pranota) }}" target="_blank" rel="noopener" class="ml-3 font-medium text-purple-700 hover:underline">Cetak permohonan transfer</a>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Belum ada pranota tagihan Batam.</td></tr>

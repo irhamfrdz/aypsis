@@ -6070,6 +6070,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pranota-tagihan-lain-lain-batam', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'index'])
         ->name('pranota-tagihan-lain-lain-batam.index')
         ->middleware('can:pranota-tagihan-lain-lain-batam-view');
+    Route::get('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}/print', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'print'])
+        ->name('pranota-tagihan-lain-lain-batam.print')
+        ->middleware('can:pranota-tagihan-lain-lain-batam-view');
     Route::get('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'show'])
         ->name('pranota-tagihan-lain-lain-batam.show')
         ->middleware('can:pranota-tagihan-lain-lain-batam-view');

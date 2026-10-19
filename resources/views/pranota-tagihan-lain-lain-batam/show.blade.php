@@ -9,7 +9,10 @@
             <h1 class="text-2xl font-bold text-gray-900">Pranota {{ $pranota->nomor_pranota }}</h1>
             <p class="mt-1 text-sm text-gray-600">Tanggal pranota: {{ $pranota->tanggal_pranota->format('d/m/Y') }}</p>
         </div>
-        <a href="{{ route('pranota-tagihan-lain-lain-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Kembali ke Daftar Pranota</a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('pranota-tagihan-lain-lain-batam.print', $pranota) }}" target="_blank" rel="noopener" class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">Cetak Permohonan Transfer</a>
+            <a href="{{ route('pranota-tagihan-lain-lain-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Kembali ke Daftar Pranota</a>
+        </div>
     </div>
 
     <div class="mb-6 grid gap-4 rounded-lg border bg-white p-5 shadow-sm sm:grid-cols-3">
