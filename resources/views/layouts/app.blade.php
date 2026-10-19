@@ -445,7 +445,8 @@
                         'dashboard', 'dashboard.*', 'dashboard-dokumen-kapal-alexindo',
                         'hrd.dashboard*', 'gerak-voyage.dashboard',
                         'admin.cek-kendaraan.daily', 'admin.cek-kendaraan.weekly',
-                        'stock-amprahan.dashboard-pemakaian', 'surat-jalan-bongkaran-batam.dashboard'
+                        'stock-amprahan.dashboard-pemakaian', 'surat-jalan-bongkaran-batam.dashboard',
+                        'dashboard-perjalanan-kendaraan.index'
                     );
                 @endphp
                 <div>
@@ -461,6 +462,10 @@
                         <!-- Dashboard -->
                         <a href="{{ route('dashboard') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
                             <span class="text-xs font-medium menu-text">Dashboard Utama</span>
+                        </a>
+
+                        <a href="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ Request::routeIs('dashboard-perjalanan-kendaraan.index') ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                            <span class="text-xs font-medium menu-text">Dashboard Perjalanan Kendaraan</span>
                         </a>
 
                         <!-- Dashboard Asuransi Asset -->

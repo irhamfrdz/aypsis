@@ -6051,6 +6051,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tracking-transaksi', [\App\Http\Controllers\TrackingTransaksiController::class, 'index'])
         ->name('tracking-transaksi.index');
 
+    // Dashboard perjalanan kendaraan dari rekap GPS harian
+    Route::get('dashboard-perjalanan-kendaraan', [\App\Http\Controllers\DashboardPerjalananKendaraanController::class, 'index'])
+        ->name('dashboard-perjalanan-kendaraan.index');
+
     // GPS Tracking Routes
     Route::prefix('gps-tracking')->name('gps-tracking.')->group(function () {
         Route::get('/', [\App\Http\Controllers\GpsTrackingController::class, 'index'])->name('index');
