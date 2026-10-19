@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GpsDailyDistance;
+use App\Models\Mobil;
 use App\Models\PranotaUangRit;
 use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
@@ -1125,17 +1127,24 @@ class PranotaUangRitController extends Controller
 
         // Group supir details by NIK (or name if NIK not found) to consolidate duplicates
         $consolidatedDetails = [];
+        $driverKeysByName = [];
         foreach ($supirDetailsRaw as $detail) {
             $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
                 ->orWhere('nama_lengkap', $detail->supir_nama)
                 ->first();
 
             $key = $karyawan ? $karyawan->nik : $detail->supir_nama;
+            foreach ([$detail->supir_nama, $karyawan?->nama_panggilan, $karyawan?->nama_lengkap] as $name) {
+                if ($name) {
+                    $driverKeysByName[mb_strtoupper(trim($name))] = $key;
+                }
+            }
 
             if (! isset($consolidatedDetails[$key])) {
                 $consolidatedDetails[$key] = [
                     'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
                     'nik' => $karyawan ? $karyawan->nik : null,
+                    'jarak_tempuh_km' => null,
                     'jumlah_rit' => 0,
                     'absen' => 0,
                     'total_uang_supir' => 0,
@@ -1157,6 +1166,99 @@ class PranotaUangRitController extends Controller
             $consolidatedDetails[$key]['grand_total'] += $detail->grand_total;
         }
 
+        if ($supirDetailsRaw->isEmpty()) {
+            foreach ($suratJalanSupirs as $name) {
+                $key = trim($name);
+                $karyawan = \App\Models\Karyawan::where('nama_panggilan', $key)
+                    ->orWhere('nama_lengkap', $key)
+                    ->first();
+                foreach ([$key, $karyawan?->nama_panggilan, $karyawan?->nama_lengkap] as $alias) {
+                    if ($alias) {
+                        $driverKeysByName[mb_strtoupper(trim($alias))] = $key;
+                    }
+                }
+            }
+        }
+
+        // GPS stores daily distance by vehicle. Associate it with the vehicles and
+        // trip dates on the surat jalan included in this pranota.
+        $regularNumbers = [];
+        $bongkaranNumbers = [];
+        foreach ($suratJalanNomors as $number) {
+            $number = trim($number);
+            if (str_ends_with($number, ' (Bongkaran)')) {
+                $bongkaranNumbers[] = substr($number, 0, -strlen(' (Bongkaran)'));
+            } elseif ($number !== '') {
+                $regularNumbers[] = $number;
+            }
+        }
+
+        $journeys = SuratJalan::whereIn('no_surat_jalan', $regularNumbers)
+            ->with('tandaTerima')
+            ->get(['id', 'supir', 'no_plat', 'tanggal_surat_jalan', 'tanggal_checkpoint', 'tanggal_tanda_terima'])
+            ->concat(SuratJalanBongkaran::whereIn('nomor_surat_jalan', $bongkaranNumbers)
+                ->with('tandaTerima')
+                ->get(['id', 'supir', 'no_plat', 'tanggal_surat_jalan', 'tanggal_checkpoint']));
+
+        $vehicleIdsByPlate = Mobil::whereNotNull('imei_gps')->where('imei_gps', '!=', '')
+            ->get(['id', 'nomor_polisi'])
+            ->filter(fn ($mobil) => $mobil->nomor_polisi)
+            ->mapWithKeys(fn ($mobil) => [mb_strtoupper(preg_replace('/[^[:alnum:]]/u', '', $mobil->nomor_polisi)) => $mobil->id]);
+
+        $periodsByVehicle = [];
+        foreach ($journeys as $journey) {
+            $driverKey = $driverKeysByName[mb_strtoupper(trim($journey->supir ?? ''))] ?? null;
+            $plate = mb_strtoupper(preg_replace('/[^[:alnum:]]/u', '', $journey->no_plat ?? ''));
+            $vehicleId = $vehicleIdsByPlate[$plate] ?? null;
+            $start = $journey->tanggal_surat_jalan?->toDateString();
+            if ($driverKey === null || $vehicleId === null || $start === null) {
+                continue;
+            }
+
+            $receiptDate = $journey instanceof SuratJalan
+                ? $journey->tandaTerima?->tanggal?->toDateString()
+                : $journey->tandaTerima?->tanggal_tanda_terima?->toDateString();
+            $end = collect([
+                $start,
+                $journey->tanggal_checkpoint?->toDateString(),
+                $journey instanceof SuratJalan ? $journey->tanggal_tanda_terima?->toDateString() : null,
+                $receiptDate,
+            ])->filter()->max();
+            $periodsByVehicle[$vehicleId][] = [
+                'driver' => $driverKey,
+                'start' => min($start, $end),
+                'end' => max($start, $end),
+            ];
+        }
+
+        $distanceByDriver = [];
+        $countedDays = [];
+        if ($periodsByVehicle) {
+            $allPeriods = collect($periodsByVehicle)->flatten(1);
+            $gpsDays = GpsDailyDistance::whereIn('mobil_id', array_keys($periodsByVehicle))
+                ->whereBetween('date', [$allPeriods->min('start'), $allPeriods->max('end')])
+                ->where('point_count', '>', 0)
+                ->get(['mobil_id', 'date', 'distance_km']);
+
+            foreach ($gpsDays as $gpsDay) {
+                foreach ($periodsByVehicle[$gpsDay->mobil_id] as $period) {
+                    if ($gpsDay->date >= $period['start'] && $gpsDay->date <= $period['end']) {
+                        $key = $period['driver'];
+                        $countedDay = $gpsDay->mobil_id.'|'.$gpsDay->date;
+                        if (! isset($countedDays[$key][$countedDay])) {
+                            $distanceByDriver[$key] = ($distanceByDriver[$key] ?? 0) + (float) $gpsDay->distance_km;
+                            $countedDays[$key][$countedDay] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($consolidatedDetails as $key => &$detail) {
+            $detail['jarak_tempuh_km'] = $distanceByDriver[$key] ?? null;
+        }
+        unset($detail);
+
         // Convert back to collection of objects for the view
         $supirDetails = collect();
         foreach ($consolidatedDetails as $detail) {
@@ -1165,7 +1267,7 @@ class PranotaUangRitController extends Controller
 
         $supirDetails = $supirDetails->sortBy('supir_nama');
 
-        return view('pranota-uang-rit.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
+        return view('pranota-uang-rit.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails', 'distanceByDriver'));
     }
 
     /**

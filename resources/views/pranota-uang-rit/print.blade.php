@@ -202,15 +202,16 @@
                 <tr>
                     <th style="width: 4%;">No</th>
                     <th style="width: 8%;">NIK</th>
-                    <th style="width: 20%;">Supir</th>
+                    <th style="width: 16%;">Supir</th>
                     <th style="width: 5%;">Rit</th>
+                    <th style="width: 9%;">Jarak Tempuh (km)</th>
                     <th style="width: 5%;">Absen</th>
                     <th style="width: 11%;">Total Uang</th>
                     <th style="width: 8%;">Hutang</th>
                     <th style="width: 8%;">Tabungan</th>
                     <th style="width: 8%;">BPJS</th>
-                    <th style="width: 10%;">Adjusment</th>
-                    <th style="width: 13%;">Grand Total</th>
+                    <th style="width: 8%;">Adjusment</th>
+                    <th style="width: 10%;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -235,6 +236,7 @@
                         <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                         <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
                         <td class="text-center">{{ $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0 }}</td>
+                        <td class="text-right">{{ $detail->jarak_tempuh_km !== null ? number_format($detail->jarak_tempuh_km, 2, ',', '.') : '-' }}</td>
                         <td class="text-center">{{ $detail->absen ?? 0 }} hari</td>
                         <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
@@ -265,6 +267,7 @@
                         <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                         <td class="text-left">{{ strtoupper($supirName) }}</td>
                         <td class="text-center">{{ $totalUangSupir > 0 ? round($totalUangSupir / 85000) : 0 }}</td>
+                        <td class="text-right">{{ isset($distanceByDriver[$supirName]) ? number_format($distanceByDriver[$supirName], 2, ',', '.') : '-' }}</td>
                         <td class="text-center">-</td>
                         <td class="text-right">{{ number_format($totalUangSupir, 0, ',', '.') }}</td>
                         <td class="text-right">-</td>
@@ -294,6 +297,9 @@
                                 echo $totalRit;
                             @endphp
                         @endif
+                    </strong></td>
+                    <td class="text-right"><strong>
+                        {{ $distanceByDriver ? number_format(array_sum($distanceByDriver), 2, ',', '.') : '-' }}
                     </strong></td>
                     <td class="text-center"><strong>
                         @if($supirDetails && $supirDetails->count() > 0)
@@ -349,6 +355,7 @@
     </table>
     
     <div class="footer-notes">
+        <div>Jarak tempuh GPS adalah total harian kendaraan sejak tanggal surat jalan sampai tanggal checkpoint atau tanda terima. Jarak pada hari yang sama dapat mencakup perjalanan lain; data GPS yang belum tersedia ditampilkan sebagai -.</div>
         <div>Dibuat pada: {{ $pranotaUangRit->created_at ? $pranotaUangRit->created_at->format('d/m/Y H:i') : '' }}</div>
         <div>Status: {{ $pranotaUangRit->status_label }}</div>
         @if($pranotaUangRit->keterangan)
