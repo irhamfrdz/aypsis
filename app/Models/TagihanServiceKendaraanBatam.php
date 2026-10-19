@@ -11,6 +11,7 @@ class TagihanServiceKendaraanBatam extends Model
     protected $fillable = [
         'nomor_tagihan',
         'tanggal_service',
+        'mobil_id',
         'nomor_polisi',
         'bengkel',
         'rincian_service',
@@ -25,4 +26,9 @@ class TagihanServiceKendaraanBatam extends Model
         'tanggal_service' => 'date',
         'biaya' => 'decimal:2',
     ];
+
+    public function mobil()
+    {
+        return $this->belongsTo(Mobil::class, 'mobil_id');
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TagihanServiceKendaraanBatam;
+use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,12 +46,14 @@ class TagihanServiceKendaraanBatamController extends Controller
         return view('tagihan-service-kendaraan-batam.create', [
             'tagihan' => new TagihanServiceKendaraanBatam,
             'nomorTagihan' => $this->previewNomorTagihan(),
+            'mobils' => $this->getMobilsForSelect(),
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $data = $this->applyMobilNumber($data);
         DB::transaction(function () use (&$data) {
             $prefix = '001'.now()->format('dm');
             DB::table('tagihan_service_kendaraan_batam_sequences')->insertOrIgnore([
@@ -81,12 +84,20 @@ class TagihanServiceKendaraanBatamController extends Controller
 
     public function edit(TagihanServiceKendaraanBatam $serviceTagihan)
     {
-        return view('tagihan-service-kendaraan-batam.edit', ['tagihan' => $serviceTagihan]);
+        $mobils = $this->getMobilsForSelect();
+        $selectedMobilId = $serviceTagihan->mobil_id ?: $mobils->first(function ($mobil) use ($serviceTagihan) {
+            return $this->mobilDisplayNumber($mobil) === $serviceTagihan->nomor_polisi;
+        })?->id;
+
+        return view('tagihan-service-kendaraan-batam.edit', compact('serviceTagihan', 'mobils', 'selectedMobilId') + [
+            'tagihan' => $serviceTagihan,
+        ]);
     }
 
     public function update(Request $request, TagihanServiceKendaraanBatam $serviceTagihan)
     {
         $data = $this->validated($request);
+        $data = $this->applyMobilNumber($data);
         $data['updated_by'] = Auth::id();
         $serviceTagihan->update($data);
 
@@ -107,13 +118,41 @@ class TagihanServiceKendaraanBatamController extends Controller
         return $request->validate([
             'nomor_tagihan' => ['nullable', 'string', 'max:100'],
             'tanggal_service' => ['required', 'date'],
-            'nomor_polisi' => ['required', 'string', 'max:30'],
+            'mobil_id' => ['required', 'integer', 'exists:mobils,id'],
             'bengkel' => ['required', 'string', 'max:255'],
             'rincian_service' => ['required', 'string', 'max:2000'],
             'biaya' => ['required', 'numeric', 'min:0'],
             'status' => ['required', 'in:pending,paid,cancelled'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ]);
+    }
+
+    private function getMobilsForSelect()
+    {
+        return Mobil::query()
+            ->select(['id', 'kode_no', 'nomor_polisi', 'no_kir', 'nickname'])
+            ->where(function ($query) {
+                $query->whereNotNull('nomor_polisi')->orWhereNotNull('no_kir');
+            })
+            ->orderBy('nomor_polisi')
+            ->get()
+            ->filter(fn (Mobil $mobil) => $this->mobilDisplayNumber($mobil) !== '')
+            ->values();
+    }
+
+    private function mobilDisplayNumber(Mobil $mobil): string
+    {
+        $nomorPolisi = trim((string) $mobil->nomor_polisi);
+
+        return $nomorPolisi !== '' ? $nomorPolisi : trim((string) $mobil->no_kir);
+    }
+
+    private function applyMobilNumber(array $data): array
+    {
+        $mobil = Mobil::findOrFail($data['mobil_id']);
+        $data['nomor_polisi'] = $this->mobilDisplayNumber($mobil);
+
+        return $data;
     }
 
     private function previewNomorTagihan(): string

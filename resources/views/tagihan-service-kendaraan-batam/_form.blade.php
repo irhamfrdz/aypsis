@@ -34,9 +34,19 @@
         @error('tanggal_service')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
-        <label for="nomor_polisi" class="service-batam-label">Nomor Polisi <span>*</span></label>
-        <input id="nomor_polisi" name="nomor_polisi" value="{{ old('nomor_polisi', $tagihan->nomor_polisi) }}" required maxlength="30" placeholder="Contoh: BP 1234 XX" class="service-batam-control">
-        @error('nomor_polisi')<p class="service-batam-error">{{ $message }}</p>@enderror
+        <label for="mobil_id" class="service-batam-label">Nomor Polisi / KIR <span>*</span></label>
+        <select id="mobil_id" name="mobil_id" required class="service-batam-control">
+            <option value="">Pilih nomor polisi atau KIR</option>
+            @foreach ($mobils as $mobil)
+                @php
+                    $mobilNumber = filled(trim((string) $mobil->nomor_polisi)) ? trim((string) $mobil->nomor_polisi) : trim((string) $mobil->no_kir);
+                @endphp
+                <option value="{{ $mobil->id }}" @selected((string) old('mobil_id', $selectedMobilId ?? $tagihan->mobil_id) === (string) $mobil->id)>
+                    {{ $mobilNumber }}{{ $mobil->nickname ? ' — '.$mobil->nickname : '' }}{{ $mobil->kode_no ? ' ('.$mobil->kode_no.')' : '' }}
+                </option>
+            @endforeach
+        </select>
+        @error('mobil_id')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
         <label for="bengkel" class="service-batam-label">Bengkel / Vendor <span>*</span></label>
