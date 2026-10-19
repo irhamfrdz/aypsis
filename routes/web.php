@@ -7435,7 +7435,7 @@ Route::middleware(['auth',
         ->names('master-pricelist-biaya-storage-pelindo')
         ->except(['show'])
         ->parameters([
-            'pricelist-biaya-storage-pelindo' => 'masterPricelistBiayaStoragePelindo',
+            'pricelist-biaya-storage-pelindo' => 'pricelist',
         ])
         ->middleware([
             'index' => 'can:master-pricelist-biaya-storage-pelindo-view',

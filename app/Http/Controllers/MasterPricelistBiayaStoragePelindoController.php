@@ -46,29 +46,29 @@ class MasterPricelistBiayaStoragePelindoController extends Controller
             ->with('success', 'Pricelist Biaya Storage Pelindo berhasil ditambahkan.');
     }
 
-    public function edit(MasterPricelistBiayaStoragePelindo $masterPricelistBiayaStoragePelindo)
+    public function edit(MasterPricelistBiayaStoragePelindo $pricelist)
     {
-        $pricelist = $masterPricelistBiayaStoragePelindo->load('tarifMassa');
+        $pricelist->load('tarifMassa');
 
         return view('master-pricelist-biaya-storage-pelindo.edit', compact('pricelist'));
     }
 
-    public function update(Request $request, MasterPricelistBiayaStoragePelindo $masterPricelistBiayaStoragePelindo)
+    public function update(Request $request, MasterPricelistBiayaStoragePelindo $pricelist)
     {
         $data = $this->validated($request);
-        DB::transaction(function () use ($masterPricelistBiayaStoragePelindo, $data) {
-            $masterPricelistBiayaStoragePelindo->update(collect($data)->except('tarif_massa')->all());
-            $masterPricelistBiayaStoragePelindo->tarifMassa()->delete();
-            $masterPricelistBiayaStoragePelindo->tarifMassa()->createMany($data['tarif_massa']);
+        DB::transaction(function () use ($pricelist, $data) {
+            $pricelist->update(collect($data)->except('tarif_massa')->all());
+            $pricelist->tarifMassa()->delete();
+            $pricelist->tarifMassa()->createMany($data['tarif_massa']);
         });
 
         return redirect()->route('master-pricelist-biaya-storage-pelindo.index')
             ->with('success', 'Pricelist Biaya Storage Pelindo berhasil diperbarui.');
     }
 
-    public function destroy(MasterPricelistBiayaStoragePelindo $masterPricelistBiayaStoragePelindo)
+    public function destroy(MasterPricelistBiayaStoragePelindo $pricelist)
     {
-        $masterPricelistBiayaStoragePelindo->delete();
+        $pricelist->delete();
 
         return redirect()->route('master-pricelist-biaya-storage-pelindo.index')
             ->with('success', 'Pricelist Biaya Storage Pelindo berhasil dihapus.');
