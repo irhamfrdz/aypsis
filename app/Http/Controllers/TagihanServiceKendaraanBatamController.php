@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\TagihanServiceKendaraanBatam;
+use App\Models\PranotaTagihanLainLainBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class TagihanServiceKendaraanBatamController extends Controller
 {
     public function index(Request $request)
     {
         $query = TagihanServiceKendaraanBatam::query();
+
+        $query->whereDoesntHave('pranotaItems');
 
         if (in_array($request->input('jenis_tagihan'), ['kendaraan', 'lain_lain'], true)) {
             $query->where('jenis_tagihan', $request->input('jenis_tagihan'));
@@ -37,8 +42,13 @@ class TagihanServiceKendaraanBatamController extends Controller
         }
 
         $tagihan = $query->latest('tanggal_service')->latest('id')->paginate(20)->withQueryString();
+        $pranotas = PranotaTagihanLainLainBatam::with('items.tagihan')
+            ->latest('tanggal_pranota')
+            ->latest('id')
+            ->limit(10)
+            ->get();
 
-        return view('tagihan-lain-lain-batam.index', compact('tagihan'));
+        return view('tagihan-lain-lain-batam.index', compact('tagihan', 'pranotas'));
     }
 
     public function create()
@@ -111,6 +121,63 @@ class TagihanServiceKendaraanBatamController extends Controller
 
         return redirect()->route('tagihan-lain-lain-batam.index')
             ->with('success', 'Tagihan lain lain Batam berhasil dihapus.');
+    }
+
+    public function storePranota(Request $request)
+    {
+        $validated = $request->validate([
+            'tagihan_ids' => ['required', 'array', 'min:1'],
+            'tagihan_ids.*' => ['required', 'integer', 'distinct', 'exists:tagihan_lain_lain_batams,id'],
+            'tanggal_pranota' => ['required', 'date'],
+            'keterangan_pranota' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $pranota = DB::transaction(function () use ($validated) {
+            $tagihans = TagihanServiceKendaraanBatam::query()
+                ->whereIn('id', $validated['tagihan_ids'])
+                ->lockForUpdate()
+                ->get();
+
+            if ($tagihans->count() !== count($validated['tagihan_ids'])) {
+                throw ValidationException::withMessages([
+                    'tagihan_ids' => 'Sebagian tagihan tidak ditemukan. Muat ulang halaman dan coba lagi.',
+                ]);
+            }
+
+            $sudahMasukPranota = DB::table('pranota_tagihan_lain_lain_batam_items')
+                ->whereIn('tagihan_id', $tagihans->pluck('id'))
+                ->exists();
+
+            if ($sudahMasukPranota) {
+                throw ValidationException::withMessages([
+                    'tagihan_ids' => 'Sebagian tagihan sudah dimasukkan ke pranota lain. Muat ulang halaman dan pilih tagihan yang belum diproses.',
+                ]);
+            }
+
+            $total = $tagihans->sum(fn ($tagihan) => (float) $tagihan->total_biaya);
+            $pranota = PranotaTagihanLainLainBatam::create([
+                'nomor_pranota' => 'TMP-'.Str::uuid(),
+                'tanggal_pranota' => $validated['tanggal_pranota'],
+                'keterangan' => $validated['keterangan_pranota'] ?? null,
+                'total_biaya' => $total,
+                'created_by' => Auth::id(),
+            ]);
+            $pranota->update([
+                'nomor_pranota' => 'PNLB-'.$pranota->tanggal_pranota->format('Ymd').'-'.str_pad((string) $pranota->id, 6, '0', STR_PAD_LEFT),
+            ]);
+
+            foreach ($tagihans as $tagihan) {
+                $pranota->items()->create([
+                    'tagihan_id' => $tagihan->id,
+                    'total_biaya' => $tagihan->total_biaya,
+                ]);
+            }
+
+            return $pranota;
+        });
+
+        return redirect()->route('tagihan-lain-lain-batam.index')
+            ->with('success', 'Pranota '.$pranota->nomor_pranota.' berhasil dibuat dari '.count($validated['tagihan_ids']).' tagihan.');
     }
 
     private function validated(Request $request): array

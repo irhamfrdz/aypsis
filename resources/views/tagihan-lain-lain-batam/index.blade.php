@@ -17,6 +17,9 @@
     @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>
     @endif
+    @if ($errors->any())
+        <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">{{ $errors->first() }}</div>
+    @endif
 
     <form method="GET" action="{{ route('tagihan-lain-lain-batam.index') }}" class="mb-5 grid grid-cols-1 gap-3 rounded-lg border bg-white p-4 md:grid-cols-5">
         <select name="jenis_tagihan" class="rounded-lg border-gray-300 text-sm" aria-label="Jenis tagihan">
@@ -33,16 +36,24 @@
         </div>
     </form>
 
+    @can('pranota-tagihan-lain-lain-batam-create')
+        <div id="pranota-actions" class="mb-4 hidden items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3">
+            <span class="text-sm text-blue-900"><span id="selected-count">0</span> tagihan dipilih</span>
+            <button type="button" id="open-pranota-modal" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Masukkan ke Pranota</button>
+        </div>
+    @endcan
+
     <div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis Tagihan</th>@if (request('jenis_tagihan') !== 'lain_lain')<th class="px-4 py-3">No. Polisi / KIR</th>@endif<th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
+                    @can('pranota-tagihan-lain-lain-batam-create')<th class="px-4 py-3"><input type="checkbox" id="select-all-tagihan" aria-label="Pilih semua tagihan"></th>@endcan<th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis Tagihan</th>@if (request('jenis_tagihan') !== 'lain_lain')<th class="px-4 py-3">No. Polisi / KIR</th>@endif<th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse ($tagihan as $item)
                     <tr>
+                        @can('pranota-tagihan-lain-lain-batam-create')<td class="px-4 py-3"><input type="checkbox" class="tagihan-checkbox h-4 w-4 rounded border-gray-300 text-blue-600" value="{{ $item->id }}" aria-label="Pilih tagihan {{ $item->nomor_tagihan }}"></td>@endcan
                         <td class="whitespace-nowrap px-4 py-3">{{ $item->tanggal_service->format('d/m/Y') }}</td>
                         <td class="px-4 py-3">{{ $item->nomor_tagihan ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $item->jenis_tagihan === 'kendaraan' ? 'Tagihan Kendaraan' : 'Tagihan Lain Lain' }}</td>
@@ -65,11 +76,121 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="{{ request('jenis_tagihan') === 'lain_lain' ? 9 : 10 }}" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan untuk filter ini.</td></tr>
+                    <tr><td colspan="{{ (request('jenis_tagihan') === 'lain_lain' ? 9 : 10) + (auth()->user()->can('pranota-tagihan-lain-lain-batam-create') ? 1 : 0) }}" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan yang tersedia untuk filter ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     <div class="mt-4">{{ $tagihan->links() }}</div>
+
+    <section class="mt-8">
+        <div class="mb-3 flex items-center justify-between gap-4">
+            <h2 class="text-lg font-bold text-gray-900">Pranota Terbaru</h2>
+            @can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.index') }}" class="text-sm font-medium text-blue-700 hover:underline">Lihat semua pranota</a>@endcan
+        </div>
+        <div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
+                    <tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Nomor Pranota</th><th class="px-4 py-3">Jumlah Tagihan</th><th class="px-4 py-3 text-right">Total</th><th class="px-4 py-3">Keterangan / Rincian</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse ($pranotas as $pranota)
+                        <tr>
+                            <td class="whitespace-nowrap px-4 py-3">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 font-semibold">@can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranota) }}" class="text-blue-700 hover:underline">{{ $pranota->nomor_pranota }}</a>@else{{ $pranota->nomor_pranota }}@endcan</td>
+                            <td class="px-4 py-3">{{ $pranota->items->count() }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $pranota->total_biaya, 0, ',', '.') }}</td>
+                            <td class="min-w-64 px-4 py-3">
+                                @if ($pranota->keterangan)<p class="mb-1">{{ $pranota->keterangan }}</p>@endif
+                                <details>
+                                    <summary class="cursor-pointer text-blue-700 hover:underline">Lihat tagihan</summary>
+                                    <ul class="mt-2 list-inside list-disc space-y-1 text-gray-600">
+                                        @foreach ($pranota->items as $pranotaItem)
+                                            <li>{{ $pranotaItem->tagihan?->nomor_tagihan ?? 'Tagihan dihapus' }} — Rp {{ number_format((float) $pranotaItem->total_biaya, 0, ',', '.') }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">Belum ada pranota tagihan Batam.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
+
+<div id="pranota-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="pranota-modal-title">
+    <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+        <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+                <h2 id="pranota-modal-title" class="text-xl font-bold text-gray-900">Masukkan Tagihan ke Pranota</h2>
+                <p class="mt-1 text-sm text-gray-600"><span id="modal-selected-count">0</span> tagihan dipilih. Tagihan yang dimasukkan tidak dapat dipilih kembali.</p>
+            </div>
+            <button type="button" id="close-pranota-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800" aria-label="Tutup">&times;</button>
+        </div>
+        <form id="pranota-form" action="{{ route('tagihan-lain-lain-batam.pranota.store') }}" method="POST" class="space-y-4">
+            @csrf
+            <div id="selected-tagihan-inputs"></div>
+            <div>
+                <label for="tanggal_pranota" class="mb-1 block text-sm font-medium text-gray-700">Tanggal Pranota <span class="text-red-600">*</span></label>
+                <input type="date" id="tanggal_pranota" name="tanggal_pranota" value="{{ now()->format('Y-m-d') }}" required class="w-full rounded-lg border-gray-300 text-sm">
+            </div>
+            <div>
+                <label for="keterangan_pranota" class="mb-1 block text-sm font-medium text-gray-700">Keterangan</label>
+                <textarea id="keterangan_pranota" name="keterangan_pranota" rows="3" maxlength="2000" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Catatan pranota (opsional)"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" id="cancel-pranota-modal" class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700">Batal</button>
+                <button type="submit" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Buat Pranota</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = [...document.querySelectorAll('.tagihan-checkbox')];
+    const selectAll = document.getElementById('select-all-tagihan');
+    const actionBar = document.getElementById('pranota-actions');
+    const count = document.getElementById('selected-count');
+    const modal = document.getElementById('pranota-modal');
+    const modalCount = document.getElementById('modal-selected-count');
+    const selectedInputs = document.getElementById('selected-tagihan-inputs');
+    const updateSelection = () => {
+        const selected = checkboxes.filter((checkbox) => checkbox.checked);
+        count.textContent = selected.length;
+        actionBar.classList.toggle('hidden', selected.length === 0);
+        actionBar.classList.toggle('flex', selected.length > 0);
+        if (selectAll) selectAll.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+    };
+    checkboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
+    selectAll?.addEventListener('change', () => {
+        checkboxes.forEach((checkbox) => { checkbox.checked = selectAll.checked; });
+        updateSelection();
+    });
+    document.getElementById('open-pranota-modal')?.addEventListener('click', () => {
+        const selected = checkboxes.filter((checkbox) => checkbox.checked);
+        if (!selected.length) return;
+        modalCount.textContent = selected.length;
+        selectedInputs.replaceChildren(...selected.map((checkbox) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'tagihan_ids[]';
+            input.value = checkbox.value;
+            return input;
+        }));
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+    document.getElementById('close-pranota-modal')?.addEventListener('click', closeModal);
+    document.getElementById('cancel-pranota-modal')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+});
+</script>
 @endsection

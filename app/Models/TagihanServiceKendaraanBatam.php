@@ -35,4 +35,9 @@ class TagihanServiceKendaraanBatam extends Model
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');
     }
+
+    public function pranotaItems()
+    {
+        return $this->hasMany(PranotaTagihanLainLainBatamItem::class, 'tagihan_id');
+    }
 }

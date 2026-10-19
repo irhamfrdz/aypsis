@@ -6067,6 +6067,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-cat.destroy')
         ->middleware('can:tagihan-cat-delete');
 
+    Route::get('pranota-tagihan-lain-lain-batam', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'index'])
+        ->name('pranota-tagihan-lain-lain-batam.index')
+        ->middleware('can:pranota-tagihan-lain-lain-batam-view');
+    Route::get('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'show'])
+        ->name('pranota-tagihan-lain-lain-batam.show')
+        ->middleware('can:pranota-tagihan-lain-lain-batam-view');
+    Route::post('tagihan-lain-lain-batam/pranota', [\App\Http\Controllers\TagihanServiceKendaraanBatamController::class, 'storePranota'])
+        ->name('tagihan-lain-lain-batam.pranota.store')
+        ->middleware('can:pranota-tagihan-lain-lain-batam-create');
     Route::resource('tagihan-lain-lain-batam', \App\Http\Controllers\TagihanServiceKendaraanBatamController::class)
         ->names('tagihan-lain-lain-batam')
         ->except(['show'])

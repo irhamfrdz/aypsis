@@ -184,6 +184,15 @@ return [
                 'tagihan-service-kendaraan-batam-delete' => 'Hapus Tagihan Lain Lain Batam',
             ],
         ],
+        'pranota-tagihan-lain-lain-batam' => [
+            'name' => 'Pranota Tagihan Lain Lain Batam',
+            'description' => 'Menu pranota tagihan Lain Lain Batam',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-tagihan-lain-lain-batam-view' => 'Lihat Pranota Tagihan Lain Lain Batam',
+                'pranota-tagihan-lain-lain-batam-create' => 'Buat Pranota Tagihan Lain Lain Batam',
+            ],
+        ],
         'pranota-lolo-batam' => [
             'name' => 'Pranota LOLO Batam',
             'description' => 'Menu pranota LOLO Batam',
