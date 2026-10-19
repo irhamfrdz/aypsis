@@ -112,9 +112,10 @@ class TagihanServiceKendaraanBatamController extends Controller
     private function validated(Request $request): array
     {
         return $request->validate([
+            'jenis_tagihan' => ['required', 'in:kendaraan,lain_lain'],
             'nomor_tagihan' => ['nullable', 'string', 'max:100'],
             'tanggal_service' => ['required', 'date'],
-            'mobil_id' => ['required', 'integer', 'exists:mobils,id'],
+            'mobil_id' => ['nullable', 'required_if:jenis_tagihan,kendaraan', 'integer', 'exists:mobils,id'],
             'bengkel' => ['required', 'string', 'max:255'],
             'rincian_service' => ['required', 'string', 'max:2000'],
             'biaya' => ['required', 'numeric', 'min:0'],
@@ -145,8 +146,14 @@ class TagihanServiceKendaraanBatamController extends Controller
 
     private function applyMobilNumber(array $data): array
     {
-        $mobil = Mobil::findOrFail($data['mobil_id']);
-        $data['nomor_polisi'] = $this->mobilDisplayNumber($mobil);
+        if ($data['jenis_tagihan'] === 'kendaraan') {
+            $mobil = Mobil::findOrFail($data['mobil_id']);
+            $data['nomor_polisi'] = $this->mobilDisplayNumber($mobil);
+        } else {
+            $data['mobil_id'] = null;
+            $data['nomor_polisi'] = null;
+        }
+
         $data['total_biaya'] = round((float) $data['biaya'] * (1 + ((float) $data['pph_rate'] / 100)), 2);
 
         return $data;

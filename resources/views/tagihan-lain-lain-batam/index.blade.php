@@ -32,7 +32,7 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">No. Polisi / KIR</th><th class="px-4 py-3">Bengkel</th><th class="px-4 py-3">Rincian Service</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
+                    <th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis Tagihan</th><th class="px-4 py-3">No. Polisi / KIR</th><th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -40,7 +40,8 @@
                     <tr>
                         <td class="whitespace-nowrap px-4 py-3">{{ $item->tanggal_service->format('d/m/Y') }}</td>
                         <td class="px-4 py-3">{{ $item->nomor_tagihan ?: '-' }}</td>
-                        <td class="whitespace-nowrap px-4 py-3 font-medium">{{ $item->nomor_polisi }}</td>
+                        <td class="px-4 py-3">{{ $item->jenis_tagihan === 'kendaraan' ? 'Tagihan Kendaraan' : 'Tagihan Lain Lain' }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 font-medium">{{ $item->nomor_polisi ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $item->bengkel }}</td>
                         <td class="max-w-sm px-4 py-3">{{ $item->rincian_service }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $item->biaya, 0, ',', '.') }}</td>
@@ -59,7 +60,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan lain lain Batam.</td></tr>
+                    <tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan lain lain Batam.</td></tr>
                 @endforelse
             </tbody>
         </table>

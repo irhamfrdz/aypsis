@@ -9,6 +9,7 @@ class TagihanServiceKendaraanBatam extends Model
     protected $table = 'tagihan_lain_lain_batams';
 
     protected $fillable = [
+        'jenis_tagihan',
         'nomor_tagihan',
         'tanggal_service',
         'mobil_id',
