@@ -33,7 +33,7 @@
         .items tr { break-inside: avoid; page-break-inside: avoid; }
         .right { text-align: right; }
         .center { text-align: center; }
-        .note { margin-top: 9px; padding: 6px; border: 1px dashed #777; white-space: pre-line; }
+        .note { margin-top: 9px; padding: 6px; border: 2px solid #333; white-space: pre-line; }
         .signatures { width: 100%; margin-top: 18px; border-collapse: collapse; break-inside: avoid; page-break-inside: avoid; }
         .signatures td { width: 33.33%; text-align: center; vertical-align: top; padding: 0 8px; }
         .signature-space { height: 36px; }
