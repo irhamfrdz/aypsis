@@ -12,6 +12,10 @@
         <a href="{{ route('tagihan-lain-lain-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Kembali ke Tagihan</a>
     </div>
 
+    @if (session('success'))
+        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
+    @endif
+
     <div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
@@ -28,6 +32,13 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right">
                             <a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranota) }}" class="font-medium text-blue-700 hover:underline">Lihat rincian</a>
                             <a href="{{ route('pranota-tagihan-lain-lain-batam.print', $pranota) }}" target="_blank" rel="noopener" class="ml-3 font-medium text-purple-700 hover:underline">Cetak permohonan transfer</a>
+                            @can('pranota-tagihan-lain-lain-batam-delete')
+                                <form action="{{ route('pranota-tagihan-lain-lain-batam.destroy', $pranota) }}" method="POST" class="ml-3 inline" onsubmit="return confirm('Hapus pranota ini? Tagihan di dalamnya akan tersedia kembali untuk pranota baru.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="font-medium text-red-700 hover:underline">Hapus</button>
+                                </form>
+                            @endcan
                         </td>
                     </tr>
                 @empty

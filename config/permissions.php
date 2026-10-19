@@ -191,6 +191,7 @@ return [
             'sub_modules' => [
                 'pranota-tagihan-lain-lain-batam-view' => 'Lihat Pranota Tagihan Lain Lain Batam',
                 'pranota-tagihan-lain-lain-batam-create' => 'Buat Pranota Tagihan Lain Lain Batam',
+                'pranota-tagihan-lain-lain-batam-delete' => 'Hapus Pranota Tagihan Lain Lain Batam',
             ],
         ],
         'pranota-lolo-batam' => [

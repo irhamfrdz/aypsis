@@ -4521,7 +4521,7 @@ class UserController extends Controller
                         }
                     }
 
-                    if ($module === 'pranota-tagihan-lain-lain-batam' && in_array($action, ['view', 'create'])) {
+                    if ($module === 'pranota-tagihan-lain-lain-batam' && in_array($action, ['view', 'create', 'delete'])) {
                         $permission = Permission::where('name', $module.'-'.$action)->first();
                         if ($permission) {
                             $permissionIds[] = $permission->id;

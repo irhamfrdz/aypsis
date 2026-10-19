@@ -1944,7 +1944,9 @@
                                 <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">└─</span><span class="text-teal-700 font-bold">Pranota Tagihan Lain Lain Batam</span></div></td>
                                 <td><input type="checkbox" name="permissions[pranota-tagihan-lain-lain-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-tagihan-lain-lain-batam.view') || (isset($userMatrixPermissions['pranota-tagihan-lain-lain-batam']['view']) && $userMatrixPermissions['pranota-tagihan-lain-lain-batam']['view']) || ($user && $user->can('pranota-tagihan-lain-lain-batam-view'))) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[pranota-tagihan-lain-lain-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-tagihan-lain-lain-batam.create') || (isset($userMatrixPermissions['pranota-tagihan-lain-lain-batam']['create']) && $userMatrixPermissions['pranota-tagihan-lain-lain-batam']['create']) || ($user && $user->can('pranota-tagihan-lain-lain-batam-create'))) checked @endif></td>
-                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-tagihan-lain-lain-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-tagihan-lain-lain-batam.delete') || (isset($userMatrixPermissions['pranota-tagihan-lain-lain-batam']['delete']) && $userMatrixPermissions['pranota-tagihan-lain-lain-batam']['delete']) || ($user && $user->can('pranota-tagihan-lain-lain-batam-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
                             </tr>
 
                             {{-- Pranota LOLO Batam --}}

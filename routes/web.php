@@ -6093,6 +6093,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}/print', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'print'])
         ->name('pranota-tagihan-lain-lain-batam.print')
         ->middleware('can:pranota-tagihan-lain-lain-batam-view');
+    Route::delete('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'destroy'])
+        ->name('pranota-tagihan-lain-lain-batam.destroy')
+        ->middleware('can:pranota-tagihan-lain-lain-batam-delete');
     Route::get('pranota-tagihan-lain-lain-batam/{pranotaTagihanLainLainBatam}', [\App\Http\Controllers\PranotaTagihanLainLainBatamController::class, 'show'])
         ->name('pranota-tagihan-lain-lain-batam.show')
         ->middleware('can:pranota-tagihan-lain-lain-batam-view');
