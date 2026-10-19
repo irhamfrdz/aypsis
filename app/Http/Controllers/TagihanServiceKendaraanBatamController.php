@@ -17,7 +17,7 @@ class TagihanServiceKendaraanBatamController extends Controller
     {
         $query = TagihanServiceKendaraanBatam::query();
 
-        $query->whereDoesntHave('pranotaItems');
+        $query->with('pranotaItems.pranota');
 
         if (in_array($request->input('jenis_tagihan'), ['kendaraan', 'lain_lain'], true)) {
             $query->where('jenis_tagihan', $request->input('jenis_tagihan'));
@@ -42,13 +42,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         }
 
         $tagihan = $query->latest('tanggal_service')->latest('id')->paginate(20)->withQueryString();
-        $pranotas = PranotaTagihanLainLainBatam::with('items.tagihan')
-            ->latest('tanggal_pranota')
-            ->latest('id')
-            ->limit(10)
-            ->get();
-
-        return view('tagihan-lain-lain-batam.index', compact('tagihan', 'pranotas'));
+        return view('tagihan-lain-lain-batam.index', compact('tagihan'));
     }
 
     public function create()

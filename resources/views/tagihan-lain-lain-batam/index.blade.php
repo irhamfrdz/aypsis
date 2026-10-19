@@ -47,13 +47,14 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
                 <tr>
-                    @can('pranota-tagihan-lain-lain-batam-create')<th class="px-4 py-3"><input type="checkbox" id="select-all-tagihan" aria-label="Pilih semua tagihan"></th>@endcan<th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis Tagihan</th>@if (request('jenis_tagihan') !== 'lain_lain')<th class="px-4 py-3">No. Polisi / KIR</th>@endif<th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3 text-right">Aksi</th>
+                    @can('pranota-tagihan-lain-lain-batam-create')<th class="px-4 py-3"><input type="checkbox" id="select-all-tagihan" aria-label="Pilih semua tagihan"></th>@endcan<th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">No. Tagihan</th><th class="px-4 py-3">Jenis Tagihan</th>@if (request('jenis_tagihan') !== 'lain_lain')<th class="px-4 py-3">No. Polisi / KIR</th>@endif<th class="px-4 py-3">Bengkel / Vendor</th><th class="px-4 py-3">Rincian</th><th class="px-4 py-3 text-right">Biaya</th><th class="px-4 py-3">PPh</th><th class="px-4 py-3 text-right">Total Biaya</th><th class="px-4 py-3">Status Pranota</th><th class="px-4 py-3 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse ($tagihan as $item)
                     <tr>
-                        @can('pranota-tagihan-lain-lain-batam-create')<td class="px-4 py-3"><input type="checkbox" class="tagihan-checkbox h-4 w-4 rounded border-gray-300 text-blue-600" value="{{ $item->id }}" aria-label="Pilih tagihan {{ $item->nomor_tagihan }}"></td>@endcan
+                        @php($pranotaItem = $item->pranotaItems->first())
+                        @can('pranota-tagihan-lain-lain-batam-create')<td class="px-4 py-3">@if (!$pranotaItem)<input type="checkbox" class="tagihan-checkbox h-4 w-4 rounded border-gray-300 text-blue-600" value="{{ $item->id }}" aria-label="Pilih tagihan {{ $item->nomor_tagihan }}">@endif</td>@endcan
                         <td class="whitespace-nowrap px-4 py-3">{{ $item->tanggal_service->format('d/m/Y') }}</td>
                         <td class="px-4 py-3">{{ $item->nomor_tagihan ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $item->jenis_tagihan === 'kendaraan' ? 'Tagihan Kendaraan' : 'Tagihan Lain Lain' }}</td>
@@ -63,6 +64,7 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $item->biaya, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3">{{ (float) $item->pph_rate == 0 ? 'Tanpa PPh' : rtrim(rtrim(number_format((float) $item->pph_rate, 1, ',', ''), '0'), ',').'%' }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_biaya, 0, ',', '.') }}</td>
+                        <td class="whitespace-nowrap px-4 py-3">@if ($pranotaItem?->pranota)<span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">Sudah dibuat pranota</span><div class="mt-1 text-xs text-gray-500">@can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranotaItem->pranota) }}" class="text-blue-700 hover:underline">{{ $pranotaItem->pranota->nomor_pranota }}</a>@else{{ $pranotaItem->pranota->nomor_pranota }}@endcan</div>@else<span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">Belum dibuat pranota</span>@endif</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">
                             @can('tagihan-service-kendaraan-batam-update')
                                 <a href="{{ route('tagihan-lain-lain-batam.edit', $item) }}" class="font-medium text-blue-700 hover:underline">Edit</a>
@@ -76,49 +78,12 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="{{ (request('jenis_tagihan') === 'lain_lain' ? 9 : 10) + (auth()->user()->can('pranota-tagihan-lain-lain-batam-create') ? 1 : 0) }}" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan yang tersedia untuk filter ini.</td></tr>
+                    <tr><td colspan="{{ (request('jenis_tagihan') === 'lain_lain' ? 10 : 11) + (auth()->user()->can('pranota-tagihan-lain-lain-batam-create') ? 1 : 0) }}" class="px-4 py-8 text-center text-gray-500">Belum ada tagihan untuk filter ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     <div class="mt-4">{{ $tagihan->links() }}</div>
-
-    <section class="mt-8">
-        <div class="mb-3 flex items-center justify-between gap-4">
-            <h2 class="text-lg font-bold text-gray-900">Pranota Terbaru</h2>
-            @can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.index') }}" class="text-sm font-medium text-blue-700 hover:underline">Lihat semua pranota</a>@endcan
-        </div>
-        <div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50 text-left text-xs uppercase text-gray-600">
-                    <tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Nomor Pranota</th><th class="px-4 py-3">Jumlah Tagihan</th><th class="px-4 py-3 text-right">Total</th><th class="px-4 py-3">Keterangan / Rincian</th></tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($pranotas as $pranota)
-                        <tr>
-                            <td class="whitespace-nowrap px-4 py-3">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 font-semibold">@can('pranota-tagihan-lain-lain-batam-view')<a href="{{ route('pranota-tagihan-lain-lain-batam.show', $pranota) }}" class="text-blue-700 hover:underline">{{ $pranota->nomor_pranota }}</a>@else{{ $pranota->nomor_pranota }}@endcan</td>
-                            <td class="px-4 py-3">{{ $pranota->items->count() }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $pranota->total_biaya, 0, ',', '.') }}</td>
-                            <td class="min-w-64 px-4 py-3">
-                                @if ($pranota->keterangan)<p class="mb-1">{{ $pranota->keterangan }}</p>@endif
-                                <details>
-                                    <summary class="cursor-pointer text-blue-700 hover:underline">Lihat tagihan</summary>
-                                    <ul class="mt-2 list-inside list-disc space-y-1 text-gray-600">
-                                        @foreach ($pranota->items as $pranotaItem)
-                                            <li>{{ $pranotaItem->tagihan?->nomor_tagihan ?? 'Tagihan dihapus' }} — Rp {{ number_format((float) $pranotaItem->total_biaya, 0, ',', '.') }}</li>
-                                        @endforeach
-                                    </ul>
-                                </details>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">Belum ada pranota tagihan Batam.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </section>
 </div>
 
 <div id="pranota-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="pranota-modal-title">
