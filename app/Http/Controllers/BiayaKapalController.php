@@ -757,6 +757,20 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // Perlengkapan inputs are formatted with Indonesian thousands separators in the form.
+        if (isset($data['perlengkapan_sections']) && is_array($data['perlengkapan_sections'])) {
+            foreach ($data['perlengkapan_sections'] as &$section) {
+                if (isset($section['jumlah_biaya'])) {
+                    $section['jumlah_biaya'] = (float) str_replace(['.', ','], '', (string) $section['jumlah_biaya']);
+                }
+            }
+            unset($section);
+
+            if (isset($data['nominal'])) {
+                $data['nominal'] = (float) str_replace(['.', ','], '', (string) $data['nominal']);
+            }
+        }
+
         $request->replace($data);
 
         $validated = $request->validate([
@@ -3527,7 +3541,7 @@ class BiayaKapalController extends Controller
      */
     public function printPerlengkapan(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'perlengkapanDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'perlengkapanDetails', 'bank']);
 
         return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
     }
@@ -4395,6 +4409,20 @@ class BiayaKapalController extends Controller
                 }
             }
             unset($section);
+        }
+
+        // Perlengkapan inputs are formatted with Indonesian thousands separators in the form.
+        if (isset($data['perlengkapan_sections']) && is_array($data['perlengkapan_sections'])) {
+            foreach ($data['perlengkapan_sections'] as &$section) {
+                if (isset($section['jumlah_biaya'])) {
+                    $section['jumlah_biaya'] = (float) str_replace(['.', ','], '', (string) $section['jumlah_biaya']);
+                }
+            }
+            unset($section);
+
+            if (isset($data['nominal'])) {
+                $data['nominal'] = (float) str_replace(['.', ','], '', (string) $data['nominal']);
+            }
         }
 
         $request->replace($data);

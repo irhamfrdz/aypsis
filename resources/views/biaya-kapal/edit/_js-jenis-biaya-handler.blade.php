@@ -1449,6 +1449,7 @@
             if(penerimaInput) penerimaInput.setAttribute('required', 'required');
             if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(bankIdWrapper) bankIdWrapper.classList.remove('hidden');
             if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
             const keteranganWrapper = document.getElementById('keterangan_wrapper');
             const buktiWrapper = document.getElementById('bukti_wrapper');

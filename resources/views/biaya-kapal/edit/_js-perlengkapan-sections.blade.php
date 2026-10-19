@@ -10,6 +10,14 @@
     function clearAllPerlengkapanSections() {
         if (perlengkapanSectionsContainer) perlengkapanSectionsContainer.innerHTML = '';
         perlengkapanSectionCounter = 0;
+        updatePerlengkapanGrandTotal();
+    }
+
+    function updatePerlengkapanGrandTotal() {
+        const total = Array.from(document.querySelectorAll('.perlengkapan-jumlah-input'))
+            .reduce((sum, input) => sum + (parseInt((input.value || '').replace(/\D/g, ''), 10) || 0), 0);
+        const nominal = document.getElementById('nominal');
+        if (nominal) nominal.value = total.toLocaleString('id-ID');
     }
 
     function addPerlengkapanSection() {
@@ -88,11 +96,13 @@
         `;
 
         perlengkapanSectionsContainer.appendChild(section);
+        updatePerlengkapanGrandTotal();
     }
 
     window.removePerlengkapanSection = function(btn) {
         const section = btn.closest('.perlengkapan-section');
         if (section) section.remove();
+        updatePerlengkapanGrandTotal();
     };
 
     window.formatPerlengkapanBiaya = function(input) {
@@ -110,6 +120,7 @@
             const numVal = parseInt(input.value.replace(/\./g, '') || 0);
             if (subtotalEl) subtotalEl.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
         }
+        updatePerlengkapanGrandTotal();
     };
 
     window.loadVoyagesForPerlengkapanSection = function(sectionIndex, kapalNama, selectedVoyage = null) {
