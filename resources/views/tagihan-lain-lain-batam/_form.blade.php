@@ -80,7 +80,7 @@
         @error('pph_rate')<p class="service-batam-error">{{ $message }}</p>@enderror
     </div>
     <div class="service-batam-field">
-        <label for="total_biaya_preview" class="service-batam-label">Total biaya setelah PPh (Rp)</label>
+        <label for="total_biaya_preview" class="service-batam-label">Grand total (biaya + PPh) (Rp)</label>
         <input id="total_biaya_preview" value="{{ old('total_biaya', $tagihan->total_biaya ?? $tagihan->biaya ?? 0) }}" readonly class="service-batam-control service-batam-control--readonly">
     </div>
     <div class="service-batam-field service-batam-field--wide">
