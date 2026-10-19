@@ -1747,6 +1747,16 @@
                                 <td><input type="checkbox" name="permissions[tagihan-lolo-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.export')) checked @endif></td>
                             </tr>
 
+                            {{-- Tagihan Service Kendaraan Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">└─</span><span class="text-blue-600 font-bold">Tagihan Service Kendaraan Batam</span></div></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.delete')) checked @endif></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota LOLO Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

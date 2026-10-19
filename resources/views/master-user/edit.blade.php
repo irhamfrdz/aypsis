@@ -1929,6 +1929,16 @@
                                 <td><input type="checkbox" name="permissions[tagihan-lolo-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-lolo-batam.export') || (isset($userMatrixPermissions['tagihan-lolo-batam']['export']) && $userMatrixPermissions['tagihan-lolo-batam']['export']) || ($user && $user->can('tagihan-lolo-batam-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Tagihan Service Kendaraan Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">└─</span><span class="text-blue-600 font-bold">Tagihan Service Kendaraan Batam</span></div></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.view') || (isset($userMatrixPermissions['tagihan-service-kendaraan-batam']['view']) && $userMatrixPermissions['tagihan-service-kendaraan-batam']['view']) || ($user && $user->can('tagihan-service-kendaraan-batam-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.create') || (isset($userMatrixPermissions['tagihan-service-kendaraan-batam']['create']) && $userMatrixPermissions['tagihan-service-kendaraan-batam']['create']) || ($user && $user->can('tagihan-service-kendaraan-batam-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.update') || (isset($userMatrixPermissions['tagihan-service-kendaraan-batam']['update']) && $userMatrixPermissions['tagihan-service-kendaraan-batam']['update']) || ($user && $user->can('tagihan-service-kendaraan-batam-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-service-kendaraan-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-service-kendaraan-batam.delete') || (isset($userMatrixPermissions['tagihan-service-kendaraan-batam']['delete']) && $userMatrixPermissions['tagihan-service-kendaraan-batam']['delete']) || ($user && $user->can('tagihan-service-kendaraan-batam-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota LOLO Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

@@ -721,6 +721,7 @@ class UserController extends Controller
                 'order-batam' => 'order-batam',
                 'langsir-batam' => 'langsir-batam',
                 'tagihan-lolo-batam' => 'tagihan-lolo-batam',
+                'tagihan-service-kendaraan-batam' => 'tagihan-service-kendaraan-batam',
                 'master-pricelist-lolo-batam' => 'master-pricelist-lolo-batam',
                 'order-management' => 'order', // Map order-management to order for permission names
                 'pembayaran-aktivitas-lain' => 'pembayaran-aktivitas-lain',
@@ -4507,6 +4508,15 @@ class UserController extends Controller
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
                             }
+                        }
+                    }
+
+                    // Handle tagihan-service-kendaraan-batam permissions explicitly
+                    if ($module === 'tagihan-service-kendaraan-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $permission = Permission::where('name', $module.'-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                            $found = true;
                         }
                     }
 

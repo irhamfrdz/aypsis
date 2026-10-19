@@ -6067,6 +6067,19 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-cat.destroy')
         ->middleware('can:tagihan-cat-delete');
 
+    Route::resource('tagihan-service-kendaraan-batam', \App\Http\Controllers\TagihanServiceKendaraanBatamController::class)
+        ->names('tagihan-service-kendaraan-batam')
+        ->except(['show'])
+        ->parameters(['tagihan-service-kendaraan-batam' => 'serviceTagihan'])
+        ->middleware([
+            'index' => 'can:tagihan-service-kendaraan-batam-view',
+            'create' => 'can:tagihan-service-kendaraan-batam-create',
+            'store' => 'can:tagihan-service-kendaraan-batam-create',
+            'edit' => 'can:tagihan-service-kendaraan-batam-update',
+            'update' => 'can:tagihan-service-kendaraan-batam-update',
+            'destroy' => 'can:tagihan-service-kendaraan-batam-delete',
+        ]);
+
     // Tagihan Pelindo routes
     Route::get('tagihan-pelindo', [\App\Http\Controllers\TagihanPelindoController::class, 'index'])
         ->name('tagihan-pelindo.index')
