@@ -258,6 +258,50 @@ class MasterArmadaTest extends TestCase
         $this->dashboardData(['periode' => 14]);
     }
 
+    public function test_custom_date_range_includes_both_boundaries_and_filters_activity_and_availability(): void
+    {
+        $this->trip('B 1001 AA', '2026-10-16', 4);
+        $this->trip('B 1001 AA', '2026-10-17');
+        $this->trip('B 1001 AA', '2026-10-18', 2);
+        $this->trip('B 1001 AA', '2026-10-19', 8);
+        foreach (['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19'] as $date) {
+            ArmadaUnavailability::withoutEvents(fn () => ArmadaUnavailability::create([
+                'mobil_id' => 2, 'start_date' => $date, 'end_date' => $date, 'reason' => 'Servis',
+            ]));
+        }
+
+        $filters = ['tanggal_mulai' => '2026-10-17', 'tanggal_selesai' => '2026-10-18'];
+        $data = $this->dashboardData($filters);
+        $this->assertSame(2, $data['periode']);
+        $row = $data['rankings']->first(fn ($row) => $row['mobil']->id === 1);
+        $this->assertSame(3, $row['rit']);
+        $this->assertSame(['2026-10-17', '2026-10-18'], $row['daily']->pluck('date')->all());
+        $this->assertEquals(1234.125, $row['gps_km']);
+        $this->assertSame(2, $data['availabilityPeriods']->total());
+
+        $singleDay = $this->dashboardData(['tanggal_mulai' => '2026-10-18', 'tanggal_selesai' => '2026-10-18']);
+        $this->assertSame(1, $singleDay['periode']);
+        $this->assertSame(2, $singleDay['rankingSummary']['rit']);
+    }
+
+    public function test_custom_date_range_rejects_reversed_future_invalid_and_incomplete_dates(): void
+    {
+        foreach ([
+            ['tanggal_mulai' => '2026-10-19', 'tanggal_selesai' => '2026-10-18'],
+            ['tanggal_mulai' => '2026-10-19', 'tanggal_selesai' => '2026-10-21'],
+            ['tanggal_mulai' => 'invalid', 'tanggal_selesai' => '2026-10-19'],
+            ['tanggal_mulai' => '2026-10-18'],
+            ['tanggal_selesai' => '2026-10-19'],
+        ] as $filters) {
+            try {
+                $this->dashboardData($filters);
+                $this->fail('Invalid date range was accepted.');
+            } catch (ValidationException $exception) {
+                $this->assertNotEmpty($exception->errors());
+            }
+        }
+    }
+
     public function test_dashboard_respects_gps_branch_search_location_and_vehicle_type(): void
     {
         $data = $this->dashboardData([], 'BTM');

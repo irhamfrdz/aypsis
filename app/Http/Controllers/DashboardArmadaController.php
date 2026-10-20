@@ -14,17 +14,30 @@ class DashboardArmadaController extends Controller
     public function index(Request $request)
     {
         $request->validate([
+            'tanggal_mulai' => ['nullable', 'required_with:tanggal_selesai', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'tanggal_selesai' => ['nullable', 'required_with:tanggal_mulai', 'date_format:Y-m-d', 'after_or_equal:tanggal_mulai', 'before_or_equal:today'],
             'tanggal' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'periode' => ['nullable', 'integer', 'in:7,30'],
             'search' => ['nullable', 'string', 'max:255'],
             'lokasi' => ['nullable', 'string', 'max:255'],
             'jenis' => ['nullable', 'string', 'max:255'],
             'mode' => ['nullable', 'in:tabel,diagram'],
+        ], [
+            'tanggal_mulai.required_with' => 'Tanggal mulai wajib diisi.',
+            'tanggal_selesai.required_with' => 'Tanggal akhir wajib diisi.',
+            'tanggal_selesai.after_or_equal' => 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.',
+            'tanggal_mulai.before_or_equal' => 'Tanggal mulai tidak boleh melewati hari ini.',
+            'tanggal_selesai.before_or_equal' => 'Tanggal akhir tidak boleh melewati hari ini.',
         ]);
         $tanggalRanking = $request->filled('tanggal') ? Carbon::parse($request->tanggal) : today()->subDay();
         $periode = $request->filled('periode') ? $request->integer('periode') : 7;
         $rankingMode = $request->input('mode') ?: 'tabel';
         $tanggalMulai = $tanggalRanking->copy()->subDays($periode - 1);
+        if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
+            $tanggalMulai = Carbon::parse($request->input('tanggal_mulai'));
+            $tanggalRanking = Carbon::parse($request->input('tanggal_selesai'));
+            $periode = (int) $tanggalMulai->diffInDays($tanggalRanking) + 1;
+        }
         $query = Mobil::whereNotNull('imei_gps')->whereRaw("TRIM(imei_gps) <> ''");
         if ($request->user()?->karyawan?->cabang === 'BTM') {
             $query->where('lokasi', 'BTM');

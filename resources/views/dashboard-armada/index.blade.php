@@ -21,15 +21,12 @@
     <form method="GET" action="{{ route('dashboard-armada.index') }}" class="bg-white rounded-xl border border-gray-200 p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
         <input type="hidden" name="mode" value="{{ $rankingMode }}">
         <div>
-            <label for="periode" class="block text-xs font-semibold text-gray-600 mb-1">Periode Analisis</label>
-            <select id="periode" name="periode" class="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="7" @selected($periode === 7)>7 Hari</option>
-                <option value="30" @selected($periode === 30)>30 Hari</option>
-            </select>
+            <label for="tanggal_mulai" class="block text-xs font-semibold text-gray-600 mb-1">Dari Tanggal</label>
+            <input id="tanggal_mulai" name="tanggal_mulai" type="date" value="{{ old('tanggal_mulai', $tanggalMulai->toDateString()) }}" max="{{ today()->toDateString() }}" required class="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
         </div>
         <div>
-            <label for="tanggal" class="block text-xs font-semibold text-gray-600 mb-1">Sampai Tanggal</label>
-            <input id="tanggal" name="tanggal" type="date" value="{{ $tanggalRanking->toDateString() }}" max="{{ today()->toDateString() }}" class="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <label for="tanggal_selesai" class="block text-xs font-semibold text-gray-600 mb-1">Sampai Tanggal</label>
+            <input id="tanggal_selesai" name="tanggal_selesai" type="date" value="{{ old('tanggal_selesai', $tanggalRanking->toDateString()) }}" max="{{ today()->toDateString() }}" required class="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
         </div>
         <div>
             <label for="search" class="block text-xs font-semibold text-gray-600 mb-1">Cari Armada</label>
@@ -54,7 +51,7 @@
             <a href="{{ route('dashboard-armada.index') }}" class="py-2 text-sm text-gray-500 hover:text-indigo-600">Reset</a>
         </div>
     </form>
-    <p class="text-sm text-gray-500">Periode {{ $tanggalMulai->format('d M Y') }}–{{ $tanggalRanking->format('d M Y') }} ({{ $periode }} hari kalender). Default sampai kemarin agar hari berjalan tidak menurunkan hasil.
+    <p class="text-sm text-gray-500">Periode {{ $tanggalMulai->format('d M Y') }}–{{ $tanggalRanking->format('d M Y') }} ({{ $periode }} hari kalender, termasuk tanggal awal dan akhir). Pilih rentang tanggal lalu klik Terapkan. Default 7 hari sampai kemarin.
         @if($tanggalRanking->isToday())<span class="text-amber-700">Periode ini mencakup hari ini; data masih dapat bertambah.</span>@endif
     </p>
 
