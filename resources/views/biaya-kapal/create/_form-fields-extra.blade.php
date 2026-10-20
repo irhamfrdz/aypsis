@@ -237,10 +237,25 @@
                     @enderror
                 </div>
 
-                <!-- Bank Selection (for Biaya Buruh) -->
+                <!-- Keterangan -->
+                <div id="keterangan_wrapper" class="md:col-span-2">
+                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan
+                    </label>
+                    <textarea id="keterangan"
+                              name="keterangan"
+                              rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('keterangan') border-red-500 @enderror"
+                              placeholder="Masukkan keterangan atau catatan tambahan (opsional)">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Bank Selection -->
                 <div id="bank_id_wrapper" class="hidden">
                     <label for="bank_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Pilih Bank
+                        Nama Bank
                     </label>
                     <select id="bank_id" 
                             name="bank_id" 
@@ -253,21 +268,6 @@
                         @endforeach
                     </select>
                     @error('bank_id')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Keterangan -->
-                <div id="keterangan_wrapper" class="md:col-span-2">
-                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Keterangan
-                    </label>
-                    <textarea id="keterangan" 
-                              name="keterangan" 
-                              rows="4"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('keterangan') border-red-500 @enderror"
-                              placeholder="Masukkan keterangan atau catatan tambahan (opsional)">{{ old('keterangan') }}</textarea>
-                    @error('keterangan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

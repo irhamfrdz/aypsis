@@ -1270,6 +1270,7 @@
             if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(bankIdWrapper) bankIdWrapper.classList.remove('hidden');
             if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
 
             // Hide all other type-specific fields

@@ -3107,9 +3107,9 @@ class BiayaKapalController extends Controller
                         'jumlah_biaya' => $jumlah, // Explicitly keep jumlah_biaya if it exists or use it
                         'sub_total' => $subTotal,
                         'grand_total' => $grandTotal,
-                        'penerima' => $section['penerima'] ?? null,
-                        'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                        'bank_id' => $section['bank_id'] ?? null,
+                        'penerima' => $section['penerima'] ?? $validated['penerima'] ?? null,
+                        'nomor_rekening' => $section['nomor_rekening'] ?? $validated['nomor_rekening'] ?? null,
+                        'bank_id' => $section['bank_id'] ?? $validated['bank_id'] ?? null,
                         'tanggal_invoice_vendor' => ! empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                         'keterangan' => $section['keterangan'] ?? null,
                     ]);
@@ -3851,7 +3851,7 @@ class BiayaKapalController extends Controller
      */
     public function printPerijinan(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details', 'perijinanDetails.karantinaItems', 'perijinanDetails.bank']);
+        $biayaKapal->load(['klasifikasiBiaya', 'bank', 'perijinanDetails.details', 'perijinanDetails.karantinaItems', 'perijinanDetails.bank']);
 
         return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
     }
