@@ -83,7 +83,7 @@
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
                 <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-3" aria-labelledby="kendaraan-title">
                     <h3 id="kendaraan-title" class="text-lg font-semibold text-gray-900">Jarak Tempuh per Kendaraan</h3>
-                    <p class="mt-1 text-sm text-gray-500">Diurutkan dari jarak terjauh pada periode ini. Rit dihitung dari surat jalan sesuai periode Report Rit.</p>
+                    <p class="mt-1 text-sm text-gray-500">Diurutkan dari jarak terjauh pada periode ini. Klik nama kendaraan untuk melihat detail rit dari surat jalan sesuai periode Report Rit.</p>
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-100 text-sm">
                             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
@@ -99,14 +99,52 @@
                                 @foreach($vehicleStats as $row)
                                     <tr>
                                         <td class="px-3 py-3">
-                                            <div class="font-semibold text-gray-900">{{ $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id }}</div>
-                                            <div class="text-xs text-gray-500">{{ $row->mobil?->merek ?: '-' }} · {{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</div>
+                                            <button type="button" class="group flex w-full items-start justify-between gap-2 text-left focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500" data-rit-toggle aria-expanded="false" aria-controls="rit-details-{{ $row->mobil_id }}">
+                                                <span>
+                                                    <span class="block font-semibold text-gray-900 group-hover:text-indigo-700">{{ $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id }}</span>
+                                                    <span class="block text-xs text-gray-500">{{ $row->mobil?->merek ?: '-' }} · {{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</span>
+                                                </span>
+                                                <i class="fas fa-chevron-down mt-1 text-xs text-gray-400 transition-transform" aria-hidden="true"></i>
+                                            </button>
                                             <div class="mt-2 h-1.5 w-full rounded-full bg-gray-100"><div class="h-1.5 rounded-full bg-indigo-500" style="width: {{ $maxVehicleDistance > 0 ? round((float) $row->total_km / $maxVehicleDistance * 100, 1) : 0 }}%"></div></div>
                                         </td>
                                         <td class="px-3 py-3 text-center text-gray-600">{{ $row->days_with_data }}</td>
                                         <td class="px-3 py-3 text-center text-gray-600">{{ $row->moving_days }}</td>
                                         <td class="px-3 py-3 text-center font-semibold text-gray-900">{{ number_format($row->rit_count, 0, ',', '.') }}</td>
                                         <td class="px-3 py-3 text-right font-semibold text-indigo-700 whitespace-nowrap">{{ number_format((float) $row->total_km, 2, ',', '.') }} km</td>
+                                    </tr>
+                                    <tr id="rit-details-{{ $row->mobil_id }}" class="hidden bg-indigo-50/50">
+                                        <td colspan="5" class="px-3 py-4">
+                                            <p class="mb-3 text-xs font-semibold text-indigo-900">Detail Rit · {{ $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id }} · {{ number_format($row->rit_count, 0, ',', '.') }} rit</p>
+                                            @if($row->rit_details->isEmpty())
+                                                <p class="text-xs text-gray-600">Tidak ada surat jalan rit untuk kendaraan ini pada periode yang dipilih.</p>
+                                            @else
+                                                <div class="overflow-x-auto rounded-lg border border-indigo-100 bg-white">
+                                                    <table class="min-w-full divide-y divide-gray-100 text-xs">
+                                                        <thead class="bg-indigo-50 text-left text-gray-600">
+                                                            <tr>
+                                                                <th class="px-3 py-2">Tanggal</th>
+                                                                <th class="px-3 py-2">No. Surat Jalan</th>
+                                                                <th class="px-3 py-2">Jenis</th>
+                                                                <th class="px-3 py-2">Kegiatan</th>
+                                                                <th class="px-3 py-2">Supir</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-gray-100">
+                                                            @foreach($row->rit_details as $detail)
+                                                                <tr>
+                                                                    <td class="whitespace-nowrap px-3 py-2">{{ $detail['tanggal'] }}</td>
+                                                                    <td class="px-3 py-2 font-medium">{{ $detail['nomor'] ?: '-' }}</td>
+                                                                    <td class="px-3 py-2">{{ $detail['jenis'] }}</td>
+                                                                    <td class="px-3 py-2">{{ ucfirst($detail['kegiatan'] ?: '-') }}</td>
+                                                                    <td class="px-3 py-2">{{ $detail['supir'] ?: '-' }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -134,3 +172,17 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('[data-rit-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const details = document.getElementById(button.getAttribute('aria-controls'));
+        const isOpen = button.getAttribute('aria-expanded') === 'true';
+        details.classList.toggle('hidden', isOpen);
+        button.setAttribute('aria-expanded', String(!isOpen));
+        button.querySelector('i').classList.toggle('rotate-180', !isOpen);
+    });
+});
+</script>
+@endpush

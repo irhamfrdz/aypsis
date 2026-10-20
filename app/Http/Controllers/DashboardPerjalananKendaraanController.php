@@ -44,6 +44,7 @@ class DashboardPerjalananKendaraanController extends Controller
                 $start = Carbon::parse($tanggalDari)->startOfDay();
                 $end = Carbon::parse($tanggalSampai)->endOfDay();
                 $ritCounts = [];
+                $plateVariants = [];
 
                 foreach ([$ritService->regular($start, $end), $ritService->bongkaran($start, $end)] as $query) {
                     $counts = $query
@@ -57,6 +58,51 @@ class DashboardPerjalananKendaraanController extends Controller
                         $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($count->no_plat));
                         if ($plate !== '') {
                             $ritCounts[$plate] = ($ritCounts[$plate] ?? 0) + (int) $count->rit_count;
+                            $plateVariants[$plate][] = $count->no_plat;
+                        }
+                    }
+                }
+
+                $vehiclePlates = $vehicleStats
+                    ->map(fn ($row) => preg_replace('/[^A-Z0-9]/', '', strtoupper($row->mobil?->nomor_polisi ?? '')))
+                    ->filter()
+                    ->unique();
+                $matchingPlates = $vehiclePlates
+                    ->flatMap(fn ($plate) => $plateVariants[$plate] ?? [])
+                    ->unique()
+                    ->values()
+                    ->all();
+                $ritDetails = [];
+
+                if ($matchingPlates !== []) {
+                    foreach (['regular', 'bongkaran'] as $type) {
+                        $suratJalans = $ritService->{$type}($start, $end)
+                            ->whereIn('no_plat', $matchingPlates)
+                            ->select($type === 'regular'
+                                ? ['id', 'no_plat', 'tanggal_checkpoint', 'tanggal_tanda_terima', 'tanggal_surat_jalan', 'no_surat_jalan', 'kegiatan', 'status', 'supir', 'supir2']
+                                : ['id', 'no_plat', 'tanggal_checkpoint', 'nomor_surat_jalan', 'kegiatan', 'supir', 'supir2'])
+                            ->with('tandaTerima')
+                            ->get();
+
+                        foreach ($suratJalans as $suratJalan) {
+                            $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($suratJalan->no_plat));
+                            $dateCandidates = [
+                                $suratJalan->tanggal_checkpoint,
+                                $type === 'regular' ? $suratJalan->tandaTerima?->tanggal : $suratJalan->tandaTerima?->tanggal_tanda_terima,
+                                $type === 'regular' && $suratJalan->kegiatan === 'bongkaran' ? $suratJalan->tanggal_tanda_terima : null,
+                                $type === 'regular' && $suratJalan->status === 'approved' ? $suratJalan->tanggal_surat_jalan : null,
+                            ];
+                            $date = collect($dateCandidates)->first(fn ($candidate) => $candidate
+                                && Carbon::parse($candidate)->betweenIncluded($start, $end));
+
+                            $ritDetails[$plate][] = [
+                                'tanggal' => $date ? Carbon::parse($date)->format('d/m/Y') : '-',
+                                'tanggal_sort' => $date ? Carbon::parse($date)->toDateString() : '',
+                                'nomor' => $type === 'regular' ? $suratJalan->no_surat_jalan : $suratJalan->nomor_surat_jalan,
+                                'jenis' => $type === 'regular' ? 'Surat jalan' : 'Bongkaran',
+                                'kegiatan' => $suratJalan->kegiatan,
+                                'supir' => $suratJalan->supir ?: $suratJalan->supir2,
+                            ];
                         }
                     }
                 }
@@ -64,6 +110,9 @@ class DashboardPerjalananKendaraanController extends Controller
                 foreach ($vehicleStats as $row) {
                     $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($row->mobil?->nomor_polisi ?? ''));
                     $row->rit_count = $ritCounts[$plate] ?? 0;
+                    $row->rit_details = collect($ritDetails[$plate] ?? [])
+                        ->sortByDesc('tanggal_sort')
+                        ->values();
                 }
             }
 
