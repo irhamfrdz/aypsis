@@ -89,6 +89,22 @@ document.addEventListener('DOMContentLoaded', function () {
     let nextIndex = {{ count($accountRows) ? max(array_keys($accountRows)) + 1 : 0 }};
     const rupiah = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
 
+    function initAkunSearch(scope) {
+        if (!window.jQuery || !jQuery.fn.select2) return;
+
+        scope.querySelectorAll('.akun-select').forEach(function (select) {
+            if (jQuery(select).hasClass('select2-hidden-accessible')) return;
+
+            jQuery(select).select2({
+                width: '100%',
+                placeholder: '-- Pilih Akun --',
+                minimumResultsForSearch: 0
+            });
+        });
+    }
+
+    initAkunSearch(container);
+
     window.updateAkunTotal = function () {
         const total = [...container.querySelectorAll('.akun-nominal')]
             .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
@@ -102,11 +118,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('addAkunItem').addEventListener('click', function () {
         container.insertAdjacentHTML('beforeend', document.getElementById('akunItemTemplate').innerHTML.replaceAll('__INDEX__', nextIndex++));
+        initAkunSearch(container.lastElementChild);
         window.updateAkunTotal();
     });
     container.addEventListener('click', function (event) {
         if (event.target.closest('.remove-akun-item') && container.querySelectorAll('.akun-item').length > 1) {
-            event.target.closest('.akun-item').remove();
+            const row = event.target.closest('.akun-item');
+            const select = row.querySelector('.akun-select');
+            if (window.jQuery && jQuery.fn.select2 && jQuery(select).hasClass('select2-hidden-accessible')) {
+                jQuery(select).select2('destroy');
+            }
+            row.remove();
             window.updateAkunTotal();
         }
     });
