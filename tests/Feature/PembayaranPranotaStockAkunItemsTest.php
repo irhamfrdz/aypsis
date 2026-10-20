@@ -176,4 +176,42 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
         $this->assertDatabaseCount('coa_transactions', 0);
         $this->assertEquals('approved', DB::table('pranota_stocks')->where('id', 1)->value('status'));
     }
+
+    public function test_migration_recovers_a_table_left_by_a_failed_foreign_key_creation(): void
+    {
+        Schema::drop('pembayaran_pranota_stock_akun_items');
+        Schema::create('pembayaran_pranota_stock_akun_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('pembayaran_pranota_stock_id');
+            $table->unsignedBigInteger('akun_coa_id');
+            $table->decimal('nominal', 15, 2);
+            $table->string('keterangan')->nullable();
+            $table->timestamps();
+        });
+        DB::table('pembayaran_pranota_stocks')->insert([
+            'id' => 1,
+            'nomor_pembayaran' => 'SIS-EXISTING',
+            'tanggal_pembayaran' => '2026-10-20',
+            'bank' => 'BANK TEST',
+            'jenis_transaksi' => 'Kredit',
+            'total_pembayaran' => 100,
+            'total_tagihan_setelah_penyesuaian' => 100,
+            'status_pembayaran' => 'paid',
+        ]);
+        DB::table('pembayaran_pranota_stock_akun_items')->insert([
+            'pembayaran_pranota_stock_id' => 1,
+            'akun_coa_id' => 2,
+            'nominal' => 100,
+        ]);
+
+        $migration = require database_path('migrations/2026_10_20_160000_create_pembayaran_pranota_stock_akun_items_table.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertDatabaseCount('pembayaran_pranota_stock_akun_items', 1);
+        $columns = collect(Schema::getForeignKeys('pembayaran_pranota_stock_akun_items'))
+            ->flatMap(fn ($key) => $key['columns'])->all();
+        $this->assertContains('pembayaran_pranota_stock_id', $columns);
+        $this->assertContains('akun_coa_id', $columns);
+    }
 }
