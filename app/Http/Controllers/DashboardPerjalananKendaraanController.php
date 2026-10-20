@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\GpsDailyDistance;
+use App\Services\RitSuratJalanService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardPerjalananKendaraanController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, RitSuratJalanService $ritService)
     {
         $hasReport = $request->hasAny(['tanggal_dari', 'tanggal_sampai']);
         $tanggalDari = (string) $request->query('tanggal_dari', '');
@@ -37,6 +39,33 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->get()
                 ->sortByDesc(fn ($row) => (float) $row->total_km)
                 ->values();
+
+            if ($vehicleStats->isNotEmpty()) {
+                $start = Carbon::parse($tanggalDari)->startOfDay();
+                $end = Carbon::parse($tanggalSampai)->endOfDay();
+                $ritCounts = [];
+
+                foreach ([$ritService->regular($start, $end), $ritService->bongkaran($start, $end)] as $query) {
+                    $counts = $query
+                        ->whereNotNull('no_plat')
+                        ->where('no_plat', '!=', '')
+                        ->selectRaw('no_plat, COUNT(*) as rit_count')
+                        ->groupBy('no_plat')
+                        ->get();
+
+                    foreach ($counts as $count) {
+                        $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($count->no_plat));
+                        if ($plate !== '') {
+                            $ritCounts[$plate] = ($ritCounts[$plate] ?? 0) + (int) $count->rit_count;
+                        }
+                    }
+                }
+
+                foreach ($vehicleStats as $row) {
+                    $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($row->mobil?->nomor_polisi ?? ''));
+                    $row->rit_count = $ritCounts[$plate] ?? 0;
+                }
+            }
 
             $dailyTotals = GpsDailyDistance::query()
                 ->select('date')

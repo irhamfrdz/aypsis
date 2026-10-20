@@ -83,7 +83,7 @@
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
                 <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-3" aria-labelledby="kendaraan-title">
                     <h3 id="kendaraan-title" class="text-lg font-semibold text-gray-900">Jarak Tempuh per Kendaraan</h3>
-                    <p class="mt-1 text-sm text-gray-500">Diurutkan dari jarak terjauh pada periode ini.</p>
+                    <p class="mt-1 text-sm text-gray-500">Diurutkan dari jarak terjauh pada periode ini. Rit dihitung dari surat jalan sesuai periode Report Rit.</p>
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-100 text-sm">
                             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
@@ -91,6 +91,7 @@
                                     <th class="px-3 py-3">Kendaraan</th>
                                     <th class="px-3 py-3 text-center">Hari GPS</th>
                                     <th class="px-3 py-3 text-center">Hari Bergerak</th>
+                                    <th class="px-3 py-3 text-center">Rit</th>
                                     <th class="px-3 py-3 text-right">Jarak</th>
                                 </tr>
                             </thead>
@@ -104,6 +105,7 @@
                                         </td>
                                         <td class="px-3 py-3 text-center text-gray-600">{{ $row->days_with_data }}</td>
                                         <td class="px-3 py-3 text-center text-gray-600">{{ $row->moving_days }}</td>
+                                        <td class="px-3 py-3 text-center font-semibold text-gray-900">{{ number_format($row->rit_count, 0, ',', '.') }}</td>
                                         <td class="px-3 py-3 text-right font-semibold text-indigo-700 whitespace-nowrap">{{ number_format((float) $row->total_km, 2, ',', '.') }} km</td>
                                     </tr>
                                 @endforeach
