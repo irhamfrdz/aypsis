@@ -167,7 +167,15 @@
                                     {{ $trx->keterangan ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700">
-                                    {{ $trx->akun_pembayaran ?: '-' }}
+                                    @if(!empty($trx->rincian_akun_pembayaran))
+                                        <div class="space-y-1">
+                                            @foreach($trx->rincian_akun_pembayaran as $rincian)
+                                                <div>{{ $rincian['nama_akun'] }} — Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}</div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        {{ $trx->akun_pembayaran ?: '-' }}
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 text-sm text-right font-medium text-green-600">
                                     @if($trx->debit > 0)

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\PembayaranPranotaStockController;
+use App\Http\Controllers\Report\KasTruckController;
 use App\Models\PembayaranPranotaStock;
 use App\Services\CoaTransactionService;
 use Illuminate\Database\Eloquent\Model;
@@ -213,5 +214,27 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
             ->flatMap(fn ($key) => $key['columns'])->all();
         $this->assertContains('pembayaran_pranota_stock_id', $columns);
         $this->assertContains('akun_coa_id', $columns);
+    }
+
+    public function test_kas_truck_report_exposes_every_account_line_for_a_stock_payment(): void
+    {
+        $bankName = 'Bank BCA Trucking  - 168 2889 955';
+        DB::table('akun_coa')->where('id', 1)->update(['nama_akun' => $bankName]);
+        $input = $this->paymentInput();
+        $input['bank'] = $bankName;
+        $this->controller()->store(Request::create('/pembayaran-pranota-stock', 'POST', $input));
+
+        $view = (new KasTruckController)->view(Request::create('/report/kas-truck/view', 'GET'));
+        $transactions = $view->getData()['transactions'];
+        $this->assertCount(1, $transactions);
+        $transaction = $transactions->first();
+        $this->assertEquals(100, $transaction->kredit);
+        $this->assertSame([
+            ['nama_akun' => 'Biaya A', 'nominal' => 60],
+            ['nama_akun' => 'Biaya B', 'nominal' => 40],
+        ], array_map(fn ($line) => [
+            'nama_akun' => $line['nama_akun'],
+            'nominal' => (int) $line['nominal'],
+        ], $transaction->rincian_akun_pembayaran));
     }
 }

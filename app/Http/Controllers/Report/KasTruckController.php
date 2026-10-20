@@ -81,6 +81,7 @@ class KasTruckController extends Controller
             $nomorAccurateMap = [];
             $akunPembayaranMap = [];
             $akunPembayaranIds = [];
+            $rincianAkunStockMap = [];
 
             if (! empty($referensiList)) {
                 // Tabel yang menggunakan kolom 'nomor' sebagai primary key referensi
@@ -195,6 +196,23 @@ class KasTruckController extends Controller
             }
             // -------------------------------------------------------
 
+            if (! empty($referensiList) && Schema::hasTable('pembayaran_pranota_stock_akun_items')) {
+                $rincianAkunStock = DB::table('pembayaran_pranota_stock_akun_items as rincian')
+                    ->join('pembayaran_pranota_stocks as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_pranota_stock_id')
+                    ->join('akun_coa as akun', 'akun.id', '=', 'rincian.akun_coa_id')
+                    ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
+                    ->whereNull('pembayaran.deleted_at')
+                    ->orderBy('rincian.id')
+                    ->get(['pembayaran.nomor_pembayaran', 'akun.nama_akun', 'rincian.nominal']);
+
+                foreach ($rincianAkunStock as $rincian) {
+                    $rincianAkunStockMap[$rincian->nomor_pembayaran][] = [
+                        'nama_akun' => $rincian->nama_akun,
+                        'nominal' => $rincian->nominal,
+                    ];
+                }
+            }
+
             // -------------------------------------------------------
             // Attach nomor_accurate dan Sortir
             // -------------------------------------------------------
@@ -205,6 +223,9 @@ class KasTruckController extends Controller
                 $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
                 $akun = $akunPembayaranMap[$t->nomor_referensi] ?? null;
                 $t->akun_pembayaran = $namaAkunMap[$akun] ?? $akun;
+                $t->rincian_akun_pembayaran = $t->jenis_transaksi === 'Pembayaran Pranota Stock'
+                    ? ($rincianAkunStockMap[$t->nomor_referensi] ?? [])
+                    : [];
             }
 
             // Urutkan: TOP UP SALDO AWAL paling atas, sisanya by nomor_accurate
