@@ -128,6 +128,8 @@
                                                                 <th class="px-3 py-2">Jenis</th>
                                                                 <th class="px-3 py-2">Kegiatan</th>
                                                                 <th class="px-3 py-2">Supir</th>
+                                                                <th class="px-3 py-2">Pengirim</th>
+                                                                <th class="px-3 py-2">Tujuan Ambil</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody class="divide-y divide-gray-100">
@@ -138,6 +140,8 @@
                                                                     <td class="px-3 py-2">{{ $detail['jenis'] }}</td>
                                                                     <td class="px-3 py-2">{{ ucfirst($detail['kegiatan'] ?: '-') }}</td>
                                                                     <td class="px-3 py-2">{{ $detail['supir'] ?: '-' }}</td>
+                                                                    <td class="px-3 py-2">{{ $detail['pengirim'] ?: '-' }}</td>
+                                                                    <td class="px-3 py-2">{{ $detail['tujuan_ambil'] ?: '-' }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>

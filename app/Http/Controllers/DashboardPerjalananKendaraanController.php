@@ -79,9 +79,9 @@ class DashboardPerjalananKendaraanController extends Controller
                         $suratJalans = $ritService->{$type}($start, $end)
                             ->whereIn('no_plat', $matchingPlates)
                             ->select($type === 'regular'
-                                ? ['id', 'no_plat', 'tanggal_checkpoint', 'tanggal_tanda_terima', 'tanggal_surat_jalan', 'no_surat_jalan', 'kegiatan', 'status', 'supir', 'supir2']
-                                : ['id', 'no_plat', 'tanggal_checkpoint', 'nomor_surat_jalan', 'kegiatan', 'supir', 'supir2'])
-                            ->with('tandaTerima')
+                                ? ['id', 'no_plat', 'tanggal_checkpoint', 'tanggal_tanda_terima', 'tanggal_surat_jalan', 'no_surat_jalan', 'kegiatan', 'status', 'supir', 'supir2', 'pengirim', 'tujuan_pengambilan']
+                                : ['id', 'no_plat', 'tanggal_checkpoint', 'nomor_surat_jalan', 'kegiatan', 'supir', 'supir2', 'pengirim', 'tujuan_pengambilan'])
+                            ->with($type === 'regular' ? ['tandaTerima', 'pengirimRelation'] : ['tandaTerima'])
                             ->get();
 
                         foreach ($suratJalans as $suratJalan) {
@@ -102,6 +102,10 @@ class DashboardPerjalananKendaraanController extends Controller
                                 'jenis' => $type === 'regular' ? 'Surat jalan' : 'Bongkaran',
                                 'kegiatan' => $suratJalan->kegiatan,
                                 'supir' => $suratJalan->supir ?: $suratJalan->supir2,
+                                'pengirim' => $type === 'regular'
+                                    ? ($suratJalan->pengirimRelation?->nama_pengirim ?: $suratJalan->pengirim)
+                                    : $suratJalan->pengirim,
+                                'tujuan_ambil' => $suratJalan->tujuan_pengambilan,
                             ];
                         }
                     }
