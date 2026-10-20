@@ -51,7 +51,7 @@
             <a href="{{ route('dashboard-armada.index') }}" class="py-2 text-sm text-gray-500 hover:text-indigo-600">Reset</a>
         </div>
     </form>
-    <p class="text-sm text-gray-500">Periode {{ $tanggalMulai->format('d M Y') }}–{{ $tanggalRanking->format('d M Y') }} ({{ $periode }} hari kalender, termasuk tanggal awal dan akhir). Pilih rentang tanggal lalu klik Terapkan. Default 7 hari sampai kemarin.
+    <p class="text-sm text-gray-500">Rentang tanggal {{ $tanggalMulai->format('d M Y') }}–{{ $tanggalRanking->format('d M Y') }} (termasuk tanggal awal dan akhir). Pilih Dari Tanggal dan Sampai Tanggal lalu klik Terapkan.
         @if($tanggalRanking->isToday())<span class="text-amber-700">Periode ini mencakup hari ini; data masih dapat bertambah.</span>@endif
     </p>
 
