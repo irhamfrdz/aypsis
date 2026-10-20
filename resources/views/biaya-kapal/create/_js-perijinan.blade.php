@@ -110,16 +110,8 @@
                 <input type="hidden" name="perijinan_sections[${idx}][dari_tanggal]" class="perijinan-dari-tanggal">
                 <input type="hidden" name="perijinan_sections[${idx}][sampai_tanggal]" class="perijinan-sampai-tanggal">
 
-                <!-- Row 2: Vendor & Lokasi -->
-                <div class="space-y-1">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Vendor</label>
-                    <input type="text" 
-                           name="perijinan_sections[${idx}][vendor]" 
-                           class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" 
-                           placeholder="Nama Vendor...">
-                </div>
-
-                <div class="space-y-1">
+                <!-- Lokasi -->
+                <div class="space-y-1 md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Lokasi</label>
                     <div class="relative">
                         <select name="perijinan_sections[${idx}][lokasi]" 
@@ -146,16 +138,8 @@
                     </button>
                 </div>
 
-                <!-- Row 6: Nomor Referensi & Tanggal Invoice -->
-                <div class="space-y-1">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Referensi</label>
-                    <input type="text" 
-                           name="perijinan_sections[${idx}][nomor_referensi]" 
-                           class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" 
-                           placeholder="No. Ref / No. Invoice Vendor...">
-                </div>
-
-                <div class="space-y-1">
+                <!-- Tanggal Invoice Vendor -->
+                <div class="space-y-1 md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Invoice Vendor</label>
                     <input type="date" 
                            name="perijinan_sections[${idx}][tanggal_invoice_vendor]" 
@@ -214,8 +198,6 @@
             
             section.querySelector(`[name="perijinan_sections[${idx}][dari_tanggal]"]`).value = initialData.dari_tanggal || '';
             section.querySelector(`[name="perijinan_sections[${idx}][sampai_tanggal]"]`).value = initialData.sampai_tanggal || '';
-            section.querySelector(`[name="perijinan_sections[${idx}][nomor_referensi]"]`).value = initialData.nomor_referensi || '';
-            section.querySelector(`[name="perijinan_sections[${idx}][vendor]"]`).value = initialData.vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][lokasi]"]`).value = initialData.lokasi || '';
             section.querySelector(`[name="perijinan_sections[${idx}][tanggal_invoice_vendor]"]`).value = initialData.tanggal_invoice_vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][keterangan]"]`).value = initialData.keterangan || '';

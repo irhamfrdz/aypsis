@@ -39,7 +39,7 @@
                     <input type="text" 
                            id="nomor_referensi" 
                            name="nomor_referensi" 
-                           value="{{ old('nomor_referensi') }}"
+                           value="{{ old('nomor_referensi', $biayaKapal->nomor_referensi ?: $biayaKapal->perijinanDetails->pluck('nomor_referensi')->filter()->first()) }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_referensi') border-red-500 @enderror"
                            placeholder="Masukkan nomor referensi (opsional)">
                     @error('nomor_referensi')

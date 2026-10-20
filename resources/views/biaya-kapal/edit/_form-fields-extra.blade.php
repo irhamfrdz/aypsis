@@ -217,7 +217,7 @@
                     <input type="text" 
                            id="nama_vendor" 
                            name="nama_vendor" 
-                           value="{{ old('nama_vendor', $biayaKapal->nama_vendor) }}"
+                           value="{{ old('nama_vendor', $biayaKapal->nama_vendor ?: $biayaKapal->perijinanDetails->pluck('vendor')->filter()->first()) }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_vendor') border-red-500 @enderror"
                            placeholder="Masukkan nama vendor">
                     <p class="mt-1 text-xs text-gray-500">Nama perusahaan atau individu penerima pembayaran</p>

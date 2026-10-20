@@ -21,8 +21,6 @@ class BiayaKapalPerijinan extends Model
         'no_voyage',
         'dari_tanggal',
         'sampai_tanggal',
-        'nomor_referensi',
-        'vendor',
         'lokasi',
         'sub_total',
         'grand_total',

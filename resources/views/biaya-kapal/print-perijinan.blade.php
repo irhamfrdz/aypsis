@@ -2,7 +2,8 @@
 <html lang="id">
 @php
     // Calculate Vendor first to determine default paper size
-    $vendorDisplay = $biayaKapal->nama_vendor ?? ($biayaKapal->perijinanDetails->pluck('vendor')->filter()->unique()->values()->first() ?? '-');
+    $vendorDisplay = $biayaKapal->nama_vendor ?: ($biayaKapal->perijinanDetails->pluck('vendor')->filter()->first() ?: '-');
+    $referensiDisplay = $biayaKapal->nomor_referensi ?: ($biayaKapal->perijinanDetails->pluck('nomor_referensi')->filter()->first() ?: '-');
     
     $paperSize = request('paper_size', 'A4');
     $paperMap = [
@@ -231,8 +232,8 @@
                 <tr>
                     <td>No. Rekening</td>
                     <td>: {{ $rekeningDisplay }} ({{ $bankDisplay }})</td>
-                    <td></td>
-                    <td></td>
+                    <td>No. Referensi</td>
+                    <td>: {{ $referensiDisplay }}</td>
                 </tr>
             </table>
         </div>
@@ -242,8 +243,8 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Tanggal Ref.</th>
-                    <th style="width: 35%;">Nomor Referensi / Dokumen</th>
+                    <th style="width: 15%;">Tanggal Invoice Vendor</th>
+                    <th style="width: 35%;">Kapal / Dokumen</th>
                     <th style="width: 25%;">Voyage / Mode</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
@@ -264,7 +265,7 @@
                                     {{ $detail->karantina_nomor_dokumen ?: '-' }}
                                 @endforelse
                             @else
-                                {{ $detail->nomor_referensi ?: '-' }}
+                                {{ $detail->nama_kapal ?: '-' }}
                             @endif
                         </td>
                         <td class="text-center">{{ ($detail->mode ?? 'perijinan') === 'karantina' ? 'Karantina' : $detail->no_voyage }}</td>

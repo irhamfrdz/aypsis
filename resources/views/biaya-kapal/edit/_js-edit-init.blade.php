@@ -362,8 +362,6 @@
                     })->toArray(),
                     'nama_kapal' => $p->nama_kapal,
                     'no_voyage' => $p->no_voyage,
-                    'nomor_referensi' => $p->nomor_referensi,
-                    'vendor' => $p->vendor,
                     'lokasi' => $p->lokasi,
                     'jumlah_biaya' => $p->jumlah_biaya,
                     'sub_total' => $p->sub_total,

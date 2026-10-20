@@ -941,9 +941,9 @@
             
             // Hide standard fields
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
-            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
             if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
-            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
             if(penerimaInput) penerimaInput.removeAttribute('required');
             
             // Hide other type-specific fields

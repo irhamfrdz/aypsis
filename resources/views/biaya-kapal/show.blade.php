@@ -1078,13 +1078,22 @@
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-bold text-gray-800">Detail Biaya Perijinan</h3>
         </div>
+        <div class="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-4 text-sm text-gray-800">
+            <span class="font-semibold">Vendor:</span> {{ $biayaKapal->nama_vendor ?: ($biayaKapal->perijinanDetails->pluck('vendor')->filter()->first() ?: '-') }}
+            <span class="ml-6 font-semibold">Nomor Referensi:</span> {{ $biayaKapal->nomor_referensi ?: ($biayaKapal->perijinanDetails->pluck('nomor_referensi')->filter()->first() ?: '-') }}
+            @if($biayaKapal->penerima || $biayaKapal->nomor_rekening)
+                <div class="mt-2">
+                    <span class="font-semibold">Transfer:</span> {{ $biayaKapal->penerima ?: '-' }}
+                    @if($biayaKapal->nomor_rekening) ({{ $biayaKapal->nomor_rekening }} - {{ $biayaKapal->bank?->name ?: '-' }}) @endif
+                </div>
+            @endif
+        </div>
         <div class="bg-white border-2 border-indigo-100 rounded-xl overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-indigo-100">
                     <thead class="bg-indigo-50/50">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Kapal / Dokumen</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">No. Ref / Vendor</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Rincian Biaya</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Keterangan</th>
                             <th class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Total Section</th>
@@ -1111,15 +1120,6 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-semibold text-gray-800">{{ $detail->nomor_referensi ?: '-' }}</div>
-                                <div class="text-xs text-gray-500 italic">Vendor: {{ $detail->vendor ?: '-' }}</div>
-                                @if($detail->penerima || $detail->nomor_rekening)
-                                    <div class="text-xs text-indigo-600 font-medium mt-1">
-                                        Trsf: {{ $detail->penerima }} @if($detail->nomor_rekening) ({{ $detail->nomor_rekening }} - {{ $detail->bank?->name ?: '-' }}) @endif
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
                                 <div class="space-y-1">
                                     <div class="flex justify-between text-xs">
                                         <span class="text-gray-500 uppercase tracking-tighter">BIAYA:</span>
@@ -1138,7 +1138,7 @@
                     </tbody>
                     <tfoot class="bg-indigo-900">
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-right text-sm font-bold text-indigo-100 uppercase">Grand Total Perijinan</td>
+                            <td colspan="3" class="px-6 py-4 text-right text-sm font-bold text-indigo-100 uppercase">Grand Total Perijinan</td>
                             <td class="px-6 py-4 text-right text-base font-black text-white whitespace-nowrap">
                                 Rp {{ number_format($biayaKapal->perijinanDetails->sum('jumlah_biaya'), 0, ',', '.') }}
                             </td>
