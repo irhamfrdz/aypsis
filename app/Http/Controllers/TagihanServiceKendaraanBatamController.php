@@ -139,6 +139,8 @@ class TagihanServiceKendaraanBatamController extends Controller
             'tagihan_ids' => ['required', 'array', 'min:1'],
             'tagihan_ids.*' => ['required', 'integer', 'distinct', 'exists:tagihan_lain_lain_batams,id'],
             'tanggal_pranota' => ['required', 'date'],
+            'bank' => ['required', 'string', 'max:100'],
+            'nomor_rekening' => ['required', 'string', 'max:50'],
             'keterangan_pranota' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -168,6 +170,8 @@ class TagihanServiceKendaraanBatamController extends Controller
             $pranota = PranotaTagihanLainLainBatam::create([
                 'nomor_pranota' => 'TMP-'.Str::uuid(),
                 'tanggal_pranota' => $validated['tanggal_pranota'],
+                'bank' => $validated['bank'],
+                'nomor_rekening' => $validated['nomor_rekening'],
                 'keterangan' => $validated['keterangan_pranota'] ?? null,
                 'total_biaya' => $total,
                 'created_by' => Auth::id(),

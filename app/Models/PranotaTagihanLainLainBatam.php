@@ -9,6 +9,8 @@ class PranotaTagihanLainLainBatam extends Model
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
+        'bank',
+        'nomor_rekening',
         'keterangan',
         'total_biaya',
         'created_by',

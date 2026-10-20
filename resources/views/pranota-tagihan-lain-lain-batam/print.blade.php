@@ -63,6 +63,8 @@
             <tr><td class="label">Nomor Pranota</td><td class="separator">:</td><td>{{ $pranota->nomor_pranota }}</td></tr>
             <tr><td class="label">Tanggal Pranota</td><td class="separator">:</td><td>{{ $pranota->tanggal_pranota?->format('d/m/Y') ?? '-' }}</td></tr>
             <tr><td class="label">Jenis Tagihan</td><td class="separator">:</td><td>Tagihan kendaraan dan tagihan lain lain Batam</td></tr>
+            <tr><td class="label">Bank</td><td class="separator">:</td><td>{{ $pranota->bank ?: '-' }}</td></tr>
+            <tr><td class="label">No. Rekening</td><td class="separator">:</td><td>{{ $pranota->nomor_rekening ?: '-' }}</td></tr>
         </table>
 
         <table class="items">

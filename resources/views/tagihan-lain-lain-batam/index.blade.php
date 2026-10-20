@@ -125,6 +125,17 @@
                         </div>
                     </div>
 
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="bank" class="mb-1 block text-sm font-medium text-gray-700">Bank <span class="text-red-600">*</span></label>
+                            <input type="text" id="bank" name="bank" value="{{ old('bank') }}" maxlength="100" required class="w-full rounded-lg border-gray-300 text-sm" placeholder="Nama bank tujuan">
+                        </div>
+                        <div>
+                            <label for="nomor_rekening" class="mb-1 block text-sm font-medium text-gray-700">Nomor Rekening <span class="text-red-600">*</span></label>
+                            <input type="text" id="nomor_rekening" name="nomor_rekening" value="{{ old('nomor_rekening') }}" maxlength="50" required inputmode="numeric" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Nomor rekening tujuan">
+                        </div>
+                    </div>
+
                     <div>
                         <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-gray-700">Rincian Tagihan Terpilih (<span id="modal-selected-count">0</span>)</h3>
                         <div class="overflow-x-auto rounded-xl border">

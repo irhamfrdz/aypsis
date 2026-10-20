@@ -19,6 +19,8 @@
         <div><p class="text-xs font-semibold uppercase text-gray-500">Tanggal</p><p class="mt-1 font-medium">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</p></div>
         <div><p class="text-xs font-semibold uppercase text-gray-500">Jumlah Tagihan</p><p class="mt-1 font-medium">{{ $pranota->items->count() }}</p></div>
         <div><p class="text-xs font-semibold uppercase text-gray-500">Total Pranota</p><p class="mt-1 text-lg font-bold">Rp {{ number_format((float) $pranota->total_biaya, 0, ',', '.') }}</p></div>
+        <div><p class="text-xs font-semibold uppercase text-gray-500">Bank</p><p class="mt-1 font-medium">{{ $pranota->bank ?: '-' }}</p></div>
+        <div><p class="text-xs font-semibold uppercase text-gray-500">Nomor Rekening</p><p class="mt-1 font-medium">{{ $pranota->nomor_rekening ?: '-' }}</p></div>
         @if ($pranota->keterangan)
             <div class="sm:col-span-3"><p class="text-xs font-semibold uppercase text-gray-500">Keterangan</p><p class="mt-1 whitespace-pre-line">{{ $pranota->keterangan }}</p></div>
         @endif
