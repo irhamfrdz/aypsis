@@ -37,6 +37,11 @@
                 <strong>Gagal!</strong> {{ session('error') }}
             </div>
         @endif
+        @if($errors->any())
+            <div class="mb-3 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                {{ $errors->first() }}
+            </div>
+        @endif
 
         <form id="pembayaranForm" action="{{ route('pembayaran-pranota-stock.update', $item->id) }}" method="POST" class="space-y-4">
             @csrf
@@ -53,11 +58,11 @@
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Nomor Accurate</label>
-                            <input type="text" name="nomor_accurate" value="{{ $item->nomor_accurate }}" class="{{ $inputClasses }}" placeholder="Input Accurate No">
+                            <input type="text" name="nomor_accurate" value="{{ old('nomor_accurate', $item->nomor_accurate) }}" class="{{ $inputClasses }}" placeholder="Input Accurate No">
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Tanggal Kas <span class="text-red-500">*</span></label>
-                            <input type="date" name="tanggal_pembayaran" value="{{ $item->tanggal_pembayaran->format('Y-m-d') }}" class="{{ $inputClasses }}" required>
+                            <input type="date" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', $item->tanggal_pembayaran->format('Y-m-d')) }}" class="{{ $inputClasses }}" required>
                         </div>
                     </div>
                 </div>
@@ -68,8 +73,8 @@
                     <div class="space-y-3">
                         <div class="relative" id="bankDropdownContainer">
                             <label class="{{ $labelClasses }}">Pilih Bank/Kas <span class="text-red-500">*</span></label>
-                            <input type="text" id="bankSearch" value="{{ $item->bank }}" class="{{ $inputClasses }} bg-white" placeholder="Cari Bank/Kas..." autocomplete="off">
-                            <input type="hidden" name="bank" id="bankValue" value="{{ $item->bank }}" required>
+                            <input type="text" id="bankSearch" value="{{ old('bank', $item->bank) }}" class="{{ $inputClasses }} bg-white" placeholder="Cari Bank/Kas..." autocomplete="off">
+                            <input type="hidden" name="bank" id="bankValue" value="{{ old('bank', $item->bank) }}" required>
                             
                             <div id="bankList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg searchable-dropdown-items z-50">
                                 @foreach($akunCoa as $akun)
@@ -82,28 +87,15 @@
                         <div>
                             <label class="{{ $labelClasses }}">Jenis Transaksi <span class="text-red-500">*</span></label>
                             <select name="jenis_transaksi" class="{{ $inputClasses }}" required>
-                                <option value="Kredit" {{ $item->jenis_transaksi == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
-                                <option value="Debit" {{ $item->jenis_transaksi == 'Debit' ? 'selected' : '' }}>Debit (Bank bertambah, Biaya berkurang)</option>
+                                <option value="Kredit" @selected(old('jenis_transaksi', $item->jenis_transaksi) === 'Kredit')>Kredit (Biaya bertambah, Bank berkurang)</option>
+                                <option value="Debit" @selected(old('jenis_transaksi', $item->jenis_transaksi) === 'Debit')>Debit (Bank bertambah, Biaya berkurang)</option>
                             </select>
-                        </div>
-                        <div>
-                            <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
-                            <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
-                                <option value="">-- Pilih Akun dari COA --</option>
-                                @foreach($akunBiaya as $akun)
-                                    <option value="{{ $akun->id }}" {{ old('akun_coa_id', $item->akun_coa_id) == $akun->id ? 'selected' : '' }}>
-                                        {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                        </div>
-                        <div class="text-[10px] text-blue-600 bg-blue-50 p-2 rounded">
-                            <strong>Info:</strong> Jurnal otomatis menggunakan akun biaya yang dipilih.
                         </div>
                     </div>
                 </div>
             </div>
+
+            @include('pembayaran-pranota-stock._akun-items')
 
             <!-- Table Pranota Selection -->
             <div class="border rounded-lg overflow-hidden">
@@ -144,7 +136,7 @@
                                         }
                                     }
                                     $totalBill += $pranota->adjustment ?? 0;
-                                    $isChecked = in_array($pranota->id, $selectedPranotaIds);
+                                    $isChecked = in_array($pranota->id, old('pranota_stock_ids', $selectedPranotaIds));
                                 @endphp
                                 <tr class="pranota-row hover:bg-gray-50 cursor-pointer" onclick="toggleRow(this)">
                                     <td class="px-4 py-2" onclick="event.stopPropagation()">
@@ -177,7 +169,7 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-600">Penyesuaian Akhir:</span>
-                            <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian" class="{{ $inputClasses }} text-right w-48 bg-white" value="{{ $item->total_tagihan_penyesuaian }}">
+                            <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian" class="{{ $inputClasses }} text-right w-48 bg-white" value="{{ old('total_tagihan_penyesuaian', $item->total_tagihan_penyesuaian) }}">
                         </div>
                         <div class="flex justify-between items-center pt-2 border-t">
                             <span class="font-bold text-gray-800">TOTAL AKHIR:</span>
@@ -190,11 +182,11 @@
                     <div class="space-y-3">
                         <div>
                             <label class="{{ $labelClasses }}">Alasan Penyesuaian</label>
-                            <textarea name="alasan_penyesuaian" rows="1" class="{{ $inputClasses }} bg-white">{{ $item->alasan_penyesuaian }}</textarea>
+                            <textarea name="alasan_penyesuaian" rows="1" class="{{ $inputClasses }} bg-white">{{ old('alasan_penyesuaian', $item->alasan_penyesuaian) }}</textarea>
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Keterangan</label>
-                            <textarea name="keterangan" rows="1" class="{{ $inputClasses }} bg-white">{{ $item->keterangan }}</textarea>
+                            <textarea name="keterangan" rows="1" class="{{ $inputClasses }} bg-white">{{ old('keterangan', $item->keterangan) }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -210,14 +202,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.jQuery && jQuery.fn.select2) {
-                jQuery('#akun_coa_id').select2({
-                    width: '100%',
-                    placeholder: '-- Pilih Akun dari COA --',
-                    minimumResultsForSearch: 0
-                });
-            }
-
             // Searchable Dropdown Logic (Vanilla JS)
             const bankSearch = document.getElementById('bankSearch');
             const bankList = document.getElementById('bankList');
@@ -295,6 +279,7 @@
                 
                 const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
                 if(totalAkhirInput) totalAkhirInput.value = subtotal + penyesuaian;
+                if(window.updateAkunTotal) window.updateAkunTotal();
             }
 
             if(selectAll) {
@@ -326,6 +311,12 @@
                     e.preventDefault();
                     alert('Silakan pilih bank terlebih dahulu.');
                     bankSearch.focus();
+                    return;
+                }
+                const totalAkun = [...document.querySelectorAll('.akun-nominal')].reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+                if(Math.abs(totalAkun - (parseFloat(totalAkhirInput.value) || 0)) > 0.01) {
+                    e.preventDefault();
+                    alert('Jumlah nominal akun harus sama dengan total akhir pembayaran.');
                     return;
                 }
                 if(!confirm('Konfirmasi update pembayaran ini?')) {

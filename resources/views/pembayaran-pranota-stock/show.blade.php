@@ -30,10 +30,6 @@
                         <span class="text-sm font-semibold">{{ $item->bank }}</span>
                     </div>
                     <div class="flex justify-between border-b pb-2">
-                        <span class="text-sm text-gray-500 font-medium">Akun Biaya:</span>
-                        <span class="text-sm font-semibold">{{ $item->akunCoa ? ($item->akunCoa->nomor_akun ? $item->akunCoa->nomor_akun.' - ' : '').$item->akunCoa->nama_akun : '-' }}</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2">
                         <span class="text-sm text-gray-500 font-medium">Jenis Transaksi:</span>
                         <span class="text-sm font-semibold">{{ $item->jenis_transaksi }}</span>
                     </div>
@@ -66,6 +62,34 @@
                         <strong>Keterangan:</strong><br>
                         {{ $item->keterangan ?? 'Tidak ada keterangan tambahan.' }}
                     </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Rincian Akun Biaya</h4>
+                <div class="border rounded-lg overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100"><tr>
+                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Akun</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Catatan</th>
+                            <th class="px-4 py-2 text-right text-xs font-bold text-gray-600 uppercase">Nominal</th>
+                        </tr></thead>
+                        <tbody class="divide-y divide-gray-100 bg-white">
+                            @forelse($item->akunItems as $line)
+                            <tr>
+                                <td class="px-4 py-2 text-sm">{{ $line->akunCoa?->nomor_akun }} - {{ $line->akunCoa?->nama_akun }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-600">{{ $line->keterangan ?: '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($line->nominal, 0, ',', '.') }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td class="px-4 py-2 text-sm">{{ $item->akunCoa ? ($item->akunCoa->nomor_akun ? $item->akunCoa->nomor_akun.' - ' : '').$item->akunCoa->nama_akun : '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-600">Data pembayaran lama</td>
+                                <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($item->total_tagihan_setelah_penyesuaian, 0, ',', '.') }}</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranPranotaStockController extends Controller
 {
@@ -76,19 +77,25 @@ class PembayaranPranotaStockController extends Controller
     {
         $validated = $request->validate([
             'pranota_stock_ids' => ['required', 'array', 'min:1'],
-            'pranota_stock_ids.*' => ['exists:pranota_stocks,id'],
+            'pranota_stock_ids.*' => ['distinct', 'exists:pranota_stocks,id'],
             'nomor_pembayaran' => 'nullable|string',
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => ['required', 'array', 'min:1'],
+            'akun_items.*.akun_coa_id' => ['required', 'exists:akun_coa,id'],
+            'akun_items.*.nominal' => ['required', 'numeric', 'gt:0'],
+            'akun_items.*.keterangan' => ['nullable', 'string', 'max:255'],
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        $validated['akun_items'] = array_values($validated['akun_items']);
+        $this->validatePaymentAmounts($validated);
 
         DB::beginTransaction();
 
@@ -102,7 +109,8 @@ class PembayaranPranotaStockController extends Controller
             $modulSis->increment('nomor_terakhir');
 
             $paymentData = $validated;
-            unset($paymentData['pranota_stock_ids']);
+            unset($paymentData['pranota_stock_ids'], $paymentData['akun_items']);
+            $paymentData['akun_coa_id'] = $validated['akun_items'][0]['akun_coa_id'];
 
             $paymentData['nomor_pembayaran'] = $nomorPembayaran;
             $paymentData['status_pembayaran'] = 'paid';
@@ -110,6 +118,7 @@ class PembayaranPranotaStockController extends Controller
             $paymentData['updated_by'] = Auth::id();
 
             $pembayaran = PembayaranPranotaStock::create($paymentData);
+            $pembayaran->akunItems()->createMany($validated['akun_items']);
 
             foreach ($validated['pranota_stock_ids'] as $pranotaId) {
                 $pranota = PranotaStock::findOrFail($pranotaId);
@@ -135,37 +144,7 @@ class PembayaranPranotaStockController extends Controller
                 ]);
             }
 
-            // Accounting Entry (Double Book)
-            $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
-            $bankName = $validated['bank'];
-            $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = 'Pembayaran Pranota Stock - '.$nomorPembayaran;
-            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
-            $costEntry = ['nama_akun' => $costAccount->nama_akun, 'coa_id' => $costAccount->id, 'jumlah' => $totalFinal];
-
-            if ($jenisTransaksi == 'Debit') {
-                $recorded = $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $costEntry,
-                    $validated['tanggal_pembayaran'],
-                    $nomorPembayaran,
-                    'Pembayaran Pranota Stock',
-                    $desc
-                );
-            } else {
-                $recorded = $this->coaTransactionService->recordDoubleEntry(
-                    $costEntry,
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $nomorPembayaran,
-                    'Pembayaran Pranota Stock',
-                    $desc
-                );
-            }
-
-            if (! $recorded) {
-                throw new \RuntimeException('Jurnal pembayaran tidak dapat dicatat. Periksa akun bank dan akun biaya yang dipilih.');
-            }
+            $this->recordAccounting($pembayaran, $validated);
 
             DB::commit();
 
@@ -182,7 +161,7 @@ class PembayaranPranotaStockController extends Controller
 
     public function edit($id)
     {
-        $item = PembayaranPranotaStock::with('pranotaStocks')->findOrFail($id);
+        $item = PembayaranPranotaStock::with(['pranotaStocks', 'akunItems'])->findOrFail($id);
 
         // Items currently in this payment
         $selectedPranotaIds = $item->pranotaStocks->pluck('id')->toArray();
@@ -216,19 +195,25 @@ class PembayaranPranotaStockController extends Controller
 
         $validated = $request->validate([
             'pranota_stock_ids' => ['required', 'array', 'min:1'],
-            'pranota_stock_ids.*' => ['exists:pranota_stocks,id'],
+            'pranota_stock_ids.*' => ['distinct', 'exists:pranota_stocks,id'],
             'nomor_pembayaran' => 'required|string',
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => ['required', 'array', 'min:1'],
+            'akun_items.*.akun_coa_id' => ['required', 'exists:akun_coa,id'],
+            'akun_items.*.nominal' => ['required', 'numeric', 'gt:0'],
+            'akun_items.*.keterangan' => ['nullable', 'string', 'max:255'],
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        $validated['akun_items'] = array_values($validated['akun_items']);
+        $this->validatePaymentAmounts($validated);
 
         DB::beginTransaction();
 
@@ -245,10 +230,13 @@ class PembayaranPranotaStockController extends Controller
 
             // Update main record
             $paymentData = $validated;
-            unset($paymentData['pranota_stock_ids']);
+            unset($paymentData['pranota_stock_ids'], $paymentData['akun_items']);
+            $paymentData['akun_coa_id'] = $validated['akun_items'][0]['akun_coa_id'];
             $paymentData['updated_by'] = Auth::id();
 
             $pembayaran->update($paymentData);
+            $pembayaran->akunItems()->delete();
+            $pembayaran->akunItems()->createMany($validated['akun_items']);
 
             // Sync pranotas
             $syncData = [];
@@ -274,37 +262,7 @@ class PembayaranPranotaStockController extends Controller
 
             $pembayaran->pranotaStocks()->sync($syncData);
 
-            // Accounting Entry (Double Book)
-            $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
-            $bankName = $validated['bank'];
-            $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = 'Update Pembayaran Pranota Stock - '.$pembayaran->nomor_pembayaran;
-            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
-            $costEntry = ['nama_akun' => $costAccount->nama_akun, 'coa_id' => $costAccount->id, 'jumlah' => $totalFinal];
-
-            if ($jenisTransaksi == 'Debit') {
-                $recorded = $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $costEntry,
-                    $validated['tanggal_pembayaran'],
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Stock',
-                    $desc
-                );
-            } else {
-                $recorded = $this->coaTransactionService->recordDoubleEntry(
-                    $costEntry,
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Stock',
-                    $desc
-                );
-            }
-
-            if (! $recorded) {
-                throw new \RuntimeException('Jurnal pembayaran tidak dapat dicatat. Periksa akun bank dan akun biaya yang dipilih.');
-            }
+            $this->recordAccounting($pembayaran, $validated);
 
             DB::commit();
 
@@ -321,7 +279,7 @@ class PembayaranPranotaStockController extends Controller
 
     public function show($id)
     {
-        $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy', 'akunCoa'])->findOrFail($id);
+        $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy', 'akunCoa', 'akunItems.akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-stock.show', compact('item'));
     }
@@ -350,6 +308,59 @@ class PembayaranPranotaStockController extends Controller
             DB::rollBack();
 
             return back()->with('error', 'Gagal menghapus: '.$e->getMessage());
+        }
+    }
+
+    private function validatePaymentAmounts(array $validated): void
+    {
+        $pranotas = PranotaStock::whereIn('id', $validated['pranota_stock_ids'])->get();
+        $subtotal = $pranotas->sum(function ($pranota) {
+            $items = collect($pranota->hydrated_items ?? []);
+
+            return $items->sum(fn ($item) => (float) ($item['harga'] ?? 0) * (float) ($item['jumlah'] ?? 0)
+                + (float) ($item['adjustment'] ?? 0)) + (float) ($pranota->adjustment ?? 0);
+        });
+        $final = $subtotal + (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+        $akunTotal = collect($validated['akun_items'])->sum('nominal');
+
+        if (abs($subtotal - (float) $validated['total_pembayaran']) > 0.01
+            || abs($final - (float) $validated['total_tagihan_setelah_penyesuaian']) > 0.01) {
+            throw ValidationException::withMessages(['total_pembayaran' => 'Total pembayaran tidak sesuai dengan pranota yang dipilih.']);
+        }
+        if (abs($akunTotal - $final) > 0.01) {
+            throw ValidationException::withMessages(['akun_items' => 'Jumlah nominal seluruh akun harus sama dengan total akhir pembayaran.']);
+        }
+    }
+
+    private function recordAccounting(PembayaranPranotaStock $pembayaran, array $validated): void
+    {
+        $debitBank = $validated['jenis_transaksi'] === 'Debit';
+        $date = $validated['tanggal_pembayaran'];
+        $reference = $pembayaran->nomor_pembayaran;
+        $type = 'Pembayaran Pranota Stock';
+        $description = 'Pembayaran Pranota Stock - '.$reference;
+        $total = (float) $validated['total_tagihan_setelah_penyesuaian'];
+
+        $bankEntry = $this->coaTransactionService->recordTransaction(
+            $validated['bank'], $debitBank ? $total : 0, $debitBank ? 0 : $total,
+            $date, $reference, $type, $description
+        );
+        if (! $bankEntry) {
+            throw new \RuntimeException('Akun bank/kas tidak ditemukan.');
+        }
+
+        foreach ($validated['akun_items'] as $line) {
+            $account = Coa::findOrFail($line['akun_coa_id']);
+            $amount = (float) $line['nominal'];
+            $note = trim((string) ($line['keterangan'] ?? ''));
+            $entry = $this->coaTransactionService->recordTransaction(
+                $account->nama_akun, $debitBank ? 0 : $amount, $debitBank ? $amount : 0,
+                $date, $reference, $type, $note === '' ? $description : $description.' - '.$note,
+                $account->id
+            );
+            if (! $entry) {
+                throw new \RuntimeException('Jurnal akun biaya tidak dapat dicatat.');
+            }
         }
     }
 

@@ -90,6 +90,11 @@ class PembayaranPranotaStock extends Model
         return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaStockAkunItem::class, 'pembayaran_pranota_stock_id');
+    }
+
     /**
      * Get formatted amount
      */
