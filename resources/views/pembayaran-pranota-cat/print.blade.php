@@ -256,6 +256,10 @@
                     <td style="padding: 3px; font-weight: bold;">Nomor Accurate:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;" colspan="3">{{ $pembayaran->nomor_accurate ?? '-' }}</td>
                 </tr>
+                <tr>
+                    <td style="padding: 3px; font-weight: bold;">Akun Biaya:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;" colspan="3">{{ $pembayaran->akunCoa ? $pembayaran->akunCoa->nomor_akun.' - '.$pembayaran->akunCoa->nama_akun : '-' }}</td>
+                </tr>
             </table>
         </div>
  

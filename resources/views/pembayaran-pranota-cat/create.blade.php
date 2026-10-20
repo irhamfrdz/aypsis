@@ -115,9 +115,19 @@
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
                                 <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis --</option>
-                                    <option value="debit">Debit</option>
-                                    <option value="credit">Credit</option>
+                                    <option value="debit" @selected(old('jenis_transaksi') === 'debit')>Debit</option>
+                                    <option value="credit" @selected(old('jenis_transaksi') === 'credit')>Credit</option>
                                 </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-600">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Akun COA --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" @selected(old('akun_coa_id') == $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
                         </div>
                     </div>

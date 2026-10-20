@@ -18,6 +18,7 @@ class PembayaranPranotaCat extends Model
         'nomor_cetakan',
         'nomor_accurate',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'tanggal_kas',
         'total_pembayaran',
@@ -34,6 +35,11 @@ class PembayaranPranotaCat extends Model
         'penyesuaian' => 'decimal:2',
         'total_setelah_penyesuaian' => 'decimal:2',
     ];
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
+    }
 
     /**
      * Relationship to pranota items through pivot table

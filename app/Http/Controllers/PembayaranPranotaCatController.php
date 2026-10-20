@@ -49,7 +49,7 @@ class PembayaranPranotaCatController extends Controller
 
     public function show($id)
     {
-        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers', 'akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-cat.show', compact('pembayaran'));
     }
@@ -108,7 +108,9 @@ class PembayaranPranotaCatController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-cat.create', compact('pranotaList', 'pranotaTagihanCatList', 'akunCoa'));
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+
+        return view('pembayaran-pranota-cat.create', compact('pranotaList', 'pranotaTagihanCatList', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -177,7 +179,9 @@ class PembayaranPranotaCatController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-cat.payment-form', compact('pranotaList', 'pranotaTagihanCatList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+
+        return view('pembayaran-pranota-cat.payment-form', compact('pranotaList', 'pranotaTagihanCatList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -200,6 +204,7 @@ class PembayaranPranotaCatController extends Controller
                 'nomor_pembayaran' => 'required|string',
                 'nomor_accurate' => 'nullable|string|max:255',
                 'bank' => 'required|string|max:255',
+                'akun_coa_id' => 'required|exists:akun_coa,id',
                 'jenis_transaksi' => 'required|in:debit,credit',
                 'tanggal_kas' => 'required|date',
                 'pranota_ids' => 'nullable|array',
@@ -263,6 +268,7 @@ class PembayaranPranotaCatController extends Controller
                 'nomor_cetakan' => 1,
                 'nomor_accurate' => $request->nomor_accurate,
                 'bank' => $request->bank,
+                'akun_coa_id' => $request->akun_coa_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'tanggal_kas' => $request->tanggal_kas,
                 'total_pembayaran' => $totalPembayaran,
@@ -306,14 +312,17 @@ class PembayaranPranotaCatController extends Controller
                 $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
-            $this->coaTransactionService->recordDoubleEntry(
-                ['nama_akun' => 'Biaya CAT Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
+            $akunBiaya = Coa::findOrFail($request->akun_coa_id);
+            if (! $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $totalSetelahPenyesuaian],
                 ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
                 $tanggalTransaksi,
                 $request->nomor_pembayaran,
                 'Pembayaran Pranota CAT Kontainer',
                 $keterangan
-            );
+            )) {
+                throw new \RuntimeException('Jurnal COA pembayaran gagal dicatat.');
+            }
 
             DB::commit();
 
@@ -341,7 +350,7 @@ class PembayaranPranotaCatController extends Controller
             return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengedit pembayaran ini.');
         }
 
-        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers', 'akunCoa'])->findOrFail($id);
 
         $akunCoa = Coa::where(function ($query) {
             $query->where('tipe_akun', 'Kas/Bank')
@@ -352,7 +361,9 @@ class PembayaranPranotaCatController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-cat.edit', compact('pembayaran', 'akunCoa'));
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+
+        return view('pembayaran-pranota-cat.edit', compact('pembayaran', 'akunCoa', 'akunBiaya'));
     }
 
     public function update(Request $request, $id)
@@ -369,6 +380,7 @@ class PembayaranPranotaCatController extends Controller
             $request->validate([
                 'nomor_accurate' => 'nullable|string|max:255',
                 'bank' => 'required|string|max:255',
+                'akun_coa_id' => 'required|exists:akun_coa,id',
                 'tanggal_kas' => 'required|date',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'penyesuaian' => 'nullable|numeric',
@@ -393,19 +405,23 @@ class PembayaranPranotaCatController extends Controller
                 $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
-            $this->coaTransactionService->recordDoubleEntry(
-                ['nama_akun' => 'Biaya CAT Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
+            $akunBiaya = Coa::findOrFail($request->akun_coa_id);
+            if (! $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $totalSetelahPenyesuaian],
                 ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
                 $tanggalTransaksi,
                 $pembayaran->nomor_pembayaran,
                 'Pembayaran Pranota CAT Kontainer',
                 $keterangan
-            );
+            )) {
+                throw new \RuntimeException('Jurnal COA pembayaran gagal dicatat.');
+            }
 
             // Update Pembayaran Record
             $pembayaran->update([
                 'nomor_accurate' => $request->nomor_accurate,
                 'bank' => $request->bank,
+                'akun_coa_id' => $akunBiaya->id,
                 'tanggal_kas' => $request->tanggal_kas,
                 'penyesuaian' => $penyesuaian,
                 'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
@@ -430,7 +446,7 @@ class PembayaranPranotaCatController extends Controller
 
     public function print($id)
     {
-        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers', 'akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-cat.print', compact('pembayaran'));
     }

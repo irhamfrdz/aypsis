@@ -42,6 +42,10 @@
                             <dd class="text-sm text-gray-900">{{ $pembayaran->bank }}</dd>
                         </div>
                         <div>
+                            <dt class="text-sm font-medium text-gray-500">Akun Biaya</dt>
+                            <dd class="text-sm text-gray-900">{{ $pembayaran->akunCoa ? $pembayaran->akunCoa->nomor_akun.' - '.$pembayaran->akunCoa->nama_akun : '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-sm font-medium text-gray-500">Jenis Transaksi</dt>
                             <dd class="text-sm text-gray-900">{{ ucfirst($pembayaran->jenis_transaksi) }}</dd>
                         </div>
