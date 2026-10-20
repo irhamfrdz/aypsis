@@ -283,6 +283,16 @@
                 $totalAdmin += $detail->biaya_admin;
                 $totalGrandTotal += $detail->grand_total;
             }
+
+            $temasStages = \App\Models\BiayaKapalTemasStage::with('dpStages.biayaKapal')
+                ->where('biaya_kapal_id', $biayaKapal->id)->get();
+            $dpDiperhitungkan = $temasStages->sum('dp_diperhitungkan');
+            $totalTagihanSebelumDp = $temasStages->isNotEmpty()
+                ? $temasStages->sum(fn ($stage) => $stage->payment_mode === 'dp'
+                    ? (float) $stage->nominal_dibayar
+                    : (float) $stage->nilai_tagihan)
+                : $totalGrandTotal;
+            $totalSetelahDp = $totalTagihanSebelumDp - $dpDiperhitungkan;
         @endphp
 
         <div class="info-section">
@@ -318,7 +328,7 @@
                     <th style="width: 20%;">Referensi</th>
                     <th style="width: 15%;">Nomor Voyage</th>
                     <th style="width: 25%;">Nomor BL</th>
-                    <th style="width: 20%;">Total</th>
+                    <th style="width: 20%;">DPP</th>
                 </tr>
             </thead>
             <tbody>
@@ -339,7 +349,7 @@
                     }
                     
                     $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
-                    $sectionGrandTotal = $details->sum('grand_total');
+                    $sectionDpp = $details->sum('sub_total');
                     $firstDetail = $details->first();
                     $blInduk = $normalizeNomorBl($firstDetail->nomor_bl) ?: '-';
                     $manifestInfo = $temasManifestGroups->get(($firstDetail->voyage ?? '').'|'.$blInduk);
@@ -368,24 +378,34 @@
                             </div>
                         @endif
                     </td>
-                    <td class="text-right">Rp {{ number_format($sectionGrandTotal, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($sectionDpp, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
                     <td colspan="6" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
+                <tr>
+                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
+                </tr>
+                @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
+                <tr>
+                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                </tr>
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">TOTAL PEMBAYARAN</td>
-                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
 
-        @php
-            $temasStages = \App\Models\BiayaKapalTemasStage::with('dpStages.biayaKapal')->where('biaya_kapal_id', $biayaKapal->id)->get();
-            $dpDiperhitungkan = $temasStages->sum('dp_diperhitungkan');
-        @endphp
         @if($temasStages->isNotEmpty())
             <div class="keterangan-box">
                 @foreach($temasStages as $stage)
@@ -531,15 +551,23 @@
                 </tr>
                 @endif
                 
-                @if($dpDiperhitungkan > 0)
                 <tr>
-                    <td colspan="5" class="text-right">DIKURANGI DP YANG SUDAH DIBAYAR</td>
-                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
+                </tr>
+                @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
+                <tr>
+                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
                 </tr>
                 @endif
+                <tr>
+                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                </tr>
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">TOTAL</td>
-                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>

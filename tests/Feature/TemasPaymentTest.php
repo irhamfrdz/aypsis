@@ -507,7 +507,8 @@ class TemasPaymentTest extends TestCase
         $html = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
 
         $this->assertStringContainsString('Detail Biaya per Nomor BL', $html);
-        $this->assertStringContainsString('01-1, 01-2', $html);
+        $this->assertStringContainsString('<span>01-1</span>', $html);
+        $this->assertStringContainsString('<span>01-2</span>', $html);
         $this->assertStringContainsString('TEMU001', $html);
         $this->assertStringContainsString('TEMU002', $html);
         $this->assertStringContainsString('HANDLING BL', $html);
@@ -517,6 +518,31 @@ class TemasPaymentTest extends TestCase
         $activePphHtml = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
         $this->assertStringContainsString('PPH (2%)', $activePphHtml);
         $this->assertStringContainsString('Rp 20.000', $activePphHtml);
+    }
+
+    public function test_temas_print_shows_dpp_dp_and_zero_remaining_when_dp_covers_invoice(): void
+    {
+        $billing = app(\App\Services\TemasBillingService::class);
+        $dpInvoice = BiayaKapal::create(['tanggal' => '2026-10-07']);
+        $billing->replace($dpInvoice, [[
+            'kapal' => 'TEMAS 1', 'voyage' => 'V001', 'payment_mode' => 'dp',
+            'tanggal_dp' => '2026-10-07', 'nama_bank' => 'BANK TEST', 'nominal_dibayar' => 1000000,
+        ]]);
+
+        $invoice = BiayaKapal::create(['nomor_invoice' => 'BKP-TEST-DP', 'tanggal' => '2026-10-20']);
+        $billing->replace($invoice, [$this->finalCosts() + [
+            'payment_mode' => 'pelunasan_dp',
+            'dp_stage_id' => \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $dpInvoice->id)->value('id'),
+        ]]);
+
+        $html = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
+
+        $this->assertSame('0.00', $invoice->fresh()->nominal);
+        $this->assertStringContainsString('DPP (SEBELUM DP)', $html);
+        $this->assertStringContainsString('DP DIPERHITUNGKAN', $html);
+        $this->assertStringContainsString('SISA SETELAH DP', $html);
+        $this->assertStringContainsString('- Rp 1.000.000', $html);
+        $this->assertMatchesRegularExpression('/DPP \(SEBELUM DP\).*?Rp 1\.000\.000.*?DP DIPERHITUNGKAN.*?- Rp 1\.000\.000.*?SISA SETELAH DP.*?Rp 0/s', $html);
     }
 
     public function test_settlement_below_dp_preserves_unused_balance(): void
