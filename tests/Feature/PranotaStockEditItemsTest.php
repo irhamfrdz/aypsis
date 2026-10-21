@@ -77,7 +77,7 @@ class PranotaStockEditItemsTest extends TestCase
 
     public function test_search_and_update_remove_and_add_items(): void
     {
-        $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'search' => 'Barang']))
+        $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'search' => 'Barang Baru']))
             ->assertOk()
             ->assertJsonCount(1, 'items')
             ->assertJsonPath('items.0.id', 2)
@@ -96,9 +96,9 @@ class PranotaStockEditItemsTest extends TestCase
         $this->assertSame('Sudah', DB::table('stock_amprahans')->where('id', 2)->value('status_pranota'));
     }
 
-    public function test_unavailable_item_rejects_update_without_changing_existing_items(): void
+    public function test_item_from_another_location_rejects_update_without_changing_existing_items(): void
     {
-        $this->putJson(route('pranota-stock.update', 1), $this->payload([['id' => 1], ['id' => 3]]))
+        $this->putJson(route('pranota-stock.update', 1), $this->payload([['id' => 1], ['id' => 4]]))
             ->assertStatus(500)
             ->assertJsonPath('success', false);
 
@@ -106,6 +106,33 @@ class PranotaStockEditItemsTest extends TestCase
         $this->assertCount(1, $items);
         $this->assertSame(1, $items[0]['id']);
         $this->assertSame('Sudah', DB::table('stock_amprahans')->where('id', 1)->value('status_pranota'));
+    }
+
+    public function test_item_already_in_another_pranota_can_be_added_and_status_tracks_both_references(): void
+    {
+        DB::table('pranota_stocks')->insert([
+            'id' => 2,
+            'nomor_pranota' => 'PTP-002',
+            'tanggal_pranota' => '2026-10-21',
+            'lokasi' => 'Jakarta',
+            'items' => json_encode([['id' => '3', 'nama_barang' => 'Barang Terpakai', 'harga' => 30, 'jumlah' => 1]]),
+        ]);
+
+        $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'search' => 'Barang Terpakai']))
+            ->assertOk()
+            ->assertJsonPath('items.0.id', 3)
+            ->assertJsonPath('items.0.status_pranota', 'Sudah');
+
+        $this->putJson(route('pranota-stock.update', 1), $this->payload([['id' => 1], ['id' => 3]]))
+            ->assertOk()
+            ->assertJsonPath('success', true);
+        $this->assertSame('Sudah', DB::table('stock_amprahans')->where('id', 3)->value('status_pranota'));
+
+        $this->delete(route('pranota-stock.destroy', 2))->assertRedirect();
+        $this->assertSame('Sudah', DB::table('stock_amprahans')->where('id', 3)->value('status_pranota'));
+
+        $this->putJson(route('pranota-stock.update', 1), $this->payload([['id' => 1]]))->assertOk();
+        $this->assertSame('Belum', DB::table('stock_amprahans')->where('id', 3)->value('status_pranota'));
     }
 
     public function test_available_items_can_be_loaded_beyond_first_page(): void
@@ -128,12 +155,12 @@ class PranotaStockEditItemsTest extends TestCase
         $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'page' => 1]))
             ->assertOk()
             ->assertJsonCount(50, 'items')
-            ->assertJsonPath('total', 56)
+            ->assertJsonPath('total', 58)
             ->assertJsonPath('last_page', 2);
         $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'page' => 2]))
             ->assertOk()
-            ->assertJsonCount(6, 'items')
-            ->assertJsonPath('items.5.id', 2);
+            ->assertJsonCount(8, 'items')
+            ->assertJsonPath('items.7.id', 1);
     }
 
     private function payload(array $items): array

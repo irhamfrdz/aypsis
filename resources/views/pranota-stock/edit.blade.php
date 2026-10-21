@@ -106,7 +106,7 @@
                     <input type="search" id="cariBarang" class="flex-1 border-gray-300 rounded-md text-sm" placeholder="Cari nama barang, nomor bukti, atau ID">
                     <button type="button" id="tutupPilihBarang" class="px-3 py-2 text-xs text-gray-600 hover:text-gray-900">Tutup</button>
                 </div>
-                <p class="text-xs text-gray-600 mb-2">Menampilkan barang di lokasi pranota ini yang belum masuk pranota lain.</p>
+                <p class="text-xs text-gray-600 mb-2">Menampilkan semua barang di lokasi pranota ini, termasuk yang sudah masuk pranota lain.</p>
                 <div id="hasilCariBarang" class="max-h-64 overflow-y-auto space-y-2 text-sm text-gray-600">Cari barang yang belum masuk pranota.</div>
                 <div class="flex items-center justify-between mt-3">
                     <span id="jumlahHasilBarang" class="text-xs text-gray-600"></span>
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 name.textContent = item.nama_barang;
                 const detail = document.createElement('div');
                 detail.className = 'text-xs text-gray-500';
-                detail.textContent = `ID: ${item.id} · Bukti: ${item.kode || '-'} · Qty: ${Number(item.jumlah).toLocaleString('id-ID')}`;
+                detail.textContent = `ID: ${item.id} · Bukti: ${item.kode || '-'} · Qty: ${Number(item.jumlah).toLocaleString('id-ID')} · ${item.status_pranota === 'Sudah' ? 'Sudah masuk pranota' : 'Belum masuk pranota'}`;
                 info.append(name, detail);
                 const addButton = document.createElement('button');
                 addButton.type = 'button';

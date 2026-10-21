@@ -2068,17 +2068,12 @@ class StockAmprahanController extends Controller
     {
         try {
             $pranota = \App\Models\PranotaStock::findOrFail($id);
+            $itemIds = collect($pranota->items ?? [])->pluck('id')->filter()->all();
 
-            // Revert status_pranota pada item
-            if (is_array($pranota->items)) {
-                foreach ($pranota->items as $item) {
-                    if (isset($item['id'])) {
-                        \App\Models\StockAmprahan::where('id', $item['id'])->update(['status_pranota' => 'Belum']);
-                    }
-                }
-            }
-
-            $pranota->delete();
+            DB::transaction(function () use ($pranota, $itemIds) {
+                $pranota->delete();
+                $this->syncPranotaStatusForStockItems($itemIds);
+            });
 
             return redirect()->route('pranota-stock.index')->with('success', 'Pranota berhasil dihapus');
         } catch (\Exception $e) {
@@ -2138,9 +2133,6 @@ class StockAmprahanController extends Controller
             ->with('masterNamaBarangAmprahan')
             ->withSum('usages', 'jumlah')
             ->where('lokasi', $lokasiStock)
-            ->where(function ($query) {
-                $query->whereNull('status_pranota')->orWhere('status_pranota', '!=', 'Sudah');
-            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('nama_barang', 'like', '%'.$search.'%')
@@ -2165,6 +2157,7 @@ class StockAmprahanController extends Controller
                 'adjustment' => $item->adjustment,
                 'jumlah' => (float) $item->jumlah + (float) ($item->usages_sum_jumlah ?? 0),
                 'satuan' => $item->satuan,
+                'status_pranota' => $item->status_pranota,
             ];
         });
 
@@ -2218,8 +2211,8 @@ class StockAmprahanController extends Controller
             };
             foreach ($addedIds as $addedId) {
                 $stock = $newStockItems->get($addedId);
-                if (! $stock || $stock->status_pranota === 'Sudah' || $stock->lokasi !== $lokasiStock) {
-                    throw new \RuntimeException("Barang #{$addedId} sudah masuk pranota lain atau berada di lokasi lain.");
+                if (! $stock || $stock->lokasi !== $lokasiStock) {
+                    throw new \RuntimeException("Barang #{$addedId} tidak ditemukan di lokasi pranota ini.");
                 }
             }
 
@@ -2258,10 +2251,8 @@ class StockAmprahanController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            // Revert status for removed items
-            if (! empty($removedIds)) {
-                \App\Models\StockAmprahan::whereIn('id', $removedIds)->update(['status_pranota' => 'Belum']);
-            }
+            // Satu barang dapat tercatat di beberapa pranota; periksa referensi lain.
+            $this->syncPranotaStatusForStockItems($removedIds);
 
             // Ensure status for current items is 'Sudah'
             if (! empty($newItemIds)) {
@@ -2282,6 +2273,34 @@ class StockAmprahanController extends Controller
                 'success' => false,
                 'message' => 'Gagal memperbarui pranota: '.$e->getMessage(),
             ], 500);
+        }
+    }
+
+    private function syncPranotaStatusForStockItems(array $itemIds): void
+    {
+        $ids = array_values(array_unique(array_map('intval', $itemIds)));
+        if ($ids === []) {
+            return;
+        }
+
+        $wanted = array_fill_keys($ids, true);
+        $assigned = [];
+        // ID di JSON lama ada yang berupa string dan ada yang berupa angka.
+        foreach (\App\Models\PranotaStock::select('items')->cursor() as $pranota) {
+            foreach ($pranota->items ?? [] as $item) {
+                $itemId = (int) ($item['id'] ?? 0);
+                if (isset($wanted[$itemId])) {
+                    $assigned[$itemId] = true;
+                }
+            }
+            if (count($assigned) === count($ids)) {
+                break;
+            }
+        }
+
+        foreach ($ids as $itemId) {
+            \App\Models\StockAmprahan::whereKey($itemId)
+                ->update(['status_pranota' => isset($assigned[$itemId]) ? 'Sudah' : 'Belum']);
         }
     }
 
