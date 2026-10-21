@@ -138,26 +138,38 @@ class PembayaranPranotaRitKenekController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $desc = 'Pembayaran Pranota Rit Kenek - '.$nomorPembayaran;
 
-            $costAccount = 'Biaya Ritasi'; // Same as supir
+            // Ikuti akun biaya pembayaran pranota rit (supir) yang sudah digunakan.
+            $costAccount = Coa::where('nomor_akun', '5101.001')
+                ->where('nama_akun', 'Biaya Insentif Supir Truck Jakarta')
+                ->sole();
+            $costEntry = [
+                'nama_akun' => $costAccount->nama_akun,
+                'coa_id' => $costAccount->id,
+                'jumlah' => $totalFinal,
+            ];
 
             if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => $costAccount, 'jumlah' => $totalFinal],
+                    $costEntry,
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Rit Kenek',
                     $desc
                 );
             } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $costAccount, 'jumlah' => $totalFinal],
+                $recorded = $this->coaTransactionService->recordDoubleEntry(
+                    $costEntry,
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Rit Kenek',
                     $desc
                 );
+            }
+
+            if (! $recorded) {
+                throw new \RuntimeException('Jurnal pembayaran pranota rit kenek gagal dicatat.');
             }
 
             DB::commit();
