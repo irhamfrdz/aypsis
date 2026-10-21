@@ -106,7 +106,12 @@
                     <input type="search" id="cariBarang" class="flex-1 border-gray-300 rounded-md text-sm" placeholder="Cari nama barang, nomor bukti, atau ID">
                     <button type="button" id="tutupPilihBarang" class="px-3 py-2 text-xs text-gray-600 hover:text-gray-900">Tutup</button>
                 </div>
+                <p class="text-xs text-gray-600 mb-2">Menampilkan barang di lokasi pranota ini yang belum masuk pranota lain.</p>
                 <div id="hasilCariBarang" class="max-h-64 overflow-y-auto space-y-2 text-sm text-gray-600">Cari barang yang belum masuk pranota.</div>
+                <div class="flex items-center justify-between mt-3">
+                    <span id="jumlahHasilBarang" class="text-xs text-gray-600"></span>
+                    <button type="button" id="muatLagiBarang" class="hidden px-3 py-1.5 bg-white border border-green-300 text-green-700 rounded-md text-xs font-semibold hover:bg-green-100">Muat lagi</button>
+                </div>
             </div>
             <div class="border rounded-lg overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -188,8 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const barangPanel = document.getElementById('pilihBarangPanel');
     const cariBarang = document.getElementById('cariBarang');
     const hasilCariBarang = document.getElementById('hasilCariBarang');
+    const jumlahHasilBarang = document.getElementById('jumlahHasilBarang');
+    const muatLagiBarang = document.getElementById('muatLagiBarang');
     let searchTimer;
     let latestSearch = 0;
+    let currentPage = 0;
 
     function formatRupiah(value) {
         return `Rp ${Math.round(Number(value) || 0).toLocaleString('id-ID')}`;
@@ -245,21 +253,29 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTotalBiayaDisplay();
     }
 
-    async function searchAvailableItems() {
+    async function searchAvailableItems(reset = true) {
         const searchNumber = ++latestSearch;
-        hasilCariBarang.textContent = 'Memuat barang...';
+        const page = reset ? 1 : currentPage + 1;
+        if (reset) {
+            hasilCariBarang.textContent = 'Memuat barang...';
+            jumlahHasilBarang.textContent = '';
+            muatLagiBarang.classList.add('hidden');
+        } else {
+            muatLagiBarang.disabled = true;
+            muatLagiBarang.textContent = 'Memuat...';
+        }
         try {
             const url = new URL(@json(route('pranota-stock.available-items', $pranota->id)), window.location.origin);
             url.searchParams.set('search', cariBarang.value.trim());
+            url.searchParams.set('page', page);
             const response = await fetch(url, {headers: {'Accept': 'application/json'}});
             if (!response.ok) throw new Error('Gagal mengambil daftar barang');
             const data = await response.json();
             if (searchNumber !== latestSearch) return;
-            hasilCariBarang.replaceChildren();
+            if (reset) hasilCariBarang.replaceChildren();
             const available = data.items.filter(item => !selectedItems.some(selected => String(selected.id) === String(item.id)));
-            if (!available.length) {
+            if (reset && !data.items.length) {
                 hasilCariBarang.textContent = 'Tidak ada barang yang tersedia.';
-                return;
             }
             available.forEach(item => {
                 const row = document.createElement('div');
@@ -285,21 +301,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.append(info, addButton);
                 hasilCariBarang.appendChild(row);
             });
+            currentPage = data.current_page;
+            jumlahHasilBarang.textContent = `${Math.min(currentPage * 50, data.total).toLocaleString('id-ID')} dari ${Number(data.total).toLocaleString('id-ID')} barang tersedia`;
+            muatLagiBarang.classList.toggle('hidden', currentPage >= data.last_page);
         } catch (error) {
             if (searchNumber === latestSearch) hasilCariBarang.textContent = error.message;
+        } finally {
+            if (searchNumber === latestSearch) {
+                muatLagiBarang.disabled = false;
+                muatLagiBarang.textContent = 'Muat lagi';
+            }
         }
     }
 
     document.getElementById('btnTambahBarang').addEventListener('click', () => {
         barangPanel.classList.remove('hidden');
         cariBarang.focus();
-        searchAvailableItems();
+        searchAvailableItems(true);
     });
     document.getElementById('tutupPilihBarang').addEventListener('click', () => barangPanel.classList.add('hidden'));
     cariBarang.addEventListener('input', () => {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(searchAvailableItems, 300);
+        searchTimer = setTimeout(() => searchAvailableItems(true), 300);
     });
+    muatLagiBarang.addEventListener('click', () => searchAvailableItems(false));
 
     // Pranota Penerima Dropdown Logic
     const pranotaPenerimaContainer = document.getElementById('pranota_penerima_dropdown_container');

@@ -108,6 +108,34 @@ class PranotaStockEditItemsTest extends TestCase
         $this->assertSame('Sudah', DB::table('stock_amprahans')->where('id', 1)->value('status_pranota'));
     }
 
+    public function test_available_items_can_be_loaded_beyond_first_page(): void
+    {
+        $items = [];
+        for ($id = 5; $id < 60; $id++) {
+            $items[] = [
+                'id' => $id,
+                'nomor_bukti' => 'B-'.$id,
+                'nama_barang' => 'Tambahan '.$id,
+                'status_pranota' => 'Belum',
+                'harga_satuan' => 10,
+                'adjustment' => 0,
+                'jumlah' => 1,
+                'lokasi' => 'KANTOR AYP JAKARTA',
+            ];
+        }
+        DB::table('stock_amprahans')->insert($items);
+
+        $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'page' => 1]))
+            ->assertOk()
+            ->assertJsonCount(50, 'items')
+            ->assertJsonPath('total', 56)
+            ->assertJsonPath('last_page', 2);
+        $this->getJson(route('pranota-stock.available-items', ['id' => 1, 'page' => 2]))
+            ->assertOk()
+            ->assertJsonCount(6, 'items')
+            ->assertJsonPath('items.5.id', 2);
+    }
+
     private function payload(array $items): array
     {
         return [

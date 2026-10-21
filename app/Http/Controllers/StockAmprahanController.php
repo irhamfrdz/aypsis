@@ -2154,21 +2154,26 @@ class StockAmprahanController extends Controller
                 });
             })
             ->orderByDesc('id')
-            ->limit(30)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'nama_barang' => $item->nama_barang ?: ($item->masterNamaBarangAmprahan?->nama_barang ?? '-'),
-                    'kode' => $item->nomor_bukti,
-                    'harga' => $item->harga_satuan,
-                    'adjustment' => $item->adjustment,
-                    'jumlah' => (float) $item->jumlah + (float) ($item->usages_sum_jumlah ?? 0),
-                    'satuan' => $item->satuan,
-                ];
-            });
+            ->paginate(50);
 
-        return response()->json(['items' => $items]);
+        $results = $items->getCollection()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nama_barang' => $item->nama_barang ?: ($item->masterNamaBarangAmprahan?->nama_barang ?? '-'),
+                'kode' => $item->nomor_bukti,
+                'harga' => $item->harga_satuan,
+                'adjustment' => $item->adjustment,
+                'jumlah' => (float) $item->jumlah + (float) ($item->usages_sum_jumlah ?? 0),
+                'satuan' => $item->satuan,
+            ];
+        });
+
+        return response()->json([
+            'items' => $results,
+            'total' => $items->total(),
+            'current_page' => $items->currentPage(),
+            'last_page' => $items->lastPage(),
+        ]);
     }
 
     public function pranotaUpdate(Request $request, $id)
