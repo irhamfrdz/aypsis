@@ -176,6 +176,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ukuran</label>
                         <input type="text" name="ukuran" value="{{ old('ukuran') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ukuran') border-red-500 @enderror" placeholder="Contoh: 1000, 1100, 750">
+                        <select name="ukuran" id="ukuran-valmet" class="hidden w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ukuran') border-red-500 @enderror" disabled>
+                            <option value="">-- Pilih Ukuran --</option>
+                            <option value="1800-25" {{ old('ukuran') == '1800-25' ? 'selected' : '' }}>1800-25</option>
+                        </select>
                         @error('ukuran')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -1007,6 +1011,7 @@
                 const isThinner = selectedText.includes('thinner');
                 const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner;
                 const isBanLuar = selectedText.includes('ban luar');
+                const isBanLuarValmet = selectedText.includes('ban luar valmet');
                 const penerimaContainer = document.getElementById('penerima-container');
                 const penerimaSelect = document.getElementById('penerima_id');
                 const penerimaSelectedText = document.getElementById('penerima-selected-text');
@@ -1172,6 +1177,13 @@
                     const ukuranContainer = ukuranInput ? ukuranInput.closest('div') : null;
                     if (ukuranContainer) ukuranContainer.classList.remove('hidden');
                 }
+
+                const ukuranInput = document.querySelector('input[name="ukuran"]');
+                const ukuranValmetSelect = document.getElementById('ukuran-valmet');
+                ukuranInput.classList.toggle('hidden', isBanLuarValmet);
+                ukuranInput.disabled = isBanLuarValmet;
+                ukuranValmetSelect.classList.toggle('hidden', !isBanLuarValmet);
+                ukuranValmetSelect.disabled = !isBanLuarValmet;
             }
 
             namaBarangSelect.addEventListener('change', checkItemType);
