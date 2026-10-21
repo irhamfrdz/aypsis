@@ -1053,6 +1053,7 @@
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-36">NIK</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
                                 <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Divisi / Cabang</th>
+                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tanggal Belum Absen Pulang</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
@@ -1084,6 +1085,13 @@
                                                 {{ $k->cabang }}
                                             </span>
                                         @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach($k->tanggal_belum_pulang ?? [] as $tanggalBelumPulang)
+                                            <span class="whitespace-nowrap rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 border border-amber-200">{{ \Carbon\Carbon::parse($tanggalBelumPulang)->format('d-m-Y') }}</span>
+                                        @endforeach
                                     </div>
                                 </td>
                             </tr>
@@ -1602,7 +1610,7 @@
         },
         'belum-pulang': {
             title: 'Karyawan Belum Absen Pulang',
-            subtitle: 'Daftar karyawan yang belum melakukan absensi pulang hari ini',
+            subtitle: 'Daftar karyawan yang sudah absen masuk tetapi belum absen pulang pada tanggal dalam periode yang dipilih',
             icon: 'fa-running',
             iconBg: '#fef9c3',
             iconColor: '#ca8a04',

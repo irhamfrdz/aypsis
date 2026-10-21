@@ -11,6 +11,26 @@ use Tests\TestCase;
 
 class HrdDashboardDetailExportTest extends TestCase
 {
+    public function test_missing_clock_out_dates_are_matched_per_day(): void
+    {
+        $controller = new class extends HrdDashboardController {
+            public function dates(array $masuk, array $pulang): array
+            {
+                $logs = fn ($dates) => collect($dates)->map(fn ($date) => (object) ['waktu' => $date]);
+
+                return $this->missingClockOutDates($logs($masuk), $logs($pulang));
+            }
+        };
+
+        $this->assertSame(['2026-10-07', '2026-10-09'], $controller->dates([
+            '2026-10-09 08:00:00', '2026-10-07 08:00:00',
+            '2026-10-07 08:01:00', '2026-10-08 08:00:00',
+        ], ['2026-10-08 17:00:00']));
+        $this->assertSame([], $controller->dates(['2026-10-07 08:00:00'], ['2026-10-07 17:00:00']));
+        $this->assertSame(['2026-10-07'], $controller->dates(['2026-10-07 08:00:00'], []));
+        $this->assertSame([], $controller->dates([], ['2026-10-07 17:00:00']));
+    }
+
     public function test_missing_clock_in_export_respects_search_and_preserves_nik(): void
     {
         $data = [
@@ -83,6 +103,7 @@ class HrdDashboardDetailExportTest extends TestCase
         $karyawan = (object) [
             'nik' => '0233', 'nama_lengkap' => 'ACENG JAELANI',
             'divisi' => 'KRANI', 'cabang' => 'JAKARTA',
+            'tanggal_belum_pulang' => ['2026-10-07', '2026-10-09'],
         ];
         $absen = (object) [
             'karyawan' => $karyawan,
@@ -128,6 +149,10 @@ class HrdDashboardDetailExportTest extends TestCase
                 $this->assertSame(2, $sheet->getHighestRow(), $category);
                 $this->assertSame('0233', $sheet->getCell('B2')->getValue(), $category);
                 $this->assertSame('ACENG JAELANI', $sheet->getCell('C2')->getValue(), $category);
+                if ($category === 'belum-pulang') {
+                    $this->assertSame('Tanggal Belum Absen Pulang', $sheet->getCell('F1')->getValue());
+                    $this->assertSame('07-10-2026, 09-10-2026', $sheet->getCell('F2')->getValue());
+                }
             } finally {
                 unlink($path);
             }

@@ -303,16 +303,23 @@ class HrdDashboardController extends Controller
         if (! empty($selectedCabang) || ! empty($selectedGroup) || ! empty($selectedDepartemen)) {
             $absensiPulangQuery->whereIn('karyawan_id', $activeKaryawanIds);
         }
-        $absensiPulang = $absensiPulangQuery->pluck('karyawan_id')
-            ->filter()
-            ->unique()
-            ->toArray();
+        $absensiPulang = $absensiPulangQuery->get(['karyawan_id', 'waktu']);
+        $masukPerKaryawan = $absensiMasuk->groupBy('karyawan_id');
+        $pulangPerKaryawan = $absensiPulang->groupBy('karyawan_id');
 
         $karyawanBelumAbsenPulang = (clone $karyawanBaseQuery)
             ->whereIn('id', $karyawanIdsAbsen)
-            ->whereNotIn('id', $absensiPulang)
             ->orderBy('nama_lengkap', 'asc')
-            ->get();
+            ->get()
+            ->filter(function ($karyawan) use ($masukPerKaryawan, $pulangPerKaryawan) {
+                $karyawan->tanggal_belum_pulang = $this->missingClockOutDates(
+                    $masukPerKaryawan->get($karyawan->id, collect()),
+                    $pulangPerKaryawan->get($karyawan->id, collect())
+                );
+
+                return $karyawan->tanggal_belum_pulang !== [];
+            })
+            ->values();
 
         // 7. Absensi Luar Radius
         $absensiLuarRadiusQuery = Absensi::with(['karyawan' => function ($q) {
@@ -379,6 +386,14 @@ class HrdDashboardController extends Controller
         ));
     }
 
+    protected function missingClockOutDates(\Illuminate\Support\Collection $masuk, \Illuminate\Support\Collection $pulang): array
+    {
+        // Cocokkan per tanggal kalender, sesuai filter tanggal dashboard.
+        $dates = fn ($logs) => $logs->map(fn ($log) => Carbon::parse($log->waktu)->toDateString())->unique();
+
+        return $dates($masuk)->diff($dates($pulang))->sort()->values()->all();
+    }
+
     /**
      * Export rekap absensi HRD (4 sheets).
      */
@@ -440,8 +455,13 @@ class HrdDashboardController extends Controller
             ],
             'belum-pulang' => [
                 'Belum_Absen_Pulang',
-                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang'],
-                $data['karyawanBelumAbsenPulang']->map(fn ($karyawan) => $entry($employee($karyawan), $employeeSearch($karyawan))),
+                ['No', 'NIK', 'Nama Karyawan', 'Divisi', 'Cabang', 'Tanggal Belum Absen Pulang'],
+                $data['karyawanBelumAbsenPulang']->map(function ($karyawan) use ($entry, $employee, $employeeSearch) {
+                    $dates = collect($karyawan->tanggal_belum_pulang ?? [])
+                        ->map(fn ($date) => Carbon::parse($date)->format('d-m-Y'))->implode(', ');
+
+                    return $entry(array_merge($employee($karyawan), [$dates]), $employeeSearch($karyawan).' '.$dates);
+                }),
             ],
             'terlambat' => [
                 'Absen_Terlambat',
