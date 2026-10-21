@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\PembayaranAktivitasLain;
 use App\Http\Controllers\PembayaranAktivitasLainController;
+use App\Models\PembayaranAktivitasLain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +12,8 @@ use Tests\TestCase;
 
 class PembayaranAktivitasLainBatamTest extends TestCase
 {
+    private int $taxAccountId;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -40,6 +42,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             $table->enum('debit_kredit', ['debit', 'kredit']);
             $table->unsignedBigInteger('akun_coa_id')->nullable();
             $table->unsignedBigInteger('akun_bank_id')->nullable();
+            $table->unsignedBigInteger('akun_pph_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
@@ -54,7 +57,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             $table->decimal('saldo', 15, 2)->default(0);
             $table->timestamps();
         });
-        DB::table('akun_coa')->insert(['nomor_akun' => '2102.003', 'saldo' => 0]);
+        $this->taxAccountId = DB::table('akun_coa')->insertGetId(['nomor_akun' => '2102.003', 'saldo' => 0]);
         Schema::create('coa_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('coa_id');
@@ -157,6 +160,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'jenis_aktivitas' => 'Pembayaran Kendaraan',
             'lokasi' => 'jakarta',
             'pph_persen' => 2,
+            'akun_pph_id' => $this->taxAccountId,
             'jumlah' => 100,
             'debit_kredit' => 'kredit',
             'akun_coa_id' => $expenseId,
@@ -191,6 +195,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'jenis_aktivitas' => 'Pembayaran Kendaraan',
             'lokasi' => 'batam',
             'pph_persen' => 2,
+            'akun_pph_id' => $this->taxAccountId,
             'jumlah' => 100,
         ]);
         $payload = $this->vehiclePayload('jakarta') + [
@@ -221,6 +226,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'jenis_aktivitas' => 'Pembayaran Kendaraan',
             'lokasi' => 'jakarta',
             'pph_persen' => 2,
+            'akun_pph_id' => $this->taxAccountId,
             'jumlah' => 100,
             'debit_kredit' => 'kredit',
             'akun_coa_id' => $expenseId,
@@ -243,6 +249,43 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
     }
 
+    public function test_selected_pph_account_is_saved_and_used_for_journal(): void
+    {
+        $this->withoutMiddleware();
+
+        $expenseId = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $bankId = DB::table('akun_coa')->insertGetId(['saldo' => 1000]);
+        $customTaxId = DB::table('akun_coa')->insertGetId(['nomor_akun' => '2102.005', 'saldo' => 0]);
+        $payload = $this->vehiclePayload('jakarta') + [
+            'debit_kredit' => 'kredit',
+            'akun_coa_id' => $expenseId,
+            'akun_bank_id' => $bankId,
+        ];
+        unset($payload['akun_pph_id']);
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertSessionHasErrors('akun_pph_id');
+        $this->assertSame(0, PembayaranAktivitasLain::count());
+        $payload['akun_pph_id'] = $customTaxId;
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame($customTaxId, $payment->akun_pph_id);
+        $this->assertEquals(2, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $customTaxId)->value('kredit'));
+        $this->assertEquals(0, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
+
+        $payload['akun_pph_id'] = $this->taxAccountId;
+        app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment
+        );
+
+        $this->assertSame($this->taxAccountId, $payment->fresh()->akun_pph_id);
+        $this->assertEquals(0, DB::table('akun_coa')->find($customTaxId)->saldo);
+        $this->assertEquals(-2, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
+    }
+
     private function vehiclePayload(string $lokasi): array
     {
         return [
@@ -251,6 +294,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'lokasi' => $lokasi,
             'pph_persen' => '2',
             'pph_manual' => '0',
+            'akun_pph_id' => $this->taxAccountId,
             'sub_jenis_kendaraan' => 'Plat',
             'nomor_polisi' => 'BP 1234 AA',
             'penerima' => 'Vendor',

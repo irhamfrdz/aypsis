@@ -176,6 +176,12 @@
                                 <p class="text-xs text-gray-500">Nominal disesuaikan manual</p>
                             @endif
                         </div>
+                        @if($pembayaranAktivitasLain->akunPph)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Akun PPh</label>
+                                <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->akunPph->nomor_akun }} - {{ $pembayaranAktivitasLain->akunPph->nama_akun }}</p>
+                            </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-medium text-gray-500">Grand Total</label>
                             <p class="mt-1 text-lg font-bold text-blue-600">Rp {{ number_format($pembayaranAktivitasLain->grand_total, 0, ',', '.') }}</p>

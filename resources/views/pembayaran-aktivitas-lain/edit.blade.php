@@ -335,6 +335,16 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                     <p id="pph_nominal_error" class="hidden text-red-500 text-xs mt-1">Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.</p>
+                    <div id="akun_pph_field" class="mt-3 {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && (float) old('pph_persen', $pembayaranAktivitasLain->pph_persen) > 0 ? '' : 'hidden' }}">
+                        <label for="akun_pph_select" class="block text-gray-700 mb-2">Akun PPh <span class="text-red-500">*</span></label>
+                        <select name="akun_pph_id" id="akun_pph_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_pph_id') border-red-500 @enderror">
+                            <option value="">Pilih akun PPh</option>
+                            @foreach($akunPph as $akun)
+                                <option value="{{ $akun->id }}" {{ old('akun_pph_id', $pembayaranAktivitasLain->akun_pph_id) == $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            @endforeach
+                        </select>
+                        @error('akun_pph_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
                     <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
                 </div>
 
@@ -636,6 +646,12 @@ function initializeSelect2() {
         width: '100%'
     });
 
+    $('#akun_pph_select').select2({
+        placeholder: "Pilih Akun PPh",
+        allowClear: true,
+        width: '100%'
+    });
+
     $('#penerima_dropdown').select2({
         placeholder: "Pilih dari Karyawan",
         allowClear: true,
@@ -699,11 +715,16 @@ function initializeSelect2() {
     const pphManualInput = document.getElementById('pph_manual_input');
     const pphAutoButton = document.getElementById('pph_auto_button');
     const pphError = document.getElementById('pph_nominal_error');
+    const akunPphField = document.getElementById('akun_pph_field');
+    const akunPphSelect = document.getElementById('akun_pph_select');
     function updatePphSummary(recalculate = false) {
         const isVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan';
         pphSummary.classList.toggle('hidden', !isVehicle);
         const hasRate = isVehicle && pphSelect.value !== '';
         const canEdit = hasRate && Number(pphSelect.value) > 0;
+        akunPphField.classList.toggle('hidden', !canEdit);
+        akunPphSelect.disabled = !canEdit;
+        akunPphSelect.required = canEdit;
         pphInput.disabled = !canEdit;
         pphInput.required = canEdit;
         pphAutoButton.disabled = !canEdit;
@@ -1212,6 +1233,8 @@ function initializeSelect2() {
         const akunBank = akunBankSelect.selectedOptions[0];
         const valInput = document.getElementById('jumlah_input_value');
         const jumlah = parseFloat(valInput ? valInput.value : 0) || 0;
+        const pph = jenisAktivitas.value === 'Pembayaran Kendaraan' ? Number(pphInput.value) || 0 : 0;
+        const akunPph = akunPphSelect.selectedOptions[0];
         
         if (!jenisTransaksi || !akunBiaya || !akunBank || jumlah <= 0) {
             journalPreview.classList.add('hidden');
@@ -1225,6 +1248,8 @@ function initializeSelect2() {
             currency: 'IDR',
             minimumFractionDigits: 0
         }).format(jumlah);
+        const bankFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(jumlah - pph);
+        const pphFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(pph);
         
         let journalHtml = '';
         if (jenisTransaksi === 'kredit') {
@@ -1238,7 +1263,7 @@ function initializeSelect2() {
                     <div class="bg-red-50 p-2 rounded border border-red-200">
                         <p class="font-medium text-red-700">KREDIT (-)</p>
                         <p class="text-xs text-red-600">${akunBankNama}</p>
-                        <p class="font-bold text-red-700">${jumlahFormatted}</p>
+                        <p class="font-bold text-red-700">${bankFormatted}</p>
                     </div>
                 </div>
             `;
@@ -1248,7 +1273,7 @@ function initializeSelect2() {
                     <div class="bg-green-50 p-2 rounded border border-green-200">
                         <p class="font-medium text-green-700">DEBIT (+)</p>
                         <p class="text-xs text-green-600">${akunBankNama}</p>
-                        <p class="font-bold text-green-700">${jumlahFormatted}</p>
+                        <p class="font-bold text-green-700">${bankFormatted}</p>
                     </div>
                     <div class="bg-red-50 p-2 rounded border border-red-200">
                         <p class="font-medium text-red-700">KREDIT (-)</p>
@@ -1258,12 +1283,21 @@ function initializeSelect2() {
                 </div>
             `;
         }
+        if (pph > 0 && akunPphSelect.value) {
+            journalHtml += `<div class="mt-2 rounded border p-2 ${jenisTransaksi === 'kredit' ? 'border-red-200 bg-red-50 text-red-700' : 'border-green-200 bg-green-50 text-green-700'}">
+                <span class="font-medium">${jenisTransaksi === 'kredit' ? 'KREDIT (-)' : 'DEBIT (+)'} PPh:</span>
+                ${akunPph.textContent} — ${pphFormatted}
+            </div>`;
+        }
         
         journalContent.innerHTML = journalHtml;
         journalPreview.classList.remove('hidden');
     }
 
-    $('#debit_kredit, #akun_coa_select, #akun_bank_select').on('change', updateJournalPreview);
+    $('#debit_kredit, #akun_coa_select, #akun_bank_select, #akun_pph_select').on('change', updateJournalPreview);
+    pphInput.addEventListener('input', updateJournalPreview);
+    pphSelect.addEventListener('change', updateJournalPreview);
+    pphAutoButton.addEventListener('click', updateJournalPreview);
     
     // Form submission
     const vehicleMasterModal = document.getElementById('vehicleMasterModal');
@@ -1307,6 +1341,9 @@ function initializeSelect2() {
         if (document.getElementById('jenis_aktivitas').value === 'Pembayaran Kendaraan') {
             requiredFields.push({ id: 'lokasi_kendaraan_select', name: 'Lokasi' });
             requiredFields.push({ id: 'pph_kendaraan_select', name: 'PPh' });
+            if (Number(document.getElementById('pph_kendaraan_select').value) > 0) {
+                requiredFields.push({ id: 'akun_pph_select', name: 'Akun PPh' });
+            }
             if (document.getElementById('sub_jenis_kendaraan_select').value === 'Lain Lain') {
                 requiredFields.push({ id: 'nomor_polisi_list_select', name: 'Kendaraan' });
             }

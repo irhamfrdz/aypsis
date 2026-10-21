@@ -10,6 +10,7 @@ use App\Models\PembayaranInvoiceAktivitasLain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PembayaranAktivitasLainController extends Controller
 {
@@ -258,7 +259,9 @@ class PembayaranAktivitasLainController extends Controller
             ->sortBy('no_surat_jalan')
             ->values();
 
-        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
+        $akunPph = DB::table('akun_coa')->orderBy('nomor_akun')->get();
+
+        return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'akunPph', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }
 
     /**
@@ -406,6 +409,7 @@ class PembayaranAktivitasLainController extends Controller
             'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
@@ -416,6 +420,9 @@ class PembayaranAktivitasLainController extends Controller
             : null;
         $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && (bool) ($validated['pph_manual'] ?? false);
+        if ($validated['jenis_aktivitas'] !== 'Pembayaran Kendaraan' || (float) $validated['pph_persen'] <= 0) {
+            $validated['akun_pph_id'] = null;
+        }
         if (! $requiresDoubleBook) {
             $validated['debit_kredit'] = null;
             $validated['akun_coa_id'] = null;
@@ -574,7 +581,7 @@ class PembayaranAktivitasLainController extends Controller
         $akunBank = Coa::find($validated['akun_bank_id']);
         $pphNominal = (int) $pembayaran->pph_nominal;
         $jumlahBank = (int) $pembayaran->grand_total;
-        $akunPph = $pphNominal > 0 ? Coa::where('nomor_akun', '2102.003')->firstOrFail() : null;
+        $akunPph = $pphNominal > 0 ? Coa::findOrFail($pembayaran->akun_pph_id) : null;
 
         $tanggal = $validated['tanggal'];
         $jumlah = $validated['jumlah'];
@@ -623,7 +630,7 @@ class PembayaranAktivitasLainController extends Controller
                     'tanggal_transaksi' => $tanggal,
                     'nomor_referensi' => $nomorReferensi,
                     'jenis_transaksi' => $jenisTransaksiDesc,
-                    'keterangan' => $keterangan.' - Potongan PPh 23',
+                    'keterangan' => $keterangan.' - Potongan PPh',
                     'debit' => 0,
                     'kredit' => $pphNominal,
                     'saldo' => $akunPph->saldo - $pphNominal,
@@ -670,7 +677,7 @@ class PembayaranAktivitasLainController extends Controller
                     'tanggal_transaksi' => $tanggal,
                     'nomor_referensi' => $nomorReferensi,
                     'jenis_transaksi' => $jenisTransaksiDesc,
-                    'keterangan' => $keterangan.' - Pengembalian PPh 23',
+                    'keterangan' => $keterangan.' - Pengembalian PPh',
                     'debit' => $pphNominal,
                     'kredit' => 0,
                     'saldo' => $akunPph->saldo + $pphNominal,
@@ -691,7 +698,7 @@ class PembayaranAktivitasLainController extends Controller
 
     public function show(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
-        $pembayaranAktivitasLain->load(['creator', 'approver']);
+        $pembayaranAktivitasLain->load(['creator', 'approver', 'akunPph']);
 
         return view('pembayaran-aktivitas-lain.show', compact('pembayaranAktivitasLain'));
     }
@@ -797,10 +804,13 @@ class PembayaranAktivitasLainController extends Controller
             ->sortBy('no_surat_jalan')
             ->values();
 
+        $akunPph = DB::table('akun_coa')->orderBy('nomor_akun')->get();
+
         return view('pembayaran-aktivitas-lain.edit', compact(
             'pembayaranAktivitasLain',
             'akunBiaya',
             'akunBank',
+            'akunPph',
             'mobils',
             'voyages',
             'karyawans',
@@ -837,6 +847,7 @@ class PembayaranAktivitasLainController extends Controller
             'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
 
         $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
@@ -847,6 +858,9 @@ class PembayaranAktivitasLainController extends Controller
             : null;
         $validated['pph_manual'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             && (bool) ($validated['pph_manual'] ?? false);
+        if ($validated['jenis_aktivitas'] !== 'Pembayaran Kendaraan' || (float) $validated['pph_persen'] <= 0) {
+            $validated['akun_pph_id'] = null;
+        }
         if (! $requiresDoubleBook) {
             $validated['debit_kredit'] = null;
             $validated['akun_coa_id'] = null;
@@ -939,6 +953,7 @@ class PembayaranAktivitasLainController extends Controller
 
             if ($newJumlah === (int) $pembayaranAktivitasLain->jumlah) {
                 DB::rollBack();
+
                 return redirect()->back()->with('info', 'Tidak ada perubahan jumlah');
             }
 

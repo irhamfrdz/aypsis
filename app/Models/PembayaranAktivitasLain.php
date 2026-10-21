@@ -33,6 +33,7 @@ class PembayaranAktivitasLain extends Model
         'metode_pembayaran',
         'akun_coa_id',
         'akun_bank_id',
+        'akun_pph_id',
         'invoice_ids',
         'status',
         'approved_by',
@@ -116,6 +117,11 @@ class PembayaranAktivitasLain extends Model
     public function akunBank()
     {
         return $this->belongsTo(Coa::class, 'akun_bank_id');
+    }
+
+    public function akunPph()
+    {
+        return $this->belongsTo(Coa::class, 'akun_pph_id');
     }
 
     public function invoices()

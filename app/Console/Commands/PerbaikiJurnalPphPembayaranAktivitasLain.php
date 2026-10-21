@@ -13,7 +13,7 @@ class PerbaikiJurnalPphPembayaranAktivitasLain extends Command
 {
     protected $signature = 'pembayaran-aktivitas-lain:perbaiki-jurnal-pph {nomor} {--execute : Simpan koreksi jurnal}';
 
-    protected $description = 'Koreksi jurnal bank PAL menjadi nilai setelah PPh dan catat utang PPh 23';
+    protected $description = 'Koreksi jurnal bank PAL menjadi nilai setelah PPh dan catat ke akun PPh pembayaran';
 
     public function handle(): int
     {
@@ -25,9 +25,9 @@ class PerbaikiJurnalPphPembayaranAktivitasLain extends Command
             return self::FAILURE;
         }
 
-        $taxAccount = Coa::where('nomor_akun', '2102.003')->first();
+        $taxAccount = Coa::find($payment->akun_pph_id);
         if (! $taxAccount) {
-            $this->error('Akun 2102.003 Utang pajak PPH 23 tidak ditemukan.');
+            $this->error('Akun PPh pembayaran belum dipilih atau tidak ditemukan.');
 
             return self::FAILURE;
         }
@@ -79,7 +79,7 @@ class PerbaikiJurnalPphPembayaranAktivitasLain extends Command
                     'tanggal_transaksi' => $payment->tanggal,
                     'nomor_referensi' => $payment->nomor,
                     'jenis_transaksi' => 'Pembayaran Aktivitas Lain',
-                    'keterangan' => 'Pembayaran Aktivitas Lain - '.$payment->jenis_aktivitas.' - PPh 23',
+                    'keterangan' => 'Pembayaran Aktivitas Lain - '.$payment->jenis_aktivitas.' - PPh',
                     'debit' => $bankIsCredit ? 0 : $pph,
                     'kredit' => $bankIsCredit ? $pph : 0,
                     'saldo' => $lockedTaxAccount->saldo + $taxBalanceChange,
