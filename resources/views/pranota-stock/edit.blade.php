@@ -94,7 +94,19 @@
         <div class="mb-6">
             <div class="flex items-center justify-between mb-2">
                 <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Item dalam Pranota</h4>
-                <span class="text-xs text-gray-500"><span id="total-count-display">{{ count($pranota->items) }}</span> Item Terpilih</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500"><span id="total-count-display">{{ count($pranota->items) }}</span> Item Terpilih</span>
+                    <button type="button" id="btnTambahBarang" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-semibold hover:bg-green-700">
+                        <i class="fas fa-plus mr-1"></i> Tambah Barang
+                    </button>
+                </div>
+            </div>
+            <div id="pilihBarangPanel" class="hidden mb-3 p-4 border border-green-200 bg-green-50 rounded-lg">
+                <div class="flex gap-2 mb-3">
+                    <input type="search" id="cariBarang" class="flex-1 border-gray-300 rounded-md text-sm" placeholder="Cari nama barang, nomor bukti, atau ID">
+                    <button type="button" id="tutupPilihBarang" class="px-3 py-2 text-xs text-gray-600 hover:text-gray-900">Tutup</button>
+                </div>
+                <div id="hasilCariBarang" class="max-h-64 overflow-y-auto space-y-2 text-sm text-gray-600">Cari barang yang belum masuk pranota.</div>
             </div>
             <div class="border rounded-lg overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -104,6 +116,7 @@
                             <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Barang</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase">Qty</th>
                             <th class="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase">Subtotal</th>
+                            <th class="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="pranota-items" class="bg-white divide-y divide-gray-50">
@@ -121,6 +134,9 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-bold text-gray-800">{{ number_format($item['jumlah'], 0, ',', '.') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-bold text-indigo-600">Rp {{ number_format($biaya, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <button type="button" class="btnKeluarkanBarang text-xs font-semibold text-red-600 hover:text-red-800" data-id="{{ $item['id'] }}">Keluarkan</button>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -139,6 +155,7 @@
                                     Rp {{ number_format($totalBiaya + $pranota->adjustment, 0, ',', '.') }}
                                 </div>
                             </td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -166,6 +183,124 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const selectedItems = @json($pranota->items ?? []);
+    const itemsBody = document.getElementById('pranota-items');
+    const barangPanel = document.getElementById('pilihBarangPanel');
+    const cariBarang = document.getElementById('cariBarang');
+    const hasilCariBarang = document.getElementById('hasilCariBarang');
+    let searchTimer;
+    let latestSearch = 0;
+
+    function formatRupiah(value) {
+        return `Rp ${Math.round(Number(value) || 0).toLocaleString('id-ID')}`;
+    }
+
+    function renderItems() {
+        itemsBody.replaceChildren();
+        selectedItems.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50';
+
+            const numberCell = row.insertCell();
+            numberCell.className = 'px-4 py-3 text-gray-500';
+            numberCell.textContent = index + 1;
+
+            const barangCell = row.insertCell();
+            barangCell.className = 'px-4 py-3 text-sm';
+            const name = document.createElement('div');
+            name.className = 'font-bold text-gray-900';
+            name.textContent = item.nama_barang || '-';
+            const id = document.createElement('div');
+            id.className = 'text-[10px] text-gray-400';
+            id.textContent = `ID: ${item.id}`;
+            barangCell.append(name, id);
+
+            const quantityCell = row.insertCell();
+            quantityCell.className = 'px-4 py-3 text-center text-sm font-bold text-gray-800';
+            quantityCell.textContent = Number(item.jumlah || 0).toLocaleString('id-ID');
+
+            const subtotalCell = row.insertCell();
+            subtotalCell.className = 'px-4 py-3 text-right text-sm font-bold text-indigo-600';
+            subtotalCell.textContent = formatRupiah(Number(item.harga || 0) * Number(item.jumlah || 0) + Number(item.adjustment || 0));
+
+            const actionCell = row.insertCell();
+            actionCell.className = 'px-4 py-3 text-right';
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'text-xs font-semibold text-red-600 hover:text-red-800';
+            removeButton.textContent = 'Keluarkan';
+            removeButton.addEventListener('click', () => {
+                if (selectedItems.length === 1) {
+                    alert('Pranota harus memiliki minimal satu barang.');
+                    return;
+                }
+                selectedItems.splice(index, 1);
+                renderItems();
+            });
+            actionCell.appendChild(removeButton);
+            itemsBody.appendChild(row);
+        });
+
+        document.getElementById('total-count-display').textContent = selectedItems.length;
+        updateTotalBiayaDisplay();
+    }
+
+    async function searchAvailableItems() {
+        const searchNumber = ++latestSearch;
+        hasilCariBarang.textContent = 'Memuat barang...';
+        try {
+            const url = new URL(@json(route('pranota-stock.available-items', $pranota->id)), window.location.origin);
+            url.searchParams.set('search', cariBarang.value.trim());
+            const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+            if (!response.ok) throw new Error('Gagal mengambil daftar barang');
+            const data = await response.json();
+            if (searchNumber !== latestSearch) return;
+            hasilCariBarang.replaceChildren();
+            const available = data.items.filter(item => !selectedItems.some(selected => String(selected.id) === String(item.id)));
+            if (!available.length) {
+                hasilCariBarang.textContent = 'Tidak ada barang yang tersedia.';
+                return;
+            }
+            available.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-3 bg-white border rounded-md px-3 py-2';
+                const info = document.createElement('div');
+                info.className = 'min-w-0';
+                const name = document.createElement('div');
+                name.className = 'font-semibold text-gray-800';
+                name.textContent = item.nama_barang;
+                const detail = document.createElement('div');
+                detail.className = 'text-xs text-gray-500';
+                detail.textContent = `ID: ${item.id} · Bukti: ${item.kode || '-'} · Qty: ${Number(item.jumlah).toLocaleString('id-ID')}`;
+                info.append(name, detail);
+                const addButton = document.createElement('button');
+                addButton.type = 'button';
+                addButton.className = 'px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700';
+                addButton.textContent = 'Tambahkan';
+                addButton.addEventListener('click', () => {
+                    selectedItems.push(item);
+                    renderItems();
+                    row.remove();
+                });
+                row.append(info, addButton);
+                hasilCariBarang.appendChild(row);
+            });
+        } catch (error) {
+            if (searchNumber === latestSearch) hasilCariBarang.textContent = error.message;
+        }
+    }
+
+    document.getElementById('btnTambahBarang').addEventListener('click', () => {
+        barangPanel.classList.remove('hidden');
+        cariBarang.focus();
+        searchAvailableItems();
+    });
+    document.getElementById('tutupPilihBarang').addEventListener('click', () => barangPanel.classList.add('hidden'));
+    cariBarang.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchAvailableItems, 300);
+    });
+
     // Pranota Penerima Dropdown Logic
     const pranotaPenerimaContainer = document.getElementById('pranota_penerima_dropdown_container');
     const pranotaPenerimaInput = document.getElementById('penerima_pranota');
@@ -217,16 +352,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateTotalBiayaDisplay() {
         const display = document.getElementById('total-biaya-display');
-        const original = parseFloat(display.dataset.original || 0);
+        const original = selectedItems.reduce((total, item) => total + Number(item.harga || 0) * Number(item.jumlah || 0) + Number(item.adjustment || 0), 0);
         const adj = parseFloat(document.getElementById('adjustment').value || 0);
         const total = original + adj;
-        display.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        display.textContent = formatRupiah(total);
     }
 
     const adjInput = document.getElementById('adjustment');
     if (adjInput) {
         adjInput.addEventListener('input', updateTotalBiayaDisplay);
     }
+    renderItems();
 
     const btnUpdate = document.getElementById('btnUpdatePranota');
     if (btnUpdate) {
@@ -263,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     penerima: penerima,
                     adjustment: adj,
                     keterangan: ket,
-                    items: @json($pranota->items)
+                    items: selectedItems.map(item => ({id: item.id}))
                 })
             })
             .then(res => res.json())

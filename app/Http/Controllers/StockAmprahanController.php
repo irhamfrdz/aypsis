@@ -2124,6 +2124,53 @@ class StockAmprahanController extends Controller
         return view('pranota-stock.edit', compact('pranota', 'karyawans', 'banks'));
     }
 
+    public function pranotaAvailableItems(Request $request, $id)
+    {
+        $pranota = \App\Models\PranotaStock::findOrFail($id);
+        $search = trim((string) $request->query('search', ''));
+        $lokasiStock = match (strtolower((string) $pranota->lokasi)) {
+            'jakarta' => 'KANTOR AYP JAKARTA',
+            'batam' => 'KANTOR AYP BATAM',
+            default => $pranota->lokasi,
+        };
+
+        $items = \App\Models\StockAmprahan::query()
+            ->with('masterNamaBarangAmprahan')
+            ->withSum('usages', 'jumlah')
+            ->where('lokasi', $lokasiStock)
+            ->where(function ($query) {
+                $query->whereNull('status_pranota')->orWhere('status_pranota', '!=', 'Sudah');
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('nama_barang', 'like', '%'.$search.'%')
+                        ->orWhere('nomor_bukti', 'like', '%'.$search.'%')
+                        ->orWhereHas('masterNamaBarangAmprahan', function ($query) use ($search) {
+                            $query->where('nama_barang', 'like', '%'.$search.'%');
+                        });
+                    if (ctype_digit($search)) {
+                        $query->orWhereKey((int) $search);
+                    }
+                });
+            })
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'nama_barang' => $item->nama_barang ?: ($item->masterNamaBarangAmprahan?->nama_barang ?? '-'),
+                    'kode' => $item->nomor_bukti,
+                    'harga' => $item->harga_satuan,
+                    'adjustment' => $item->adjustment,
+                    'jumlah' => (float) $item->jumlah + (float) ($item->usages_sum_jumlah ?? 0),
+                    'satuan' => $item->satuan,
+                ];
+            });
+
+        return response()->json(['items' => $items]);
+    }
+
     public function pranotaUpdate(Request $request, $id)
     {
         try {
@@ -2139,16 +2186,58 @@ class StockAmprahanController extends Controller
                 'penerima' => 'nullable|string',
                 'adjustment' => 'nullable|numeric',
                 'keterangan' => 'nullable|string',
-                'items' => 'required|array',
+                'items' => 'required|array|min:1',
+                'items.*.id' => 'required|integer|distinct|exists:stock_amprahans,id',
             ]);
 
             // Track old items to revert status if removed
-            $oldItemIds = is_array($pranota->items) ? collect($pranota->items)->pluck('id')->filter()->toArray() : [];
-            $newItemIds = collect($data['items'])->pluck('id')->filter()->toArray();
+            $oldItems = collect($pranota->items ?? [])->keyBy('id');
+            $oldItemIds = $oldItems->keys()->map(fn ($itemId) => (int) $itemId)->all();
+            $newItemIds = collect($data['items'])->pluck('id')->map(fn ($itemId) => (int) $itemId)->all();
 
             $removedIds = array_diff($oldItemIds, $newItemIds);
+            $addedIds = array_diff($newItemIds, $oldItemIds);
 
             DB::beginTransaction();
+
+            $newStockItems = \App\Models\StockAmprahan::with('masterNamaBarangAmprahan')
+                ->withSum('usages', 'jumlah')
+                ->whereIn('id', $addedIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+            $lokasiStock = match (strtolower((string) $pranota->lokasi)) {
+                'jakarta' => 'KANTOR AYP JAKARTA',
+                'batam' => 'KANTOR AYP BATAM',
+                default => $pranota->lokasi,
+            };
+            foreach ($addedIds as $addedId) {
+                $stock = $newStockItems->get($addedId);
+                if (! $stock || $stock->status_pranota === 'Sudah' || $stock->lokasi !== $lokasiStock) {
+                    throw new \RuntimeException("Barang #{$addedId} sudah masuk pranota lain atau berada di lokasi lain.");
+                }
+            }
+
+            $updatedItems = collect($newItemIds)->map(function ($itemId) use ($oldItems, $newStockItems) {
+                if ($oldItems->has($itemId)) {
+                    return $oldItems->get($itemId);
+                }
+
+                $stock = $newStockItems->get($itemId);
+
+                return [
+                    'id' => $stock->id,
+                    'nama_barang' => $stock->nama_barang ?: ($stock->masterNamaBarangAmprahan?->nama_barang ?? '-'),
+                    'kode' => $stock->nomor_bukti,
+                    'harga' => $stock->harga_satuan,
+                    'adjustment' => $stock->adjustment,
+                    'jumlah' => (float) $stock->jumlah + (float) ($stock->usages_sum_jumlah ?? 0),
+                    'satuan' => $stock->satuan,
+                    'tanggal' => $stock->tanggal_beli?->format('Y-m-d'),
+                    'type' => $stock->type_amprahan,
+                    'keterangan' => $stock->keterangan,
+                ];
+            })->all();
 
             $pranota->update([
                 'nomor_pranota' => $data['nomor_pranota'],
@@ -2160,7 +2249,7 @@ class StockAmprahanController extends Controller
                 'penerima' => $data['penerima'],
                 'adjustment' => $data['adjustment'] ?? 0,
                 'keterangan' => $data['keterangan'],
-                'items' => $data['items'],
+                'items' => $updatedItems,
                 'updated_by' => Auth::id(),
             ]);
 
