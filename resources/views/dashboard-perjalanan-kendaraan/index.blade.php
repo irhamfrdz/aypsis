@@ -120,7 +120,20 @@
                                                 </span>
                                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600"><i class="fas fa-chevron-down text-[10px] transition-transform" aria-hidden="true"></i></span>
                                             </button>
-                                            <div class="mt-3 h-1.5 w-full rounded-full bg-slate-100"><div class="h-1.5 rounded-full bg-indigo-500" style="width: {{ $maxVehicleDistance > 0 ? round((float) $row->total_km / $maxVehicleDistance * 100, 1) : 0 }}%"></div></div>
+                                            @php
+                                                $distancePercent = $maxVehicleDistance > 0 ? round((float) $row->total_km / $maxVehicleDistance * 100, 1) : 0;
+                                                $distancePercentLabel = number_format($distancePercent, 1, ',', '.').'%';
+                                            @endphp
+                                            <div class="relative mt-3 h-5 w-full rounded-full bg-slate-100" role="meter" aria-label="Jarak dibanding kendaraan dengan jarak terjauh" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $distancePercent }}" title="{{ $distancePercentLabel }} dari jarak kendaraan terjauh">
+                                                <div class="flex h-5 items-center justify-center rounded-full bg-indigo-500" style="width: {{ $distancePercent }}%">
+                                                    @if($distancePercent >= 25)
+                                                        <span class="text-[10px] font-bold leading-none text-white">{{ $distancePercentLabel }}</span>
+                                                    @endif
+                                                </div>
+                                                @if($distancePercent < 25)
+                                                    <span class="absolute inset-y-0 flex items-center pl-2 text-[10px] font-bold leading-none text-indigo-700" style="left: {{ $distancePercent }}%">{{ $distancePercentLabel }}</span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-center text-slate-600">{{ $row->days_with_data }}</td>
                                         <td class="px-4 py-3 text-center text-slate-600">{{ $row->moving_days }}</td>
