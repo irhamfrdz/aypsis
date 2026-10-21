@@ -46,7 +46,7 @@
                 <th style="width: 10%;">Tanggal</th>
                 <th style="width: 15%;">Jenis Aktivitas</th>
                 <th style="width: 15%;">Penerima</th>
-                <th class="numeric" style="width: 15%;">Jumlah</th>
+                <th class="numeric" style="width: 15%;">Jumlah Dibayar</th>
             </tr>
         </thead>
         <tbody>
@@ -58,13 +58,13 @@
                 <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                 <td>{{ $item->jenis_aktivitas }}</td>
                 <td>{{ $item->penerima }}</td>
-                <td class="numeric">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                <td class="numeric">Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td>
             </tr>
             @endforeach
         </tbody>
 
         @php
-            $total = $pembayarans->sum('jumlah');
+            $total = $pembayarans->sum('grand_total');
         @endphp
         <tfoot class="table-totals">
             <tr>

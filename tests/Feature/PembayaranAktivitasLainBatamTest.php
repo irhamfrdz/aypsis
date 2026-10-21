@@ -50,9 +50,11 @@ class PembayaranAktivitasLainBatamTest extends TestCase
 
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
+            $table->string('nomor_akun')->nullable();
             $table->decimal('saldo', 15, 2)->default(0);
             $table->timestamps();
         });
+        DB::table('akun_coa')->insert(['nomor_akun' => '2102.003', 'saldo' => 0]);
         Schema::create('coa_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('coa_id');
@@ -123,9 +125,24 @@ class PembayaranAktivitasLainBatamTest extends TestCase
 
         $payment = PembayaranAktivitasLain::firstOrFail();
         $this->assertSame('kredit', $payment->debit_kredit);
-        $this->assertSame(2, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+        $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
         $this->assertEquals(100, DB::table('akun_coa')->find($expenseId)->saldo);
-        $this->assertEquals(900, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(902, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(-2, DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('saldo'));
+
+        app(PembayaranAktivitasLainController::class)->updateJumlah(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id.'/update-jumlah', 'PATCH', ['jumlah' => 200]),
+            $payment
+        );
+        $this->assertSame(196, $payment->fresh()->grand_total);
+        $this->assertEquals(804, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(-4, DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('saldo'));
+        $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+
+        app(PembayaranAktivitasLainController::class)->destroy($payment->fresh());
+        $this->assertSame(0, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+        $this->assertEquals(1000, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(0, DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('saldo'));
     }
 
     public function test_changing_vehicle_payment_to_batam_reverses_existing_journal(): void
@@ -189,9 +206,41 @@ class PembayaranAktivitasLainBatamTest extends TestCase
 
         $this->assertSame(route('pembayaran-aktivitas-lain.show', $payment), $response->getTargetUrl());
         $this->assertSame('kredit', $payment->fresh()->debit_kredit);
-        $this->assertSame(2, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+        $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
         $this->assertEquals(100, DB::table('akun_coa')->find($expenseId)->saldo);
-        $this->assertEquals(900, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(902, DB::table('akun_coa')->find($bankId)->saldo);
+    }
+
+    public function test_existing_gross_bank_journal_can_be_corrected_once(): void
+    {
+        $expenseId = DB::table('akun_coa')->insertGetId(['saldo' => 100]);
+        $bankId = DB::table('akun_coa')->insertGetId(['saldo' => 900]);
+        $payment = PembayaranAktivitasLain::create([
+            'nomor' => 'PAL/2026/10/0100',
+            'tanggal' => '2026-10-10',
+            'jenis_aktivitas' => 'Pembayaran Kendaraan',
+            'lokasi' => 'jakarta',
+            'pph_persen' => 2,
+            'jumlah' => 100,
+            'debit_kredit' => 'kredit',
+            'akun_coa_id' => $expenseId,
+            'akun_bank_id' => $bankId,
+        ]);
+        DB::table('coa_transactions')->insert([
+            ['coa_id' => $expenseId, 'tanggal_transaksi' => '2026-10-10', 'nomor_referensi' => $payment->nomor, 'jenis_transaksi' => 'Pembayaran Aktivitas Lain', 'debit' => 100, 'kredit' => 0, 'saldo' => 100],
+            ['coa_id' => $bankId, 'tanggal_transaksi' => '2026-10-10', 'nomor_referensi' => $payment->nomor, 'jenis_transaksi' => 'Pembayaran Aktivitas Lain', 'debit' => 0, 'kredit' => 100, 'saldo' => 900],
+        ]);
+
+        $this->artisan('pembayaran-aktivitas-lain:perbaiki-jurnal-pph', ['nomor' => $payment->nomor, '--execute' => true])
+            ->assertExitCode(0);
+        $this->assertEquals(98, DB::table('coa_transactions')->where('coa_id', $bankId)->value('kredit'));
+        $this->assertEquals(902, DB::table('akun_coa')->find($bankId)->saldo);
+        $this->assertEquals(-2, DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('saldo'));
+        $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+
+        $this->artisan('pembayaran-aktivitas-lain:perbaiki-jurnal-pph', ['nomor' => $payment->nomor, '--execute' => true])
+            ->assertExitCode(0);
+        $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
     }
 
     private function vehiclePayload(string $lokasi): array

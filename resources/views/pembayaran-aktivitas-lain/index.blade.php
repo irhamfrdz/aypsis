@@ -72,7 +72,7 @@
                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">Tanggal</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jenis Aktivitas</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penerima</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Jumlah</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Jumlah Dibayar</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">Aksi</th>
                     </tr>
                 </thead>
@@ -113,7 +113,7 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <div class="text-sm font-semibold text-gray-900">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</div>
+                                <div class="text-sm font-semibold text-gray-900">Rp {{ number_format($item->tipe_pembayaran === 'invoice' ? $item->jumlah_dibayar : $item->grand_total, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center">
                                 <div class="flex justify-center gap-2">

@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedItems.forEach((item, index) => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
+            row.dataset.itemId = String(item.id);
 
             const numberCell = row.insertCell();
             numberCell.className = 'px-4 py-3 text-gray-500';
@@ -244,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 selectedItems.splice(index, 1);
                 renderItems();
+                if (!barangPanel.classList.contains('hidden')) searchAvailableItems(true);
             });
             actionCell.appendChild(removeButton);
             itemsBody.appendChild(row);
@@ -273,11 +275,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             if (searchNumber !== latestSearch) return;
             if (reset) hasilCariBarang.replaceChildren();
-            const available = data.items.filter(item => !selectedItems.some(selected => String(selected.id) === String(item.id)));
             if (reset && !data.items.length) {
                 hasilCariBarang.textContent = 'Tidak ada barang yang tersedia.';
             }
-            available.forEach(item => {
+            data.items.forEach(item => {
+                const alreadySelected = selectedItems.some(selected => String(selected.id) === String(item.id));
                 const row = document.createElement('div');
                 row.className = 'flex items-center justify-between gap-3 bg-white border rounded-md px-3 py-2';
                 const info = document.createElement('div');
@@ -291,13 +293,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 info.append(name, detail);
                 const addButton = document.createElement('button');
                 addButton.type = 'button';
-                addButton.className = 'px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700';
-                addButton.textContent = 'Tambahkan';
-                addButton.addEventListener('click', () => {
-                    selectedItems.push(item);
-                    renderItems();
-                    row.remove();
-                });
+                if (alreadySelected) {
+                    addButton.className = 'px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-semibold';
+                    addButton.textContent = 'Sudah di pranota ini';
+                    addButton.disabled = true;
+                } else {
+                    addButton.className = 'px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700';
+                    addButton.textContent = 'Tambahkan';
+                    addButton.addEventListener('click', () => {
+                        selectedItems.push(item);
+                        renderItems();
+                        addButton.className = 'px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-semibold';
+                        addButton.textContent = 'Sudah di pranota ini';
+                        addButton.disabled = true;
+                    });
+                }
                 row.append(info, addButton);
                 hasilCariBarang.appendChild(row);
             });

@@ -57,13 +57,19 @@ class KasTruckController extends Controller
                 });
             }
 
-            $transactions = $query->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc')->get();
+            $transactions = $this->applyPalNetCashAmounts(
+                $query->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc')->get(),
+                $akunCoa->id
+            );
 
             // Calculate initial balance (before start date) if start date is provided
             if ($startDate) {
-                $pastTransactions = CoaTransaction::where('coa_id', $akunCoa->id)
-                    ->whereDate('tanggal_transaksi', '<', $startDate)
-                    ->get();
+                $pastTransactions = $this->applyPalNetCashAmounts(
+                    CoaTransaction::where('coa_id', $akunCoa->id)
+                        ->whereDate('tanggal_transaksi', '<', $startDate)
+                        ->get(),
+                    $akunCoa->id
+                );
 
                 foreach ($pastTransactions as $pt) {
                     $saldoAwal += $pt->debit;
@@ -269,6 +275,36 @@ class KasTruckController extends Controller
             'totalDebit',
             'totalKredit'
         ));
+    }
+
+    private function applyPalNetCashAmounts($transactions, int $bankAccountId)
+    {
+        $references = $transactions->pluck('nomor_referensi')->filter()->unique();
+        if ($references->isEmpty()) {
+            return $transactions;
+        }
+
+        $netAmounts = DB::table('pembayaran_aktivitas_lains')
+            ->whereIn('nomor', $references)
+            ->where('akun_bank_id', $bankAccountId)
+            ->where('pph_nominal', '>', 0)
+            ->whereNull('deleted_at')
+            ->pluck('grand_total', 'nomor');
+
+        foreach ($transactions as $transaction) {
+            $netAmount = $netAmounts[$transaction->nomor_referensi] ?? null;
+            if ($netAmount === null || $transaction->jenis_transaksi !== 'Pembayaran Aktivitas Lain') {
+                continue;
+            }
+
+            if ($transaction->debit > 0) {
+                $transaction->debit = $netAmount;
+            } elseif ($transaction->kredit > 0) {
+                $transaction->kredit = $netAmount;
+            }
+        }
+
+        return $transactions;
     }
 
     public function topup(Request $request)

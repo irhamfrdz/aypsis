@@ -572,6 +572,9 @@ class PembayaranAktivitasLainController extends Controller
         // Get account information
         $akunCoa = Coa::find($validated['akun_coa_id']);
         $akunBank = Coa::find($validated['akun_bank_id']);
+        $pphNominal = (int) $pembayaran->pph_nominal;
+        $jumlahBank = (int) $pembayaran->grand_total;
+        $akunPph = $pphNominal > 0 ? Coa::where('nomor_akun', '2102.003')->firstOrFail() : null;
 
         $tanggal = $validated['tanggal'];
         $jumlah = $validated['jumlah'];
@@ -607,13 +610,27 @@ class PembayaranAktivitasLainController extends Controller
                 'jenis_transaksi' => $jenisTransaksiDesc,
                 'keterangan' => $keterangan.' - '.$validated['keterangan'],
                 'debit' => 0,
-                'kredit' => $jumlah,
-                'saldo' => $akunBank->saldo - $jumlah,
+                'kredit' => $jumlahBank,
+                'saldo' => $akunBank->saldo - $jumlahBank,
                 'created_by' => Auth::id(),
             ]);
 
             // Update account balance
-            $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
+            $akunBank->update(['saldo' => $akunBank->saldo - $jumlahBank]);
+            if ($akunPph) {
+                $this->createCoaTransaction([
+                    'coa_id' => $akunPph->id,
+                    'tanggal_transaksi' => $tanggal,
+                    'nomor_referensi' => $nomorReferensi,
+                    'jenis_transaksi' => $jenisTransaksiDesc,
+                    'keterangan' => $keterangan.' - Potongan PPh 23',
+                    'debit' => 0,
+                    'kredit' => $pphNominal,
+                    'saldo' => $akunPph->saldo - $pphNominal,
+                    'created_by' => Auth::id(),
+                ]);
+                $akunPph->update(['saldo' => $akunPph->saldo - $pphNominal]);
+            }
         } else {
             // DEBIT: Increase bank account, decrease expense/cost account
             // Dr. Bank Account (+)
@@ -623,14 +640,14 @@ class PembayaranAktivitasLainController extends Controller
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
                 'keterangan' => $keterangan.' - '.$validated['keterangan'],
-                'debit' => $jumlah,
+                'debit' => $jumlahBank,
                 'kredit' => 0,
-                'saldo' => $akunBank->saldo + $jumlah,
+                'saldo' => $akunBank->saldo + $jumlahBank,
                 'created_by' => Auth::id(),
             ]);
 
             // Update account balance
-            $akunBank->update(['saldo' => $akunBank->saldo + $jumlah]);
+            $akunBank->update(['saldo' => $akunBank->saldo + $jumlahBank]);
 
             // Cr. Expense Account (-)
             $this->createCoaTransaction([
@@ -647,6 +664,20 @@ class PembayaranAktivitasLainController extends Controller
 
             // Update account balance
             $akunCoa->update(['saldo' => $akunCoa->saldo - $jumlah]);
+            if ($akunPph) {
+                $this->createCoaTransaction([
+                    'coa_id' => $akunPph->id,
+                    'tanggal_transaksi' => $tanggal,
+                    'nomor_referensi' => $nomorReferensi,
+                    'jenis_transaksi' => $jenisTransaksiDesc,
+                    'keterangan' => $keterangan.' - Pengembalian PPh 23',
+                    'debit' => $pphNominal,
+                    'kredit' => 0,
+                    'saldo' => $akunPph->saldo + $pphNominal,
+                    'created_by' => Auth::id(),
+                ]);
+                $akunPph->update(['saldo' => $akunPph->saldo + $pphNominal]);
+            }
         }
     }
 
@@ -904,69 +935,33 @@ class PembayaranAktivitasLainController extends Controller
         try {
             DB::beginTransaction();
 
-            $oldJumlah = (int) $pembayaranAktivitasLain->jumlah;
             $newJumlah = (int) $request->jumlah;
-            $selisih = $newJumlah - $oldJumlah;
 
-            if ($selisih === 0) {
+            if ($newJumlah === (int) $pembayaranAktivitasLain->jumlah) {
+                DB::rollBack();
                 return redirect()->back()->with('info', 'Tidak ada perubahan jumlah');
             }
 
-            // Update main record
-            $pembayaranAktivitasLain->update(['jumlah' => $newJumlah, 'pph_manual' => false]);
-
-            // Update related CoaTransactions and Coa balances
             $transactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();
-
             foreach ($transactions as $transaction) {
-                $affectedAccount = Coa::find($transaction->coa_id);
-
-                if ($transaction->debit > 0) {
-                    $transaction->update([
-                        'debit' => $newJumlah,
-                        'saldo' => $transaction->saldo + $selisih,
-                    ]);
-
-                    // Adjust Coa balance if it was Dr+
-                    if ($affectedAccount) {
-                        if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
-                            if ($pembayaranAktivitasLain->debit_kredit === 'kredit') {
-                                // Dr. Expense (+)
-                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
-                            } else {
-                                // Dr. Bank (+)
-                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
-                            }
-                        } elseif ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
-                            if ($pembayaranAktivitasLain->debit_kredit === 'debit') {
-                                // Dr. Bank (+)
-                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
-                            } else {
-                                // This case should be credit if bank is Cr. handled below
-                            }
-                        }
-                    }
-                } elseif ($transaction->kredit > 0) {
-                    $transaction->update([
-                        'kredit' => $newJumlah,
-                        'saldo' => $transaction->saldo - $selisih,
-                    ]);
-
-                    // Adjust Coa balance if it was Cr+
-                    if ($affectedAccount) {
-                        if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
-                            if ($pembayaranAktivitasLain->debit_kredit === 'debit') {
-                                // Cr. Expense (-)
-                                $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
-                            }
-                        } elseif ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
-                            if ($pembayaranAktivitasLain->debit_kredit === 'kredit') {
-                                // Cr. Bank (-)
-                                $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
-                            }
-                        }
-                    }
+                $account = Coa::find($transaction->coa_id);
+                if ($account) {
+                    $account->update(['saldo' => $account->saldo - $transaction->debit + $transaction->kredit]);
                 }
+                $transaction->delete();
+            }
+
+            $pembayaranAktivitasLain->update(['jumlah' => $newJumlah, 'pph_manual' => false]);
+            if ($pembayaranAktivitasLain->usesDoubleBook()) {
+                $this->createDoubleBookJournal($pembayaranAktivitasLain, [
+                    'akun_coa_id' => $pembayaranAktivitasLain->akun_coa_id,
+                    'akun_bank_id' => $pembayaranAktivitasLain->akun_bank_id,
+                    'tanggal' => $pembayaranAktivitasLain->tanggal,
+                    'jumlah' => $newJumlah,
+                    'debit_kredit' => $pembayaranAktivitasLain->debit_kredit,
+                    'jenis_aktivitas' => $pembayaranAktivitasLain->jenis_aktivitas,
+                    'keterangan' => $pembayaranAktivitasLain->keterangan,
+                ]);
             }
 
             DB::commit();
@@ -1004,10 +999,18 @@ class PembayaranAktivitasLainController extends Controller
     public function destroy(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         try {
-            // Delete associated COA transactions
-            \App\Models\CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->delete();
+            DB::transaction(function () use ($pembayaranAktivitasLain) {
+                $transactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();
+                foreach ($transactions as $transaction) {
+                    $account = Coa::find($transaction->coa_id);
+                    if ($account) {
+                        $account->update(['saldo' => $account->saldo - $transaction->debit + $transaction->kredit]);
+                    }
+                    $transaction->delete();
+                }
 
-            $pembayaranAktivitasLain->delete();
+                $pembayaranAktivitasLain->delete();
+            });
 
             return redirect()->route('pembayaran-aktivitas-lain.index')
                 ->with('success', 'Data berhasil dihapus');
