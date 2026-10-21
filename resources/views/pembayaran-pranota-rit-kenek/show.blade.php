@@ -30,6 +30,10 @@
                         <span class="text-sm font-semibold">{{ $item->bank }}</span>
                     </div>
                     <div class="flex justify-between border-b pb-2">
+                        <span class="text-sm text-gray-500 font-medium">Akun Biaya:</span>
+                        <span class="text-sm font-semibold">{{ $item->akunCoa ? trim(($item->akunCoa->nomor_akun ? $item->akunCoa->nomor_akun.' - ' : '').$item->akunCoa->nama_akun) : '-' }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
                         <span class="text-sm text-gray-500 font-medium">Jenis Transaksi:</span>
                         <span class="text-sm font-semibold">{{ $item->jenis_transaksi }}</span>
                     </div>

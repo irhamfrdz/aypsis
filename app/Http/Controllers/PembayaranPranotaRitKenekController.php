@@ -71,10 +71,14 @@ class PembayaranPranotaRitKenekController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+        $defaultAkunBiayaId = Coa::where('nomor_akun', '5101.001')
+            ->where('nama_akun', 'Biaya Insentif Supir Truck Jakarta')
+            ->value('id');
 
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-rit-kenek.create', compact('pranotaRits', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-rit-kenek.create', compact('pranotaRits', 'nomorPembayaran', 'akunCoa', 'akunBiaya', 'defaultAkunBiayaId'));
     }
 
     public function store(Request $request)
@@ -87,6 +91,7 @@ class PembayaranPranotaRitKenekController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -138,10 +143,7 @@ class PembayaranPranotaRitKenekController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $desc = 'Pembayaran Pranota Rit Kenek - '.$nomorPembayaran;
 
-            // Ikuti akun biaya pembayaran pranota rit (supir) yang sudah digunakan.
-            $costAccount = Coa::where('nomor_akun', '5101.001')
-                ->where('nama_akun', 'Biaya Insentif Supir Truck Jakarta')
-                ->sole();
+            $costAccount = Coa::findOrFail($validated['akun_coa_id']);
             $costEntry = [
                 'nama_akun' => $costAccount->nama_akun,
                 'coa_id' => $costAccount->id,
@@ -187,7 +189,7 @@ class PembayaranPranotaRitKenekController extends Controller
 
     public function show($id)
     {
-        $item = PembayaranPranotaRitKenek::with(['pranotaUangRitKeneks.creator', 'createdBy'])->findOrFail($id);
+        $item = PembayaranPranotaRitKenek::with(['pranotaUangRitKeneks.creator', 'createdBy', 'akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-rit-kenek.show', compact('item'));
     }
