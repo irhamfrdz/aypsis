@@ -16,41 +16,29 @@
             transform: translateY(-3px);
             box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.03);
         }
-        .stat-card[data-color="red"].active,
-        .diagram-stat-card[data-color="red"].active {
+        .stat-card[data-color="red"].active {
             border-color: #ef4444 !important;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22), 0 12px 24px -6px rgba(239, 68, 68, 0.12) !important;
             background-color: #fffbfb !important;
             transform: translateY(-2px);
         }
-        .stat-card[data-color="yellow"].active,
-        .diagram-stat-card[data-color="yellow"].active {
+        .stat-card[data-color="yellow"].active {
             border-color: #eab308 !important;
             box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.22), 0 12px 24px -6px rgba(234, 179, 8, 0.12) !important;
             background-color: #fffef2 !important;
             transform: translateY(-2px);
         }
-        .stat-card[data-color="orange"].active,
-        .diagram-stat-card[data-color="orange"].active {
+        .stat-card[data-color="orange"].active {
             border-color: #ea580c !important;
             box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.22), 0 12px 24px -6px rgba(234, 88, 12, 0.12) !important;
             background-color: #fffaf5 !important;
             transform: translateY(-2px);
         }
-        .stat-card[data-color="rose"].active,
-        .diagram-stat-card[data-color="rose"].active {
+        .stat-card[data-color="rose"].active {
             border-color: #e11d48 !important;
             box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.22), 0 12px 24px -6px rgba(225, 29, 72, 0.12) !important;
             background-color: #fff5f7 !important;
             transform: translateY(-2px);
-        }
-        .diagram-stat-card {
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1.5px solid #e2e8f0;
-        }
-        .diagram-stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.06);
         }
         #detail-panel {
             animation: panelSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -436,419 +424,7 @@
 
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-        <!-- Header Section -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 pb-4">
-            <div>
-                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-indigo-600"></i>
-                    Diagram Analisis Variabel Kehadiran
-                </h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    Visualisasi diagram terpisah untuk setiap variabel indikator absensi karyawan — <strong>@if($isSingleDay){{ $startDate->translatedFormat('d F Y') }}@else{{ $startDate->translatedFormat('d M Y') }} s/d {{ $endDate->translatedFormat('d M Y') }}@endif</strong>
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" id="btnTabPisah" onclick="switchDiagramTab('pisah')"
-                        class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5">
-                    <i class="fas fa-th-large"></i>
-                    <span>Diagram Per Variabel</span>
-                </button>
-                <button type="button" id="btnTabRingkasan" onclick="switchDiagramTab('ringkasan')"
-                        class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1.5">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Ringkasan Komparasi</span>
-                </button>
-            </div>
-        </div>
 
-        <!-- TAB 1: Grid Diagram Terpisah Per Variabel (6 Diagram) -->
-        <div id="container-tab-pisah" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
-            {{-- 1. Variabel: Hadir Normal --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                 id="card-diagram-hadir-normal"
-                 data-color="green"
-                 onclick="showDetailTable('hadir-normal')"
-                 title="Klik untuk melihat daftar karyawan yang hadir normal">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
-                                <i class="fas fa-check-circle text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">Hadir Normal</h4>
-                                <p class="text-[11px] text-gray-500">Tepat waktu tanpa terlambat</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
-                            {{ number_format($cntHadirNormal) }} Org
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarHadirNormal"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-green-600">{{ $pctHadirNormal }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">dari aktif</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                            Hadir Tepat Waktu
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntHadirNormal) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Karyawan Lainnya
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format(max(0, $totalKaryawan - $cntHadirNormal)) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-gray-500 bg-gray-50 rounded-md px-2.5 py-1.5 flex items-center justify-between">
-                        <span>Basis: {{ number_format($totalKaryawan) }} Karyawan Aktif</span>
-                        <span class="text-green-600 font-semibold">{{ $totalKaryawanMasuk > 0 ? round(($cntHadirNormal / $totalKaryawanMasuk) * 100, 1) : 0 }}% hadir</span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 2. Variabel: Belum Absen Masuk --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group hover:border-red-300 cursor-pointer"
-                 id="card-diagram-belum-masuk"
-                 data-color="red"
-                 onclick="showDetailTable('belum-masuk')"
-                 title="Klik untuk melihat detail karyawan belum absen masuk">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0 group-hover:scale-105 transition-transform">
-                                <i class="fas fa-user-times text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm group-hover:text-red-600 transition-colors">Belum Absen Masuk</h4>
-                                <p class="text-[11px] text-gray-500">Ada tanggal tanpa scan masuk dalam periode</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
-                            {{ number_format($cntBelumMasuk) }} Org
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarBelumMasuk"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-red-600">{{ $pctBelumMasuk }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">dari aktif</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                            Belum Absen Masuk
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntBelumMasuk) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Tanpa Kekurangan Scan Masuk
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format(max(0, $totalKaryawan - $cntBelumMasuk)) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-red-600 bg-red-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium group-hover:bg-red-100/70 transition-colors">
-                        <span><i class="fas fa-hand-pointer mr-1"></i> Klik untuk lihat daftar</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 3. Variabel: Belum Absen Pulang --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group hover:border-yellow-300 cursor-pointer"
-                 id="card-diagram-belum-pulang"
-                 data-color="yellow"
-                 onclick="showDetailTable('belum-pulang')"
-                 title="Klik untuk melihat detail karyawan belum absen pulang">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-yellow-100 flex items-center justify-center text-yellow-600 flex-shrink-0 group-hover:scale-105 transition-transform">
-                                <i class="fas fa-running text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm group-hover:text-yellow-600 transition-colors">Belum Absen Pulang</h4>
-                                <p class="text-[11px] text-gray-500">Sudah masuk, belum tapping pulang</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200">
-                            {{ number_format($cntBelumPulang) }} Org
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarBelumPulang"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-yellow-600">{{ $pctBelumPulang }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">dari hadir</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
-                            Belum Absen Pulang
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntBelumPulang) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Sudah Absen Pulang
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntSudahPulang) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-yellow-700 bg-yellow-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium group-hover:bg-yellow-100/70 transition-colors">
-                        <span><i class="fas fa-hand-pointer mr-1"></i> Klik untuk lihat daftar</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 4. Variabel: Absen Terlambat --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group hover:border-orange-300 cursor-pointer"
-                 id="card-diagram-terlambat"
-                 data-color="orange"
-                 onclick="showDetailTable('terlambat')"
-                 title="Klik untuk melihat detail karyawan terlambat">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0 group-hover:scale-105 transition-transform">
-                                <i class="fas fa-clock text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm group-hover:text-orange-600 transition-colors">Absen Terlambat</h4>
-                                <p class="text-[11px] text-gray-500">Masuk > {{ sprintf('%02d:05', $jamBatas) }} WIB</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
-                            {{ number_format($cntTerlambat) }} Org
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarTerlambat"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-orange-600">{{ $pctTerlambat }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">dari hadir</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-                            Absen Terlambat
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntTerlambat) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Tepat Waktu
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntTepatWaktu) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-orange-600 bg-orange-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium group-hover:bg-orange-100/70 transition-colors">
-                        <span><i class="fas fa-hand-pointer mr-1"></i> Klik untuk lihat daftar</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 5. Variabel: Cuti & Izin Berjalan --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                 data-color="purple">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
-                                <i class="fas fa-calendar-alt text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">Cuti & Izin Berjalan</h4>
-                                <p class="text-[11px] text-gray-500">Status cuti/izin approved</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                            {{ number_format($cntCuti) }} Org
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarCuti"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-purple-600">{{ $pctCuti }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">dari aktif</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
-                            Sedang Cuti / Izin
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntCuti) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Aktif Bekerja
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format(max(0, $totalKaryawan - $cntCuti)) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-purple-600 bg-purple-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium">
-                        <span>Basis: {{ number_format($totalKaryawan) }} Karyawan Aktif</span>
-                        <span>Approved</span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 6. Variabel: Absen Luar Radius --}}
-            <div class="diagram-stat-card bg-white rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group hover:border-rose-300 cursor-pointer"
-                 id="card-diagram-luar-radius"
-                 data-color="rose"
-                 onclick="showDetailTable('luar-radius')"
-                 title="Klik untuk melihat detail presensi luar radius">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0 group-hover:scale-105 transition-transform">
-                                <i class="fas fa-map-marker-alt text-base"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm group-hover:text-rose-600 transition-colors">Absen Luar Radius</h4>
-                                <p class="text-[11px] text-gray-500">Di luar geofence kantor</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                            {{ number_format($cntLuarRadius) }} Presensi
-                        </span>
-                    </div>
-
-                    {{-- Diagram Donut Terpisah --}}
-                    <div class="py-2">
-                        <div class="relative w-36 h-36 mx-auto flex items-center justify-center">
-                            <canvas id="chartVarLuarRadius"></canvas>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-extrabold text-rose-600">{{ $pctLuarRadius }}%</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">presensi</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                            Di Luar Radius
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntLuarRadius) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
-                            Dalam Radius
-                        </span>
-                        <span class="font-bold text-gray-800">{{ number_format($cntDalamRadius) }}</span>
-                    </div>
-                    <div class="mt-2 text-[11px] text-rose-600 bg-rose-50/70 rounded-md px-2.5 py-1.5 flex items-center justify-between font-medium group-hover:bg-rose-100/70 transition-colors">
-                        <span><i class="fas fa-hand-pointer mr-1"></i> Klik untuk lihat detail</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </div>
-                </div>
-            </div>
-
-        </div>{{-- end TAB 1 --}}
-
-        <!-- TAB 2: Ringkasan Komparasi Semua Variabel -->
-        <div id="container-tab-ringkasan" class="hidden space-y-6">
-            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                <h4 class="font-bold text-gray-800 text-sm mb-1 flex items-center gap-2">
-                    <i class="fas fa-chart-bar text-indigo-500"></i>
-                    Perbandingan Volume Semua Variabel
-                </h4>
-                <p class="text-xs text-gray-500 mb-4">Grafik komparasi kuantitas untuk masing-masing variabel kehadiran hari ini</p>
-                <div class="relative w-full" style="height: 280px;">
-                    <canvas id="comparisonBarChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Ringkasan Cepat Persentase -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div class="p-3 bg-green-50/70 rounded-lg border border-green-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Hadir Normal</p>
-                    <p class="text-lg font-bold text-green-700 mt-0.5">{{ number_format($cntHadirNormal) }}</p>
-                    <p class="text-[11px] text-green-600 font-semibold">{{ $pctHadirNormal }}% dari aktif</p>
-                </div>
-                <div class="p-3 bg-red-50/70 rounded-lg border border-red-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Belum Masuk</p>
-                    <p class="text-lg font-bold text-red-700 mt-0.5">{{ number_format($cntBelumMasuk) }}</p>
-                    <p class="text-[11px] text-red-600 font-semibold">{{ $pctBelumMasuk }}% dari aktif</p>
-                </div>
-                <div class="p-3 bg-yellow-50/70 rounded-lg border border-yellow-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Belum Pulang</p>
-                    <p class="text-lg font-bold text-yellow-700 mt-0.5">{{ number_format($cntBelumPulang) }}</p>
-                    <p class="text-[11px] text-yellow-600 font-semibold">{{ $pctBelumPulang }}% dari hadir</p>
-                </div>
-                <div class="p-3 bg-orange-50/70 rounded-lg border border-orange-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Terlambat</p>
-                    <p class="text-lg font-bold text-orange-700 mt-0.5">{{ number_format($cntTerlambat) }}</p>
-                    <p class="text-[11px] text-orange-600 font-semibold">{{ $pctTerlambat }}% dari hadir</p>
-                </div>
-                <div class="p-3 bg-purple-50/70 rounded-lg border border-purple-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Cuti & Izin</p>
-                    <p class="text-lg font-bold text-purple-700 mt-0.5">{{ number_format($cntCuti) }}</p>
-                    <p class="text-[11px] text-purple-600 font-semibold">{{ $pctCuti }}% dari aktif</p>
-                </div>
-                <div class="p-3 bg-rose-50/70 rounded-lg border border-rose-200/70">
-                    <p class="text-xs text-gray-500 font-medium">Luar Radius</p>
-                    <p class="text-lg font-bold text-rose-700 mt-0.5">{{ number_format($cntLuarRadius) }}</p>
-                    <p class="text-[11px] text-rose-600 font-semibold">{{ $pctLuarRadius }}% presensi</p>
-                </div>
-            </div>
-        </div>{{-- end TAB 2 --}}
-
-    </div>{{-- end Section Diagram --}}
 
     <!-- Detail Panel (muncul saat kartu diklik) -->
     <div id="detail-panel" class="hidden">
@@ -1416,156 +992,7 @@
     </script>
 @endif
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // ── Diagram Analisis Variabel Kehadiran (Dipisah per Variabel) ─────────────
-    document.addEventListener('DOMContentLoaded', function() {
-        // Helper untuk membuat mini donut chart per variabel
-        function createMiniDonut(canvasId, value, total, primaryColor, labelPrimary, labelSecondary) {
-            var ctx = document.getElementById(canvasId);
-            if (!ctx) return;
-
-            var remainder = Math.max(0, total - value);
-            // Jika kedua nilai 0 (misal presensi luar radius 0 dan total presensi 0)
-            var dataValues = (value === 0 && remainder === 0) ? [0, 1] : [value, remainder];
-            var bgColors   = (value === 0 && remainder === 0) ? ['#e2e8f0', '#f1f5f9'] : [primaryColor, '#e2e8f0'];
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: [labelPrimary, labelSecondary],
-                    datasets: [{
-                        data: dataValues,
-                        backgroundColor: bgColors,
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                        hoverOffset: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '72%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(c) {
-                                    if (value === 0 && remainder === 0) return ' Tidak ada data';
-                                    var val = c.raw;
-                                    var pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
-                                    return ' ' + c.label + ': ' + val + ' (' + pct + '%)';
-                                }
-                            },
-                            backgroundColor: 'rgba(17,24,39,0.85)',
-                            padding: 8,
-                            cornerRadius: 6,
-                            titleFont: { size: 11 },
-                            bodyFont: { size: 11 },
-                        }
-                    },
-                    animation: { animateRotate: true, duration: 800 }
-                }
-            });
-        }
-
-        // 1. Hadir Normal
-        createMiniDonut('chartVarHadirNormal', {{ $cntHadirNormal }}, {{ $totalKaryawan }}, '#22c55e', 'Hadir Tepat Waktu', 'Lainnya');
-        // 2. Belum Absen Masuk
-        createMiniDonut('chartVarBelumMasuk', {{ $cntBelumMasuk }}, {{ $totalKaryawan }}, '#ef4444', 'Belum Absen Masuk', 'Tanpa Kekurangan Scan');
-        // 3. Belum Absen Pulang
-        createMiniDonut('chartVarBelumPulang', {{ $cntBelumPulang }}, {{ max(1, $totalKaryawanMasuk) }}, '#eab308', 'Belum Absen Pulang', 'Sudah Absen Pulang');
-        // 4. Absen Terlambat
-        createMiniDonut('chartVarTerlambat', {{ $cntTerlambat }}, {{ max(1, $totalKaryawanMasuk) }}, '#ea580c', 'Absen Terlambat', 'Tepat Waktu');
-        // 5. Cuti & Izin Berjalan
-        createMiniDonut('chartVarCuti', {{ $cntCuti }}, {{ $totalKaryawan }}, '#9333ea', 'Cuti & Izin', 'Aktif Bekerja');
-        // 6. Absen Luar Radius
-        createMiniDonut('chartVarLuarRadius', {{ $cntLuarRadius }}, {{ max(1, $totalPresensi) }}, '#e11d48', 'Luar Radius', 'Dalam Radius');
-
-        // Chart Bar Komparasi (TAB 2)
-        var barCtx = document.getElementById('comparisonBarChart');
-        if (barCtx) {
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: [
-                        'Hadir Normal',
-                        'Belum Masuk',
-                        'Belum Pulang',
-                        'Terlambat',
-                        'Cuti & Izin',
-                        'Luar Radius'
-                    ],
-                    datasets: [{
-                        label: 'Jumlah Karyawan / Presensi',
-                        data: [
-                            {{ $cntHadirNormal }},
-                            {{ $cntBelumMasuk }},
-                            {{ $cntBelumPulang }},
-                            {{ $cntTerlambat }},
-                            {{ $cntCuti }},
-                            {{ $cntLuarRadius }},
-                        ],
-                        backgroundColor: [
-                            '#22c55e',
-                            '#ef4444',
-                            '#eab308',
-                            '#ea580c',
-                            '#9333ea',
-                            '#e11d48',
-                        ],
-                        borderRadius: 6,
-                        borderWidth: 0,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(17,24,39,0.85)',
-                            padding: 8,
-                            cornerRadius: 6,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9' },
-                            ticks: { font: { size: 11 } }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { font: { size: 12, weight: '500' } }
-                        }
-                    }
-                }
-            });
-        }
-    });
-
-    // Switch Tab Diagram
-    function switchDiagramTab(tab) {
-        var tabPisah = document.getElementById('container-tab-pisah');
-        var tabRingkasan = document.getElementById('container-tab-ringkasan');
-        var btnPisah = document.getElementById('btnTabPisah');
-        var btnRingkasan = document.getElementById('btnTabRingkasan');
-
-        if (tab === 'pisah') {
-            tabPisah.classList.remove('hidden');
-            tabRingkasan.classList.add('hidden');
-            btnPisah.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5';
-            btnRingkasan.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1.5';
-        } else {
-            tabPisah.classList.add('hidden');
-            tabRingkasan.classList.remove('hidden');
-            btnPisah.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1.5';
-            btnRingkasan.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-sm transition-all flex items-center gap-1.5';
-        }
-    }
-
     var _activeTable = null;
 
     function prepareDetailExport(link) {
@@ -1659,7 +1086,7 @@
         if (searchInput) searchInput.value = '';
 
         // Nonaktifkan semua kartu
-        document.querySelectorAll('.stat-card, .diagram-stat-card').forEach(function(c) {
+        document.querySelectorAll('.stat-card').forEach(function(c) {
             c.classList.remove('active');
         });
 
@@ -1680,11 +1107,9 @@
         var cfg = DETAIL_CONFIG[type];
         if (!cfg) return;
 
-        // Aktifkan kartu yang diklik (baik stat card maupun diagram card)
+        // Aktifkan kartu statistik yang diklik
         var card = document.getElementById('card-' + type);
         if (card) card.classList.add('active');
-        var cardDiag = document.getElementById('card-diagram-' + type);
-        if (cardDiag) cardDiag.classList.add('active');
 
         // Update panel header style
         var header = document.getElementById('detail-panel-header');
@@ -1740,7 +1165,7 @@
     function closeDetailPanel() {
         var panel = document.getElementById('detail-panel');
         panel.classList.add('hidden');
-        document.querySelectorAll('.stat-card, .diagram-stat-card').forEach(function(c) {
+        document.querySelectorAll('.stat-card').forEach(function(c) {
             c.classList.remove('active');
         });
         var searchInput = document.getElementById('detail_search_input');
