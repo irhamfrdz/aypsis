@@ -150,10 +150,10 @@
                     </select>
                 </div>
 
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pemegang Asset (Karyawan)</label>
+                <div id="karyawan-field" class="md:col-span-2 hidden">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Karyawan Pembawa Asset <span class="text-rose-500">*</span></label>
                     <select name="karyawan_id" id="karyawan_id" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-karyawan">
-                        <option value="">-- Pilih Karyawan Pemegang Asset (Opsional) --</option>
+                        <option value="">-- Pilih Karyawan Pembawa Asset --</option>
                         @foreach($karyawans as $kry)
                             <option value="{{ $kry->id }}" {{ old('karyawan_id', $asset->karyawan_id) == $kry->id ? 'selected' : '' }}>
                                 {{ $kry->nama_lengkap }} ({{ $kry->nik ?? '-' }})@if($kry->divisi) - {{ $kry->divisi }}@endif
@@ -255,17 +255,22 @@
         const lokasi = document.getElementById('lokasi');
         const kapalField = document.getElementById('kapal-field');
         const kapalSelect = document.getElementById('kapal_id');
+        const karyawanField = document.getElementById('karyawan-field');
+        const karyawanSelect = document.getElementById('karyawan_id');
         const toggleKapal = function() {
             const show = lokasi.value === 'Di kapal';
             kapalField.classList.toggle('hidden', !show);
             kapalSelect.required = show;
+            const showKaryawan = lokasi.value === 'Di bawa oleh karyawan';
+            karyawanField.classList.toggle('hidden', !showKaryawan);
+            karyawanSelect.required = showKaryawan;
         };
         lokasi.addEventListener('change', toggleKapal);
         toggleKapal();
 
         if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
             $('#karyawan_id').select2({
-                placeholder: '-- Pilih Karyawan Pemegang Asset (Opsional) --',
+                placeholder: '-- Pilih Karyawan Pembawa Asset --',
                 allowClear: true,
                 width: '100%'
             });
