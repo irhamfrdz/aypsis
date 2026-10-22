@@ -533,16 +533,26 @@
         const selectedRecipients = {};
         const contactValues = {};
         const sentRecipients = {};
+        const recipientElements = {};
         let isGatewayOnline = false;
 
-        // Inisialisasi checkbox & nomor awal
-        $('.recipient-checkbox').each(function() {
-            const index = $(this).attr('data-recipient-index');
-            selectedRecipients[index] = false;
-        });
-
+        // Cache nodes before DataTables detaches rows on other pages.
         $('.contact-person-input').each(function() {
-            contactValues[$(this).attr('data-recipient-index')] = $(this).val() || '';
+            const $input = $(this);
+            const index = $input.attr('data-recipient-index');
+            const $row = $input.closest('tr');
+            const $action = $row.find('.wa-action');
+            selectedRecipients[index] = false;
+            contactValues[index] = $input.val() || '';
+            recipientElements[index] = {
+                input: $input,
+                checkbox: $row.find('.recipient-checkbox'),
+                status: $row.find('.contact-status'),
+                action: $action,
+                shipper: $row.find('.shipper-name-text').text().trim(),
+                message: $action.attr('data-message') || '',
+                renderedState: null
+            };
         });
 
         function normalizeWaPhone(value) {
@@ -638,10 +648,15 @@
         }
 
         function refreshRecipientContact(index, value) {
+            const recipient = recipientElements[index];
+            if (!recipient) return;
             const phone = normalizeWaPhone(value);
-            const $status = $('.contact-status[data-recipient-index="' + index + '"]');
-            const $action = $('.wa-action[data-recipient-index="' + index + '"]');
-            const message = $action.attr('data-message') || '';
+            const state = JSON.stringify([phone, Boolean(selectedRecipients[index]), Boolean(sentRecipients[index])]);
+            if (recipient.renderedState === state) return;
+            recipient.renderedState = state;
+            const $status = recipient.status;
+            const $action = recipient.action;
+            const message = recipient.message;
 
             // Jika sudah dikirim
             if (sentRecipients[index]) {
@@ -713,10 +728,6 @@
             }
         }
 
-        $('.contact-person-input').each(function() {
-            refreshRecipientContact($(this).attr('data-recipient-index'), contactValues[$(this).attr('data-recipient-index')] || '');
-        });
-
         $(document).on('input', '.contact-person-input', function() {
             const index = $(this).attr('data-recipient-index');
             contactValues[index] = $(this).val() || '';
@@ -724,34 +735,39 @@
             updateSelectedSummary();
         });
 
-        contactTable = $('#contactTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"lf>rt<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 text-xs text-slate-500"ip>',
-            language: {
-                search: "",
-                searchPlaceholder: "Cari shipper / kontak...",
-                lengthMenu: "Tampilkan _MENU_ data",
-                info: "Menampilkan _START_ s/d _END_ dari total _TOTAL_ shipper",
-                infoEmpty: "Tidak ada data shipper",
-                infoFiltered: "(disaring dari _MAX_ total data)",
-                paginate: {
-                    first: '<i class="fas fa-angle-double-left"></i>',
-                    last: '<i class="fas fa-angle-double-right"></i>',
-                    next: '<i class="fas fa-chevron-right text-xs"></i>',
-                    previous: '<i class="fas fa-chevron-left text-xs"></i>'
+        if ($.fn.DataTable && Object.keys(recipientElements).length > 0) {
+            contactTable = $('#contactTable').DataTable({
+                autoWidth: false,
+                pageLength: 50,
+                rowCallback: function(row) {
+                    const index = row.querySelector('.recipient-checkbox')?.dataset.recipientIndex;
+                    const recipient = recipientElements[index];
+                    if (!recipient) return;
+                    recipient.checkbox.prop('checked', Boolean(selectedRecipients[index]));
+                    recipient.input.val(contactValues[index] || '');
+                    refreshRecipientContact(index, contactValues[index] || '');
+                },
+                dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"lf>rt<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 text-xs text-slate-500"ip>',
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari shipper / kontak...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ s/d _END_ dari total _TOTAL_ shipper",
+                    infoEmpty: "Tidak ada data shipper",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    paginate: {
+                        first: '<i class="fas fa-angle-double-left"></i>',
+                        last: '<i class="fas fa-angle-double-right"></i>',
+                        next: '<i class="fas fa-chevron-right text-xs"></i>',
+                        previous: '<i class="fas fa-chevron-left text-xs"></i>'
+                    }
                 }
-            }
-        });
-
-        $('#contactTable').on('draw.dt', function() {
-            $('.recipient-checkbox').each(function() {
-                const index = $(this).attr('data-recipient-index');
-                $(this).prop('checked', Boolean(selectedRecipients[index]));
+            });
+        } else {
+            Object.keys(recipientElements).forEach(index => {
                 refreshRecipientContact(index, contactValues[index] || '');
             });
-            updateSelectedSummary();
-        });
+        }
 
         $(document).on('change', '.recipient-checkbox', function() {
             const index = $(this).attr('data-recipient-index');
@@ -768,11 +784,14 @@
                 selectedRecipients[idx] = isSelected;
             });
 
-            contactTable.rows().nodes().to$().find('.recipient-checkbox').each(function() {
-                const index = $(this).attr('data-recipient-index');
-                $(this).prop('checked', isSelected);
-                refreshRecipientContact(index, contactValues[index] || '');
-            });
+            if (contactTable) {
+                contactTable.draw(false);
+            } else {
+                Object.keys(recipientElements).forEach(index => {
+                    recipientElements[index].checkbox.prop('checked', isSelected);
+                    refreshRecipientContact(index, contactValues[index] || '');
+                });
+            }
             
             updateSelectedSummary();
         });
@@ -856,9 +875,9 @@
                 if (selectedRecipients[idx]) {
                     const phone = normalizeWaPhone(contactValues[idx]);
                     if (phone) {
-                        const $row = $('#table-row-' + idx);
-                        const shipperName = $row.find('.shipper-name-text').text().trim() || ('Shipper #' + (parseInt(idx) + 1));
-                        const message = $('.wa-action[data-recipient-index="' + idx + '"]').attr('data-message') || '';
+                        const recipient = recipientElements[idx];
+                        const shipperName = recipient.shipper || ('Shipper #' + (parseInt(idx) + 1));
+                        const message = recipient.message;
                         bulkQueue.push({
                             index: idx,
                             shipper: shipperName,
