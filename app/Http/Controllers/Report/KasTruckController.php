@@ -35,7 +35,13 @@ class KasTruckController extends Controller
 
         if ($akunCoa) {
             $query = CoaTransaction::with(['coa'])
-                ->where('coa_id', $akunCoa->id);
+                ->where('coa_id', $akunCoa->id)
+                ->whereNotIn('nomor_referensi', function ($query) {
+                    $query->select('nomor_pembayaran')
+                        ->from('pembatalan_surat_jalans')
+                        ->where('metode_pembatalan', 'utang_karyawan')
+                        ->whereNotNull('nomor_pembayaran');
+                });
 
             // Apply Date Filters
             $startDate = $request->input('start_date');
@@ -66,6 +72,12 @@ class KasTruckController extends Controller
             if ($startDate) {
                 $pastTransactions = $this->applyPalNetCashAmounts(
                     CoaTransaction::where('coa_id', $akunCoa->id)
+                        ->whereNotIn('nomor_referensi', function ($query) {
+                            $query->select('nomor_pembayaran')
+                                ->from('pembatalan_surat_jalans')
+                                ->where('metode_pembatalan', 'utang_karyawan')
+                                ->whereNotNull('nomor_pembayaran');
+                        })
                         ->whereDate('tanggal_transaksi', '<', $startDate)
                         ->get(),
                     $akunCoa->id

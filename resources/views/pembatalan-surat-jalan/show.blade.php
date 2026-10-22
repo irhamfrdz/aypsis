@@ -45,20 +45,35 @@
                         <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->nomor_accurate ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="block text-gray-500">Tanggal Kas</span>
+                        <span class="block text-gray-500">Tanggal Pencatatan</span>
                         <span class="font-semibold text-gray-900">{{ optional($pembatalanSuratJalan->tanggal_kas)->format('d/m/Y') ?? '-' }}</span>
                     </div>
+                    <div>
+                        <span class="block text-gray-500">Cara Pembatalan</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->metode_pembatalan === 'utang_karyawan' ? 'Utang Karyawan' : 'Kas/Bank' }}</span>
+                    </div>
+                    @if($pembatalanSuratJalan->metode_pembatalan === 'utang_karyawan')
+                    <div>
+                        <span class="block text-gray-500">Karyawan</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->karyawan?->nama_lengkap ?? $pembatalanSuratJalan->karyawan?->nama_panggilan ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Akun Piutang</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->akunPiutang ? $pembatalanSuratJalan->akunPiutang->nomor_akun.' - '.$pembatalanSuratJalan->akunPiutang->nama_akun : '-' }}</span>
+                    </div>
+                    @else
                     <div>
                         <span class="block text-gray-500">Bank</span>
                         <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->bank ?? '-' }}</span>
                     </div>
+                    @endif
                     <div>
                         <span class="block text-gray-500">Akun Biaya</span>
                         <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->akunCoa ? $pembatalanSuratJalan->akunCoa->nomor_akun.' - '.$pembatalanSuratJalan->akunCoa->nama_akun : 'Biaya Uang Jalan Muat (data lama)' }}</span>
                     </div>
                     <div>
                         <span class="block text-gray-500">Jenis Transaksi</span>
-                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->jenis_transaksi ?? '-' }}</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->metode_pembatalan === 'utang_karyawan' ? 'Piutang (Debit) / Biaya (Kredit)' : ($pembatalanSuratJalan->jenis_transaksi ?? '-') }}</span>
                     </div>
                     <div>
                         <span class="block text-gray-500">Tanggal Pembayaran</span>

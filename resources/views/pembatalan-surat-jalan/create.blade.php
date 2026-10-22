@@ -79,7 +79,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembatalan</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div>
                                 <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran <span class="text-red-500">*</span></label>
@@ -101,7 +101,7 @@
                                     class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                             </div>
                             <div>
-                                <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
+                                <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Pencatatan</label>
                                 <input type="date" name="tanggal_kas" id="tanggal_kas"
                                     value="{{ old('tanggal_kas', now()->toDateString()) }}"
                                     class="{{ $inputClasses }}" required>
@@ -124,9 +124,40 @@
 
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book Accounting)</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Cara Pembatalan & Jurnal</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                            <div>
+                                <label for="metode_pembatalan" class="{{ $labelClasses }}">Cara Pembatalan <span class="text-red-500">*</span></label>
+                                <select name="metode_pembatalan" id="metode_pembatalan" class="{{ $inputClasses }}" required>
+                                    <option value="utang_karyawan" @selected(old('metode_pembatalan', 'utang_karyawan') === 'utang_karyawan')>Masukkan sebagai Utang Karyawan</option>
+                                    <option value="kas" @selected(old('metode_pembatalan') === 'kas')>Pengembalian melalui Kas/Bank</option>
+                                </select>
+                            </div>
+                            <div id="karyawanField">
+                                <label for="karyawan_id" class="{{ $labelClasses }}">Karyawan <span class="text-red-500">*</span></label>
+                                <select name="karyawan_id" id="karyawan_id" class="{{ $inputClasses }}">
+                                    <option value="">-- Pilih Karyawan --</option>
+                                    @foreach($karyawans as $karyawan)
+                                        <option value="{{ $karyawan->id }}" @selected((string) old('karyawan_id') === (string) $karyawan->id)>
+                                            {{ $karyawan->nik ? $karyawan->nik.' - ' : '' }}{{ $karyawan->nama_lengkap ?: $karyawan->nama_panggilan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('karyawan_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div id="akunPiutangField">
+                                <label for="akun_piutang_id" class="{{ $labelClasses }}">Akun Piutang Karyawan <span class="text-red-500">*</span></label>
+                                <select name="akun_piutang_id" id="akun_piutang_id" class="{{ $inputClasses }}">
+                                    <option value="">-- Pilih Akun Piutang --</option>
+                                    @foreach($akunPiutang as $akun)
+                                        <option value="{{ $akun->id }}" @selected((string) old('akun_piutang_id') === (string) $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                                    @endforeach
+                                </select>
+                                @error('akun_piutang_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <div class="relative">
+                            <div id="bankField" class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
                                 <div class="relative">
                                     <input type="text" id="bankSearch" placeholder="Cari bank..."
@@ -136,7 +167,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
                                 </div>
-                                <select name="bank" id="bank" class="hidden" required>
+                                <select name="bank" id="bank" class="hidden">
                                     <option value="">-- Pilih Bank --</option>
                                     @if(isset($akunCoa))
                                         @foreach($akunCoa as $akun)
@@ -163,16 +194,16 @@
                                 </select>
                                 @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
-                            <div>
+                            <div id="jenisTransaksiField">
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
-                                <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
+                                <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}">
                                     <option value="">-- Pilih Jenis --</option>
                                     <option value="Debit" {{ old('jenis_transaksi') == 'Debit' ? 'selected' : '' }}>Debit (Bank +, Biaya -)</option>
                                     <option value="Kredit" {{ old('jenis_transaksi', 'Kredit') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya +, Bank -)</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                        <div id="journalHelp" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
                             <div class="flex items-start">
                                 <svg class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
@@ -394,8 +425,19 @@
         const bankSearch = document.getElementById('bankSearch');
         const bankSelect = document.getElementById('bank');
         const akunBiayaSelect = document.getElementById('akun_coa_id');
+        const metodeSelect = document.getElementById('metode_pembatalan');
+        const karyawanSelect = document.getElementById('karyawan_id');
+        const akunPiutangSelect = document.getElementById('akun_piutang_id');
+        const bankField = document.getElementById('bankField');
+        const karyawanField = document.getElementById('karyawanField');
+        const akunPiutangField = document.getElementById('akunPiutangField');
+        const jenisTransaksiField = document.getElementById('jenisTransaksiField');
+        const jenisTransaksi = document.getElementById('jenis_transaksi');
+        const journalHelp = document.getElementById('journalHelp');
         if (window.jQuery && jQuery.fn.select2) {
             jQuery(akunBiayaSelect).select2({ width: '100%', placeholder: '-- Pilih Akun COA --' });
+            jQuery(karyawanSelect).select2({ width: '100%', placeholder: '-- Pilih Karyawan --' });
+            jQuery(akunPiutangSelect).select2({ width: '100%', placeholder: '-- Pilih Akun Piutang --' });
         }
         const bankDropdown = document.getElementById('bankDropdown');
         const bankOptions = document.getElementById('bankOptions');
@@ -407,6 +449,32 @@
         const serverSearchForm = document.getElementById('sjServerSearchForm');
         const serverSearchInput = document.getElementById('search_sj');
         const searchCounter = document.getElementById('searchCounter');
+
+        function updateMetodeFields() {
+            const isUtang = metodeSelect?.value === 'utang_karyawan';
+            karyawanField?.classList.toggle('hidden', !isUtang);
+            akunPiutangField?.classList.toggle('hidden', !isUtang);
+            bankField?.classList.toggle('hidden', isUtang);
+            jenisTransaksiField?.classList.toggle('hidden', isUtang);
+
+            karyawanSelect.required = isUtang;
+            karyawanSelect.disabled = !isUtang;
+            akunPiutangSelect.required = isUtang;
+            akunPiutangSelect.disabled = !isUtang;
+            bankSelect.required = !isUtang;
+            bankSelect.disabled = isUtang;
+            jenisTransaksi.required = !isUtang;
+            jenisTransaksi.disabled = isUtang;
+
+            if (journalHelp) {
+                journalHelp.querySelector('div > div').innerHTML = isUtang
+                    ? '<strong>Jurnal Utang Karyawan:</strong> akun piutang bertambah (Dr), akun biaya yang dipilih berkurang (Cr). Tidak ada kas yang masuk dan laporan Kas Truck tidak bertambah.'
+                    : '<strong>Jurnal Kas/Bank:</strong><br>Debit: Bank bertambah (Dr), akun biaya berkurang (Cr).<br>Kredit: Akun biaya bertambah (Dr), Bank berkurang (Cr).';
+            }
+        }
+
+        metodeSelect?.addEventListener('change', updateMetodeFields);
+        updateMetodeFields();
 
         rows.forEach(row => {
             row.addEventListener('click', function () {
@@ -618,7 +686,20 @@
                     return false;
                 }
 
-                if (!bankSelect?.value) {
+                const isUtang = metodeSelect?.value === 'utang_karyawan';
+                if (isUtang && !karyawanSelect?.value) {
+                    e.preventDefault();
+                    showWarning('Silakan pilih karyawan yang menanggung utang.', 'warning');
+                    return false;
+                }
+
+                if (isUtang && !akunPiutangSelect?.value) {
+                    e.preventDefault();
+                    showWarning('Silakan pilih akun piutang karyawan.', 'warning');
+                    return false;
+                }
+
+                if (!isUtang && !bankSelect?.value) {
                     e.preventDefault();
                     showWarning('Silakan pilih bank terlebih dahulu.', 'warning');
                     return false;
@@ -630,8 +711,7 @@
                     return false;
                 }
 
-                const jenisTransaksi = document.getElementById('jenis_transaksi');
-                if (!jenisTransaksi?.value) {
+                if (!isUtang && !jenisTransaksi?.value) {
                     e.preventDefault();
                     showWarning('Silakan pilih jenis transaksi terlebih dahulu.', 'warning');
                     return false;
@@ -641,7 +721,11 @@
                 const totalPembayaran = parseFloat(totalSetelahInput?.value) || 0;
                 const bankName = bankSelect.options[bankSelect.selectedIndex]?.text || '-';
                 const akunBiayaName = akunBiayaSelect.options[akunBiayaSelect.selectedIndex]?.text || '-';
-                const confirmRes = confirm(`Konfirmasi pembatalan:\n\nNo Surat Jalan: ${selectedNo}\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\nBank: ${bankName}\nAkun Biaya: ${akunBiayaName}\nJenis: ${jenisTransaksi.value}\n\nStatus akan otomatis berubah menjadi Cancelled.\nLanjutkan pembatalan?`);
+                const karyawanName = karyawanSelect.options[karyawanSelect.selectedIndex]?.text.trim() || '-';
+                const caraPembatalan = isUtang
+                    ? `Utang Karyawan: ${karyawanName}\nKas Truck: Tidak bertambah`
+                    : `Bank: ${bankName}\nJenis: ${jenisTransaksi.value}`;
+                const confirmRes = confirm(`Konfirmasi pembatalan:\n\nNo Surat Jalan: ${selectedNo}\nJumlah: Rp ${totalPembayaran.toLocaleString('id-ID')}\n${caraPembatalan}\nAkun Biaya: ${akunBiayaName}\n\nStatus akan otomatis berubah menjadi Cancelled.\nLanjutkan pembatalan?`);
                 if (!confirmRes) {
                     e.preventDefault();
                     return false;

@@ -17,6 +17,9 @@ class PembatalanSuratJalan extends Model
         'nomor_accurate',
         'tanggal_kas',
         'tanggal_pembayaran',
+        'metode_pembatalan',
+        'karyawan_id',
+        'akun_piutang_id',
         'bank',
         'akun_coa_id',
         'jenis_transaksi',
@@ -57,5 +60,15 @@ class PembatalanSuratJalan extends Model
     public function akunCoa()
     {
         return $this->belongsTo(Coa::class, 'akun_coa_id');
+    }
+
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function akunPiutang()
+    {
+        return $this->belongsTo(Coa::class, 'akun_piutang_id');
     }
 }

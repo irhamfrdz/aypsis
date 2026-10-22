@@ -45,18 +45,48 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                    <div>
+                        <label for="metode_pembatalan" class="block text-sm font-semibold text-gray-700 mb-1">Cara Pembatalan</label>
+                        <select id="metode_pembatalan" name="metode_pembatalan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                            <option value="utang_karyawan" @selected(old('metode_pembatalan', $pembatalanSuratJalan->metode_pembatalan ?? 'kas') === 'utang_karyawan')>Masukkan sebagai Utang Karyawan</option>
+                            <option value="kas" @selected(old('metode_pembatalan', $pembatalanSuratJalan->metode_pembatalan ?? 'kas') === 'kas')>Pengembalian melalui Kas/Bank</option>
+                        </select>
+                    </div>
+                    <div id="karyawanField">
+                        <label for="karyawan_id" class="block text-sm font-semibold text-gray-700 mb-1">Karyawan</label>
+                        <select id="karyawan_id" name="karyawan_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Pilih Karyawan --</option>
+                            @foreach($karyawans as $karyawan)
+                                <option value="{{ $karyawan->id }}" @selected((string) old('karyawan_id', $pembatalanSuratJalan->karyawan_id) === (string) $karyawan->id)>{{ $karyawan->nik ? $karyawan->nik.' - ' : '' }}{{ $karyawan->nama_lengkap ?: $karyawan->nama_panggilan }}</option>
+                            @endforeach
+                        </select>
+                        @error('karyawan_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div id="akunPiutangField">
+                        <label for="akun_piutang_id" class="block text-sm font-semibold text-gray-700 mb-1">Akun Piutang Karyawan</label>
+                        <select id="akun_piutang_id" name="akun_piutang_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Pilih Akun Piutang --</option>
+                            @foreach($akunPiutang as $akun)
+                                <option value="{{ $akun->id }}" @selected((string) old('akun_piutang_id', $pembatalanSuratJalan->akun_piutang_id) === (string) $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            @endforeach
+                        </select>
+                        @error('akun_piutang_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
                     <div>
-                        <label for="tanggal_kas" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Kas</label>
+                        <label for="tanggal_kas" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pencatatan</label>
                         <input type="date" id="tanggal_kas" name="tanggal_kas" value="{{ old('tanggal_kas', optional($pembatalanSuratJalan->tanggal_kas)->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
                     <div>
                         <label for="tanggal_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pembayaran</label>
                         <input type="date" id="tanggal_pembayaran" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', optional($pembatalanSuratJalan->tanggal_pembayaran)->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
-                    <div>
+                    <div id="bankField">
                         <label for="bank" class="block text-sm font-semibold text-gray-700 mb-1">Bank</label>
-                        <select id="bank" name="bank" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <select id="bank" name="bank" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">-- Pilih Bank --</option>
                             @foreach($akunCoa as $akun)
                                 <option value="{{ $akun->nama_akun }}" {{ old('bank', $pembatalanSuratJalan->bank) == $akun->nama_akun ? 'selected' : '' }}>
@@ -78,9 +108,9 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                    <div>
+                    <div id="jenisTransaksiField">
                         <label for="jenis_transaksi" class="block text-sm font-semibold text-gray-700 mb-1">Jenis Transaksi</label>
-                        <select id="jenis_transaksi" name="jenis_transaksi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <select id="jenis_transaksi" name="jenis_transaksi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">-- Pilih Jenis --</option>
                             <option value="Debit" {{ old('jenis_transaksi', $pembatalanSuratJalan->jenis_transaksi) == 'Debit' ? 'selected' : '' }}>Debit</option>
                             <option value="Kredit" {{ old('jenis_transaksi', $pembatalanSuratJalan->jenis_transaksi) == 'Kredit' ? 'selected' : '' }}>Kredit</option>
@@ -136,6 +166,30 @@
         const totalPembayaranInput = document.getElementById('total_pembayaran');
         const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalAkhirInput = document.getElementById('total_tagihan_setelah_penyesuaian');
+        const metodeSelect = document.getElementById('metode_pembatalan');
+        const karyawanSelect = document.getElementById('karyawan_id');
+        const akunPiutangSelect = document.getElementById('akun_piutang_id');
+        const bankSelect = document.getElementById('bank');
+        const jenisTransaksi = document.getElementById('jenis_transaksi');
+
+        function updateMetodeFields() {
+            const isUtang = metodeSelect.value === 'utang_karyawan';
+            document.getElementById('karyawanField').classList.toggle('hidden', !isUtang);
+            document.getElementById('akunPiutangField').classList.toggle('hidden', !isUtang);
+            document.getElementById('bankField').classList.toggle('hidden', isUtang);
+            document.getElementById('jenisTransaksiField').classList.toggle('hidden', isUtang);
+            karyawanSelect.required = isUtang;
+            karyawanSelect.disabled = !isUtang;
+            akunPiutangSelect.required = isUtang;
+            akunPiutangSelect.disabled = !isUtang;
+            bankSelect.required = !isUtang;
+            bankSelect.disabled = isUtang;
+            jenisTransaksi.required = !isUtang;
+            jenisTransaksi.disabled = isUtang;
+        }
+
+        metodeSelect.addEventListener('change', updateMetodeFields);
+        updateMetodeFields();
 
         function hitungTotalAkhir() {
             const totalPembayaran = parseFloat(totalPembayaranInput?.value) || 0;

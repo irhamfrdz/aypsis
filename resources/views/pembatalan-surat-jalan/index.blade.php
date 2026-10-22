@@ -39,9 +39,9 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. SJ</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pembayaran</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cara Pembatalan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akun Biaya</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl. Kas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl. Pencatatan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Akhir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan Batal</th>
@@ -75,14 +75,19 @@
                             {{ $pembatalan->nomor_pembayaran ?? '-' }}
                         </td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
-                            {{ $pembatalan->bank ?? '-' }}
+                            @if($pembatalan->metode_pembatalan === 'utang_karyawan')
+                                <span class="font-medium text-amber-700">Utang Karyawan</span>
+                                <div class="text-xs text-gray-500">{{ $pembatalan->karyawan?->nama_lengkap ?? $pembatalan->karyawan?->nama_panggilan ?? '-' }}</div>
+                            @else
+                                {{ $pembatalan->bank ?? '-' }}
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">{{ $pembatalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat (data lama)' }}</td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
                             {{ $pembatalan->tanggal_kas ? $pembatalan->tanggal_kas->format('d/m/Y') : '-' }}
                         </td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
-                            {{ $pembatalan->jenis_transaksi ?? '-' }}
+                            {{ $pembatalan->metode_pembatalan === 'utang_karyawan' ? 'Piutang / Biaya' : ($pembatalan->jenis_transaksi ?? '-') }}
                         </td>
                         <td class="px-6 py-4 text-right font-semibold text-gray-900 whitespace-nowrap">
                             Rp {{ number_format((float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? 0), 0, ',', '.') }}
