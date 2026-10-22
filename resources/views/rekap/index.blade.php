@@ -43,7 +43,7 @@
 @php
     $user = Auth::user();
     $groups = collect([
-        ['category' => 'Kontainer', 'label' => 'Rekap Perbaikan Kontainer', 'route' => 'rekap-perbaikan-kontainer.index', 'permission' => null],
+        ['category' => 'Aktiva', 'label' => 'Rekap Perbaikan Kontainer', 'route' => 'rekap-perbaikan-kontainer.index', 'permission' => null],
         ['category' => 'Absensi', 'label' => 'Rekap Absensi', 'route' => 'absensi.rekap', 'permission' => 'absensi-rekap'],
         ['category' => 'Aktiva', 'label' => 'Rekap Biaya Kapal', 'route' => 'rekap-biaya-kapal.index', 'permission' => 'biaya-kapal-view'],
         ['category' => 'Aktiva', 'label' => 'Rekap Biaya Asset', 'route' => 'rekap-biaya-asset.index', 'permission' => 'rekap-biaya-asset-view'],
