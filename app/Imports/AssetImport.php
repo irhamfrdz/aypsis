@@ -52,6 +52,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
             Asset::create([
                 'kode_asset' => $kodeAsset,
                 'nama_asset' => $row['nama_asset'],
+                'nomor_seri' => $row['nomor_seri'],
                 'kategori' => $kategori,
                 'tanggal_perolehan' => $tanggalPerolehan,
                 'kondisi' => $kondisi,
@@ -64,10 +65,26 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
         }
     }
 
+    public function prepareForValidation($data, $index)
+    {
+        $data['nomor_seri'] = trim((string) ($data['nomor_seri'] ?? ''));
+
+        return $data;
+    }
+
     public function rules(): array
     {
         return [
             'nama_asset' => 'required|string',
+            'nomor_seri' => 'required|string|max:100',
+        ];
+    }
+
+    public function customValidationMessages(): array
+    {
+        return [
+            'nomor_seri.required' => 'No Seri/No Mesin wajib diisi.',
+            'nomor_seri.max' => 'No Seri/No Mesin maksimal 100 karakter.',
         ];
     }
 }

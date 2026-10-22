@@ -15,6 +15,7 @@ class AssetTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, Wi
         return [
             'kode_asset',
             'nama_asset',
+            'nomor_seri',
             'kategori',
             'tanggal_perolehan',
             'kondisi',
@@ -31,6 +32,7 @@ class AssetTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, Wi
             [
                 '(Kosongkan = Auto)',
                 'Laptop Dell Latitude 5420',
+                'SN-DELL-5420-001',
                 'Elektronik & IT',
                 '2024-01-15',
                 'Baik',
@@ -42,6 +44,7 @@ class AssetTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, Wi
             [
                 '(Kosongkan = Auto)',
                 'Forklift TCM 3 Ton Diesel',
+                'MESIN-TCM-0001',
                 'Alat Berat',
                 '2023-06-10',
                 'Baik',
