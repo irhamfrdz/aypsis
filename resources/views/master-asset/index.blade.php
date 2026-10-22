@@ -371,7 +371,6 @@
         <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form id="tandaTerimaForm" method="POST" action="" enctype="multipart/form-data">
                 @csrf
-                <input type="hidden" name="print_after_save" id="modal_print_after_save" value="0">
                 <div class="bg-white px-6 pt-5 pb-4">
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                         <div>
@@ -434,21 +433,12 @@
                     </div>
                 </div>
 
-                <div class="bg-gray-50 px-6 py-3 flex flex-wrap items-center justify-between gap-2">
-                    <a id="modal_print_link" href="#" target="_blank" class="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        Cetak Form Dokumen
-                    </a>
-
+                <div class="bg-gray-50 px-6 py-3 flex flex-wrap items-center justify-end gap-2">
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="closeTandaTerimaModal()" class="px-3.5 py-2 text-xs font-semibold rounded-xl text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-all duration-150">
                             Batal
                         </button>
-                        <button type="button" onclick="submitTandaTerima(true)" class="px-3.5 py-2 text-xs font-semibold rounded-xl text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-all duration-150 inline-flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                            Simpan & Cetak
-                        </button>
-                        <button type="button" onclick="submitTandaTerima(false)" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150">
+                        <button type="button" onclick="submitTandaTerima()" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150">
                             Simpan Tanda Terima
                         </button>
                     </div>
@@ -479,12 +469,10 @@
     function openTandaTerimaModal(id, kode, nama, karyawanId, tanggal, status, keterangan, fotoUrl = '') {
         document.getElementById('modal_asset_label').innerText = `${kode} - ${nama}`;
         document.getElementById('tandaTerimaForm').action = `{{ url('master-asset') }}/${id}/tanda-terima`;
-        document.getElementById('modal_print_link').href = `{{ url('master-asset') }}/${id}/print-tanda-terima`;
         document.getElementById('modal_karyawan_id').value = karyawanId || '';
         document.getElementById('modal_tanggal_tanda_terima').value = tanggal || '{{ date('Y-m-d') }}';
         document.getElementById('modal_status').value = status || 'Digunakan';
         document.getElementById('modal_keterangan').value = keterangan || '';
-        document.getElementById('modal_print_after_save').value = '0';
         document.getElementById('modal_foto_tanda_terima').value = '';
         const fotoLink = document.getElementById('modal_foto_tanda_terima_link');
         fotoLink.href = fotoUrl || '#';
@@ -496,7 +484,7 @@
         document.getElementById('tandaTerimaModal').classList.add('hidden');
     }
 
-    function submitTandaTerima(print) {
+    function submitTandaTerima() {
         const form = document.getElementById('tandaTerimaForm');
         const karyawanSelect = document.getElementById('modal_karyawan_id');
         const tanggalInput = document.getElementById('modal_tanggal_tanda_terima');
@@ -513,7 +501,6 @@
             return;
         }
 
-        document.getElementById('modal_print_after_save').value = print ? '1' : '0';
         if (!form.reportValidity()) return;
         form.submit();
     }
@@ -526,8 +513,5 @@
         }
     }
 
-    @if(session('print_asset_id'))
-        window.open("{{ route('asset.print-tanda-terima', session('print_asset_id')) }}", "_blank");
-    @endif
 </script>
 @endpush

@@ -355,12 +355,6 @@ class AssetController extends Controller
             $disk->delete($fotoLama);
         }
 
-        if ($request->boolean('print_after_save')) {
-            return redirect()->route('asset.index')
-                ->with('success', 'Form tanda terima asset berhasil disimpan')
-                ->with('print_asset_id', $asset->id);
-        }
-
         return redirect()->route('asset.index')->with('success', 'Form tanda terima asset berhasil disimpan');
     }
 

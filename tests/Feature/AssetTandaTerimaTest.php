@@ -154,7 +154,7 @@ class AssetTandaTerimaTest extends TestCase
     {
         return Request::create('/master-asset/1/tanda-terima', 'POST', [
             'karyawan_id' => 1, 'tanggal_tanda_terima' => '2026-10-23',
-            'status' => 'Digunakan', 'print_after_save' => '0',
+            'status' => 'Digunakan',
         ], [], $files);
     }
 
