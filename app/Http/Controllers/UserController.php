@@ -774,6 +774,7 @@ class UserController extends Controller
                 'mesin' => 'mesin',
                 'gaji-supir-batam' => 'gaji-supir-batam',
                 'saldo-utang-karyawan' => 'saldo-utang-karyawan',
+                'permohonan-pinjaman-karyawan' => 'permohonan-pinjaman-karyawan',
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {

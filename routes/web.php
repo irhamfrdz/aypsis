@@ -4975,6 +4975,28 @@ Route::middleware([
         Route::resource('saldo-utang-karyawan', \App\Http\Controllers\SaldoUtangSupirController::class)
             ->only(['index', 'create', 'store', 'show']);
 
+        Route::get('permohonan-pinjaman-karyawan', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'index'])
+            ->name('permohonan-pinjaman-karyawan.index')
+            ->middleware('can:permohonan-pinjaman-karyawan-view');
+        Route::get('permohonan-pinjaman-karyawan/create', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'create'])
+            ->name('permohonan-pinjaman-karyawan.create')
+            ->middleware('can:permohonan-pinjaman-karyawan-create');
+        Route::post('permohonan-pinjaman-karyawan', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'store'])
+            ->name('permohonan-pinjaman-karyawan.store')
+            ->middleware('can:permohonan-pinjaman-karyawan-create');
+        Route::get('permohonan-pinjaman-karyawan/{permohonanPinjamanKaryawan}', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'show'])
+            ->name('permohonan-pinjaman-karyawan.show')
+            ->middleware('can:permohonan-pinjaman-karyawan-view');
+        Route::post('permohonan-pinjaman-karyawan/{permohonanPinjamanKaryawan}/approve', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'approve'])
+            ->name('permohonan-pinjaman-karyawan.approve')
+            ->middleware('can:permohonan-pinjaman-karyawan-approve');
+        Route::post('permohonan-pinjaman-karyawan/{permohonanPinjamanKaryawan}/reject', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'reject'])
+            ->name('permohonan-pinjaman-karyawan.reject')
+            ->middleware('can:permohonan-pinjaman-karyawan-approve');
+        Route::post('permohonan-pinjaman-karyawan/{permohonanPinjamanKaryawan}/cancel', [\App\Http\Controllers\PermohonanPinjamanKaryawanController::class, 'cancel'])
+            ->name('permohonan-pinjaman-karyawan.cancel')
+            ->middleware('can:permohonan-pinjaman-karyawan-view');
+
         // Rute lama dipertahankan untuk bookmark/form yang belum diperbarui.
         Route::get('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
             ->name('saldo-utang-supir.import');

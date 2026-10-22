@@ -1165,6 +1165,23 @@
                                 <td><input type="checkbox" name="permissions[permohonan-amprahan][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Permohonan Pinjaman Karyawan --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">&boxur;&boxh;</span>
+                                        <span class="font-bold text-amber-600">Permohonan Pinjaman Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][create]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][approve]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
 
                             {{-- Master Tarif --}}

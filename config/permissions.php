@@ -334,6 +334,16 @@ return [
                 'permohonan-amprahan-export' => 'Export Permohonan Amprahan',
             ],
         ],
+        'permohonan-pinjaman-karyawan' => [
+            'name' => 'Permohonan Pinjaman Karyawan',
+            'description' => 'Pengajuan dan persetujuan pinjaman karyawan',
+            'required' => true,
+            'sub_modules' => [
+                'permohonan-pinjaman-karyawan-view' => 'View Permohonan Pinjaman Karyawan',
+                'permohonan-pinjaman-karyawan-create' => 'Create Permohonan Pinjaman Karyawan',
+                'permohonan-pinjaman-karyawan-approve' => 'Approve Permohonan Pinjaman Karyawan',
+            ],
+        ],
         'riwayat-pasang-ban' => [
             'name' => 'Riwayat Pasang Ban',
             'description' => 'Menu Riwayat Pemasangan Ban',
@@ -422,6 +432,7 @@ return [
 
         // Permintaan Amprahan
         'permohonan-amprahan' => ['permohonan-amprahan-view'],
+        'permohonan-pinjaman-karyawan' => ['permohonan-pinjaman-karyawan-view'],
 
         // Master Asset
         'master-asset' => ['master-asset-view', 'master-asset-create', 'master-asset-update', 'master-asset-delete', 'asset-view', 'asset-create', 'asset-update', 'asset-delete'],

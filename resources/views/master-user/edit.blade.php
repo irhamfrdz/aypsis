@@ -3554,6 +3554,25 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Permohonan Pinjaman Karyawan --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">â””â”€</span>
+                                        <div>
+                                            <span class="text-amber-600 font-bold">Permohonan Pinjaman Karyawan</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][view]" value="1" class="permission-checkbox" @if(old('permissions.permohonan-pinjaman-karyawan.view') || (isset($userMatrixPermissions['permohonan-pinjaman-karyawan']['view']) && $userMatrixPermissions['permohonan-pinjaman-karyawan']['view']) || ($user && $user->can('permohonan-pinjaman-karyawan-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][create]" value="1" class="permission-checkbox" @if(old('permissions.permohonan-pinjaman-karyawan.create') || (isset($userMatrixPermissions['permohonan-pinjaman-karyawan']['create']) && $userMatrixPermissions['permohonan-pinjaman-karyawan']['create']) || ($user && $user->can('permohonan-pinjaman-karyawan-create'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-pinjaman-karyawan][approve]" value="1" class="permission-checkbox" @if(old('permissions.permohonan-pinjaman-karyawan.approve') || (isset($userMatrixPermissions['permohonan-pinjaman-karyawan']['approve']) && $userMatrixPermissions['permohonan-pinjaman-karyawan']['approve']) || ($user && $user->can('permohonan-pinjaman-karyawan-approve'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
 
                             {{-- Biaya Bensin --}}

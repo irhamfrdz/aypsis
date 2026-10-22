@@ -1127,6 +1127,7 @@
                                  Request::routeIs('pembayaran-pranota-rit-kenek.*') ||
                                  Request::routeIs('pranota-uang-rit-batam.*') ||
                                  Request::routeIs('saldo-utang-karyawan.*') ||
+                                 Request::routeIs('permohonan-pinjaman-karyawan.*') ||
                                  Request::routeIs('saldo-utang-supir.*');
                     
                     $hasRitPermissions = $user && (
@@ -1137,6 +1138,7 @@
                         $user->can('pembayaran-pranota-rit-kenek-view') ||
                         $user->can('pranota-uang-rit-batam-view') ||
                         $user->can('saldo-utang-karyawan-view') ||
+                        $user->can('permohonan-pinjaman-karyawan-view') ||
                         $isAdmin
                     );
 
@@ -1167,6 +1169,12 @@
                         @if($user && ($user->can('saldo-utang-karyawan-view') || $isAdmin))
                             <a href="{{ route('saldo-utang-karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ (Request::routeIs('saldo-utang-karyawan.*') || Request::routeIs('saldo-utang-supir.*')) ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Saldo Utang Karyawan</span>
+                            </a>
+                        @endif
+
+                        @if($user && ($user->can('permohonan-pinjaman-karyawan-view') || $isAdmin))
+                            <a href="{{ route('permohonan-pinjaman-karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('permohonan-pinjaman-karyawan.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Permohonan Pinjaman Karyawan</span>
                             </a>
                         @endif
 

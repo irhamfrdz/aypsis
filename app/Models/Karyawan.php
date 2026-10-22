@@ -162,6 +162,11 @@ class Karyawan extends Model
         return $this->hasMany(RiwayatUtangKaryawan::class, 'karyawan_id');
     }
 
+    public function permohonanPinjaman()
+    {
+        return $this->hasMany(PermohonanPinjamanKaryawan::class, 'karyawan_id');
+    }
+
     /**
      * Cek apakah karyawan dikecualikan (bebas) dari perhitungan keterlambatan.
      * Bebas keterlambatan untuk penempatan kerja:
