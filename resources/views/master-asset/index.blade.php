@@ -327,6 +327,7 @@
                             <div>
                                 Pastikan format file sesuai dengan template. Format yang didukung: <span class="font-semibold">.xlsx, .xls</span>
                                 <p class="mt-1">Kolom <span class="font-semibold">nomor_seri (No Seri/No Mesin)</span> wajib diisi untuk setiap asset, maksimal 100 karakter. Gunakan format sel Text agar angka nol di awal tetap tersimpan.</p>
+                                <p class="mt-1">Kolom <span class="font-semibold">nik_pemegang</span> dan <span class="font-semibold">nama_pemegang</span> wajib diisi dengan NIK dan nama lengkap pemegang asset sesuai master karyawan. Ganti contoh ISI_NIK_KARYAWAN dan ISI_NAMA_LENGKAP_KARYAWAN dengan data yang sesuai. Gunakan format sel Text untuk NIK agar angka nol di awal tetap tersimpan.</p>
                             </div>
                         </div>
 

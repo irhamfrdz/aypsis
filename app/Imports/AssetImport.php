@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Asset;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +54,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 'kode_asset' => $kodeAsset,
                 'nama_asset' => $row['nama_asset'],
                 'nomor_seri' => $row['nomor_seri'],
+                'karyawan_id' => Karyawan::where('nik', $row['nik_pemegang'])->firstOrFail()->id,
                 'kategori' => $kategori,
                 'tanggal_perolehan' => $tanggalPerolehan,
                 'kondisi' => $kondisi,
@@ -68,6 +70,8 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
     public function prepareForValidation($data, $index)
     {
         $data['nomor_seri'] = trim((string) ($data['nomor_seri'] ?? ''));
+        $data['nik_pemegang'] = trim((string) ($data['nik_pemegang'] ?? ''));
+        $data['nama_pemegang'] = trim((string) ($data['nama_pemegang'] ?? ''));
 
         return $data;
     }
@@ -77,7 +81,26 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
         return [
             'nama_asset' => 'required|string',
             'nomor_seri' => 'required|string|max:100',
+            'nik_pemegang' => 'bail|required|string|exists:karyawans,nik',
+            'nama_pemegang' => 'required|string|max:255',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            foreach ($validator->getData() as $index => $row) {
+                if ($validator->errors()->has($index.'.nik_pemegang') || $validator->errors()->has($index.'.nama_pemegang')) {
+                    continue;
+                }
+
+                $namaKaryawan = Karyawan::where('nik', $row['nik_pemegang'])->value('nama_lengkap');
+
+                if (mb_strtolower(trim((string) $namaKaryawan)) !== mb_strtolower($row['nama_pemegang'])) {
+                    $validator->errors()->add($index.'.nama_pemegang', 'Nama pemegang asset tidak sesuai dengan NIK pada data karyawan.');
+                }
+            }
+        });
     }
 
     public function customValidationMessages(): array
@@ -85,6 +108,10 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
         return [
             'nomor_seri.required' => 'No Seri/No Mesin wajib diisi.',
             'nomor_seri.max' => 'No Seri/No Mesin maksimal 100 karakter.',
+            'nik_pemegang.required' => 'NIK pemegang asset wajib diisi.',
+            'nik_pemegang.exists' => 'NIK pemegang asset tidak ditemukan pada data karyawan.',
+            'nama_pemegang.required' => 'Nama pemegang asset wajib diisi.',
+            'nama_pemegang.max' => 'Nama pemegang asset maksimal 255 karakter.',
         ];
     }
 }
