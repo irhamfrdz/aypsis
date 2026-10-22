@@ -127,11 +127,14 @@
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Cara Pembatalan & Jurnal</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
                             <div>
-                                <label for="metode_pembatalan" class="{{ $labelClasses }}">Cara Pembatalan <span class="text-red-500">*</span></label>
-                                <select name="metode_pembatalan" id="metode_pembatalan" class="{{ $inputClasses }}" required>
-                                    <option value="utang_karyawan" @selected(old('metode_pembatalan', 'utang_karyawan') === 'utang_karyawan')>Masukkan sebagai Utang Karyawan</option>
-                                    <option value="kas" @selected(old('metode_pembatalan') === 'kas')>Pengembalian melalui Kas/Bank</option>
-                                </select>
+                                <span class="{{ $labelClasses }}">Cara Pembatalan</span>
+                                <input type="hidden" name="metode_pembatalan" id="metode_pembatalan" value="{{ old('metode_pembatalan', 'kas') }}">
+                                <label for="utangKaryawanCheckbox" class="mt-1 flex min-h-[38px] cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm">
+                                    <input type="checkbox" id="utangKaryawanCheckbox" value="1"
+                                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        @checked(old('metode_pembatalan') === 'utang_karyawan')>
+                                    <span>Masukkan sebagai utang karyawan</span>
+                                </label>
                             </div>
                             <div id="karyawanField">
                                 <label for="karyawan_id" class="{{ $labelClasses }}">Karyawan <span class="text-red-500">*</span></label>
@@ -425,7 +428,8 @@
         const bankSearch = document.getElementById('bankSearch');
         const bankSelect = document.getElementById('bank');
         const akunBiayaSelect = document.getElementById('akun_coa_id');
-        const metodeSelect = document.getElementById('metode_pembatalan');
+        const metodeInput = document.getElementById('metode_pembatalan');
+        const utangKaryawanCheckbox = document.getElementById('utangKaryawanCheckbox');
         const karyawanSelect = document.getElementById('karyawan_id');
         const akunPiutangSelect = document.getElementById('akun_piutang_id');
         const bankField = document.getElementById('bankField');
@@ -451,7 +455,8 @@
         const searchCounter = document.getElementById('searchCounter');
 
         function updateMetodeFields() {
-            const isUtang = metodeSelect?.value === 'utang_karyawan';
+            const isUtang = utangKaryawanCheckbox?.checked === true;
+            metodeInput.value = isUtang ? 'utang_karyawan' : 'kas';
             karyawanField?.classList.toggle('hidden', !isUtang);
             akunPiutangField?.classList.toggle('hidden', !isUtang);
             bankField?.classList.toggle('hidden', isUtang);
@@ -473,7 +478,7 @@
             }
         }
 
-        metodeSelect?.addEventListener('change', updateMetodeFields);
+        utangKaryawanCheckbox?.addEventListener('change', updateMetodeFields);
         updateMetodeFields();
 
         rows.forEach(row => {
@@ -686,7 +691,7 @@
                     return false;
                 }
 
-                const isUtang = metodeSelect?.value === 'utang_karyawan';
+                const isUtang = utangKaryawanCheckbox?.checked === true;
                 if (isUtang && !karyawanSelect?.value) {
                     e.preventDefault();
                     showWarning('Silakan pilih karyawan yang menanggung utang.', 'warning');
