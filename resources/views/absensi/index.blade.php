@@ -109,7 +109,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Search Karyawan -->
                     <div>
                         <label for="search" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="m20 20-4-4"/></svg>Cari Karyawan / NIK</label>
@@ -154,10 +154,17 @@
                         </select>
                     </div>
 
-                    <!-- Tanggal -->
+                    <!-- Rentang Tanggal -->
                     <div>
-                        <label for="start_date" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="M16 3v4M8 3v4M3 10h18"/></svg>Tanggal</label>
+                        <label for="start_date" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="M16 3v4M8 3v4M3 10h18"/></svg>Tanggal Dari</label>
                         <input type="date" name="start_date" id="start_date" value="{{ $startDate }}"
+                               onchange="document.getElementById('end_date').min = this.value"
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
+                    </div>
+
+                    <div>
+                        <label for="end_date" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="M16 3v4M8 3v4M3 10h18"/></svg>Tanggal Sampai</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" min="{{ $startDate }}"
                                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
                     </div>
                 </div>
@@ -167,7 +174,7 @@
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" /></svg>
                         Filter Data
                     </button>
-                    @if(request()->anyFilled(['search', 'pekerjaan', 'departemen', 'cabang', 'start_date']))
+                    @if(request()->anyFilled(['search', 'pekerjaan', 'departemen', 'cabang', 'start_date', 'end_date']))
                         <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 focus:outline-none transition shadow-sm">
                             Reset
                         </a>
