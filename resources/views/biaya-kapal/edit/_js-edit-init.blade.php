@@ -51,10 +51,11 @@
                         'total_nominal' => $batamItem ? $batamItem->total_nominal : 0,
                         'nominal' => $batamItem ? $batamItem->nominal : 0,
                         'nomor_bukti' => $batamItem ? $batamItem->nomor_bukti : '',
-                        'penerima' => $batamItem ? $batamItem->penerima : '',
+                        'nama_vendor' => $batamItem ? '' : ($biayaKapal->nama_vendor ?? ''),
+                        'penerima' => $batamItem ? $batamItem->penerima : ($biayaKapal->penerima ?? ''),
                         'master_customer_buruh_id' => $batamItem ? $batamItem->master_customer_buruh_id : '',
-                        'bank_id' => $batamItem ? $batamItem->bank_id : '',
-                        'nomor_rekening' => $batamItem ? $batamItem->nomor_rekening : '',
+                        'bank_id' => $batamItem ? $batamItem->bank_id : ($biayaKapal->bank_id ?? ''),
+                        'nomor_rekening' => $batamItem ? $batamItem->nomor_rekening : ($biayaKapal->nomor_rekening ?? ''),
                         'pph_percent' => $batamItem ? $batamItem->pph_percent : 0,
                         'pph_amount' => $batamItem ? $batamItem->pph_amount : 0,
                         'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
@@ -738,6 +739,15 @@
                                     addBuruhToSectionWithValue(sectionIndex, tk.buruh_id, tk.nominal);
                                 });
                             }
+
+                            const namaVendorInput = section.querySelector('.nama-vendor-input');
+                            if (namaVendorInput) namaVendorInput.value = myData.nama_vendor || '';
+
+                            restoreEditSelectValue(section.querySelector('.penerima-select'), myData.penerima);
+                            restoreEditSelectValue(section.querySelector('.bank-select'), myData.bank_id);
+
+                            const nomorRekeningInput = section.querySelector('.nomor-rekening-input');
+                            if (nomorRekeningInput) nomorRekeningInput.value = myData.nomor_rekening || '';
                         } else {
                             // Populate Batam data - directly create container rows with saved data
                             // Don't depend on async container fetch; use stored data instead
