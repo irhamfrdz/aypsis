@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Transaksi Utang Supir - AYPSIS')
+@section('title', 'Tambah Transaksi Utang Karyawan - AYPSIS')
 
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-2xl">
     <!-- Back Button & Title -->
     <div class="flex items-center space-x-4 mb-8">
-        <a href="{{ route('saldo-utang-supir.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
+        <a href="{{ route('saldo-utang-karyawan.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
             <i class="fas fa-arrow-left text-xs"></i>
         </a>
         <div>
             <h1 class="text-xl font-black text-gray-900 tracking-tight">Tambah Transaksi Utang</h1>
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Catat pinjaman baru atau pelunasan manual untuk supir</p>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Catat pinjaman baru atau pelunasan manual untuk karyawan</p>
         </div>
     </div>
 
@@ -27,18 +27,18 @@
 
     <!-- Form Card -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-8">
-        <form action="{{ route('saldo-utang-supir.store') }}" method="POST">
+        <form action="{{ route('saldo-utang-karyawan.store') }}" method="POST">
             @csrf
             
             <div class="space-y-6">
-                <!-- Driver Selector -->
+                <!-- Employee Selector -->
                 <div>
-                    <label for="karyawan_id" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pilih Supir</label>
+                    <label for="karyawan_id" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pilih Karyawan</label>
                     <select name="karyawan_id" id="karyawan_id" class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('karyawan_id') border-rose-300 @enderror">
-                        <option value="">-- Pilih Supir --</option>
-                        @foreach($supirs as $supir)
-                            <option value="{{ $supir->id }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
-                                {{ strtoupper($supir->nama_lengkap) }} ({{ $supir->nik ?? 'TANPA NIK' }})
+                        <option value="">-- Pilih Karyawan --</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
+                                {{ strtoupper($karyawan->nama_lengkap) }} ({{ $karyawan->nik ?? 'TANPA NIK' }})
                             </option>
                         @endforeach
                     </select>
@@ -120,7 +120,7 @@
 
             <!-- Submit Button -->
             <div class="mt-8 flex justify-end space-x-2">
-                <a href="{{ route('saldo-utang-supir.index') }}" class="px-5 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors duration-200">
+                <a href="{{ route('saldo-utang-karyawan.index') }}" class="px-5 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors duration-200">
                     Batal
                 </a>
                 <button type="submit" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all duration-200 text-xs uppercase tracking-wider">

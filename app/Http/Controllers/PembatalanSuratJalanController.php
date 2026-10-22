@@ -6,8 +6,8 @@ use App\Models\Coa;
 use App\Models\CoaTransaction;
 use App\Models\Karyawan;
 use App\Models\PembatalanSuratJalan;
-use App\Models\RiwayatUtangSupir;
-use App\Models\SaldoUtangSupir;
+use App\Models\RiwayatUtangKaryawan;
+use App\Models\SaldoUtangKaryawan;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -509,13 +509,13 @@ class PembatalanSuratJalanController extends Controller
     private function recordEmployeeDebt(PembatalanSuratJalan $pembatalan): void
     {
         $nominal = (float) $pembatalan->total_tagihan_setelah_penyesuaian;
-        $saldoUtang = SaldoUtangSupir::firstOrCreate(
+        $saldoUtang = SaldoUtangKaryawan::firstOrCreate(
             ['karyawan_id' => $pembatalan->karyawan_id],
             ['saldo' => 0]
         );
         $saldoUtang->increment('saldo', $nominal);
 
-        RiwayatUtangSupir::create([
+        RiwayatUtangKaryawan::create([
             'karyawan_id' => $pembatalan->karyawan_id,
             'tanggal' => $pembatalan->tanggal_pembayaran,
             'tipe' => 'penambahan',
@@ -527,15 +527,15 @@ class PembatalanSuratJalanController extends Controller
 
     private function reverseEmployeeDebt(PembatalanSuratJalan $pembatalan): void
     {
-        $riwayat = RiwayatUtangSupir::where('karyawan_id', $pembatalan->karyawan_id)
+        $riwayat = RiwayatUtangKaryawan::where('karyawan_id', $pembatalan->karyawan_id)
             ->where('referensi', $pembatalan->nomor_pembayaran)
             ->where('tipe', 'penambahan')
             ->get();
         $nominal = (float) $riwayat->sum('nominal');
 
         if ($nominal > 0) {
-            SaldoUtangSupir::where('karyawan_id', $pembatalan->karyawan_id)->decrement('saldo', $nominal);
-            RiwayatUtangSupir::whereKey($riwayat->pluck('id'))->delete();
+            SaldoUtangKaryawan::where('karyawan_id', $pembatalan->karyawan_id)->decrement('saldo', $nominal);
+            RiwayatUtangKaryawan::whereKey($riwayat->pluck('id'))->delete();
         }
     }
 }

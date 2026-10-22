@@ -773,7 +773,7 @@ class UserController extends Controller
                 'hrd-dashboard' => 'hrd-dashboard',
                 'mesin' => 'mesin',
                 'gaji-supir-batam' => 'gaji-supir-batam',
-                'saldo-utang-supir' => 'saldo-utang-supir',
+                'saldo-utang-karyawan' => 'saldo-utang-karyawan',
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {

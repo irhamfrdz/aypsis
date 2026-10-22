@@ -176,7 +176,7 @@ class PranotaUangRitController extends Controller
 
         // Get driver active debt balances
         $driverBalances = [];
-        $balances = \App\Models\SaldoUtangSupir::with('karyawan')->get();
+        $balances = \App\Models\SaldoUtangKaryawan::with('karyawan')->get();
         foreach ($balances as $b) {
             if ($b->karyawan) {
                 $saldo = (float) $b->saldo;
@@ -647,13 +647,13 @@ class PranotaUangRitController extends Controller
                         ->first();
 
                     if ($karyawan) {
-                        $saldoUtang = \App\Models\SaldoUtangSupir::firstOrCreate(
+                        $saldoUtang = \App\Models\SaldoUtangKaryawan::firstOrCreate(
                             ['karyawan_id' => $karyawan->id],
                             ['saldo' => 0.00]
                         );
                         $saldoUtang->decrement('saldo', floatval($totals['hutang']));
 
-                        \App\Models\RiwayatUtangSupir::create([
+                        \App\Models\RiwayatUtangKaryawan::create([
                             'karyawan_id' => $karyawan->id,
                             'tanggal' => $request->tanggal,
                             'tipe' => 'pengurangan',

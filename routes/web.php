@@ -4967,7 +4967,15 @@ Route::middleware([
             ->name('pranota-uang-rit.print')
             ->middleware('can:pranota-uang-rit-view');
 
-        // Saldo Utang Supir Management routes
+        // Saldo Utang Karyawan Management routes
+        Route::get('saldo-utang-karyawan/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
+            ->name('saldo-utang-karyawan.import');
+        Route::post('saldo-utang-karyawan/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'importProcess'])
+            ->name('saldo-utang-karyawan.import-process');
+        Route::resource('saldo-utang-karyawan', \App\Http\Controllers\SaldoUtangSupirController::class)
+            ->only(['index', 'create', 'store', 'show']);
+
+        // Rute lama dipertahankan untuk bookmark/form yang belum diperbarui.
         Route::get('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
             ->name('saldo-utang-supir.import');
         Route::post('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'importProcess'])

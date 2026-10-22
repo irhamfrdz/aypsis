@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Saldo Utang Supir - AYPSIS')
+@section('title', 'Saldo Utang Karyawan - AYPSIS')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -11,15 +11,15 @@
                 <i class="fas fa-hand-holding-usd text-indigo-600 text-xl"></i>
             </div>
             <div>
-                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Saldo Utang Supir</h1>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kelola dan pantau saldo pinjaman & kasbon armada supir</p>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Saldo Utang Karyawan</h1>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kelola dan pantau saldo pinjaman & kasbon seluruh karyawan</p>
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('saldo-utang-supir.import') }}" class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
+            <a href="{{ route('saldo-utang-karyawan.import') }}" class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
                 <i class="fas fa-file-import"></i> Import Saldo Awal
             </a>
-            <a href="{{ route('saldo-utang-supir.create') }}" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
+            <a href="{{ route('saldo-utang-karyawan.create') }}" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
                 <i class="fas fa-plus-circle"></i> Tambah Transaksi
             </a>
         </div>
@@ -42,7 +42,7 @@
                 <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3 text-amber-700">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <span class="font-black text-sm">Ada data supir yang tidak cocok (tidak ditemukan di database):</span>
+                <span class="font-black text-sm">Ada data karyawan yang tidak cocok (tidak ditemukan di database):</span>
             </div>
             <div class="overflow-x-auto max-h-48 overflow-y-auto mt-2 rounded-lg border border-amber-100">
                 <table class="w-full text-left text-xs text-amber-800">
@@ -79,7 +79,7 @@
 
     <!-- Search Card -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-        <form action="{{ route('saldo-utang-supir.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
+        <form action="{{ route('saldo-utang-karyawan.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
             <div class="flex-1 relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400 text-xs"></i>
@@ -87,7 +87,7 @@
                 <input type="text" 
                        name="search" 
                        value="{{ request('search') }}"
-                       placeholder="Cari supir berdasarkan nama atau NIK..." 
+                       placeholder="Cari karyawan berdasarkan nama atau NIK..."
                        class="block w-full pl-9 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
             </div>
             <div class="flex gap-2">
@@ -95,7 +95,7 @@
                     Filter
                 </button>
                 @if(request()->filled('search'))
-                    <a href="{{ route('saldo-utang-supir.index') }}" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-colors duration-200">
+                    <a href="{{ route('saldo-utang-karyawan.index') }}" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-colors duration-200">
                         Reset
                     </a>
                 @endif
@@ -110,37 +110,37 @@
                 <thead class="bg-gray-50/75 border-b border-gray-100">
                     <tr>
                         <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">NIK</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Supir</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Karyawan</th>
                         <th class="px-6 py-4 class text-[10px] font-black text-gray-400 uppercase tracking-widest">Jabatan / Pekerjaan</th>
                         <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Saldo Utang Aktif</th>
                         <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($supirs as $supir)
+                    @forelse($karyawans as $karyawan)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-4 text-xs font-semibold text-gray-700">
-                                {{ $supir->nik ?? '-' }}
+                                {{ $karyawan->nik ?? '-' }}
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                        {{ strtoupper(substr($supir->nama_lengkap, 0, 1)) }}
+                                        {{ strtoupper(substr($karyawan->nama_lengkap, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <div class="text-xs font-black text-gray-900">{{ strtoupper($supir->nama_lengkap) }}</div>
-                                        <div class="text-[9px] text-gray-400">Panggilan: {{ $supir->nama_panggilan ?? '-' }}</div>
+                                        <div class="text-xs font-black text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</div>
+                                        <div class="text-[9px] text-gray-400">Panggilan: {{ $karyawan->nama_panggilan ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-500">
                                 <span class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider">
-                                    {{ $supir->pekerjaan ?? 'Supir' }}
+                                    {{ $karyawan->pekerjaan ?? '-' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right font-mono text-xs font-bold">
                                 @php
-                                    $saldo = $supir->saldoUtang ? $supir->saldoUtang->saldo : 0;
+                                    $saldo = $karyawan->saldoUtang ? $karyawan->saldoUtang->saldo : 0;
                                 @endphp
                                 @if($saldo > 0)
                                     <span class="text-emerald-600 font-black">Rp {{ number_format($saldo, 0, ',', '.') }}</span>
@@ -151,7 +151,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <a href="{{ route('saldo-utang-supir.show', $supir->id) }}" 
+                                <a href="{{ route('saldo-utang-karyawan.show', $karyawan->id) }}"
                                    class="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-black rounded-lg text-[10px] uppercase tracking-wider transition-colors duration-200 gap-1.5">
                                     <i class="fas fa-history text-[9px]"></i> Riwayat
                                 </a>
@@ -164,7 +164,7 @@
                                     <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 mb-3">
                                         <i class="fas fa-user-slash text-gray-400"></i>
                                     </div>
-                                    <span class="text-xs text-gray-400 font-semibold">Tidak ada data supir ditemukan</span>
+                                    <span class="text-xs text-gray-400 font-semibold">Tidak ada data karyawan ditemukan</span>
                                 </div>
                             </td>
                         </tr>
@@ -172,9 +172,9 @@
                 </tbody>
             </table>
         </div>
-        @if($supirs->hasPages())
+        @if($karyawans->hasPages())
             <div class="px-6 py-4 border-t border-gray-100">
-                {{ $supirs->links() }}
+                {{ $karyawans->links() }}
             </div>
         @endif
     </div>

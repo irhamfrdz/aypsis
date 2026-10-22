@@ -149,7 +149,7 @@ class Karyawan extends Model
 
     public function saldoUtang()
     {
-        return $this->hasOne(SaldoUtangSupir::class, 'karyawan_id');
+        return $this->hasOne(SaldoUtangKaryawan::class, 'karyawan_id');
     }
 
     public function absensi()
@@ -159,7 +159,7 @@ class Karyawan extends Model
 
     public function riwayatUtang()
     {
-        return $this->hasMany(RiwayatUtangSupir::class, 'karyawan_id');
+        return $this->hasMany(RiwayatUtangKaryawan::class, 'karyawan_id');
     }
 
     /**

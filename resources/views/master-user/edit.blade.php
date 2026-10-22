@@ -3535,18 +3535,18 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Saldo Utang Supir --}}
+                            {{-- Saldo Utang Karyawan --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
                                         <div>
-                                            <span class="text-indigo-600 font-bold">Saldo Utang Supir</span>
+                                            <span class="text-indigo-600 font-bold">Saldo Utang Karyawan</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[saldo-utang-supir][view]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-supir.view') || (isset($userMatrixPermissions['saldo-utang-supir']['view']) && $userMatrixPermissions['saldo-utang-supir']['view']) || ($user && $user->can('saldo-utang-supir-view'))) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[saldo-utang-supir][create]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-supir.create') || (isset($userMatrixPermissions['saldo-utang-supir']['create']) && $userMatrixPermissions['saldo-utang-supir']['create']) || ($user && $user->can('saldo-utang-supir-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[saldo-utang-karyawan][view]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-karyawan.view') || (isset($userMatrixPermissions['saldo-utang-karyawan']['view']) && $userMatrixPermissions['saldo-utang-karyawan']['view']) || ($user && $user->can('saldo-utang-karyawan-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[saldo-utang-karyawan][create]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-karyawan.create') || (isset($userMatrixPermissions['saldo-utang-karyawan']['create']) && $userMatrixPermissions['saldo-utang-karyawan']['create']) || ($user && $user->can('saldo-utang-karyawan-create'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

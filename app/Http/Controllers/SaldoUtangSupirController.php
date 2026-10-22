@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
-use App\Models\RiwayatUtangSupir;
-use App\Models\SaldoUtangSupir;
+use App\Models\RiwayatUtangKaryawan;
+use App\Models\SaldoUtangKaryawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,17 +15,7 @@ class SaldoUtangSupirController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Karyawan::query()
-            ->with(['saldoUtang'])
-            ->where(function ($q) {
-                $q->where('pekerjaan', 'like', '%supir%')
-                    ->orWhere('pekerjaan', 'like', '%sopir%')
-                    ->orWhere('pekerjaan', 'like', '%driver%')
-                    ->orWhere('divisi', 'like', '%supir%')
-                    ->orWhere('divisi', 'like', '%sopir%')
-                    ->orWhere('divisi', 'like', '%driver%')
-                    ->orWhereHas('saldoUtang');
-            });
+        $query = Karyawan::query()->with('saldoUtang');
 
         // Search filter
         if ($request->filled('search')) {
@@ -37,9 +27,9 @@ class SaldoUtangSupirController extends Controller
             });
         }
 
-        $supirs = $query->orderBy('nama_lengkap', 'asc')->paginate(20);
+        $karyawans = $query->orderBy('nama_lengkap', 'asc')->paginate(20);
 
-        return view('saldo-utang-supir.index', compact('supirs'));
+        return view('saldo-utang-supir.index', compact('karyawans'));
     }
 
     /**
@@ -47,17 +37,9 @@ class SaldoUtangSupirController extends Controller
      */
     public function create()
     {
-        $supirs = Karyawan::where(function ($q) {
-            $q->where('pekerjaan', 'like', '%supir%')
-                ->orWhere('pekerjaan', 'like', '%sopir%')
-                ->orWhere('pekerjaan', 'like', '%driver%')
-                ->orWhere('divisi', 'like', '%supir%')
-                ->orWhere('divisi', 'like', '%sopir%')
-                ->orWhere('divisi', 'like', '%driver%')
-                ->orWhereHas('saldoUtang');
-        })->orderBy('nama_lengkap', 'asc')->get();
+        $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
 
-        return view('saldo-utang-supir.create', compact('supirs'));
+        return view('saldo-utang-supir.create', compact('karyawans'));
     }
 
     /**
@@ -76,7 +58,7 @@ class SaldoUtangSupirController extends Controller
 
         DB::beginTransaction();
         try {
-            $saldoUtang = SaldoUtangSupir::firstOrCreate(
+            $saldoUtang = SaldoUtangKaryawan::firstOrCreate(
                 ['karyawan_id' => $request->karyawan_id],
                 ['saldo' => 0.00]
             );
@@ -87,7 +69,7 @@ class SaldoUtangSupirController extends Controller
                 $saldoUtang->decrement('saldo', floatval($request->nominal));
             }
 
-            RiwayatUtangSupir::create([
+            RiwayatUtangKaryawan::create([
                 'karyawan_id' => $request->karyawan_id,
                 'tanggal' => $request->tanggal,
                 'tipe' => $request->tipe,
@@ -98,8 +80,8 @@ class SaldoUtangSupirController extends Controller
 
             DB::commit();
 
-            return redirect()->route('saldo-utang-supir.index')
-                ->with('success', 'Transaksi utang supir berhasil disimpan.');
+            return redirect()->route('saldo-utang-karyawan.index')
+                ->with('success', 'Transaksi utang karyawan berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -112,14 +94,14 @@ class SaldoUtangSupirController extends Controller
      */
     public function show($id)
     {
-        $supir = Karyawan::with(['saldoUtang'])->findOrFail($id);
+        $karyawan = Karyawan::with('saldoUtang')->findOrFail($id);
 
-        $riwayat = RiwayatUtangSupir::where('karyawan_id', $id)
+        $riwayat = RiwayatUtangKaryawan::where('karyawan_id', $id)
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(30);
 
-        return view('saldo-utang-supir.show', compact('supir', 'riwayat'));
+        return view('saldo-utang-supir.show', compact('karyawan', 'riwayat'));
     }
 
     /**
@@ -182,7 +164,7 @@ class SaldoUtangSupirController extends Controller
 
                     // 2. Match by Name if NIK didn't yield a result
                     if (! $karyawan && ! empty($namaInput)) {
-                        $cleanedName = $this->cleanDriverName($namaInput);
+                        $cleanedName = $this->cleanKaryawanName($namaInput);
                         $karyawan = Karyawan::where('nama_lengkap', 'like', "%{$cleanedName}%")
                             ->orWhere('nama_panggilan', 'like', "%{$cleanedName}%")
                             ->first();
@@ -190,7 +172,7 @@ class SaldoUtangSupirController extends Controller
 
                     if ($karyawan) {
                         // Update or create saldo
-                        $saldoUtang = SaldoUtangSupir::firstOrCreate(
+                        $saldoUtang = SaldoUtangKaryawan::firstOrCreate(
                             ['karyawan_id' => $karyawan->id],
                             ['saldo' => 0.00]
                         );
@@ -200,7 +182,7 @@ class SaldoUtangSupirController extends Controller
                         $saldoUtang->save();
 
                         // Add transaction log
-                        RiwayatUtangSupir::create([
+                        RiwayatUtangKaryawan::create([
                             'karyawan_id' => $karyawan->id,
                             'tanggal' => now(),
                             'tipe' => $saldoFloat >= 0 ? 'penambahan' : 'pengurangan',
@@ -224,13 +206,13 @@ class SaldoUtangSupirController extends Controller
             DB::commit();
 
             if (count($unmatchedRows) > 0) {
-                return redirect()->route('saldo-utang-supir.index')
-                    ->with('success', "Sukses mengimpor {$successCount} saldo supir.")
+                return redirect()->route('saldo-utang-karyawan.index')
+                    ->with('success', "Sukses mengimpor {$successCount} saldo karyawan.")
                     ->with('warning_data', $unmatchedRows);
             }
 
-            return redirect()->route('saldo-utang-supir.index')
-                ->with('success', "Sukses mengimpor seluruh {$successCount} data saldo supir.");
+            return redirect()->route('saldo-utang-karyawan.index')
+                ->with('success', "Sukses mengimpor seluruh {$successCount} data saldo karyawan.");
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -241,7 +223,7 @@ class SaldoUtangSupirController extends Controller
     /**
      * Clean driver name from CSV trailing details
      */
-    private function cleanDriverName(string $name): string
+    private function cleanKaryawanName(string $name): string
     {
         $name = preg_replace('/,\s*BP(\s*\(KENEK\))?/i', '', $name);
         $name = preg_replace('/\s*BP\s*(\(KENEK\))?/i', '', $name);

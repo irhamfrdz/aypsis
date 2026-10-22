@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Utang ' . strtoupper($supir->nama_lengkap) . ' - AYPSIS')
+@section('title', 'Riwayat Utang ' . strtoupper($karyawan->nama_lengkap) . ' - AYPSIS')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- Back Button & Title -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div class="flex items-center space-x-4">
-            <a href="{{ route('saldo-utang-supir.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
+            <a href="{{ route('saldo-utang-karyawan.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
                 <i class="fas fa-arrow-left text-xs"></i>
             </a>
             <div>
                 <h1 class="text-xl font-black text-gray-900 tracking-tight">Detail Riwayat Utang</h1>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{{ strtoupper($supir->nama_lengkap) }} ({{ $supir->nik ?? 'TANPA NIK' }})</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{{ strtoupper($karyawan->nama_lengkap) }} ({{ $karyawan->nik ?? 'TANPA NIK' }})</p>
             </div>
         </div>
         
         <!-- Big Balance Display -->
         @php
-            $saldo = $supir->saldoUtang ? $supir->saldoUtang->saldo : 0;
+            $saldo = $karyawan->saldoUtang ? $karyawan->saldoUtang->saldo : 0;
             $isNegative = $saldo < 0;
         @endphp
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 flex items-center space-x-4">

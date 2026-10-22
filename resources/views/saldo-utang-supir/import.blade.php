@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Import Saldo Awal Utang Supir - AYPSIS')
+@section('title', 'Import Saldo Awal Utang Karyawan - AYPSIS')
 
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-2xl">
     <!-- Back Button & Title -->
     <div class="flex items-center space-x-4 mb-8">
-        <a href="{{ route('saldo-utang-supir.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
+        <a href="{{ route('saldo-utang-karyawan.index') }}" class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-900 shadow-sm transition-all duration-200">
             <i class="fas fa-arrow-left text-xs"></i>
         </a>
         <div>
             <h1 class="text-xl font-black text-gray-900 tracking-tight">Import Saldo Awal</h1>
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Unggah file CSV saldo awal armada supir</p>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Unggah file CSV saldo awal karyawan</p>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
 
     <!-- Upload Card -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-8">
-        <form action="{{ route('saldo-utang-supir.import-process') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('saldo-utang-karyawan.import-process') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="space-y-6">
@@ -75,7 +75,7 @@
 
             <!-- Action Buttons -->
             <div class="mt-8 flex justify-end space-x-2">
-                <a href="{{ route('saldo-utang-supir.index') }}" class="px-5 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors duration-200">
+                <a href="{{ route('saldo-utang-karyawan.index') }}" class="px-5 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors duration-200">
                     Batal
                 </a>
                 <button type="submit" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all duration-200 text-xs uppercase tracking-wider">
