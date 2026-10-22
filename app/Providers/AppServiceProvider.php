@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Asset;
 use App\Models\Kontainer;
 use App\Models\Permission;
 use App\Models\StockKontainer;
 use App\Models\UangJalan;
 use App\Models\User;
+use App\Observers\AssetObserver;
 use App\Observers\KontainerObserver;
 use App\Observers\StockKontainerObserver;
 use App\Observers\UangJalanObserver;
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultSimpleView('pagination::simple-tailwind');
 
         // Register observers
+        Asset::observe(AssetObserver::class);
         Kontainer::observe(KontainerObserver::class);
         StockKontainer::observe(StockKontainerObserver::class);
         UangJalan::observe(UangJalanObserver::class);

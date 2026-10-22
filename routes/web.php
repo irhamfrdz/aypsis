@@ -3221,6 +3221,7 @@ Route::middleware([
         Route::get('master-asset/template', [\App\Http\Controllers\AssetController::class, 'downloadTemplate'])->name('asset.template');
         Route::post('master-asset/import', [\App\Http\Controllers\AssetController::class, 'import'])->name('asset.import');
         Route::get('master-asset/{asset}/print-tanda-terima', [\App\Http\Controllers\AssetController::class, 'printTandaTerima'])->name('asset.print-tanda-terima');
+        Route::get('master-asset/{asset}/download-tanda-terima', [\App\Http\Controllers\AssetController::class, 'downloadTandaTerima'])->name('asset.download-tanda-terima');
         Route::post('master-asset/{asset}/tanda-terima', [\App\Http\Controllers\AssetController::class, 'updateTandaTerima'])->name('asset.update-tanda-terima');
         Route::resource('master-asset', \App\Http\Controllers\AssetController::class)
             ->names('asset')

@@ -228,6 +228,9 @@
                                     {{ $asset->kode_asset }}
                                 </a>
                                 <span class="font-semibold text-gray-800 block">{{ $asset->nama_asset }}</span>
+                                @if($asset->nama_merk)
+                                    <span class="text-[11px] text-gray-500 block">Merk: {{ $asset->nama_merk }}</span>
+                                @endif
                             </td>
                             <td class="py-3 px-4">
                                 <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 font-medium">

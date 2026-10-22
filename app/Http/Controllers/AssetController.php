@@ -8,8 +8,10 @@ use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\Karyawan;
 use App\Models\MasterKapal;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -98,6 +100,7 @@ class AssetController extends Controller
         $validated = $request->validate([
             'kode_asset' => 'required|string|max:50|unique:assets,kode_asset',
             'nama_asset' => 'required|string|max:255',
+            'nama_merk' => 'nullable|string|max:150',
             'kategori' => 'required|string|max:100',
             'tanggal_perolehan' => 'nullable|date',
             'kondisi' => 'required|string|max:50',
@@ -143,7 +146,7 @@ class AssetController extends Controller
             $validated['kapal_id'] = null;
         }
 
-        Asset::create($validated);
+        DB::transaction(fn () => Asset::create($validated));
 
         return redirect()->route('asset.index')->with('success', 'Data Asset berhasil ditambahkan');
     }
@@ -184,6 +187,7 @@ class AssetController extends Controller
         $validated = $request->validate([
             'kode_asset' => 'required|string|max:50|unique:assets,kode_asset,'.$asset->id,
             'nama_asset' => 'required|string|max:255',
+            'nama_merk' => 'nullable|string|max:150',
             'kategori' => 'required|string|max:100',
             'tanggal_perolehan' => 'nullable|date',
             'kondisi' => 'required|string|max:50',
@@ -328,5 +332,20 @@ class AssetController extends Controller
         $asset->load(['karyawan', 'creator']);
 
         return view('master-asset.print-tanda-terima', compact('asset'));
+    }
+
+    public function downloadTandaTerima(Asset $asset)
+    {
+        $asset->load(['karyawan', 'creator']);
+
+        $kodeAsset = preg_replace('/[^A-Za-z0-9_-]/', '_', $asset->kode_asset);
+
+        return Pdf::loadView('master-asset.print-tanda-terima', [
+            'asset' => $asset,
+            'isPdf' => true,
+        ])
+            ->setPaper('letter', 'portrait')
+            ->setOption('defaultMediaType', 'print')
+            ->download('tanda_terima_asset_'.$kodeAsset.'.pdf');
     }
 }

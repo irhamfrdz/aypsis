@@ -86,6 +86,11 @@
                     </div>
 
                     <div>
+                        <span class="text-gray-400 block font-medium">Nama Merk</span>
+                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nama_merk ?: '-' }}</span>
+                    </div>
+
+                    <div>
                         <span class="text-gray-400 block font-medium">Nomor Seri / Nomor Mesin</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_seri ?: '-' }}</span>
                     </div>

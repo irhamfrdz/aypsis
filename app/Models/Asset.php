@@ -6,6 +6,7 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Asset extends Model
@@ -17,6 +18,7 @@ class Asset extends Model
     protected $fillable = [
         'kode_asset',
         'nama_asset',
+        'nama_merk',
         'kategori',
         'tanggal_perolehan',
         'kondisi',
@@ -79,6 +81,11 @@ class Asset extends Model
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function tandaTerima(): HasOne
+    {
+        return $this->hasOne(TandaTerimaAsset::class);
     }
 
     public function kapal(): BelongsTo

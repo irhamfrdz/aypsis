@@ -53,6 +53,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
             Asset::create([
                 'kode_asset' => $kodeAsset,
                 'nama_asset' => $row['nama_asset'],
+                'nama_merk' => $row['nama_merk'] ?? null,
                 'nomor_seri' => $row['nomor_seri'],
                 'karyawan_id' => Karyawan::where('nik', $row['nik_pemegang'])->firstOrFail()->id,
                 'kategori' => $kategori,
@@ -80,6 +81,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
     {
         return [
             'nama_asset' => 'required|string',
+            'nama_merk' => 'nullable|string|max:150',
             'nomor_seri' => 'required|string|max:100',
             'nik_pemegang' => 'bail|required|string|exists:karyawans,nik',
             'nama_pemegang' => 'required|string|max:255',
