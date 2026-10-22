@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AlatBerat;
 use App\Models\Mobil;
+use App\Models\PembayaranAktivitasLain;
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
 use App\Models\SuratJalanBongkaranBatam;
@@ -78,6 +79,7 @@ class RekapBiayaAssetController extends Controller
 
         $suratJalans = collect();
         $tagihanKendaraan = collect();
+        $pembayaranKendaraan = collect();
         if ($type === 'mobil' && $mobil) {
             $tagihanQuery = TagihanServiceKendaraanBatam::query()
                 ->where('jenis_tagihan', 'kendaraan')
@@ -94,6 +96,72 @@ class RekapBiayaAssetController extends Controller
             foreach ($tagihanKendaraan as $tagihan) {
                 $tagihan->apportioned = ['total_biaya' => (float) $tagihan->total_biaya];
             }
+
+            $pembayaranQuery = PembayaranAktivitasLain::query()
+                ->where('jenis_aktivitas', 'Pembayaran Kendaraan');
+
+            if ($bulan) {
+                $pembayaranQuery->whereMonth('tanggal', $bulan);
+            }
+            if ($tahun) {
+                $pembayaranQuery->whereYear('tanggal', $tahun);
+            }
+
+            $vehicleNumbers = collect([$mobil->nomor_polisi, $mobil->no_kir])
+                ->filter()
+                ->map(fn ($number) => $this->normalizeVehicleNumber($number))
+                ->unique()
+                ->values();
+
+            $pembayaranKendaraan = $pembayaranQuery
+                ->orderByDesc('tanggal')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function (PembayaranAktivitasLain $pembayaran) use ($vehicleNumbers) {
+                    $details = collect($pembayaran->kendaraan_details ?: []);
+                    $matchedDetail = $details->first(function ($detail) use ($vehicleNumbers) {
+                        return $vehicleNumbers->contains($this->normalizeVehicleNumber($detail['nomor_polisi'] ?? null));
+                    });
+
+                    if ($matchedDetail) {
+                        $nominal = (float) ($matchedDetail['nominal'] ?? 0);
+                        $vehicleNumber = $matchedDetail['nomor_polisi'] ?? $pembayaran->nomor_polisi;
+                    } else {
+                        $paymentVehicles = collect($pembayaran->nomor_polisi_list ?: [$pembayaran->nomor_polisi])
+                            ->filter()
+                            ->unique()
+                            ->values();
+                        $matchedVehicle = $paymentVehicles->first(function ($number) use ($vehicleNumbers) {
+                            return $vehicleNumbers->contains($this->normalizeVehicleNumber($number));
+                        });
+
+                        if (! $matchedVehicle) {
+                            return null;
+                        }
+
+                        $nominal = (float) $pembayaran->jumlah / max($paymentVehicles->count(), 1);
+                        $vehicleNumber = $matchedVehicle;
+                    }
+
+                    $paymentNominal = (float) $pembayaran->jumlah;
+                    $pph = $paymentNominal > 0
+                        ? round((float) $pembayaran->pph_nominal * $nominal / $paymentNominal)
+                        : 0;
+
+                    $pembayaran->asset_vehicle_number = $vehicleNumber;
+                    $pembayaran->apportioned = [
+                        'nominal' => $nominal,
+                        'ppn' => 0,
+                        'pph' => $pph,
+                        'total_biaya' => $nominal - $pph,
+                    ];
+                    $pembayaran->jenis_biaya = 'Pembayaran Kendaraan - '.($pembayaran->sub_jenis_kendaraan ?: 'Lain Lain');
+                    $pembayaran->klasifikasiBiaya = (object) ['nama' => 'Pembayaran Kendaraan'];
+
+                    return $pembayaran;
+                })
+                ->filter()
+                ->values();
         }
 
         if ($mobil && $mobil->nomor_polisi) {
@@ -265,11 +333,14 @@ class RekapBiayaAssetController extends Controller
         $totalTagihanNominal = $tagihanKendaraan->sum(fn ($tagihan) => (float) $tagihan->biaya);
         $totalTagihan = $tagihanKendaraan->sum(fn ($tagihan) => (float) $tagihan->total_biaya);
         $totalTagihanPph = $totalTagihanNominal - $totalTagihan;
+        $totalPembayaranKendaraanNominal = $pembayaranKendaraan->sum(fn ($pembayaran) => $pembayaran->apportioned['nominal']);
+        $totalPembayaranKendaraan = $pembayaranKendaraan->sum(fn ($pembayaran) => $pembayaran->apportioned['total_biaya']);
+        $totalPembayaranKendaraanPph = $pembayaranKendaraan->sum(fn ($pembayaran) => $pembayaran->apportioned['pph']);
         $summary = [
-            'total_nominal' => $totalNominal + $totalSuratJalan + $totalTagihanNominal,
+            'total_nominal' => $totalNominal + $totalSuratJalan + $totalTagihanNominal + $totalPembayaranKendaraanNominal,
             'total_ppn' => 0,
-            'total_pph' => $totalTagihanPph,
-            'grand_total' => $totalNominal + $totalSuratJalan + $totalTagihan,
+            'total_pph' => $totalTagihanPph + $totalPembayaranKendaraanPph,
+            'grand_total' => $totalNominal + $totalSuratJalan + $totalTagihan + $totalPembayaranKendaraan,
         ];
 
         // Group by classification/jenis_biaya (excluding Ban)
@@ -287,6 +358,15 @@ class RekapBiayaAssetController extends Controller
             $grouped->put('Tagihan Kendaraan Batam', $tagihanKendaraan);
         }
 
-        return view('rekap-biaya-asset.show', compact('usages', 'suratJalans', 'tagihanKendaraan', 'totalSuratJalan', 'totalTagihan', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
+        if ($pembayaranKendaraan->isNotEmpty()) {
+            $grouped->put('Pembayaran Kendaraan', $pembayaranKendaraan);
+        }
+
+        return view('rekap-biaya-asset.show', compact('usages', 'suratJalans', 'tagihanKendaraan', 'pembayaranKendaraan', 'totalSuratJalan', 'totalTagihan', 'totalPembayaranKendaraan', 'summary', 'grouped', 'assetName', 'type', 'bulan', 'tahun'));
+    }
+
+    private function normalizeVehicleNumber(?string $number): string
+    {
+        return strtoupper(preg_replace('/[^A-Z0-9]/i', '', (string) $number));
     }
 }

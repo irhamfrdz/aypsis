@@ -24,6 +24,7 @@ class PembayaranAktivitasLain extends Model
         'sub_jenis_kendaraan',
         'nomor_polisi',
         'nomor_polisi_list',
+        'kendaraan_details',
         'nomor_voyage',
         'no_surat_jalan',
         'penerima',
@@ -51,6 +52,7 @@ class PembayaranAktivitasLain extends Model
         'tipe_penyesuaian' => 'array',
         'tipe_penyesuaian_detail' => 'array',
         'nomor_polisi_list' => 'array',
+        'kendaraan_details' => 'array',
         'approved_at' => 'datetime',
     ];
 

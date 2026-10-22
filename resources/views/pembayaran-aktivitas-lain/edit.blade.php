@@ -278,7 +278,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Kendaraan <span class="text-red-500">*</span></label>
                     @php
                         $selectedNomorPolisiList = old('nomor_polisi_list', $pembayaranAktivitasLain->nomor_polisi_list
-                            ?? ($pembayaranAktivitasLain->sub_jenis_kendaraan === 'Lain Lain' && $pembayaranAktivitasLain->nomor_polisi
+                            ?? (in_array($pembayaranAktivitasLain->sub_jenis_kendaraan, ['Lain Lain', 'KIR']) && $pembayaranAktivitasLain->nomor_polisi
                                 ? [$pembayaranAktivitasLain->nomor_polisi] : []));
                     @endphp
                     <select name="nomor_polisi_list[]" id="nomor_polisi_list_select" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_polisi_list') border-red-500 @enderror">
@@ -295,6 +295,15 @@
                     <p class="text-xs text-gray-500 mt-1">Pilih satu atau lebih kendaraan.</p>
                     @error('nomor_polisi_list')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     @error('nomor_polisi_list.*')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div id="kendaraan_kir_details_field" class="hidden md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nominal KIR per Kendaraan <span class="text-red-500">*</span></label>
+                    <div id="kendaraan_kir_details_container" class="space-y-2"></div>
+                    <p class="text-xs text-gray-500 mt-1">Jumlah pembayaran dihitung otomatis dari seluruh nominal kendaraan.</p>
+                    @error('kendaraan_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error('kendaraan_details.*.nomor_polisi')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error('kendaraan_details.*.nominal')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <!-- Nomor Voyage (Hidden by default) -->
@@ -702,6 +711,11 @@ function initializeSelect2() {
     const subJenisSelect = document.getElementById('sub_jenis_kendaraan_select');
     const nomorPolisiField = document.getElementById('nomor_polisi_field');
     const nomorPolisiSelect = nomorPolisiField.querySelector('select');
+    const nomorPolisiListField = document.getElementById('nomor_polisi_list_field');
+    const nomorPolisiListSelect = document.getElementById('nomor_polisi_list_select');
+    const kendaraanKirDetailsField = document.getElementById('kendaraan_kir_details_field');
+    const kendaraanKirDetailsContainer = document.getElementById('kendaraan_kir_details_container');
+    const initialKirDetails = new Map(@json(old('kendaraan_details', $pembayaranAktivitasLain->kendaraan_details ?: [])).map(item => [item.nomor_polisi, item.nominal]));
     const nomorVoyageField = document.getElementById('nomor_voyage_field');
     const nomorVoyageSelect = nomorVoyageField.querySelector('select');
     
@@ -914,19 +928,85 @@ function initializeSelect2() {
         calculateTotalJumlah();
     }
 
+    function calculateKirTotal() {
+        if (jenisAktivitas.value !== 'Pembayaran Kendaraan' || subJenisSelect.value !== 'KIR') return;
+
+        const total = Array.from(kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal'))
+            .reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+        jumlahDisplay.value = total ? total.toLocaleString('id-ID') : '';
+        document.getElementById('jumlah_input_value').value = total || '';
+        jumlahDisplay.readOnly = true;
+        jumlahDisplay.classList.add('bg-gray-100', 'cursor-not-allowed');
+        jumlahDisplay.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function renderKirDetails() {
+        const isKir = jenisAktivitas.value === 'Pembayaran Kendaraan' && subJenisSelect.value === 'KIR';
+        kendaraanKirDetailsField.classList.toggle('hidden', !isKir);
+        if (!isKir) {
+            kendaraanKirDetailsContainer.innerHTML = '';
+            jumlahDisplay.readOnly = false;
+            jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            return;
+        }
+
+        kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal').forEach(input => {
+            initialKirDetails.set(input.dataset.nomorPolisi, input.value);
+        });
+        kendaraanKirDetailsContainer.innerHTML = '';
+
+        Array.from(nomorPolisiListSelect.selectedOptions).forEach((option, index) => {
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 items-center rounded-md border border-gray-200 bg-gray-50 p-3';
+
+            const vehicle = document.createElement('div');
+            vehicle.className = 'text-sm font-medium text-gray-700';
+            vehicle.textContent = option.textContent.trim();
+
+            const amountWrapper = document.createElement('div');
+            amountWrapper.className = 'flex items-center gap-2';
+            const prefix = document.createElement('span');
+            prefix.className = 'text-sm text-gray-500';
+            prefix.textContent = 'Rp';
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = `kendaraan_details[${index}][nomor_polisi]`;
+            hidden.value = option.value;
+            const amount = document.createElement('input');
+            amount.type = 'number';
+            amount.name = `kendaraan_details[${index}][nominal]`;
+            amount.min = '1';
+            amount.step = '1';
+            amount.required = true;
+            amount.placeholder = 'Nominal KIR';
+            amount.value = initialKirDetails.get(option.value) || '';
+            amount.dataset.nomorPolisi = option.value;
+            amount.className = 'kir-nominal w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right';
+            amount.addEventListener('input', calculateKirTotal);
+
+            amountWrapper.append(prefix, hidden, amount);
+            row.append(vehicle, amountWrapper);
+            kendaraanKirDetailsContainer.appendChild(row);
+        });
+
+        calculateKirTotal();
+    }
+
     function toggleNomorPolisi() {
         const subJenis = subJenisSelect.value;
-        const nomorPolisiListField = document.getElementById('nomor_polisi_list_field');
-        const nomorPolisiListSelect = document.getElementById('nomor_polisi_list_select');
-        if (jenisAktivitas.value === 'Pembayaran Kendaraan' && subJenis === 'Lain Lain') {
+        if (jenisAktivitas.value === 'Pembayaran Kendaraan' && (subJenis === 'Lain Lain' || subJenis === 'KIR')) {
             nomorPolisiField.classList.add('hidden');
             nomorPolisiSelect.removeAttribute('required');
             $(nomorPolisiSelect).val('').trigger('change');
             nomorPolisiListField.classList.remove('hidden');
+            nomorPolisiListSelect.required = true;
             $(nomorPolisiListSelect).select2({ placeholder: 'Pilih Kendaraan', width: '100%' });
-        } else if (jenisAktivitas.value === 'Pembayaran Kendaraan' && (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR')) {
+            renderKirDetails();
+        } else if (jenisAktivitas.value === 'Pembayaran Kendaraan' && (subJenis === 'Plat' || subJenis === 'STNK')) {
             nomorPolisiListField.classList.add('hidden');
+            nomorPolisiListSelect.required = false;
             $(nomorPolisiListSelect).val(null).trigger('change');
+            renderKirDetails();
             nomorPolisiField.classList.remove('hidden');
             nomorPolisiSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing
@@ -939,7 +1019,9 @@ function initializeSelect2() {
             }, 100);
         } else {
             nomorPolisiListField.classList.add('hidden');
+            nomorPolisiListSelect.required = false;
             $(nomorPolisiListSelect).val(null).trigger('change');
+            renderKirDetails();
             nomorPolisiField.classList.add('hidden');
             nomorPolisiSelect.removeAttribute('required');
             $('select[name="nomor_polisi"]').val('').trigger('change');
@@ -1114,6 +1196,11 @@ function initializeSelect2() {
         
         if (!jumlahDisplay) return;
 
+        if (jenisAktivitasVal === 'Pembayaran Kendaraan' && subJenisSelect.value === 'KIR') {
+            calculateKirTotal();
+            return;
+        }
+
         if (jenisAktivitasVal === 'Pembayaran Adjusment Uang Jalan' || jenisAktivitasVal === 'Pembayaran Adjustment Uang Jalan') {
             const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
             
@@ -1160,6 +1247,8 @@ function initializeSelect2() {
         subJenisSelect.value = this.value;
         toggleNomorPolisi();
     });
+
+    $('#nomor_polisi_list_select').on('change', renderKirDetails);
     
     $('#jenis_penyesuaian_select').on('change', function() {
         toggleTipePenyesuaian();
@@ -1344,8 +1433,16 @@ function initializeSelect2() {
             if (Number(document.getElementById('pph_kendaraan_select').value) > 0) {
                 requiredFields.push({ id: 'akun_pph_select', name: 'Akun PPh' });
             }
-            if (document.getElementById('sub_jenis_kendaraan_select').value === 'Lain Lain') {
+            const subJenis = document.getElementById('sub_jenis_kendaraan_select').value;
+            if (subJenis === 'Lain Lain' || subJenis === 'KIR') {
                 requiredFields.push({ id: 'nomor_polisi_list_select', name: 'Kendaraan' });
+            }
+            if (subJenis === 'KIR') {
+                const kirNominals = kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal');
+                if (!kirNominals.length || Array.from(kirNominals).some(input => !Number.isInteger(Number(input.value)) || Number(input.value) <= 0)) {
+                    showErrorMessage('Nominal setiap kendaraan KIR harus berupa angka bulat positif!');
+                    return false;
+                }
             }
         }
         

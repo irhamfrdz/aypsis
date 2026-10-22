@@ -264,7 +264,14 @@
                     <td>: {{ ucfirst($pembayaranAktivitasLain->jenis_penyesuaian) }}</td>
                 </tr>
                 @endif
-                @if($pembayaranAktivitasLain->nomor_polisi)
+                @if($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details)
+                    @foreach($pembayaranAktivitasLain->kendaraan_details as $detail)
+                    <tr>
+                        <td>{{ $loop->first ? 'Kendaraan / Nominal KIR' : '' }}</td>
+                        <td>: {{ $detail['nomor_polisi'] }} — Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                @elseif($pembayaranAktivitasLain->nomor_polisi)
                 <tr>
                     <td>Nomor Polisi</td>
                     <td>: {{ $pembayaranAktivitasLain->nomor_polisi }}</td>

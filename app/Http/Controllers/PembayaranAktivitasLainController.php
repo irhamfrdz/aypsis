@@ -383,6 +383,19 @@ class PembayaranAktivitasLainController extends Controller
     public function store(Request $request)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
+        $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
+            && $request->input('sub_jenis_kendaraan') === 'KIR';
+        if ($isKirPayment) {
+            $request->merge([
+                'jumlah' => collect($request->input('kendaraan_details', []))->sum('nominal'),
+            ]);
+        }
+        $validVehicleNumbers = DB::table('mobils')
+            ->get(['nomor_polisi', 'no_kir'])
+            ->map(fn ($mobil) => $mobil->nomor_polisi ?: $mobil->no_kir)
+            ->filter()
+            ->values()
+            ->all();
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
@@ -399,8 +412,11 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
-            'nomor_polisi_list' => 'required_if:sub_jenis_kendaraan,Lain Lain|nullable|array|min:1',
+            'nomor_polisi_list' => [Rule::requiredIf($request->input('sub_jenis_kendaraan') === 'Lain Lain' || $isKirPayment), 'nullable', 'array', 'min:1'],
             'nomor_polisi_list.*' => 'required|string|max:255|distinct',
+            'kendaraan_details' => [Rule::requiredIf($isKirPayment), 'nullable', 'array', 'min:1'],
+            'kendaraan_details.*.nomor_polisi' => ['required', 'string', 'max:255', 'distinct', Rule::in($validVehicleNumbers)],
+            'kendaraan_details.*.nominal' => 'required|integer|min:1',
             'nomor_voyage' => 'nullable|string|max:255',
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
@@ -428,10 +444,18 @@ class PembayaranAktivitasLainController extends Controller
             $validated['akun_coa_id'] = null;
             $validated['akun_bank_id'] = null;
         }
-        $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
-            && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
-                ? array_values($validated['nomor_polisi_list'])
-                : null;
+        $validated['kendaraan_details'] = $isKirPayment
+            ? array_values($validated['kendaraan_details'])
+            : null;
+        if ($isKirPayment) {
+            $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
+            $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
+        } else {
+            $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+                && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
+                    ? array_values($validated['nomor_polisi_list'])
+                    : null;
+        }
         if ($validated['nomor_polisi_list']) {
             $validated['nomor_polisi'] = $validated['nomor_polisi_list'][0];
         }
@@ -821,6 +845,19 @@ class PembayaranAktivitasLainController extends Controller
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
+        $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
+            && $request->input('sub_jenis_kendaraan') === 'KIR';
+        if ($isKirPayment) {
+            $request->merge([
+                'jumlah' => collect($request->input('kendaraan_details', []))->sum('nominal'),
+            ]);
+        }
+        $validVehicleNumbers = DB::table('mobils')
+            ->get(['nomor_polisi', 'no_kir'])
+            ->map(fn ($mobil) => $mobil->nomor_polisi ?: $mobil->no_kir)
+            ->filter()
+            ->values()
+            ->all();
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
@@ -837,8 +874,11 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
-            'nomor_polisi_list' => 'required_if:sub_jenis_kendaraan,Lain Lain|nullable|array|min:1',
+            'nomor_polisi_list' => [Rule::requiredIf($request->input('sub_jenis_kendaraan') === 'Lain Lain' || $isKirPayment), 'nullable', 'array', 'min:1'],
             'nomor_polisi_list.*' => 'required|string|max:255|distinct',
+            'kendaraan_details' => [Rule::requiredIf($isKirPayment), 'nullable', 'array', 'min:1'],
+            'kendaraan_details.*.nomor_polisi' => ['required', 'string', 'max:255', 'distinct', Rule::in($validVehicleNumbers)],
+            'kendaraan_details.*.nominal' => 'required|integer|min:1',
             'nomor_voyage' => 'nullable|string|max:255',
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
@@ -866,10 +906,18 @@ class PembayaranAktivitasLainController extends Controller
             $validated['akun_coa_id'] = null;
             $validated['akun_bank_id'] = null;
         }
-        $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
-            && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
-                ? array_values($validated['nomor_polisi_list'])
-                : null;
+        $validated['kendaraan_details'] = $isKirPayment
+            ? array_values($validated['kendaraan_details'])
+            : null;
+        if ($isKirPayment) {
+            $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
+            $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
+        } else {
+            $validated['nomor_polisi_list'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
+                && $validated['sub_jenis_kendaraan'] === 'Lain Lain'
+                    ? array_values($validated['nomor_polisi_list'])
+                    : null;
+        }
         if ($validated['nomor_polisi_list']) {
             $validated['nomor_polisi'] = $validated['nomor_polisi_list'][0];
         }
@@ -940,6 +988,10 @@ class PembayaranAktivitasLainController extends Controller
     {
         if ($pembayaranAktivitasLain->status === 'paid') {
             return redirect()->back()->with('error', 'Tidak dapat mengubah jumlah untuk pembayaran yang sudah status Paid');
+        }
+
+        if ($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details) {
+            return redirect()->back()->with('error', 'Jumlah pembayaran KIR harus diubah melalui rincian nominal setiap kendaraan.');
         }
 
         $request->validate([

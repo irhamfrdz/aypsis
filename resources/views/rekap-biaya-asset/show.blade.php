@@ -40,7 +40,7 @@
                     <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Periode: <strong>Semua Waktu</strong></span>
                 @endif
                 <span class="flex items-center"><i class="fas fa-clock mr-2 text-emerald-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
-                <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-emerald-400"></i> Total Records: <strong>{{ $usages->count() + $suratJalans->count() + $tagihanKendaraan->count() }}</strong></span>
+                <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-emerald-400"></i> Total Records: <strong>{{ $usages->count() + $suratJalans->count() + $tagihanKendaraan->count() + $pembayaranKendaraan->count() }}</strong></span>
             </div>
         </div>
     </div>
@@ -281,6 +281,85 @@
             </div>
         @endforeach
 
+        @if($type === 'mobil' && $pembayaranKendaraan->isNotEmpty())
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
+                <button type="button" class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion" data-target="#accordion-pembayaran-kendaraan">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center mr-4">
+                            <i class="fas fa-receipt text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-gray-800 text-base">Pembayaran Kendaraan</h3>
+                            <p class="text-xs text-gray-500 font-medium">{{ $pembayaranKendaraan->count() }} Transaksi</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($totalPembayaranKendaraan, 0, ',', '.') }}</span>
+                        <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
+                        </div>
+                    </div>
+                </button>
+                <div id="accordion-pembayaran-kendaraan" class="accordion-body" style="display: none;">
+                    <div class="border-t border-gray-200 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nomor Pembayaran</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Jenis / Kendaraan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Keterangan</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Nominal</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">PPh</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                                    @can('pembayaran-aktivitas-lain-view')
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase no-print">Aksi</th>
+                                    @endcan
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @foreach($pembayaranKendaraan as $pembayaran)
+                                    <tr>
+                                        <td class="px-4 py-3 text-xs text-gray-500">{{ $loop->iteration }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{{ $pembayaran->tanggal?->format('d/M/Y') ?? '-' }}</td>
+                                        <td class="px-4 py-3 text-xs font-bold text-gray-800">{{ $pembayaran->nomor }}</td>
+                                        <td class="px-4 py-3 text-xs text-gray-700">
+                                            <div class="font-semibold">{{ $pembayaran->sub_jenis_kendaraan ?: '-' }}</div>
+                                            <div class="mt-1 text-gray-500">{{ $pembayaran->asset_vehicle_number ?: '-' }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs text-gray-700">{{ $pembayaran->keterangan ?: '-' }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs text-gray-700">Rp {{ number_format($pembayaran->apportioned['nominal'], 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs text-gray-700">
+                                            {{ number_format((float) $pembayaran->pph_persen, 1, ',', '') }}%<br>
+                                            Rp {{ number_format($pembayaran->apportioned['pph'], 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-bold text-gray-900">Rp {{ number_format($pembayaran->apportioned['total_biaya'], 0, ',', '.') }}</td>
+                                        @can('pembayaran-aktivitas-lain-view')
+                                            <td class="px-4 py-3 text-center no-print">
+                                                <a href="{{ route('pembayaran-aktivitas-lain.show', $pembayaran) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-colors" title="Lihat Pembayaran">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            </td>
+                                        @endcan
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-3 text-right text-xs text-gray-500 uppercase">Subtotal Pembayaran Kendaraan</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">Rp {{ number_format($totalPembayaranKendaraan, 0, ',', '.') }}</td>
+                                    @can('pembayaran-aktivitas-lain-view')
+                                        <td class="no-print"></td>
+                                    @endcan
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($type === 'mobil' && $tagihanKendaraan->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
                 <button type="button" class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion" data-target="#accordion-tagihan-kendaraan-batam">
@@ -411,7 +490,7 @@
             </div>
         @endif
 
-        @if($usages->count() === 0 && $suratJalans->isEmpty() && $tagihanKendaraan->isEmpty())
+        @if($usages->count() === 0 && $suratJalans->isEmpty() && $tagihanKendaraan->isEmpty() && $pembayaranKendaraan->isEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500">
                 <i class="fas fa-truck-moving text-gray-300 text-5xl mb-4 block"></i>
                 <p class="font-semibold text-lg">Tidak ada data biaya yang ditemukan</p>
