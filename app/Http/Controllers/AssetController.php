@@ -374,6 +374,16 @@ class AssetController extends Controller
         return view('master-asset.print-tanda-terima', compact('asset'));
     }
 
+    public function fotoTandaTerima(Asset $asset)
+    {
+        $receipt = $asset->tandaTerima;
+        $disk = Storage::disk('tanda_terima_asset');
+
+        abort_unless($receipt?->foto && $disk->exists($receipt->foto), 404, 'Foto bukti serah terima tidak ditemukan. Silakan unggah kembali melalui Form Tanda Terima.');
+
+        return $disk->response($receipt->foto, null, ['X-Content-Type-Options' => 'nosniff']);
+    }
+
     public function downloadTandaTerima(Asset $asset)
     {
         $asset->load(['karyawan', 'creator']);

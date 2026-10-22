@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class AssetTandaTerimaTest extends TestCase
@@ -241,5 +242,43 @@ class AssetTandaTerimaTest extends TestCase
         $this->assertSame('Budi Santoso', $receipt->nama_pemegang);
         Storage::disk('tanda_terima_asset')->assertExists($receipt->foto);
         $this->assertSame(1, TandaTerimaAsset::count());
+    }
+
+    public function test_receipt_photo_link_uses_application_host_and_serves_uploaded_image(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        config(['filesystems.disks.tanda_terima_asset.url' => 'http://wrong-host.test/uploads']);
+        app('url')->forceRootUrl('http://127.0.0.1:8000');
+        $asset = Asset::create($this->payload());
+        $file = UploadedFile::fake()->image('proof.png');
+        $photo = $file->store('', 'tanda_terima_asset');
+        $receipt = $asset->tandaTerima()->firstOrFail();
+        $receipt->update(['foto' => $photo]);
+
+        $this->assertSame('http://127.0.0.1:8000/master-asset/'.$asset->id.'/foto-tanda-terima', $receipt->foto_url);
+        $response = (new AssetController)->fotoTandaTerima($asset);
+        $this->assertSame('image/png', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('inline;', $response->headers->get('Content-Disposition'));
+        ob_start();
+        $response->sendContent();
+        $content = ob_get_clean();
+        $this->assertSame(Storage::disk('tanda_terima_asset')->get($photo), $content);
+    }
+
+    public function test_missing_receipt_photo_returns_clear_not_found_message(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        $asset = Asset::create($this->payload());
+        foreach ([null, 'missing.jpg'] as $photo) {
+            $asset->tandaTerima()->first()->update(['foto' => $photo]);
+            $asset->unsetRelation('tandaTerima');
+            try {
+                (new AssetController)->fotoTandaTerima($asset);
+                $this->fail('Expected missing photo to return 404.');
+            } catch (HttpException $exception) {
+                $this->assertSame(404, $exception->getStatusCode());
+                $this->assertStringContainsString('unggah kembali', $exception->getMessage());
+            }
+        }
     }
 }

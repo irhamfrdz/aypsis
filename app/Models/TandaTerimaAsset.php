@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class TandaTerimaAsset extends Model
 {
@@ -56,7 +55,7 @@ class TandaTerimaAsset extends Model
 
     public function getFotoUrlAttribute(): ?string
     {
-        return $this->foto ? Storage::disk('tanda_terima_asset')->url($this->foto) : null;
+        return $this->foto ? route('asset.foto-tanda-terima', $this->asset_id) : null;
     }
 
     public function karyawan(): BelongsTo
