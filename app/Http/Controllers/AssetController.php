@@ -7,6 +7,7 @@ use App\Exports\AssetTemplateExport;
 use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\Karyawan;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -84,8 +85,9 @@ class AssetController extends Controller
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
+        $kapals = MasterKapal::orderBy('nama_kapal')->get(['id', 'nama_kapal', 'status']);
 
-        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans'));
+        return view('master-asset.create', compact('nextKode', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans', 'kapals'));
     }
 
     /**
@@ -104,6 +106,7 @@ class AssetController extends Controller
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
             'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
+            'kapal_id' => 'nullable|required_if:lokasi,Di kapal|exists:master_kapals,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -136,6 +139,9 @@ class AssetController extends Controller
         }
 
         $validated['created_by'] = Auth::id();
+        if (($validated['lokasi'] ?? null) !== 'Di kapal') {
+            $validated['kapal_id'] = null;
+        }
 
         Asset::create($validated);
 
@@ -147,7 +153,7 @@ class AssetController extends Controller
      */
     public function show(Asset $asset)
     {
-        $asset->load(['creator', 'updater', 'karyawan']);
+        $asset->load(['creator', 'updater', 'karyawan', 'kapal']);
 
         return view('master-asset.show', compact('asset'));
     }
@@ -165,8 +171,9 @@ class AssetController extends Controller
             ->orWhere('id', $asset->karyawan_id)
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nik', 'divisi', 'posisi']);
+        $kapals = MasterKapal::orderBy('nama_kapal')->get(['id', 'nama_kapal', 'status']);
 
-        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans'));
+        return view('master-asset.edit', compact('asset', 'kategoris', 'statuses', 'kondisis', 'lokasis', 'karyawans', 'kapals'));
     }
 
     /**
@@ -185,6 +192,7 @@ class AssetController extends Controller
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
             'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
+            'kapal_id' => 'nullable|required_if:lokasi,Di kapal|exists:master_kapals,id',
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -223,6 +231,9 @@ class AssetController extends Controller
         }
 
         $validated['updated_by'] = Auth::id();
+        if (($validated['lokasi'] ?? null) !== 'Di kapal') {
+            $validated['kapal_id'] = null;
+        }
 
         $asset->update($validated);
 

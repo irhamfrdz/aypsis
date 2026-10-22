@@ -25,6 +25,7 @@ class Asset extends Model
         'tanggal_tanda_terima',
         'nomor_seri',
         'lokasi',
+        'kapal_id',
         'vendor',
         'nomor_faktur',
         'foto',
@@ -78,6 +79,11 @@ class Asset extends Model
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function kapal(): BelongsTo
+    {
+        return $this->belongsTo(MasterKapal::class, 'kapal_id');
     }
 
     /**

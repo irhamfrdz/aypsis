@@ -102,13 +102,23 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
-                    <select name="lokasi" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select name="lokasi" id="lokasi" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Lokasi</option>
                         @if($asset->lokasi && !in_array($asset->lokasi, $lokasis, true))
                             <option value="{{ $asset->lokasi }}" selected>{{ $asset->lokasi }}</option>
                         @endif
                         @foreach($lokasis as $lokasi)
                             <option value="{{ $lokasi }}" {{ old('lokasi', $asset->lokasi) === $lokasi ? 'selected' : '' }}>{{ $lokasi }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="kapal-field" class="hidden">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Kapal <span class="text-rose-500">*</span></label>
+                    <select name="kapal_id" id="kapal_id" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Kapal</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal->id }}" {{ old('kapal_id', $asset->kapal_id) == $kapal->id ? 'selected' : '' }}>{{ $kapal->nama_kapal }}{{ $kapal->status !== 'aktif' ? ' (Nonaktif)' : '' }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -242,6 +252,17 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const lokasi = document.getElementById('lokasi');
+        const kapalField = document.getElementById('kapal-field');
+        const kapalSelect = document.getElementById('kapal_id');
+        const toggleKapal = function() {
+            const show = lokasi.value === 'Di kapal';
+            kapalField.classList.toggle('hidden', !show);
+            kapalSelect.required = show;
+        };
+        lokasi.addEventListener('change', toggleKapal);
+        toggleKapal();
+
         if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
             $('#karyawan_id').select2({
                 placeholder: '-- Pilih Karyawan Pemegang Asset (Opsional) --',

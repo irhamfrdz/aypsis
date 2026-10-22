@@ -93,6 +93,9 @@
                     <div>
                         <span class="text-gray-400 block font-medium">Lokasi</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->lokasi ?: '-' }}</span>
+                        @if($asset->kapal)
+                            <span class="text-gray-500 mt-0.5 block">Kapal: {{ $asset->kapal->nama_kapal }}</span>
+                        @endif
                     </div>
 
                     <div>
