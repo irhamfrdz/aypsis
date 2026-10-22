@@ -8,9 +8,12 @@ use App\Models\Asset;
 use App\Models\TandaTerimaAsset;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -49,6 +52,7 @@ class AssetTandaTerimaTest extends TestCase
         (require database_path('migrations/2026_10_22_110000_add_nama_merk_to_assets_table.php'))->up();
         Schema::table('assets', fn (Blueprint $table) => $table->unsignedBigInteger('kapal_id')->nullable());
         (require database_path('migrations/2026_10_22_120000_create_tanda_terima_asset_table.php'))->up();
+        (require database_path('migrations/2026_10_22_130000_add_foto_to_tanda_terima_asset_table.php'))->up();
 
         DB::table('karyawans')->insert([
             'id' => 1, 'nama_lengkap' => 'Budi Santoso', 'nik' => '00123', 'departemen' => 'IT',
@@ -143,5 +147,99 @@ class AssetTandaTerimaTest extends TestCase
 
         $this->assertSame(0, Asset::count());
         $this->assertSame(0, TandaTerimaAsset::count());
+    }
+
+    private function handoverRequest(array $files = []): Request
+    {
+        return Request::create('/master-asset/1/tanda-terima', 'POST', [
+            'karyawan_id' => 1, 'tanggal_tanda_terima' => '2026-10-23',
+            'status' => 'Digunakan', 'print_after_save' => '0',
+        ], [], $files);
+    }
+
+    public function test_separate_receipt_photo_upload_and_replacement_preserve_asset_photo(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        $asset = Asset::create($this->payload(['foto' => 'uploads/assets/photos/original.jpg']));
+        $controller = new AssetController;
+        $response = $controller->updateTandaTerima($this->handoverRequest([
+            'foto_tanda_terima' => UploadedFile::fake()->image('bukti.jpg'),
+        ]), $asset);
+
+        $firstPhoto = $asset->tandaTerima()->firstOrFail()->foto;
+        Storage::disk('tanda_terima_asset')->assertExists($firstPhoto);
+        $this->assertSame('uploads/assets/photos/original.jpg', $asset->fresh()->foto);
+        $this->assertSame('2026-10-23', $asset->tandaTerima()->first()->tanggal_tanda_terima->toDateString());
+        $this->assertFalse($response->getSession()->has('print_asset_id'));
+
+        $controller->updateTandaTerima($this->handoverRequest(), $asset);
+        $this->assertSame($firstPhoto, $asset->tandaTerima()->first()->foto);
+        Storage::disk('tanda_terima_asset')->assertExists($firstPhoto);
+
+        $controller->updateTandaTerima($this->handoverRequest([
+            'foto_tanda_terima' => UploadedFile::fake()->image('bukti-baru.png'),
+        ]), $asset);
+
+        $newPhoto = $asset->tandaTerima()->first()->foto;
+        $this->assertNotSame($firstPhoto, $newPhoto);
+        Storage::disk('tanda_terima_asset')->assertExists($newPhoto);
+        Storage::disk('tanda_terima_asset')->assertMissing($firstPhoto);
+        $this->assertSame(1, TandaTerimaAsset::count());
+    }
+
+    public function test_failed_receipt_update_removes_new_upload_and_preserves_old_photo(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        $asset = Asset::create($this->payload());
+        Storage::disk('tanda_terima_asset')->put('old.jpg', 'old proof');
+        $asset->tandaTerima()->first()->update(['foto' => 'old.jpg']);
+        Event::listen('eloquent.updating: '.TandaTerimaAsset::class, function () {
+            throw new RuntimeException('Receipt update failed');
+        });
+
+        try {
+            (new AssetController)->updateTandaTerima($this->handoverRequest([
+                'foto_tanda_terima' => UploadedFile::fake()->image('new.jpg'),
+            ]), $asset);
+            $this->fail('Expected receipt update failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Receipt update failed', $exception->getMessage());
+        }
+
+        $this->assertSame(['old.jpg'], Storage::disk('tanda_terima_asset')->files());
+        $this->assertSame('old.jpg', $asset->tandaTerima()->first()->foto);
+        $this->assertSame('2026-10-22', $asset->fresh()->tanggal_tanda_terima->toDateString());
+    }
+
+    public function test_receipt_photo_rejects_non_images_and_oversized_files(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        $asset = Asset::create($this->payload());
+        foreach ([UploadedFile::fake()->create('proof.pdf', 10, 'application/pdf'), UploadedFile::fake()->image('large.jpg')->size(5121)] as $file) {
+            try {
+                (new AssetController)->updateTandaTerima($this->handoverRequest(['foto_tanda_terima' => $file]), $asset);
+                $this->fail('Expected invalid photo to be rejected.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('foto_tanda_terima', $exception->errors());
+            }
+        }
+        $this->assertSame([], Storage::disk('tanda_terima_asset')->files());
+        $this->assertNull($asset->tandaTerima()->first()->foto);
+    }
+
+    public function test_upload_creates_receipt_for_legacy_asset_without_one(): void
+    {
+        Storage::fake('tanda_terima_asset');
+        $asset = Asset::create($this->payload());
+        $asset->tandaTerima()->delete();
+
+        (new AssetController)->updateTandaTerima($this->handoverRequest([
+            'foto_tanda_terima' => UploadedFile::fake()->image('bukti.jpg'),
+        ]), $asset);
+
+        $receipt = $asset->tandaTerima()->firstOrFail();
+        $this->assertSame('Budi Santoso', $receipt->nama_pemegang);
+        Storage::disk('tanda_terima_asset')->assertExists($receipt->foto);
+        $this->assertSame(1, TandaTerimaAsset::count());
     }
 }

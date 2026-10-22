@@ -30,6 +30,14 @@ return [
 
     'disks' => [
 
+        'tanda_terima_asset' => [
+            'driver' => 'local',
+            'root' => public_path('uploads/tanda-terima-assets/photos'),
+            'url' => env('APP_URL').'/uploads/tanda-terima-assets/photos',
+            'visibility' => 'public',
+            'throw' => true,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

@@ -8,11 +8,13 @@ use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\Karyawan;
 use App\Models\MasterKapal;
+use App\Models\TandaTerimaAsset;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
@@ -22,7 +24,7 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Asset::with(['creator', 'karyawan']);
+        $query = Asset::with(['creator', 'karyawan', 'tandaTerima']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -308,14 +310,52 @@ class AssetController extends Controller
             'tanggal_tanda_terima' => 'required|date',
             'status' => 'nullable|string|max:50',
             'keterangan' => 'nullable|string',
+            'foto_tanda_terima' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ], [
+            'foto_tanda_terima.image' => 'Foto bukti serah terima harus berupa gambar.',
+            'foto_tanda_terima.mimes' => 'Foto bukti serah terima harus berformat JPG, PNG, atau WEBP.',
+            'foto_tanda_terima.max' => 'Foto bukti serah terima maksimal 5 MB.',
         ]);
 
-        $validated['status'] = $validated['status'] ?: 'Digunakan';
+        unset($validated['foto_tanda_terima']);
+        $validated['status'] = ($validated['status'] ?? null) ?: 'Digunakan';
         $validated['updated_by'] = Auth::id();
 
-        $asset->update($validated);
+        $disk = Storage::disk('tanda_terima_asset');
+        $fotoBaru = null;
+        $fotoLama = null;
 
-        if ($request->filled('print_after_save')) {
+        try {
+            if ($request->hasFile('foto_tanda_terima')) {
+                $fotoBaru = $request->file('foto_tanda_terima')->store('', 'tanda_terima_asset');
+            }
+
+            DB::transaction(function () use ($asset, $validated, $fotoBaru, &$fotoLama) {
+                $asset->update($validated);
+                $asset->unsetRelation('karyawan');
+                $receipt = $asset->tandaTerima()->lockForUpdate()->first();
+                $fotoLama = $receipt?->foto;
+                $attributes = TandaTerimaAsset::attributesFromAsset($asset);
+
+                if ($fotoBaru !== null) {
+                    $attributes['foto'] = $fotoBaru;
+                }
+
+                $asset->tandaTerima()->updateOrCreate(['asset_id' => $asset->id], $attributes);
+            });
+        } catch (\Throwable $exception) {
+            if ($fotoBaru !== null) {
+                $disk->delete($fotoBaru);
+            }
+
+            throw $exception;
+        }
+
+        if ($fotoBaru !== null && $fotoLama) {
+            $disk->delete($fotoLama);
+        }
+
+        if ($request->boolean('print_after_save')) {
             return redirect()->route('asset.index')
                 ->with('success', 'Form tanda terima asset berhasil disimpan')
                 ->with('print_asset_id', $asset->id);

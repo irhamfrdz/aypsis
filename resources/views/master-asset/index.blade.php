@@ -251,6 +251,9 @@
                                         <span class="text-gray-400 italic text-[11px]">-</span>
                                     @endif
                                 @endif
+                                @if($asset->tandaTerima?->foto)
+                                    <a href="{{ $asset->tandaTerima->foto_url }}" target="_blank" rel="noopener" class="text-[11px] text-blue-600 hover:underline block mt-1">Lihat bukti serah terima</a>
+                                @endif
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $asset->kondisi_badge_class }}">
@@ -268,7 +271,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
                                     @if(Auth::user() && (Auth::user()->hasRole('admin') || Auth::user()->can('asset-update') || Auth::user()->can('master-asset-update')))
-                                    <button type="button" onclick="openTandaTerimaModal('{{ $asset->id }}', '{{ addslashes($asset->kode_asset) }}', '{{ addslashes($asset->nama_asset) }}', '{{ $asset->karyawan_id }}', '{{ $asset->tanggal_tanda_terima ? $asset->tanggal_tanda_terima->format('Y-m-d') : date('Y-m-d') }}', '{{ $asset->status }}', '{{ addslashes($asset->keterangan ?? '') }}')" class="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Form Tanda Terima">
+                                    <button type="button" data-foto-url="{{ $asset->tandaTerima?->foto_url }}" onclick="openTandaTerimaModal('{{ $asset->id }}', '{{ addslashes($asset->kode_asset) }}', '{{ addslashes($asset->nama_asset) }}', '{{ $asset->karyawan_id }}', '{{ $asset->tanggal_tanda_terima ? $asset->tanggal_tanda_terima->format('Y-m-d') : date('Y-m-d') }}', '{{ $asset->status }}', '{{ addslashes($asset->keterangan ?? '') }}', this.dataset.fotoUrl)" class="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Form Tanda Terima">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </button>
                                     <a href="{{ route('asset.print-tanda-terima', $asset->id) }}" target="_blank" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Cetak Form Tanda Terima">
@@ -366,7 +369,7 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeTandaTerimaModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
         <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <form id="tandaTerimaForm" method="POST" action="">
+            <form id="tandaTerimaForm" method="POST" action="" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="print_after_save" id="modal_print_after_save" value="0">
                 <div class="bg-white px-6 pt-5 pb-4">
@@ -418,6 +421,13 @@
                         </div>
 
                         <div>
+                            <label for="modal_foto_tanda_terima" class="block text-xs font-semibold text-gray-700 mb-1">Foto Bukti Serah Terima</label>
+                            <input type="file" name="foto_tanda_terima" id="modal_foto_tanda_terima" accept="image/jpeg,image/png,image/webp" class="w-full text-xs border border-gray-300 rounded-xl file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-blue-50 file:text-blue-700">
+                            <p class="text-[10px] text-gray-500 mt-1">Unggah foto bukti serah terima (JPG, PNG, WEBP; maksimal 5 MB). Kosongkan untuk mempertahankan foto yang sudah tersimpan.</p>
+                            <a id="modal_foto_tanda_terima_link" href="#" target="_blank" rel="noopener" class="hidden text-xs text-blue-600 hover:underline mt-1">Lihat foto bukti tersimpan</a>
+                        </div>
+
+                        <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan / Kelengkapan Serah Terima</label>
                             <textarea name="keterangan" id="modal_keterangan" rows="2.5" placeholder="Contoh: Unit diserahkan lengkap (charger, dus/tas dsb.) dalam kondisi berfungsi baik..." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
                         </div>
@@ -466,7 +476,7 @@
         document.getElementById('importModal').classList.add('hidden');
     }
 
-    function openTandaTerimaModal(id, kode, nama, karyawanId, tanggal, status, keterangan) {
+    function openTandaTerimaModal(id, kode, nama, karyawanId, tanggal, status, keterangan, fotoUrl = '') {
         document.getElementById('modal_asset_label').innerText = `${kode} - ${nama}`;
         document.getElementById('tandaTerimaForm').action = `{{ url('master-asset') }}/${id}/tanda-terima`;
         document.getElementById('modal_print_link').href = `{{ url('master-asset') }}/${id}/print-tanda-terima`;
@@ -475,6 +485,10 @@
         document.getElementById('modal_status').value = status || 'Digunakan';
         document.getElementById('modal_keterangan').value = keterangan || '';
         document.getElementById('modal_print_after_save').value = '0';
+        document.getElementById('modal_foto_tanda_terima').value = '';
+        const fotoLink = document.getElementById('modal_foto_tanda_terima_link');
+        fotoLink.href = fotoUrl || '#';
+        fotoLink.classList.toggle('hidden', !fotoUrl);
         document.getElementById('tandaTerimaModal').classList.remove('hidden');
     }
 
@@ -500,6 +514,7 @@
         }
 
         document.getElementById('modal_print_after_save').value = print ? '1' : '0';
+        if (!form.reportValidity()) return;
         form.submit();
     }
 
