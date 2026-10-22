@@ -146,6 +146,11 @@
                                 <p class="text-sm text-gray-600 line-clamp-2 max-w-xs break-words italic">
                                     {{ $history->keterangan ?? '-' }}
                                 </p>
+                                @if($history->is_masuk_via_tanda_terima)
+                                    <p class="mt-1 text-xs font-semibold text-gray-700">
+                                        Supir: {{ $history->supir_tanda_terima ?: '-' }}
+                                    </p>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">

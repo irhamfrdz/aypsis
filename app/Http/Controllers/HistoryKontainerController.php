@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Gudang;
 use App\Models\HistoryKontainer;
+use App\Models\SuratJalan;
+use App\Models\TandaTerima;
 use Illuminate\Http\Request;
 
 class HistoryKontainerController extends Controller
@@ -45,6 +47,43 @@ class HistoryKontainerController extends Controller
         }
 
         $histories = $query->paginate(20);
+
+        $nomorSuratJalans = $histories->getCollection()
+            ->map(function (HistoryKontainer $history) {
+                if (preg_match('/^Masuk via Tanda Terima:\s*(.+)$/i', trim((string) $history->keterangan), $matches)) {
+                    return trim($matches[1]);
+                }
+
+                return null;
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $tandaTerimas = TandaTerima::whereIn('no_surat_jalan', $nomorSuratJalans)
+            ->orderByDesc('id')
+            ->get(['id', 'no_surat_jalan', 'supir', 'supir_pengganti'])
+            ->unique('no_surat_jalan')
+            ->keyBy('no_surat_jalan');
+
+        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $nomorSuratJalans)
+            ->get(['no_surat_jalan', 'supir'])
+            ->keyBy('no_surat_jalan');
+
+        $histories->getCollection()->each(function (HistoryKontainer $history) use ($tandaTerimas, $suratJalans) {
+            if (! preg_match('/^Masuk via Tanda Terima:\s*(.+)$/i', trim((string) $history->keterangan), $matches)) {
+                return;
+            }
+
+            $nomorSuratJalan = trim($matches[1]);
+            $tandaTerima = $tandaTerimas->get($nomorSuratJalan);
+            $supir = $tandaTerima?->supir_pengganti
+                ?: $tandaTerima?->supir
+                ?: $suratJalans->get($nomorSuratJalan)?->supir;
+
+            $history->setAttribute('supir_tanda_terima', $supir);
+            $history->setAttribute('is_masuk_via_tanda_terima', true);
+        });
 
         return view('history-kontainer.index', compact('histories'));
     }
