@@ -277,6 +277,9 @@ Route::middleware([
     Route::get('jurnal-opp-opt', [\App\Http\Controllers\JurnalOppOptController::class, 'index'])
         ->name('jurnal-opp-opt.index')
         ->middleware('can:jurnal-opp-opt-view');
+    Route::get('jurnal-opp-opt/manifest-options', [\App\Http\Controllers\JurnalOppOptController::class, 'manifestOptions'])
+        ->name('jurnal-opp-opt.manifest-options')
+        ->middleware('can:jurnal-opp-opt-create');
     Route::get('jurnal-opp-opt/create', [\App\Http\Controllers\JurnalOppOptController::class, 'create'])
         ->name('jurnal-opp-opt.create')
         ->middleware('can:jurnal-opp-opt-create');

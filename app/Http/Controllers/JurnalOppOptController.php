@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JurnalOppOpt;
+use App\Models\Manifest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +48,54 @@ class JurnalOppOptController extends Controller
         return view('jurnal-opp-opt.index', compact('entries', 'totalSaldo', 'totalKredit', 'saldoAkhir'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('jurnal-opp-opt.create');
+        $mode = $request->query('mode') === 'voyage' ? 'voyage' : 'manual';
+        $kapals = $mode === 'voyage'
+            ? Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
+                ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal')
+            : collect();
+
+        return view('jurnal-opp-opt.create', compact('mode', 'kapals'));
+    }
+
+    public function manifestOptions(Request $request)
+    {
+        $request->validate([
+            'nama_kapal' => ['nullable', 'string', 'max:255'],
+            'no_voyage' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $query = Manifest::query();
+        if ($request->filled('nama_kapal')) {
+            $query->where('nama_kapal', $request->input('nama_kapal'));
+        }
+        if ($request->filled('no_voyage')) {
+            $query->where('no_voyage', $request->input('no_voyage'));
+        }
+
+        if (! $request->filled('nama_kapal')) {
+            return response()->json(['voyages' => [], 'containers' => [], 'bls' => []]);
+        }
+
+        if (! $request->filled('no_voyage')) {
+            return response()->json([
+                'voyages' => (clone $query)->whereNotNull('no_voyage')->where('no_voyage', '!=', '')
+                    ->distinct()->orderBy('no_voyage')->pluck('no_voyage')->values(),
+                'containers' => [],
+                'bls' => [],
+            ]);
+        }
+
+        // LCL dapat memiliki banyak baris manifest/vendor untuk satu kontainer.
+        // DISTINCT membuat pilihan kontainer tetap satu per nomor kontainer.
+        return response()->json([
+            'voyages' => [],
+            'containers' => (clone $query)->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')
+                ->distinct()->orderBy('nomor_kontainer')->pluck('nomor_kontainer')->values(),
+            'bls' => (clone $query)->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '')
+                ->distinct()->orderBy('nomor_bl')->pluck('nomor_bl')->values(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -70,7 +116,13 @@ class JurnalOppOptController extends Controller
 
     public function edit(JurnalOppOpt $jurnalOppOpt): View
     {
-        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt'));
+        $mode = $jurnalOppOpt->nama_kapal ? 'voyage' : 'manual';
+        $kapals = $mode === 'voyage'
+            ? Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
+                ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal')
+            : collect();
+
+        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals'));
     }
 
     public function update(Request $request, JurnalOppOpt $jurnalOppOpt): RedirectResponse
@@ -100,8 +152,13 @@ class JurnalOppOptController extends Controller
     private function validatedData(Request $request): array
     {
         $data = $request->validate([
+            'mode' => ['nullable', 'in:manual,voyage'],
             'tanggal' => ['required', 'date'],
             'nomor_referensi' => ['nullable', 'string', 'max:100'],
+            'nama_kapal' => ['nullable', 'required_if:mode,voyage', 'string', 'max:255'],
+            'no_voyage' => ['nullable', 'required_if:mode,voyage', 'string', 'max:255'],
+            'nomor_kontainer' => ['nullable', 'string', 'max:255'],
+            'nomor_bl' => ['nullable', 'string', 'max:255'],
             'keterangan' => ['required', 'string', 'max:2000'],
             'saldo' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'kredit' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -109,6 +166,27 @@ class JurnalOppOptController extends Controller
 
         $data['saldo'] = (float) ($data['saldo'] ?? 0);
         $data['kredit'] = (float) ($data['kredit'] ?? 0);
+
+        if (($data['mode'] ?? null) === 'voyage') {
+            $manifestQuery = Manifest::query()
+                ->where('nama_kapal', $data['nama_kapal'])
+                ->where('no_voyage', $data['no_voyage']);
+
+            if (! $manifestQuery->exists()) {
+                throw ValidationException::withMessages(['no_voyage' => 'Voyage tidak ditemukan pada manifest untuk kapal yang dipilih.']);
+            }
+            foreach (['nomor_kontainer' => 'nomor_kontainer', 'nomor_bl' => 'nomor_bl'] as $field => $column) {
+                if (! empty($data[$field]) && ! (clone $manifestQuery)->where($column, $data[$field])->exists()) {
+                    throw ValidationException::withMessages([$field => 'Pilihan tidak ditemukan pada manifest voyage ini.']);
+                }
+            }
+        } else {
+            $data['nama_kapal'] = null;
+            $data['no_voyage'] = null;
+            $data['nomor_kontainer'] = null;
+            $data['nomor_bl'] = null;
+        }
+        unset($data['mode']);
 
         if ($data['saldo'] <= 0 && $data['kredit'] <= 0) {
             throw ValidationException::withMessages([

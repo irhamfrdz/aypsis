@@ -35,7 +35,7 @@
                     <a href="{{ route('jurnal-opp-opt.create', ['mode' => 'voyage']) }}" class="group rounded-xl border-2 border-blue-100 p-5 transition hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 group-hover:bg-blue-200"><i class="fas fa-ship text-lg"></i></span>
                         <span class="block font-bold text-gray-900">Dengan Voyage</span>
-                        <span class="mt-1 block text-sm text-gray-500">Transaksi terkait dengan perjalanan kapal.</span>
+                        <span class="mt-1 block text-sm text-gray-500">Pilih kapal, voyage, serta kontainer atau BL dari manifest.</span>
                     </a>
                     <a href="{{ route('jurnal-opp-opt.create', ['mode' => 'manual']) }}" class="group rounded-xl border-2 border-emerald-100 p-5 transition hover:border-emerald-500 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200"><i class="fas fa-file-invoice-dollar text-lg"></i></span>
@@ -136,7 +136,16 @@
                     @forelse($entries as $entry)
                         <tr class="hover:bg-gray-50">
                             <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-700">{{ $entry->tanggal->format('d/m/Y') }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-gray-800">{{ $entry->nomor_referensi ?: '-' }}</td>
+                            <td class="px-5 py-4 text-sm font-medium text-gray-800">
+                                <div>{{ $entry->nomor_referensi ?: '-' }}</div>
+                                @if($entry->nama_kapal || $entry->no_voyage || $entry->nomor_kontainer || $entry->nomor_bl)
+                                    <div class="mt-1 space-y-0.5 text-xs font-normal text-gray-500">
+                                        @if($entry->nama_kapal)<div>{{ $entry->nama_kapal }} · Voyage {{ $entry->no_voyage }}</div>@endif
+                                        @if($entry->nomor_kontainer)<div>Kontainer: {{ $entry->nomor_kontainer }}</div>@endif
+                                        @if($entry->nomor_bl)<div>BL: {{ $entry->nomor_bl }}</div>@endif
+                                    </div>
+                                @endif
+                            </td>
                             <td class="min-w-64 px-5 py-4 text-sm text-gray-600">{{ $entry->keterangan }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-right text-sm font-semibold text-blue-700">
                                 {{ (float) $entry->saldo > 0 ? 'Rp '.number_format((float) $entry->saldo, 2, ',', '.') : '-' }}

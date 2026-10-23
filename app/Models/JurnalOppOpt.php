@@ -15,6 +15,10 @@ class JurnalOppOpt extends Model
     protected $fillable = [
         'tanggal',
         'nomor_referensi',
+        'nama_kapal',
+        'no_voyage',
+        'nomor_kontainer',
+        'nomor_bl',
         'keterangan',
         'saldo',
         'kredit',
