@@ -99,9 +99,9 @@
                     <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Group (Opsional)</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Sub Group (Opsional)</label>
                     <select name="group" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                        <option value="">Semua Group</option>
+                        <option value="">Semua Sub Group</option>
                         @foreach($allGroups as $g)
                             <option value="{{ $g }}" {{ request('group') == $g ? 'selected' : '' }}>{{ $g }}</option>
                         @endforeach
@@ -173,7 +173,40 @@
             </div>
             
             @if(count($payrolls) > 0)
-            <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                @php
+                    $tableSubGroupsByEmployee = collect($payrolls)->mapWithKeys(function ($row) {
+                        $employee = $row['karyawan'];
+                        $groups = $employee instanceof \App\Models\Karyawan ? $employee->grup : $employee->group;
+                        $groups = is_string($groups) ? json_decode($groups, true) : $groups;
+                        $groups = collect(is_array($groups) ? $groups : [])
+                            ->map(fn ($group) => trim(explode(':', $group, 2)[1] ?? ''))
+                            ->filter(fn ($group) => $group !== '')
+                            ->unique()->values()->all();
+
+                        if ($employee instanceof \App\Models\KaryawanTidakTetap) {
+                            $subGroups = $employee->sub_group;
+                            $subGroups = is_string($subGroups) ? json_decode($subGroups, true) : $subGroups;
+                            $groups = collect($groups)->merge(is_array($subGroups) ? $subGroups : [])
+                                ->map(fn ($subGroup) => trim($subGroup ?? ''))
+                                ->filter(fn ($subGroup) => $subGroup !== '')
+                                ->unique()->values()->all();
+                        }
+
+                        return [class_basename($employee) . '_' . $employee->id => $groups];
+                    });
+                    $tableSubGroupOptions = $tableSubGroupsByEmployee->flatten()->unique()->sort()->values();
+                @endphp
+                <div>
+                    <label for="table-sub-group-filter" class="sr-only">Filter Sub Group</label>
+                    <select id="table-sub-group-filter" class="py-1.5 pl-3 pr-8 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Sub Group</option>
+                        @foreach($tableSubGroupOptions as $tableSubGroup)
+                            <option value="{{ $tableSubGroup }}">{{ $tableSubGroup }}</option>
+                        @endforeach
+                        <option value="__blank__">Tanpa Sub Group</option>
+                    </select>
+                </div>
                 <!-- Search Table Input -->
                 <div class="relative flex-1 md:w-56">
                     <input type="text" id="table-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-full" placeholder="Cari Nama atau NIK...">
@@ -234,7 +267,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                     @forelse($payrolls as $row)
-                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                    <tr data-sub-groups="{{ json_encode($tableSubGroupsByEmployee[class_basename($row['karyawan']) . '_' . $row['karyawan']->id]) }}" class="hover:bg-gray-50 transition-colors duration-200">
                         <td class="px-4 py-4 whitespace-nowrap text-center">
                             <input type="checkbox" name="selected_pranota[]" value="{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </td>
@@ -301,6 +334,11 @@
                         </td>
                     </tr>
                     @endforelse
+                    @if(count($payrolls) > 0)
+                    <tr id="table-filter-empty" style="display: none;">
+                        <td colspan="8" class="px-6 py-10 text-center text-gray-500">Tidak ada karyawan yang sesuai dengan filter.</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
             @if(count($payrolls) > 0)
@@ -714,6 +752,7 @@
                 // Simpan text pencarian jika ada
                 const searchInput = currentResultsCard.querySelector('#table-search-input');
                 const searchValue = searchInput ? searchInput.value : '';
+                const subGroupValue = currentResultsCard.querySelector('#table-sub-group-filter')?.value || '';
 
                 currentResultsCard.innerHTML = newResultsCard.innerHTML;
                 
@@ -733,6 +772,11 @@
                 }
 
                 // Kembalikan text pencarian jika ada
+                const newSubGroupFilter = currentResultsCard.querySelector('#table-sub-group-filter');
+                if (newSubGroupFilter) {
+                    newSubGroupFilter.value = Array.from(newSubGroupFilter.options).some(option => option.value === subGroupValue) ? subGroupValue : '';
+                    newSubGroupFilter.dispatchEvent(new Event('change'));
+                }
                 if (searchValue) {
                     const newSearchInput = currentResultsCard.querySelector('#table-search-input');
                     if (newSearchInput) {
@@ -779,6 +823,14 @@
         const rowCheckboxes = resultsCard.querySelectorAll('.row-checkbox');
         const btnPranota = resultsCard.querySelector('#btn-masukkan-pranota');
 
+        function updateCheckAll() {
+            if (!checkAll) return;
+            const visibleCheckboxes = Array.from(rowCheckboxes).filter(cb => cb.closest('tr').style.display !== 'none');
+            const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+            checkAll.checked = visibleCheckboxes.length > 0 && checkedCount === visibleCheckboxes.length;
+            checkAll.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
+        }
+
         function togglePranotaButton() {
             if (!btnPranota) return;
             const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
@@ -791,20 +843,17 @@
 
         if (checkAll) {
             checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                rowCheckboxes.forEach(cb => {
+                    if (cb.closest('tr').style.display !== 'none') cb.checked = this.checked;
+                });
+                updateCheckAll();
                 togglePranotaButton();
             });
         }
 
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
-                if (!this.checked && checkAll) checkAll.checked = false;
-                
-                // If all are checked, check the check-all box
-                if (Array.from(rowCheckboxes).every(c => c.checked) && checkAll) {
-                    checkAll.checked = true;
-                }
-                
+                updateCheckAll();
                 togglePranotaButton();
             });
         });
@@ -816,33 +865,31 @@
             });
         }
 
-        // Table Search Logic
+        // Combine sub group filtering with the name/NIK search.
         const tableSearchInput = resultsCard.querySelector('#table-search-input');
-        if (tableSearchInput) {
-            tableSearchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = resultsCard.querySelectorAll('table.min-w-full > tbody > tr');
-                
-                rows.forEach(row => {
-                    // Cek jika ini baris kosong
-                    if (row.querySelector('td[colspan]')) return;
-                    
-                    const nameNode = row.querySelector('td:nth-child(3) .font-medium');
-                    const nikNode = row.querySelector('td:nth-child(3) .text-xs');
-                    
-                    if (nameNode && nikNode) {
-                        const name = nameNode.innerText.toLowerCase();
-                        const nik = nikNode.innerText.toLowerCase();
-                        
-                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
-                });
+        const tableSubGroupFilter = resultsCard.querySelector('#table-sub-group-filter');
+        function filterTableRows() {
+            const searchTerm = (tableSearchInput?.value || '').toLowerCase().trim();
+            const group = tableSubGroupFilter?.value || '';
+            let visibleCount = 0;
+
+            resultsCard.querySelectorAll('tr[data-sub-groups]').forEach(row => {
+                const name = row.querySelector('td:nth-child(3) .font-medium').innerText.toLowerCase();
+                const nik = row.querySelector('td:nth-child(3) .text-xs').innerText.toLowerCase();
+                const groups = JSON.parse(row.dataset.subGroups);
+                const matchesSubGroup = !group || (group === '__blank__' ? groups.length === 0 : groups.includes(group));
+                const visible = matchesSubGroup && (name.includes(searchTerm) || nik.includes(searchTerm));
+                row.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
             });
+
+            const emptyRow = resultsCard.querySelector('#table-filter-empty');
+            if (emptyRow) emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+            updateCheckAll();
         }
+        tableSearchInput?.addEventListener('input', filterTableRows);
+        tableSubGroupFilter?.addEventListener('change', filterTableRows);
+        filterTableRows();
 
         // Refresh Button Binding
         const btnRefresh = resultsCard.querySelector('#btn-refresh-data');
