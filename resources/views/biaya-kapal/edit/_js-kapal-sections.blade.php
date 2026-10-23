@@ -2,6 +2,17 @@
     let kapalSectionCounter = 0;
     const kapalSectionsContainer = document.getElementById('kapal_sections_container');
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
+    // Rows restored in edit mode and rows added later share the same total handler.
+    kapalSectionsContainer.addEventListener('input', function(event) {
+        if (event.target.matches('.jumlah-input-item')) {
+            calculateTotalFromAllSections();
+        }
+    });
+    kapalSectionsContainer.addEventListener('change', function(event) {
+        if (event.target.matches('.barang-select-item, .jumlah-input-item')) {
+            calculateTotalFromAllSections();
+        }
+    });
     const allBuruhsData = @json($allBuruhs ?? []);
     const editPphRecipients = @json($penerimaBuktiPotongPphs);
     const isBuruhBongkarEdit = @json($biayaKapal->jenis_biaya === 'KB054');
@@ -631,17 +642,7 @@
         
         container.appendChild(inputGroup);
         
-        // Add event listeners
-        const barangSelect = inputGroup.querySelector('.barang-select-item');
-        const jumlahInput = inputGroup.querySelector('.jumlah-input-item');
-        
-        barangSelect.addEventListener('change', function() {
-            calculateTotalFromAllSections();
-        });
-        
-        jumlahInput.addEventListener('input', function() {
-            calculateTotalFromAllSections();
-        });
+        calculateTotalFromAllSections();
     };
     
     window.removeKapalSection = function(sectionIndex) {
@@ -715,17 +716,7 @@
         
         container.appendChild(inputGroup);
         
-        // Add event listeners
-        const barangSelect = inputGroup.querySelector('.barang-select-item');
-        const jumlahInput = inputGroup.querySelector('.jumlah-input-item');
-        
-        barangSelect.addEventListener('change', function() {
-            calculateTotalFromAllSections();
-        });
-        
-        jumlahInput.addEventListener('input', function() {
-            calculateTotalFromAllSections();
-        });
+        calculateTotalFromAllSections();
     };
     
     window.addBuruhToSection = function(sectionIndex) {
@@ -1245,24 +1236,6 @@
             if (nominal) nominal.name = `kapal_sections[${sectionIndex}][kontainer][${newIndex}][nominal]`;
         });
     }
-    
-    window.addBarangToSectionWithValue = function(sectionIndex, barangId, jumlah) {
-        addBarangToSection(sectionIndex);
-        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
-        const container = section.querySelector('.barang-container-section');
-        const groups = container.querySelectorAll('.flex');
-        const lastGroup = groups[groups.length - 1];
-        
-        if (lastGroup) {
-            const select = lastGroup.querySelector('.barang-select-item');
-            const input = lastGroup.querySelector('.jumlah-input-item');
-            if (select) select.value = barangId;
-            if (input) input.value = jumlah;
-            if (typeof jQuery !== 'undefined' && $.fn.select2) {
-                $(select).trigger('change');
-            }
-        }
-    };
     
     window.addBuruhToSectionWithValue = function(sectionIndex, buruhId, nominal) {
         addBuruhToSection(sectionIndex);
