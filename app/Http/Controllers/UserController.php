@@ -1251,6 +1251,15 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            if (str_starts_with($permissionName, 'purchase-order-')) {
+                $action = substr($permissionName, strlen('purchase-order-'));
+                if (in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                    $matrixPermissions['purchase-order'][$action] = true;
+                }
+
+                continue;
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -1945,6 +1954,15 @@ class UserController extends Controller
                     // selalu menunjuk ke permission database yang tepat.
                     if ($module === 'jurnal-opp-opt' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
                         $permission = Permission::where('name', 'jurnal-opp-opt-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                        }
+
+                        continue;
+                    }
+
+                    if ($module === 'purchase-order' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                        $permission = Permission::where('name', 'purchase-order-'.$action)->first();
                         if ($permission) {
                             $permissionIds[] = $permission->id;
                         }

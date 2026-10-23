@@ -466,6 +466,26 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Purchase Order --}}
+                            <tr class="module-row" data-module="purchase-order">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2" style="display: none;"></span>
+                                        <div>
+                                            <div class="font-semibold">Purchase Order</div>
+                                            <div class="text-xs text-gray-500">Kelola pesanan pembelian</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[purchase-order][view]" value="1" class="permission-checkbox" @if(!empty($userMatrixPermissions['purchase-order']['view'])) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[purchase-order][create]" value="1" class="permission-checkbox" @if(!empty($userMatrixPermissions['purchase-order']['create'])) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[purchase-order][update]" value="1" class="permission-checkbox" @if(!empty($userMatrixPermissions['purchase-order']['update'])) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[purchase-order][delete]" value="1" class="permission-checkbox" @if(!empty($userMatrixPermissions['purchase-order']['delete'])) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">
