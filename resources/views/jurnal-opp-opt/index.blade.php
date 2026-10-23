@@ -11,12 +11,67 @@
             <p class="mt-1 text-sm text-gray-500">Buku jurnal mandiri untuk saldo dan kredit OPT/OPP.</p>
         </div>
         @can('jurnal-opp-opt-create')
-            <a href="{{ route('jurnal-opp-opt.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+            <button type="button" id="open-create-options" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
                 <i class="fas fa-plus"></i>
                 Tambah Transaksi
-            </a>
+            </button>
         @endcan
     </div>
+
+    @can('jurnal-opp-opt-create')
+        <div id="create-options-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="create-options-title">
+            <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+                <div class="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                        <h2 id="create-options-title" class="text-xl font-bold text-gray-900">Tambah Transaksi</h2>
+                        <p class="mt-1 text-sm text-gray-500">Pilih cara pencatatan transaksi.</p>
+                    </div>
+                    <button type="button" id="close-create-options" class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Tutup">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <a href="{{ route('jurnal-opp-opt.create', ['mode' => 'voyage']) }}" class="group rounded-xl border-2 border-blue-100 p-5 transition hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 group-hover:bg-blue-200"><i class="fas fa-ship text-lg"></i></span>
+                        <span class="block font-bold text-gray-900">Dengan Voyage</span>
+                        <span class="mt-1 block text-sm text-gray-500">Transaksi terkait dengan perjalanan kapal.</span>
+                    </a>
+                    <a href="{{ route('jurnal-opp-opt.create', ['mode' => 'manual']) }}" class="group rounded-xl border-2 border-emerald-100 p-5 transition hover:border-emerald-500 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200"><i class="fas fa-file-invoice-dollar text-lg"></i></span>
+                        <span class="block font-bold text-gray-900">Tanpa Voyage</span>
+                        <span class="mt-1 block text-sm text-gray-500">Catat transaksi jurnal secara langsung.</span>
+                    </a>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" id="cancel-create-options" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            (() => {
+                const modal = document.getElementById('create-options-modal');
+                const openButton = document.getElementById('open-create-options');
+                const closeButtons = [document.getElementById('close-create-options'), document.getElementById('cancel-create-options')];
+                const close = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                };
+
+                openButton.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+                closeButtons.forEach((button) => button.addEventListener('click', close));
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) close();
+                });
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+                });
+            })();
+        </script>
+    @endcan
 
     @if(session('success'))
         <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
