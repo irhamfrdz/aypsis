@@ -48,20 +48,16 @@ class PushAbsensiHistory extends Command
             $query = 'SELECT u.Badgenumber, c.CHECKTIME, c.CHECKTYPE 
                       FROM CHECKINOUT c 
                       INNER JOIN USERINFO u ON c.USERID = u.USERID
-                      ORDER BY c.CHECKTIME DESC';
+                      ORDER BY c.CHECKTIME ASC';
             $stmt = $conn->query($query);
 
             $logs = [];
             $chunks = [];
 
             while ($log = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                $checktype = strtoupper($log['CHECKTYPE']);
-                $type = (in_array($checktype, ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
+                $type = \App\Helpers\AttendanceEventType::fromMachineCode($log['CHECKTYPE']) ?? 'Pulang';
 
                 $logTime = Carbon::parse($log['CHECKTIME']);
-                if ($logTime->hour >= 4 && $logTime->hour < 12) {
-                    $type = 'Masuk';
-                }
 
                 $logs[] = [
                     'nik' => trim($log['Badgenumber']),

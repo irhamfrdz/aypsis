@@ -88,27 +88,17 @@ class AbsensiImport implements ToCollection
                     }
                 }
 
-                // Cek tipe absen
-                $upperCell = strtoupper($cellStr);
-                if (in_array($upperCell, ['0', 'I', 'C/IN', 'MASUK', 'IN'])) {
-                    $typeStr = 'Masuk';
-                } elseif (in_array($upperCell, ['1', 'O', 'C/OUT', 'PULANG', 'OUT'])) {
-                    $typeStr = 'Pulang';
-                } elseif (in_array($upperCell, ['2', 'B'])) {
-                    $typeStr = 'istirahat_keluar';
-                } elseif (in_array($upperCell, ['3', 'b'])) {
-                    $typeStr = 'istirahat_masuk';
-                } elseif ($upperCell === '4') {
-                    $typeStr = 'lembur_masuk';
-                } elseif ($upperCell === '5') {
-                    $typeStr = 'lembur_pulang';
+                // Preserve both machine codes and named overtime types.
+                $mappedType = \App\Helpers\AttendanceEventType::fromMachineCode($cellStr);
+                if ($mappedType !== null) {
+                    $typeStr = $mappedType;
                 }
             }
-
             // Jika kita menemukan NIK dan Waktu di baris ini
             if ($nik && $waktu) {
                 // Tentukan type default jika tidak ditemukan
                 $type = $typeStr ?: 'Masuk';
+                $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $waktu, $type, $this->employees[$nik] ?? null);
 
                 $key = $nik.'_'.$waktu;
                 if (isset($existingLogs[$key])) {

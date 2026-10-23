@@ -32,6 +32,7 @@ class AbsensiSyncController extends Controller
 
         $mesinId = $request->mesin_id;
         $logs = $request->logs;
+        usort($logs, fn ($a, $b) => strcmp($a['waktu'], $b['waktu']));
 
         // Cache existing logs to avoid N+1 queries
         $existingLogs = Absensi::select('nik', 'waktu', 'tipe')
@@ -63,6 +64,7 @@ class AbsensiSyncController extends Controller
             }
             $type = $log['tipe'];
             $logTime = Carbon::parse($log['waktu'])->format('Y-m-d H:i:s');
+            $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $logTime, $type, $employees[$nik] ?? null);
 
             $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
             if (isset($existingLogs[$key])) {

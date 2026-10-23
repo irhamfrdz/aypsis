@@ -101,6 +101,7 @@ class SyncAttendanceLocal extends Command
                                 }
                                 $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
+                                $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $logTime, $type);
                                 $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                                 if (isset($existingLogs[$key])) {
                                     continue;
@@ -198,22 +199,7 @@ class SyncAttendanceLocal extends Command
                             $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                         }
 
-                        $checkType = strtoupper($log['CHECKTYPE']);
-                        if (in_array($checkType, ['I', '0', 'MASUK'])) {
-                            $type = 'Masuk';
-                        } elseif (in_array($checkType, ['O', '1', 'PULANG'])) {
-                            $type = 'Pulang';
-                        } elseif ($checkType == '2' || $checkType == 'B') { // Usually '2' or 'B' for Break Out
-                            $type = 'istirahat_keluar';
-                        } elseif ($checkType == '3' || $checkType == 'b') { // Usually '3' or 'b' for Break In
-                            $type = 'istirahat_masuk';
-                        } elseif ($checkType == '4') {
-                            $type = 'lembur_masuk';
-                        } elseif ($checkType == '5') {
-                            $type = 'lembur_pulang';
-                        } else {
-                            $type = 'Pulang';
-                        }
+                        $type = \App\Helpers\AttendanceEventType::fromMachineCode($log['CHECKTYPE']) ?? 'Pulang';
 
                         $logTimeObj = Carbon::parse($log['CHECKTIME']);
 
@@ -224,6 +210,7 @@ class SyncAttendanceLocal extends Command
 
                         $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
+                        $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $logTime, $type);
                         $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                         if (isset($existingLogs[$key])) {
                             continue;

@@ -111,13 +111,10 @@ class AbsensiImportController extends Controller
                     continue; // Skip invalid date
                 }
 
-                $state = isset($parts[2]) ? (int) trim($parts[2]) : 0;
+                $state = isset($parts[2]) ? trim($parts[2]) : '0';
 
-                if (in_array($state, [0, 3, 4])) {
-                    $type = 'Masuk';
-                } else {
-                    $type = 'Pulang';
-                }
+                $type = \App\Helpers\AttendanceEventType::fromMachineCode($state) ?? 'Pulang';
+                $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $waktu, $type);
 
                 $verifyMethodRaw = isset($parts[3]) ? (int) trim($parts[3]) : null;
                 $verifyMode = null;

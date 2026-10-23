@@ -16,7 +16,7 @@ class ApiAttendanceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tipe' => 'required|in:Masuk,Pulang,masuk,pulang,istirahat_keluar,istirahat_masuk',
+            'tipe' => 'required|in:Masuk,Pulang,masuk,pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang,Lembur_Masuk,Lembur_Pulang',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
@@ -35,16 +35,25 @@ class ApiAttendanceController extends Controller
         }
 
         $karyawan = $user->karyawan;
-        $today = Carbon::today('Asia/Jakarta');
+        $waktuAbsensi = Carbon::now('Asia/Jakarta');
+        $tipe = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve(
+            $karyawan->nik ?? '', $waktuAbsensi->toDateTimeString(), $request->tipe, $karyawan->id
+        );
+        $workDate = $waktuAbsensi->copy()->subHours(6)->toDateString();
+        if ($tipe === 'lembur_masuk') {
+            $workDate = $waktuAbsensi->toDateString();
+        } elseif ($tipe === 'lembur_pulang') {
+            $start = Absensi::where('karyawan_id', $karyawan->id)
+                ->whereRaw("LOWER(REPLACE(tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur')")
+                ->whereBetween('waktu', [$waktuAbsensi->copy()->subDay(), $waktuAbsensi])
+                ->orderByDesc('waktu')->first();
+            $workDate = $start ? Carbon::parse($start->waktu)->toDateString() : $waktuAbsensi->toDateString();
+        }
 
-        // Normalize tipe to match what we store (or just keep what's sent)
-        $tipe = strtolower($request->tipe) == 'masuk' ? 'Masuk' :
-               (strtolower($request->tipe) == 'pulang' ? 'Pulang' : $request->tipe);
-
-        // Check if already checked in/out today for this specific type
+        // Deduplicate by attendance type and work session, including overnight overtime.
         $existing = Absensi::where('karyawan_id', $karyawan->id)
-            ->where('tipe', $tipe)
-            ->whereDate('waktu', $today)
+            ->whereRaw("LOWER(REPLACE(tipe, '_', ' ')) = ?", [strtolower(str_replace('_', ' ', $tipe))])
+            ->workDates($workDate)
             ->first();
 
         if ($existing) {
@@ -77,9 +86,6 @@ class ApiAttendanceController extends Controller
             file_put_contents($uploadPath.'/'.$fileName, $decodedData);
             $fotoUrl = '/uploads/absensi/'.$fileName;
         }
-
-        // Tentukan waktu absensi
-        $waktuAbsensi = Carbon::now('Asia/Jakarta');
 
         // Validasi Lokasi Absensi Wajib & Radius Geofence
         $statusAbsensi = 'HADIR';

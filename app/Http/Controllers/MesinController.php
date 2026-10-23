@@ -301,8 +301,9 @@ class MesinController extends Controller
                     if (is_numeric($nik)) {
                         $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                     }
-                    $type = (in_array(strtoupper($log['CHECKTYPE']), ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
+                    $type = \App\Helpers\AttendanceEventType::fromMachineCode($log['CHECKTYPE']) ?? 'Pulang';
                     $logTime = \Carbon\Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s');
+                    $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $logTime, $type);
 
                     $key = AbsensiDeletionGuard::key($nik, $logTime, $type);
                     if (isset($existingLogs[$key])) {
