@@ -369,6 +369,28 @@
         <!-- Sidebar Informasi -->
         <div class="lg:col-span-1">
             
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <h3 class="text-base font-semibold text-gray-800 mb-3">Informasi Asset</h3>
+                <dl class="space-y-2 text-sm">
+                    <div>
+                        <dt class="text-gray-600">Tanggal Tanda Terima Asset</dt>
+                        <dd class="bg-white p-2 rounded border">{{ $mobil->tanggal_tanda_terima_asset?->format('d M Y') ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600">Kategori Asset</dt>
+                        <dd class="bg-white p-2 rounded border">{{ $mobil->kategori_asset ?: '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600">Status Operasional</dt>
+                        <dd class="bg-white p-2 rounded border">{{ $mobil->status_operasional ?: '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600">Kondisi Fisik</dt>
+                        <dd class="bg-white p-2 rounded border">{{ $mobil->kondisi_fisik ?: '-' }}</dd>
+                    </div>
+                </dl>
+            </div>
+
             <!-- Informasi Karyawan -->
             <div class="bg-gray-50 rounded-lg p-4 mb-4">
                 <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">

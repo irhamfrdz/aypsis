@@ -785,6 +785,48 @@
         </div>
     </details>
 
+    <details open class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
+            <span>Asset yang Digunakan</span>
+            <span class="text-sm text-gray-500">{{ $assets->count() }} asset</span>
+        </summary>
+        <div class="p-4">
+            @if($assets->isNotEmpty())
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-3 py-2 text-left">Jenis Asset</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kode / Nomor</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Nama Asset</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Tanggal Tanda Terima Asset</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kondisi Fisik</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($assets as $asset)
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['jenis'] }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['kode'] }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['nama'] }}</td>
+                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $asset['tanggal_tanda_terima_asset'] ? \Carbon\Carbon::parse($asset['tanggal_tanda_terima_asset'])->format('d/m/Y') : '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['kondisi_fisik'] }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['detail'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-box-open text-2xl mb-2" aria-hidden="true"></i>
+                    <p>Belum ada asset yang digunakan oleh karyawan ini.</p>
+                </div>
+            @endif
+        </div>
+    </details>
+
     <div class="mt-6">
         <p class="font-semibold text-gray-600">Catatan Umum</p>
         <div class="mt-2 p-3 bg-gray-50 border rounded text-gray-800 min-h-[80px] whitespace-pre-wrap">

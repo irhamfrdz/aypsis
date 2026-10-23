@@ -1297,7 +1297,9 @@ class KaryawanController extends Controller
      */
     public function show(Karyawan $karyawan)
     {
-        return view('master-karyawan.show', compact('karyawan'));
+        $assets = app(\App\Services\KaryawanAssetService::class)->forKaryawan($karyawan->id);
+
+        return view('master-karyawan.show', compact('karyawan', 'assets'));
     }
 
     /**

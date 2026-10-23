@@ -334,6 +334,10 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jatuh Tempo Asuransi</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Tanda Terima Asset</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori Asset</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Operasional</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi Fisik</th>
                     <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -414,6 +418,10 @@
                             @endif
                         </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm whitespace-nowrap">{{ $mobil->tanggal_tanda_terima_asset?->format('d/m/Y') ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->kategori_asset ?: '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->status_operasional ?: '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->kondisi_fisik ?: '-' }}</td>
                         <td class="py-2 px-3 text-center">
                             <div class="flex item-center justify-center space-x-1">
                                 <!-- Tombol Detail -->
@@ -449,7 +457,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="py-6 px-3 text-center text-gray-500">
+                        <td colspan="15" class="py-6 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center py-4">
                                 <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

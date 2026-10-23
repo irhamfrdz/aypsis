@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mobil;
+use App\Services\MobilAssetSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class MobilController extends Controller
@@ -156,17 +158,26 @@ class MobilController extends Controller
             'tanggal_jatuh_tempo_asuransi' => 'nullable|date',
             'warna_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string|max:500',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
+            'karyawan_id' => 'required_if:is_asset_karyawan,1|nullable|exists:karyawans,id',
+            'is_asset_karyawan' => 'sometimes|boolean',
+            'tanggal_tanda_terima_asset' => 'nullable|date',
+            'status_operasional' => 'nullable|in:Tersedia,Digunakan,Dalam Pemeliharaan,Dipinjam,Dijual',
+            'kondisi_fisik' => 'nullable|in:Baik,Rusak Ringan,Rusak Berat,Afkir',
+            'kategori_asset' => 'nullable|in:Elektronik,Kendaraan,Alat Berat',
             'imei_gps' => 'nullable|string|max:50|unique:mobils,imei_gps',
         ]);
 
-        $mobil = Mobil::create($validated);
+        $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
+        DB::transaction(function () use ($validated, $request) {
+            $mobil = Mobil::create($validated);
+            app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
 
-        // Update nomor polisi pada karyawan jika ada karyawan dan nomor polisi diisi
-        if ($validated['karyawan_id'] && ! empty($validated['nomor_polisi'])) {
-            \App\Models\Karyawan::where('id', $validated['karyawan_id'])
-                ->update(['plat' => $validated['nomor_polisi']]);
-        }
+            // Update nomor polisi pada karyawan jika ada karyawan dan nomor polisi diisi
+            if (! empty($validated['karyawan_id']) && ! empty($validated['nomor_polisi'])) {
+                \App\Models\Karyawan::where('id', $validated['karyawan_id'])
+                    ->update(['plat' => $validated['nomor_polisi']]);
+            }
+        });
 
         return redirect()->route('master.mobil.index')->with('success', 'Data mobil berhasil ditambahkan.');
     }
@@ -293,24 +304,34 @@ class MobilController extends Controller
             'tanggal_jatuh_tempo_asuransi' => 'nullable|date',
             'warna_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string|max:500',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
+            'karyawan_id' => 'required_if:is_asset_karyawan,1|nullable|exists:karyawans,id',
+            'is_asset_karyawan' => 'sometimes|boolean',
+            'tanggal_tanda_terima_asset' => 'nullable|date',
+            'status_operasional' => 'nullable|in:Tersedia,Digunakan,Dalam Pemeliharaan,Dipinjam,Dijual',
+            'kondisi_fisik' => 'nullable|in:Baik,Rusak Ringan,Rusak Berat,Afkir',
+            'kategori_asset' => 'nullable|in:Elektronik,Kendaraan,Alat Berat',
             'imei_gps' => 'nullable|string|max:50|unique:mobils,imei_gps,'.$id,
         ]);
 
-        // Jika karyawan lama ada, hapus nomor plat dari karyawan lama
-        if ($mobil->karyawan_id && $mobil->karyawan_id != $validated['karyawan_id']) {
-            \App\Models\Karyawan::where('id', $mobil->karyawan_id)
-                ->update(['plat' => null]);
-        }
+        $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
 
-        // Update data mobil
-        $mobil->update($validated);
+        DB::transaction(function () use ($mobil, $validated, $request) {
+            $mobil = Mobil::whereKey($mobil->id)->lockForUpdate()->firstOrFail();
+            // Jika karyawan lama ada, hapus nomor plat dari karyawan lama
+            if ($mobil->karyawan_id && $mobil->karyawan_id != ($validated['karyawan_id'] ?? null)) {
+                \App\Models\Karyawan::where('id', $mobil->karyawan_id)
+                    ->update(['plat' => null]);
+            }
 
-        // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
-        if ($validated['karyawan_id'] && ! empty($validated['nomor_polisi'])) {
-            \App\Models\Karyawan::where('id', $validated['karyawan_id'])
-                ->update(['plat' => $validated['nomor_polisi']]);
-        }
+            $mobil->update($validated);
+            app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
+
+            // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
+            if (! empty($validated['karyawan_id']) && ! empty($validated['nomor_polisi'])) {
+                \App\Models\Karyawan::where('id', $validated['karyawan_id'])
+                    ->update(['plat' => $validated['nomor_polisi']]);
+            }
+        });
 
         return redirect()->route('master.mobil.index')->with('success', 'Data mobil berhasil diperbarui.');
     }

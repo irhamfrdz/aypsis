@@ -16,6 +16,8 @@ class Asset extends Model
     protected $table = 'assets';
 
     protected $fillable = [
+        'source_table',
+        'source_id',
         'kode_asset',
         'nama_asset',
         'nama_merk',
@@ -27,6 +29,7 @@ class Asset extends Model
         'tanggal_tanda_terima',
         'nomor_seri',
         'lokasi',
+        'lokasi_asset',
         'kapal_id',
         'vendor',
         'nomor_faktur',
@@ -43,6 +46,7 @@ class Asset extends Model
     ];
 
     public const KATEGORI_OPTIONS = [
+        'Elektronik',
         'Elektronik & IT',
         'Kendaraan',
         'Alat Berat',
@@ -73,6 +77,12 @@ class Asset extends Model
         'Batam',
         'Di kapal',
         'Di bawa oleh karyawan',
+    ];
+
+    public const LOKASI_ASSET_OPTIONS = [
+        'JKT',
+        'BTM',
+        'PNG',
     ];
 
     /**

@@ -46,6 +46,11 @@ class Mobil extends Model
         'warna_plat',
         'catatan',
         'karyawan_id',
+        'is_asset_karyawan',
+        'tanggal_tanda_terima_asset',
+        'status_operasional',
+        'kondisi_fisik',
+        'kategori_asset',
         'imei_gps',
         'km',
     ];
@@ -56,6 +61,8 @@ class Mobil extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'is_asset_karyawan' => 'boolean',
+        'tanggal_tanda_terima_asset' => 'date',
         'km' => 'decimal:3',
         'pajak_stnk' => 'date',
         'pajak_plat' => 'date',

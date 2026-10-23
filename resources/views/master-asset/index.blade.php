@@ -192,6 +192,7 @@
         </form>
     </div>
 
+    <h2 class="text-lg font-semibold text-gray-800">Daftar Asset Terdaftar</h2>
     <!-- Data Table -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">

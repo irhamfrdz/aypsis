@@ -109,13 +109,23 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
                     <select name="lokasi" id="lokasi" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Lokasi</option>
-                        @if($asset->lokasi && !in_array($asset->lokasi, $lokasis, true))
-                            <option value="{{ $asset->lokasi }}" selected>{{ $asset->lokasi }}</option>
-                        @endif
                         @foreach($lokasis as $lokasi)
                             <option value="{{ $lokasi }}" {{ old('lokasi', $asset->lokasi) === $lokasi ? 'selected' : '' }}>{{ $lokasi }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div>
+                    <label for="lokasi_asset" class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Asset</label>
+                    <select name="lokasi_asset" id="lokasi_asset" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Lokasi Asset</option>
+                        @foreach(\App\Models\Asset::LOKASI_ASSET_OPTIONS as $lokasiAsset)
+                            <option value="{{ $lokasiAsset }}" @selected(old('lokasi_asset', $asset->lokasi_asset) === $lokasiAsset)>{{ $lokasiAsset }}</option>
+                        @endforeach
+                    </select>
+                    @error('lokasi_asset')
+                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div id="kapal-field" class="hidden">
@@ -258,20 +268,16 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const lokasi = document.getElementById('lokasi');
-        const kapalField = document.getElementById('kapal-field');
-        const kapalSelect = document.getElementById('kapal_id');
-        const karyawanField = document.getElementById('karyawan-field');
-        const karyawanSelect = document.getElementById('karyawan_id');
-        const toggleKapal = function() {
-            const show = lokasi.value === 'Di kapal';
-            kapalField.classList.toggle('hidden', !show);
-            kapalSelect.required = show;
+        const toggleLocationFields = function() {
+            const showKapal = lokasi.value === 'Di kapal';
             const showKaryawan = lokasi.value === 'Di bawa oleh karyawan';
-            karyawanField.classList.toggle('hidden', !showKaryawan);
-            karyawanSelect.required = showKaryawan;
+            document.getElementById('kapal-field').classList.toggle('hidden', !showKapal);
+            document.getElementById('kapal_id').required = showKapal;
+            document.getElementById('karyawan-field').classList.toggle('hidden', !showKaryawan);
+            document.getElementById('karyawan_id').required = showKaryawan;
         };
-        lokasi.addEventListener('change', toggleKapal);
-        toggleKapal();
+        lokasi.addEventListener('change', toggleLocationFields);
+        toggleLocationFields();
 
         if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
             $('#karyawan_id').select2({

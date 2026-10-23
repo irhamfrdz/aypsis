@@ -271,9 +271,23 @@
             </div>
         </fieldset>
 
+        @include('master-mobil._asset-fields')
+
         <fieldset class="mb-6">
             <legend class="text-lg font-semibold text-gray-800 mb-4">Penugasan Karyawan</legend>
             <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <input type="hidden" name="is_asset_karyawan" value="0">
+                    <label for="is_asset_karyawan" class="relative inline-flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" role="switch" id="is_asset_karyawan" name="is_asset_karyawan" value="1" class="absolute left-0 top-0 h-6 w-11 cursor-pointer opacity-0 peer" @checked(old('is_asset_karyawan', $mobil->is_asset_karyawan)) aria-describedby="asset-karyawan-description">
+                        <span class="relative h-6 w-11 shrink-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-indigo-600 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5" aria-hidden="true"></span>
+                        <span class="text-sm font-medium text-gray-700">Asset digunakan oleh karyawan</span>
+                    </label>
+                    <p id="asset-karyawan-description" class="mt-1 text-xs text-gray-500">Saat diperbarui, kendaraan akan otomatis disinkronkan ke Master Asset. Jika dinonaktifkan, asset tetap tersimpan dan penugasan karyawan dilepas.</p>
+                    @error('is_asset_karyawan')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
                 <!-- Karyawan -->
                 <div>
                     <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan Supir</label>

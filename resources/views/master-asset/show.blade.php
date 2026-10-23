@@ -96,6 +96,11 @@
                     </div>
 
                     <div>
+                        <span class="text-gray-400 block font-medium">Lokasi Asset</span>
+                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->lokasi_asset ?: '-' }}</span>
+                    </div>
+
+                    <div>
                         <span class="text-gray-400 block font-medium">Lokasi</span>
                         <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->lokasi ?: '-' }}</span>
                         @if($asset->kapal)

@@ -51,9 +51,12 @@
         $karyawan = $asset->karyawan;
         $namaPemegang = $karyawan?->nama_lengkap ?: '........................................';
         $tanggalSurat = $asset->tanggal_tanda_terima ?? now();
-        $kota = in_array($asset->lokasi, ['Jakarta', 'Batam'], true)
-            ? $asset->lokasi
-            : ($karyawan?->cabang ?: '........................');
+        $kota = match ($asset->lokasi_asset ?: $asset->lokasi) {
+            'JKT', 'Jakarta' => 'Jakarta',
+            'BTM', 'Batam' => 'Batam',
+            'PNG' => 'PNG',
+            default => $karyawan?->cabang ?: '........................',
+        };
     @endphp
 
     @unless($isPdf ?? false)
