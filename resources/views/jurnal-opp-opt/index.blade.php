@@ -138,11 +138,15 @@
                             <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-700">{{ $entry->tanggal->format('d/m/Y') }}</td>
                             <td class="px-5 py-4 text-sm font-medium text-gray-800">
                                 <div>{{ $entry->nomor_referensi ?: '-' }}</div>
-                                @if($entry->nama_kapal || $entry->no_voyage || $entry->nomor_kontainer || $entry->nomor_bl || $entry->vendor || $entry->klasifikasiBiaya)
+                                @if($entry->nama_kapal || $entry->no_voyage || $entry->nomor_kontainer || $entry->nomor_bl || $entry->vendor || $entry->klasifikasiBiaya || $entry->manifestItems->isNotEmpty())
                                     <div class="mt-1 space-y-0.5 text-xs font-normal text-gray-500">
                                         @if($entry->nama_kapal)<div>{{ $entry->nama_kapal }} · Voyage {{ $entry->no_voyage }}</div>@endif
-                                        @if($entry->nomor_kontainer)<div>Kontainer: {{ $entry->nomor_kontainer }}</div>@endif
-                                        @if($entry->nomor_bl)<div>BL: {{ $entry->nomor_bl }}</div>@endif
+                                        @forelse($entry->manifestItems->groupBy(fn ($item) => $item->nomor_kontainer ? 'container:'.$item->nomor_kontainer : 'bl:'.$item->nomor_bl) as $manifestGroup)
+                                            @php($firstManifestItem = $manifestGroup->first())
+                                            <div>{{ $firstManifestItem->nomor_kontainer ?: 'Tanpa kontainer' }} / {{ $manifestGroup->pluck('nomor_bl')->filter()->unique()->implode(', ') ?: 'Tanpa BL' }} · Saldo Rp {{ number_format((float) $manifestGroup->sum('saldo'), 2, ',', '.') }} · Kredit Rp {{ number_format((float) $manifestGroup->sum('kredit'), 2, ',', '.') }}</div>
+                                        @empty
+                                            @if($entry->nomor_kontainer || $entry->nomor_bl)<div>{{ $entry->nomor_kontainer ?: 'Tanpa kontainer' }} / {{ $entry->nomor_bl ?: 'Tanpa BL' }}</div>@endif
+                                        @endforelse
                                         @if($entry->vendor)<div>Vendor: {{ $entry->vendor }}</div>@endif
                                         @if($entry->klasifikasiBiaya)<div>Biaya: {{ $entry->klasifikasiBiaya->kode }} — {{ $entry->klasifikasiBiaya->nama }}</div>@endif
                                     </div>

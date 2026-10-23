@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JurnalOppOpt extends Model
 {
@@ -49,5 +50,10 @@ class JurnalOppOpt extends Model
     public function klasifikasiBiaya(): BelongsTo
     {
         return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_id');
+    }
+
+    public function manifestItems(): HasMany
+    {
+        return $this->hasMany(JurnalOppOptManifestItem::class, 'jurnal_opp_opt_id');
     }
 }

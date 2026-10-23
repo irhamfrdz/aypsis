@@ -21,7 +21,7 @@ class JurnalOppOptController extends Controller
             'tanggal_sampai' => ['nullable', 'date', 'after_or_equal:tanggal_dari'],
         ]);
 
-        $query = JurnalOppOpt::query()->with(['creator', 'klasifikasiBiaya']);
+        $query = JurnalOppOpt::query()->with(['creator', 'klasifikasiBiaya', 'manifestItems']);
 
         $query->when($filters['search'] ?? null, function ($query, string $search) {
             $query->where(function ($query) use ($search) {
@@ -105,12 +105,15 @@ class JurnalOppOptController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validatedData($request);
+        $manifestItems = $data['manifest_items'] ?? [];
+        unset($data['manifest_items']);
 
-        DB::transaction(function () use ($data) {
-            JurnalOppOpt::create($data + [
+        DB::transaction(function () use ($data, $manifestItems) {
+            $entry = JurnalOppOpt::create($data + [
                 'created_by' => auth()->id(),
                 'updated_by' => auth()->id(),
             ]);
+            $this->syncManifestItems($entry, $manifestItems);
             $this->recalculateBalances();
         });
 
@@ -134,15 +137,29 @@ class JurnalOppOptController extends Controller
             })
             ->orderBy('nama')->get();
 
-        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals', 'klasifikasiBiayas'));
+        $selectedManifestReferences = $jurnalOppOpt->manifestItems->map(fn ($item) => json_encode([
+            'nomor_kontainer' => $item->nomor_kontainer,
+            'nomor_bl' => $item->nomor_bl,
+        ]))->values();
+        if ($selectedManifestReferences->isEmpty() && ($jurnalOppOpt->nomor_kontainer || $jurnalOppOpt->nomor_bl)) {
+            $selectedManifestReferences->push(json_encode([
+                'nomor_kontainer' => $jurnalOppOpt->nomor_kontainer,
+                'nomor_bl' => $jurnalOppOpt->nomor_bl,
+            ]));
+        }
+
+        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals', 'klasifikasiBiayas', 'selectedManifestReferences'));
     }
 
     public function update(Request $request, JurnalOppOpt $jurnalOppOpt): RedirectResponse
     {
         $data = $this->validatedData($request);
+        $manifestItems = $data['manifest_items'] ?? [];
+        unset($data['manifest_items']);
 
-        DB::transaction(function () use ($data, $jurnalOppOpt) {
+        DB::transaction(function () use ($data, $manifestItems, $jurnalOppOpt) {
             $jurnalOppOpt->update($data + ['updated_by' => auth()->id()]);
+            $this->syncManifestItems($jurnalOppOpt, $manifestItems);
             $this->recalculateBalances();
         });
 
@@ -169,8 +186,8 @@ class JurnalOppOptController extends Controller
             'nomor_referensi' => ['nullable', 'string', 'max:100'],
             'nama_kapal' => ['nullable', 'required_if:mode,voyage', 'string', 'max:255'],
             'no_voyage' => ['nullable', 'required_if:mode,voyage', 'string', 'max:255'],
-            'nomor_kontainer' => ['nullable', 'string', 'max:255'],
-            'nomor_bl' => ['nullable', 'string', 'max:255'],
+            'manifest_references' => ['nullable', 'array', 'max:100'],
+            'manifest_references.*' => ['required', 'string', 'max:600'],
             'vendor' => ['nullable', 'string', 'max:255'],
             'klasifikasi_biaya_id' => ['nullable', 'integer', 'exists:klasifikasi_biayas,id'],
             'keterangan' => ['required', 'string', 'max:2000'],
@@ -189,25 +206,54 @@ class JurnalOppOptController extends Controller
             if (! $manifestQuery->exists()) {
                 throw ValidationException::withMessages(['no_voyage' => 'Voyage tidak ditemukan pada manifest untuk kapal yang dipilih.']);
             }
-            if (($data['nomor_kontainer'] ?? null) !== null || ($data['nomor_bl'] ?? null) !== null) {
+            $references = [];
+            foreach ($data['manifest_references'] ?? [] as $encodedReference) {
+                try {
+                    $reference = json_decode($encodedReference, true, 512, JSON_THROW_ON_ERROR);
+                } catch (\JsonException) {
+                    throw ValidationException::withMessages(['manifest_references' => 'Referensi kontainer / BL tidak valid.']);
+                }
+
+                if (! is_array($reference)
+                    || (! array_key_exists('nomor_kontainer', $reference) && ! array_key_exists('nomor_bl', $reference))
+                    || (isset($reference['nomor_kontainer']) && ! is_string($reference['nomor_kontainer']))
+                    || (isset($reference['nomor_bl']) && ! is_string($reference['nomor_bl']))) {
+                    throw ValidationException::withMessages(['manifest_references' => 'Referensi kontainer / BL tidak valid.']);
+                }
+
+                $container = $reference['nomor_kontainer'] ?? null;
+                $bl = $reference['nomor_bl'] ?? null;
+                if (($container === null || $container === '') && ($bl === null || $bl === '')) {
+                    throw ValidationException::withMessages(['manifest_references' => 'Setiap pilihan harus memiliki nomor kontainer atau BL.']);
+                }
+
                 $referenceQuery = clone $manifestQuery;
-                foreach (['nomor_kontainer', 'nomor_bl'] as $field) {
-                    $this->whereManifestField($referenceQuery, $field, $data[$field] ?? null);
-                }
+                $this->whereManifestField($referenceQuery, 'nomor_kontainer', $container);
+                $this->whereManifestField($referenceQuery, 'nomor_bl', $bl);
                 if (! $referenceQuery->exists()) {
-                    throw ValidationException::withMessages(['nomor_kontainer' => 'Pasangan kontainer dan BL tidak ditemukan pada baris manifest yang sama.']);
+                    throw ValidationException::withMessages(['manifest_references' => 'Pasangan kontainer dan BL tidak ditemukan pada baris manifest yang sama.']);
                 }
+
+                $key = json_encode(['nomor_kontainer' => $container, 'nomor_bl' => $bl]);
+                $references[$key] = ['nomor_kontainer' => $container, 'nomor_bl' => $bl];
             }
+
+            $references = array_values($references);
+            $data['nomor_kontainer'] = count($references) === 1 ? $references[0]['nomor_kontainer'] : null;
+            $data['nomor_bl'] = count($references) === 1 ? $references[0]['nomor_bl'] : null;
         } else {
             $data['nama_kapal'] = null;
             $data['no_voyage'] = null;
             $data['nomor_kontainer'] = null;
             $data['nomor_bl'] = null;
+            $references = [];
         }
         if (! empty($data['klasifikasi_biaya_id']) && ! KlasifikasiBiaya::query()
             ->whereKey($data['klasifikasi_biaya_id'])->where('is_active', true)->exists()) {
             throw ValidationException::withMessages(['klasifikasi_biaya_id' => 'Klasifikasi biaya yang dipilih tidak aktif.']);
         }
+        $data['manifest_items'] = $this->allocateAmountsToReferences($references, $data['saldo'], $data['kredit']);
+        unset($data['manifest_references']);
         unset($data['mode']);
 
         if ($data['saldo'] <= 0 && $data['kredit'] <= 0) {
@@ -231,6 +277,55 @@ class JurnalOppOptController extends Controller
         }
 
         $query->where($field, $value);
+    }
+
+    private function allocateAmountsToReferences(array $references, float $saldo, float $kredit): array
+    {
+        if ($references === []) {
+            return [];
+        }
+
+        $groups = [];
+        foreach ($references as $index => $reference) {
+            $container = $reference['nomor_kontainer'] ?? null;
+            $bl = $reference['nomor_bl'] ?? null;
+            $groupKey = $container !== null && $container !== ''
+                ? 'container:'.$container
+                : 'bl:'.($bl ?? '');
+            $groups[$groupKey][] = $index;
+        }
+
+        $count = count($groups);
+        $saldoCents = (int) round($saldo * 100);
+        $kreditCents = (int) round($kredit * 100);
+        $saldoBase = intdiv($saldoCents, $count);
+        $kreditBase = intdiv($kreditCents, $count);
+        $saldoRemainder = $saldoCents % $count;
+        $kreditRemainder = $kreditCents % $count;
+
+        foreach ($references as &$reference) {
+            $reference['saldo'] = 0;
+            $reference['kredit'] = 0;
+        }
+        unset($reference);
+
+        $groupIndex = 0;
+        foreach ($groups as $indexes) {
+            $firstIndex = $indexes[0];
+            $references[$firstIndex]['saldo'] = ($saldoBase + ($groupIndex < $saldoRemainder ? 1 : 0)) / 100;
+            $references[$firstIndex]['kredit'] = ($kreditBase + ($groupIndex < $kreditRemainder ? 1 : 0)) / 100;
+            $groupIndex++;
+        }
+
+        return $references;
+    }
+
+    private function syncManifestItems(JurnalOppOpt $entry, array $items): void
+    {
+        $entry->manifestItems()->delete();
+        if ($items !== []) {
+            $entry->manifestItems()->createMany($items);
+        }
     }
 
     private function recalculateBalances(): void

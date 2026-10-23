@@ -5,7 +5,7 @@
     <div class="mb-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5">
         <div class="mb-4">
             <h2 class="font-bold text-gray-900">Referensi Manifest Voyage</h2>
-            <p class="mt-1 text-xs text-gray-600">Kontainer LCL yang tercatat pada beberapa vendor akan ditampilkan satu kali.</p>
+            <p class="mt-1 text-xs text-gray-600">Pilih pasangan kontainer / BL dari manifest. Biaya dihitung satu kali per kontainer, termasuk LCL dengan beberapa vendor.</p>
         </div>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -25,15 +25,12 @@
                 </select>
                 @error('no_voyage')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
-            <input type="hidden" id="nomor_kontainer" name="nomor_kontainer" value="{{ old('nomor_kontainer', $entry?->nomor_kontainer) }}">
-            <input type="hidden" id="nomor_bl" name="nomor_bl" value="{{ old('nomor_bl', $entry?->nomor_bl) }}">
             <div class="md:col-span-2">
                 <label for="manifest_reference" class="mb-2 block text-sm font-semibold text-gray-700">Kontainer / BL</label>
-                <select id="manifest_reference" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Pilih voyage terlebih dahulu</option>
+                <select id="manifest_reference" name="manifest_references[]" multiple size="6" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                 </select>
-                @error('nomor_kontainer')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                @error('nomor_bl')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                <p class="mt-1 text-xs text-gray-500">Pilih satu atau lebih pasangan. Saldo dan kredit akan dibagi rata ke setiap pilihan.</p>
+                @error('manifest_references')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">
                 <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor</label>
@@ -47,15 +44,13 @@
             const ship = document.getElementById('nama_kapal');
             const voyage = document.getElementById('no_voyage');
             const reference = document.getElementById('manifest_reference');
-            const container = document.getElementById('nomor_kontainer');
-            const bl = document.getElementById('nomor_bl');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
-            const selectedContainer = @json(old('nomor_kontainer', $entry?->nomor_kontainer));
-            const selectedBl = @json(old('nomor_bl', $entry?->nomor_bl));
+            const selectedReferencesValue = @json(old('manifest_references', $selectedManifestReferences ?? []));
+            const selectedReferences = Array.isArray(selectedReferencesValue) ? selectedReferencesValue : [];
             const reset = (select, placeholder) => {
                 select.innerHTML = '';
-                select.add(new Option(placeholder, ''));
+                if (!select.multiple) select.add(new Option(placeholder, ''));
                 select.disabled = true;
             };
             const fill = (select, values, placeholder, selected = '') => {
@@ -67,8 +62,6 @@
             const loadVoyages = async (restore = false) => {
                 reset(voyage, ship.value ? 'Memuat voyage...' : 'Pilih kapal terlebih dahulu');
                 reset(reference, 'Pilih voyage terlebih dahulu');
-                container.value = '';
-                bl.value = '';
                 if (!ship.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
@@ -79,8 +72,6 @@
             };
             const loadManifestChoices = async (restore = false) => {
                 reset(reference, 'Memuat kontainer / BL...');
-                container.value = '';
-                bl.value = '';
                 if (!ship.value || !voyage.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
@@ -92,28 +83,23 @@
                 references.forEach((item) => {
                     const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
                     const blLabel = item.nomor_bl || 'Tanpa nomor BL';
-                    reference.add(new Option(`${containerLabel} — ${blLabel}`, JSON.stringify(item)));
+                    const optionValue = JSON.stringify(item);
+                    const option = new Option(`${containerLabel} / ${blLabel}`, optionValue);
+                    option.selected = restore && selectedReferences.some((encoded) => {
+                        try {
+                            const selected = typeof encoded === 'string' ? JSON.parse(encoded) : encoded;
+                            return (selected.nomor_kontainer || '') === (item.nomor_kontainer || '')
+                                && (selected.nomor_bl || '') === (item.nomor_bl || '');
+                        } catch (error) {
+                            return false;
+                        }
+                    });
+                    reference.add(option);
                 });
                 reference.disabled = false;
-                const savedReference = references.find((item) => (item.nomor_kontainer || '') === (restore ? selectedContainer || '' : '')
-                    && (item.nomor_bl || '') === (restore ? selectedBl || '' : ''));
-                if (savedReference && restore) {
-                    reference.value = JSON.stringify(savedReference);
-                    container.value = savedReference.nomor_kontainer || '';
-                    bl.value = savedReference.nomor_bl || '';
-                }
-            };
-            const applyReference = () => {
-                container.value = '';
-                bl.value = '';
-                if (!reference.value) return;
-                const selected = JSON.parse(reference.value);
-                container.value = selected.nomor_kontainer || '';
-                bl.value = selected.nomor_bl || '';
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
-            reference.addEventListener('change', () => applyReference());
             if (ship.value) loadVoyages(true);
         })();
     </script>
