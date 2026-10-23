@@ -363,6 +363,14 @@ class UserController extends Controller
                 continue;
             }
 
+            // Jurnal OPT/OPP memakai nama modul bertingkat dengan dash.
+            if (strpos($permissionName, 'jurnal-opp-opt-') === 0) {
+                $action = substr($permissionName, strlen('jurnal-opp-opt-'));
+                $matrixPermissions['jurnal-opp-opt'][$action] = true;
+
+                continue;
+            }
+
             if (strpos($permissionName, 'master-pricelist-biaya-storage-pelindo-') === 0) {
                 $module = 'master-pricelist-biaya-storage-pelindo';
                 $action = str_replace('master-pricelist-biaya-storage-pelindo-', '', $permissionName);
@@ -1932,6 +1940,17 @@ class UserController extends Controller
             foreach ($actions as $action => $value) {
                 // Only process checked permissions (value = true or 1)
                 if ($value == '1' || $value === true) {
+
+                    // Pemetaan eksplisit agar seluruh aksi Jurnal OPT/OPP
+                    // selalu menunjuk ke permission database yang tepat.
+                    if ($module === 'jurnal-opp-opt' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                        $permission = Permission::where('name', 'jurnal-opp-opt-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                        }
+
+                        continue;
+                    }
 
                     // Permintaan Amprahan permissions have a direct dash name.
                     if ($module === 'permohonan-amprahan') {

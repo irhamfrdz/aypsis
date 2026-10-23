@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\JurnalOppOptController;
+use App\Http\Controllers\UserController;
 use App\Models\JurnalOppOpt;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -40,10 +41,18 @@ class JurnalOppOptTest extends TestCase
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('permissions');
         Schema::dropIfExists('jurnal_opp_opts');
         Schema::dropIfExists('users');
         Model::setEventDispatcher(app('events'));
@@ -95,6 +104,39 @@ class JurnalOppOptTest extends TestCase
     {
         $this->assertFalse(Schema::hasColumn('jurnal_opp_opts', 'biaya_kapal_id'));
         $this->assertFalse(Schema::hasColumn('jurnal_opp_opts', 'biaya_kapal_opp_opt_id'));
+    }
+
+    public function test_user_permission_matrix_maps_all_jurnal_opp_opt_actions(): void
+    {
+        $names = [
+            'jurnal-opp-opt-view',
+            'jurnal-opp-opt-create',
+            'jurnal-opp-opt-update',
+            'jurnal-opp-opt-delete',
+        ];
+
+        foreach ($names as $name) {
+            \App\Models\Permission::query()->create(['name' => $name]);
+        }
+
+        $controller = app(UserController::class);
+        $toMatrix = new \ReflectionMethod($controller, 'convertPermissionsToMatrix');
+        $matrix = $toMatrix->invoke($controller, $names);
+
+        $this->assertSame([
+            'view' => true,
+            'create' => true,
+            'update' => true,
+            'delete' => true,
+        ], $matrix['jurnal-opp-opt']);
+
+        $toIds = new \ReflectionMethod($controller, 'convertMatrixPermissionsToIds');
+        $ids = $toIds->invoke($controller, ['jurnal-opp-opt' => $matrix['jurnal-opp-opt']]);
+
+        $this->assertEqualsCanonicalizing(
+            \App\Models\Permission::query()->whereIn('name', $names)->pluck('id')->all(),
+            $ids
+        );
     }
 
     private function request(array $data): Request

@@ -446,6 +446,26 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Jurnal OPT/OPP --}}
+                            <tr class="module-row" data-module="jurnal-opp-opt">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2" style="display: none;"></span>
+                                        <div>
+                                            <div class="font-semibold">Jurnal OPT/OPP</div>
+                                            <div class="text-xs text-gray-500">Kelola jurnal saldo dan kredit OPT/OPP</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[jurnal-opp-opt][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jurnal-opp-opt']['view']) && $userMatrixPermissions['jurnal-opp-opt']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jurnal-opp-opt][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jurnal-opp-opt']['create']) && $userMatrixPermissions['jurnal-opp-opt']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jurnal-opp-opt][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jurnal-opp-opt']['update']) && $userMatrixPermissions['jurnal-opp-opt']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[jurnal-opp-opt][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['jurnal-opp-opt']['delete']) && $userMatrixPermissions['jurnal-opp-opt']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">
