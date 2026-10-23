@@ -26,10 +26,15 @@
                 @error('no_voyage')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">
-                <label for="manifest_reference" class="mb-2 block text-sm font-semibold text-gray-700">Kontainer / BL</label>
-                <select id="manifest_reference" name="manifest_references[]" multiple size="6" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                </select>
-                <p class="mt-1 text-xs text-gray-500">Pilih satu atau lebih pasangan. Saldo dan kredit akan dibagi rata ke setiap pilihan.</p>
+                <div class="mb-2 flex items-center justify-between gap-3">
+                    <label class="block text-sm font-semibold text-gray-700">Kontainer / BL</label>
+                    <span id="manifest_reference_count" class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">0 kontainer</span>
+                </div>
+                <div id="manifest_reference_list" class="max-h-56 min-h-14 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                    <div class="px-4 py-4 text-sm text-gray-400">Pilih kapal dan voyage untuk menampilkan manifest.</div>
+                </div>
+                <div id="manifest_reference_inputs"></div>
+                <p class="mt-2 flex items-start gap-2 text-xs text-gray-500"><i class="fas fa-circle-info mt-0.5 text-blue-500"></i><span>Pilih satu atau lebih pasangan. Saldo dan kredit dibagi rata per kontainer.</span></p>
                 @error('manifest_references')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">
@@ -43,7 +48,9 @@
         (() => {
             const ship = document.getElementById('nama_kapal');
             const voyage = document.getElementById('no_voyage');
-            const reference = document.getElementById('manifest_reference');
+            const referenceList = document.getElementById('manifest_reference_list');
+            const referenceInputs = document.getElementById('manifest_reference_inputs');
+            const referenceCount = document.getElementById('manifest_reference_count');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
             const selectedReferencesValue = @json(old('manifest_references', $selectedManifestReferences ?? []));
@@ -53,6 +60,28 @@
                 if (!select.multiple) select.add(new Option(placeholder, ''));
                 select.disabled = true;
             };
+            const clearReferences = (message) => {
+                referenceList.innerHTML = `<div class="px-4 py-4 text-sm text-gray-400">${message}</div>`;
+                referenceInputs.innerHTML = '';
+                referenceCount.textContent = '0 kontainer';
+            };
+            const syncReferenceInputs = () => {
+                const selected = [...referenceList.querySelectorAll('input[type="checkbox"]:checked')];
+                referenceInputs.innerHTML = '';
+                const allocationGroups = new Set();
+                selected.forEach((checkbox) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'manifest_references[]';
+                    input.value = checkbox.value;
+                    referenceInputs.appendChild(input);
+                    const reference = JSON.parse(checkbox.value);
+                    allocationGroups.add(reference.nomor_kontainer
+                        ? `container:${reference.nomor_kontainer}`
+                        : `bl:${reference.nomor_bl || ''}`);
+                });
+                referenceCount.textContent = `${allocationGroups.size} kontainer`;
+            };
             const fill = (select, values, placeholder, selected = '') => {
                 reset(select, placeholder);
                 values.forEach((value) => select.add(new Option(value, value)));
@@ -61,7 +90,7 @@
             };
             const loadVoyages = async (restore = false) => {
                 reset(voyage, ship.value ? 'Memuat voyage...' : 'Pilih kapal terlebih dahulu');
-                reset(reference, 'Pilih voyage terlebih dahulu');
+                clearReferences('Pilih kapal dan voyage untuk menampilkan manifest.');
                 if (!ship.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
@@ -71,21 +100,30 @@
                 if (restore && selectedVoyage && data.voyages?.includes(selectedVoyage)) await loadManifestChoices(true);
             };
             const loadManifestChoices = async (restore = false) => {
-                reset(reference, 'Memuat kontainer / BL...');
+                clearReferences('Memuat daftar kontainer dan BL...');
                 if (!ship.value || !voyage.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
                 url.searchParams.set('no_voyage', voyage.value);
                 const response = await fetch(url, { headers: { Accept: 'application/json' } });
                 const data = await response.json();
-                reset(reference, 'Opsional: pilih kontainer / BL');
                 const references = data.references || [];
+                referenceList.innerHTML = '';
+                if (references.length === 0) {
+                    clearReferences('Tidak ada kontainer atau BL pada voyage ini.');
+                    return;
+                }
                 references.forEach((item) => {
                     const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
                     const blLabel = item.nomor_bl || 'Tanpa nomor BL';
                     const optionValue = JSON.stringify(item);
-                    const option = new Option(`${containerLabel} / ${blLabel}`, optionValue);
-                    option.selected = restore && selectedReferences.some((encoded) => {
+                    const row = document.createElement('label');
+                    row.className = 'flex cursor-pointer items-center gap-3 border-b border-gray-100 px-4 py-3 transition last:border-b-0 hover:bg-blue-50';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = optionValue;
+                    checkbox.className = 'h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500';
+                    checkbox.checked = restore && selectedReferences.some((encoded) => {
                         try {
                             const selected = typeof encoded === 'string' ? JSON.parse(encoded) : encoded;
                             return (selected.nomor_kontainer || '') === (item.nomor_kontainer || '')
@@ -94,9 +132,16 @@
                             return false;
                         }
                     });
-                    reference.add(option);
+                    checkbox.addEventListener('change', syncReferenceInputs);
+                    const labels = document.createElement('span');
+                    labels.className = 'min-w-0 flex-1';
+                    labels.innerHTML = `<span class="block truncate text-sm font-semibold text-gray-800"></span><span class="mt-0.5 block text-xs text-gray-500"></span>`;
+                    labels.children[0].textContent = containerLabel;
+                    labels.children[1].textContent = `BL: ${blLabel}`;
+                    row.append(checkbox, labels);
+                    referenceList.appendChild(row);
                 });
-                reference.disabled = false;
+                syncReferenceInputs();
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
