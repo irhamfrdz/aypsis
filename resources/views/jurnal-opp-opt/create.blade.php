@@ -4,17 +4,18 @@
 @section('page_title', 'Tambah Jurnal OPT/OPP')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Tambah Transaksi</h1>
-        <p class="mt-1 text-sm text-gray-500">{{ $mode === 'voyage' ? 'Catat transaksi dengan referensi manifest kapal.' : 'Catat penambahan saldo atau kredit Jurnal OPT/OPP.' }}</p>
+<div class="mx-auto max-w-5xl px-1 pb-8 sm:px-0">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Tambah Transaksi</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ $mode === 'voyage' ? 'Catat transaksi dengan referensi manifest kapal.' : 'Catat penambahan saldo atau kredit Jurnal OPT/OPP.' }}</p>
+        </div>
+        <a href="{{ route('jurnal-opp-opt.index') }}" class="inline-flex items-center gap-2 self-start text-sm font-medium text-slate-600 transition hover:text-slate-900"><i class="fas fa-arrow-left"></i>Kembali ke daftar</a>
     </div>
 
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <form method="POST" action="{{ route('jurnal-opp-opt.store') }}">
-            @csrf
-            @include('jurnal-opp-opt._form', ['submitLabel' => 'Simpan Transaksi'])
-        </form>
-    </div>
+    <form method="POST" action="{{ route('jurnal-opp-opt.store') }}" class="space-y-5">
+        @csrf
+        @include('jurnal-opp-opt._form', ['submitLabel' => 'Simpan Transaksi'])
+    </form>
 </div>
 @endsection

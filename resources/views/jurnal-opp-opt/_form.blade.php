@@ -2,15 +2,18 @@
 
 @if(($mode ?? 'manual') === 'voyage')
     <input type="hidden" name="mode" value="voyage">
-    <div class="mb-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5">
-        <div class="mb-4">
-            <h2 class="font-bold text-gray-900">Referensi Manifest Voyage</h2>
-            <p class="mt-1 text-xs text-gray-600">Pilih pasangan kontainer / BL dari manifest. Biaya dihitung satu kali per kontainer, termasuk LCL dengan beberapa vendor.</p>
-        </div>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 shadow-sm sm:p-6">
+        <div class="mb-6 flex items-start gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700"><i class="fas fa-ship"></i></div>
             <div>
-                <label for="nama_kapal" class="mb-2 block text-sm font-semibold text-gray-700">Kapal <span class="text-red-500">*</span></label>
-                <select id="nama_kapal" name="nama_kapal" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <h2 class="text-base font-bold text-slate-900">Referensi Manifest Voyage</h2>
+                <p class="mt-1 text-sm leading-5 text-slate-600">Pilih kapal dan voyage, lalu tandai kontainer / BL yang terkait.</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+                <label for="nama_kapal" class="mb-2 block text-sm font-semibold text-slate-700">Kapal <span class="text-rose-600">*</span></label>
+                <select id="nama_kapal" name="nama_kapal" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                     <option value="">Pilih kapal</option>
                     @foreach($kapals ?? [] as $kapal)
                         <option value="{{ $kapal }}" @selected(old('nama_kapal', $entry?->nama_kapal) === $kapal)>{{ $kapal }}</option>
@@ -19,28 +22,27 @@
                 @error('nama_kapal')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div>
-                <label for="no_voyage" class="mb-2 block text-sm font-semibold text-gray-700">Nomor Voyage <span class="text-red-500">*</span></label>
-                <select id="no_voyage" name="no_voyage" required disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <label for="no_voyage" class="mb-2 block text-sm font-semibold text-slate-700">Nomor Voyage <span class="text-rose-600">*</span></label>
+                <select id="no_voyage" name="no_voyage" required disabled class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500">
                     <option value="">Pilih kapal terlebih dahulu</option>
                 </select>
                 @error('no_voyage')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
-            <div class="md:col-span-2">
+            <div class="sm:col-span-2">
                 <div class="mb-2 flex items-center justify-between gap-3">
-                    <label class="block text-sm font-semibold text-gray-700">Kontainer / BL</label>
-                    <span id="manifest_reference_count" class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">0 kontainer</span>
+                    <label class="block text-sm font-semibold text-slate-700">Kontainer / BL</label>
+                    <span id="manifest_reference_count" class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">0 kontainer</span>
                 </div>
-                <div id="manifest_reference_list" class="max-h-56 min-h-14 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                    <div class="px-4 py-4 text-sm text-gray-400">Pilih kapal dan voyage untuk menampilkan manifest.</div>
+                <div class="relative mb-2">
+                    <i class="fas fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    <input type="search" id="manifest_reference_search" disabled placeholder="Cari nomor kontainer atau BL" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100">
+                </div>
+                <div id="manifest_reference_list" class="max-h-56 min-h-14 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+                    <div class="px-4 py-4 text-sm text-slate-500">Pilih kapal dan voyage untuk menampilkan manifest.</div>
                 </div>
                 <div id="manifest_reference_inputs"></div>
-                <p class="mt-2 flex items-start gap-2 text-xs text-gray-500"><i class="fas fa-circle-info mt-0.5 text-blue-500"></i><span>Pilih satu atau lebih pasangan. Saldo dan kredit dibagi rata per kontainer.</span></p>
+                <p class="mt-2 flex items-start gap-2 text-xs leading-5 text-slate-600"><i class="fas fa-circle-info mt-0.5 text-blue-500"></i><span>Anda bisa memilih beberapa pasangan. Nilai transaksi dibagi rata per kontainer, termasuk LCL dengan beberapa vendor.</span></p>
                 @error('manifest_references')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-            </div>
-            <div class="md:col-span-2">
-                <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor</label>
-                <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Masukkan nama vendor (opsional)" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
         </div>
     </div>
@@ -51,6 +53,7 @@
             const referenceList = document.getElementById('manifest_reference_list');
             const referenceInputs = document.getElementById('manifest_reference_inputs');
             const referenceCount = document.getElementById('manifest_reference_count');
+            const referenceSearch = document.getElementById('manifest_reference_search');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
             const selectedReferencesValue = @json(old('manifest_references', $selectedManifestReferences ?? []));
@@ -61,9 +64,11 @@
                 select.disabled = true;
             };
             const clearReferences = (message) => {
-                referenceList.innerHTML = `<div class="px-4 py-4 text-sm text-gray-400">${message}</div>`;
+                referenceList.innerHTML = `<div class="px-4 py-4 text-sm text-slate-500">${message}</div>`;
                 referenceInputs.innerHTML = '';
                 referenceCount.textContent = '0 kontainer';
+                referenceSearch.value = '';
+                referenceSearch.disabled = true;
             };
             const syncReferenceInputs = () => {
                 const selected = [...referenceList.querySelectorAll('input[type="checkbox"]:checked')];
@@ -113,12 +118,14 @@
                     clearReferences('Tidak ada kontainer atau BL pada voyage ini.');
                     return;
                 }
+                referenceSearch.disabled = false;
                 references.forEach((item) => {
                     const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
                     const blLabel = item.nomor_bl || 'Tanpa nomor BL';
                     const optionValue = JSON.stringify(item);
                     const row = document.createElement('label');
-                    row.className = 'flex cursor-pointer items-center gap-3 border-b border-gray-100 px-4 py-3 transition last:border-b-0 hover:bg-blue-50';
+                    row.className = 'flex cursor-pointer items-center gap-3 border-b border-slate-100 px-4 py-3 transition last:border-b-0 hover:bg-blue-50 focus-within:bg-blue-50';
+                    row.dataset.search = `${containerLabel} ${blLabel}`.toLocaleLowerCase();
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.value = optionValue;
@@ -132,7 +139,11 @@
                             return false;
                         }
                     });
-                    checkbox.addEventListener('change', syncReferenceInputs);
+                    row.classList.toggle('bg-blue-50', checkbox.checked);
+                    checkbox.addEventListener('change', () => {
+                        row.classList.toggle('bg-blue-50', checkbox.checked);
+                        syncReferenceInputs();
+                    });
                     const labels = document.createElement('span');
                     labels.className = 'min-w-0 flex-1';
                     labels.innerHTML = `<span class="block truncate text-sm font-semibold text-gray-800"></span><span class="mt-0.5 block text-xs text-gray-500"></span>`;
@@ -145,82 +156,94 @@
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
+            referenceSearch.addEventListener('input', () => {
+                const search = referenceSearch.value.trim().toLocaleLowerCase();
+                referenceList.querySelectorAll('label[data-search]').forEach((row) => {
+                    row.classList.toggle('hidden', !row.dataset.search.includes(search));
+                });
+            });
             if (ship.value) loadVoyages(true);
         })();
     </script>
 @else
     <input type="hidden" name="mode" value="manual">
-    <div class="mb-6">
-        <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor</label>
-        <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Nama vendor (opsional)" class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
-        @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-    </div>
 @endif
 
-<div class="mb-6">
-    <label for="klasifikasi_biaya_id" class="mb-2 block text-sm font-semibold text-gray-700">Klasifikasi Biaya</label>
-    <select id="klasifikasi_biaya_id" name="klasifikasi_biaya_id" class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
-        <option value="">Pilih klasifikasi biaya (opsional)</option>
-        @foreach($klasifikasiBiayas ?? [] as $klasifikasi)
-            <option value="{{ $klasifikasi->id }}" @selected((string) old('klasifikasi_biaya_id', $entry?->klasifikasi_biaya_id) === (string) $klasifikasi->id)>{{ $klasifikasi->kode }} — {{ $klasifikasi->nama }}</option>
-        @endforeach
-    </select>
-    @error('klasifikasi_biaya_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-        <label for="tanggal" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal <span class="text-red-500">*</span></label>
-        <input type="date" id="tanggal" name="tanggal" required
-               value="{{ old('tanggal', $entry?->tanggal?->format('Y-m-d') ?? now()->format('Y-m-d')) }}"
-               class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
-        @error('tanggal')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-    </div>
-
-    <div>
-        <label for="nomor_referensi" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Referensi</label>
-        <input type="text" id="nomor_referensi" name="nomor_referensi" maxlength="100"
-               value="{{ old('nomor_referensi', $entry?->nomor_referensi) }}" placeholder="Opsional"
-               class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
-        @error('nomor_referensi')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-    </div>
-
-    <div>
-        <label for="saldo" class="block text-sm font-semibold text-gray-700 mb-2">Saldo (Penambahan)</label>
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-            <input type="number" id="saldo" name="saldo" min="0" step="0.01"
-                   value="{{ old('saldo', $entry?->saldo ?? 0) }}"
-                   class="w-full pl-10 rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
+<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="mb-6 flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div>
+            <h2 class="text-base font-bold text-slate-900">Detail Transaksi</h2>
+            <p class="mt-1 text-sm text-slate-500">Lengkapi kategori, vendor, dan tanggal pencatatan.</p>
         </div>
-        <p class="mt-1 text-xs text-gray-500">Menambah saldo berjalan.</p>
-        @error('saldo')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
-
-    <div>
-        <label for="kredit" class="block text-sm font-semibold text-gray-700 mb-2">Kredit (Pengurangan)</label>
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-            <input type="number" id="kredit" name="kredit" min="0" step="0.01"
-                   value="{{ old('kredit', $entry?->kredit ?? 0) }}"
-                   class="w-full pl-10 rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+            <label for="klasifikasi_biaya_id" class="mb-2 block text-sm font-semibold text-slate-700">Klasifikasi Biaya <span class="font-normal text-slate-500">(opsional)</span></label>
+            <select id="klasifikasi_biaya_id" name="klasifikasi_biaya_id" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+                <option value="">Pilih klasifikasi biaya</option>
+                @foreach($klasifikasiBiayas ?? [] as $klasifikasi)
+                    <option value="{{ $klasifikasi->id }}" @selected((string) old('klasifikasi_biaya_id', $entry?->klasifikasi_biaya_id) === (string) $klasifikasi->id)>{{ $klasifikasi->kode }} — {{ $klasifikasi->nama }}</option>
+                @endforeach
+            </select>
+            @error('klasifikasi_biaya_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
         </div>
-        <p class="mt-1 text-xs text-gray-500">Mengurangi saldo berjalan.</p>
-        @error('kredit')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        <div>
+            <label for="vendor" class="mb-2 block text-sm font-semibold text-slate-700">Vendor <span class="font-normal text-slate-500">(opsional)</span></label>
+            <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Masukkan nama vendor" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+            @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label for="tanggal" class="mb-2 block text-sm font-semibold text-slate-700">Tanggal <span class="text-rose-600">*</span></label>
+            <input type="date" id="tanggal" name="tanggal" required value="{{ old('tanggal', $entry?->tanggal?->format('Y-m-d') ?? now()->format('Y-m-d')) }}" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+            @error('tanggal')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label for="nomor_referensi" class="mb-2 block text-sm font-semibold text-slate-700">Nomor Referensi <span class="font-normal text-slate-500">(opsional)</span></label>
+            <input type="text" id="nomor_referensi" name="nomor_referensi" maxlength="100" value="{{ old('nomor_referensi', $entry?->nomor_referensi) }}" placeholder="Opsional" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+            @error('nomor_referensi')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
     </div>
+</section>
 
-    <div class="md:col-span-2">
-        <label for="keterangan" class="block text-sm font-semibold text-gray-700 mb-2">Keterangan <span class="text-red-500">*</span></label>
-        <textarea id="keterangan" name="keterangan" rows="4" required maxlength="2000"
-                  class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                  placeholder="Tuliskan keterangan transaksi">{{ old('keterangan', $entry?->keterangan) }}</textarea>
+<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="mb-6 flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><i class="fas fa-coins"></i></div>
+        <div>
+            <h2 class="text-base font-bold text-slate-900">Nominal dan Keterangan</h2>
+            <p class="mt-1 text-sm text-slate-500">Isi nilai penambahan atau pengurangan, lalu jelaskan transaksi.</p>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+            <label for="saldo" class="mb-2 block text-sm font-semibold text-emerald-900">Saldo (Penambahan)</label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-semibold text-slate-500">Rp</span>
+                <input type="number" id="saldo" name="saldo" min="0" step="0.01" value="{{ old('saldo', $entry?->saldo ?? 0) }}" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+            </div>
+            <p class="mt-2 text-xs text-slate-600">Menambah saldo berjalan.</p>
+            @error('saldo')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div class="rounded-xl border border-rose-200 bg-rose-50/50 p-4">
+            <label for="kredit" class="mb-2 block text-sm font-semibold text-rose-900">Kredit (Pengurangan)</label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-semibold text-slate-500">Rp</span>
+                <input type="number" id="kredit" name="kredit" min="0" step="0.01" value="{{ old('kredit', $entry?->kredit ?? 0) }}" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100">
+            </div>
+            <p class="mt-2 text-xs text-slate-600">Mengurangi saldo berjalan.</p>
+            @error('kredit')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+    </div>
+    <div class="mt-5">
+        <label for="keterangan" class="mb-2 block text-sm font-semibold text-slate-700">Keterangan <span class="text-rose-600">*</span></label>
+        <textarea id="keterangan" name="keterangan" rows="4" required maxlength="2000" placeholder="Tuliskan keterangan transaksi" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">{{ old('keterangan', $entry?->keterangan) }}</textarea>
         @error('keterangan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
-</div>
+</section>
 
-<div class="mt-8 flex justify-end gap-3 border-t border-gray-100 pt-6">
-    <a href="{{ route('jurnal-opp-opt.index') }}" class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</a>
-    <button type="submit" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm">
-        {{ $submitLabel }}
+<div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+    <a href="{{ route('jurnal-opp-opt.index') }}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Batal</a>
+    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+        <i class="fas fa-save"></i>{{ $submitLabel }}
     </button>
 </div>
