@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JurnalOppOpt;
 use App\Models\KlasifikasiBiaya;
 use App\Models\Manifest;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -190,6 +191,8 @@ class JurnalOppOptController extends Controller
             'manifest_references.*' => ['required', 'string', 'max:600'],
             'vendor' => ['nullable', 'string', 'max:255'],
             'klasifikasi_biaya_id' => ['nullable', 'integer', 'exists:klasifikasi_biayas,id'],
+            'tanggal_mulai_penumpukan' => ['nullable', 'date'],
+            'tanggal_selesai_penumpukan' => ['nullable', 'date', 'after_or_equal:tanggal_mulai_penumpukan'],
             'keterangan' => ['required', 'string', 'max:2000'],
             'saldo' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'kredit' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -248,9 +251,31 @@ class JurnalOppOptController extends Controller
             $data['nomor_bl'] = null;
             $references = [];
         }
-        if (! empty($data['klasifikasi_biaya_id']) && ! KlasifikasiBiaya::query()
-            ->whereKey($data['klasifikasi_biaya_id'])->where('is_active', true)->exists()) {
+        $klasifikasi = ! empty($data['klasifikasi_biaya_id'])
+            ? KlasifikasiBiaya::query()->find($data['klasifikasi_biaya_id'])
+            : null;
+        if (! empty($data['klasifikasi_biaya_id']) && ! $klasifikasi?->is_active) {
             throw ValidationException::withMessages(['klasifikasi_biaya_id' => 'Klasifikasi biaya yang dipilih tidak aktif.']);
+        }
+        if ($klasifikasi && stripos($klasifikasi->nama, 'biaya penumpukan') !== false) {
+            $errors = [];
+            if (empty($data['tanggal_mulai_penumpukan'])) {
+                $errors['tanggal_mulai_penumpukan'] = 'Tanggal mulai penumpukan wajib diisi.';
+            }
+            if (empty($data['tanggal_selesai_penumpukan'])) {
+                $errors['tanggal_selesai_penumpukan'] = 'Tanggal selesai penumpukan wajib diisi.';
+            }
+            if ($errors !== []) {
+                throw ValidationException::withMessages($errors);
+            }
+
+            $days = (int) Carbon::parse($data['tanggal_mulai_penumpukan'])
+                ->diffInDays(Carbon::parse($data['tanggal_selesai_penumpukan'])) + 1;
+            $data['massa'] = (int) ceil($days / 3);
+        } else {
+            $data['tanggal_mulai_penumpukan'] = null;
+            $data['tanggal_selesai_penumpukan'] = null;
+            $data['massa'] = null;
         }
         $data['manifest_items'] = $this->allocateAmountsToReferences($references, $data['saldo'], $data['kredit']);
         unset($data['manifest_references']);

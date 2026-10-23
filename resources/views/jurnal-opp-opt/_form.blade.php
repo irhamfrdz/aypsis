@@ -198,7 +198,7 @@
             <select id="klasifikasi_biaya_id" name="klasifikasi_biaya_id" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
                 <option value="">Pilih klasifikasi biaya</option>
                 @foreach($klasifikasiBiayas ?? [] as $klasifikasi)
-                    <option value="{{ $klasifikasi->id }}" @selected((string) old('klasifikasi_biaya_id', $entry?->klasifikasi_biaya_id) === (string) $klasifikasi->id)>{{ $klasifikasi->kode }} — {{ $klasifikasi->nama }}</option>
+                    <option value="{{ $klasifikasi->id }}" data-penumpukan="{{ stripos($klasifikasi->nama, 'biaya penumpukan') !== false ? '1' : '0' }}" @selected((string) old('klasifikasi_biaya_id', $entry?->klasifikasi_biaya_id) === (string) $klasifikasi->id)>{{ $klasifikasi->kode }} — {{ $klasifikasi->nama }}</option>
                 @endforeach
             </select>
             @error('klasifikasi_biaya_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -207,6 +207,28 @@
             <label for="vendor" class="mb-2 block text-sm font-semibold text-slate-700">Vendor <span class="font-normal text-slate-500">(opsional)</span></label>
             <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Masukkan nama vendor" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
             @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+        <div id="penumpukan_date_range" class="hidden rounded-xl border border-amber-200 bg-amber-50/60 p-4 sm:col-span-2">
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-amber-950">Periode Penumpukan</h3>
+                <p class="mt-1 text-xs text-amber-800">Hari mulai dan selesai dihitung. Satu massa berlaku untuk setiap 3 hari.</p>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                    <label for="tanggal_mulai_penumpukan" class="mb-2 block text-sm font-semibold text-slate-700">Dari Tanggal <span class="text-rose-600">*</span></label>
+                    <input type="date" id="tanggal_mulai_penumpukan" name="tanggal_mulai_penumpukan" value="{{ old('tanggal_mulai_penumpukan', $entry?->tanggal_mulai_penumpukan?->format('Y-m-d')) }}" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100">
+                    @error('tanggal_mulai_penumpukan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="tanggal_selesai_penumpukan" class="mb-2 block text-sm font-semibold text-slate-700">Sampai Tanggal <span class="text-rose-600">*</span></label>
+                    <input type="date" id="tanggal_selesai_penumpukan" name="tanggal_selesai_penumpukan" value="{{ old('tanggal_selesai_penumpukan', $entry?->tanggal_selesai_penumpukan?->format('Y-m-d')) }}" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100">
+                    @error('tanggal_selesai_penumpukan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="massa_penumpukan" class="mb-2 block text-sm font-semibold text-slate-700">Massa</label>
+                    <input type="number" id="massa_penumpukan" value="{{ old('massa', $entry?->massa) }}" min="1" readonly placeholder="Otomatis dari tanggal" class="block w-full rounded-lg border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-700">
+                </div>
+            </div>
         </div>
         <div>
             <label for="tanggal" class="mb-2 block text-sm font-semibold text-slate-700">Tanggal <span class="text-rose-600">*</span></label>
@@ -220,6 +242,38 @@
         </div>
     </div>
 </section>
+
+<script>
+    (() => {
+        const classification = document.getElementById('klasifikasi_biaya_id');
+        const dateRange = document.getElementById('penumpukan_date_range');
+        const start = document.getElementById('tanggal_mulai_penumpukan');
+        const end = document.getElementById('tanggal_selesai_penumpukan');
+        const mass = document.getElementById('massa_penumpukan');
+
+        const updateMass = () => {
+            end.min = start.value;
+            const days = start.value && end.value
+                ? Math.round((Date.parse(`${end.value}T00:00:00Z`) - Date.parse(`${start.value}T00:00:00Z`)) / 86400000) + 1
+                : 0;
+            mass.value = days > 0 ? Math.ceil(days / 3) : '';
+        };
+        const updateVisibility = () => {
+            const visible = classification.selectedOptions[0]?.dataset.penumpukan === '1';
+            dateRange.classList.toggle('hidden', !visible);
+            [start, end].forEach((input) => {
+                input.disabled = !visible;
+                input.required = visible;
+            });
+            if (visible) updateMass();
+        };
+
+        classification.addEventListener('change', updateVisibility);
+        start.addEventListener('change', updateMass);
+        end.addEventListener('change', updateMass);
+        updateVisibility();
+    })();
+</script>
 
 <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div class="mb-6 flex items-start gap-3">

@@ -22,6 +22,9 @@ class JurnalOppOpt extends Model
         'nomor_bl',
         'vendor',
         'klasifikasi_biaya_id',
+        'tanggal_mulai_penumpukan',
+        'tanggal_selesai_penumpukan',
+        'massa',
         'keterangan',
         'saldo',
         'kredit',
@@ -32,6 +35,9 @@ class JurnalOppOpt extends Model
 
     protected $casts = [
         'tanggal' => 'date',
+        'tanggal_mulai_penumpukan' => 'date',
+        'tanggal_selesai_penumpukan' => 'date',
+        'massa' => 'integer',
         'saldo' => 'decimal:2',
         'kredit' => 'decimal:2',
         'saldo_berjalan' => 'decimal:2',
