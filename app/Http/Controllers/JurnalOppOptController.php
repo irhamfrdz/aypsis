@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JurnalOppOpt;
+use App\Models\KlasifikasiBiaya;
 use App\Models\Manifest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class JurnalOppOptController extends Controller
             'tanggal_sampai' => ['nullable', 'date', 'after_or_equal:tanggal_dari'],
         ]);
 
-        $query = JurnalOppOpt::query()->with('creator');
+        $query = JurnalOppOpt::query()->with(['creator', 'klasifikasiBiaya']);
 
         $query->when($filters['search'] ?? null, function ($query, string $search) {
             $query->where(function ($query) use ($search) {
@@ -55,8 +56,9 @@ class JurnalOppOptController extends Controller
             ? Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
                 ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal')
             : collect();
+        $klasifikasiBiayas = KlasifikasiBiaya::query()->where('is_active', true)->orderBy('nama')->get();
 
-        return view('jurnal-opp-opt.create', compact('mode', 'kapals'));
+        return view('jurnal-opp-opt.create', compact('mode', 'kapals', 'klasifikasiBiayas'));
     }
 
     public function manifestOptions(Request $request)
@@ -73,9 +75,8 @@ class JurnalOppOptController extends Controller
         if ($request->filled('no_voyage')) {
             $query->where('no_voyage', $request->input('no_voyage'));
         }
-
         if (! $request->filled('nama_kapal')) {
-            return response()->json(['voyages' => [], 'containers' => [], 'bls' => []]);
+            return response()->json(['voyages' => [], 'containers' => [], 'bls' => [], 'vendors' => []]);
         }
 
         if (! $request->filled('no_voyage')) {
@@ -84,17 +85,28 @@ class JurnalOppOptController extends Controller
                     ->distinct()->orderBy('no_voyage')->pluck('no_voyage')->values(),
                 'containers' => [],
                 'bls' => [],
+                'vendors' => [],
             ]);
         }
 
         // LCL dapat memiliki banyak baris manifest/vendor untuk satu kontainer.
         // DISTINCT membuat pilihan kontainer tetap satu per nomor kontainer.
+        $vendorQuery = clone $query;
+        if ($request->filled('nomor_kontainer')) {
+            $vendorQuery->where('nomor_kontainer', $request->input('nomor_kontainer'));
+        }
+        if ($request->filled('nomor_bl')) {
+            $vendorQuery->where('nomor_bl', $request->input('nomor_bl'));
+        }
+
         return response()->json([
             'voyages' => [],
             'containers' => (clone $query)->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')
                 ->distinct()->orderBy('nomor_kontainer')->pluck('nomor_kontainer')->values(),
             'bls' => (clone $query)->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '')
                 ->distinct()->orderBy('nomor_bl')->pluck('nomor_bl')->values(),
+            'vendors' => $vendorQuery->whereNotNull('pengirim')->where('pengirim', '!=', '')
+                ->distinct()->orderBy('pengirim')->pluck('pengirim')->values(),
         ]);
     }
 
@@ -121,8 +133,16 @@ class JurnalOppOptController extends Controller
             ? Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
                 ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal')
             : collect();
+        $klasifikasiBiayas = KlasifikasiBiaya::query()
+            ->where(function ($query) use ($jurnalOppOpt) {
+                $query->where('is_active', true);
+                if ($jurnalOppOpt->klasifikasi_biaya_id) {
+                    $query->orWhereKey($jurnalOppOpt->klasifikasi_biaya_id);
+                }
+            })
+            ->orderBy('nama')->get();
 
-        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals'));
+        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals', 'klasifikasiBiayas'));
     }
 
     public function update(Request $request, JurnalOppOpt $jurnalOppOpt): RedirectResponse
@@ -159,6 +179,8 @@ class JurnalOppOptController extends Controller
             'no_voyage' => ['nullable', 'required_if:mode,voyage', 'string', 'max:255'],
             'nomor_kontainer' => ['nullable', 'string', 'max:255'],
             'nomor_bl' => ['nullable', 'string', 'max:255'],
+            'vendor' => ['nullable', 'string', 'max:255'],
+            'klasifikasi_biaya_id' => ['nullable', 'integer', 'exists:klasifikasi_biayas,id'],
             'keterangan' => ['required', 'string', 'max:2000'],
             'saldo' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'kredit' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -180,11 +202,25 @@ class JurnalOppOptController extends Controller
                     throw ValidationException::withMessages([$field => 'Pilihan tidak ditemukan pada manifest voyage ini.']);
                 }
             }
+            $vendorManifestQuery = clone $manifestQuery;
+            if (! empty($data['nomor_kontainer'])) {
+                $vendorManifestQuery->where('nomor_kontainer', $data['nomor_kontainer']);
+            }
+            if (! empty($data['nomor_bl'])) {
+                $vendorManifestQuery->where('nomor_bl', $data['nomor_bl']);
+            }
+            if (! empty($data['vendor']) && ! $vendorManifestQuery->where('pengirim', $data['vendor'])->exists()) {
+                throw ValidationException::withMessages(['vendor' => 'Vendor/pengirim tidak ditemukan pada manifest voyage yang dipilih.']);
+            }
         } else {
             $data['nama_kapal'] = null;
             $data['no_voyage'] = null;
             $data['nomor_kontainer'] = null;
             $data['nomor_bl'] = null;
+        }
+        if (! empty($data['klasifikasi_biaya_id']) && ! KlasifikasiBiaya::query()
+            ->whereKey($data['klasifikasi_biaya_id'])->where('is_active', true)->exists()) {
+            throw ValidationException::withMessages(['klasifikasi_biaya_id' => 'Klasifikasi biaya yang dipilih tidak aktif.']);
         }
         unset($data['mode']);
 

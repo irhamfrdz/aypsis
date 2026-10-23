@@ -39,6 +39,13 @@
                 </select>
                 @error('nomor_bl')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
+            <div class="md:col-span-2">
+                <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor / Pengirim</label>
+                <select id="vendor" name="vendor" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Opsional: pilih vendor/pengirim</option>
+                </select>
+                @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
         </div>
     </div>
     <script>
@@ -47,10 +54,12 @@
             const voyage = document.getElementById('no_voyage');
             const container = document.getElementById('nomor_kontainer');
             const bl = document.getElementById('nomor_bl');
+            const vendor = document.getElementById('vendor');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
             const selectedContainer = @json(old('nomor_kontainer', $entry?->nomor_kontainer));
             const selectedBl = @json(old('nomor_bl', $entry?->nomor_bl));
+            const selectedVendor = @json(old('vendor', $entry?->vendor));
             const reset = (select, placeholder) => {
                 select.innerHTML = '';
                 select.add(new Option(placeholder, ''));
@@ -66,6 +75,7 @@
                 reset(voyage, ship.value ? 'Memuat voyage...' : 'Pilih kapal terlebih dahulu');
                 reset(container, 'Pilih voyage terlebih dahulu');
                 reset(bl, 'Pilih voyage terlebih dahulu');
+                reset(vendor, 'Pilih voyage terlebih dahulu');
                 if (!ship.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
@@ -85,15 +95,46 @@
                 const data = await response.json();
                 fill(container, data.containers || [], 'Opsional: pilih kontainer', restore ? selectedContainer : '');
                 fill(bl, data.bls || [], 'Opsional: pilih BL', restore ? selectedBl : '');
+                await loadVendors(restore);
+            };
+            const loadVendors = async (restore = false) => {
+                reset(vendor, 'Memuat vendor/pengirim...');
+                if (!ship.value || !voyage.value) return;
+                const url = new URL(endpoint, window.location.origin);
+                url.searchParams.set('nama_kapal', ship.value);
+                url.searchParams.set('no_voyage', voyage.value);
+                if (container.value) url.searchParams.set('nomor_kontainer', container.value);
+                if (bl.value) url.searchParams.set('nomor_bl', bl.value);
+                const response = await fetch(url, { headers: { Accept: 'application/json' } });
+                const data = await response.json();
+                fill(vendor, data.vendors || [], 'Opsional: pilih vendor/pengirim', restore ? selectedVendor : '');
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
+            container.addEventListener('change', () => loadVendors());
+            bl.addEventListener('change', () => loadVendors());
             if (ship.value) loadVoyages(true);
         })();
     </script>
 @else
     <input type="hidden" name="mode" value="manual">
+    <div class="mb-6">
+        <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor</label>
+        <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Nama vendor (opsional)" class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
+        @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+    </div>
 @endif
+
+<div class="mb-6">
+    <label for="klasifikasi_biaya_id" class="mb-2 block text-sm font-semibold text-gray-700">Klasifikasi Biaya</label>
+    <select id="klasifikasi_biaya_id" name="klasifikasi_biaya_id" class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500">
+        <option value="">Pilih klasifikasi biaya (opsional)</option>
+        @foreach($klasifikasiBiayas ?? [] as $klasifikasi)
+            <option value="{{ $klasifikasi->id }}" @selected((string) old('klasifikasi_biaya_id', $entry?->klasifikasi_biaya_id) === (string) $klasifikasi->id)>{{ $klasifikasi->kode }} — {{ $klasifikasi->nama }}</option>
+        @endforeach
+    </select>
+    @error('klasifikasi_biaya_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+</div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>

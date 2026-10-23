@@ -19,6 +19,8 @@ class JurnalOppOpt extends Model
         'no_voyage',
         'nomor_kontainer',
         'nomor_bl',
+        'vendor',
+        'klasifikasi_biaya_id',
         'keterangan',
         'saldo',
         'kredit',
@@ -42,5 +44,10 @@ class JurnalOppOpt extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function klasifikasiBiaya(): BelongsTo
+    {
+        return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_id');
     }
 }

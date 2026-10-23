@@ -138,11 +138,13 @@
                             <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-700">{{ $entry->tanggal->format('d/m/Y') }}</td>
                             <td class="px-5 py-4 text-sm font-medium text-gray-800">
                                 <div>{{ $entry->nomor_referensi ?: '-' }}</div>
-                                @if($entry->nama_kapal || $entry->no_voyage || $entry->nomor_kontainer || $entry->nomor_bl)
+                                @if($entry->nama_kapal || $entry->no_voyage || $entry->nomor_kontainer || $entry->nomor_bl || $entry->vendor || $entry->klasifikasiBiaya)
                                     <div class="mt-1 space-y-0.5 text-xs font-normal text-gray-500">
                                         @if($entry->nama_kapal)<div>{{ $entry->nama_kapal }} · Voyage {{ $entry->no_voyage }}</div>@endif
                                         @if($entry->nomor_kontainer)<div>Kontainer: {{ $entry->nomor_kontainer }}</div>@endif
                                         @if($entry->nomor_bl)<div>BL: {{ $entry->nomor_bl }}</div>@endif
+                                        @if($entry->vendor)<div>Vendor: {{ $entry->vendor }}</div>@endif
+                                        @if($entry->klasifikasiBiaya)<div>Biaya: {{ $entry->klasifikasiBiaya->kode }} — {{ $entry->klasifikasiBiaya->nama }}</div>@endif
                                     </div>
                                 @endif
                             </td>
