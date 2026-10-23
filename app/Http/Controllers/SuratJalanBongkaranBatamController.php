@@ -16,6 +16,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SuratJalanBongkaranBatamController extends Controller
 {
+    private const TIPE_KONTAINER_ORDER = "CASE UPPER(TRIM(manifests.tipe_kontainer)) WHEN 'LCL' THEN 1 WHEN 'FCL BOOKING' THEN 2 WHEN 'FCL' THEN 3 WHEN 'CARGO' THEN 4 ELSE 5 END";
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -236,7 +238,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 $query->where('surat_jalan_bongkaran_batams.no_voyage', $selectedVoyage);
             }
 
-            // Filter by types (FCL, LCL, Cargo)
+            // Filter by container types.
             if ($request->filled('types')) {
                 $types = (array) $request->types;
                 $query->where(function ($q) use ($types) {
@@ -278,7 +280,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
             $suratJalans = $query->select('surat_jalan_bongkaran_batams.*')
                 ->leftJoin('manifests', 'surat_jalan_bongkaran_batams.manifest_id', '=', 'manifests.id')
-                ->orderByRaw("FIELD(UPPER(manifests.tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
+                ->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->paginate(25);
             $manifests = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Manifest mode
@@ -302,7 +304,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 $query->where('manifests.no_voyage', $selectedVoyage);
             }
 
-            // Filter by types (FCL, LCL, Cargo)
+            // Filter by container types.
             if ($request->filled('types')) {
                 $types = (array) $request->types;
                 $query->whereIn('manifests.tipe_kontainer', $types);
@@ -339,7 +341,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 });
             }
 
-            $manifests = $query->orderByRaw("FIELD(UPPER(manifests.tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
+            $manifests = $query->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
@@ -528,8 +530,9 @@ class SuratJalanBongkaranBatamController extends Controller
                         ->orWhere('surat_jalan_bongkaran_batams.no_plat', 'like', "%{$search}%");
                 });
             }
-            // Keep the Excel order aligned with the BL order shown in the list.
+            // Keep the Excel order aligned with the type and BL order shown in the list.
             $data = $query
+                ->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->orderBy('surat_jalan_bongkaran_batams.created_at', 'desc')
                 ->get();
@@ -563,8 +566,9 @@ class SuratJalanBongkaranBatamController extends Controller
                         ->orWhere('penerima', 'like', "%{$search}%");
                 });
             }
-            // BL number is the primary ordering; null BL numbers are placed last.
+            // Keep the Excel order aligned with the type and BL order shown in the list.
             $data = $query
+                ->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->orderBy('manifests.nomor_bl', 'asc')
                 ->orderBy('manifests.created_at', 'desc')

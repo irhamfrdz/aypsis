@@ -2002,6 +2002,16 @@
 </div>
 @endif
 
+{{-- Purchase Order Menu --}}
+@if($user && $user->can('purchase-order-view'))
+<div class="mt-4">
+    <a href="{{ route('purchase-orders.index') }}" class="w-full flex items-center gap-2 py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('purchase-orders.*') ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
+        <i class="fas fa-file-invoice text-sm"></i>
+        <span class="text-xs font-medium truncate w-full">Purchase Order</span>
+    </a>
+</div>
+@endif
+
 {{-- Jurnal OPT/OPP Menu - Standalone --}}
 @if($user && $user->can('jurnal-opp-opt-view'))
 <div class="mt-4">

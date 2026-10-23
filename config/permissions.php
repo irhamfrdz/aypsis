@@ -27,6 +27,17 @@ return [
             'description' => 'Akses halaman dashboard',
             'required' => false, // Semua user bisa akses
         ],
+        'purchase-order' => [
+            'name' => 'Purchase Order',
+            'description' => 'Kelola pesanan pembelian dan rincian item',
+            'required' => true,
+            'sub_modules' => [
+                'purchase-order-view' => 'Lihat Purchase Order',
+                'purchase-order-create' => 'Tambah Purchase Order',
+                'purchase-order-update' => 'Ubah Purchase Order',
+                'purchase-order-delete' => 'Hapus Purchase Order',
+            ],
+        ],
         'jurnal-opp-opt' => [
             'name' => 'Jurnal OPT/OPP',
             'description' => 'Kelola jurnal saldo dan kredit OPT/OPP yang berdiri sendiri',

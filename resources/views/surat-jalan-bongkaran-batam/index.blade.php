@@ -137,13 +137,13 @@
                         <div class="flex items-center gap-4">
                             <span class="text-sm font-medium text-gray-700">Tipe Kontainer:</span>
                             <div class="flex items-center gap-4">
-                                @foreach(['FCL', 'LCL', 'Cargo'] as $type)
+                                @foreach(['LCL' => 'LCL', 'FCL BOOKING' => 'FCL Booking', 'FCL' => 'FCL', 'Cargo' => 'Cargo'] as $type => $label)
                                     <label class="inline-flex items-center cursor-pointer group">
                                         <input type="checkbox" name="types[]" value="{{ $type }}" 
                                                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors duration-200"
                                                {{ in_array($type, (array)request('types')) ? 'checked' : '' }}
                                                onchange="this.form.submit()">
-                                        <span class="ml-2 text-sm text-gray-600 group-hover:text-blue-600 transition-colors duration-200">{{ $type }}</span>
+                                        <span class="ml-2 text-sm text-gray-600 group-hover:text-blue-600 transition-colors duration-200">{{ $label }}</span>
                                     </label>
                                 @endforeach
                             </div>

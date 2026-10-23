@@ -10,6 +10,11 @@
  */
 
 return [
+    'purchase-order' => [
+        'label' => 'Purchase Order',
+        'prefixes' => ['purchase-order-'],
+    ],
+
     'master' => [
         'label' => 'Master Data',
         'prefixes' => ['master-'],

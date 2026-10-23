@@ -273,6 +273,21 @@ Route::middleware([
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
 
+    Route::get('purchase-orders', [\App\Http\Controllers\PurchaseOrderController::class, 'index'])
+        ->name('purchase-orders.index')->middleware('can:purchase-order-view');
+    Route::get('purchase-orders/create', [\App\Http\Controllers\PurchaseOrderController::class, 'create'])
+        ->name('purchase-orders.create')->middleware('can:purchase-order-create');
+    Route::post('purchase-orders', [\App\Http\Controllers\PurchaseOrderController::class, 'store'])
+        ->name('purchase-orders.store')->middleware('can:purchase-order-create');
+    Route::get('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'show'])
+        ->name('purchase-orders.show')->middleware('can:purchase-order-view');
+    Route::get('purchase-orders/{purchaseOrder}/edit', [\App\Http\Controllers\PurchaseOrderController::class, 'edit'])
+        ->name('purchase-orders.edit')->middleware('can:purchase-order-update');
+    Route::put('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'update'])
+        ->name('purchase-orders.update')->middleware('can:purchase-order-update');
+    Route::delete('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'destroy'])
+        ->name('purchase-orders.destroy')->middleware('can:purchase-order-delete');
+
     // Jurnal OPT/OPP berdiri sendiri dan tidak terhubung ke modul Biaya Kapal.
     Route::get('jurnal-opp-opt', [\App\Http\Controllers\JurnalOppOptController::class, 'index'])
         ->name('jurnal-opp-opt.index')
