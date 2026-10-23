@@ -36,10 +36,8 @@
                 @error('nomor_bl')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">
-                <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor / Pengirim</label>
-                <select id="vendor" name="vendor" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Opsional: pilih vendor/pengirim</option>
-                </select>
+                <label for="vendor" class="mb-2 block text-sm font-semibold text-gray-700">Vendor</label>
+                <input type="text" id="vendor" name="vendor" maxlength="255" value="{{ old('vendor', $entry?->vendor) }}" placeholder="Masukkan nama vendor (opsional)" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                 @error('vendor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
         </div>
@@ -51,12 +49,10 @@
             const reference = document.getElementById('manifest_reference');
             const container = document.getElementById('nomor_kontainer');
             const bl = document.getElementById('nomor_bl');
-            const vendor = document.getElementById('vendor');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
             const selectedContainer = @json(old('nomor_kontainer', $entry?->nomor_kontainer));
             const selectedBl = @json(old('nomor_bl', $entry?->nomor_bl));
-            const selectedVendor = @json(old('vendor', $entry?->vendor));
             const reset = (select, placeholder) => {
                 select.innerHTML = '';
                 select.add(new Option(placeholder, ''));
@@ -71,7 +67,6 @@
             const loadVoyages = async (restore = false) => {
                 reset(voyage, ship.value ? 'Memuat voyage...' : 'Pilih kapal terlebih dahulu');
                 reset(reference, 'Pilih voyage terlebih dahulu');
-                reset(vendor, 'Pilih voyage terlebih dahulu');
                 container.value = '';
                 bl.value = '';
                 if (!ship.value) return;
@@ -84,7 +79,6 @@
             };
             const loadManifestChoices = async (restore = false) => {
                 reset(reference, 'Memuat kontainer / BL...');
-                reset(vendor, 'Pilih kontainer / BL terlebih dahulu');
                 container.value = '';
                 bl.value = '';
                 if (!ship.value || !voyage.value) return;
@@ -107,33 +101,15 @@
                     reference.value = JSON.stringify(savedReference);
                     container.value = savedReference.nomor_kontainer || '';
                     bl.value = savedReference.nomor_bl || '';
-                    await loadVendors(true);
                 }
             };
-            const applyReference = async () => {
+            const applyReference = () => {
                 container.value = '';
                 bl.value = '';
-                if (!reference.value) {
-                    reset(vendor, 'Pilih kontainer / BL terlebih dahulu');
-                    return;
-                }
+                if (!reference.value) return;
                 const selected = JSON.parse(reference.value);
                 container.value = selected.nomor_kontainer || '';
                 bl.value = selected.nomor_bl || '';
-                await loadVendors();
-            };
-            const loadVendors = async (restore = false) => {
-                reset(vendor, 'Memuat vendor/pengirim...');
-                if (!ship.value || !voyage.value) return;
-                const url = new URL(endpoint, window.location.origin);
-                url.searchParams.set('nama_kapal', ship.value);
-                url.searchParams.set('no_voyage', voyage.value);
-                url.searchParams.set('filter_reference', '1');
-                url.searchParams.set('nomor_kontainer', container.value);
-                url.searchParams.set('nomor_bl', bl.value);
-                const response = await fetch(url, { headers: { Accept: 'application/json' } });
-                const data = await response.json();
-                fill(vendor, data.vendors || [], 'Opsional: pilih vendor/pengirim', restore ? selectedVendor : '');
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
