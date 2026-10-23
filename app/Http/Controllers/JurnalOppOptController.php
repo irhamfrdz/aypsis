@@ -329,10 +329,9 @@ class JurnalOppOptController extends Controller
 
     private function manifestStorageStatus(Manifest $manifest): string
     {
-        $name = strtolower(trim((string) $manifest->nama_barang));
-        $isEmpty = $name === '' || $name === 'mt' || $name === 'mty'
-            || str_contains($name, 'empty') || str_contains($name, 'kosong')
-            || (strtoupper((string) $manifest->tipe_kontainer) === 'FCL'
+        $name = strtoupper((string) $manifest->nama_barang);
+        $isEmpty = str_contains($name, 'EMPTY')
+            || ((string) $manifest->tipe_kontainer === 'FCL'
                 && (empty($manifest->nomor_kontainer) || str_starts_with($manifest->nomor_kontainer, 'CARGO-')));
 
         return $isEmpty ? 'empty' : 'full';

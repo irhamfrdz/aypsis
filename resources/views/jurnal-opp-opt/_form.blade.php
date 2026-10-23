@@ -164,7 +164,15 @@
                     labels.innerHTML = `<span class="block truncate text-sm font-semibold text-gray-800"></span><span class="mt-0.5 block text-xs text-gray-500"></span>`;
                     labels.children[0].textContent = containerLabel;
                     labels.children[1].textContent = `BL: ${blLabel}`;
-                    row.append(checkbox, labels);
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = item.status_kontainer === 'empty'
+                        ? 'shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700'
+                        : (item.status_kontainer === 'full'
+                            ? 'shrink-0 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700'
+                            : 'shrink-0 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800');
+                    statusBadge.textContent = item.status_kontainer === 'empty' ? 'Empty'
+                        : (item.status_kontainer === 'full' ? 'Full' : 'Periksa status');
+                    row.append(checkbox, labels, statusBadge);
                     referenceList.appendChild(row);
                 });
                 syncReferenceInputs();
@@ -238,7 +246,7 @@
                 <div>
                     <label for="status_kontainer" class="mb-2 block text-sm font-semibold text-slate-700">Status Kontainer</label>
                     <select id="status_kontainer" name="status_kontainer" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100">
-                        <option value="">Otomatis dari manifest</option>
+                        <option value="">Otomatis (aturan OB)</option>
                         <option value="full" @selected(old('status_kontainer', $entry?->status_kontainer) === 'full')>Full</option>
                         <option value="empty" @selected(old('status_kontainer', $entry?->status_kontainer) === 'empty')>Empty</option>
                     </select>
