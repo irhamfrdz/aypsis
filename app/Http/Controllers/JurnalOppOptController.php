@@ -66,6 +66,9 @@ class JurnalOppOptController extends Controller
         $request->validate([
             'nama_kapal' => ['nullable', 'string', 'max:255'],
             'no_voyage' => ['nullable', 'string', 'max:255'],
+            'nomor_kontainer' => ['nullable', 'string', 'max:255'],
+            'nomor_bl' => ['nullable', 'string', 'max:255'],
+            'filter_reference' => ['nullable', 'boolean'],
         ]);
 
         $query = Manifest::query();
@@ -76,35 +79,39 @@ class JurnalOppOptController extends Controller
             $query->where('no_voyage', $request->input('no_voyage'));
         }
         if (! $request->filled('nama_kapal')) {
-            return response()->json(['voyages' => [], 'containers' => [], 'bls' => [], 'vendors' => []]);
+            return response()->json(['voyages' => [], 'references' => [], 'vendors' => []]);
         }
 
         if (! $request->filled('no_voyage')) {
             return response()->json([
                 'voyages' => (clone $query)->whereNotNull('no_voyage')->where('no_voyage', '!=', '')
                     ->distinct()->orderBy('no_voyage')->pluck('no_voyage')->values(),
-                'containers' => [],
-                'bls' => [],
+                'references' => [],
                 'vendors' => [],
             ]);
         }
 
-        // LCL dapat memiliki banyak baris manifest/vendor untuk satu kontainer.
-        // DISTINCT membuat pilihan kontainer tetap satu per nomor kontainer.
+        // Pasangan kontainer/BL berasal dari satu baris manifest; vendor LCL
+        // tetap dipilih terpisah karena beberapa pengirim dapat berbagi kontainer.
         $vendorQuery = clone $query;
-        if ($request->filled('nomor_kontainer')) {
-            $vendorQuery->where('nomor_kontainer', $request->input('nomor_kontainer'));
-        }
-        if ($request->filled('nomor_bl')) {
-            $vendorQuery->where('nomor_bl', $request->input('nomor_bl'));
+        if ($request->boolean('filter_reference')) {
+            foreach (['nomor_kontainer', 'nomor_bl'] as $field) {
+                $this->whereManifestField($vendorQuery, $field, $request->input($field));
+            }
         }
 
         return response()->json([
             'voyages' => [],
-            'containers' => (clone $query)->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')
-                ->distinct()->orderBy('nomor_kontainer')->pluck('nomor_kontainer')->values(),
-            'bls' => (clone $query)->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '')
-                ->distinct()->orderBy('nomor_bl')->pluck('nomor_bl')->values(),
+            'references' => (clone $query)
+                ->where(function ($query) {
+                    $query->where(function ($query) {
+                        $query->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '');
+                    })->orWhere(function ($query) {
+                        $query->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '');
+                    });
+                })
+                ->select('nomor_kontainer', 'nomor_bl')->distinct()
+                ->orderBy('nomor_kontainer')->orderBy('nomor_bl')->get(),
             'vendors' => $vendorQuery->whereNotNull('pengirim')->where('pengirim', '!=', '')
                 ->distinct()->orderBy('pengirim')->pluck('pengirim')->values(),
         ]);
@@ -197,17 +204,20 @@ class JurnalOppOptController extends Controller
             if (! $manifestQuery->exists()) {
                 throw ValidationException::withMessages(['no_voyage' => 'Voyage tidak ditemukan pada manifest untuk kapal yang dipilih.']);
             }
-            foreach (['nomor_kontainer' => 'nomor_kontainer', 'nomor_bl' => 'nomor_bl'] as $field => $column) {
-                if (! empty($data[$field]) && ! (clone $manifestQuery)->where($column, $data[$field])->exists()) {
-                    throw ValidationException::withMessages([$field => 'Pilihan tidak ditemukan pada manifest voyage ini.']);
+            if (($data['nomor_kontainer'] ?? null) !== null || ($data['nomor_bl'] ?? null) !== null) {
+                $referenceQuery = clone $manifestQuery;
+                foreach (['nomor_kontainer', 'nomor_bl'] as $field) {
+                    $this->whereManifestField($referenceQuery, $field, $data[$field] ?? null);
+                }
+                if (! $referenceQuery->exists()) {
+                    throw ValidationException::withMessages(['nomor_kontainer' => 'Pasangan kontainer dan BL tidak ditemukan pada baris manifest yang sama.']);
                 }
             }
             $vendorManifestQuery = clone $manifestQuery;
-            if (! empty($data['nomor_kontainer'])) {
-                $vendorManifestQuery->where('nomor_kontainer', $data['nomor_kontainer']);
-            }
-            if (! empty($data['nomor_bl'])) {
-                $vendorManifestQuery->where('nomor_bl', $data['nomor_bl']);
+            if (($data['nomor_kontainer'] ?? null) !== null || ($data['nomor_bl'] ?? null) !== null) {
+                foreach (['nomor_kontainer', 'nomor_bl'] as $field) {
+                    $this->whereManifestField($vendorManifestQuery, $field, $data[$field] ?? null);
+                }
             }
             if (! empty($data['vendor']) && ! $vendorManifestQuery->where('pengirim', $data['vendor'])->exists()) {
                 throw ValidationException::withMessages(['vendor' => 'Vendor/pengirim tidak ditemukan pada manifest voyage yang dipilih.']);
@@ -232,6 +242,19 @@ class JurnalOppOptController extends Controller
         }
 
         return $data;
+    }
+
+    private function whereManifestField($query, string $field, ?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $query->where(function ($query) use ($field) {
+                $query->whereNull($field)->orWhere($field, '');
+            });
+
+            return;
+        }
+
+        $query->where($field, $value);
     }
 
     private function recalculateBalances(): void

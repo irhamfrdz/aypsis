@@ -25,18 +25,14 @@
                 </select>
                 @error('no_voyage')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
-            <div>
-                <label for="nomor_kontainer" class="mb-2 block text-sm font-semibold text-gray-700">Nomor Kontainer</label>
-                <select id="nomor_kontainer" name="nomor_kontainer" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Opsional: pilih kontainer</option>
+            <input type="hidden" id="nomor_kontainer" name="nomor_kontainer" value="{{ old('nomor_kontainer', $entry?->nomor_kontainer) }}">
+            <input type="hidden" id="nomor_bl" name="nomor_bl" value="{{ old('nomor_bl', $entry?->nomor_bl) }}">
+            <div class="md:col-span-2">
+                <label for="manifest_reference" class="mb-2 block text-sm font-semibold text-gray-700">Kontainer / BL</label>
+                <select id="manifest_reference" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Pilih voyage terlebih dahulu</option>
                 </select>
                 @error('nomor_kontainer')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-            </div>
-            <div>
-                <label for="nomor_bl" class="mb-2 block text-sm font-semibold text-gray-700">Nomor BL</label>
-                <select id="nomor_bl" name="nomor_bl" disabled class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Opsional: pilih BL</option>
-                </select>
                 @error('nomor_bl')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">
@@ -52,6 +48,7 @@
         (() => {
             const ship = document.getElementById('nama_kapal');
             const voyage = document.getElementById('no_voyage');
+            const reference = document.getElementById('manifest_reference');
             const container = document.getElementById('nomor_kontainer');
             const bl = document.getElementById('nomor_bl');
             const vendor = document.getElementById('vendor');
@@ -73,9 +70,10 @@
             };
             const loadVoyages = async (restore = false) => {
                 reset(voyage, ship.value ? 'Memuat voyage...' : 'Pilih kapal terlebih dahulu');
-                reset(container, 'Pilih voyage terlebih dahulu');
-                reset(bl, 'Pilih voyage terlebih dahulu');
+                reset(reference, 'Pilih voyage terlebih dahulu');
                 reset(vendor, 'Pilih voyage terlebih dahulu');
+                container.value = '';
+                bl.value = '';
                 if (!ship.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
@@ -85,17 +83,44 @@
                 if (restore && selectedVoyage && data.voyages?.includes(selectedVoyage)) await loadManifestChoices(true);
             };
             const loadManifestChoices = async (restore = false) => {
-                reset(container, 'Memuat kontainer...');
-                reset(bl, 'Memuat BL...');
+                reset(reference, 'Memuat kontainer / BL...');
+                reset(vendor, 'Pilih kontainer / BL terlebih dahulu');
+                container.value = '';
+                bl.value = '';
                 if (!ship.value || !voyage.value) return;
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
                 url.searchParams.set('no_voyage', voyage.value);
                 const response = await fetch(url, { headers: { Accept: 'application/json' } });
                 const data = await response.json();
-                fill(container, data.containers || [], 'Opsional: pilih kontainer', restore ? selectedContainer : '');
-                fill(bl, data.bls || [], 'Opsional: pilih BL', restore ? selectedBl : '');
-                await loadVendors(restore);
+                reset(reference, 'Opsional: pilih kontainer / BL');
+                const references = data.references || [];
+                references.forEach((item) => {
+                    const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
+                    const blLabel = item.nomor_bl || 'Tanpa nomor BL';
+                    reference.add(new Option(`${containerLabel} — ${blLabel}`, JSON.stringify(item)));
+                });
+                reference.disabled = false;
+                const savedReference = references.find((item) => (item.nomor_kontainer || '') === (restore ? selectedContainer || '' : '')
+                    && (item.nomor_bl || '') === (restore ? selectedBl || '' : ''));
+                if (savedReference && restore) {
+                    reference.value = JSON.stringify(savedReference);
+                    container.value = savedReference.nomor_kontainer || '';
+                    bl.value = savedReference.nomor_bl || '';
+                    await loadVendors(true);
+                }
+            };
+            const applyReference = async () => {
+                container.value = '';
+                bl.value = '';
+                if (!reference.value) {
+                    reset(vendor, 'Pilih kontainer / BL terlebih dahulu');
+                    return;
+                }
+                const selected = JSON.parse(reference.value);
+                container.value = selected.nomor_kontainer || '';
+                bl.value = selected.nomor_bl || '';
+                await loadVendors();
             };
             const loadVendors = async (restore = false) => {
                 reset(vendor, 'Memuat vendor/pengirim...');
@@ -103,16 +128,16 @@
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('nama_kapal', ship.value);
                 url.searchParams.set('no_voyage', voyage.value);
-                if (container.value) url.searchParams.set('nomor_kontainer', container.value);
-                if (bl.value) url.searchParams.set('nomor_bl', bl.value);
+                url.searchParams.set('filter_reference', '1');
+                url.searchParams.set('nomor_kontainer', container.value);
+                url.searchParams.set('nomor_bl', bl.value);
                 const response = await fetch(url, { headers: { Accept: 'application/json' } });
                 const data = await response.json();
                 fill(vendor, data.vendors || [], 'Opsional: pilih vendor/pengirim', restore ? selectedVendor : '');
             };
             ship.addEventListener('change', () => loadVoyages());
             voyage.addEventListener('change', () => loadManifestChoices());
-            container.addEventListener('change', () => loadVendors());
-            bl.addEventListener('change', () => loadVendors());
+            reference.addEventListener('change', () => applyReference());
             if (ship.value) loadVoyages(true);
         })();
     </script>
