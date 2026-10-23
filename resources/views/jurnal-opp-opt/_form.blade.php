@@ -37,6 +37,11 @@
                     <i class="fas fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
                     <input type="search" id="manifest_reference_search" disabled placeholder="Cari nomor kontainer atau BL" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100">
                 </div>
+                <div class="mb-2 flex justify-end">
+                    <button type="button" id="manifest_reference_select_all" disabled class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50">
+                        <i class="fas fa-check-double"></i>Pilih semua
+                    </button>
+                </div>
                 <div id="manifest_reference_list" class="max-h-56 min-h-14 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm">
                     <div class="px-4 py-4 text-sm text-slate-500">Pilih kapal dan voyage untuk menampilkan manifest.</div>
                 </div>
@@ -54,6 +59,7 @@
             const referenceInputs = document.getElementById('manifest_reference_inputs');
             const referenceCount = document.getElementById('manifest_reference_count');
             const referenceSearch = document.getElementById('manifest_reference_search');
+            const selectAllReferences = document.getElementById('manifest_reference_select_all');
             const endpoint = @json(route('jurnal-opp-opt.manifest-options'));
             const selectedVoyage = @json(old('no_voyage', $entry?->no_voyage));
             const selectedReferencesValue = @json(old('manifest_references', $selectedManifestReferences ?? []));
@@ -69,6 +75,7 @@
                 referenceCount.textContent = '0 kontainer';
                 referenceSearch.value = '';
                 referenceSearch.disabled = true;
+                selectAllReferences.disabled = true;
             };
             const syncReferenceInputs = () => {
                 const selected = [...referenceList.querySelectorAll('input[type="checkbox"]:checked')];
@@ -119,6 +126,7 @@
                     return;
                 }
                 referenceSearch.disabled = false;
+                selectAllReferences.disabled = false;
                 references.forEach((item) => {
                     const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
                     const blLabel = item.nomor_bl || 'Tanpa nomor BL';
@@ -161,6 +169,13 @@
                 referenceList.querySelectorAll('label[data-search]').forEach((row) => {
                     row.classList.toggle('hidden', !row.dataset.search.includes(search));
                 });
+            });
+            selectAllReferences.addEventListener('click', () => {
+                referenceList.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+                    checkbox.checked = true;
+                    checkbox.closest('label')?.classList.add('bg-blue-50');
+                });
+                syncReferenceInputs();
             });
             if (ship.value) loadVoyages(true);
         })();
