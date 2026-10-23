@@ -25,6 +25,7 @@ class JurnalOppOpt extends Model
         'tanggal_mulai_penumpukan',
         'tanggal_selesai_penumpukan',
         'massa',
+        'status_kontainer',
         'keterangan',
         'saldo',
         'kredit',

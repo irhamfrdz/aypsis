@@ -76,6 +76,7 @@
                 referenceSearch.value = '';
                 referenceSearch.disabled = true;
                 selectAllReferences.disabled = true;
+                document.dispatchEvent(new Event('jurnal-opp-opt:references-changed'));
             };
             const syncReferenceInputs = () => {
                 const selected = [...referenceList.querySelectorAll('input[type="checkbox"]:checked')];
@@ -93,6 +94,7 @@
                         : `bl:${reference.nomor_bl || ''}`);
                 });
                 referenceCount.textContent = `${allocationGroups.size} kontainer`;
+                document.dispatchEvent(new Event('jurnal-opp-opt:references-changed'));
             };
             const fill = (select, values, placeholder, selected = '') => {
                 reset(select, placeholder);
@@ -130,13 +132,18 @@
                 references.forEach((item) => {
                     const containerLabel = item.nomor_kontainer || 'Tanpa nomor kontainer';
                     const blLabel = item.nomor_bl || 'Tanpa nomor BL';
-                    const optionValue = JSON.stringify(item);
+                    const optionValue = JSON.stringify({
+                        nomor_kontainer: item.nomor_kontainer,
+                        nomor_bl: item.nomor_bl,
+                    });
                     const row = document.createElement('label');
                     row.className = 'flex cursor-pointer items-center gap-3 border-b border-slate-100 px-4 py-3 transition last:border-b-0 hover:bg-blue-50 focus-within:bg-blue-50';
                     row.dataset.search = `${containerLabel} ${blLabel}`.toLocaleLowerCase();
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.value = optionValue;
+                    checkbox.dataset.size = item.size_kontainer || '';
+                    checkbox.dataset.status = item.status_kontainer || '';
                     checkbox.className = 'h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500';
                     checkbox.checked = restore && selectedReferences.some((encoded) => {
                         try {
@@ -213,7 +220,7 @@
                 <h3 class="text-sm font-semibold text-amber-950">Periode Penumpukan</h3>
                 <p class="mt-1 text-xs text-amber-800">Hari mulai dan selesai dihitung. Satu massa berlaku untuk setiap 3 hari.</p>
             </div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <label for="tanggal_mulai_penumpukan" class="mb-2 block text-sm font-semibold text-slate-700">Dari Tanggal <span class="text-rose-600">*</span></label>
                     <input type="date" id="tanggal_mulai_penumpukan" name="tanggal_mulai_penumpukan" value="{{ old('tanggal_mulai_penumpukan', $entry?->tanggal_mulai_penumpukan?->format('Y-m-d')) }}" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100">
@@ -228,7 +235,17 @@
                     <label for="massa_penumpukan" class="mb-2 block text-sm font-semibold text-slate-700">Massa</label>
                     <input type="number" id="massa_penumpukan" value="{{ old('massa', $entry?->massa) }}" min="1" readonly placeholder="Otomatis dari tanggal" class="block w-full rounded-lg border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-700">
                 </div>
+                <div>
+                    <label for="status_kontainer" class="mb-2 block text-sm font-semibold text-slate-700">Status Kontainer</label>
+                    <select id="status_kontainer" name="status_kontainer" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100">
+                        <option value="">Otomatis dari manifest</option>
+                        <option value="full" @selected(old('status_kontainer', $entry?->status_kontainer) === 'full')>Full</option>
+                        <option value="empty" @selected(old('status_kontainer', $entry?->status_kontainer) === 'empty')>Empty</option>
+                    </select>
+                    @error('status_kontainer')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
             </div>
+            <p id="penumpukan_tarif_hint" class="mt-3 text-xs leading-5 text-amber-800" aria-live="polite"></p>
         </div>
         <div>
             <label for="tanggal" class="mb-2 block text-sm font-semibold text-slate-700">Tanggal <span class="text-rose-600">*</span></label>
@@ -244,12 +261,107 @@
 </section>
 
 <script>
-    (() => {
+    document.addEventListener('DOMContentLoaded', () => {
         const classification = document.getElementById('klasifikasi_biaya_id');
         const dateRange = document.getElementById('penumpukan_date_range');
         const start = document.getElementById('tanggal_mulai_penumpukan');
         const end = document.getElementById('tanggal_selesai_penumpukan');
         const mass = document.getElementById('massa_penumpukan');
+        const statusOverride = document.getElementById('status_kontainer');
+        const referenceList = document.getElementById('manifest_reference_list');
+        const credit = document.getElementById('kredit');
+        const hint = document.getElementById('penumpukan_tarif_hint');
+        const storageTarifs = @json($storageTarifs ?? []);
+        let autoCreditCents = null;
+        let creditEdited = false;
+
+        const clearAutoCredit = () => {
+            if (autoCreditCents !== null && Math.round(Number(credit.value || 0) * 100) === autoCreditCents) {
+                credit.value = '0';
+            }
+            autoCreditCents = null;
+        };
+
+        const updateAutoCredit = () => {
+            if (classification.selectedOptions[0]?.dataset.penumpukan !== '1') {
+                clearAutoCredit();
+                hint.textContent = '';
+                return;
+            }
+            if (!mass.value) {
+                clearAutoCredit();
+                hint.textContent = 'Lengkapi periode penumpukan untuk menghitung tarif.';
+                return;
+            }
+            if (!referenceList) {
+                clearAutoCredit();
+                hint.textContent = 'Pada transaksi tanpa voyage, isi kredit secara manual.';
+                return;
+            }
+
+            const selected = [...referenceList.querySelectorAll('input[type="checkbox"]:checked')];
+            if (!selected.length) {
+                clearAutoCredit();
+                hint.textContent = 'Pilih kontainer / BL agar kredit dapat dihitung otomatis.';
+                return;
+            }
+
+            const containers = new Map();
+            selected.forEach((checkbox) => {
+                const reference = JSON.parse(checkbox.value);
+                const key = reference.nomor_kontainer
+                    ? `container:${reference.nomor_kontainer}`
+                    : `bl:${reference.nomor_bl || ''}`;
+                const size = checkbox.dataset.size.match(/20|40|45/)?.[0] || null;
+                const status = statusOverride.value || checkbox.dataset.status || null;
+                if (containers.has(key)) {
+                    const container = containers.get(key);
+                    if (size && container.size && container.size !== size) container.sizeConflict = true;
+                    if (status && container.status && container.status !== status) container.statusConflict = true;
+                    if (size && !container.sizeConflict) container.size = size;
+                    if (status && !container.statusConflict) container.status = status;
+                } else {
+                    containers.set(key, { size, status, sizeConflict: false, statusConflict: false });
+                }
+            });
+
+            if ([...containers.values()].some((container) =>
+                !container.size || !container.status || container.sizeConflict || container.statusConflict
+            )) {
+                clearAutoCredit();
+                hint.textContent = 'Ukuran atau status salah satu kontainer tidak tersedia. Pilih status Full/Empty jika perlu, lalu isi kredit manual bila tarif tetap tidak ditemukan.';
+                return;
+            }
+
+            let totalCents = 0;
+            for (const container of containers.values()) {
+                const pricelist = storageTarifs.find((item) =>
+                    String(item.size).includes(container.size)
+                    && String(item.status).toLowerCase() === container.status
+                );
+                const rate = pricelist?.tarif_massa.find((item) => Number(item.massa) === Number(mass.value))?.tarif;
+                if (rate === undefined || rate === null) {
+                    clearAutoCredit();
+                    hint.textContent = 'Tarif massa ini belum tersedia untuk salah satu kontainer. Isi kredit secara manual.';
+                    return;
+                }
+                totalCents += Math.round(Number(rate) * 100);
+            }
+
+            const currentCents = Math.round(Number(credit.value || 0) * 100);
+            if (autoCreditCents === null && currentCents > 0 && currentCents !== totalCents) {
+                creditEdited = true;
+            }
+            if (!creditEdited) {
+                credit.value = (totalCents / 100).toFixed(2);
+                autoCreditCents = totalCents;
+            }
+            const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
+                .format(totalCents / 100);
+            hint.textContent = creditEdited
+                ? `Tarif otomatis ${formatted} untuk ${containers.size} kontainer. Kredit saat ini diisi manual.`
+                : `Kredit otomatis ${formatted} untuk ${containers.size} kontainer, dihitung sekali per kontainer.`;
+        };
 
         const updateMass = () => {
             end.min = start.value;
@@ -257,6 +369,7 @@
                 ? Math.round((Date.parse(`${end.value}T00:00:00Z`) - Date.parse(`${start.value}T00:00:00Z`)) / 86400000) + 1
                 : 0;
             mass.value = days > 0 ? Math.ceil(days / 3) : '';
+            updateAutoCredit();
         };
         const updateVisibility = () => {
             const visible = classification.selectedOptions[0]?.dataset.penumpukan === '1';
@@ -265,14 +378,23 @@
                 input.disabled = !visible;
                 input.required = visible;
             });
+            statusOverride.disabled = !visible;
             if (visible) updateMass();
+            else updateAutoCredit();
         };
 
         classification.addEventListener('change', updateVisibility);
         start.addEventListener('change', updateMass);
         end.addEventListener('change', updateMass);
+        statusOverride.addEventListener('change', updateAutoCredit);
+        document.addEventListener('jurnal-opp-opt:references-changed', updateAutoCredit);
+        credit.addEventListener('input', () => {
+            autoCreditCents = null;
+            creditEdited = Number(credit.value || 0) > 0;
+            updateAutoCredit();
+        });
         updateVisibility();
-    })();
+    });
 </script>
 
 <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -299,7 +421,7 @@
                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-semibold text-slate-500">Rp</span>
                 <input type="number" id="kredit" name="kredit" min="0" step="0.01" value="{{ old('kredit', $entry?->kredit ?? 0) }}" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100">
             </div>
-            <p class="mt-2 text-xs text-slate-600">Mengurangi saldo berjalan.</p>
+            <p class="mt-2 text-xs text-slate-600">Mengurangi saldo berjalan. Untuk penumpukan, tarif terisi dari massa dan kontainer terpilih.</p>
             @error('kredit')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
         </div>
     </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JurnalOppOpt;
 use App\Models\KlasifikasiBiaya;
 use App\Models\Manifest;
+use App\Models\MasterPricelistBiayaStoragePelindo;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,8 +59,9 @@ class JurnalOppOptController extends Controller
                 ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal')
             : collect();
         $klasifikasiBiayas = KlasifikasiBiaya::query()->where('is_active', true)->orderBy('nama')->get();
+        $storageTarifs = $this->storageTarifs();
 
-        return view('jurnal-opp-opt.create', compact('mode', 'kapals', 'klasifikasiBiayas'));
+        return view('jurnal-opp-opt.create', compact('mode', 'kapals', 'klasifikasiBiayas', 'storageTarifs'));
     }
 
     public function manifestOptions(Request $request)
@@ -98,8 +100,26 @@ class JurnalOppOptController extends Controller
                         $query->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '');
                     });
                 })
-                ->select('nomor_kontainer', 'nomor_bl')->distinct()
-                ->orderBy('nomor_kontainer')->orderBy('nomor_bl')->get(),
+                ->select('nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer', 'nama_barang')
+                ->orderBy('nomor_kontainer')->orderBy('nomor_bl')->get()
+                ->groupBy(fn (Manifest $item) => json_encode([$item->nomor_kontainer, $item->nomor_bl]))
+                ->map(function ($rows) {
+                    $sizes = $rows->pluck('size_kontainer')->filter()
+                        ->map(function ($size) {
+                            preg_match('/20|40|45/', (string) $size, $matches);
+
+                            return $matches[0] ?? null;
+                        })->filter()->unique()->values();
+                    $statuses = $rows->map(fn (Manifest $item) => $this->manifestStorageStatus($item))
+                        ->unique()->values();
+
+                    return [
+                        'nomor_kontainer' => $rows->first()->nomor_kontainer,
+                        'nomor_bl' => $rows->first()->nomor_bl,
+                        'size_kontainer' => $sizes->count() === 1 ? $sizes->first() : null,
+                        'status_kontainer' => $statuses->count() === 1 ? $statuses->first() : null,
+                    ];
+                })->values(),
         ]);
     }
 
@@ -137,6 +157,7 @@ class JurnalOppOptController extends Controller
                 }
             })
             ->orderBy('nama')->get();
+        $storageTarifs = $this->storageTarifs();
 
         $selectedManifestReferences = $jurnalOppOpt->manifestItems->map(fn ($item) => json_encode([
             'nomor_kontainer' => $item->nomor_kontainer,
@@ -149,7 +170,7 @@ class JurnalOppOptController extends Controller
             ]));
         }
 
-        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals', 'klasifikasiBiayas', 'selectedManifestReferences'));
+        return view('jurnal-opp-opt.edit', compact('jurnalOppOpt', 'mode', 'kapals', 'klasifikasiBiayas', 'selectedManifestReferences', 'storageTarifs'));
     }
 
     public function update(Request $request, JurnalOppOpt $jurnalOppOpt): RedirectResponse
@@ -193,6 +214,7 @@ class JurnalOppOptController extends Controller
             'klasifikasi_biaya_id' => ['nullable', 'integer', 'exists:klasifikasi_biayas,id'],
             'tanggal_mulai_penumpukan' => ['nullable', 'date'],
             'tanggal_selesai_penumpukan' => ['nullable', 'date', 'after_or_equal:tanggal_mulai_penumpukan'],
+            'status_kontainer' => ['nullable', 'in:full,empty'],
             'keterangan' => ['required', 'string', 'max:2000'],
             'saldo' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'kredit' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -276,6 +298,7 @@ class JurnalOppOptController extends Controller
             $data['tanggal_mulai_penumpukan'] = null;
             $data['tanggal_selesai_penumpukan'] = null;
             $data['massa'] = null;
+            $data['status_kontainer'] = null;
         }
         $data['manifest_items'] = $this->allocateAmountsToReferences($references, $data['saldo'], $data['kredit']);
         unset($data['manifest_references']);
@@ -289,6 +312,30 @@ class JurnalOppOptController extends Controller
         }
 
         return $data;
+    }
+
+    private function storageTarifs(): array
+    {
+        return MasterPricelistBiayaStoragePelindo::query()->with('tarifMassa')
+            ->where('status', 'aktif')->get()->map(fn ($item) => [
+                'size' => $item->size_kontainer,
+                'status' => $item->status_kontainer,
+                'tarif_massa' => $item->tarifMassa->map(fn ($tarif) => [
+                    'massa' => (float) $tarif->massa,
+                    'tarif' => (float) $tarif->tarif,
+                ])->all(),
+            ])->all();
+    }
+
+    private function manifestStorageStatus(Manifest $manifest): string
+    {
+        $name = strtolower(trim((string) $manifest->nama_barang));
+        $isEmpty = $name === '' || $name === 'mt' || $name === 'mty'
+            || str_contains($name, 'empty') || str_contains($name, 'kosong')
+            || (strtoupper((string) $manifest->tipe_kontainer) === 'FCL'
+                && (empty($manifest->nomor_kontainer) || str_starts_with($manifest->nomor_kontainer, 'CARGO-')));
+
+        return $isEmpty ? 'empty' : 'full';
     }
 
     private function whereManifestField($query, string $field, ?string $value): void
