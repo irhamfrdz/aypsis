@@ -2002,6 +2002,15 @@
 </div>
 @endif
 
+{{-- Jurnal OPT/OPP Menu - Standalone --}}
+@if($user && $user->can('jurnal-opp-opt-view'))
+<div class="mt-4">
+    <a href="{{ route('jurnal-opp-opt.index') }}" target="_blank" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('jurnal-opp-opt.*') ? 'bg-emerald-50 text-emerald-700 font-medium' : '' }}">
+        <span class="text-xs font-medium truncate w-full">Jurnal OPT/OPP</span>
+    </a>
+</div>
+@endif
+
 {{-- Audit Log Menu - Standalone --}}
 @if($user && $user->can('audit-log-view'))
 <div class="mt-4">

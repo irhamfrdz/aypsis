@@ -27,6 +27,17 @@ return [
             'description' => 'Akses halaman dashboard',
             'required' => false, // Semua user bisa akses
         ],
+        'jurnal-opp-opt' => [
+            'name' => 'Jurnal OPT/OPP',
+            'description' => 'Kelola jurnal saldo dan kredit OPT/OPP yang berdiri sendiri',
+            'required' => true,
+            'sub_modules' => [
+                'jurnal-opp-opt-view' => 'Lihat Jurnal OPT/OPP',
+                'jurnal-opp-opt-create' => 'Tambah Jurnal OPT/OPP',
+                'jurnal-opp-opt-update' => 'Ubah Jurnal OPT/OPP',
+                'jurnal-opp-opt-delete' => 'Hapus Jurnal OPT/OPP',
+            ],
+        ],
         'master-data' => [
             'name' => 'Master Data',
             'description' => 'Akses menu master data',

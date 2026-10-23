@@ -273,6 +273,26 @@ Route::middleware([
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
 
+    // Jurnal OPT/OPP berdiri sendiri dan tidak terhubung ke modul Biaya Kapal.
+    Route::get('jurnal-opp-opt', [\App\Http\Controllers\JurnalOppOptController::class, 'index'])
+        ->name('jurnal-opp-opt.index')
+        ->middleware('can:jurnal-opp-opt-view');
+    Route::get('jurnal-opp-opt/create', [\App\Http\Controllers\JurnalOppOptController::class, 'create'])
+        ->name('jurnal-opp-opt.create')
+        ->middleware('can:jurnal-opp-opt-create');
+    Route::post('jurnal-opp-opt', [\App\Http\Controllers\JurnalOppOptController::class, 'store'])
+        ->name('jurnal-opp-opt.store')
+        ->middleware('can:jurnal-opp-opt-create');
+    Route::get('jurnal-opp-opt/{jurnalOppOpt}/edit', [\App\Http\Controllers\JurnalOppOptController::class, 'edit'])
+        ->name('jurnal-opp-opt.edit')
+        ->middleware('can:jurnal-opp-opt-update');
+    Route::match(['put', 'patch'], 'jurnal-opp-opt/{jurnalOppOpt}', [\App\Http\Controllers\JurnalOppOptController::class, 'update'])
+        ->name('jurnal-opp-opt.update')
+        ->middleware('can:jurnal-opp-opt-update');
+    Route::delete('jurnal-opp-opt/{jurnalOppOpt}', [\App\Http\Controllers\JurnalOppOptController::class, 'destroy'])
+        ->name('jurnal-opp-opt.destroy')
+        ->middleware('can:jurnal-opp-opt-delete');
+
 
     // Denah gudang uses the existing warehouse view/edit permissions.
     Route::middleware('can:master-gudang-view')->group(function () {
