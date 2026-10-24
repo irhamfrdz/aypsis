@@ -726,6 +726,16 @@ class RekapBiayaKapalController extends Controller
                 ?: ((float) $d->subtotal ?: collect($d->kontainer_ids ?? [])->sum('biaya_klaim')));
         }
 
+        // MERATUS costs follow the final invoice, rather than the DP cash advance.
+        elseif ($item->meratusDetails->count() > 0) {
+            $hasDetails = true;
+            $details = $item->meratusDetails->filter(fn ($d) => $this->shipKey($d->kapal ?? '') === $kapalLower
+                && strtolower(trim($d->voyage ?? '')) === $voyageLower
+                && $d->stage?->payment_mode !== 'dp');
+            $nominal = $details->sum('sub_total');
+            $total = $details->sum('rekap_total');
+        }
+
         // TEMAS costs follow the final invoice, rather than the DP cash advance.
         elseif ($item->temasDetails->count() > 0) {
             $hasDetails = true;
@@ -1096,7 +1106,7 @@ class RekapBiayaKapalController extends Controller
                         $target = $ratio === null ? $common : $selected;
                         foreach ($detailGroup as $groupDetail) {
                             $copy = clone $groupDetail;
-                            if ($relation === 'temasDetails') {
+                            if (in_array($relation, ['temasDetails', 'meratusDetails'], true)) {
                                 $copy->rekap_bl_total = round($groupDetail->rekap_total * ($ratio ?? 1), 2);
                             }
                             if ($relation === 'oppOptDetails') {
@@ -1315,7 +1325,7 @@ class RekapBiayaKapalController extends Controller
         $bl = implode(', ', $bls);
 
         // Fetch all biaya kapals and load relations
-        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'barangDetails.pricelistBuruh', 'temasDetails.stage.details', 'tkbmDetails.pricelistTkbm', 'oppOptDetails.manifests'], $this->relations);
+        $allRelations = array_merge(['klasifikasiBiaya', 'vendor', 'barangDetails.pricelistBuruh', 'temasDetails.stage.details', 'meratusDetails.stage.details', 'tkbmDetails.pricelistTkbm', 'oppOptDetails.manifests'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
             ->filter(function ($record) use ($kapal, $voyage, $lokasi) {
@@ -1325,6 +1335,13 @@ class RekapBiayaKapalController extends Controller
                         return false;
                     }
                     $record->setRelation('temasDetails', $details);
+                }
+                if ($record->meratusDetails->isNotEmpty()) {
+                    $details = $record->meratusDetails->filter(fn ($detail) => $detail->stage?->payment_mode !== 'dp');
+                    if ($details->isEmpty()) {
+                        return false;
+                    }
+                    $record->setRelation('meratusDetails', $details);
                 }
 
                 return $this->recordHasShipAndVoyage($record, $kapal, $voyage)

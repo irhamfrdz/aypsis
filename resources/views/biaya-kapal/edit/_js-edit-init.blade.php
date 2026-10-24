@@ -385,15 +385,26 @@
 
         // Map Meratus
         if($biayaKapal->meratusDetails->count() > 0) {
+            $legacyMeratusBls = \App\Models\Bl::whereIn('id', $biayaKapal->meratusDetails->pluck('bl_id')->filter())
+                ->pluck('nomor_bl', 'id');
             $groupedMeratus = $biayaKapal->meratusDetails->groupBy(function($item) {
                 $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
-                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '');
+                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '') . '|||' . ($item->meratus_stage_id ?? '');
             });
             foreach($groupedMeratus as $key => $items) {
                  $parts = explode('|||', $key);
                  if(count($parts) >= 2) {
                      $firstItem = $items->first();
                      $editMeratusSections[] = [
+                         'payment_mode' => $firstItem->stage?->payment_mode ?? 'lunas',
+                         'nominal_dibayar' => $firstItem->stage?->nominal_dibayar ?? 0,
+                         'dp_stage_id' => $firstItem->stage?->dp_stage_id,
+                         'biaya_kapal_id' => $biayaKapal->id,
+                         'dp_references' => $firstItem->stage?->dpStages->map(fn ($dp) => ['id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage, 'nominal_dibayar' => $dp->nominal_dibayar, 'saldo_dp' => app(\App\Services\MeratusBillingService::class)->balanceCents($dp, $biayaKapal->id) / 100, 'tanggal_dp' => $dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d')])->values()->all() ?? [],
+                         'dp_diperhitungkan' => $firstItem->stage?->dp_diperhitungkan ?? 0,
+                         'tanggal_dp' => $firstItem->stage?->tanggal_dp?->format('Y-m-d'),
+                         'nama_bank' => $firstItem->stage?->nama_bank,
+                         'keterangan_dp' => $firstItem->stage?->keterangan_dp,
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],
                          'penerima' => $parts[2],
@@ -401,7 +412,7 @@
                          'nomor_referensi' => $parts[4],
                          'tanggal_invoice_vendor' => $parts[5],
                          'keterangan' => $parts[6],
-                         'types' => $items->map(function($i){
+                         'types' => $items->map(function($i) use ($legacyMeratusBls){
                              return [
                                  'type_id' => $i->pricelist_meratus_id ?? 'MANUAL',
                                  'manual_name' => $i->jenis_biaya,
@@ -411,8 +422,10 @@
                                  'kuantitas' => $i->kuantitas,
                                  'is_muat' => $i->is_muat,
                                  'is_bongkar' => $i->is_bongkar,
-                                 'nomor_kontainer' => $i->nomor_kontainer,
-                                 'bl_id' => $i->bl_id
+                                  'is_per_container' => $i->is_per_container,
+                                  'nomor_kontainer' => $i->nomor_kontainer,
+                                  'nomor_bl' => $i->nomor_bl ?: ($legacyMeratusBls[$i->bl_id] ?? null),
+                                  'bl_id' => $i->bl_id
                              ];
                          })->toArray(),
                          'sub_total' => $firstItem->sub_total ?? 0,

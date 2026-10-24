@@ -10,6 +10,9 @@ class BiayaKapalMeratus extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
+        'meratus_stage_id',
+        'nomor_bl',
+        'is_per_container',
         'kapal',
         'voyage',
         'nomor_kontainer',
@@ -40,6 +43,7 @@ class BiayaKapalMeratus extends Model
 
     protected $casts = [
         'bl_id' => 'integer',
+        'is_per_container' => 'boolean',
         'kuantitas' => 'decimal:2',
         'harga' => 'decimal:2',
         'sub_total' => 'decimal:2',
@@ -62,6 +66,39 @@ class BiayaKapalMeratus extends Model
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(BiayaKapalMeratusStage::class, 'meratus_stage_id');
+    }
+
+    /** Cost assigned to this invoice row, including the portion paid using DP. */
+    public function getRekapTotalAttribute(): float
+    {
+        if (! $this->meratus_stage_id || ! $this->stage) {
+            return (float) $this->grand_total;
+        }
+        if ($this->stage->payment_mode === 'dp') {
+            return 0;
+        }
+
+        // Allocate the full invoice amount, independent of cash paid or a BL filter.
+        $rows = $this->stage->details->sortBy('id');
+        $subtotal = $rows->sum(fn ($row) => (int) round((float) $row->sub_total * 100));
+        $total = (int) round((float) $this->stage->nilai_tagihan * 100);
+        $cumulative = 0;
+        $allocated = 0;
+        foreach ($rows as $row) {
+            $cumulative += (int) round((float) $row->sub_total * 100);
+            $target = $subtotal > 0 ? (int) round($total * ($cumulative / $subtotal)) : $total;
+            if ($row->id === $this->id) {
+                return ($target - $allocated) / 100;
+            }
+            $allocated = $target;
+        }
+
+        return 0;
     }
 
     /**

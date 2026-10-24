@@ -1156,12 +1156,12 @@
         <div class="space-y-6">
             @php
                 $groupedMeratus = $biayaKapal->meratusDetails->groupBy(function($item) {
-                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->meratus_stage_id ?? 'lama');
                 });
             @endphp
             @foreach($groupedMeratus as $groupKey => $details)
                 @php
-                    list($kapal, $voyage) = explode('|', $groupKey);
+                    [$kapal, $voyage] = explode('|', $groupKey);
                     $first = $details->first();
                 @endphp
                 <div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-5">
@@ -1175,12 +1175,20 @@
                             <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
                         </div>
                     </div>
+                    @if($first->stage)
+                        <p class="mb-3 text-sm font-medium text-indigo-800">
+                            {{ match($first->stage->payment_mode) { 'dp' => 'DP / Uang muka', 'pelunasan_dp' => 'Pelunasan DP', default => 'Bayar langsung' } }}
+                            · Nilai tagihan Rp {{ number_format($first->stage->nilai_tagihan, 0, ',', '.') }}
+                            · Nominal transaksi Rp {{ number_format($first->stage->nominal_dibayar, 0, ',', '.') }}
+                        </p>
+                    @endif
                     
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Biaya</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nomor BL</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lokasi/Size</th>
                                     <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kuantitas</th>
                                     <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Harga</th>
@@ -1191,6 +1199,7 @@
                                 @foreach($details as $item)
                                     <tr>
                                         <td class="px-4 py-2 text-sm text-gray-900">{{ $item->jenis_biaya }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600">{{ $item->nomor_bl ?: '-' }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-600">{{ $item->lokasi }} / {{ $item->size }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->kuantitas, 0, ',', '.') }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
@@ -1200,35 +1209,35 @@
                             </tbody>
                             <tfoot class="bg-gray-50 font-bold">
                                 <tr>
-                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Subtotal</td>
+                                    <td colspan="5" class="px-4 py-2 text-sm text-right">Subtotal</td>
                                     <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
                                 </tr>
                                 @if($first->ppn_active)
                                 <tr>
-                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPN</td>
+                                    <td colspan="5" class="px-4 py-2 text-sm text-right">PPN</td>
                                     <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->ppn, 0, ',', '.') }}</td>
                                 </tr>
                                 @endif
                                 @if($first->pph_active)
                                 <tr>
-                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPH</td>
+                                    <td colspan="5" class="px-4 py-2 text-sm text-right">PPH</td>
                                     <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
                                 </tr>
                                 @endif
                                 @if($first->biaya_materai > 0)
                                 <tr>
-                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Materai</td>
+                                    <td colspan="5" class="px-4 py-2 text-sm text-right">Materai</td>
                                     <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->biaya_materai, 0, ',', '.') }}</td>
                                 </tr>
                                 @endif
                                 @if($first->adjustment != 0)
                                 <tr>
-                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Adjustment</td>
+                                    <td colspan="5" class="px-4 py-2 text-sm text-right">Adjustment</td>
                                     <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->adjustment, 0, ',', '.') }}</td>
                                 </tr>
                                 @endif
                                 <tr class="bg-indigo-100">
-                                    <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
+                                    <td colspan="5" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
                                     <td class="px-4 py-2 text-base text-right font-black text-indigo-800">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>

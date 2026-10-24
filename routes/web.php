@@ -3083,6 +3083,9 @@ Route::middleware([
         Route::get('biaya-kapal/temas-dp-candidates', [\App\Http\Controllers\BiayaKapalController::class, 'getOutstandingTemasDps'])
             ->name('biaya-kapal.temas-dp-candidates')
             ->middleware('can:biaya-kapal-create');
+        Route::get('biaya-kapal/meratus-dp-candidates', [\App\Http\Controllers\BiayaKapalController::class, 'getOutstandingMeratusDps'])
+            ->name('biaya-kapal.meratus-dp-candidates')
+            ->middleware('can:biaya-kapal-create');
         Route::post('biaya-kapal/get-bls-by-voyages', [\App\Http\Controllers\BiayaKapalController::class, 'getBlsByVoyages'])
             ->name('biaya-kapal.get-bls-by-voyages');
         Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])
@@ -3189,6 +3192,9 @@ Route::middleware([
             ->middleware('can:biaya-kapal-view');
         Route::get('biaya-kapal/temas-dp/{stage}/print', [\App\Http\Controllers\BiayaKapalController::class, 'printTemasDp'])
             ->name('biaya-kapal.print-temas-dp')
+            ->middleware('can:biaya-kapal-view');
+        Route::get('biaya-kapal/meratus-dp/{stage}/print', [\App\Http\Controllers\BiayaKapalController::class, 'printMeratusDp'])
+            ->name('biaya-kapal.print-meratus-dp')
             ->middleware('can:biaya-kapal-view');
         Route::get('biaya-kapal/{biayaKapal}/print-tanto', [\App\Http\Controllers\BiayaKapalController::class, 'printTanto'])
             ->name('biaya-kapal.print-tanto')

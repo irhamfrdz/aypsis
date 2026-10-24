@@ -152,6 +152,30 @@
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
+        .compact-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1px 5px;
+            align-items: start;
+            font-size: 0.92em;
+            line-height: 1.15;
+        }
+
+        .compact-list.columns-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            font-size: 0.86em;
+            gap: 1px 3px;
+        }
+
+        .compact-list span {
+            white-space: nowrap;
+        }
+
+        .bl-main-number {
+            display: block;
+            margin-bottom: 2px;
+        }
+
         .total-row td {
             background-color: #f0f0f0 !important;
             font-weight: bold !important;
@@ -163,6 +187,8 @@
             padding: 4px;
             margin-top: 10px;
             min-height: 40px;
+            word-wrap: break-word;
+            word-break: break-all;
         }
 
         .footer {
@@ -223,38 +249,27 @@
         @php
             $penerimaDisplay = $biayaKapal->penerima ?? ($meratusDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
             $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($meratusDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+            $meratusManifestGroups = $meratusManifestGroups ?? collect();
             
-            // Calculate Totals and Group by Type
-            $meratusByType = [];
+            // Nomor seperti 01-1, 01-2, dan seterusnya merupakan satu BL induk 01.
+            $normalizeNomorBl = static function ($nomorBl) {
+                $nomorBl = trim((string) $nomorBl);
+                return preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
+            };
+            $meratusByBl = $meratusDetails->groupBy(function ($detail) use ($normalizeNomorBl) {
+                return ($detail->kapal ?? '-').'|'.($detail->voyage ?? '-').'|'.$normalizeNomorBl($detail->nomor_bl);
+            });
+
+            // Calculate Totals
             $totalSubtotal = 0;
             $totalPPH = 0; // Total PPH yang benar-benar memotong (untuk kalkulasi)
             $totalPPN = 0; // Total PPN yang benar-benar menambah (untuk kalkulasi)
-            $displayPPH = 0; // Untuk tampilan baris di tabel
-            $displayPPN = 0; // Untuk tampilan baris di tabel
             $totalAdjustment = 0;
             $totalMaterai = 0;
             $totalAdmin = 0;
             $totalGrandTotal = 0;
             
             foreach($meratusDetails as $detail) {
-                // Group by Type (Jenis Biaya) and include Muat/Bongkar status
-                $status = '';
-                if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
-                elseif ($detail->is_muat) $status = ' (MUAT)';
-                elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
-
-                $typeKey = ($detail->jenis_biaya ?? 'BIAYA MERATUS') . $status;
-                
-                if (!isset($meratusByType[$typeKey])) {
-                    $meratusByType[$typeKey] = [
-                        'qty' => 0, 
-                        'cost' => 0
-                    ];
-                }
-                
-                $meratusByType[$typeKey]['qty'] += $detail->kuantitas;
-                $meratusByType[$typeKey]['cost'] += $detail->sub_total;
-                
                 $totalSubtotal += $detail->sub_total;
                 
                 $isPphActive = ($detail->pph_active ?? true);
@@ -263,15 +278,21 @@
                 $totalPPH += ($isPphActive ? $detail->pph : 0);
                 $totalPPN += ($isPpnActive ? $detail->ppn : 0);
                 
-                // Selalu jumlahkan untuk tampilan
-                $displayPPH += $detail->pph;
-                $displayPPN += $detail->ppn;
-                
                 $totalAdjustment += $detail->adjustment;
                 $totalMaterai += $detail->biaya_materai;
                 $totalAdmin += $detail->biaya_admin;
                 $totalGrandTotal += $detail->grand_total;
             }
+
+            $meratusStages = \App\Models\BiayaKapalMeratusStage::with('dpStages.biayaKapal')
+                ->where('biaya_kapal_id', $biayaKapal->id)->get();
+            $dpDiperhitungkan = $meratusStages->sum('dp_diperhitungkan');
+            $totalTagihanSebelumDp = $meratusStages->isNotEmpty()
+                ? $meratusStages->sum(fn ($stage) => $stage->payment_mode === 'dp'
+                    ? (float) $stage->nominal_dibayar
+                    : (float) $stage->nilai_tagihan)
+                : $totalGrandTotal;
+            $totalSetelahDp = $totalTagihanSebelumDp - $dpDiperhitungkan;
         @endphp
 
         <div class="info-section">
@@ -303,16 +324,17 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 18%;">Tanggal Ref.</th>
-                    <th style="width: 37%;">Referensi</th>
-                    <th style="width: 20%;">Nomor Voyage</th>
-                    <th style="width: 20%;">Total</th>
+                    <th style="width: 15%;">Tanggal Ref.</th>
+                    <th style="width: 20%;">Referensi</th>
+                    <th style="width: 15%;">Nomor Voyage</th>
+                    <th style="width: 25%;">Nomor BL</th>
+                    <th style="width: 20%;">DPP</th>
                 </tr>
             </thead>
             <tbody>
                 @php
-                    $perSection = $meratusDetails->groupBy(function($item) {
-                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-');
+                    $perSection = $meratusDetails->groupBy(function($item) use ($normalizeNomorBl) {
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-') . '|' . $normalizeNomorBl($item->nomor_bl);
                     });
                 @endphp
                 
@@ -327,7 +349,13 @@
                     }
                     
                     $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
-                    $sectionGrandTotal = $details->sum('grand_total');
+                    $sectionDpp = $details->sum('sub_total');
+                    $firstDetail = $details->first();
+                    $blInduk = $normalizeNomorBl($firstDetail->nomor_bl) ?: '-';
+                    $manifestInfo = $meratusManifestGroups->get(($firstDetail->voyage ?? '').'|'.$blInduk);
+                    $blVariants = collect($manifestInfo['variants'] ?? [])
+                        ->whenEmpty(fn ($items) => $items->push($firstDetail->nomor_bl))
+                        ->filter()->unique()->values();
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
@@ -340,59 +368,157 @@
                         @if($references->isEmpty()) - @endif
                     </td>
                     <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
-
-                    <td class="text-right">Rp {{ number_format($sectionGrandTotal, 0, ',', '.') }}</td>
+                    <td class="text-center">
+                        <span class="bl-main-number">{{ $blInduk }}</span>
+                        @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
+                            <div class="compact-list {{ $blVariants->count() > 10 ? 'columns-3' : '' }}">
+                                @foreach($blVariants as $variant)
+                                    <span>{{ $variant }}</span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </td>
+                    <td class="text-right">Rp {{ number_format($sectionDpp, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="6" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
+                <tr>
+                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
+                </tr>
+                @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
+                <tr>
+                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                </tr>
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">TOTAL PEMBAYARAN</td>
-                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- TABLE 2: DETAIL BIAYA (GABUNGAN) -->
-        <div class="section-header">Detail Biaya (Gabungan):</div>
+        @if($meratusStages->isNotEmpty())
+            <div class="keterangan-box">
+                @foreach($meratusStages as $stage)
+                    <div>
+                        <strong>{{ $stage->kapal }} / {{ $stage->voyage }}:</strong>
+                        @if($stage->payment_mode === 'dp')
+                            DP / Uang muka Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}. Tagihan akhir belum ditentukan.
+                            Saldo DP saat ini Rp {{ number_format(app(\App\Services\MeratusBillingService::class)->balanceCents($stage) / 100, 0, ',', '.') }}.
+                            <a class="no-print" href="{{ route('biaya-kapal.print-meratus-dp', $stage->id) }}" target="_blank" style="margin-left: 8px; color: #1d4ed8; text-decoration: underline;">Cetak bukti DP</a>
+                        @elseif($stage->payment_mode === 'pelunasan_dp')
+                            Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
+                            - DP digunakan Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
+                            = Pelunasan Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
+                            @foreach($stage->dpStages as $dp)
+                                <div style="margin-left: 12px; font-size: 10px;">
+                                    Referensi DP {{ $dp->biayaKapal->nomor_invoice ?? '#' . $dp->id }}:
+                                    {{ $dp->kapal }} / {{ $dp->voyage }};
+                                    digunakan Rp {{ number_format($dp->pivot->nominal_digunakan, 0, ',', '.') }};
+                                    saldo saat ini Rp {{ number_format(app(\App\Services\MeratusBillingService::class)->balanceCents($dp) / 100, 0, ',', '.') }}.
+                                </div>
+                            @endforeach
+                        @else
+                            Bayar langsung Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <!-- TABLE 2: DETAIL BIAYA PER BL -->
+        <div class="section-header">Detail Biaya per Nomor BL:</div>
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">No</th>
-                    <th style="width: 57%;">Jenis Biaya</th>
-                    <th style="width: 15%;">Jumlah</th>
-                    <th style="width: 20%;">Subtotal</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 15%;">Nomor BL</th>
+                    <th style="width: 25%;">Kontainer</th>
+                    <th style="width: 27%;">Jenis Biaya</th>
+                    <th style="width: 10%;">Jumlah</th>
+                    <th style="width: 18%;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 @php $no = 1; @endphp
-                
-                @foreach($meratusByType as $typeName => $data)
-                    @if($data['cost'] > 0 || $data['qty'] > 0)
-                    <tr>
-                        <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ strtoupper($typeName) }}</td>
-                        <td class="text-center">{{ rtrim(rtrim(number_format($data['qty'], 2, ',', '.'), '0'), ',') }}</td>
-                        <td class="text-right">Rp {{ number_format($data['cost'], 0, ',', '.') }}</td>
-                    </tr>
-                    @endif
+
+                @foreach($meratusByBl as $blDetails)
+                    @php
+                        $firstBlDetail = $blDetails->first();
+                        $blInduk = $normalizeNomorBl($firstBlDetail->nomor_bl) ?: '-';
+                        $manifestInfo = $meratusManifestGroups->get(($firstBlDetail->voyage ?? '').'|'.$blInduk);
+                        $blVariants = collect($manifestInfo['variants'] ?? [])
+                            ->whenEmpty(fn ($items) => $items->push($firstBlDetail->nomor_bl))
+                            ->filter()->unique()->values();
+                        $containers = collect($manifestInfo['containers'] ?? []);
+                        if ($containers->isEmpty()) {
+                            $containers = $blDetails->pluck('nomor_kontainer')
+                                ->flatMap(fn ($numbers) => array_map('trim', explode(',', (string) $numbers)))
+                                ->filter()->unique()->values();
+                        }
+                        $rowspan = $blDetails->count();
+                    @endphp
+                    @foreach($blDetails as $detail)
+                        @php
+                            $status = '';
+                            if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
+                            elseif ($detail->is_muat) $status = ' (MUAT)';
+                            elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
+                        @endphp
+                        <tr>
+                            @if($loop->first)
+                                <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
+                                <td class="text-center" rowspan="{{ $rowspan }}">
+                                    <span class="bl-main-number">{{ $blInduk }}</span>
+                                    @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
+                                        <div class="compact-list {{ $blVariants->count() > 10 ? 'columns-3' : '' }}">
+                                            @foreach($blVariants as $variant)
+                                                <span>{{ $variant }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </td>
+                                <td rowspan="{{ $rowspan }}">
+                                    @if($containers->isNotEmpty())
+                                        <div class="compact-list {{ $containers->count() > 16 ? 'columns-3' : '' }}">
+                                            @foreach($containers as $container)
+                                                <span>{{ $container }}</span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            @endif
+                            <td>{{ strtoupper(($detail->jenis_biaya ?? 'BIAYA MERATUS').$status) }}</td>
+                            <td class="text-center">{{ rtrim(rtrim(number_format($detail->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
                 @endforeach
                 
-                @if($displayPPH > 0)
+                @if($totalPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>PPH (2%) {{ $totalPPH <= 0 ? '(Reimburse)' : '' }}</td>
+                    <td colspan="3">PPH (2%)</td>
                     <td class="text-center">1</td>
-                    <td class="text-right">Rp {{ number_format($displayPPH, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
                 @if($totalPPN > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>PPN (11%)</td>
+                    <td colspan="3">PPN (11%)</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
                 </tr>
@@ -401,7 +527,7 @@
                 @if($totalMaterai > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>BIAYA MATERAI</td>
+                    <td colspan="3">BIAYA MATERAI</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
                 </tr>
@@ -410,7 +536,7 @@
                 @if($totalAdmin > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>BIAYA ADMIN</td>
+                    <td colspan="3">BIAYA ADMIN</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdmin, 0, ',', '.') }}</td>
                 </tr>
@@ -419,15 +545,29 @@
                 @if($totalAdjustment != 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>ADJUSTMENT</td>
+                    <td colspan="3">ADJUSTMENT</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 
+                <tr>
+                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
+                </tr>
+                @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
+                <tr>
+                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
+                </tr>
                 <tr class="total-row">
-                    <td colspan="3" class="text-right">TOTAL</td>
-                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
