@@ -158,7 +158,10 @@
         voyageSelect.addEventListener('change', function() {
             // Skip auto-fill during edit initialization to prevent clearing saved barang
             if (section.getAttribute('data-initializing') === 'true') return;
-            loadBlDataForTkbmSection(sectionIndex, this.value);
+            const kapalNama = section.querySelector('.tkbm-kapal-select').value;
+            if (kapalNama && this.value) {
+                autoFillBarangForTkbmSection(sectionIndex, kapalNama, this.value);
+            }
         });
         
         // Add first barang input
@@ -211,59 +214,60 @@
             });
     }
 
-    function loadBlDataForTkbmSection(sectionIndex, voyage) {
-        if (!voyage) return;
+    function autoFillBarangForTkbmSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        if (!section) return;
+        const container = section.querySelector('.tkbm-barang-container');
+        container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</div>';
 
-        fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
+        fetch("{{ url('biaya-kapal/get-container-counts') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ 
-                voyages: [voyage]
-            })
+            body: JSON.stringify({ kapal: kapalNama, voyage: voyage })
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.bls) {
-                const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
-                const container = section.querySelector('.tkbm-barang-container');
-                container.innerHTML = ''; // Clear existing barang rows
+            // Ignore an older request if the user has already chosen another voyage.
+            if (!section.isConnected || section.querySelector('.tkbm-kapal-select').value !== kapalNama ||
+                section.querySelector('.tkbm-voyage-select').value !== voyage) return;
 
-                Object.values(data.bls).forEach(bl => {
-                    // Normalize BL data
-                    const blNamaBarang = (bl.nama_barang || '').trim().toUpperCase();
-                    const blSize = (bl.size || '').toString().toUpperCase().replace('FT', '');
-                    const blTipe = (bl.tipe || '').trim().toUpperCase();
-                    
-                    // Case 1: Explicit "Empty Container"
-                    if (blNamaBarang.includes('EMPTY CONTAINER')) {
-                        const targetName = blSize ? `KONTAINER ${blSize}FT EMPTY` : 'KONTAINER 20FT EMPTY';
-                        addBarangToTkbmSection(sectionIndex, targetName, 1);
-                        return;
-                    }
-
-                    // Case 2: Regular item auto-fill (skip common generic names)
-                    if (bl.nama_barang && !['---', '.', '-'].includes(blNamaBarang)) {
-                        addBarangToTkbmSection(sectionIndex, bl.nama_barang, 1);
-                    }
-                    
-                    // Case 3: Container size/type logic
-                    if (blSize && blSize !== '0') {
-                        let resolvedType = blTipe || 'FULL';
-                        if (blNamaBarang.includes('EMPTY')) resolvedType = 'EMPTY';
-                        
-                        const containerItemName = `KONTAINER ${blSize}FT ${resolvedType}`.toUpperCase();
-                        addBarangToTkbmSection(sectionIndex, containerItemName, 1);
-                    }
+            container.innerHTML = '';
+            if (data.success && data.counts) {
+                const pricelistIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null, 'cargo': null };
+                pricelistTkbmData.forEach(pricelist => {
+                    const name = (pricelist.nama_barang || pricelist.cargo || '').toLowerCase();
+                    if (name.includes('20') && name.includes('full')) pricelistIds['20_full'] = pricelist.id;
+                    if (name.includes('20') && name.includes('empty')) pricelistIds['20_empty'] = pricelist.id;
+                    if (name.includes('40') && name.includes('full')) pricelistIds['40_full'] = pricelist.id;
+                    if (name.includes('40') && name.includes('empty')) pricelistIds['40_empty'] = pricelist.id;
+                    if (name === 'cargo') pricelistIds['cargo'] = pricelist.id;
                 });
 
+                [['20', 'full'], ['20', 'empty'], ['40', 'full'], ['40', 'empty']].forEach(([size, type]) => {
+                    const count = data.counts[size]?.[type] || 0;
+                    const barangId = pricelistIds[`${size}_${type}`];
+                    if (count > 0 && barangId) addBarangToTkbmSectionWithValue(sectionIndex, barangId, count);
+                });
+                if (data.counts.cargo_max_tv_sum > 0 && pricelistIds.cargo) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds.cargo, data.counts.cargo_max_tv_sum);
+                }
+                if (!container.children.length) addBarangToTkbmSection(sectionIndex);
+                calculateTotalFromAllTkbmSections();
+            } else {
+                addBarangToTkbmSection(sectionIndex);
                 calculateTotalFromAllTkbmSections();
             }
         })
         .catch(error => {
             console.error('Error fetching BL data for TKBM:', error);
+            if (!section.isConnected || section.querySelector('.tkbm-kapal-select').value !== kapalNama ||
+                section.querySelector('.tkbm-voyage-select').value !== voyage) return;
+            container.innerHTML = '';
+            addBarangToTkbmSection(sectionIndex);
+            calculateTotalFromAllTkbmSections();
         });
     }
     
