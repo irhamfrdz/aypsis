@@ -2506,7 +2506,7 @@ class KaryawanController extends Controller
             $hasSuccess = $import->successCount > 0;
 
             if ($hasSuccess) {
-                $messages[] = "✅ {$import->successCount} data Group & Sub Group karyawan berhasil diperbarui.";
+                $messages[] = "✅ {$import->successCount} data Group & Sub Group karyawan berhasil diproses. Group baru ditambahkan dan group lama tetap dipertahankan.";
             }
 
             if ($hasErrors) {

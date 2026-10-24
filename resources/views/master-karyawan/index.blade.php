@@ -1105,7 +1105,7 @@
                             <p class="text-xs text-indigo-700 font-medium">Tabel Informasi Perusahaan</p>
 
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
-                                <p>Silakan unggah file Excel/CSV untuk memperbarui data Group & Sub Group karyawan pada Informasi Perusahaan.</p>
+                                <p>Unggah file Excel/CSV untuk menambahkan Group & Sub Group karyawan. Data lama tetap tersimpan, pasangan yang sama tidak digandakan, dan kolom group kosong diabaikan.</p>
                                 <div class="bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div>

@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Karyawan;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -70,17 +71,14 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
 
             try {
                 $finalGroups = [];
-                $shouldClear = false;
 
                 foreach ($data['entries'] as $entry) {
                     $rawGroup = $entry['group'] !== null ? trim((string) $entry['group']) : '';
                     $rawSubGroup = $entry['sub_group'] !== null ? trim((string) $entry['sub_group']) : '';
 
-                    // Jika diisi kata kunci khusus untuk mengosongkan grup
+                    // This import only appends groups; deletion belongs in the edit form.
                     if (in_array(strtoupper($rawGroup), ['-', 'CLEAR', 'KOSONG', 'NULL', 'HAPUS'])) {
-                        $shouldClear = true;
-
-                        continue;
+                        throw new \InvalidArgumentException('Impor ini hanya menambahkan Group & Sub Group. Untuk menghapus group, gunakan edit karyawan.');
                     }
 
                     if (empty($rawGroup)) {
@@ -139,15 +137,36 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
                     }
                 }
 
-                // Tentukan data grup baru
-                if ($shouldClear && empty($finalGroups)) {
-                    $newGroupData = [];
-                } else {
-                    $newGroupData = array_values(array_unique(array_filter($finalGroups)));
-                }
+                if (! empty($finalGroups)) {
+                    DB::transaction(function () use ($karyawan, $finalGroups) {
+                        $employee = Karyawan::whereKey($karyawan->id)->lockForUpdate()->firstOrFail();
+                        $existingGroups = $employee->grup;
+                        if (! is_array($existingGroups)) {
+                            $legacyValue = $existingGroups ?? $employee->getRawOriginal('grup');
+                            $existingGroups = is_string($legacyValue) && trim($legacyValue) !== '' ? [$legacyValue] : [];
+                        }
 
-                $karyawan->grup = $newGroupData;
-                $karyawan->save();
+                        // Keep the old values and order, and deduplicate complete pairs.
+                        $groups = $existingGroups;
+                        $seen = [];
+                        foreach ($existingGroups as $group) {
+                            if (is_string($group)) {
+                                $seen[$this->groupKey($group)] = true;
+                            }
+                        }
+                        foreach ($finalGroups as $group) {
+                            $key = $this->groupKey($group);
+                            if ($key !== '' && ! isset($seen[$key])) {
+                                $groups[] = $group;
+                                $seen[$key] = true;
+                            }
+                        }
+                        if ($groups !== $existingGroups) {
+                            $employee->grup = array_values($groups);
+                            $employee->save();
+                        }
+                    });
+                }
                 $this->successCount++;
             } catch (\Exception $e) {
                 $this->failedRows[] = [
@@ -157,5 +176,10 @@ class KaryawanGroupImport implements ToCollection, WithHeadingRow
                 ];
             }
         }
+    }
+
+    private function groupKey(string $group): string
+    {
+        return implode(':', array_map(fn ($part) => strtoupper(trim($part)), explode(':', $group, 2)));
     }
 }
