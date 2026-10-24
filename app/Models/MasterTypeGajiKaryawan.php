@@ -16,6 +16,11 @@ class MasterTypeGajiKaryawan extends Model
 
     protected $casts = ['type_gaji_id' => 'integer'];
 
+    public function getFormattedTypeGajiIdAttribute(): ?string
+    {
+        return $this->type_gaji_id === null ? null : '00'.$this->type_gaji_id;
+    }
+
     /** Lock the shared allocator inside the caller's transaction. */
     public static function lockIdSequence(): object
     {

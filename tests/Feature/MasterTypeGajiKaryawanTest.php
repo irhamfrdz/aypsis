@@ -100,12 +100,15 @@ class MasterTypeGajiKaryawanTest extends TestCase
 
     public function test_search_and_status_filters_keep_pagination(): void
     {
-        MasterTypeGajiKaryawan::create(['nama' => 'Bulanan', 'keterangan' => 'Karyawan tetap', 'status' => 'active']);
+        MasterTypeGajiKaryawan::create(['type_gaji_id' => 12, 'nama' => 'Bulanan', 'keterangan' => 'Karyawan tetap', 'status' => 'active']);
         MasterTypeGajiKaryawan::create(['nama' => 'Harian', 'status' => 'inactive']);
         $view = (new MasterTypeGajiKaryawanController)->index(Request::create('/', 'GET', ['search' => 'tetap', 'status' => 'active']));
         $types = $view->getData()['types'];
         $this->assertSame(1, $types->total());
         $this->assertSame('Bulanan', $types->first()->nama);
+        $prefixed = (new MasterTypeGajiKaryawanController)->index(Request::create('/', 'GET', ['search' => '0012']))->getData()['types'];
+        $this->assertSame(1, $prefixed->total());
+        $this->assertSame('Bulanan', $prefixed->first()->nama);
     }
 
     public function test_each_mutation_requires_its_own_permission(): void
@@ -198,10 +201,13 @@ class MasterTypeGajiKaryawanTest extends TestCase
         $data = ['typeGajiKaryawan' => $type, 'errors' => new \Illuminate\Support\ViewErrorBag];
         $locked = view('master-type-gaji-karyawan._form', $data)->render();
         $this->assertStringContainsString('readonly', $locked);
+        $this->assertStringContainsString('value="0010"', $locked);
         $this->assertStringNotContainsString('name="type_gaji_id"', $locked);
         auth()->user()->setRelation('karyawan', new Karyawan(['nik' => '1593']));
         $editable = view('master-type-gaji-karyawan._form', $data)->render();
         $this->assertStringContainsString('name="type_gaji_id"', $editable);
+        $this->assertStringContainsString('value="10"', $editable);
+        $this->assertStringContainsString('>00</span>', $editable);
         $this->assertStringNotContainsString('readonly', $editable);
         $create = view('master-type-gaji-karyawan._form', array_merge($data, ['typeGajiKaryawan' => null]))->render();
         $this->assertStringContainsString('Dibuat otomatis saat disimpan', $create);

@@ -2,11 +2,14 @@
     <div>
         <label for="type_gaji_id" class="mb-1 block text-sm font-medium text-gray-700">Type Gaji ID</label>
         @if($typeGajiKaryawan && auth()->user()?->canEditTypeGajiId())
-            <input id="type_gaji_id" name="type_gaji_id" type="number" min="1" max="9223372036854775807" step="1" required value="{{ old('type_gaji_id', $typeGajiKaryawan->type_gaji_id) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm @error('type_gaji_id') border-red-500 @enderror">
+            <div class="flex">
+                <span class="rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600" aria-hidden="true">00</span>
+                <input id="type_gaji_id" name="type_gaji_id" type="number" min="1" max="9223372036854775807" step="1" required value="{{ old('type_gaji_id', $typeGajiKaryawan->type_gaji_id) }}" aria-label="Angka Type Gaji ID setelah awalan 00" class="min-w-0 flex-1 rounded-r-lg border border-gray-300 px-3 py-2 text-sm @error('type_gaji_id') border-red-500 @enderror">
+            </div>
         @else
-            <input id="type_gaji_id" type="text" readonly value="{{ $typeGajiKaryawan?->type_gaji_id }}" placeholder="Dibuat otomatis saat disimpan" class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600">
+            <input id="type_gaji_id" type="text" readonly value="{{ $typeGajiKaryawan?->formatted_type_gaji_id }}" placeholder="Dibuat otomatis saat disimpan" class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600">
         @endif
-        <p class="mt-1 text-xs text-gray-500">ID dibuat otomatis. Perubahan ID hanya tersedia untuk karyawan dengan NIK 1593.</p>
+        <p class="mt-1 text-xs text-gray-500">ID dibuat otomatis dengan awalan 00. Perubahan angka ID hanya tersedia untuk karyawan dengan NIK 1593.</p>
         @error('type_gaji_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
     <div>

@@ -37,7 +37,7 @@
                     @forelse($types as $type)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-gray-500">{{ $types->firstItem() + $loop->index }}</td>
-                            <td class="px-6 py-4 text-gray-600">{{ $type->type_gaji_id ?? '-' }}</td>
+                            <td class="px-6 py-4 text-gray-600">{{ $type->formatted_type_gaji_id ?? '-' }}</td>
                             <td class="px-6 py-4 font-semibold text-gray-900">{{ $type->nama }}</td>
                             <td class="px-6 py-4 text-gray-600">{{ $type->keterangan ?: '-' }}</td>
                             <td class="px-6 py-4"><span class="rounded-full px-2 py-1 text-xs font-medium {{ $type->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">{{ $type->status === 'active' ? 'Aktif' : 'Nonaktif' }}</span></td>

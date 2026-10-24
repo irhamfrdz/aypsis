@@ -23,8 +23,11 @@ class MasterTypeGajiKaryawanController extends Controller
         $types = MasterTypeGajiKaryawan::query()
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim($request->input('search'));
+                $formattedIdSql = DB::connection()->getDriverName() === 'sqlite'
+                    ? "('00' || type_gaji_id)" : "CONCAT('00', type_gaji_id)";
                 $query->where(fn ($query) => $query->where('nama', 'like', '%'.$search.'%')
                     ->orWhere('type_gaji_id', 'like', '%'.$search.'%')
+                    ->orWhereRaw($formattedIdSql.' LIKE ?', ['%'.$search.'%'])
                     ->orWhere('keterangan', 'like', '%'.$search.'%'));
             })
             ->when(in_array($request->input('status'), ['active', 'inactive']), fn ($query) => $query->where('status', $request->input('status')))
