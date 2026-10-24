@@ -163,23 +163,7 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="group" class="{{ $labelClasses }}">Group</label>
-                        <select name="group[]" id="group" class="{{ $selectClasses }} select2-multiple" multiple data-placeholder="-- Pilih Group --">
-                            @foreach($groups as $g)
-                                <option value="{{ $g }}" {{ (is_array(old('group', $karyawanTidakTetap->group)) && in_array($g, old('group', $karyawanTidakTetap->group))) ? 'selected' : '' }}>{{ $g }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="sub_group" class="{{ $labelClasses }}">Sub Group</label>
-                        <select name="sub_group[]" id="sub_group" class="{{ $selectClasses }} select2-multiple" multiple data-placeholder="-- Pilih Sub Group --">
-                            @foreach($subGroups as $sg)
-                                <option value="{{ $sg }}" {{ (is_array(old('sub_group', $karyawanTidakTetap->sub_group)) && in_array($sg, old('sub_group', $karyawanTidakTetap->sub_group))) ? 'selected' : '' }}>{{ $sg }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @include('karyawan-tidak-tetap.partials.group-fields')
                 </div>
             </div>
         </fieldset>

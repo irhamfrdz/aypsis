@@ -39,24 +39,9 @@ class KaryawanTidakTetapController extends Controller
         $nextNik = $this->generateNextNik();
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
 
-        $rawGroups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique();
-        $groups = collect();
-        $subGroups = collect();
+        [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        foreach ($rawGroups as $raw) {
-            if (strpos($raw, ':') !== false) {
-                $parts = explode(':', $raw, 2);
-                $groups->push(trim($parts[0]));
-                $subGroups->push(trim($parts[1]));
-            } else {
-                $groups->push(trim($raw));
-            }
-        }
-
-        $groups = $groups->unique()->filter()->values();
-        $subGroups = $subGroups->unique()->filter()->values();
-
-        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroups'));
+        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroupsByGroup'));
     }
 
     /**
@@ -144,24 +129,37 @@ class KaryawanTidakTetapController extends Controller
         $pajaks = \App\Models\Pajak::all();
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
 
-        $rawGroups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique();
-        $groups = collect();
-        $subGroups = collect();
+        [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        foreach ($rawGroups as $raw) {
-            if (strpos($raw, ':') !== false) {
-                $parts = explode(':', $raw, 2);
-                $groups->push(trim($parts[0]));
-                $subGroups->push(trim($parts[1]));
-            } else {
-                $groups->push(trim($raw));
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroupsByGroup'));
+    }
+
+    private function groupOptions(): array
+    {
+        $groups = collect();
+        $subGroupsByGroup = [];
+        foreach (\App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique() as $raw) {
+            if (! is_string($raw)) {
+                continue;
+            }
+            $parts = explode(':', $raw, 2);
+            $group = trim($parts[0]);
+            $key = strtoupper($group);
+            $groups->push($group);
+            if ($key !== 'GAJI' && isset($parts[1]) && trim($parts[1]) !== '') {
+                $subGroupsByGroup[$key][] = trim($parts[1]);
             }
         }
+        if (! $groups->contains(fn ($group) => strtoupper($group) === 'GAJI')) {
+            $groups->push('GAJI');
+        }
+        $subGroupsByGroup['GAJI'] = \App\Models\MasterTypeGajiKaryawan::where('status', 'active')
+            ->orderBy('nama')->pluck('nama')->all();
+        foreach ($subGroupsByGroup as $group => $options) {
+            $subGroupsByGroup[$group] = array_values(array_unique($options));
+        }
 
-        $groups = $groups->unique()->filter()->values();
-        $subGroups = $subGroups->unique()->filter()->values();
-
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroups'));
+        return [$groups->unique()->filter()->values(), $subGroupsByGroup];
     }
 
     /**
