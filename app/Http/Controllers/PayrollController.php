@@ -78,7 +78,7 @@ class PayrollController extends Controller
 
             foreach ($allKaryawans as $k) {
                 $isNominalTetap = UangMakanHelper::isNominalTetap($k);
-                $isSatpam = $isNominalTetap;
+                $isSatpam = UangMakanHelper::includesSundayAttendance($k);
                 $isSatpamPelabuhan = false;
                 if ($k instanceof \App\Models\Karyawan) {
                     $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
@@ -268,7 +268,7 @@ class PayrollController extends Controller
         $count = 0;
         foreach ($allKaryawans as $k) {
             $isNominalTetap = UangMakanHelper::isNominalTetap($k);
-            $isSatpam = $isNominalTetap;
+            $isSatpam = UangMakanHelper::includesSundayAttendance($k);
             $isSatpamPelabuhan = false;
             $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
             if (is_array($kGrup)) {

@@ -145,4 +145,70 @@ class PayrollUangMakanNominalTetapTest extends TestCase
         $this->assertEquals(350000, $row['nominal_awal']);
         $this->assertEquals(350000, $row['nominal_per_hari']);
     }
+
+    private function seedJakartaSatpam(): void
+    {
+        DB::table('karyawans')->insert([
+            'id' => 4, 'nik' => 'SATPAM4', 'nama_lengkap' => 'Satpam Jakarta', 'status' => 'active',
+            'departemen' => ' jakarta satpam ', 'grup' => null, 'penempatan' => 'KANTOR JAKARTA',
+            'nominal_uang_makan' => 25000,
+        ]);
+        DB::table('uang_makans')->insert([
+            'karyawan_id' => 4, 'tipe_karyawan' => Karyawan::class, 'nominal' => 25000, 'tanggal' => '2026-10-12',
+        ]);
+        foreach (['2026-10-12 08:00:00', '2026-10-13 08:00:00', '2026-10-18 08:00:00', '2026-10-18 09:00:00'] as $time) {
+            DB::table('absensis')->insert(['karyawan_id' => 4, 'waktu' => $time, 'tipe' => 'Masuk']);
+        }
+    }
+
+    public function test_jakarta_satpam_preview_counts_sunday_once_and_only_when_present(): void
+    {
+        $this->seedJakartaSatpam();
+        $controller = new PayrollController;
+        $parameters = $this->parameters() + ['generate' => 1];
+        $view = $controller->uangMakan(Request::create('/', 'GET', $parameters));
+        $rows = collect($view->getData()['payrolls'])->keyBy(fn ($row) => $row['karyawan']->id);
+        $this->assertSame(3, $rows[4]['total_kehadiran']);
+        $this->assertSame(['2026-10-12', '2026-10-13', '2026-10-18'], $rows[4]['dates_kehadiran']);
+        $this->assertEquals(75000, $rows[4]['total_payout']);
+        $this->assertFalse($rows[4]['is_nominal_tetap']);
+        $this->assertSame(2, $rows[2]['total_kehadiran']);
+
+        DB::table('absensis')->where('karyawan_id', 4)->whereDate('waktu', '2026-10-18')->delete();
+        $withoutSunday = $controller->uangMakan(Request::create('/', 'GET', $parameters));
+        $satpam = collect($withoutSunday->getData()['payrolls'])->first(fn ($row) => $row['karyawan']->id === 4);
+        $this->assertSame(2, $satpam['total_kehadiran']);
+        $this->assertEquals(50000, $satpam['total_payout']);
+    }
+
+    public function test_jakarta_satpam_payroll_persists_sunday_and_handles_a_sunday_only_range(): void
+    {
+        $this->seedJakartaSatpam();
+        Excel::shouldReceive('download')->twice()->andReturn(response('export'));
+        $controller = new PayrollController;
+        $controller->storeUangMakan(Request::create('/', 'POST', $this->parameters()));
+        $row = PayrollUangMakan::where('karyawan_id', 4)->firstOrFail();
+        $this->assertEquals(3, $row->total_kehadiran);
+        $this->assertEquals(75000, $row->total_payout);
+        $this->assertEquals(1, $row->multiplier);
+        $controller->storeUangMakan(Request::create('/', 'POST', array_merge($this->parameters(), [
+            'start_date' => '2026-10-18', 'end_date' => '2026-10-18',
+        ])));
+        $sunday = PayrollUangMakan::where('karyawan_id', 4)->whereDate('periode_start', '2026-10-18')->firstOrFail();
+        $this->assertEquals(1, $sunday->total_kehadiran);
+        $this->assertEquals(25000, $sunday->total_payout);
+    }
+
+    public function test_jakarta_satpam_pranota_refresh_includes_sunday_using_the_daily_rate(): void
+    {
+        $this->seedJakartaSatpam();
+        DB::table('pranota_uang_makans')->insert(['id' => 1, 'nomor_pranota' => 'PUM-SATPAM']);
+        $request = Request::create('/refresh', 'POST', $this->parameters() + [
+            'row_items' => [['key' => 'Karyawan_4', 'kehadiran' => '2 Hari', 'nominal_awal' => 50000]],
+        ]);
+        $row = (new PranotaUangMakanController)->refreshAbsensi($request, 1)->getData(true)['data']['Karyawan_4'];
+        $this->assertSame('3 Hari', $row['kehadiran']);
+        $this->assertEquals(75000, $row['nominal_awal']);
+        $this->assertEquals(25000, $row['nominal_per_hari']);
+    }
 }

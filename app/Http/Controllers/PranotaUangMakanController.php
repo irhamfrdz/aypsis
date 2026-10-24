@@ -149,7 +149,7 @@ class PranotaUangMakanController extends Controller
             $key = class_basename($k).'_'.$k->id;
 
             $isNominalTetap = UangMakanHelper::isNominalTetap($k);
-            $isSatpam = $isNominalTetap;
+            $isSatpam = UangMakanHelper::includesSundayAttendance($k);
             $isSatpamPelabuhan = false;
             if ($k instanceof Karyawan) {
                 $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array) $k->grup;
