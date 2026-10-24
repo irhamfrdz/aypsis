@@ -15,6 +15,13 @@
         </a>
     </div>
 
+    @if(session('success'))
+        <div role="status" class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ session('error') }}</div>
+    @endif
+
     <!-- Informasi Karyawan -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-start justify-between">
@@ -61,6 +68,9 @@
                         <th class="px-6 py-4 text-left">Perangkat / Mesin</th>
                         <th class="px-6 py-4 text-left">Status</th>
                         <th class="px-6 py-4 text-center">Foto</th>
+                        @can('absensi-delete')
+                            <th class="px-6 py-4 text-center">Aksi</th>
+                        @endcan
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
@@ -68,6 +78,7 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">
                             {{ \Carbon\Carbon::parse($log->waktu)->format('H:i:s') }}
+                            <div class="mt-1 text-xs font-normal text-gray-500">{{ \Carbon\Carbon::parse($log->waktu)->format('d/m/Y') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             @php
@@ -110,6 +121,21 @@
                                 <span class="text-gray-400 text-sm">-</span>
                             @endif
                         </td>
+                        @can('absensi-delete')
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <form action="{{ route('absensi.destroy_log', $log->id) }}" method="POST"
+                                      data-confirm="Hapus log {{ $log->tipe }} pada {{ \Carbon\Carbon::parse($log->waktu)->format('d/m/Y H:i:s') }}? Log yang dihapus tidak akan diimpor ulang dari mesin."
+                                      onsubmit="return confirm(this.dataset.confirm)">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                            aria-label="Hapus log {{ $log->tipe }} pada {{ \Carbon\Carbon::parse($log->waktu)->format('d/m/Y H:i:s') }}">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        @endcan
                     </tr>
                     @endforeach
                 </tbody>

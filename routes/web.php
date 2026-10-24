@@ -2654,6 +2654,10 @@ Route::middleware([
             ->name('absensi.delete_log')
             ->middleware('can:absensi-delete');
 
+        Route::delete('absensi/log/{absensi}', [AbsensiController::class, 'destroyLog'])
+            ->name('absensi.destroy_log')
+            ->middleware('can:absensi-delete');
+
         Route::post('absensi/store', [AbsensiController::class, 'store'])
             ->name('absensi.store')
             ->middleware('can:absensi-create');

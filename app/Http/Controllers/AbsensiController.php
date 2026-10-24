@@ -819,6 +819,18 @@ class AbsensiController extends Controller
         return back()->with('success', "{$deletedCount} log jam {$request->tipe} berhasil dihapus dari database.");
     }
 
+    /** Delete only the selected timeline entry, including duplicate types. */
+    public function destroyLog(Absensi $absensi)
+    {
+        $deletedCount = $this->deleteLogsAndRemember(Absensi::whereKey($absensi->id));
+
+        if ($deletedCount === 0) {
+            return back()->with('error', 'Log absensi yang dipilih tidak ditemukan di database.');
+        }
+
+        return back()->with('success', 'Log absensi '.$absensi->tipe.' pada '.$absensi->waktu->format('d/m/Y H:i:s').' berhasil dihapus.');
+    }
+
     /** Hard-delete attendance rows while remembering scans that must not be re-synced. */
     private function deleteLogsAndRemember(Builder $query): int
     {
