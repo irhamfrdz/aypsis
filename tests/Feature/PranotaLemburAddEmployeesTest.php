@@ -176,4 +176,77 @@ class PranotaLemburAddEmployeesTest extends TestCase
         $this->getJson(route('pranota-lembur-karyawan.employee-candidates', 1))->assertForbidden();
         $this->assertSame(1, DB::table('pranota_lembur_karyawans')->where('pranota_lembur_karyawan_header_id', 1)->count());
     }
+
+    public function test_selected_range_controls_preview_daily_details_and_saved_employee_dates(): void
+    {
+        $url = route('pranota-lembur-karyawan.employee-candidates', 1);
+        $this->getJson($url.'?start_date=2026-10-19&end_date=2026-10-19')->assertOk()->assertJsonCount(0, 'data');
+        $range = ['start_date' => '2026-10-20', 'end_date' => '2026-10-20'];
+        $this->getJson($url.'?'.http_build_query($range))->assertOk()
+            ->assertJsonPath('start_date', '2026-10-20')->assertJsonPath('end_date', '2026-10-20')
+            ->assertJsonCount(1, 'data.0.detail')
+            ->assertJsonPath('data.0.detail.0.tanggal', '2026-10-20')
+            ->assertJsonPath('data.0.detail.0.waktu_lembur_masuk', '2026-10-20 19:00:00')
+            ->assertJsonPath('data.0.detail.0.waktu_lembur_pulang', '2026-10-20 22:00:00')
+            ->assertJsonPath('data.0.detail.0.durasi_jam', 3)
+            ->assertJsonPath('data.0.detail.0.total', 15000);
+        $this->postJson(route('pranota-lembur-karyawan.add-employees', 1), array_merge($range, ['karyawan_ids' => [2]]))->assertOk();
+        $this->assertDatabaseHas('pranota_lembur_karyawans', [
+            'pranota_lembur_karyawan_header_id' => 1, 'karyawan_id' => 2,
+            'periode_mulai' => '2026-10-20 00:00:00', 'periode_selesai' => '2026-10-20 00:00:00', 'nominal_awal' => 15000,
+        ]);
+    }
+
+    public function test_outside_range_expands_header_and_preserves_legacy_employee_period(): void
+    {
+        foreach ([['id' => 2, 'date' => '2026-10-16'], ['id' => 2, 'date' => '2026-10-22'], ['id' => 1, 'date' => '2026-10-19'], ['id' => 1, 'date' => '2026-10-22']] as $log) {
+            foreach (['lembur_masuk' => '19:00:00', 'lembur_pulang' => '22:00:00'] as $type => $time) {
+                DB::table('absensis')->insert(['karyawan_id' => $log['id'], 'nik' => (string) $log['id'], 'tipe' => $type, 'waktu' => $log['date'].' '.$time]);
+            }
+        }
+        DB::table('pranota_lembur_karyawans')->where('pranota_lembur_karyawan_header_id', 1)->update(['tanggal_lembur' => null]);
+        $range = ['start_date' => '2026-10-16', 'end_date' => '2026-10-22'];
+        $this->getJson(route('pranota-lembur-karyawan.employee-candidates', 1).'?'.http_build_query($range))
+            ->assertOk()->assertJsonPath('periode_berubah', true)
+            ->assertJsonPath('periode_setelah_penambahan', '16/10/2026 – 22/10/2026')
+            ->assertJsonPath('data.0.tanggal_lembur', ['2026-10-16', '2026-10-20', '2026-10-22'])
+            ->assertJsonPath('data.0.nominal_awal', 45000);
+        $this->postJson(route('pranota-lembur-karyawan.add-employees', 1), array_merge($range, ['karyawan_ids' => [2]]))->assertOk();
+        $header = PranotaLemburKaryawanHeader::findOrFail(1);
+        $this->assertSame('2026-10-16', $header->periode_mulai->toDateString());
+        $this->assertSame('2026-10-22', $header->periode_selesai->toDateString());
+        $this->assertEquals(150000, $header->total_setelah_adjustment);
+        $old = $header->karyawans()->where('karyawan_id', 1)->firstOrFail();
+        $this->assertSame('2026-10-19', $old->periode_mulai->toDateString());
+        $this->assertSame('2026-10-20', $old->periode_selesai->toDateString());
+        $this->assertEquals(105000, $old->total_akhir);
+        $this->postJson(route('pranota-lembur-karyawan.refresh-attendance', 1))->assertOk()
+            ->assertJsonFragment(['karyawan_id' => 1, 'nominal_awal' => 15000])
+            ->assertJsonFragment(['karyawan_id' => 2, 'nominal_awal' => 45000]);
+    }
+
+    public function test_overnight_holiday_details_match_total_including_meal_allowance(): void
+    {
+        DB::table('absensis')->where('karyawan_id', 2)->where('waktu', '2026-10-20 22:00:00')->update(['waktu' => '2026-10-21 04:00:00']);
+        DB::table('hari_liburs')->insert(['tanggal' => '2026-10-20']);
+        DB::table('karyawans')->where('id', 2)->update(['nominal_uang_makan' => 20000]);
+        DB::table('uang_lembur_rules')->insert(['uang_lembur_id' => 1, 'tipe_hari' => 'Hari Libur', 'jam_mulai' => '18:00:00', 'jam_selesai' => '08:00:00', 'satuan' => 'Jam', 'nominal' => 5000]);
+        $this->getJson(route('pranota-lembur-karyawan.employee-candidates', 1).'?start_date=2026-10-20&end_date=2026-10-20')->assertOk()
+            ->assertJsonPath('data.0.nominal_awal', 65000)
+            ->assertJsonPath('data.0.detail.0.waktu_lembur_pulang', '2026-10-21 04:00:00')
+            ->assertJsonPath('data.0.detail.0.tipe_hari', 'Hari Libur')
+            ->assertJsonPath('data.0.detail.0.durasi_jam', 9)
+            ->assertJsonPath('data.0.detail.0.nominal_lembur', 45000)
+            ->assertJsonPath('data.0.detail.0.uang_makan_lembur', 20000)
+            ->assertJsonPath('data.0.detail.0.total', 65000);
+    }
+
+    public function test_invalid_or_incomplete_date_ranges_are_rejected_without_mutation(): void
+    {
+        foreach ([['start_date' => '2026-10-20'], ['end_date' => '2026-10-20'], ['start_date' => 'invalid', 'end_date' => '2026-10-20'], ['start_date' => '2026-10-21', 'end_date' => '2026-10-20']] as $range) {
+            $this->getJson(route('pranota-lembur-karyawan.employee-candidates', 1).'?'.http_build_query($range))->assertUnprocessable();
+            $this->postJson(route('pranota-lembur-karyawan.add-employees', 1), array_merge($range, ['karyawan_ids' => [2]]))->assertUnprocessable();
+        }
+        $this->assertSame(1, DB::table('pranota_lembur_karyawans')->where('pranota_lembur_karyawan_header_id', 1)->count());
+    }
 }

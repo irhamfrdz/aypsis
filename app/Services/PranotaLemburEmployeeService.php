@@ -20,9 +20,11 @@ class PranotaLemburEmployeeService
         ];
     }
 
-    public function candidates(PranotaLemburKaryawanHeader $pranota, ?array $ids = null): Collection
+    public function candidates(PranotaLemburKaryawanHeader $pranota, ?array $ids = null, ?Carbon $start = null, ?Carbon $end = null): Collection
     {
-        [$start, $end] = $this->period($pranota);
+        [$defaultStart, $defaultEnd] = $this->period($pranota);
+        $start ??= $defaultStart;
+        $end ??= $defaultEnd;
         $employees = Karyawan::whereNotIn('id', $pranota->karyawans()->select('karyawan_id'))
             ->when($ids !== null, fn ($query) => $query->whereIn('id', $ids))
             ->whereHas('absensi', function ($query) use ($start, $end) {

@@ -615,6 +615,7 @@ class PerhitunganLemburController extends Controller
                     'nominal_awal' => 0,
                     'total_hari' => 0,
                     'tanggal_lembur' => [],
+                    'detail' => [],
                 ];
                 continue;
             }
@@ -645,6 +646,7 @@ class PerhitunganLemburController extends Controller
             $totalNominal = 0;
             $totalUangMakanLembur = 0;
             $datesList = [];
+            $dailyDetails = [];
 
             $sortedLogs = $logs->sortBy('tanggal');
 
@@ -760,6 +762,17 @@ class PerhitunganLemburController extends Controller
 
                 $totalNominal += $nominalHariIni;
                 $datesList[] = $dateStr;
+                $dailyDetails[] = [
+                    'tanggal' => $dateStr,
+                    'tipe_hari' => $tipeHari,
+                    'waktu_lembur_masuk' => $lm->toDateTimeString(),
+                    'waktu_lembur_pulang' => $lp->toDateTimeString(),
+                    'durasi_menit' => $durationMinutes,
+                    'durasi_jam' => $durasiJam,
+                    'nominal_lembur' => $nominalHariIni,
+                    'uang_makan_lembur' => $nominalUangMakanLembur,
+                    'total' => $nominalHariIni + $nominalUangMakanLembur,
+                ];
             }
 
             $totalJam = $totalJamHariBiasa + $totalJamHariLibur;
@@ -774,6 +787,7 @@ class PerhitunganLemburController extends Controller
                 'nominal_awal' => $grandTotal,
                 'total_hari' => count($datesList),
                 'tanggal_lembur' => array_values(array_unique($datesList)),
+                'detail' => $dailyDetails,
             ];
         }
 

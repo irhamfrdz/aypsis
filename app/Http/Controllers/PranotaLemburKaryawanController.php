@@ -6,16 +6,23 @@ use Illuminate\Http\Request;
 
 class PranotaLemburKaryawanController extends Controller
 {
-    public function employeeCandidates($id, \App\Services\PranotaLemburEmployeeService $service)
+    public function employeeCandidates(Request $request, $id, \App\Services\PranotaLemburEmployeeService $service)
     {
         $pranota = \App\Models\PranotaLemburKaryawanHeader::with('pranotaPuml')->findOrFail($id);
         abort_if(in_array(optional($pranota->pranotaPuml)->status, ['approved', 'paid']), 403, 'PUML sudah disetujui atau dibayar.');
-        [$start, $end] = $service->period($pranota);
+        [$start, $end] = $this->employeeSelectionPeriod($request, $pranota, $service);
+        [$periodStart, $periodEnd] = $service->period($pranota);
 
         return response()->json([
             'nomor_pranota' => $pranota->nomor_pranota,
             'periode' => $start->format('d/m/Y').' – '.$end->format('d/m/Y'),
-            'data' => $service->candidates($pranota),
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+            'periode_mulai' => $periodStart->toDateString(),
+            'periode_selesai' => $periodEnd->toDateString(),
+            'periode_setelah_penambahan' => $periodStart->min($start)->format('d/m/Y').' – '.$periodEnd->max($end)->format('d/m/Y'),
+            'periode_berubah' => $start->lt($periodStart) || $end->gt($periodEnd),
+            'data' => $service->candidates($pranota, null, $start, $end),
         ]);
     }
 
@@ -26,20 +33,26 @@ class PranotaLemburKaryawanController extends Controller
             'karyawan_ids.*' => 'required|integer|distinct|exists:karyawans,id',
         ]);
 
-        $count = \DB::transaction(function () use ($id, $validated, $service) {
+        $count = \DB::transaction(function () use ($request, $id, $validated, $service) {
             $pranota = \App\Models\PranotaLemburKaryawanHeader::lockForUpdate()->findOrFail($id);
             $puml = $pranota->pranota_puml_id
                 ? \App\Models\PranotaPuml::lockForUpdate()->find($pranota->pranota_puml_id) : null;
             abort_if($puml && in_array($puml->status, ['approved', 'paid']), 403, 'PUML sudah disetujui atau dibayar.');
+            [$start, $end] = $this->employeeSelectionPeriod($request, $pranota, $service);
             // Serialize additions of the same employee even across different pranotas.
             \App\Models\Karyawan::whereIn('id', $validated['karyawan_ids'])->orderBy('id')->lockForUpdate()->get();
-            $candidates = $service->candidates($pranota, $validated['karyawan_ids']);
+            $candidates = $service->candidates($pranota, $validated['karyawan_ids'], $start, $end);
             if ($candidates->count() !== count($validated['karyawan_ids'])) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'karyawan_ids' => 'Pilihan tidak lagi tersedia. Karyawan sudah masuk pranota atau tidak memiliki lembur yang belum dipranotakan pada periode ini. Muat ulang pilihan karyawan.',
                 ]);
             }
-            [$start, $end] = $service->period($pranota);
+            [$periodStart, $periodEnd] = $service->period($pranota);
+            // Preserve the bounds of legacy employee rows before expanding the header.
+            if ($start->lt($periodStart) || $end->gt($periodEnd)) {
+                $pranota->karyawans()->whereNull('periode_mulai')->update(['periode_mulai' => $periodStart]);
+                $pranota->karyawans()->whereNull('periode_selesai')->update(['periode_selesai' => $periodEnd]);
+            }
             foreach ($candidates as $employee) {
                 $pranota->karyawans()->create([
                     'karyawan_id' => $employee['karyawan_id'],
@@ -54,6 +67,8 @@ class PranotaLemburKaryawanController extends Controller
             }
             $totals = $pranota->karyawans()->selectRaw('SUM(nominal_awal) as biaya, SUM(adjustment) as adj, SUM(total_akhir) as akhir')->first();
             $pranota->update([
+                'periode_mulai' => $periodStart->min($start),
+                'periode_selesai' => $periodEnd->max($end),
                 'total_biaya' => $totals->biaya,
                 'adjustment' => $totals->adj,
                 'total_setelah_adjustment' => $totals->akhir,
@@ -69,6 +84,19 @@ class PranotaLemburKaryawanController extends Controller
         $request->session()->flash('open_riwayat', true);
 
         return response()->json(['message' => $count.' karyawan berhasil ditambahkan ke pranota lembur.']);
+    }
+
+    private function employeeSelectionPeriod(Request $request, \App\Models\PranotaLemburKaryawanHeader $pranota, \App\Services\PranotaLemburEmployeeService $service): array
+    {
+        $dates = $request->validate([
+            'start_date' => 'nullable|required_with:end_date|date_format:Y-m-d',
+            'end_date' => 'nullable|required_with:start_date|date_format:Y-m-d|after_or_equal:start_date',
+        ]);
+        [$periodStart, $periodEnd] = $service->period($pranota);
+        $start = isset($dates['start_date']) ? \Carbon\Carbon::parse($dates['start_date']) : $periodStart;
+        $end = isset($dates['end_date']) ? \Carbon\Carbon::parse($dates['end_date']) : $periodEnd;
+
+        return [$start, $end];
     }
 
     public function index(Request $request)
@@ -372,13 +400,13 @@ class PranotaLemburKaryawanController extends Controller
         // those dates without reintroducing dates already billed elsewhere.
         $excludedDates = [];
         foreach ($pranota->karyawans as $detail) {
-            if (! is_array($detail->tanggal_lembur) || empty($detail->tanggal_lembur)) {
-                continue;
-            }
-            $allowed = array_fill_keys($detail->tanggal_lembur, true);
+            $allowed = is_array($detail->tanggal_lembur) && ! empty($detail->tanggal_lembur)
+                ? array_fill_keys($detail->tanggal_lembur, true) : null;
+            $detailStart = $detail->periode_mulai ?? \Carbon\Carbon::parse($startDateStr);
+            $detailEnd = $detail->periode_selesai ?? \Carbon\Carbon::parse($endDateStr);
             $end = \Carbon\Carbon::parse($endDateStr);
             for ($day = \Carbon\Carbon::parse($startDateStr); $day->lte($end); $day->addDay()) {
-                if (! isset($allowed[$day->toDateString()])) {
+                if ($day->lt($detailStart) || $day->gt($detailEnd) || ($allowed !== null && ! isset($allowed[$day->toDateString()]))) {
                     $excludedDates[$detail->karyawan_id][$day->toDateString()] = true;
                 }
             }
