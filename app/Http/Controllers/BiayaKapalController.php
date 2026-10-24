@@ -6967,26 +6967,15 @@ class BiayaKapalController extends Controller
                 return strtoupper($item->tipe_kontainer ?? '') === 'CARGO' || empty($item->size_kontainer);
             });
 
-            $cargoGroups = $cargoItems->groupBy(function ($item) {
-                return ($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
-            });
-
             $cargoMaxTvSum = 0;
-            foreach ($cargoGroups as $group) {
-                $totalVolume = $group->sum('volume_perincian');
-                $totalTonnage = $group->sum('tonnage_perincian');
-                $fallbackVolume = $group->sum('volume');
-                $fallbackTonnage = $group->sum('tonnage');
+            foreach ($cargoItems as $item) {
+                // Compare volume and tonnage per manifest before summing cargo.
+                $volumePerincian = (float) $item->volume_perincian;
+                $tonnagePerincian = (float) $item->tonnage_perincian;
+                $volume = $volumePerincian > 0 ? $volumePerincian : (float) $item->volume;
+                $tonnage = $tonnagePerincian > 0 ? $tonnagePerincian : (float) $item->tonnage;
 
-                if ($totalVolume > 0) {
-                    $cargoMaxTvSum += $totalVolume;
-                } elseif ($totalTonnage > 0) {
-                    $cargoMaxTvSum += $totalTonnage;
-                } elseif ($fallbackVolume > 0) {
-                    $cargoMaxTvSum += $fallbackVolume;
-                } elseif ($fallbackTonnage > 0) {
-                    $cargoMaxTvSum += $fallbackTonnage;
-                }
+                $cargoMaxTvSum += max(0, $volume, $tonnage);
             }
             $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum);
 
