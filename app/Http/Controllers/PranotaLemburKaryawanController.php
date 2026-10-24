@@ -6,6 +6,71 @@ use Illuminate\Http\Request;
 
 class PranotaLemburKaryawanController extends Controller
 {
+    public function employeeCandidates($id, \App\Services\PranotaLemburEmployeeService $service)
+    {
+        $pranota = \App\Models\PranotaLemburKaryawanHeader::with('pranotaPuml')->findOrFail($id);
+        abort_if(in_array(optional($pranota->pranotaPuml)->status, ['approved', 'paid']), 403, 'PUML sudah disetujui atau dibayar.');
+        [$start, $end] = $service->period($pranota);
+
+        return response()->json([
+            'nomor_pranota' => $pranota->nomor_pranota,
+            'periode' => $start->format('d/m/Y').' – '.$end->format('d/m/Y'),
+            'data' => $service->candidates($pranota),
+        ]);
+    }
+
+    public function addEmployees(Request $request, $id, \App\Services\PranotaLemburEmployeeService $service)
+    {
+        $validated = $request->validate([
+            'karyawan_ids' => 'required|array|min:1',
+            'karyawan_ids.*' => 'required|integer|distinct|exists:karyawans,id',
+        ]);
+
+        $count = \DB::transaction(function () use ($id, $validated, $service) {
+            $pranota = \App\Models\PranotaLemburKaryawanHeader::lockForUpdate()->findOrFail($id);
+            $puml = $pranota->pranota_puml_id
+                ? \App\Models\PranotaPuml::lockForUpdate()->find($pranota->pranota_puml_id) : null;
+            abort_if($puml && in_array($puml->status, ['approved', 'paid']), 403, 'PUML sudah disetujui atau dibayar.');
+            // Serialize additions of the same employee even across different pranotas.
+            \App\Models\Karyawan::whereIn('id', $validated['karyawan_ids'])->orderBy('id')->lockForUpdate()->get();
+            $candidates = $service->candidates($pranota, $validated['karyawan_ids']);
+            if ($candidates->count() !== count($validated['karyawan_ids'])) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'karyawan_ids' => 'Pilihan tidak lagi tersedia. Karyawan sudah masuk pranota atau tidak memiliki lembur yang belum dipranotakan pada periode ini. Muat ulang pilihan karyawan.',
+                ]);
+            }
+            [$start, $end] = $service->period($pranota);
+            foreach ($candidates as $employee) {
+                $pranota->karyawans()->create([
+                    'karyawan_id' => $employee['karyawan_id'],
+                    'periode_mulai' => $start,
+                    'periode_selesai' => $end,
+                    'tanggal_lembur' => $employee['tanggal_lembur'],
+                    'jam_lembur' => $employee['jam_lembur'],
+                    'nominal_awal' => $employee['nominal_awal'],
+                    'adjustment' => 0,
+                    'total_akhir' => $employee['nominal_awal'],
+                ]);
+            }
+            $totals = $pranota->karyawans()->selectRaw('SUM(nominal_awal) as biaya, SUM(adjustment) as adj, SUM(total_akhir) as akhir')->first();
+            $pranota->update([
+                'total_biaya' => $totals->biaya,
+                'adjustment' => $totals->adj,
+                'total_setelah_adjustment' => $totals->akhir,
+                'updated_by' => auth()->id(),
+            ]);
+            if ($puml) {
+                $sum = $puml->lemburs()->sum('total_setelah_adjustment');
+                $puml->update(['total_lembur' => $sum, 'grand_total' => $puml->total_uang_makan + $sum]);
+            }
+            return $candidates->count();
+        });
+        $request->session()->flash('success', $count.' karyawan berhasil ditambahkan ke pranota lembur.');
+        $request->session()->flash('open_riwayat', true);
+
+        return response()->json(['message' => $count.' karyawan berhasil ditambahkan ke pranota lembur.']);
+    }
+
     public function index(Request $request)
     {
         $query = \App\Models\PranotaLemburKaryawanHeader::query()
@@ -303,10 +368,26 @@ class PranotaLemburKaryawanController extends Controller
 
         $karyawanIds = $pranota->karyawans->pluck('karyawan_id')->unique()->filter()->values()->toArray();
 
+        // A newly added employee may reserve only part of the period. Refresh
+        // those dates without reintroducing dates already billed elsewhere.
+        $excludedDates = [];
+        foreach ($pranota->karyawans as $detail) {
+            if (! is_array($detail->tanggal_lembur) || empty($detail->tanggal_lembur)) {
+                continue;
+            }
+            $allowed = array_fill_keys($detail->tanggal_lembur, true);
+            $end = \Carbon\Carbon::parse($endDateStr);
+            for ($day = \Carbon\Carbon::parse($startDateStr); $day->lte($end); $day->addDay()) {
+                if (! isset($allowed[$day->toDateString()])) {
+                    $excludedDates[$detail->karyawan_id][$day->toDateString()] = true;
+                }
+            }
+        }
         $recalculated = \App\Http\Controllers\PerhitunganLemburController::calculateAttendanceForKaryawans(
             $karyawanIds,
             $startDateStr,
-            $endDateStr
+            $endDateStr,
+            $excludedDates
         );
 
         $results = [];

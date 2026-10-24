@@ -42,6 +42,10 @@
             </div>
         @endif
 
+        <div class="mb-4 flex items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <p class="text-sm text-blue-800">Tambahkan lemburan karyawan lain berdasarkan periode pranota yang tersimpan. Simpan perubahan edit terlebih dahulu sebelum menambahkan karyawan.</p>
+            <button type="button" onclick="openTambahKaryawanPranota({{ $pranota->id }})" class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"><i class="fas fa-user-plus mr-2"></i>Tambah Karyawan</button>
+        </div>
         <form action="{{ route('pranota-lembur-karyawan.update', $pranota->id) }}" method="POST" id="form-edit-page">
             @csrf
             @method('PUT')
@@ -215,6 +219,7 @@
     </div>
 </div>
 
+@include('pranota-lembur-karyawan.partials.add-employees')
 @push('scripts')
 <script>
     function formatRupiah(num) {

@@ -529,7 +529,7 @@ class PerhitunganLemburController extends Controller
         ));
     }
 
-    public static function calculateAttendanceForKaryawans($karyawanIds, $startDateStr, $endDateStr)
+    public static function calculateAttendanceForKaryawans($karyawanIds, $startDateStr, $endDateStr, array $excludedDatesByEmployee = [])
     {
         $startDate = Carbon::parse($startDateStr);
         $endDate = Carbon::parse($endDateStr);
@@ -650,6 +650,9 @@ class PerhitunganLemburController extends Controller
 
             foreach ($sortedLogs as $dayLog) {
                 $dateStr = $dayLog->tanggal;
+                if (isset($excludedDatesByEmployee[$karyawan->id][$dateStr])) {
+                    continue;
+                }
                 if (! isset($dateMetadata[$dateStr])) {
                     continue;
                 }

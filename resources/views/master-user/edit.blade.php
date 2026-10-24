@@ -965,6 +965,14 @@
 
                             {{-- Data Karyawan --}}
                             <tr class="submodule-row" data-parent="master">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">└─</span><span>Type Gaji Karyawan</span></div></td>
+                                @foreach(['view', 'create', 'update', 'delete'] as $typeGajiAction)
+                                    <td><input type="checkbox" name="permissions[master-type-gaji-karyawan][{{ $typeGajiAction }}]" value="1" class="permission-checkbox" @checked(!empty($userMatrixPermissions['master-type-gaji-karyawan'][$typeGajiAction]))></td>
+                                @endforeach
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>

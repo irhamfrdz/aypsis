@@ -720,6 +720,9 @@
                                                     $isPumlLocked = $item->pranota_puml_id && in_array(optional($item->pranotaPuml)->status, ['approved', 'paid']);
                                                 @endphp
                                                 @if(!$isPumlLocked)
+                                                    <button type="button" onclick="openTambahKaryawanPranota({{ $item->id }})" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors cursor-pointer" title="Tambah Karyawan ke Pranota" aria-label="Tambah karyawan ke pranota {{ $item->nomor_pranota }}">
+                                                        <i class="fas fa-user-plus"></i>
+                                                    </button>
                                                     <button type="button" onclick="openEditPranotaModal({{ $item->id }})" class="p-1.5 rounded-md text-amber-600 hover:bg-amber-100 transition-colors cursor-pointer" title="Edit Pranota">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
@@ -805,6 +808,7 @@
 </div>
 
 <!-- Modal Edit Pranota Lembur -->
+@include('pranota-lembur-karyawan.partials.add-employees')
 <div id="edit-pranota-modal" class="fixed inset-0 hidden" aria-labelledby="modal-edit-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important;">
     <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999998 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeEditPranotaModal()"></div>

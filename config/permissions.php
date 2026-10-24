@@ -70,6 +70,7 @@ return [
                 'master-mobil' => 'Manajemen Mobil',
                 'master-chasis-batam' => 'Manajemen Chasis Batam',
                 'master-tunjangan' => 'Manajemen Tunjangan',
+                'master-type-gaji-karyawan' => 'Manajemen Type Gaji Karyawan',
                 'master-shipper-consignee' => 'Manajemen Shipper Consignee',
                 'master-penerima-bukti-potong-pph' => 'Manajemen Penerima Bukti Potong PPh',
                 'master-wa-templates' => 'Manajemen WA Templates',

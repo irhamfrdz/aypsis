@@ -1260,6 +1260,14 @@ class UserController extends Controller
                 continue;
             }
 
+            if (str_starts_with($permissionName, 'master-type-gaji-karyawan-')) {
+                $action = substr($permissionName, strlen('master-type-gaji-karyawan-'));
+                if (in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                    $matrixPermissions['master-type-gaji-karyawan'][$action] = true;
+                }
+                continue;
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -3299,6 +3307,16 @@ class UserController extends Controller
                                 continue; // Skip to next action
                             }
                         }
+                    }
+
+                    // Handle Master Type Gaji Karyawan permissions explicitly
+                    if ($module === 'master-type-gaji-karyawan' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                        $permission = Permission::where('name', $module.'-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                            $found = true;
+                        }
+                        continue;
                     }
 
                     // Handle Master Type Bon Amprahan permissions explicitly
