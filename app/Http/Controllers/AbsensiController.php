@@ -203,9 +203,10 @@ class AbsensiController extends Controller
             });
         }
 
-        // Build the daily grouped query
+        // Machine logs can have no employee ID while manual logs have one.
+        // NIK and work date identify the row; keep those logs together.
         $query->selectRaw('
-            karyawan_id,
+            MAX(karyawan_id) as karyawan_id,
             nik,
             '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
@@ -233,7 +234,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN verify_mode ELSE NULL END) as verify_mode_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN verify_mode ELSE NULL END) as verify_mode_pulang
         ')
-            ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('nik', 'tanggal');
 
         $absensis = $query->orderBy('tanggal', 'desc')->paginate(25)->withQueryString();
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
@@ -327,9 +328,9 @@ class AbsensiController extends Controller
             });
         }
 
-        // Build the daily grouped query
+        // Use the same daily grouping as the attendance list.
         $query->selectRaw('
-            karyawan_id,
+            MAX(karyawan_id) as karyawan_id,
             nik,
             '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
@@ -341,7 +342,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-            ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('nik', 'tanggal');
 
         $absensis = $query->orderBy('tanggal', 'desc')->get();
 
@@ -418,9 +419,9 @@ class AbsensiController extends Controller
             });
         }
 
-        // Build the daily grouped query
+        // Use the same daily grouping as the attendance list.
         $query->selectRaw('
-            karyawan_id,
+            MAX(karyawan_id) as karyawan_id,
             nik,
             '.Absensi::workDateSql().' as tanggal,
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN waktu ELSE NULL END) as waktu_masuk,
@@ -432,7 +433,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN status ELSE NULL END) as status_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN status ELSE NULL END) as status_pulang
         ')
-            ->groupBy('karyawan_id', 'nik', 'tanggal');
+            ->groupBy('nik', 'tanggal');
 
         $absensis = $query->orderBy('tanggal', 'asc')->get();
 

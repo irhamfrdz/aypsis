@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\AbsensiImportController;
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Api\ApiAttendanceController;
 use App\Models\Absensi;
 use App\Models\Karyawan;
@@ -25,6 +26,7 @@ class AttendanceOvertimeInputTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->string('nik');
+            $table->unsignedBigInteger('mesin_id')->nullable();
             $table->dateTime('waktu');
             $table->string('tipe');
             foreach (['verify_mode', 'keterangan', 'foto', 'device', 'detail_lokasi', 'status'] as $column) {
@@ -38,6 +40,10 @@ class AttendanceOvertimeInputTest extends TestCase
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
             $table->string('nik');
+            foreach (['nama_lengkap', 'nama_panggilan', 'pekerjaan', 'departemen', 'divisi', 'cabang'] as $column) {
+                $table->string($column)->nullable();
+            }
+            $table->date('tanggal_berhenti')->nullable();
         });
         Schema::create('absensi_deletion_marks', function (Blueprint $table) {
             $table->id();
@@ -72,6 +78,57 @@ class AttendanceOvertimeInputTest extends TestCase
     {
         Carbon::setTestNow();
         parent::tearDown();
+    }
+
+    public static function machineEmployeeIds(): array
+    {
+        return ['missing employee ID' => [null], 'linked employee ID' => [1]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('machineEmployeeIds')]
+    public function test_manual_overnight_checkout_stays_on_the_same_row_as_machine_logs(?int $employeeId): void
+    {
+        Schema::create('mesins', fn (Blueprint $table) => $table->id());
+        Schema::create('karyawan_tidak_tetaps', function (Blueprint $table) {
+            $table->id();
+            $table->string('nik');
+            $table->string('nama_lengkap');
+        });
+        DB::table('karyawans')->insert(['id' => 1, 'nik' => '1004', 'nama_lengkap' => 'DARMINTO']);
+        DB::table('absensis')->insert([
+            ['karyawan_id' => $employeeId, 'nik' => '1004', 'waktu' => '2026-10-19 08:33:00', 'tipe' => 'Masuk'],
+            ['karyawan_id' => $employeeId, 'nik' => '1004', 'waktu' => '2026-10-19 18:52:00', 'tipe' => 'Pulang'],
+            ['karyawan_id' => $employeeId, 'nik' => '1004', 'waktu' => '2026-10-19 19:00:00', 'tipe' => 'lembur_masuk'],
+        ]);
+        $request = Request::create('/absensi', 'PUT', [
+            'nik' => '1004', 'tanggal' => '2026-10-19',
+            'waktu_masuk' => '08:33', 'waktu_pulang' => '18:52',
+            'waktu_lembur_masuk' => '19:00', 'waktu_lembur_pulang' => '04:00',
+        ]);
+        $controller = app(AbsensiController::class);
+        Absensi::withoutEvents(fn () => $controller->update($request));
+        $this->assertSame('2026-10-20 04:00:00', Absensi::where('tipe', 'Lembur_Pulang')->first()->waktu->format('Y-m-d H:i:s'));
+
+        $view = $controller->index(Request::create('/absensi', 'GET', [
+            'search' => '1004', 'start_date' => '2026-10-19', 'end_date' => '2026-10-19',
+        ]));
+        $rows = $view->getData()['absensis'];
+        $this->assertSame(1, $rows->total());
+        $row = $rows->first();
+        $this->assertSame('2026-10-19', $row->tanggal);
+        $this->assertSame('2026-10-19 19:00:00', $row->waktu_lembur_masuk);
+        $this->assertSame('2026-10-20 04:00:00', $row->waktu_lembur_pulang);
+        $this->assertSame('DARMINTO', $row->karyawan->nama_lengkap);
+        $this->assertEquals(9, Carbon::parse($row->waktu_lembur_masuk)->diffInHours(Carbon::parse($row->waktu_lembur_pulang)));
+        $this->assertSame(0, Absensi::where('nik', '1004')->workDates('2026-10-20')->count());
+
+        // Reopening and saving the same edit must not create another checkout.
+        Absensi::withoutEvents(fn () => $controller->update($request));
+        $this->assertSame(4, Absensi::count());
+        $data = $controller->getData(Request::create('/absensi/get-data', 'GET', [
+            'nik' => '1004', 'tanggal' => '2026-10-19',
+        ]))->getData(true);
+        $this->assertSame('04:00', $data['waktu_lembur_pulang']);
     }
 
     public function test_dat_import_preserves_machine_overtime_codes_four_and_five(): void
