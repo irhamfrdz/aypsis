@@ -1400,7 +1400,7 @@ class KaryawanController extends Controller
 
         // Anda perlu menambahkan logika validasi di sini, mirip dengan metode store()
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nik' => ['required', 'string', 'max:25', 'regex:/^[A-Za-z0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => ['required', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
@@ -1464,7 +1464,7 @@ class KaryawanController extends Controller
             'family_members.*.no_telepon' => 'nullable|string|max:20',
             'family_members.*.nik_ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
         ], [
-            'nik.regex' => 'NIK harus berupa angka.',
+            'nik.regex' => 'NIK hanya boleh berisi huruf dan angka.',
             'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
             'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
             'nik.unique' => 'NIK sudah terdaftar dalam sistem.',

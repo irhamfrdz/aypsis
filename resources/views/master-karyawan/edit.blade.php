@@ -70,13 +70,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                    <input type="text" name="nik" id="nik" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" {{ $isKiky ? '' : 'readonly' }} required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
+                    <input type="text" name="nik" id="nik" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" @if($isKiky) pattern="[A-Za-z0-9]+" @else readonly @endif required placeholder="Masukkan NIK (huruf dan angka)" maxlength="25" value="{{ old('nik', $karyawan->nik) }}">
                     @if($isKiky)
                         <p class="text-xs text-gray-500 mt-1">NIK dapat diubah (Login sebagai Kiky)</p>
                     @else
                         <p class="text-xs text-gray-500 mt-1">NIK tidak dapat diubah setelah data dibuat</p>
                     @endif
-                    <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK harus berupa angka saja, tidak boleh ada huruf</div>
+                    <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK hanya boleh berisi huruf dan angka</div>
                 </div>
 
                 <div>
@@ -930,10 +930,10 @@
                 }
             }
 
-            // Fungsi validasi NIK - lebih fleksibel, hanya perlu angka
+            // NIK karyawan dapat berisi huruf dan angka.
             function validateNIK(input, errorElement) {
                 const value = input.value.trim();
-                const isValid = /^\d+$/.test(value) && value.length > 0; // Hanya angka, minimal 1 digit
+                const isValid = /^[A-Za-z0-9]+$/.test(value);
 
                 if (value === '') {
                     // Kosongkan error jika field kosong (karena mungkin tidak wajib)
@@ -943,7 +943,7 @@
                 }
 
                 if (!isValid) {
-                    errorElement.textContent = 'NIK harus berupa angka saja, tidak boleh ada huruf';
+                    errorElement.textContent = 'NIK hanya boleh berisi huruf dan angka';
                     errorElement.classList.remove('hidden');
                     input.classList.add('border-red-500');
                     return false;
@@ -1012,7 +1012,6 @@
             // Event listener untuk NIK (skip jika readonly)
             if (nikInput && !nikInput.hasAttribute('readonly')) {
                 nikInput.addEventListener('input', function() {
-                    formatIdentityNumber(this);
                     validateNIK(this, nikError);
                 });
 
