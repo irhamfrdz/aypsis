@@ -406,7 +406,7 @@ class BiayaKapalController extends Controller
                     $section['pph_percent'] = str_replace(',', '.', str_replace('.', '', $section['pph_percent']));
                 }
                 if (isset($section['adjustment'])) {
-                    $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                    $section['adjustment'] = $this->cleanDecimal($section['adjustment']);
                 }
                 if (isset($section['grand_total'])) {
                     $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
@@ -4145,7 +4145,7 @@ class BiayaKapalController extends Controller
         // TKBM Sections Cleaning
         if (isset($data['tkbm_sections']) && is_array($data['tkbm_sections'])) {
             foreach ($data['tkbm_sections'] as &$section) {
-                $fieldsToClean = ['total_nominal', 'pph', 'adjustment', 'grand_total'];
+                $fieldsToClean = ['total_nominal', 'pph', 'grand_total'];
                 foreach ($fieldsToClean as $f) {
                     if (isset($section[$f])) {
                         $val = (string) $section[$f];
@@ -4153,6 +4153,9 @@ class BiayaKapalController extends Controller
                         $val = str_replace(',', '.', $val);
                         $section[$f] = $val !== '' ? $val : 0;
                     }
+                }
+                if (isset($section['adjustment'])) {
+                    $section['adjustment'] = $this->cleanDecimal($section['adjustment']);
                 }
 
                 // Also clean item-level quantities
@@ -5111,7 +5114,7 @@ class BiayaKapalController extends Controller
                                     'subtotal' => $barang->tarif * $jumlah,
                                     'total_nominal' => is_string($section['total_nominal'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['total_nominal'])))) : floatval($section['total_nominal'] ?? 0),
                                     'pph' => is_string($section['pph'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['pph'])))) : floatval($section['pph'] ?? 0),
-                                    'adjustment' => is_string($section['adjustment'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['adjustment'])))) : floatval($section['adjustment'] ?? 0),
+                                    'adjustment' => (float) ($section['adjustment'] ?? 0),
                                     'grand_total' => is_string($section['grand_total'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['grand_total'])))) : floatval($section['grand_total'] ?? 0),
                                 ]);
                             }
