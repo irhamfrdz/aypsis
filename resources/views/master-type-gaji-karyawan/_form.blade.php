@@ -1,7 +1,12 @@
 <div class="space-y-5">
     <div>
         <label for="type_gaji_id" class="mb-1 block text-sm font-medium text-gray-700">Type Gaji ID</label>
-        <input id="type_gaji_id" name="type_gaji_id" type="number" min="1" max="9223372036854775807" step="1" value="{{ old('type_gaji_id', $typeGajiKaryawan?->type_gaji_id) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm @error('type_gaji_id') border-red-500 @enderror">
+        @if($typeGajiKaryawan && auth()->user()?->canEditTypeGajiId())
+            <input id="type_gaji_id" name="type_gaji_id" type="number" min="1" max="9223372036854775807" step="1" required value="{{ old('type_gaji_id', $typeGajiKaryawan->type_gaji_id) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm @error('type_gaji_id') border-red-500 @enderror">
+        @else
+            <input id="type_gaji_id" type="text" readonly value="{{ $typeGajiKaryawan?->type_gaji_id }}" placeholder="Dibuat otomatis saat disimpan" class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600">
+        @endif
+        <p class="mt-1 text-xs text-gray-500">ID dibuat otomatis. Perubahan ID hanya tersedia untuk karyawan dengan NIK 1593.</p>
         @error('type_gaji_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
     <div>

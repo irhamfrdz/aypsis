@@ -58,6 +58,11 @@ class User extends Authenticatable
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
+    public function canEditTypeGajiId(): bool
+    {
+        return (string) $this->karyawan?->nik === '1593';
+    }
+
     /**
      * The relationship with the KaryawanTidakTetap model.
      */

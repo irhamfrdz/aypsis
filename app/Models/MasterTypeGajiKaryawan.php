@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MasterTypeGajiKaryawan extends Model
 {
@@ -14,4 +15,15 @@ class MasterTypeGajiKaryawan extends Model
     protected $fillable = ['type_gaji_id', 'nama', 'keterangan', 'status'];
 
     protected $casts = ['type_gaji_id' => 'integer'];
+
+    /** Lock the shared allocator inside the caller's transaction. */
+    public static function lockIdSequence(): object
+    {
+        DB::table('nomor_terakhir')->insertOrIgnore([
+            'modul' => 'type_gaji_karyawan', 'nomor_terakhir' => 0,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        return DB::table('nomor_terakhir')->where('modul', 'type_gaji_karyawan')->lockForUpdate()->first();
+    }
 }

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterTypeGajiKaryawan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class MasterTypeGajiKaryawanController extends Controller
 {
@@ -38,7 +40,17 @@ class MasterTypeGajiKaryawanController extends Controller
 
     public function store(Request $request)
     {
-        MasterTypeGajiKaryawan::create($this->validated($request));
+        $data = $this->validated($request);
+        DB::transaction(function () use ($data) {
+            $sequence = MasterTypeGajiKaryawan::lockIdSequence();
+            $lastId = max((int) $sequence->nomor_terakhir, (int) MasterTypeGajiKaryawan::max('type_gaji_id'));
+            if ($lastId >= PHP_INT_MAX) {
+                throw ValidationException::withMessages(['type_gaji_id' => 'Rentang Type Gaji ID sudah habis.']);
+            }
+            $nextId = $lastId + 1;
+            MasterTypeGajiKaryawan::create(array_merge($data, ['type_gaji_id' => $nextId]));
+            DB::table('nomor_terakhir')->where('id', $sequence->id)->update(['nomor_terakhir' => $nextId, 'updated_at' => now()]);
+        });
 
         return redirect()->route('master.type-gaji-karyawan.index')->with('success', 'Type gaji karyawan berhasil ditambahkan.');
     }
@@ -50,7 +62,14 @@ class MasterTypeGajiKaryawanController extends Controller
 
     public function update(Request $request, MasterTypeGajiKaryawan $typeGajiKaryawan)
     {
-        $typeGajiKaryawan->update($this->validated($request, $typeGajiKaryawan));
+        DB::transaction(function () use ($request, $typeGajiKaryawan) {
+            $sequence = MasterTypeGajiKaryawan::lockIdSequence();
+            $type = MasterTypeGajiKaryawan::whereKey($typeGajiKaryawan->id)->lockForUpdate()->firstOrFail();
+            $type->update($this->validated($request, $type));
+            if ($type->type_gaji_id > $sequence->nomor_terakhir) {
+                DB::table('nomor_terakhir')->where('id', $sequence->id)->update(['nomor_terakhir' => $type->type_gaji_id, 'updated_at' => now()]);
+            }
+        });
 
         return redirect()->route('master.type-gaji-karyawan.index')->with('success', 'Type gaji karyawan berhasil diperbarui.');
     }
@@ -64,8 +83,17 @@ class MasterTypeGajiKaryawanController extends Controller
 
     private function validated(Request $request, ?MasterTypeGajiKaryawan $type = null): array
     {
+        $canEditId = $request->user()?->canEditTypeGajiId() ?? false;
+        if ($type && ! $canEditId && $request->has('type_gaji_id')) {
+            $submitted = $request->input('type_gaji_id');
+            abort_unless((is_scalar($submitted) || $submitted === null)
+                && (string) $submitted === (string) $type->type_gaji_id, 403, 'Type Gaji ID hanya dapat diubah oleh karyawan dengan NIK 1593.');
+        }
+
         return $request->validate([
-            'type_gaji_id' => ['nullable', 'integer', 'min:1', 'max:9223372036854775807'],
+            'type_gaji_id' => ! $type ? ['prohibited'] : ($canEditId
+                ? ['sometimes', 'required', 'integer', 'min:1', 'max:9223372036854775807', Rule::unique('type_gaji_karyawan', 'type_gaji_id')->ignore($type)]
+                : ['exclude']),
             'nama' => ['required', 'string', 'max:100', Rule::unique('type_gaji_karyawan', 'nama')->ignore($type)],
             'keterangan' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],

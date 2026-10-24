@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Controllers\MasterTypeGajiKaryawanController;
 use App\Http\Controllers\UserController;
+use App\Models\Karyawan;
 use App\Models\MasterTypeGajiKaryawan;
 use App\Models\Permission;
 use App\Models\User;
@@ -23,6 +24,8 @@ class MasterTypeGajiKaryawanTest extends TestCase
         DB::purge('sqlite');
         (require database_path('migrations/2026_10_24_100000_create_type_gaji_karyawan_table.php'))->up();
         (require database_path('migrations/2026_10_24_100002_add_type_gaji_id_to_type_gaji_karyawan_table.php'))->up();
+        (require database_path('migrations/2025_09_30_141213_create_nomor_terakhir_table.php'))->up();
+        (require database_path('migrations/2026_10_24_100003_initialize_automatic_type_gaji_ids.php'))->up();
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
@@ -74,13 +77,13 @@ class MasterTypeGajiKaryawanTest extends TestCase
 
     public function test_crud_saves_validated_data_and_audits_changes(): void
     {
-        $this->postJson(route('master.type-gaji-karyawan.store'), ['type_gaji_id' => 10, 'nama' => 'Bulanan', 'keterangan' => 'Gaji setiap bulan', 'status' => 'active'])
+        $this->postJson(route('master.type-gaji-karyawan.store'), ['nama' => 'Bulanan', 'keterangan' => 'Gaji setiap bulan', 'status' => 'active'])
             ->assertRedirect(route('master.type-gaji-karyawan.index'))->assertSessionHas('success');
         $type = MasterTypeGajiKaryawan::firstOrFail();
-        $this->assertSame(10, $type->type_gaji_id);
-        $this->putJson(route('master.type-gaji-karyawan.update', $type), ['type_gaji_id' => 20, 'nama' => 'Harian', 'keterangan' => 'Gaji per hari', 'status' => 'inactive'])
+        $this->assertSame(1, $type->type_gaji_id);
+        $this->putJson(route('master.type-gaji-karyawan.update', $type), ['nama' => 'Harian', 'keterangan' => 'Gaji per hari', 'status' => 'inactive'])
             ->assertRedirect(route('master.type-gaji-karyawan.index'));
-        $this->assertDatabaseHas('type_gaji_karyawan', ['id' => $type->id, 'type_gaji_id' => 20, 'nama' => 'Harian', 'status' => 'inactive']);
+        $this->assertDatabaseHas('type_gaji_karyawan', ['id' => $type->id, 'type_gaji_id' => 1, 'nama' => 'Harian', 'status' => 'inactive']);
         $this->deleteJson(route('master.type-gaji-karyawan.destroy', $type))->assertRedirect(route('master.type-gaji-karyawan.index'));
         $this->assertDatabaseMissing('type_gaji_karyawan', ['id' => $type->id]);
         $this->assertSame(['created', 'updated', 'deleted'], DB::table('audit_logs')->orderBy('id')->pluck('action')->all());
@@ -140,18 +143,68 @@ class MasterTypeGajiKaryawanTest extends TestCase
         $this->assertStringContainsString('Type Gaji Karyawan', $html);
     }
 
-    public function test_type_gaji_id_is_optional_and_only_accepts_positive_integers(): void
+    public function test_ids_are_automatic_and_not_reused_after_deletion(): void
     {
-        foreach ([-1, 'abc', 1.5] as $invalidId) {
-            $this->postJson(route('master.type-gaji-karyawan.store'), ['type_gaji_id' => $invalidId, 'nama' => 'Bulanan', 'status' => 'active'])
-                ->assertUnprocessable()->assertJsonValidationErrors('type_gaji_id');
-        }
+        $this->postJson(route('master.type-gaji-karyawan.store'), ['type_gaji_id' => 999, 'nama' => 'Bulanan', 'status' => 'active'])->assertUnprocessable();
         $this->postJson(route('master.type-gaji-karyawan.store'), ['nama' => 'Bulanan', 'status' => 'active'])->assertRedirect();
         $type = MasterTypeGajiKaryawan::firstOrFail();
-        $this->assertNull($type->type_gaji_id);
-        $this->putJson(route('master.type-gaji-karyawan.update', $type), ['type_gaji_id' => 123, 'nama' => 'Bulanan', 'status' => 'active'])->assertRedirect();
-        $this->assertSame(123, $type->fresh()->type_gaji_id);
-        $this->putJson(route('master.type-gaji-karyawan.update', $type), ['type_gaji_id' => null, 'nama' => 'Bulanan', 'status' => 'active'])->assertRedirect();
-        $this->assertNull($type->fresh()->type_gaji_id);
+        $this->assertSame(1, $type->type_gaji_id);
+        $this->deleteJson(route('master.type-gaji-karyawan.destroy', $type))->assertRedirect();
+        $this->postJson(route('master.type-gaji-karyawan.store'), ['nama' => 'Harian', 'status' => 'active'])->assertRedirect();
+        $this->assertSame(2, MasterTypeGajiKaryawan::firstOrFail()->type_gaji_id);
+    }
+
+    public function test_only_employee_nik_1593_can_change_an_existing_id(): void
+    {
+        $type = MasterTypeGajiKaryawan::create(['type_gaji_id' => 10, 'nama' => 'Bulanan', 'status' => 'active']);
+        $url = route('master.type-gaji-karyawan.update', $type);
+        $this->putJson($url, ['type_gaji_id' => 20, 'nama' => 'Bulanan', 'status' => 'active'])->assertForbidden();
+        // A username or request payload cannot impersonate the employee NIK.
+        auth()->user()->username = 'kiky';
+        auth()->user()->setRelation('karyawan', new Karyawan(['nik' => '1004']));
+        $this->putJson($url, ['type_gaji_id' => 20, 'nik' => '1593', 'nama' => 'Bulanan', 'status' => 'active'])->assertForbidden();
+        $this->putJson($url, ['type_gaji_id' => 10, 'nama' => 'Bulanan', 'status' => 'inactive'])->assertRedirect();
+        $this->assertSame(10, $type->fresh()->type_gaji_id);
+
+        auth()->user()->setRelation('karyawan', new Karyawan(['nik' => '1593']));
+        $this->putJson($url, ['type_gaji_id' => 200, 'nama' => 'Bulanan', 'status' => 'active'])->assertRedirect();
+        $this->assertSame(200, $type->fresh()->type_gaji_id);
+        foreach ([-1, 'abc', 1.5, null] as $invalidId) {
+            $this->putJson($url, ['type_gaji_id' => $invalidId, 'nama' => 'Bulanan', 'status' => 'active'])->assertUnprocessable()->assertJsonValidationErrors('type_gaji_id');
+        }
+        $this->postJson(route('master.type-gaji-karyawan.store'), ['nama' => 'Harian', 'status' => 'active'])->assertRedirect();
+        $this->assertSame(201, MasterTypeGajiKaryawan::where('nama', 'Harian')->firstOrFail()->type_gaji_id);
+        $this->putJson($url, ['type_gaji_id' => 201, 'nama' => 'Bulanan', 'status' => 'active'])->assertUnprocessable();
+    }
+
+    public function test_initialization_fills_missing_ids_and_preserves_existing_ids(): void
+    {
+        DB::table('type_gaji_karyawan')->insert([
+            ['nama' => 'Bulanan', 'type_gaji_id' => 50, 'status' => 'active'],
+            ['nama' => 'Harian', 'type_gaji_id' => null, 'status' => 'active'],
+        ]);
+        $migration = require database_path('migrations/2026_10_24_100003_initialize_automatic_type_gaji_ids.php');
+        $migration->up();
+        $migration->up();
+        $this->assertSame(50, MasterTypeGajiKaryawan::where('nama', 'Bulanan')->firstOrFail()->type_gaji_id);
+        $this->assertSame(51, MasterTypeGajiKaryawan::where('nama', 'Harian')->firstOrFail()->type_gaji_id);
+        $this->postJson(route('master.type-gaji-karyawan.store'), ['nama' => 'Borongan', 'status' => 'active'])->assertRedirect();
+        $this->assertSame(52, MasterTypeGajiKaryawan::where('nama', 'Borongan')->firstOrFail()->type_gaji_id);
+    }
+
+    public function test_form_only_exposes_editable_id_to_employee_nik_1593(): void
+    {
+        $type = MasterTypeGajiKaryawan::create(['type_gaji_id' => 10, 'nama' => 'Bulanan', 'status' => 'active']);
+        $data = ['typeGajiKaryawan' => $type, 'errors' => new \Illuminate\Support\ViewErrorBag];
+        $locked = view('master-type-gaji-karyawan._form', $data)->render();
+        $this->assertStringContainsString('readonly', $locked);
+        $this->assertStringNotContainsString('name="type_gaji_id"', $locked);
+        auth()->user()->setRelation('karyawan', new Karyawan(['nik' => '1593']));
+        $editable = view('master-type-gaji-karyawan._form', $data)->render();
+        $this->assertStringContainsString('name="type_gaji_id"', $editable);
+        $this->assertStringNotContainsString('readonly', $editable);
+        $create = view('master-type-gaji-karyawan._form', array_merge($data, ['typeGajiKaryawan' => null]))->render();
+        $this->assertStringContainsString('Dibuat otomatis saat disimpan', $create);
+        $this->assertStringNotContainsString('name="type_gaji_id"', $create);
     }
 }
