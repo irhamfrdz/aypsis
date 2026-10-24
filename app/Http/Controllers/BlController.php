@@ -2477,20 +2477,7 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
-                $pengirimRaw = $item->pengirim ?? '';
-                $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
-
-                $satuan = strtolower(trim($item->satuan ?? 'Package'));
-
-                if ($pengirim === '') {
-                    $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
-                    $groupKey = 'nama|'.$namaBarang;
-                } else {
-                    $groupKey = 'pengirim|'.$pengirim;
-                }
-
-                return 'cargo|'.$groupKey.'|colly';
+                return $this->rekapBongkaranCargoGroupKey($item);
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2534,7 +2521,7 @@ class BlController extends Controller
                 $unit = '';
 
                 $safeKey = md5($key);
-                $choice = request()->input("choices.$safeKey");
+                $choice = request()->input("choices.$safeKey") ?: $group->first()->rekap_bongkaran_unit;
 
                 if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;
@@ -2620,6 +2607,48 @@ class BlController extends Controller
         return view('bl.rekap_bongkaran', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount'));
     }
 
+    private function rekapBongkaranCargoGroupKey($item): string
+    {
+        $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $item->pengirim ?? '')));
+        $groupKey = $pengirim !== ''
+            ? 'pengirim|'.$pengirim
+            : 'nama|'.strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
+
+        return 'cargo|'.$groupKey.'|colly';
+    }
+
+    public function saveRekapBongkaranUnits(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+            'choices' => 'required|array',
+            'choices.*' => 'required|in:ton,m3',
+        ]);
+
+        $kapalClean = preg_replace('/^KM\.?\s*/i', '', $validated['nama_kapal']);
+        $manifests = \App\Models\Manifest::where(function ($query) use ($validated, $kapalClean) {
+            $query->where('nama_kapal', $validated['nama_kapal'])
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })->where('no_voyage', $validated['no_voyage'])->get();
+
+        $cargoGroups = $manifests
+            ->filter(fn ($item) => $item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer))
+            ->groupBy(fn ($item) => md5($this->rekapBongkaranCargoGroupKey($item)));
+
+        foreach ($cargoGroups as $key => $group) {
+            if (isset($validated['choices'][$key])) {
+                \App\Models\Manifest::whereIn('id', $group->pluck('id')->all())
+                    ->update(['rekap_bongkaran_unit' => $validated['choices'][$key]]);
+            }
+        }
+
+        return redirect()->route('bl.rekap-bongkaran', [
+            'nama_kapal' => $validated['nama_kapal'],
+            'no_voyage' => $validated['no_voyage'],
+        ])->with('success', 'Pilihan Ton/M3 berhasil disimpan untuk perhitungan CARGO Buruh.');
+    }
+
     /**
      * Show the Rekap Bongkaran report for print.
      */
@@ -2690,19 +2719,7 @@ class BlController extends Controller
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
                 // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
-                $pengirimRaw = $item->pengirim ?? '';
-                $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
-
-                $satuan = strtolower(trim($item->satuan ?? 'Package'));
-
-                if ($pengirim === '') {
-                    $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
-                    $groupKey = 'nama|'.$namaBarang;
-                } else {
-                    $groupKey = 'pengirim|'.$pengirim;
-                }
-
-                return 'cargo|'.$groupKey.'|colly';
+                return $this->rekapBongkaranCargoGroupKey($item);
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2746,7 +2763,7 @@ class BlController extends Controller
                 $unit = '';
 
                 $safeKey = md5($key);
-                $choice = request()->input("choices.$safeKey");
+                $choice = request()->input("choices.$safeKey") ?: $group->first()->rekap_bongkaran_unit;
 
                 if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;

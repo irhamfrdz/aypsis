@@ -7117,6 +7117,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('bl/rekap-bongkaran', [\App\Http\Controllers\BlController::class, 'rekapBongkaran'])->name('bl.rekap-bongkaran')
         ->middleware('can:bl-view');
 
+    Route::post('bl/rekap-bongkaran/units', [\App\Http\Controllers\BlController::class, 'saveRekapBongkaranUnits'])->name('bl.rekap-bongkaran.units')
+        ->middleware('can:bl-edit');
+
     Route::get('bl/rekap-bongkaran/print', [\App\Http\Controllers\BlController::class, 'rekapBongkaranPrint'])->name('bl.rekap-bongkaran.print')
         ->middleware('can:bl-view');
 

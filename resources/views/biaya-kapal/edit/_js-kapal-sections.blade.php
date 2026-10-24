@@ -586,8 +586,8 @@
                 }
 
                 // Add CARGO if count > 0
-                if (data.counts['cargo_max_tv_sum'] > 0 && pricelistIds['cargo']) {
-                    addBarangToSectionWithValue(sectionIndex, pricelistIds['cargo'], data.counts['cargo_max_tv_sum']);
+                if (data.counts['cargo_buruh_sum'] > 0 && pricelistIds['cargo']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['cargo'], data.counts['cargo_buruh_sum']);
                     barangAdded = true;
                 }
                 

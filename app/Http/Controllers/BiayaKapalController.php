@@ -6891,7 +6891,7 @@ class BiayaKapalController extends Controller
 
             // Fetch from manifests table instead of bls table
             $blsQuery = DB::table('manifests')
-                ->select('id', 'nomor_bl', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar', 'kuantitas')
+                ->select('id', 'nomor_bl', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'rekap_bongkaran_unit', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar', 'kuantitas')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -6955,6 +6955,7 @@ class BiayaKapalController extends Controller
                 '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
                 '40' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
                 'cargo_max_tv_sum' => 0,
+                'cargo_buruh_sum' => 0,
                 'extra' => [
                     'Mobil' => 0,
                     'Trailer' => 0,
@@ -6968,6 +6969,7 @@ class BiayaKapalController extends Controller
             });
 
             $cargoMaxTvSum = 0;
+            $cargoBuruhSum = 0;
             foreach ($cargoItems as $item) {
                 // Compare volume and tonnage per manifest before summing cargo.
                 $volumePerincian = (float) $item->volume_perincian;
@@ -6975,9 +6977,16 @@ class BiayaKapalController extends Controller
                 $volume = $volumePerincian > 0 ? $volumePerincian : (float) $item->volume;
                 $tonnage = $tonnagePerincian > 0 ? $tonnagePerincian : (float) $item->tonnage;
 
-                $cargoMaxTvSum += max(0, $volume, $tonnage);
+                $maximum = max(0, $volume, $tonnage);
+                $cargoMaxTvSum += $maximum;
+                $cargoBuruhSum += match ($item->rekap_bongkaran_unit) {
+                    'ton' => max(0, (float) $item->tonnage),
+                    'm3' => max(0, (float) $item->volume),
+                    default => $maximum,
+                };
             }
             $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum);
+            $counts['cargo_buruh_sum'] = round($cargoBuruhSum);
 
             // Extra cargo tags counting
             foreach ($cargoItems as $item) {

@@ -8,11 +8,24 @@
             <i class="fas fa-arrow-left mr-2"></i> Kembali ke Pemilihan
         </a>
         <div class="flex space-x-2">
+            @can('bl-edit')
+            <form id="cargo-unit-form" action="{{ route('bl.rekap-bongkaran.units') }}" method="POST">
+                @csrf
+                <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+                <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl shadow-sm hover:bg-emerald-700">
+                    Simpan Pilihan Ton/M3
+                </button>
+            </form>
+            @endcan
             <a href="{{ route('bl.rekap-bongkaran.print', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-xl shadow-sm hover:bg-indigo-700 focus:outline-none transition duration-150 ease-in-out">
                 <i class="fas fa-print mr-2"></i> Cetak / Print
             </a>
         </div>
     </div>
+    @if(session('success'))
+        <div class="mt-3 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-800">{{ session('success') }}</div>
+    @endif
 </div>
 
 <!-- Print & Preview Layout -->
@@ -86,6 +99,9 @@
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0 unit-cell">
                                 <span>{{ $item['unit'] }}</span>
                                 @if(isset($item['is_cargo']) && $item['is_cargo'])
+                                @can('bl-edit')
+                                <input type="hidden" name="choices[{{ $item['key'] }}]" value="{{ $item['unit'] }}" form="cargo-unit-form" class="cargo-unit-choice">
+                                @endcan
                                 <div class="no-print mt-1 flex justify-center space-x-1">
                                     <button type="button" class="btn-toggle-unit text-[9px] px-1 bg-gray-200 hover:bg-gray-300 rounded {{ $item['unit'] === 'ton' ? 'font-bold bg-blue-100' : '' }}" data-unit="ton">Ton</button>
                                     <button type="button" class="btn-toggle-unit text-[9px] px-1 bg-gray-200 hover:bg-gray-300 rounded {{ $item['unit'] === 'm3' ? 'font-bold bg-blue-100' : '' }}" data-unit="m3">M3</button>
@@ -201,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 amountCell.innerText = '';
             }
             unitCellSpan.innerText = unit;
+            let choiceInput = tr.querySelector('.cargo-unit-choice');
+            if (choiceInput) choiceInput.value = unit;
 
             let total = 0;
             document.querySelectorAll('.amount-cell').forEach(cell => {
