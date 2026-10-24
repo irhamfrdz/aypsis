@@ -558,6 +558,7 @@ class AbsensiController extends Controller
                         'nik' => $nik,
                         'waktu' => $waktu,
                         'tipe' => $tipe,
+                        'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                         'status' => 'Manual',
                         'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
                     ]);
@@ -631,6 +632,16 @@ class AbsensiController extends Controller
                 $existingLog = $existingLogQuery->orderBy('waktu', 'asc')->first();
             }
 
+            // An existing checkout may currently be grouped under another start
+            // after midnight. Reuse that timestamp instead of creating a duplicate.
+            if (! $existingLog && $tipe === 'Lembur_Pulang' && ! empty($time)) {
+                $waktu = $this->manualAttendanceDateTime($nik, $tanggal, $tipe, $time, $times['Lembur_Masuk']);
+                $existingLog = Absensi::where('nik', $nik)
+                    ->whereIn(DB::raw("LOWER(REPLACE(tipe, '_', ' '))"), ['lembur pulang', 'selesai lembur', 'lembur keluar'])
+                    ->where('waktu', $waktu)
+                    ->first();
+            }
+
             // Update data jika sudah ada, atau hapus jika kosong
             if ($existingLog) {
                 if (! empty($time)) {
@@ -639,6 +650,7 @@ class AbsensiController extends Controller
                     try {
                         $existingLog->update([
                             'waktu' => $waktu,
+                            'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                             'status' => 'Manual',
                             'keterangan' => 'Diperbarui dari edit manual',
                         ]);
@@ -652,6 +664,7 @@ class AbsensiController extends Controller
 
                             if ($conflictLog) {
                                 $conflictLog->update([
+                                    'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                                     'status' => 'Manual',
                                     'keterangan' => 'Diperbarui dari edit manual',
                                 ]);
@@ -681,6 +694,7 @@ class AbsensiController extends Controller
                         'tipe' => $tipe,
                         'status' => 'Manual',
                         'keterangan' => 'Ditambahkan dari edit manual',
+                        'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                     ]);
                 } catch (\Illuminate\Database\QueryException $e) {
                     if ($e->errorInfo[1] == 1062) {
@@ -690,6 +704,7 @@ class AbsensiController extends Controller
                             ->update([
                                 'status' => 'Manual',
                                 'keterangan' => 'Diperbarui dari edit manual',
+                                'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                             ]);
                     } else {
                         throw $e;
@@ -1061,7 +1076,7 @@ class AbsensiController extends Controller
         $fetchStart = $startDate->copy()->subDay()->setTime(6, 0, 0);
         $fetchEnd = $endDate->copy()->addDay()->setTime(5, 59, 59);
 
-        $rawLogs = Absensi::select('id', 'karyawan_id', 'nik', 'tipe', 'waktu')
+        $rawLogs = Absensi::select('id', 'karyawan_id', 'nik', 'tipe', 'waktu', 'tanggal_kerja_manual')
             ->whereBetween('waktu', [$fetchStart, $fetchEnd])
             ->orderBy('karyawan_id')
             ->orderBy('waktu')
@@ -1077,7 +1092,9 @@ class AbsensiController extends Controller
 
         $attendance = $rawLogs->map(function ($r) use ($lemburStarts, $lemburEnds, $lemburStartByEmp) {
             $tipe = strtolower(str_replace('_', ' ', $r->tipe));
-            if (in_array($tipe, $lemburStarts)) {
+            if (in_array($tipe, $lemburEnds) && $r->tanggal_kerja_manual !== null) {
+                $tanggal_kerja = $r->tanggal_kerja_manual;
+            } elseif (in_array($tipe, $lemburStarts)) {
                 $tanggal_kerja = Carbon::parse($r->waktu)->toDateString();
             } elseif (in_array($tipe, $lemburEnds)) {
                 // Find the nearest preceding lembur-start for this employee

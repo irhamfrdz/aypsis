@@ -26,6 +26,7 @@ class Absensi extends Model
         'karyawan_id',
         'nik',
         'waktu',
+        'tanggal_kerja_manual',
         'tipe',
         'mesin_id',
         'keterangan',

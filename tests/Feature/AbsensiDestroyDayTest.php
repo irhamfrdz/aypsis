@@ -24,6 +24,7 @@ class AbsensiDestroyDayTest extends TestCase
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->string('nik');
             $table->dateTime('waktu');
+            $table->date('tanggal_kerja_manual')->nullable();
             $table->string('tipe');
         });
         (require database_path('migrations/2026_10_15_110000_create_absensi_deletion_marks_table.php'))->up();

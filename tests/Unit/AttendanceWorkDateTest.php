@@ -13,7 +13,7 @@ class AttendanceWorkDateTest extends TestCase
     protected function setUp(): void
     {
         $this->db = new PDO('sqlite::memory:');
-        $this->db->exec('CREATE TABLE absensis (id INTEGER PRIMARY KEY, nik TEXT, karyawan_id INTEGER, waktu TEXT, tipe TEXT)');
+        $this->db->exec('CREATE TABLE absensis (id INTEGER PRIMARY KEY, nik TEXT, karyawan_id INTEGER, waktu TEXT, tipe TEXT, tanggal_kerja_manual TEXT)');
     }
 
     private function log(string $time, string $type, string $nik = '1593'): int
@@ -72,5 +72,17 @@ class AttendanceWorkDateTest extends TestCase
         $end = $this->log('2026-09-17 07:00:00', 'Selesai Lembur');
         $regular = $this->log('2026-09-17 05:00:00', 'Pulang');
         $this->assertSame([$start => '2026-09-17', $end => '2026-09-17', $regular => '2026-09-16'], $this->dates());
+    }
+
+    public function test_manual_checkout_keeps_selected_date_despite_another_start_after_midnight(): void
+    {
+        $this->log('2026-10-19 19:00:00', 'Lembur_Masuk', '1004');
+        $this->log('2026-10-20 00:30:00', 'Lembur_Masuk', '1004');
+        $end = $this->log('2026-10-20 04:00:00', 'Lembur_Pulang', '1004');
+        $this->db->prepare('UPDATE absensis SET tanggal_kerja_manual = ? WHERE id = ?')->execute(['2026-10-19', $end]);
+        $later = $this->log('2026-10-20 06:30:00', 'Lembur_Pulang', '1004');
+        $this->assertSame('2026-10-19', $this->dates()[$end]);
+        $this->assertSame('2026-10-19', $this->dates(0)[$end]);
+        $this->assertSame('2026-10-20', $this->dates()[$later]);
     }
 }

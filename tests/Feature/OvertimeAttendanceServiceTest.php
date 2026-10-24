@@ -25,6 +25,7 @@ class OvertimeAttendanceServiceTest extends TestCase
             $table->string('nik')->nullable();
             $table->string('tipe');
             $table->dateTime('waktu');
+            $table->date('tanggal_kerja_manual')->nullable();
         });
     }
 
@@ -79,6 +80,25 @@ class OvertimeAttendanceServiceTest extends TestCase
         $this->assertSame('2026-10-17 23:00:00', $daily->get(1)[1]->waktu_lembur_pulang);
         $this->assertNull($daily->get(1)[2]->waktu_lembur_masuk);
         $this->assertSame('2026-10-18 01:00:00', $daily->get(1)[2]->waktu_lembur_pulang);
+    }
+
+    public function test_manual_end_does_not_move_to_or_close_the_overlapping_midnight_session(): void
+    {
+        $this->log(1, '1004', 'lembur_masuk', '2026-10-19 19:00:00');
+        $this->log(1, '1004', 'lembur_masuk', '2026-10-20 00:30:00');
+        $this->log(1, '1004', 'lembur_pulang', '2026-10-20 04:00:00');
+        DB::table('absensis')->where('waktu', '2026-10-20 04:00:00')->update(['tanggal_kerja_manual' => '2026-10-19']);
+        $this->log(1, '1004', 'lembur_pulang', '2026-10-20 06:30:00');
+
+        $employee = new Karyawan(['nik' => '1004']);
+        $employee->id = 1;
+        $days = app(OvertimeAttendanceService::class)->dailyForEmployees(
+            collect([$employee]), Carbon::parse('2026-10-19'), Carbon::parse('2026-10-20')
+        )->get(1)->keyBy('tanggal');
+        $this->assertSame('2026-10-19 19:00:00', $days['2026-10-19']->waktu_lembur_masuk);
+        $this->assertSame('2026-10-20 04:00:00', $days['2026-10-19']->waktu_lembur_pulang);
+        $this->assertSame('2026-10-20 00:30:00', $days['2026-10-20']->waktu_lembur_masuk);
+        $this->assertSame('2026-10-20 06:30:00', $days['2026-10-20']->waktu_lembur_pulang);
     }
 
     private function log(?int $employeeId, string $nik, string $type, string $time): void

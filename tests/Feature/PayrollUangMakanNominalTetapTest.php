@@ -36,6 +36,7 @@ class PayrollUangMakanNominalTetapTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('karyawan_id');
             $table->dateTime('waktu');
+            $table->date('tanggal_kerja_manual')->nullable();
             $table->string('tipe');
         });
         Schema::create('uang_makans', function (Blueprint $table) {

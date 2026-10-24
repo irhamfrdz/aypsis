@@ -34,7 +34,7 @@ class OvertimeAttendanceService
         $typeSql = "LOWER(REPLACE(tipe, '_', ' ')) IN ('lembur masuk', 'mulai lembur', 'lembur', 'lembur pulang', 'selesai lembur', 'lembur keluar')";
 
         $events = DB::table('absensis')
-            ->select('id', 'karyawan_id', 'nik', 'waktu', 'tipe')
+            ->select('id', 'karyawan_id', 'nik', 'waktu', 'tipe', 'tanggal_kerja_manual')
             ->where('waktu', '>=', $windowStart)
             ->where('waktu', '<', $windowEnd)
             ->whereRaw($typeSql)
@@ -85,7 +85,7 @@ class OvertimeAttendanceService
                         && $start < $event->waktu
                         && (! isset($lastEnd[$employeeId]) || $lastEnd[$employeeId] < $start)
                         && Carbon::parse($start)->gte(Carbon::parse($event->waktu)->subDay());
-                    $date = substr($hasMatchedStart ? $start : $event->waktu, 0, 10);
+                    $date = $event->tanggal_kerja_manual ?? substr($hasMatchedStart ? $start : $event->waktu, 0, 10);
 
                     if ($date >= $firstDate && $date <= $lastDate) {
                         $daily[$employeeId][$date] ??= (object) [
@@ -102,8 +102,13 @@ class OvertimeAttendanceService
                 }
             }
 
-            foreach ($ends as [, $targets]) {
+            foreach ($ends as [$event, $targets]) {
                 foreach ($targets as $id) {
+                    // A manually assigned end must not close another work date's start.
+                    if ($event->tanggal_kerja_manual !== null && isset($lastStart[$id])
+                        && substr($lastStart[$id], 0, 10) !== $event->tanggal_kerja_manual) {
+                        continue;
+                    }
                     unset($lastStart[$id]);
                     $lastEnd[$id] = $timestamp;
                 }

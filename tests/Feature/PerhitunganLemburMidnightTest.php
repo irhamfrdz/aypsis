@@ -34,6 +34,7 @@ class PerhitunganLemburMidnightTest extends TestCase
             $table->string('nik');
             $table->string('tipe');
             $table->dateTime('waktu');
+            $table->date('tanggal_kerja_manual')->nullable();
         });
         Schema::create('uang_makans', function (Blueprint $table) {
             $table->id();

@@ -37,6 +37,7 @@ class AttendanceOvertimeInputTest extends TestCase
             $table->timestamps();
             $table->unique(['nik', 'waktu', 'tipe']);
         });
+        (require database_path('migrations/2026_10_24_090000_add_manual_work_date_to_absensis_table.php'))->up();
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
             $table->string('nik');
@@ -82,11 +83,16 @@ class AttendanceOvertimeInputTest extends TestCase
 
     public static function machineEmployeeIds(): array
     {
-        return ['missing employee ID' => [null], 'linked employee ID' => [1]];
+        return [
+            'missing employee ID' => [null, false],
+            'linked employee ID' => [1, false],
+            'existing checkout and overlapping midnight session' => [1, true],
+            'new checkout with overlapping midnight session' => [1, true, false],
+        ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('machineEmployeeIds')]
-    public function test_manual_overnight_checkout_stays_on_the_same_row_as_machine_logs(?int $employeeId): void
+    public function test_manual_overnight_checkout_stays_on_the_same_row_as_machine_logs(?int $employeeId, bool $overlappingSession, bool $existingCheckout = true): void
     {
         Schema::create('mesins', fn (Blueprint $table) => $table->id());
         Schema::create('karyawan_tidak_tetaps', function (Blueprint $table) {
@@ -100,6 +106,19 @@ class AttendanceOvertimeInputTest extends TestCase
             ['karyawan_id' => $employeeId, 'nik' => '1004', 'waktu' => '2026-10-19 18:52:00', 'tipe' => 'Pulang'],
             ['karyawan_id' => $employeeId, 'nik' => '1004', 'waktu' => '2026-10-19 19:00:00', 'tipe' => 'lembur_masuk'],
         ]);
+        if ($overlappingSession) {
+            // Reproduce the logs shown in DARMINTO's October 20 detail.
+            DB::table('absensis')->insert([
+                ['karyawan_id' => 1, 'nik' => '1004', 'waktu' => '2026-10-20 00:30:00', 'tipe' => 'lembur_masuk'],
+                ['karyawan_id' => 1, 'nik' => '1004', 'waktu' => '2026-10-20 06:30:00', 'tipe' => 'lembur_pulang'],
+            ]);
+            if ($existingCheckout) {
+                DB::table('absensis')->insert([
+                    'karyawan_id' => 1, 'nik' => '1004', 'waktu' => '2026-10-20 04:00:00', 'tipe' => 'lembur_pulang',
+                ]);
+            }
+            $this->assertSame($existingCheckout ? 3 : 2, Absensi::where('nik', '1004')->workDates('2026-10-20')->count());
+        }
         $request = Request::create('/absensi', 'PUT', [
             'nik' => '1004', 'tanggal' => '2026-10-19',
             'waktu_masuk' => '08:33', 'waktu_pulang' => '18:52',
@@ -107,7 +126,9 @@ class AttendanceOvertimeInputTest extends TestCase
         ]);
         $controller = app(AbsensiController::class);
         Absensi::withoutEvents(fn () => $controller->update($request));
-        $this->assertSame('2026-10-20 04:00:00', Absensi::where('tipe', 'Lembur_Pulang')->first()->waktu->format('Y-m-d H:i:s'));
+        $checkout = Absensi::where('waktu', '2026-10-20 04:00:00')->first();
+        $this->assertSame('2026-10-19', $checkout->tanggal_kerja_manual);
+        $this->assertSame('2026-10-20 04:00:00', $checkout->waktu->format('Y-m-d H:i:s'));
 
         $view = $controller->index(Request::create('/absensi', 'GET', [
             'search' => '1004', 'start_date' => '2026-10-19', 'end_date' => '2026-10-19',
@@ -120,11 +141,15 @@ class AttendanceOvertimeInputTest extends TestCase
         $this->assertSame('2026-10-20 04:00:00', $row->waktu_lembur_pulang);
         $this->assertSame('DARMINTO', $row->karyawan->nama_lengkap);
         $this->assertEquals(9, Carbon::parse($row->waktu_lembur_masuk)->diffInHours(Carbon::parse($row->waktu_lembur_pulang)));
-        $this->assertSame(0, Absensi::where('nik', '1004')->workDates('2026-10-20')->count());
+        $this->assertSame($overlappingSession ? 2 : 0, Absensi::where('nik', '1004')->workDates('2026-10-20')->count());
+        $detail = $controller->show('1004', '2026-10-19')->getData()['absensis'];
+        $this->assertTrue($detail->contains('id', $checkout->id));
+        $nextDetail = $controller->show('1004', '2026-10-20')->getData()['absensis'];
+        $this->assertFalse($nextDetail->contains('id', $checkout->id));
 
         // Reopening and saving the same edit must not create another checkout.
         Absensi::withoutEvents(fn () => $controller->update($request));
-        $this->assertSame(4, Absensi::count());
+        $this->assertSame($overlappingSession ? 6 : 4, Absensi::count());
         $data = $controller->getData(Request::create('/absensi/get-data', 'GET', [
             'nik' => '1004', 'tanggal' => '2026-10-19',
         ]))->getData(true);

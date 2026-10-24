@@ -21,6 +21,7 @@ class AttendanceWorkDate
         $employee = "(s.nik = $table.nik OR (s.karyawan_id IS NOT NULL AND s.karyawan_id = $table.karyawan_id))";
 
         return "CASE
+            WHEN $type IN ($ends) AND $table.tanggal_kerja_manual IS NOT NULL THEN $table.tanggal_kerja_manual
             WHEN $type IN ($starts) THEN DATE($table.waktu)
             WHEN $type IN ($ends) THEN COALESCE((
                 SELECT DATE(s.waktu) FROM absensis s
@@ -32,6 +33,7 @@ class AttendanceWorkDate
                       WHERE (e.nik = s.nik OR (e.karyawan_id IS NOT NULL AND e.karyawan_id = s.karyawan_id))
                         AND LOWER(REPLACE(e.tipe, '_', ' ')) IN ($ends)
                         AND e.waktu >= s.waktu AND e.waktu < $table.waktu
+                        AND (e.tanggal_kerja_manual IS NULL OR e.tanggal_kerja_manual = DATE(s.waktu))
                   )
                 ORDER BY s.waktu DESC, s.id DESC LIMIT 1
             ), DATE($table.waktu))
