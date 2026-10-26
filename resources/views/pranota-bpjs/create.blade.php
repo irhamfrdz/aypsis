@@ -403,7 +403,7 @@
     </form>
 </div>
 
-<script src="{{ asset('js/pranota-bpjs-jkn.js') }}"></script>
+<script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Visible accumulator
             if (isVisible) {
                 sumKes += valKes;
-                sumKesBiaya += BpjsJknColumns.split(valKes, tr.querySelector('.tipe-karyawan-hidden-input')?.value).biaya;
+                sumKesBiaya += BpjsJknColumns.split(valKes, tr.querySelector('.tipe-karyawan-hidden-input')?.value, tr.dataset.isSpecialCase).biaya;
                 sumKet += valKet;
                 sumJhtB += valJhtB;
                 sumJhtH += valJhtH;
@@ -840,6 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (k) {
                 tr.dataset.karyawanId = k.id;
                 tr.dataset.tipeKaryawan = k.tipe_karyawan || 'App\\Models\\Karyawan';
+                tr.dataset.isSpecialCase = k.is_special_case ? '1' : '0';
                 tr.dataset.uniqueId = k.unique_id || '';
                 tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
                 tr.dataset.nik = k.nik || '';
@@ -1399,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = k.tipe_karyawan || 'App\\Models\\Karyawan';
                 tr.dataset.karyawanId = k.id;
                 tr.dataset.tipeKaryawan = k.tipe_karyawan || 'App\\Models\\Karyawan';
+                tr.dataset.isSpecialCase = k.is_special_case ? '1' : '0';
                 tr.dataset.uniqueId = k.unique_id || '';
                 tr.dataset.namaKaryawan = (k.nama_lengkap || '').toLowerCase();
                 tr.dataset.nik = k.nik || '';

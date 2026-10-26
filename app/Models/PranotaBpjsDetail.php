@@ -30,12 +30,13 @@ class PranotaBpjsDetail extends Model
 
     public function getKisBiayaAttribute(): float
     {
-        return $this->tipe_karyawan === KaryawanTidakTetap::class ? (float) $this->bpjs_kesehatan : 0;
+        return $this->tipe_karyawan === KaryawanTidakTetap::class && ! $this->karyawan?->is_special_case
+            ? (float) $this->bpjs_kesehatan : 0;
     }
 
     public function getKisTunjanganAttribute(): float
     {
-        return $this->tipe_karyawan === KaryawanTidakTetap::class ? 0 : (float) $this->bpjs_kesehatan;
+        return (float) $this->bpjs_kesehatan - $this->kis_biaya;
     }
 
     public function karyawan()

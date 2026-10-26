@@ -25,10 +25,28 @@ test('changing employee type moves the same editable input and preserves its sub
     assert.equal(input['aria-label'], 'KIS 4% (BIAY)');
     syncRow(row);
     assert.equal(biaya.changes, 1, 'recalculating must preserve the focused input');
+    row.dataset.isSpecialCase = '1';
+    syncRow(row);
+    assert.equal(tunjangan.child, input);
+    assert.equal(biaya.child, zero);
+    assert.equal(input['aria-label'], 'KIS 4% (TUNJ)');
+    row.dataset.isSpecialCase = '0';
+    syncRow(row);
+    assert.equal(biaya.child, input);
     type.value = 'App\\Models\\Karyawan';
     syncRow(row);
     assert.equal(tunjangan.child, input);
     assert.equal(biaya.child, zero);
     assert.equal(input.value, '229.195');
     assert.equal(input.name, 'details[1][bpjs_kesehatan]');
+});
+
+test('special case routes temporary JKN to tunjangan while false values stay in biaya', () => {
+    const type = 'App\\Models\\KaryawanTidakTetap';
+    for (const status of [true, 1, '1']) {
+        assert.deepEqual(split(214319, type, status), { tunjangan: 214319, biaya: 0 });
+    }
+    for (const status of [false, 0, '0', null, undefined]) {
+        assert.deepEqual(split(214319, type, status), { tunjangan: 0, biaya: 214319 });
+    }
 });

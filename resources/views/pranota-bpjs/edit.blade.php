@@ -168,7 +168,7 @@
 </div>
 
 
-<script src="{{ asset('js/pranota-bpjs-jkn.js') }}"></script>
+<script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('detail-container');
@@ -295,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 detail-row hover:bg-indigo-50/30 transition-colors";
+        tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
         tr.innerHTML = `
             <td class="px-4 py-3 text-center align-middle row-number text-gray-500 font-medium">${rowCount}</td>
             <td class="px-4 py-3 align-middle">
@@ -564,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const handleKaryawanChange = function(kId) {
             const k = findKaryawan(kId);
+            tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
             const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
             const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
             if (k) {

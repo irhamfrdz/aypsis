@@ -1,7 +1,8 @@
 (function (root) {
-    function split(amount, employeeType) {
-        const temporary = String(employeeType || '').split('\\').pop() === 'KaryawanTidakTetap';
-        return { tunjangan: temporary ? 0 : amount, biaya: temporary ? amount : 0 };
+    function split(amount, employeeType, isSpecialCase = false) {
+        const special = isSpecialCase === true || isSpecialCase === 1 || isSpecialCase === '1';
+        const biaya = String(employeeType || '').split('\\').pop() === 'KaryawanTidakTetap' && !special;
+        return { tunjangan: biaya ? 0 : amount, biaya: biaya ? amount : 0 };
     }
 
     function syncRow(row) {
@@ -10,15 +11,15 @@
         const biaya = row.querySelector('[data-jkn-biaya]');
         if (!input || !tunjangan || !biaya) return;
         const type = row.querySelector('.tipe-karyawan-hidden-input')?.value || row.dataset.tipeKaryawan;
-        const temporary = split(1, type).biaya === 1;
+        const useBiaya = split(1, type, row.dataset.isSpecialCase).biaya === 1;
         const zero = row.querySelector('.jkn-zero') || document.createElement('span');
         zero.className = 'jkn-zero block text-right text-xs text-gray-400 px-2';
         zero.textContent = '0';
-        const active = temporary ? biaya : tunjangan;
-        const inactive = temporary ? tunjangan : biaya;
+        const active = useBiaya ? biaya : tunjangan;
+        const inactive = useBiaya ? tunjangan : biaya;
         if (input.parentElement !== active) active.replaceChildren(input);
         if (zero.parentElement !== inactive) inactive.replaceChildren(zero);
-        input.setAttribute('aria-label', temporary ? 'KIS 4% (BIAY)' : 'KIS 4% (TUNJ)');
+        input.setAttribute('aria-label', useBiaya ? 'KIS 4% (BIAY)' : 'KIS 4% (TUNJ)');
     }
 
     root.BpjsJknColumns = { split, syncRow };
