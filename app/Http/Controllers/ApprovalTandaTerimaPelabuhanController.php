@@ -59,6 +59,11 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             $tandaTerima->gudang_tujuan_id = $nomorKontainer
                 ? ($lokasiKontainers->get($nomorKontainer) ?? $lokasiStock->get($nomorKontainer))
                 : null;
+
+            $details = $tandaTerima->dimensi_details ?: $tandaTerima->dimensi_items ?: [];
+            $tandaTerima->approval_nama_barang = $details
+                ? array_map(fn ($detail) => $detail['nama_barang'] ?? '', $details)
+                : ($tandaTerima->nama_barang ?: []);
         }
 
         return view('approval-tanda-terima-pelabuhan.index', compact('tandaTerimas', 'gudangs', 'status', 'search'));
@@ -72,6 +77,8 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             'tanggal' => ['required', 'date'],
             'tanggal_checkpoint_supir' => ['required', 'date'],
             'supir_pengganti' => ['nullable', 'string', 'max:255'],
+            'nama_barang' => ['nullable', 'array'],
+            'nama_barang.*' => ['nullable', 'string', 'max:5000'],
             'lembur' => ['nullable', 'boolean'],
             'nginap' => ['nullable', 'boolean'],
             'tidak_lembur_nginap' => ['nullable', 'boolean'],
@@ -103,6 +110,28 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
                 'approval_pelabuhan_status' => 'approved',
                 'updated_by' => $request->user()->id,
             ])->save();
+
+            if (array_key_exists('nama_barang', $validated)) {
+                $namaBarang = array_map(fn ($name) => trim((string) $name), $validated['nama_barang'] ?? []);
+                $tandaTerima->nama_barang = array_values(array_filter($namaBarang, fn ($name) => $name !== ''));
+
+                foreach (['dimensi_details', 'dimensi_items'] as $field) {
+                    $items = $tandaTerima->{$field} ?: [];
+                    foreach ($namaBarang as $index => $name) {
+                        if (! isset($items[$index]) && $name !== '') {
+                            $items[$index] = array_fill_keys(['nama_barang', 'jumlah', 'satuan', 'panjang', 'lebar', 'tinggi', 'ukuran', 'meter_kubik', 'tonase'], null);
+                        }
+                        if (isset($items[$index])) {
+                            $items[$index]['nama_barang'] = $name !== '' ? $name : null;
+                        }
+                    }
+                    if ($items !== []) {
+                        $tandaTerima->{$field} = array_values($items);
+                    }
+                }
+
+                $tandaTerima->save();
+            }
 
             if ($tandaTerima->surat_jalan_id) {
                 $tandaTerima->suratJalan()->update([

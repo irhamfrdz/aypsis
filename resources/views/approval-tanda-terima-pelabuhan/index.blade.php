@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Approval Tanda Terima Pelabuhan</h1>
-        <p class="mt-1 text-sm text-gray-600">Klik Setujui untuk mengisi tanggal, supir pengganti, lembur/nginap, dan gudang tujuan.</p>
+        <p class="mt-1 text-sm text-gray-600">Klik Setujui untuk mengisi tanggal, nama barang, supir pengganti, lembur/nginap, dan gudang tujuan.</p>
     </div>
 
     @if(session('success'))
@@ -78,6 +78,7 @@
                                         data-tanggal="{{ $tandaTerima->tanggal?->format('Y-m-d') }}"
                                         data-checkpoint="{{ $tandaTerima->tanggal_checkpoint_supir?->format('Y-m-d') }}"
                                         data-supir-pengganti="{{ $tandaTerima->supir_pengganti }}"
+                                        data-nama-barang="{{ json_encode($tandaTerima->approval_nama_barang) }}"
                                         data-lembur="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->lembur : $tandaTerima->lembur) ? '1' : '0' }}"
                                         data-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->nginap : $tandaTerima->nginap) ? '1' : '0' }}"
                                         data-tidak-lembur-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->tidak_lembur_nginap : $tandaTerima->tidak_lembur_nginap) ? '1' : '0' }}"
@@ -103,6 +104,7 @@
             aria-labelledby="approval-pelabuhan-title" data-reopen-id="{{ old('approval_tanda_terima_id') }}"
             data-old-tanggal="{{ old('tanggal') }}" data-old-checkpoint="{{ old('tanggal_checkpoint_supir') }}"
             data-old-supir-pengganti="{{ old('supir_pengganti') }}"
+            data-old-nama-barang="{{ json_encode(old('nama_barang', [])) }}"
             data-old-lembur="{{ old('lembur') ? '1' : '0' }}" data-old-nginap="{{ old('nginap') ? '1' : '0' }}"
             data-old-tidak-lembur-nginap="{{ old('tidak_lembur_nginap') ? '1' : '0' }}"
             data-old-gudang-id="{{ old('gudang_id') }}">
@@ -134,6 +136,13 @@
                     <label for="approval-supir-pengganti" class="block text-sm font-medium text-gray-700">Supir pengganti <span class="font-normal text-gray-500">(opsional)</span>
                         <input id="approval-supir-pengganti" type="text" name="supir_pengganti" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Nama supir pengganti">
                     </label>
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <label for="approval-nama-barang-0" class="text-sm font-medium text-gray-700">Nama Barang</label>
+                            <button id="approval-add-nama-barang" type="button" class="text-sm font-medium text-blue-700 hover:underline">Tambah barang</button>
+                        </div>
+                        <div id="approval-nama-barang-list" class="mt-2 space-y-2"></div>
+                    </div>
                     <fieldset class="rounded-lg border border-gray-200 p-3">
                         <legend class="px-1 text-sm font-medium text-gray-700">Lembur / Nginap</legend>
                         <div class="flex flex-wrap gap-4 text-sm text-gray-700">
@@ -174,10 +183,24 @@
         const tanggal = document.getElementById('approval-tanggal');
         const checkpoint = document.getElementById('approval-checkpoint');
         const supirPengganti = document.getElementById('approval-supir-pengganti');
+        const namaBarangList = document.getElementById('approval-nama-barang-list');
         const lembur = document.getElementById('approval-lembur');
         const nginap = document.getElementById('approval-nginap');
         const tidakLemburNginap = document.getElementById('approval-tidak-lembur-nginap');
         const gudang = document.getElementById('approval-gudang');
+
+        function addNamaBarang(value = '') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'nama_barang[]';
+            input.id = `approval-nama-barang-${namaBarangList.children.length}`;
+            input.maxLength = 5000;
+            input.value = value;
+            input.placeholder = 'Nama barang';
+            input.setAttribute('aria-label', `Nama barang ${namaBarangList.children.length + 1}`);
+            input.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm';
+            namaBarangList.appendChild(input);
+        }
 
         function updateLemburOptions(changed) {
             if (changed === tidakLemburNginap && tidakLemburNginap.checked) {
@@ -198,6 +221,9 @@
             tanggal.value = useOldValues ? dialog.dataset.oldTanggal : button.dataset.tanggal;
             checkpoint.value = useOldValues ? dialog.dataset.oldCheckpoint : button.dataset.checkpoint;
             supirPengganti.value = useOldValues ? dialog.dataset.oldSupirPengganti : button.dataset.supirPengganti;
+            namaBarangList.replaceChildren();
+            const namaBarang = JSON.parse(useOldValues ? dialog.dataset.oldNamaBarang : button.dataset.namaBarang);
+            (Array.isArray(namaBarang) && namaBarang.length ? namaBarang : ['']).forEach(addNamaBarang);
             lembur.checked = (useOldValues ? dialog.dataset.oldLembur : button.dataset.lembur) === '1';
             nginap.checked = (useOldValues ? dialog.dataset.oldNginap : button.dataset.nginap) === '1';
             tidakLemburNginap.checked = (useOldValues ? dialog.dataset.oldTidakLemburNginap : button.dataset.tidakLemburNginap) === '1';
@@ -209,6 +235,7 @@
         }
 
         [lembur, nginap, tidakLemburNginap].forEach(input => input.addEventListener('change', () => updateLemburOptions(input)));
+        document.getElementById('approval-add-nama-barang').addEventListener('click', () => addNamaBarang());
         buttons.forEach(button => button.addEventListener('click', () => openApproval(button)));
         document.getElementById('approval-pelabuhan-cancel').addEventListener('click', () => dialog.close());
         dialog.addEventListener('click', event => {

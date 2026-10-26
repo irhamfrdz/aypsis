@@ -71,6 +71,9 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             $table->boolean('nginap')->nullable();
             $table->boolean('tidak_lembur_nginap')->nullable();
             $table->string('supir_pengganti')->nullable();
+            $table->json('nama_barang')->nullable();
+            $table->json('dimensi_details')->nullable();
+            $table->json('dimensi_items')->nullable();
             $table->string('approval_pelabuhan_status')->default('pending');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
@@ -129,6 +132,35 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
 
         $this->expectException(ValidationException::class);
         (new ApprovalTandaTerimaPelabuhanController)->approve($request, TandaTerima::findOrFail($id));
+    }
+
+    public function test_approval_updates_item_names_without_losing_dimensions(): void
+    {
+        $gudangId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang A', 'status' => 'aktif']);
+        $id = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'SJ-BARANG',
+            'dimensi_details' => json_encode([['nama_barang' => 'Barang lama', 'jumlah' => 3]]),
+            'dimensi_items' => json_encode([['nama_barang' => 'Barang lama', 'jumlah' => 3]]),
+            'nama_barang' => json_encode(['Barang lama']),
+        ]);
+        $request = Request::create('/approval-tanda-terima-pelabuhan/'.$id, 'PATCH', [
+            'tanggal' => '2026-10-26',
+            'tanggal_checkpoint_supir' => '2026-10-25',
+            'tidak_lembur_nginap' => '1',
+            'gudang_id' => $gudangId,
+            'nama_barang' => ['Barang baru', 'Barang tambahan'],
+        ]);
+        $request->setUserResolver(fn () => (object) ['id' => 7]);
+
+        (new ApprovalTandaTerimaPelabuhanController)->approve($request, TandaTerima::findOrFail($id));
+
+        $saved = TandaTerima::findOrFail($id);
+        $this->assertSame(['Barang baru', 'Barang tambahan'], $saved->nama_barang);
+        $this->assertSame('Barang baru', $saved->dimensi_details[0]['nama_barang']);
+        $this->assertSame(3, $saved->dimensi_details[0]['jumlah']);
+        $this->assertSame('Barang tambahan', $saved->dimensi_details[1]['nama_barang']);
+        $this->assertSame('Barang baru', $saved->dimensi_items[0]['nama_barang']);
+        $this->assertSame(3, $saved->dimensi_items[0]['jumlah']);
     }
 
     public function test_approval_requires_a_lembur_or_nginap_choice(): void
