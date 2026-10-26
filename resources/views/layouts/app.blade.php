@@ -396,6 +396,7 @@
                         $user->can('master-pricelist-biaya-dokumen-view') ||
                         $user->can('master-user-view') ||
                         $user->can('master-karyawan-view') ||
+                        $user->can('master-karyawan-abk-view') ||
                         $user->can('master-type-gaji-karyawan-view') ||
                         $user->can('master-jam-kerja-view') ||
                         $user->can('master-divisi-view') ||

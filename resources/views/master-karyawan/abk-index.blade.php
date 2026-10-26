@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Master Karyawan (ABK)')
-@section('page_title', 'Master Karyawan (ABK)')
+@section('title', 'Master Data ABK')
+@section('page_title', 'Master Data ABK')
 
 @section('content')
 <div class="max-w-full mx-auto px-4">
@@ -12,7 +12,7 @@
                 <!-- TOP BAR: Title, Stats & Primary Actions -->
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <h1 class="text-xl font-bold text-gray-900 leading-tight">Master Karyawan (ABK)</h1>
+                        <h1 class="text-xl font-bold text-gray-900 leading-tight">Master Data ABK</h1>
                         @if(isset($counts))
                             <div class="flex items-center gap-1.5">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-[10px] font-bold border border-green-100 uppercase tracking-tighter">

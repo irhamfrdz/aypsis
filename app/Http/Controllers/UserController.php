@@ -386,6 +386,15 @@ class UserController extends Controller
                 continue;
             }
 
+            if (str_starts_with($permissionName, 'master-karyawan-abk-')) {
+                $action = substr($permissionName, strlen('master-karyawan-abk-'));
+                if (in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'], true)) {
+                    $matrixPermissions['master-karyawan-abk'][$action] = true;
+                }
+
+                continue;
+            }
+
             // Priority order: dot notation first, then dash notation, then simple
 
             // Pattern 1: module.submodule.action (e.g., master.karyawan.index) - HIGHEST PRIORITY
@@ -1964,6 +1973,17 @@ class UserController extends Controller
             foreach ($actions as $action => $value) {
                 // Only process checked permissions (value = true or 1)
                 if ($value == '1' || $value === true) {
+
+                    if ($module === 'master-karyawan-abk') {
+                        if (in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'], true)) {
+                            $permission = Permission::where('name', $module.'-'.$action)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                            }
+                        }
+
+                        continue;
+                    }
 
                     // Pemetaan eksplisit agar seluruh aksi Jurnal OPT/OPP
                     // selalu menunjuk ke permission database yang tepat.

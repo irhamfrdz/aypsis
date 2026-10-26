@@ -320,7 +320,7 @@
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-blue-600 font-bold">Data Karyawan (ABK)</span>
+                                        <span class="text-blue-600 font-bold">Master Data ABK</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[master-karyawan-abk][view]" value="1" class="permission-checkbox"></td>

@@ -195,6 +195,14 @@
                         </div>
                         @endif
 
+                        @if($user && $user->can('master-karyawan-abk-view'))
+                        <div class="mx-2 mb-3">
+                            <a href="{{ route('master.karyawan.abk-index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.abk-index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}" @if(Request::routeIs('master.karyawan.abk-index')) aria-current="page" @endif>
+                                <span class="text-xs font-medium">Master Data ABK</span>
+                            </a>
+                        </div>
+                        @endif
+
                         {{-- Master Karyawan Sub-Dropdown --}}
                             @php
                                 $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('karyawan-tidak-tetap.*') || Request::routeIs('master-group-bp-jamsostek.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.departemen.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master.tunjangan.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.permission.*') || Request::routeIs('master.karyawan.approval.*') || Request::routeIs('master.pelamar-karyawan.*') || Request::routeIs('master-rumus-bpjs.*') || Request::routeIs('master.type-gaji-karyawan.*');
@@ -243,11 +251,6 @@
                                     <a href="{{ route('master.pelamar-karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pelamar-karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Data Pelamar</span>
                                     </a>
-                                    @if($user && $user->can('master-karyawan-abk-view'))
-                                        <a href="{{ route('master.karyawan.abk-index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.abk-index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                            <span class="text-xs">Data Karyawan (ABK)</span>
-                                        </a>
-                                    @endif
                                 @endif
                                 @if($user && $user->can('master-karyawan-approval'))
                                     @php

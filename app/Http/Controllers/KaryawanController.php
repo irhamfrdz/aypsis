@@ -254,7 +254,7 @@ class KaryawanController extends Controller
         // Query builder untuk karyawan ABK
         $query = Karyawan::where(function ($q) {
             $q->where('divisi', 'ABK')
-                ->orWhere('pekerjaan', 'penempatan', 'ABK');
+                ->orWhere('pekerjaan', 'ABK');
         });
 
         // Precompute counts for header summary (filtered for ABK)
