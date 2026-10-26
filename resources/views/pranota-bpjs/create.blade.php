@@ -173,6 +173,11 @@
                         <i class="fas fa-file-excel text-sm text-white"></i>
                         <span>Export Excel (BPU)</span>
                     </button>
+                    <button type="button" id="btn-refresh-bpjs" title="Ambil DPP, group, dan rumus terbaru lalu hitung ulang baris yang sudah ada"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-lg transition-all">
+                        <i class="fas fa-sync-alt text-xs" aria-hidden="true"></i>
+                        <span>Refresh Data</span>
+                    </button>
                     <button type="button" id="btn-generate-all"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs hover:shadow-xs transition-all">
                         <i class="fas fa-wand-magic-sparkles text-xs"></i>
@@ -186,6 +191,7 @@
                 </div>
             </div>
 
+            <p id="bpjs-refresh-status" hidden role="status" aria-live="polite" class="px-6 py-2 text-xs text-gray-600"></p>
             {{-- ── Filter & Search Bar ───────────────────────────────────────── --}}
             <div class="px-6 py-3 bg-slate-50/80 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3">
@@ -404,6 +410,7 @@
 </div>
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
@@ -422,9 +429,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterCountText = document.getElementById('filter-count-text');
     
     // Convert karyawans to JSON for select options
-    const karyawans = @json($karyawans);
-    const rumusBpjs = @json($rumusBpjs);
+    let karyawans = @json($karyawans);
+    let rumusBpjs = @json($rumusBpjs);
     let rowCount = 0;
+    let isRefreshing = false;
 
     function formatNumber(num) {
         return new Intl.NumberFormat('id-ID').format(num || 0);
@@ -546,6 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Apply filter and search on table rows and columns
      */
     function applyFilter() {
+        if (isRefreshing) return;
         const selectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
         const selectedCabang = filterCabangSelect ? filterCabangSelect.value : 'all';
         const query = searchKaryawanInput ? (searchKaryawanInput.value || '').trim().toLowerCase() : '';
@@ -810,10 +819,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="hidden" name="details[${rowCount}][karyawan_id]" value="${k ? k.id : karyawanId}" class="karyawan-hidden-input">
                 <input type="hidden" name="details[${rowCount}][tipe_karyawan]" value="${k ? k.tipe_karyawan : 'App\\Models\\Karyawan'}" class="tipe-karyawan-hidden-input">
                 <div class="font-semibold text-gray-800 text-xs truncate flex items-center gap-1" style="max-width: 220px;" title="${k ? k.nama_lengkap : ''}">
-                    <span>${k ? k.nama_lengkap : ''}</span>
+                    <span class="employee-name">${k ? k.nama_lengkap : ''}</span>
                     ${statusBadge}
                 </div>
-                ${k && k.nik ? `<div class="text-[10px] text-gray-400 font-mono tracking-tight">NIK: ${k.nik}</div>` : ''}
+                <div class="nik-display text-[10px] text-gray-400 font-mono tracking-tight">${k && k.nik ? `NIK: ${k.nik}` : ''}</div>
             `;
         } else {
             let options = '<option value="">-- Pilih Karyawan --</option>';
@@ -1397,6 +1406,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (k) {
                 if (hiddenKaryawanId) hiddenKaryawanId.value = k.id;
+                const nameDisplay = tr.querySelector('.employee-name');
+                if (nameDisplay) {
+                    nameDisplay.textContent = k.nama_lengkap;
+                    nameDisplay.parentElement.title = k.nama_lengkap;
+                }
                 if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = k.tipe_karyawan || 'App\\Models\\Karyawan';
                 tr.dataset.karyawanId = k.id;
                 tr.dataset.tipeKaryawan = k.tipe_karyawan || 'App\\Models\\Karyawan';
@@ -1447,6 +1461,13 @@ document.addEventListener('DOMContentLoaded', function() {
             updateInfoBadgeJkn(kId);
             calculateBpjsForKaryawan(kId, selectTipe.value);
             applyFilter();
+        };
+
+        tr.refreshBpjs = function () {
+            const uniqueId = tr.dataset.uniqueId;
+            if (!uniqueId || !karyawans.some(k => k.unique_id === uniqueId)) return false;
+            handleKaryawanChange(uniqueId);
+            return true;
         };
 
         if ($select) { 
@@ -1536,6 +1557,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         applyFilter();
+    });
+
+    document.getElementById('btn-refresh-bpjs').addEventListener('click', async function () {
+        if (isRefreshing) return;
+        const button = this;
+        const label = button.querySelector('span');
+        const status = document.getElementById('bpjs-refresh-status');
+        isRefreshing = true;
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        label.textContent = 'Memperbarui...';
+        status.hidden = false;
+        status.textContent = 'Mengambil data karyawan dan rumus terbaru...';
+        try {
+            const result = await refreshBpjsData({
+                url: @json(route('pranota-bpjs.create')),
+                rows: Array.from(container.querySelectorAll('tr.detail-row')),
+                applyData(data) {
+                    karyawans = data.karyawans;
+                    rumusBpjs = data.rumusBpjs;
+                    container.querySelectorAll('.select-karyawan').forEach(select => {
+                        const selected = select.value;
+                        const previousOption = select.selectedOptions[0]?.cloneNode(true);
+                        select.replaceChildren(new Option('-- Pilih Karyawan --', ''));
+                        karyawans.forEach(k => select.add(new Option(k.nama_lengkap + (k.nik ? ' [' + k.nik + ']' : '') + ' (' + k.tipe_label + ')', k.unique_id)));
+                        if (selected && !karyawans.some(k => k.unique_id === selected) && previousOption) select.add(previousOption);
+                        select.value = selected;
+                        if (typeof jQuery !== 'undefined' && jQuery.fn.select2) jQuery(select).trigger('change.select2');
+                    });
+                    const branch = filterCabangSelect?.value;
+                    populateCabangFilterOptions();
+                    if (filterCabangSelect && branch) {
+                        if (!Array.from(filterCabangSelect.options).some(option => option.value === branch)) {
+                            filterCabangSelect.add(new Option(branch, branch));
+                        }
+                        filterCabangSelect.value = branch;
+                    }
+                }
+            });
+            status.textContent = result.updated + ' baris diperbarui menggunakan data terbaru.'
+                + (result.skipped ? ' ' + result.skipped + ' baris dilewati (belum dipilih atau karyawan tidak tersedia).' : '');
+        } catch (error) {
+            status.textContent = error.message || 'Refresh gagal. Silakan coba lagi.';
+        } finally {
+            isRefreshing = false;
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+            label.textContent = 'Refresh Data';
+            applyFilter();
+        }
     });
 
     // Export to Excel function using ExcelJS

@@ -42,7 +42,7 @@ class PranotaBpjsController extends Controller
         return view('pranota-bpjs.index', compact('pranotas'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         // Get active Karyawan that might have BPJS
         $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
@@ -86,6 +86,11 @@ class PranotaBpjsController extends Controller
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
 
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
+
+        if ($request->expectsJson()) {
+            return response()->json(compact('karyawans', 'rumusBpjs'))
+                ->header('Cache-Control', 'no-store');
+        }
 
         return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs'));
     }
