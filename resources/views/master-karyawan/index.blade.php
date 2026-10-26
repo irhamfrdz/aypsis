@@ -35,6 +35,11 @@
                                 <a href="{{ route('master.karyawan.import') }}" class="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Import Data"><i class="fas fa-file-import border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <a href="{{ route('master.karyawan.import-update') }}" class="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="Import Update Data"><i class="fas fa-sync-alt border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <button type="button" onclick="openImportDppModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal DPP & Group BPJS"><i class="fas fa-file-invoice-dollar border-r pr-2 border-gray-200 ml-1"></i></button>
+                                @can('master-karyawan-update')
+                                    <button type="button" onclick="openBpjsTextModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal BPJS (Textarea)" aria-label="Update Massal BPJS (Textarea)">
+                                        <i class="fas fa-paste border-r pr-2 border-gray-200 ml-1" aria-hidden="true"></i>
+                                    </button>
+                                @endcan
                                 <button type="button" onclick="openImportSupervisorModal()" class="p-1.5 text-gray-400 hover:text-teal-600 transition-colors" title="Update Massal Supervisor"><i class="fas fa-user-tie border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <button type="button" onclick="openImportGroupModal()" class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors" title="Update Massal Group & Sub Group (Informasi Perusahaan)"><i class="fas fa-layer-group border-r pr-2 border-gray-200 ml-1"></i></button>
                                 <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
@@ -47,11 +52,6 @@
                             </div>
                         </div>
 
-                        @can('master-karyawan-update')
-                            <button type="button" onclick="openBpjsTextModal()" class="inline-flex items-center px-3 py-1.5 bg-teal-600 rounded-lg font-bold text-[11px] text-white hover:bg-teal-700">
-                                <i class="fas fa-paste mr-1.5"></i> Update Massal BPJS
-                            </button>
-                        @endcan
                         <a href="{{ route('master.karyawan.create') }}"
                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 border border-transparent rounded-lg font-bold text-[11px] text-white uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm">
                             <i class="fas fa-plus mr-1.5"></i> Tambah
@@ -968,20 +968,33 @@
 @can('master-karyawan-update')
 <div id="bpjsTextModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="bpjs-text-title">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeBpjsTextModal()"></div>
-    <div class="relative bg-white rounded-lg shadow-xl max-w-4xl mx-auto my-8 p-6 border-t-4 border-teal-500">
+    <div class="relative bg-white rounded-xl shadow-xl max-w-3xl mx-4 sm:mx-auto my-8 overflow-hidden border border-gray-200">
         <form action="{{ route('master.karyawan.update-bpjs-text') }}" method="POST">
             @csrf
-            <h3 id="bpjs-text-title" class="text-lg font-bold text-gray-900">Update Massal DPP & Group BPJS</h3>
-            <div id="bpjs-text-help" class="mt-3 space-y-2 text-sm text-gray-600">
-                <p>Satu karyawan per baris. Jika mendapat JKN dan BP Jamsostek, tuliskan keduanya dalam baris yang sama. Gunakan format <strong>kolom;nilai</strong>, pisahkan antar kolom dengan koma. <strong>NIK dan nama karyawan wajib diisi</strong>; nama harus cocok dengan NIK tersebut.</p>
-                <p>Bisa mengisi JKN saja, BP Jamsostek saja, atau keduanya. Kolom kosong atau tidak ditulis akan mempertahankan data lama. DPP harus nominal; <strong>PPU-KANTOR</strong> ditulis pada <strong>Group BP Jamsostek</strong>.</p>
+            <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
+                <div>
+                    <h3 id="bpjs-text-title" class="text-base font-semibold text-gray-900">Update Massal BPJS</h3>
+                    <p class="mt-1 text-xs text-gray-500">Perbarui DPP, group JKN, BP Jamsostek, dan cabang BPJS.</p>
+                </div>
+                <button type="button" onclick="closeBpjsTextModal()" class="p-1.5 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100" aria-label="Tutup update massal BPJS"><i class="fas fa-times" aria-hidden="true"></i></button>
+            </div>
+            <div class="px-5 py-4">
+            <div id="bpjs-text-help" class="text-sm text-gray-600">
+                <p><strong>NIK dan nama wajib.</strong> Satu karyawan per baris; JKN dan BP Jamsostek dapat digabung dalam baris yang sama.</p>
+                <p class="mt-1 text-xs text-gray-500">Isi kolom yang ingin diperbarui. Kolom kosong atau tidak ditulis tetap memakai data lama.</p>
+            </div>
+            <details class="mt-4 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600">
+                <summary class="cursor-pointer px-3 py-2.5 font-medium text-gray-700">Lihat contoh & panduan format</summary>
+                <div class="px-3 pb-3 space-y-2 border-t border-gray-200 pt-3">
+                <p>Gunakan <strong>kolom;nilai</strong>, pisahkan antar kolom dengan koma. Nama harus cocok dengan NIK. DPP berupa nominal, misalnya <strong>3.200.000</strong>. Tulis <strong>PPU-KANTOR</strong> pada Group BP Jamsostek.</p>
                 <p>Contoh kedua pasangan DPP dan group:</p>
                 <pre class="p-3 bg-teal-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR, DPP BP Jamsostek;3.200.000, Group BP Jamsostek;PPU-KANTOR, Cabang BPJS;Jakarta</pre>
                 <p>Contoh hanya JKN (BP Jamsostek tetap):</p>
                 <pre class="p-3 bg-gray-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR</pre>
                 <p>Contoh hanya BP Jamsostek (JKN tetap):</p>
                 <pre class="p-3 bg-gray-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP BP Jamsostek;3.200.000, Group BP Jamsostek;PPU-KANTOR, Cabang BPJS;Jakarta</pre>
-            </div>
+                </div>
+            </details>
             @if(session('bpjs_text_errors'))
                 <div role="alert" class="mt-4 p-3 bg-red-50 text-red-700 rounded border border-red-200 text-sm max-h-48 overflow-y-auto">
                     <p class="font-bold">Baris berikut gagal. Textarea hanya berisi baris yang perlu diperbaiki:</p>
@@ -992,15 +1005,16 @@
                     </ul>
                 </div>
             @endif
-            <label for="bpjs_text" class="block mt-4 mb-2 font-medium text-sm">Data karyawan</label>
-            <textarea id="bpjs_text" name="bpjs_text" rows="9" maxlength="200000" required aria-describedby="bpjs-text-help" class="block w-full border-gray-300 rounded-lg font-mono text-sm focus:ring-teal-500 focus:border-teal-500" placeholder="nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR">{{ old('bpjs_text') }}</textarea>
+            <label for="bpjs_text" class="block mt-4 mb-2 font-medium text-sm text-gray-700">Data karyawan</label>
+            <textarea id="bpjs_text" name="bpjs_text" rows="7" maxlength="200000" required aria-describedby="bpjs-text-help" class="block w-full border border-gray-300 bg-white p-3 rounded-lg font-mono text-xs leading-relaxed focus:ring-1 focus:ring-teal-500 focus:border-teal-500" placeholder="nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR">{{ old('bpjs_text') }}</textarea>
             @error('bpjs_text', 'bpjsText')
                 <p role="alert" class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
-            <p class="mt-2 text-xs text-gray-500">Baris valid disimpan; baris yang gagal ditampilkan untuk diperbaiki. Fitur ini memperbarui karyawan yang sudah terdaftar.</p>
-            <div class="flex justify-end gap-3 mt-5">
-                <button type="button" onclick="closeBpjsTextModal()" class="px-4 py-2 border rounded-lg text-sm">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Simpan Update Massal</button>
+            <p class="mt-2 text-xs text-gray-500">Baris valid disimpan. Baris yang gagal dapat diperbaiki dan dikirim ulang.</p>
+            </div>
+            <div class="flex justify-end gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50">
+                <button type="button" onclick="closeBpjsTextModal()" class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm text-gray-600 hover:bg-gray-100">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">Simpan Perubahan</button>
             </div>
         </form>
     </div>
