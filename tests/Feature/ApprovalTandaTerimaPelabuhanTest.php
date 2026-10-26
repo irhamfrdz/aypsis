@@ -100,4 +100,20 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
 
         $this->assertSame(['SJ-APPROVED'], $approvedView->getData()['tandaTerimas']->pluck('no_surat_jalan')->all());
     }
+
+    public function test_existing_receipts_with_both_dates_are_marked_approved(): void
+    {
+        DB::table('tanda_terimas')->insert([
+            ['no_surat_jalan' => 'SJ-COMPLETE', 'tanggal' => '2026-10-25', 'tanggal_checkpoint_supir' => '2026-10-24'],
+            ['no_surat_jalan' => 'SJ-NO-CHECKPOINT', 'tanggal' => '2026-10-25', 'tanggal_checkpoint_supir' => null],
+            ['no_surat_jalan' => 'SJ-NO-RECEIPT-DATE', 'tanggal' => null, 'tanggal_checkpoint_supir' => '2026-10-24'],
+        ]);
+
+        $migration = require database_path('migrations/2026_10_26_000003_backfill_approval_pelabuhan_status.php');
+        $migration->up();
+
+        $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-COMPLETE', 'approval_pelabuhan_status' => 'approved']);
+        $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-NO-CHECKPOINT', 'approval_pelabuhan_status' => 'pending']);
+        $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-NO-RECEIPT-DATE', 'approval_pelabuhan_status' => 'pending']);
+    }
 }
