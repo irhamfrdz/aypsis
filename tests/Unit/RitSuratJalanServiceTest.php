@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\RitSuratJalanService;
+use App\Services\PranotaUangRitEligibility;
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Eloquent\Model;
@@ -107,5 +108,45 @@ class RitSuratJalanServiceTest extends TestCase
         $end = Carbon::parse('2026-10-09');
         $this->assertSame([1, 2, 4], $service->regular($start, $end)->orderBy('id')->pluck('id')->all());
         $this->assertSame([3], $service->bongkaran($start, $end)->pluck('id')->all());
+    }
+
+    public function test_create_candidates_exclude_every_number_in_active_pranotas(): void
+    {
+        $db = $this->database->getConnection();
+        $db->table('pranota_uang_rits')->insert([
+            ['status' => 'draft', 'surat_jalan_id' => 1, 'no_surat_jalan' => 'SJ-01, SJ-02, SJ-03 (Bongkaran)'],
+            ['status' => 'cancelled', 'surat_jalan_id' => 4, 'no_surat_jalan' => 'SJ-04'],
+        ]);
+        foreach ([1, 2, 4, 5] as $id) {
+            $db->table('surat_jalans')->insert([
+                'id' => $id, 'no_surat_jalan' => 'SJ-0'.$id, 'rit' => 'menggunakan_rit',
+                'tanggal_checkpoint' => '2026-10-05', 'status_pembayaran_uang_rit' => 'belum_dibayar',
+            ]);
+        }
+        foreach ([3, 6] as $id) {
+            $db->table('surat_jalan_bongkarans')->insert([
+                'id' => $id, 'nomor_surat_jalan' => 'SJ-0'.$id, 'rit' => 'menggunakan_rit',
+                'tanggal_checkpoint' => '2026-10-05', 'status_pembayaran_uang_rit' => 'belum_bayar',
+            ]);
+        }
+
+        $usedNumbers = PranotaUangRitEligibility::usedNumbers();
+        $usedRegular = array_fill_keys($usedNumbers['regular'], true);
+        $usedBongkaran = array_fill_keys($usedNumbers['bongkaran'], true);
+        $service = new RitSuratJalanService;
+        $start = Carbon::parse('2026-10-03');
+        $end = Carbon::parse('2026-10-09');
+
+        $regular = PranotaUangRitEligibility::regular($service->regular($start, $end))
+            ->orderBy('id')->get()
+            ->reject(fn ($suratJalan) => isset($usedRegular[$suratJalan->no_surat_jalan]))
+            ->pluck('id')->all();
+        $bongkaran = PranotaUangRitEligibility::bongkaran($service->bongkaran($start, $end))
+            ->orderBy('id')->get()
+            ->reject(fn ($suratJalan) => isset($usedBongkaran[$suratJalan->nomor_surat_jalan]))
+            ->pluck('id')->all();
+
+        $this->assertSame([4, 5], $regular);
+        $this->assertSame([6], $bongkaran);
     }
 }

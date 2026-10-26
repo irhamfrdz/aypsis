@@ -9,6 +9,7 @@ use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use App\Services\RitSuratJalanService;
+use App\Services\PranotaUangRitEligibility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -118,10 +119,15 @@ class PranotaUangRitController extends Controller
         }
 
         $ritService = app(RitSuratJalanService::class);
-        $suratJalans = $ritService->regular($startDateObj, $endDateObj)
-            ->with(['tandaTerima', 'approvals'])->orderBy('created_at', 'desc')->get();
-        $suratJalanBongkarans = $ritService->bongkaran($startDateObj, $endDateObj)
-            ->with('tandaTerima')->orderBy('created_at', 'desc')->get();
+        $usedNumbers = PranotaUangRitEligibility::usedNumbers();
+        $usedRegular = array_fill_keys($usedNumbers['regular'], true);
+        $usedBongkaran = array_fill_keys($usedNumbers['bongkaran'], true);
+        $suratJalans = PranotaUangRitEligibility::regular($ritService->regular($startDateObj, $endDateObj))
+            ->with(['tandaTerima', 'approvals'])->orderBy('created_at', 'desc')->get()
+            ->reject(fn ($suratJalan) => isset($usedRegular[$suratJalan->no_surat_jalan]))->values();
+        $suratJalanBongkarans = PranotaUangRitEligibility::bongkaran($ritService->bongkaran($startDateObj, $endDateObj))
+            ->with('tandaTerima')->orderBy('created_at', 'desc')->get()
+            ->reject(fn ($suratJalan) => isset($usedBongkaran[$suratJalan->nomor_surat_jalan]))->values();
 
         $allSuratJalans = $suratJalans->concat($suratJalanBongkarans);
         $eligibleCount = $allSuratJalans->count();
@@ -406,6 +412,25 @@ class PranotaUangRitController extends Controller
                 DB::rollBack();
 
                 return back()->withErrors(['surat_jalan_data' => 'Surat jalan yang dipilih tidak ditemukan. Muat ulang halaman dan periksa kembali.'])->withInput();
+            }
+
+            $usedNumbers = PranotaUangRitEligibility::usedNumbers();
+            $usedRegular = array_fill_keys($usedNumbers['regular'], true);
+            $usedBongkaran = array_fill_keys($usedNumbers['bongkaran'], true);
+            $regularUnavailable = $selectedRegular->contains(fn ($suratJalan) =>
+                $suratJalan->status_pembayaran_uang_rit !== SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
+                || isset($usedRegular[$suratJalan->no_surat_jalan]));
+            $bongkaranUnavailable = $selectedBongkaran->contains(fn ($suratJalan) =>
+                ! in_array($suratJalan->status_pembayaran_uang_rit, [null, 'belum_bayar'], true)
+                || isset($usedBongkaran[$suratJalan->nomor_surat_jalan]));
+            $regularLinked = PranotaUangRit::whereNotIn('status', ['cancelled'])
+                ->whereIn('surat_jalan_id', $selectedRegular->pluck('id'))->exists();
+            $bongkaranLinked = PranotaUangRit::whereNotIn('status', ['cancelled'])
+                ->whereIn('surat_jalan_bongkaran_id', $selectedBongkaran->pluck('id'))->exists();
+            if ($regularUnavailable || $bongkaranUnavailable || $regularLinked || $bongkaranLinked) {
+                DB::rollBack();
+
+                return back()->withErrors(['surat_jalan_data' => 'Ada surat jalan yang sudah masuk pranota atau dibayar. Muat ulang halaman dan pilih surat jalan yang tersedia.'])->withInput();
             }
 
             // Generate nomor pranota DALAM transaksi yang sama

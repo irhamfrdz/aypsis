@@ -240,7 +240,7 @@
                 </div>
                 @if(isset($eligibleCount))
                 <div class="px-4 py-3 text-xs text-gray-700 bg-yellow-50 rounded-b-md border-t border-yellow-200">
-                    <p class="mb-1">Keterangan: Seluruh <strong>{{ $eligibleCount }}</strong> surat jalan sesuai Report Rit tersedia untuk dipilih, termasuk yang sudah masuk pranota atau berstatus lunas.</p>
+                    <p class="mb-1">Keterangan: <strong>{{ $eligibleCount }}</strong> surat jalan sesuai Report Rit tersedia untuk dipilih. Surat jalan yang sudah masuk pranota atau sudah dibayar tidak ditampilkan.</p>
                 </div>
                 @endif
 
