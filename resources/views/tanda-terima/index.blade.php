@@ -688,6 +688,11 @@
                                         <i class="fas fa-check w-2 h-2 mr-1"></i>
                                         Done
                                     </span>
+                                @elseif($tandaTerima->status == 'approved')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        <i class="fas fa-check w-2 h-2 mr-1"></i>
+                                        Approved
+                                    </span>
                                 @elseif($tandaTerima->status == 'submitted')
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                         <i class="fas fa-paper-plane w-2 h-2 mr-1"></i>

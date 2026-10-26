@@ -7462,6 +7462,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     });
 
     // 🛡️ APPROVAL TANDA TERIMA (INSURANCE)
+    Route::prefix('approval-tanda-terima-pelabuhan')->name('approval-tanda-terima-pelabuhan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ApprovalTandaTerimaPelabuhanController::class, 'index'])
+            ->name('index')->middleware('can:approval-tanda-terima-pelabuhan-view');
+        Route::patch('/{tandaTerima}', [\App\Http\Controllers\ApprovalTandaTerimaPelabuhanController::class, 'approve'])
+            ->name('approve')->middleware('can:approval-tanda-terima-pelabuhan-approve');
+    });
+
     Route::prefix('approval-tanda-terima')->name('approval-tanda-terima.')->group(function () {
         Route::get('/', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'index'])
             ->name('index')

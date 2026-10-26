@@ -1215,28 +1215,26 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label for="tanggal" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tanggal Tanda Terima <span class="text-red-500">*</span>
+                                        Tanggal Tanda Terima
                                     </label>
                                     <input type="date"
                                            name="tanggal"
                                            id="tanggal"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal') border-red-500 @enderror"
-                                           value="{{ old('tanggal', date('Y-m-d')) }}"
-                                           required>
+                                           value="{{ old('tanggal') }}">
                                     @error('tanggal')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <div>
                                     <label for="tanggal_checkpoint_supir" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tanggal Checkpoint Supir <span class="text-red-500">*</span>
+                                        Tanggal Checkpoint Supir
                                     </label>
                                     <input type="date"
                                            name="tanggal_checkpoint_supir"
                                            id="tanggal_checkpoint_supir"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_checkpoint_supir') border-red-500 @enderror"
-                                           value="{{ old('tanggal_checkpoint_supir', $suratJalan->tanggal_checkpoint ? \Carbon\Carbon::parse($suratJalan->tanggal_checkpoint)->format('Y-m-d') : date('Y-m-d')) }}"
-                                           required>
+                                           value="{{ old('tanggal_checkpoint_supir') }}">
                                     @error('tanggal_checkpoint_supir')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
@@ -1249,7 +1247,7 @@
                                            name="tanggal_terima_pelabuhan"
                                            id="tanggal_terima_pelabuhan"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_terima_pelabuhan') border-red-500 @enderror"
-                                           value="{{ old('tanggal_terima_pelabuhan', date('Y-m-d')) }}">
+                                           value="{{ old('tanggal_terima_pelabuhan') }}">
                                     @error('tanggal_terima_pelabuhan')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror

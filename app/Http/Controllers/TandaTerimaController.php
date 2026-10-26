@@ -556,7 +556,7 @@ class TandaTerimaController extends Controller
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
             'no_dn' => 'nullable|string|max:255',
-            'tanggal' => 'required|date',
+            'tanggal' => 'nullable|date',
             'tanggal_checkpoint_supir' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
