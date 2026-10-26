@@ -28,6 +28,16 @@ class PranotaBpjsDetail extends Model
         return $this->belongsTo(PranotaBpjsHeader::class, 'pranota_bpjs_header_id');
     }
 
+    public function getKisBiayaAttribute(): float
+    {
+        return $this->tipe_karyawan === KaryawanTidakTetap::class ? (float) $this->bpjs_kesehatan : 0;
+    }
+
+    public function getKisTunjanganAttribute(): float
+    {
+        return $this->tipe_karyawan === KaryawanTidakTetap::class ? 0 : (float) $this->bpjs_kesehatan;
+    }
+
     public function karyawan()
     {
         return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');

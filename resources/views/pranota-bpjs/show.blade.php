@@ -72,7 +72,9 @@
                     <tr>
                         <th class="border border-gray-300 px-3 py-2 text-center w-12">No</th>
                         <th class="border border-gray-300 px-3 py-2 text-left">Nama Karyawan</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">JKN</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 4% (TUNJ)</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 4% (BIAY)</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 1% (HUTANG)</th>
                         <th class="border border-gray-300 px-3 py-2 text-right">BP Jamsostek</th>
                         <th class="border border-gray-300 px-3 py-2 text-right">Subtotal</th>
                     </tr>
@@ -87,7 +89,9 @@
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>
                                 @endif
                             </td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_kesehatan + $detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->kis_tunjangan, 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->kis_biaya, 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->jht_biaya + $detail->jht_hutang + $detail->jkk_tunjangan + $detail->jkm_tunjangan + $detail->jp_biaya + $detail->jp_hutang, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 px-3 py-2 text-right font-medium">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
                         </tr>
@@ -96,7 +100,9 @@
                 <tfoot class="bg-gray-50 font-bold">
                     <tr>
                         <td colspan="2" class="border border-gray-300 px-3 py-3 text-right uppercase">Total ({{ $pranota_bpj->total_karyawan }} Karyawan):</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->total_bpjs_kesehatan, 2, ',', '.') }}</td>
+                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('kis_tunjangan'), 2, ',', '.') }}</td>
+                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('kis_biaya'), 2, ',', '.') }}</td>
+                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('bpjs_ketenagakerjaan'), 2, ',', '.') }}</td>
                         <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->total_bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
                         <td class="border border-gray-300 px-3 py-3 text-right text-indigo-700">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
                     </tr>

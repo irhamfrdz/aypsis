@@ -258,7 +258,7 @@
                             <th id="th-group-info" colspan="5" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
                                 <i class="fas fa-id-card-clip text-gray-500 mr-1"></i> Informasi Karyawan
                             </th>
-                            <th id="th-group-jkn" colspan="2" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
+                            <th id="th-group-jkn" colspan="3" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
                                 <i class="fas fa-heart-pulse text-indigo-600 mr-1"></i> BPJS Kesehatan (JKN)
                             </th>
                             <th id="th-group-ppu" colspan="4" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900 col-group-ppu">
@@ -289,8 +289,9 @@
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-tipe-jkn" style="min-width:130px">Tipe JKN</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200 col-info-tipe-jam" style="min-width:140px">Tipe Jamsostek</th>
                             
-                            {{-- JKN (2) --}}
-                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (Tunj)</th>
+                            {{-- JKN (3) --}}
+                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (TUNJ)</th>
+                            <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Biaya karyawan tidak tetap">KIS 4% (BIAY)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 border-r border-indigo-100 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 1% Hutang">KIS 1% (Hutang)</th>
                             
                             {{-- PPU (4) --}}
@@ -325,6 +326,7 @@
                             </td>
                             {{-- JKN --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_kes">Rp 0</td>
+                            <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_kes_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_ket">Rp 0</td>
                             
                             {{-- PPU --}}
@@ -401,6 +403,7 @@
     </form>
 </div>
 
+<script src="{{ asset('js/pranota-bpjs-jkn.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
@@ -653,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let globalJpB = 0, globalJpH = 0;
 
         // Visible sums for table footer
-        let sumKes = 0, sumKet = 0;
+        let sumKes = 0, sumKesBiaya = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0;
         let sumBpuJht = 0, sumBpuJkk = 0, sumBpuJkm = 0;
         let sumNcJhtB = 0, sumNcJhtH = 0, sumNcJkk = 0, sumNcJkm = 0;
@@ -718,6 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Visible accumulator
             if (isVisible) {
                 sumKes += valKes;
+                sumKesBiaya += BpjsJknColumns.split(valKes, tr.querySelector('.tipe-karyawan-hidden-input')?.value).biaya;
                 sumKet += valKet;
                 sumJhtB += valJhtB;
                 sumJhtH += valJhtH;
@@ -736,7 +740,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Update footer table cells
-        document.getElementById('total_kes').innerText                 = 'Rp ' + formatNumber(sumKes);
+        document.getElementById('total_kes').innerText                 = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').innerText = 'Rp ' + formatNumber(sumKesBiaya);
         document.getElementById('total_ket').innerText                 = 'Rp ' + formatNumber(sumKet);
         document.getElementById('total_jht_biaya').innerText           = 'Rp ' + formatNumber(sumJhtB);
         document.getElementById('total_jht_hutang').innerText          = 'Rp ' + formatNumber(sumJhtH);
@@ -868,10 +873,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             
-            {{-- JKN (2) --}}
-            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn">
+            {{-- JKN (3) --}}
+            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right font-mono text-xs input-kes font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
+            <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn" data-jkn-biaya></td>
             <td class="px-1.5 py-2 align-middle bg-indigo-50/10 border-r border-indigo-100 col-group-jkn">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right font-mono text-xs input-ket font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -933,6 +939,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         container.appendChild(tr);
+        BpjsJknColumns.syncRow(tr);
 
         const inputKes     = tr.querySelector('.input-kes');
         const inputKet     = tr.querySelector('.input-ket');
@@ -956,6 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputJpHutang  = tr.querySelector('.input-jp-hutang');
         
         const updateSubtotal = () => {
+            BpjsJknColumns.syncRow(tr);
             const currentSelectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
             const kes       = parseIdNumber(inputKes.value);
             const ket       = parseIdNumber(inputKet.value);

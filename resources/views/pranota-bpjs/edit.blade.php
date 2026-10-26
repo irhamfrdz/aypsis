@@ -115,7 +115,8 @@
                             <th class="px-4 py-3 text-left">Group</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe BP JAMSOSTEK</th>
-                            <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 4%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (TUNJ)</th>
+                            <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (BIAY)</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 1%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JHT 3.7%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JHT 2%</th>
@@ -134,6 +135,7 @@
                         <tr>
                             <td colspan="5" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_ket">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_hutang">Rp 0</td>
@@ -166,6 +168,7 @@
 </div>
 
 
+<script src="{{ asset('js/pranota-bpjs-jkn.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('detail-container');
@@ -193,10 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculateTotals() {
-        let sumKes = 0, sumKet = 0;
+        let sumKes = 0, sumKesBiaya = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
         document.querySelectorAll('.input-kes').forEach(i => sumKes += parseIdNumber(i.value));
+        document.querySelectorAll('[data-jkn-biaya] .input-kes').forEach(i => sumKesBiaya += parseIdNumber(i.value));
         document.querySelectorAll('.input-ket').forEach(i => sumKet += parseIdNumber(i.value));
         document.querySelectorAll('.input-jht-biaya').forEach(i => sumJhtB += parseIdNumber(i.value));
         document.querySelectorAll('.input-jht-hutang').forEach(i => sumJhtH += parseIdNumber(i.value));
@@ -205,7 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.input-jp-biaya').forEach(i => sumJpB += parseIdNumber(i.value));
         document.querySelectorAll('.input-jp-hutang').forEach(i => sumJpH += parseIdNumber(i.value));
 
-        document.getElementById('total_kes').innerText = 'Rp ' + formatNumber(sumKes);
+        document.getElementById('total_kes').innerText = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').innerText = 'Rp ' + formatNumber(sumKesBiaya);
         document.getElementById('total_ket').innerText = 'Rp ' + formatNumber(sumKet);
         document.getElementById('total_jht_biaya').innerText = 'Rp ' + formatNumber(sumJhtB);
         document.getElementById('total_jht_hutang').innerText = 'Rp ' + formatNumber(sumJhtH);
@@ -307,9 +312,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <option value="total" selected>TOTAL BP JAMSOSTEK</option>
                 </select>
             </td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKes}" autocomplete="off">
             </td>
+            <td class="px-4 py-3 align-middle" data-jkn-biaya></td>
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKet}" autocomplete="off">
             </td>
@@ -340,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         container.appendChild(tr);
+        BpjsJknColumns.syncRow(tr);
 
         const inputKes     = tr.querySelector('.input-kes');
         const inputKet     = tr.querySelector('.input-ket');
@@ -355,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputJpHutang = tr.querySelector('.input-jp-hutang');
         
         const updateSubtotal = () => {
+            BpjsJknColumns.syncRow(tr);
             const kes = parseIdNumber(inputKes.value);
             const ket = parseIdNumber(inputKet.value);
             const jhtB = parseIdNumber(inputJhtBiaya.value);
