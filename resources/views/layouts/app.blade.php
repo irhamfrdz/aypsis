@@ -719,7 +719,7 @@
                 </div>
                 @endif
                 <div>
-                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'pranota-puml.*', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
+                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'pranota-puml.*', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*', 'report-kerja-supir-batam.*', 'report-gaji-supir-batam.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
                         Rekap dan Laporan
                     </a>
                 </div>
@@ -1451,12 +1451,6 @@
                             </a>
                         @endif
 
-                        {{-- Report Kerja Supir Batam --}}
-                        @if($user && $user->can('report-kerja-supir-batam-view'))
-                        <a href="{{ route('report-kerja-supir-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('report-kerja-supir-batam.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                            <span class="text-xs font-semibold">Report Kerja Supir Batam</span>
-                        </a>
-                        @endif
                     </div>
                 </div>
                 @endif
@@ -1950,13 +1944,6 @@
         <a href="{{ route('report-history-cuti.select-karyawan') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report-history-cuti.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             Report History Cuti
         </a>
-
-        {{-- Report Gaji Supir Batam --}}
-        @if($user && ($isAdmin || $user->can('gaji-supir-batam-view')))
-        <a href="{{ route('report-gaji-supir-batam.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report-gaji-supir-batam.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-            Report Gaji Supir Batam
-        </a>
-        @endif
 
         {{-- Report Pembayaran --}}
         <a href="{{ Route::has('report.pembayaran.index') ? route('report.pembayaran.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.pembayaran.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">

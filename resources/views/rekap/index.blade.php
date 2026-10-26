@@ -56,6 +56,8 @@
         ['category' => 'Laporan', 'label' => 'Report Pranota Uang Jalan', 'route' => 'report.pranota-uang-jalan.index', 'permission' => null],
         ['category' => 'Laporan', 'label' => 'Report Surat Jalan', 'route' => 'report.surat_jalan.index', 'permission' => null],
         ['category' => 'Laporan', 'label' => 'Report Pranota OB', 'route' => 'report.pranota-ob.index', 'permission' => null],
+        ['category' => 'Laporan', 'label' => 'Report Kerja Supir Batam', 'route' => 'report-kerja-supir-batam.index', 'permission' => 'report-kerja-supir-batam-view'],
+        ['category' => 'Laporan', 'label' => 'Report Gaji Supir Batam', 'route' => 'report-gaji-supir-batam.index', 'permission' => 'gaji-supir-batam-view'],
         ['category' => 'Laporan', 'label' => 'Riwayat Pranota PUML', 'route' => 'pranota-puml.index', 'permission' => 'pranota-puml-view'],
     ])->filter(fn ($item) => !$item['permission'] || $user->can($item['permission']))->groupBy('category');
 @endphp
