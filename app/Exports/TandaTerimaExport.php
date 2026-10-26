@@ -132,14 +132,12 @@ class TandaTerimaExport implements FromCollection, ShouldAutoSize, WithEvents
             $rows->push([
                 'RO NOMOR :',
                 ($nomorRo ?: 'N/A'),
-                '', '', '', '', '', '', '', '', '', '', '', '',
+                '', '', '', '', '', '', '',
             ]);
 
             // Add column headers
             $rows->push([
                 'CONTAINER_NO',
-                'SEAL',
-                'SUPIR',
                 'SIZE',
                 'TIPE',
                 'STATUS',
@@ -148,17 +146,12 @@ class TandaTerimaExport implements FromCollection, ShouldAutoSize, WithEvents
                 'CONSIGNEE',
                 'REMARK',
                 'POD',
-                'TUJUAN',
-                'NAMA BARANG',
-                'NAMA PENERIMA',
             ]);
 
             // Add data for this RO
             foreach ($groupedTandaTerimas as $tandaTerima) {
                 $rows->push([
                     $tandaTerima->no_kontainer ?? '',           // CONTAINER_NO
-                    $tandaTerima->no_seal ?? '',                // SEAL
-                    optional($tandaTerima->suratJalan)->supir ?? '', // SUPIR
                     $tandaTerima->size ?? '',                   // SIZE
                     $this->getContainerType($tandaTerima->no_kontainer), // TIPE
                     $this->getStatus($tandaTerima->kegiatan),   // STATUS (F/E)
@@ -167,14 +160,11 @@ class TandaTerimaExport implements FromCollection, ShouldAutoSize, WithEvents
                     '02522267',                                 // CONSIGNEE (fixed value)
                     '',                                         // REMARK (kosong)
                     $this->getPod($tandaTerima->tujuan_pengiriman), // POD (IDBTM/IDKID)
-                    $tandaTerima->tujuan_pengiriman ?? '',       // TUJUAN
-                    is_array($tandaTerima->nama_barang) ? implode(', ', $tandaTerima->nama_barang) : ($tandaTerima->nama_barang ?? ''), // NAMA BARANG
-                    $tandaTerima->penerima ?? '',                // NAMA PENERIMA
                 ]);
             }
 
             // Add empty row between RO groups
-            $rows->push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            $rows->push(['', '', '', '', '', '', '', '', '']);
         }
 
         return $rows;
@@ -237,15 +227,15 @@ class TandaTerimaExport implements FromCollection, ShouldAutoSize, WithEvents
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {
-                        $sheet->getStyle("A{$row}:N{$row}")->applyFromArray($headerStyle);
+                        $sheet->getStyle("A{$row}:I{$row}")->applyFromArray($headerStyle);
                         // Set wrap text and center alignment for header
-                        $sheet->getStyle("A{$row}:N{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getStyle("A{$row}:I{$row}")->getAlignment()->setWrapText(true);
                         $sheet->getRowDimension($row)->setRowHeight(22);
                     }
                 }
 
                 // Optionally set column widths minimum or rely on ShouldAutoSize
-                foreach (range('A', 'N') as $col) {
+                foreach (range('A', 'I') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },
