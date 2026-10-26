@@ -36,12 +36,31 @@ class KaryawanTidakTetapSalaryGroupsTest extends TestCase
         foreach (['pekerjaans', 'pajaks'] as $tableName) {
             Schema::create($tableName, fn (Blueprint $table) => $table->id());
         }
+        (require database_path('migrations/2026_10_26_150000_add_is_special_case_to_karyawan_tidak_tetaps_table.php'))->up();
         DB::table('type_gaji_karyawan')->insert([
             ['nama' => 'ABK - A1', 'status' => 'active'],
             ['nama' => 'TUNAI', 'status' => 'active'],
             ['nama' => 'TRANSFER', 'status' => 'inactive'],
         ]);
         DB::table('karyawans')->insert(['grup' => '["GAJI:LAMA", "UANG MAKAN:KANTOR BATAM"]']);
+    }
+
+    public function test_special_case_defaults_to_false_and_can_be_enabled_and_disabled(): void
+    {
+        $controller = new KaryawanTidakTetapController;
+        $controller->store(Request::create('/', 'POST', ['nik' => 'P0001', 'nama_lengkap' => 'Karyawan A']));
+        $employee = KaryawanTidakTetap::firstOrFail();
+        $this->assertFalse($employee->is_special_case);
+        $controller->update(Request::create('/', 'PUT', ['nik' => 'P0001', 'nama_lengkap' => 'Karyawan A', 'is_special_case' => '1']), $employee);
+        $this->assertTrue($employee->fresh()->is_special_case);
+        $html = view('karyawan-tidak-tetap.partials.special-case-switch', [
+            'karyawanTidakTetap' => $employee->fresh(), 'errors' => new \Illuminate\Support\ViewErrorBag,
+        ])->render();
+        $this->assertMatchesRegularExpression('/id="is_special_case"[^>]*checked/', $html);
+        $controller->update(Request::create('/', 'PUT', ['nik' => 'P0001', 'nama_lengkap' => 'Karyawan A', 'is_special_case' => '0']), $employee);
+        $this->assertFalse($employee->fresh()->is_special_case);
+        $controller->store(Request::create('/', 'POST', ['nik' => 'P0002', 'nama_lengkap' => 'Karyawan B', 'is_special_case' => '1']));
+        $this->assertTrue(KaryawanTidakTetap::where('nik', 'P0002')->firstOrFail()->is_special_case);
     }
 
     public function test_custom_bpjs_groups_are_saved_updated_and_available_on_both_forms(): void

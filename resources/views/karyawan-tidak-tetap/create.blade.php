@@ -171,6 +171,7 @@
         {{-- Informasi Pajak & JKN --}}
         <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pajak & JKN</legend>
+            @include('karyawan-tidak-tetap.partials.special-case-switch')
             <div class="form-section pt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
