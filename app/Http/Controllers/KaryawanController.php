@@ -2396,6 +2396,28 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Update supplied BPJS fields from one labelled employee record per line.
+     */
+    public function updateBpjsText(Request $request, \App\Services\KaryawanBpjsTextUpdater $updater)
+    {
+        $request->validateWithBag('bpjsText', [
+            'bpjs_text' => ['required', 'string', 'max:200000', 'regex:/\S/u'],
+        ]);
+
+        $result = $updater->update($request->input('bpjs_text'));
+        $message = "{$result['updated']} karyawan diperbarui, {$result['unchanged']} karyawan tidak berubah, ".count($result['errors']).' baris gagal.';
+
+        $response = redirect()->route('master.karyawan.index')
+            ->with(count($result['errors']) ? 'warning' : 'success', $message);
+        if ($result['errors']) {
+            $response->with('bpjs_text_errors', $result['errors'])
+                ->withInput(['bpjs_text' => implode("\n", $result['failed_text'])]);
+        }
+
+        return $response;
+    }
+
+    /**
      * Process mass update of DPP JKN and DPP BP Jamsostek from Excel.
      */
     public function importDpp(Request $request)

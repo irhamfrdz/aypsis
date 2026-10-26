@@ -47,6 +47,11 @@
                             </div>
                         </div>
 
+                        @can('master-karyawan-update')
+                            <button type="button" onclick="openBpjsTextModal()" class="inline-flex items-center px-3 py-1.5 bg-teal-600 rounded-lg font-bold text-[11px] text-white hover:bg-teal-700">
+                                <i class="fas fa-paste mr-1.5"></i> Update Massal BPJS
+                            </button>
+                        @endcan
                         <a href="{{ route('master.karyawan.create') }}"
                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 border border-transparent rounded-lg font-bold text-[11px] text-white uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm">
                             <i class="fas fa-plus mr-1.5"></i> Tambah
@@ -959,6 +964,48 @@
         </div>
     </div>
 </div>
+<!-- Update BPJS via textarea -->
+@can('master-karyawan-update')
+<div id="bpjsTextModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="bpjs-text-title">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeBpjsTextModal()"></div>
+    <div class="relative bg-white rounded-lg shadow-xl max-w-4xl mx-auto my-8 p-6 border-t-4 border-teal-500">
+        <form action="{{ route('master.karyawan.update-bpjs-text') }}" method="POST">
+            @csrf
+            <h3 id="bpjs-text-title" class="text-lg font-bold text-gray-900">Update Massal DPP & Group BPJS</h3>
+            <div id="bpjs-text-help" class="mt-3 space-y-2 text-sm text-gray-600">
+                <p>Satu karyawan per baris. Jika mendapat JKN dan BP Jamsostek, tuliskan keduanya dalam baris yang sama. Gunakan format <strong>kolom;nilai</strong>, pisahkan antar kolom dengan koma. <strong>NIK dan nama karyawan wajib diisi</strong>; nama harus cocok dengan NIK tersebut.</p>
+                <p>Bisa mengisi JKN saja, BP Jamsostek saja, atau keduanya. Kolom kosong atau tidak ditulis akan mempertahankan data lama. DPP harus nominal; <strong>PPU-KANTOR</strong> ditulis pada <strong>Group BP Jamsostek</strong>.</p>
+                <p>Contoh kedua pasangan DPP dan group:</p>
+                <pre class="p-3 bg-teal-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR, DPP BP Jamsostek;3.200.000, Group BP Jamsostek;PPU-KANTOR, Cabang BPJS;Jakarta</pre>
+                <p>Contoh hanya JKN (BP Jamsostek tetap):</p>
+                <pre class="p-3 bg-gray-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR</pre>
+                <p>Contoh hanya BP Jamsostek (JKN tetap):</p>
+                <pre class="p-3 bg-gray-50 rounded border text-xs whitespace-pre-wrap break-words">nik;1593, nama;aditya nur rahmat kaya, DPP BP Jamsostek;3.200.000, Group BP Jamsostek;PPU-KANTOR, Cabang BPJS;Jakarta</pre>
+            </div>
+            @if(session('bpjs_text_errors'))
+                <div role="alert" class="mt-4 p-3 bg-red-50 text-red-700 rounded border border-red-200 text-sm max-h-48 overflow-y-auto">
+                    <p class="font-bold">Baris berikut gagal. Textarea hanya berisi baris yang perlu diperbaiki:</p>
+                    <ul class="list-disc pl-5">
+                        @foreach(session('bpjs_text_errors') as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <label for="bpjs_text" class="block mt-4 mb-2 font-medium text-sm">Data karyawan</label>
+            <textarea id="bpjs_text" name="bpjs_text" rows="9" maxlength="200000" required aria-describedby="bpjs-text-help" class="block w-full border-gray-300 rounded-lg font-mono text-sm focus:ring-teal-500 focus:border-teal-500" placeholder="nik;1593, nama;aditya nur rahmat kaya, DPP JKN;3.200.000, Group JKN;JKN-KIS-KANTOR">{{ old('bpjs_text') }}</textarea>
+            @error('bpjs_text', 'bpjsText')
+                <p role="alert" class="mt-2 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+            <p class="mt-2 text-xs text-gray-500">Baris valid disimpan; baris yang gagal ditampilkan untuk diperbaiki. Fitur ini memperbarui karyawan yang sudah terdaftar.</p>
+            <div class="flex justify-end gap-3 mt-5">
+                <button type="button" onclick="closeBpjsTextModal()" class="px-4 py-2 border rounded-lg text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700">Simpan Update Massal</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endcan
 <!-- Import DPP Modal -->
 <div id="importDppModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -1242,6 +1289,28 @@ function closeTarikDataModal() {
     document.getElementById('tarik_penempatan').value = '';
     document.getElementById('tarik_cabang').value = '';
 }
+
+function openBpjsTextModal() {
+    const modal = document.getElementById('bpjsTextModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('bpjs_text').focus();
+}
+
+function closeBpjsTextModal() {
+    document.getElementById('bpjsTextModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('keydown', function (event) {
+    const modal = document.getElementById('bpjsTextModal');
+    if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeBpjsTextModal();
+});
+
+@if(session('bpjs_text_errors') || $errors->bpjsText->any())
+document.addEventListener('DOMContentLoaded', openBpjsTextModal);
+@endif
 
 function openImportDppModal() {
     const modal = document.getElementById('importDppModal');

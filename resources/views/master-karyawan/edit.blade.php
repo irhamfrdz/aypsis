@@ -521,6 +521,10 @@
                 <div>
                     <label for="group_jkn" class="{{ $labelClasses }}">Group JKN</label>
                     <select name="group_jkn" id="group_jkn" class="{{ $selectClasses }}">
+                        @php($currentJknGroup = old('group_jkn', $karyawan->group_jkn))
+                        @if($currentJknGroup && !in_array($currentJknGroup, ['JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN', 'JKN-KIS-NON KARY', 'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI', 'JKN-REIMBURSEMENT-CREW'], true))
+                            <option value="{{ $currentJknGroup }}" selected>{{ $currentJknGroup }} (nilai lama — silakan pilih group yang sesuai)</option>
+                        @endif
                         <option value="">-- Pilih Group JKN --</option>
                         <option value="JKN-KIS-HARIAN" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-HARIAN' ? 'selected' : '' }}>JKN-KIS-HARIAN</option>
                         <option value="JKN-KIS-KANTOR" {{ old('group_jkn', $karyawan->group_jkn) == 'JKN-KIS-KANTOR' ? 'selected' : '' }}>JKN-KIS-KANTOR</option>
@@ -544,6 +548,10 @@
                 <div>
                     <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
                     <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
+                        @php($currentJamsostekGroup = old('group_bp_jamsostek', $karyawan->group_bp_jamsostek))
+                        @if($currentJamsostekGroup && !in_array($currentJamsostekGroup, ['BPU-CREW', 'BPU-HARIAN', 'BPU-LAPANGAN', 'BPU-NON KARY-PBM', 'BPU-NON KARY-UMKM', 'BPU-NON KARY-UMKM NO PP', 'BPU-TUNAI', 'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI'], true))
+                            <option value="{{ $currentJamsostekGroup }}" selected>{{ $currentJamsostekGroup }} (nilai lama — silakan pilih group yang sesuai)</option>
+                        @endif
                         <option value="">-- Pilih Group BP Jamsostek --</option>
                         <option value="BPU-CREW" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-CREW' ? 'selected' : '' }}>BPU-CREW</option>
                         <option value="BPU-HARIAN" {{ old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) == 'BPU-HARIAN' ? 'selected' : '' }}>BPU-HARIAN</option>

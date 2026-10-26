@@ -1391,6 +1391,9 @@ Route::middleware([
         Route::post('karyawan/import-dpp', [KaryawanController::class, 'importDpp'])
             ->name('karyawan.import-dpp')
             ->middleware(['auth', 'can:master-karyawan-update']);
+        Route::post('karyawan/update-bpjs-text', [KaryawanController::class, 'updateBpjsText'])
+            ->name('karyawan.update-bpjs-text')
+            ->middleware(['auth', 'can:master-karyawan-update']);
         Route::post('karyawan/import-supervisor', [KaryawanController::class, 'importSupervisor'])
             ->name('karyawan.import-supervisor')
             ->middleware(['auth', 'can:master-karyawan-update']);
