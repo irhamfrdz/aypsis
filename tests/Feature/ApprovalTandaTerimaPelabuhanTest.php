@@ -35,7 +35,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             $table->string('no_surat_jalan');
             $table->date('tanggal')->nullable();
             $table->date('tanggal_checkpoint_supir')->nullable();
-            $table->string('status')->default('draft');
+            $table->string('approval_pelabuhan_status')->default('pending');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
@@ -66,7 +66,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $saved = $tandaTerima->fresh();
         $this->assertSame('2026-10-26', $saved->tanggal->format('Y-m-d'));
         $this->assertSame('2026-10-25', $saved->tanggal_checkpoint_supir->format('Y-m-d'));
-        $this->assertSame('approved', $saved->status);
+        $this->assertSame('approved', $saved->approval_pelabuhan_status);
         $this->assertSame(7, (int) $saved->updated_by);
         $this->assertDatabaseHas('surat_jalans', [
             'id' => $suratJalanId,
@@ -86,13 +86,18 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
     public function test_pending_list_only_contains_receipts_waiting_for_port_approval(): void
     {
         DB::table('tanda_terimas')->insert([
-            ['no_surat_jalan' => 'SJ-DRAFT', 'status' => 'draft'],
-            ['no_surat_jalan' => 'SJ-APPROVED', 'status' => 'approved'],
-            ['no_surat_jalan' => 'SJ-COMPLETED', 'status' => 'completed'],
+            ['no_surat_jalan' => 'SJ-PENDING', 'approval_pelabuhan_status' => 'pending'],
+            ['no_surat_jalan' => 'SJ-APPROVED', 'approval_pelabuhan_status' => 'approved'],
         ]);
 
         $view = (new ApprovalTandaTerimaPelabuhanController)->index(Request::create('/approval-tanda-terima-pelabuhan', 'GET'));
 
-        $this->assertSame(['SJ-DRAFT'], $view->getData()['tandaTerimas']->pluck('no_surat_jalan')->all());
+        $this->assertSame(['SJ-PENDING'], $view->getData()['tandaTerimas']->pluck('no_surat_jalan')->all());
+
+        $approvedView = (new ApprovalTandaTerimaPelabuhanController)->index(
+            Request::create('/approval-tanda-terima-pelabuhan?status=approved', 'GET')
+        );
+
+        $this->assertSame(['SJ-APPROVED'], $approvedView->getData()['tandaTerimas']->pluck('no_surat_jalan')->all());
     }
 }

@@ -18,12 +18,12 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
         }
 
         $search = trim((string) $request->query('search', ''));
-        $query = TandaTerima::query()->whereIn('status', ['draft', 'submitted', 'approved']);
+        $query = TandaTerima::query();
 
         if ($status === 'pending') {
-            $query->whereIn('status', ['draft', 'submitted']);
+            $query->where('approval_pelabuhan_status', 'pending');
         } elseif ($status === 'approved') {
-            $query->where('status', 'approved');
+            $query->where('approval_pelabuhan_status', 'approved');
         }
 
         if ($search !== '') {
@@ -48,14 +48,14 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
 
         DB::transaction(function () use ($tandaTerima, $validated, $request) {
             $tandaTerima = TandaTerima::whereKey($tandaTerima->id)->lockForUpdate()->firstOrFail();
-            if (! in_array($tandaTerima->status, ['draft', 'submitted', 'approved'], true)) {
+            if (! in_array($tandaTerima->approval_pelabuhan_status, ['pending', 'approved'], true)) {
                 abort(422, 'Status tanda terima ini tidak dapat disetujui.');
             }
 
             $tandaTerima->forceFill([
                 'tanggal' => $validated['tanggal'],
                 'tanggal_checkpoint_supir' => $validated['tanggal_checkpoint_supir'],
-                'status' => 'approved',
+                'approval_pelabuhan_status' => 'approved',
                 'updated_by' => $request->user()->id,
             ])->save();
 

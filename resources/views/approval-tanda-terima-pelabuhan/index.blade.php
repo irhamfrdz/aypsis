@@ -63,7 +63,7 @@
                                 <div class="text-xs text-gray-500">{{ $tandaTerima->supir ?: '-' }}</div>
                             </td>
                             <td class="px-4 py-3">
-                                @if($tandaTerima->status === 'approved')
+                                @if($tandaTerima->approval_pelabuhan_status === 'approved')
                                     <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Disetujui</span>
                                 @else
                                     <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">Menunggu</span>
@@ -84,7 +84,7 @@
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="{{ $status }}">
                                         <input type="hidden" name="search" value="{{ $search }}">
-                                        <button type="submit" class="whitespace-nowrap rounded-lg bg-green-600 px-3 py-2 font-medium text-white hover:bg-green-700">{{ $tandaTerima->status === 'approved' ? 'Simpan tanggal' : 'Setujui' }}</button>
+                                        <button type="submit" class="whitespace-nowrap rounded-lg bg-green-600 px-3 py-2 font-medium text-white hover:bg-green-700">{{ $tandaTerima->approval_pelabuhan_status === 'approved' ? 'Simpan tanggal' : 'Setujui' }}</button>
                                     </form>
                                 @else
                                     <span class="text-gray-400">Lihat saja</span>
