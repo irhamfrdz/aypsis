@@ -501,7 +501,7 @@ class TandaTerimaController extends Controller
         // Get all master pengirim/penerima for dropdown
         $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
     }
 
     /**
