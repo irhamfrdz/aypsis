@@ -35,6 +35,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             $table->string('no_surat_jalan');
             $table->date('tanggal')->nullable();
             $table->date('tanggal_checkpoint_supir')->nullable();
+            $table->string('supir_pengganti')->nullable();
             $table->string('approval_pelabuhan_status')->default('pending');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
@@ -58,6 +59,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $request = Request::create('/approval-tanda-terima-pelabuhan/'.$id, 'PATCH', [
             'tanggal' => '2026-10-26',
             'tanggal_checkpoint_supir' => '2026-10-25',
+            'supir_pengganti' => 'Budi',
         ]);
         $request->setUserResolver(fn () => (object) ['id' => 7]);
 
@@ -66,6 +68,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $saved = $tandaTerima->fresh();
         $this->assertSame('2026-10-26', $saved->tanggal->format('Y-m-d'));
         $this->assertSame('2026-10-25', $saved->tanggal_checkpoint_supir->format('Y-m-d'));
+        $this->assertSame('Budi', $saved->supir_pengganti);
         $this->assertSame('approved', $saved->approval_pelabuhan_status);
         $this->assertSame(7, (int) $saved->updated_by);
         $this->assertDatabaseHas('surat_jalans', [

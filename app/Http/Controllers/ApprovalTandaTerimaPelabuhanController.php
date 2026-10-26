@@ -44,6 +44,7 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
             'tanggal_checkpoint_supir' => ['required', 'date'],
+            'supir_pengganti' => ['nullable', 'string', 'max:255'],
         ]);
 
         DB::transaction(function () use ($tandaTerima, $validated, $request) {
@@ -55,6 +56,7 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             $tandaTerima->forceFill([
                 'tanggal' => $validated['tanggal'],
                 'tanggal_checkpoint_supir' => $validated['tanggal_checkpoint_supir'],
+                'supir_pengganti' => $validated['supir_pengganti'] ?? null,
                 'approval_pelabuhan_status' => 'approved',
                 'updated_by' => $request->user()->id,
             ])->save();
