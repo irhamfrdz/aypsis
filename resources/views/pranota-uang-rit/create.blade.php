@@ -306,13 +306,9 @@
                                 
                                 // Add regular surat jalans
                                 foreach($suratJalans as $sj) {
-                                    // Prioritas tanggal: checkpoint -> tanda terima
-                                    $tanggalDisplay = $sj->tanggal_checkpoint;
-                                    if (!$tanggalDisplay && $sj->tandaTerima) {
-                                        $tanggalDisplay = $sj->tandaTerima->tanggal;
-                                    }
-                                    
-                                    $tanggalDisplay = $tanggalDisplay ?: ($sj->kegiatan === 'bongkaran' ? $sj->tanggal_tanda_terima : null) ?: $sj->tanggal_surat_jalan;
+                                    // Tanggal Rit mengikuti tanggal tanda terima.
+                                    $tanggalDisplay = $sj->tandaTerima?->tanggal
+                                        ?: ($sj->kegiatan === 'bongkaran' ? $sj->tanggal_tanda_terima : null);
 
                                     // Robust identification
                                     $supirIdentifier = $sj->supir_nik ?: $sj->supir;
@@ -338,11 +334,8 @@
                                 // Add surat jalan bongkarans if available
                                 if(isset($suratJalanBongkarans)) {
                                     foreach($suratJalanBongkarans as $sjb) {
-                                        // Prioritas tanggal: checkpoint -> tanda terima bongkaran
-                                        $tanggalDisplay = $sjb->tanggal_checkpoint;
-                                        if (!$tanggalDisplay && $sjb->tandaTerima) {
-                                            $tanggalDisplay = $sjb->tandaTerima->tanggal_tanda_terima;
-                                        }
+                                        // Tanggal Rit mengikuti tanggal tanda terima bongkaran.
+                                        $tanggalDisplay = $sjb->tandaTerima?->tanggal_tanda_terima;
 
                                         // Robust identification
                                         $supirIdentifier = $sjb->supir_nik ?: $sjb->supir;
