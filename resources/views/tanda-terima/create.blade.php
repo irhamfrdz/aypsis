@@ -215,29 +215,6 @@
                                 @endfor
                             </div>
 
-                            <!-- Input Gudang Grouped -->
-                            <div class="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                <label for="gudang" class="block text-xs font-medium text-gray-500 mb-2">
-                                    Gudang Tujuan <span class="text-red-500">*</span>
-                                </label>
-                                <select name="gudang_id"
-                                        id="gudang"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-gudang @error('gudang_id') border-red-500 @enderror">
-                                    <option value="">-- Pilih Gudang --</option>
-                                    @foreach($gudangs as $gudang)
-                                        <option value="{{ $gudang->id }}"
-                                                {{ old('gudang_id') == $gudang->id ? 'selected' : '' }}>
-                                            {{ $gudang->nama_gudang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('gudang_id')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-[10px] text-gray-500 italic">
-                                    <i class="fas fa-info-circle mr-1"></i>Pilih gudang untuk menyimpan kontainer-kontainer ini dalam sistem
-                                </p>
-                            </div>
                         </div>
                         @endif
 
@@ -949,29 +926,6 @@
                                            disabled>
                                 </div>
                                 <div>
-                                    <label for="supir_pengganti" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Supir Pengganti
-                                    </label>
-                                    <select name="supir_pengganti"
-                                            id="supir_pengganti"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-supir-pengganti @error('supir_pengganti') border-red-500 @enderror">
-                                        <option value="">-- Pilih Supir Pengganti --</option>
-                                        @foreach($karyawanSupirs as $supir)
-                                            <option value="{{ $supir->nama_lengkap }}"
-                                                    data-plat="{{ $supir->plat ?? 'N/A' }}"
-                                                    {{ old('supir_pengganti') == $supir->nama_lengkap ? 'selected' : '' }}>
-                                                {{ $supir->nama_lengkap }}{{ $supir->plat ? ' (' . $supir->plat . ')' : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('supir_pengganti')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari supir pengganti
-                                    </p>
-                                </div>
-                                <div>
                                     <label for="no_plat" class="block text-xs font-medium text-gray-500 mb-2">
                                         No. Plat
                                     </label>
@@ -1024,85 +978,6 @@
                                     </p>
                                 </div>
                                 
-                                <!-- Checkbox Lembur & Nginap -->
-                                <div class="col-span-1 md:col-span-2 flex space-x-6 mt-2 items-center bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                                    <div class="flex items-center">
-                                        <input type="checkbox"
-                                               name="lembur"
-                                               id="lembur"
-                                               value="1"
-                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                               {{ old('lembur', $suratJalan->lembur) ? 'checked' : '' }}>
-                                        <label for="lembur" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                            Lembur
-                                        </label>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox"
-                                               name="nginap"
-                                               id="nginap"
-                                               value="1"
-                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                               {{ old('nginap', $suratJalan->nginap) ? 'checked' : '' }}>
-                                        <label for="nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                            Nginap
-                                        </label>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox"
-                                               name="tidak_lembur_nginap"
-                                               id="tidak_lembur_nginap"
-                                               value="1"
-                                               class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                               {{ old('tidak_lembur_nginap', $suratJalan->tidak_lembur_nginap) ? 'checked' : '' }}>
-                                        <label for="tidak_lembur_nginap" class="ml-2 block text-sm font-medium text-gray-900 cursor-pointer select-none">
-                                            Tidak Lembur & Nginap
-                                        </label>
-                                    </div>
-                                    <div class="ml-auto text-xs text-gray-500 flex items-center">
-                                        <i class="fas fa-info-circle mr-1 text-yellow-600"></i>
-                                        Pilih minimal satu
-                                    </div>
-                                </div>
-                                @if($errors->has('lembur') || $errors->has('nginap') || $errors->has('tidak_lembur_nginap'))
-                                    <p class="mt-1 text-xs text-red-600">
-                                        Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).
-                                    </p>
-                                @endif
-                                
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        const lembur = document.getElementById('lembur');
-                                        const nginap = document.getElementById('nginap');
-                                        const tidakLemburNginap = document.getElementById('tidak_lembur_nginap');
-                                        
-                                        function updateCheckboxes(event) {
-                                            // Identify which checkbox triggered the change
-                                            const target = event ? event.target : null;
-
-                                            if (target === tidakLemburNginap && tidakLemburNginap.checked) {
-                                                // If 'Tidak Lembur & Nginap' is checked, uncheck others
-                                                lembur.checked = false;
-                                                nginap.checked = false;
-                                            } else if ((target === lembur || target === nginap) && (lembur.checked || nginap.checked)) {
-                                                // If 'Lembur' or 'Nginap' is checked, uncheck 'Tidak Lembur & Nginap'
-                                                tidakLemburNginap.checked = false;
-                                            }
-                                        }
-                                        
-                                        lembur.addEventListener('change', updateCheckboxes);
-                                        nginap.addEventListener('change', updateCheckboxes);
-                                        tidakLemburNginap.addEventListener('change', updateCheckboxes);
-                                        
-                                        // Initial run logic check
-                                        if (tidakLemburNginap.checked) {
-                                            lembur.checked = false;
-                                            nginap.checked = false;
-                                        } else if (lembur.checked || nginap.checked) {
-                                            tidakLemburNginap.checked = false;
-                                        }
-                                    });
-                                </script>
                             </div>
                         </div>
 
@@ -1213,32 +1088,6 @@
                             </label>
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="tanggal" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tanggal Tanda Terima
-                                    </label>
-                                    <input type="date"
-                                           name="tanggal"
-                                           id="tanggal"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal') border-red-500 @enderror"
-                                           value="{{ old('tanggal') }}">
-                                    @error('tanggal')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="tanggal_checkpoint_supir" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tanggal Checkpoint Supir
-                                    </label>
-                                    <input type="date"
-                                           name="tanggal_checkpoint_supir"
-                                           id="tanggal_checkpoint_supir"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_checkpoint_supir') border-red-500 @enderror"
-                                           value="{{ old('tanggal_checkpoint_supir') }}">
-                                    @error('tanggal_checkpoint_supir')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
                                 <div>
                                     <label for="tanggal_terima_pelabuhan" class="block text-xs font-medium text-gray-500 mb-2">
                                         Tanggal Terima Pelabuhan
@@ -2104,15 +1953,6 @@
                 $('#alamat_notify_party').val('');
             });
 
-            // Initialize Select2 for gudang dropdown
-            $('.select2-gudang').each(function() {
-                $(this).select2({
-                    placeholder: '-- Pilih Gudang --',
-                    allowClear: true,
-                    width: '100%'
-                });
-            });
-
             // Re-usable Select2 initialization for kontainer
             function initKontainerSelect2(element) {
                 $(element).select2({
@@ -2199,21 +2039,6 @@
                 }
             };
 
-            // Initialize Select2 for supir pengganti dropdown
-            $('.select2-supir-pengganti').select2({
-                placeholder: '-- Pilih Supir Pengganti --',
-                allowClear: true,
-                width: '100%',
-                language: {
-                    noResults: function() {
-                        return "Supir tidak ditemukan";
-                    },
-                    searching: function() {
-                        return "Mencari...";
-                    }
-                }
-            });
-
             // Initialize Select2 for kenek pengganti dropdown
             $('.select2-kenek-pengganti').select2({
                 placeholder: '-- Pilih Kenek Pengganti --',
@@ -2291,45 +2116,6 @@
             });
 
 
-
-            // Auto-fill plat nomor when supir pengganti selected and update original supir field
-            $('#supir_pengganti').on('select2:select', function(e) {
-                var selectedSupir = e.params.data.id;
-                var platNomor = $(e.params.data.element).data('plat');
-                
-                console.log('Supir pengganti selected:', selectedSupir);
-                console.log('Plat nomor from element:', platNomor);
-                
-                // Try to get plat from mapping if not found in element
-                if (!platNomor || platNomor === '' || platNomor === 'N/A') {
-                    platNomor = supirPlatMap[selectedSupir];
-                    console.log('Plat nomor from mapping:', platNomor);
-                }
-                
-                // Auto-fill plat nomor if available
-                if (platNomor && platNomor !== '' && platNomor !== 'N/A') {
-                    $('#no_plat').val(platNomor);
-                    console.log('✓ Plat nomor auto-filled:', platNomor);
-                } else {
-                    console.log('⚠ Plat nomor not available for:', selectedSupir);
-                }
-                
-                // Update original supir field with selected supir pengganti
-                // This will be sent to controller to update surat jalan
-                $('#supir').val(selectedSupir);
-                console.log('✓ Original supir field updated with supir pengganti:', selectedSupir);
-            });
-
-            // Clear supir field when supir pengganti is cleared
-            $('#supir_pengganti').on('select2:clear', function(e) {
-                // Reset supir field to original value from surat jalan
-                var originalSupir = '{{ old("supir", $suratJalan->supir) }}';
-                $('#supir').val(originalSupir);
-                console.log('✓ Supir field reset to original:', originalSupir);
-                
-                // Auto-fill plat for original supir
-                autoFillPlatFromSupir();
-            });
 
             // Auto-fill when kenek pengganti selected and update original kenek field
             $('#kenek_pengganti').on('select2:select', function(e) {

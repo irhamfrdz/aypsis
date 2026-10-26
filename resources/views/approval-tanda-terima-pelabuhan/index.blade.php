@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Approval Tanda Terima Pelabuhan</h1>
-        <p class="mt-1 text-sm text-gray-600">Klik Setujui untuk mengisi tanggal tanda terima, tanggal checkpoint, dan supir pengganti.</p>
+        <p class="mt-1 text-sm text-gray-600">Klik Setujui untuk mengisi tanggal, supir pengganti, lembur/nginap, dan gudang tujuan.</p>
     </div>
 
     @if(session('success'))
@@ -78,6 +78,11 @@
                                         data-tanggal="{{ $tandaTerima->tanggal?->format('Y-m-d') }}"
                                         data-checkpoint="{{ $tandaTerima->tanggal_checkpoint_supir?->format('Y-m-d') }}"
                                         data-supir-pengganti="{{ $tandaTerima->supir_pengganti }}"
+                                        data-lembur="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->lembur : $tandaTerima->lembur) ? '1' : '0' }}"
+                                        data-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->nginap : $tandaTerima->nginap) ? '1' : '0' }}"
+                                        data-tidak-lembur-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->tidak_lembur_nginap : $tandaTerima->tidak_lembur_nginap) ? '1' : '0' }}"
+                                        data-gudang-id="{{ $tandaTerima->gudang_tujuan_id }}"
+                                        data-requires-gudang="{{ strtolower((string) ($tandaTerima->suratJalan?->tipe_kontainer ?? $tandaTerima->tipe_kontainer)) === 'cargo' ? '0' : '1' }}"
                                         data-approved="{{ $tandaTerima->approval_pelabuhan_status === 'approved' ? '1' : '0' }}">{{ $tandaTerima->approval_pelabuhan_status === 'approved' ? 'Ubah persetujuan' : 'Setujui' }}</button>
                                 @else
                                     <span class="text-gray-400">Lihat saja</span>
@@ -97,7 +102,10 @@
         <dialog id="approval-pelabuhan-modal" class="m-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 p-0 shadow-2xl backdrop:bg-black/50"
             aria-labelledby="approval-pelabuhan-title" data-reopen-id="{{ old('approval_tanda_terima_id') }}"
             data-old-tanggal="{{ old('tanggal') }}" data-old-checkpoint="{{ old('tanggal_checkpoint_supir') }}"
-            data-old-supir-pengganti="{{ old('supir_pengganti') }}">
+            data-old-supir-pengganti="{{ old('supir_pengganti') }}"
+            data-old-lembur="{{ old('lembur') ? '1' : '0' }}" data-old-nginap="{{ old('nginap') ? '1' : '0' }}"
+            data-old-tidak-lembur-nginap="{{ old('tidak_lembur_nginap') ? '1' : '0' }}"
+            data-old-gudang-id="{{ old('gudang_id') }}">
             <form id="approval-pelabuhan-form" method="POST" class="p-6">
                 @csrf
                 @method('PATCH')
@@ -126,6 +134,23 @@
                     <label for="approval-supir-pengganti" class="block text-sm font-medium text-gray-700">Supir pengganti <span class="font-normal text-gray-500">(opsional)</span>
                         <input id="approval-supir-pengganti" type="text" name="supir_pengganti" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Nama supir pengganti">
                     </label>
+                    <fieldset class="rounded-lg border border-gray-200 p-3">
+                        <legend class="px-1 text-sm font-medium text-gray-700">Lembur / Nginap</legend>
+                        <div class="flex flex-wrap gap-4 text-sm text-gray-700">
+                            <label class="inline-flex items-center gap-2"><input id="approval-lembur" type="checkbox" name="lembur" value="1" class="rounded border-gray-300"> Lembur</label>
+                            <label class="inline-flex items-center gap-2"><input id="approval-nginap" type="checkbox" name="nginap" value="1" class="rounded border-gray-300"> Nginap</label>
+                            <label class="inline-flex items-center gap-2"><input id="approval-tidak-lembur-nginap" type="checkbox" name="tidak_lembur_nginap" value="1" class="rounded border-gray-300"> Tidak Lembur &amp; Nginap</label>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Pilih minimal satu. Lembur dan Nginap dapat dipilih bersama.</p>
+                    </fieldset>
+                    <label for="approval-gudang" class="block text-sm font-medium text-gray-700">Gudang Tujuan <span id="approval-gudang-required" class="text-red-600">*</span>
+                        <select id="approval-gudang" name="gudang_id" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                            <option value="">-- Pilih Gudang --</option>
+                            @foreach($gudangs as $gudang)
+                                <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                            @endforeach
+                        </select>
+                    </label>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-2">
@@ -149,6 +174,20 @@
         const tanggal = document.getElementById('approval-tanggal');
         const checkpoint = document.getElementById('approval-checkpoint');
         const supirPengganti = document.getElementById('approval-supir-pengganti');
+        const lembur = document.getElementById('approval-lembur');
+        const nginap = document.getElementById('approval-nginap');
+        const tidakLemburNginap = document.getElementById('approval-tidak-lembur-nginap');
+        const gudang = document.getElementById('approval-gudang');
+
+        function updateLemburOptions(changed) {
+            if (changed === tidakLemburNginap && tidakLemburNginap.checked) {
+                lembur.checked = false;
+                nginap.checked = false;
+            } else if ((changed === lembur || changed === nginap) && (lembur.checked || nginap.checked)) {
+                tidakLemburNginap.checked = false;
+            }
+            lembur.setCustomValidity(lembur.checked || nginap.checked || tidakLemburNginap.checked ? '' : 'Pilih minimal satu opsi lembur/nginap.');
+        }
 
         function openApproval(button, useOldValues = false) {
             form.action = button.dataset.action;
@@ -159,9 +198,17 @@
             tanggal.value = useOldValues ? dialog.dataset.oldTanggal : button.dataset.tanggal;
             checkpoint.value = useOldValues ? dialog.dataset.oldCheckpoint : button.dataset.checkpoint;
             supirPengganti.value = useOldValues ? dialog.dataset.oldSupirPengganti : button.dataset.supirPengganti;
+            lembur.checked = (useOldValues ? dialog.dataset.oldLembur : button.dataset.lembur) === '1';
+            nginap.checked = (useOldValues ? dialog.dataset.oldNginap : button.dataset.nginap) === '1';
+            tidakLemburNginap.checked = (useOldValues ? dialog.dataset.oldTidakLemburNginap : button.dataset.tidakLemburNginap) === '1';
+            updateLemburOptions(null);
+            gudang.value = useOldValues ? dialog.dataset.oldGudangId : button.dataset.gudangId;
+            gudang.required = button.dataset.requiresGudang === '1';
+            document.getElementById('approval-gudang-required').classList.toggle('hidden', !gudang.required);
             dialog.showModal();
         }
 
+        [lembur, nginap, tidakLemburNginap].forEach(input => input.addEventListener('change', () => updateLemburOptions(input)));
         buttons.forEach(button => button.addEventListener('click', () => openApproval(button)));
         document.getElementById('approval-pelabuhan-cancel').addEventListener('click', () => dialog.close());
         dialog.addEventListener('click', event => {

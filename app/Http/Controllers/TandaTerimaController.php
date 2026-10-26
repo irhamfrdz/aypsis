@@ -479,9 +479,6 @@ class TandaTerimaController extends Controller
         // Get all karyawans for dropdown (kenek/krani) - only from divisi krani
         $kranisKenek = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
 
-        // Get supir data for supir pengganti dropdown
-        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->orderBy('nama_lengkap')->get();
-
         // Get all stock kontainers for dropdown - combine from stock_kontainers and kontainers (tersedia)
         $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
             ->orderBy('nomor_seri_gabungan')
@@ -504,10 +501,7 @@ class TandaTerimaController extends Controller
         // Get all master pengirim/penerima for dropdown
         $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
 
-        // Get all gudangs for dropdown
-        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'karyawanSupirs', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList', 'gudangs'));
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
     }
 
     /**
@@ -515,9 +509,7 @@ class TandaTerimaController extends Controller
      */
     public function store(Request $request)
     {
-        // Check if tipe kontainer is cargo to make gudang_id optional
         $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
-        $isCargo = $suratJalan && strtolower($suratJalan->tipe_kontainer ?? '') == 'cargo';
 
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
@@ -537,7 +529,6 @@ class TandaTerimaController extends Controller
             'telepon' => 'nullable|string|max:50',
             'jumlah_retur' => 'nullable|integer|min:0',
             'supir' => 'nullable|string|max:255',
-            'supir_pengganti' => 'nullable|string|max:255',
             'kenek' => 'nullable|string|max:255',
             'kenek_pengganti' => 'nullable|string|max:255',
             'no_plat' => 'nullable|string|max:50',
@@ -549,15 +540,10 @@ class TandaTerimaController extends Controller
             'karton' => 'nullable|string|max:50',
             'plastik' => 'nullable|string|max:50',
             'terpal' => 'nullable|string|max:50',
-            'lembur' => 'nullable|boolean',
-            'nginap' => 'nullable|boolean',
-            'tidak_lembur_nginap' => 'nullable|boolean',
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
             'no_dn' => 'nullable|string|max:255',
-            'tanggal' => 'nullable|date',
-            'tanggal_checkpoint_supir' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
@@ -592,17 +578,7 @@ class TandaTerimaController extends Controller
             // Validation for uploaded images
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // 10MB per file
-            'gudang_id' => ($isCargo ? 'nullable' : 'required').'|exists:gudangs,id',
         ]);
-
-        // Ensure at least one checkbox is selected
-        if (! $request->boolean('lembur') && ! $request->boolean('nginap') && ! $request->boolean('tidak_lembur_nginap')) {
-            return redirect()->back()->withInput()->withErrors([
-                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
-                'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
-                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
-            ]);
-        }
 
         DB::beginTransaction();
         try {
@@ -684,9 +660,6 @@ class TandaTerimaController extends Controller
             $tandaTerima->no_dn = $request->no_dn;
             $tandaTerima->surat_jalan_pabrik = $request->surat_jalan_pabrik;
             $tandaTerima->tanggal_surat_jalan_pabrik = $request->tanggal_surat_jalan_pabrik;
-            $tandaTerima->tanggal = $request->tanggal;
-            $tandaTerima->tanggal_checkpoint_supir = $request->tanggal_checkpoint_supir;
-            $tandaTerima->supir_pengganti = $request->supir_pengganti;
             $tandaTerima->no_plat = $request->no_plat;
             $tandaTerima->tanggal_ambil_kontainer = $request->tanggal_ambil_kontainer;
             $tandaTerima->tanggal_terima_pelabuhan = $request->tanggal_terima_pelabuhan;
@@ -708,9 +681,6 @@ class TandaTerimaController extends Controller
             $tandaTerima->notify_party = $request->notify_party;
             $tandaTerima->alamat_notify_party = $request->alamat_notify_party;
             $tandaTerima->catatan = $request->catatan;
-            $tandaTerima->lembur = $request->boolean('lembur');
-            $tandaTerima->nginap = $request->boolean('nginap');
-            $tandaTerima->tidak_lembur_nginap = $request->boolean('tidak_lembur_nginap');
 
             // Assign term from input or fallback to Surat Jalan or Order term status name
             $tandaTerima->term = $request->term ?: ($suratJalan->termRelation ? $suratJalan->termRelation->nama_status : ($suratJalan->order && $suratJalan->order->term ? $suratJalan->order->term->nama_status : null));
@@ -837,91 +807,6 @@ class TandaTerimaController extends Controller
                 }
             }
 
-            // Update gudangs_id for containers if gudang_id is present
-            if ($request->filled('gudang_id')) {
-                $gudangId = $request->gudang_id;
-
-                // Get container numbers to update
-                $containersToUpdate = [];
-                if (! empty($tandaTerima->no_kontainer)) {
-                    // Split comma-separated string
-                    $containersToUpdate = array_map('trim', explode(',', $tandaTerima->no_kontainer));
-                } elseif (! empty($suratJalan->no_kontainer)) {
-                    $containersToUpdate = array_map('trim', explode(',', $suratJalan->no_kontainer));
-                }
-
-                if (! empty($containersToUpdate)) {
-                    // Track which containers already logged history (to avoid duplicates)
-                    $loggedContainers = [];
-
-                    // Helper: get real origin gudang_id for a container
-                    // Priority: container table gudangs_id → last history gudang_id
-                    $getAsalGudangId = function ($nomorKontainer, $gudangsIdFromTable) {
-                        if (! empty($gudangsIdFromTable)) {
-                            return $gudangsIdFromTable;
-                        }
-                        // Fallback: get gudang_id from last history record
-                        $lastHistory = \App\Models\HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
-                            ->whereNotNull('gudang_id')
-                            ->orderBy('id', 'desc')
-                            ->first();
-
-                        return $lastHistory ? $lastHistory->gudang_id : null;
-                    };
-
-                    // 1. Process Kontainer FIRST (master/authoritative source for location)
-                    $affectedContainers = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)
-                        ->where('status', '!=', 'inactive')
-                        ->get();
-
-                    foreach ($affectedContainers as $kontainer) {
-                        $asalGudangId = $getAsalGudangId($kontainer->nomor_seri_gabungan, $kontainer->gudangs_id);
-                        $kontainer->update(['gudangs_id' => $gudangId]);
-
-                        // Log History dari tabel master (kontainers)
-                        \App\Models\HistoryKontainer::create([
-                            'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
-                            'tipe_kontainer' => $kontainer->tipe_kontainer ?? 'kontainer',
-                            'jenis_kegiatan' => 'Masuk',
-                            'tanggal_kegiatan' => $request->tanggal ?? now(),
-                            'asal_gudang_id' => $asalGudangId,
-                            'gudang_id' => $gudangId,
-                            'keterangan' => 'Masuk via Tanda Terima: '.($tandaTerima->no_surat_jalan ?? $suratJalan->no_surat_jalan),
-                            'created_by' => Auth::id(),
-                        ]);
-                        $loggedContainers[] = $kontainer->nomor_seri_gabungan;
-                    }
-
-                    // 2. Process StockKontainer (secondary sync)
-                    $stockContainers = \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)->get();
-                    foreach ($stockContainers as $stockKontainer) {
-                        $asalGudangId = $getAsalGudangId($stockKontainer->nomor_seri_gabungan, $stockKontainer->gudangs_id);
-                        $stockKontainer->update(['gudangs_id' => $gudangId]);
-
-                        // Log History hanya jika belum tercatat dari tabel master (kontainers)
-                        if (! in_array($stockKontainer->nomor_seri_gabungan, $loggedContainers)) {
-                            \App\Models\HistoryKontainer::create([
-                                'nomor_kontainer' => $stockKontainer->nomor_seri_gabungan,
-                                'tipe_kontainer' => $stockKontainer->tipe_kontainer ?? 'stock',
-                                'jenis_kegiatan' => 'Masuk',
-                                'tanggal_kegiatan' => $request->tanggal ?? now(),
-                                'asal_gudang_id' => $asalGudangId,
-                                'gudang_id' => $gudangId,
-                                'keterangan' => 'Masuk via Tanda Terima: '.($tandaTerima->no_surat_jalan ?? $suratJalan->no_surat_jalan),
-                                'created_by' => Auth::id(),
-                            ]);
-                        }
-                    }
-
-                    // Log update (optional but good for tracking)
-                    Log::info('Updated gudang_id and history for containers via Tanda Terima', [
-                        'gudang_id' => $gudangId,
-                        'containers' => $containersToUpdate,
-                        'tanda_terima_id' => $tandaTerima->id ?? 'new',
-                    ]);
-                }
-            }
-
             $tandaTerima->created_by = Auth::id();
             $tandaTerima->lokasi_gps = $request->lokasi_gps;
             $tandaTerima->save();
@@ -977,15 +862,6 @@ class TandaTerimaController extends Controller
             if ($request->filled('supir')) {
                 $suratJalanUpdate['supir'] = $request->supir;
             }
-            if ($request->filled('supir_pengganti')) {
-                $suratJalanUpdate['supir_pengganti'] = $request->supir_pengganti;
-
-                // Update the supir field in surat jalan when supir pengganti is selected
-                $karyawanSupir = \App\Models\Karyawan::where('nama_lengkap', $request->supir_pengganti)->first();
-                if ($karyawanSupir) {
-                    $suratJalanUpdate['supir'] = $karyawanSupir->nama_lengkap;
-                }
-            }
             if ($request->filled('no_plat')) {
                 $suratJalanUpdate['no_plat'] = $request->no_plat;
             }
@@ -1006,11 +882,6 @@ class TandaTerimaController extends Controller
             if ($request->filled('krani')) {
                 $suratJalanUpdate['krani'] = $request->krani;
             }
-
-            // Limbah & Nginap
-            $suratJalanUpdate['lembur'] = $request->boolean('lembur');
-            $suratJalanUpdate['nginap'] = $request->boolean('nginap');
-            $suratJalanUpdate['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
 
             // Data kontainer - size and jumlah only, tipe_kontainer stays separate
             if ($request->filled('size')) {
@@ -1038,11 +909,6 @@ class TandaTerimaController extends Controller
             // Tujuan pengiriman
             if ($request->filled('tujuan_pengiriman')) {
                 $suratJalanUpdate['tujuan_pengiriman'] = $request->tujuan_pengiriman;
-            }
-
-            // Tanggal checkpoint supir
-            if ($request->filled('tanggal_checkpoint_supir')) {
-                $suratJalanUpdate['tanggal_checkpoint'] = $request->tanggal_checkpoint_supir;
             }
 
             // Handle gambar checkpoint upload

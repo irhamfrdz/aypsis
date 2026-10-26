@@ -27,6 +27,37 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         Schema::create('surat_jalans', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal_checkpoint')->nullable();
+            $table->string('tipe_kontainer')->nullable();
+            $table->boolean('lembur')->nullable();
+            $table->boolean('nginap')->nullable();
+            $table->boolean('tidak_lembur_nginap')->nullable();
+            $table->timestamps();
+        });
+        Schema::create('gudangs', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_gudang');
+            $table->string('status');
+        });
+        foreach (['kontainers', 'stock_kontainers'] as $tableName) {
+            Schema::create($tableName, function (Blueprint $table) {
+                $table->id();
+                $table->string('nomor_seri_gabungan');
+                $table->string('tipe_kontainer')->nullable();
+                $table->string('status')->nullable();
+                $table->unsignedBigInteger('gudangs_id')->nullable();
+                $table->timestamps();
+            });
+        }
+        Schema::create('history_kontainers', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_kontainer');
+            $table->string('tipe_kontainer')->nullable();
+            $table->string('jenis_kegiatan');
+            $table->date('tanggal_kegiatan');
+            $table->unsignedBigInteger('asal_gudang_id')->nullable();
+            $table->unsignedBigInteger('gudang_id');
+            $table->string('keterangan')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
         Schema::create('tanda_terimas', function (Blueprint $table) {
@@ -35,6 +66,10 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             $table->string('no_surat_jalan');
             $table->date('tanggal')->nullable();
             $table->date('tanggal_checkpoint_supir')->nullable();
+            $table->string('no_kontainer')->nullable();
+            $table->boolean('lembur')->nullable();
+            $table->boolean('nginap')->nullable();
+            $table->boolean('tidak_lembur_nginap')->nullable();
             $table->string('supir_pengganti')->nullable();
             $table->string('approval_pelabuhan_status')->default('pending');
             $table->unsignedBigInteger('updated_by')->nullable();
@@ -50,6 +85,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
 
     public function test_approval_requires_both_dates_and_updates_surat_jalan_checkpoint(): void
     {
+        $gudangId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang A', 'status' => 'aktif']);
         $suratJalanId = DB::table('surat_jalans')->insertGetId([]);
         $id = DB::table('tanda_terimas')->insertGetId([
             'surat_jalan_id' => $suratJalanId,
@@ -60,6 +96,9 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             'tanggal' => '2026-10-26',
             'tanggal_checkpoint_supir' => '2026-10-25',
             'supir_pengganti' => 'Budi',
+            'lembur' => '1',
+            'nginap' => '1',
+            'gudang_id' => $gudangId,
         ]);
         $request->setUserResolver(fn () => (object) ['id' => 7]);
 
@@ -69,11 +108,17 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $this->assertSame('2026-10-26', $saved->tanggal->format('Y-m-d'));
         $this->assertSame('2026-10-25', $saved->tanggal_checkpoint_supir->format('Y-m-d'));
         $this->assertSame('Budi', $saved->supir_pengganti);
+        $this->assertTrue($saved->lembur);
+        $this->assertTrue($saved->nginap);
+        $this->assertFalse($saved->tidak_lembur_nginap);
         $this->assertSame('approved', $saved->approval_pelabuhan_status);
         $this->assertSame(7, (int) $saved->updated_by);
         $this->assertDatabaseHas('surat_jalans', [
             'id' => $suratJalanId,
             'tanggal_checkpoint' => '2026-10-25',
+            'lembur' => 1,
+            'nginap' => 1,
+            'tidak_lembur_nginap' => 0,
         ]);
     }
 
@@ -84,6 +129,45 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
 
         $this->expectException(ValidationException::class);
         (new ApprovalTandaTerimaPelabuhanController)->approve($request, TandaTerima::findOrFail($id));
+    }
+
+    public function test_approval_requires_a_lembur_or_nginap_choice(): void
+    {
+        $gudangId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang A', 'status' => 'aktif']);
+        $id = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-004']);
+        $request = Request::create('/approval-tanda-terima-pelabuhan/'.$id, 'PATCH', [
+            'tanggal' => '2026-10-26',
+            'tanggal_checkpoint_supir' => '2026-10-25',
+            'gudang_id' => $gudangId,
+        ]);
+
+        $this->expectException(ValidationException::class);
+        (new ApprovalTandaTerimaPelabuhanController)->approve($request, TandaTerima::findOrFail($id));
+    }
+
+    public function test_gudang_tujuan_updates_container_and_does_not_repeat_history(): void
+    {
+        $asalId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang A', 'status' => 'aktif']);
+        $tujuanId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang B', 'status' => 'aktif']);
+        DB::table('kontainers')->insert(['nomor_seri_gabungan' => 'ABCD1234567', 'status' => 'active', 'gudangs_id' => $asalId]);
+        DB::table('stock_kontainers')->insert(['nomor_seri_gabungan' => 'ABCD1234567', 'status' => 'inactive', 'gudangs_id' => $asalId]);
+        $id = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-003', 'no_kontainer' => 'ABCD1234567']);
+        $request = Request::create('/approval-tanda-terima-pelabuhan/'.$id, 'PATCH', [
+            'tanggal' => '2026-10-26',
+            'tanggal_checkpoint_supir' => '2026-10-25',
+            'tidak_lembur_nginap' => '1',
+            'gudang_id' => $tujuanId,
+        ]);
+        $request->setUserResolver(fn () => (object) ['id' => 7]);
+
+        $controller = new ApprovalTandaTerimaPelabuhanController;
+        $controller->approve($request, TandaTerima::findOrFail($id));
+        $controller->approve($request, TandaTerima::findOrFail($id));
+
+        $this->assertDatabaseHas('kontainers', ['nomor_seri_gabungan' => 'ABCD1234567', 'gudangs_id' => $tujuanId]);
+        $this->assertDatabaseHas('stock_kontainers', ['nomor_seri_gabungan' => 'ABCD1234567', 'gudangs_id' => $tujuanId]);
+        $this->assertDatabaseHas('history_kontainers', ['nomor_kontainer' => 'ABCD1234567', 'asal_gudang_id' => $asalId, 'gudang_id' => $tujuanId]);
+        $this->assertSame(1, DB::table('history_kontainers')->count());
     }
 
     public function test_pending_list_only_contains_receipts_waiting_for_port_approval(): void
