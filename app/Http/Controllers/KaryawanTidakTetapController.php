@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KaryawanTidakTetap;
+use App\Services\KaryawanBpjsGroups;
 use Illuminate\Http\Request;
 
 class KaryawanTidakTetapController extends Controller
@@ -34,6 +35,7 @@ class KaryawanTidakTetapController extends Controller
      */
     public function create()
     {
+        $bpjsGroupOptions = app(KaryawanBpjsGroups::class)->options(KaryawanTidakTetap::class);
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $nextNik = $this->generateNextNik();
@@ -41,7 +43,7 @@ class KaryawanTidakTetapController extends Controller
 
         [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroupsByGroup'));
+        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroupsByGroup', 'bpjsGroupOptions'));
     }
 
     /**
@@ -49,6 +51,7 @@ class KaryawanTidakTetapController extends Controller
      */
     public function store(Request $request)
     {
+        $this->normalizeBpjsGroups($request);
         $validated = $request->validate([
             'nik' => 'required|string|max:50|unique:karyawan_tidak_tetaps,nik',
             'nama_lengkap' => 'required|string|max:255',
@@ -125,13 +128,23 @@ class KaryawanTidakTetapController extends Controller
      */
     public function edit(KaryawanTidakTetap $karyawanTidakTetap)
     {
+        $bpjsGroupOptions = app(KaryawanBpjsGroups::class)->options(KaryawanTidakTetap::class);
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
 
         [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroupsByGroup'));
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroupsByGroup', 'bpjsGroupOptions'));
+    }
+
+    private function normalizeBpjsGroups(Request $request): void
+    {
+        foreach (['group_jkn', 'group_bp_jamsostek'] as $field) {
+            if (is_string($request->input($field))) {
+                $request->merge([$field => KaryawanBpjsGroups::normalize($request->input($field))]);
+            }
+        }
     }
 
     private function groupOptions(): array
@@ -167,6 +180,7 @@ class KaryawanTidakTetapController extends Controller
      */
     public function update(Request $request, KaryawanTidakTetap $karyawanTidakTetap)
     {
+        $this->normalizeBpjsGroups($request);
         $validated = $request->validate([
             'nik' => 'required|string|max:50|unique:karyawan_tidak_tetaps,nik,'.$karyawanTidakTetap->id,
             'nama_lengkap' => 'required|string|max:255',

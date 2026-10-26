@@ -24,12 +24,12 @@ class KaryawanBpjsGroups
         return mb_strtoupper(preg_replace('/\s+/u', ' ', trim($value)));
     }
 
-    public function options(): array
+    public function options(string $employeeModel = Karyawan::class): array
     {
         $options = [];
         foreach (self::DEFAULTS as $column => $defaults) {
             $options[$column] = collect($defaults)
-                ->merge(Karyawan::whereNotNull($column)->distinct()->pluck($column))
+                ->merge($employeeModel::whereNotNull($column)->distinct()->pluck($column))
                 ->map(fn ($value) => self::normalize($value))
                 ->filter()->unique()->values()->all();
         }

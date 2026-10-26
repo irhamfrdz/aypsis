@@ -195,16 +195,12 @@
 
                     <div>
                         <label for="group_jkn" class="{{ $labelClasses }}">Group JKN</label>
+                        @include('master-karyawan.partials.add-bpjs-group', ['field' => 'group_jkn', 'groupLabel' => 'Group JKN', 'maxLength' => 100])
                         <select name="group_jkn" id="group_jkn" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Group JKN --</option>
-                            <option value="JKN-KIS-HARIAN" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-HARIAN' ? 'selected' : '' }}>JKN-KIS-HARIAN</option>
-                            <option value="JKN-KIS-KANTOR" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-KANTOR' ? 'selected' : '' }}>JKN-KIS-KANTOR</option>
-                            <option value="JKN-KIS-LAPANGAN" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-LAPANGAN' ? 'selected' : '' }}>JKN-KIS-LAPANGAN</option>
-                            <option value="JKN-KIS-NON KARY" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-NON KARY' ? 'selected' : '' }}>JKN-KIS-NON KARY</option>
-                            <option value="JKN-KIS-NON KARY-UMKM KIS" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-NON KARY-UMKM KIS' ? 'selected' : '' }}>JKN-KIS-NON KARY-UMKM KIS</option>
-                            <option value="JKN-KIS-TRANSFER" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-TRANSFER' ? 'selected' : '' }}>JKN-KIS-TRANSFER</option>
-                            <option value="JKN-KIS-TUNAI" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-KIS-TUNAI' ? 'selected' : '' }}>JKN-KIS-TUNAI</option>
-                            <option value="JKN-REIMBURSEMENT-CREW" {{ old('group_jkn', $karyawanTidakTetap->group_jkn) == 'JKN-REIMBURSEMENT-CREW' ? 'selected' : '' }}>JKN-REIMBURSEMENT-CREW</option>
+                            @foreach(collect($bpjsGroupOptions['group_jkn'])->push(old('group_jkn', $karyawanTidakTetap->group_jkn))->filter()->unique() as $group)
+                                <option value="{{ $group }}" @selected(old('group_jkn', $karyawanTidakTetap->group_jkn) === $group)>{{ $group }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -220,20 +216,12 @@
 
                     <div>
                         <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
+                        @include('master-karyawan.partials.add-bpjs-group', ['field' => 'group_bp_jamsostek', 'groupLabel' => 'Group BP Jamsostek', 'maxLength' => 100])
                         <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Group BP Jamsostek --</option>
-                            <option value="BPU-CREW" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-CREW' ? 'selected' : '' }}>BPU-CREW</option>
-                            <option value="BPU-HARIAN" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-HARIAN' ? 'selected' : '' }}>BPU-HARIAN</option>
-                            <option value="BPU-LAPANGAN" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-LAPANGAN' ? 'selected' : '' }}>BPU-LAPANGAN</option>
-                            <option value="BPU-NON KARY-PBM" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-NON KARY-PBM' ? 'selected' : '' }}>BPU-NON KARY-PBM</option>
-                            <option value="BPU-NON KARY-UMKM" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-NON KARY-UMKM' ? 'selected' : '' }}>BPU-NON KARY-UMKM</option>
-                            <option value="BPU-NON KARY-UMKM NO PP" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-NON KARY-UMKM NO PP' ? 'selected' : '' }}>BPU-NON KARY-UMKM NO PP</option>
-                            <option value="BPU-TUNAI" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'BPU-TUNAI' ? 'selected' : '' }}>BPU-TUNAI</option>
-                            <option value="PPU-HARIAN" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'PPU-HARIAN' ? 'selected' : '' }}>PPU-HARIAN</option>
-                            <option value="PPU-KANTOR" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'PPU-KANTOR' ? 'selected' : '' }}>PPU-KANTOR</option>
-                            <option value="PPU-LAPANGAN" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'PPU-LAPANGAN' ? 'selected' : '' }}>PPU-LAPANGAN</option>
-                            <option value="PPU-TRANSFER" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'PPU-TRANSFER' ? 'selected' : '' }}>PPU-TRANSFER</option>
-                            <option value="PPU-TUNAI" {{ old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) == 'PPU-TUNAI' ? 'selected' : '' }}>PPU-TUNAI</option>
+                            @foreach(collect($bpjsGroupOptions['group_bp_jamsostek'])->push(old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek))->filter()->unique() as $group)
+                                <option value="{{ $group }}" @selected(old('group_bp_jamsostek', $karyawanTidakTetap->group_bp_jamsostek) === $group)>{{ $group }}</option>
+                            @endforeach
                         </select>
                     </div>
 

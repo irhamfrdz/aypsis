@@ -2,7 +2,7 @@
     <summary class="cursor-pointer text-blue-600 hover:text-blue-800">+ Tambah group baru</summary>
     <div class="mt-2 flex items-center gap-2">
         <label for="new_{{ $field }}" class="sr-only">Nama {{ $groupLabel }} baru</label>
-        <input type="text" id="new_{{ $field }}" maxlength="255" class="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-xs" placeholder="Nama {{ $groupLabel }} baru">
+        <input type="text" id="new_{{ $field }}" maxlength="{{ $maxLength ?? 255 }}" class="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-xs" placeholder="Nama {{ $groupLabel }} baru">
         <button type="button" class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700">Tambahkan</button>
     </div>
     <p class="mt-1 text-gray-500">Group dipilih otomatis dan tersimpan saat data karyawan disimpan.</p>
