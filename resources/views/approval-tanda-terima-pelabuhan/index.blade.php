@@ -78,7 +78,7 @@
                                         data-tanggal="{{ $tandaTerima->tanggal?->format('Y-m-d') }}"
                                         data-checkpoint="{{ $tandaTerima->tanggal_checkpoint_supir?->format('Y-m-d') }}"
                                         data-supir-pengganti="{{ $tandaTerima->supir_pengganti }}"
-                                        data-nama-barang="{{ json_encode($tandaTerima->approval_nama_barang) }}"
+                                        data-dimensi="{{ json_encode($tandaTerima->approval_dimensi) }}"
                                         data-lembur="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->lembur : $tandaTerima->lembur) ? '1' : '0' }}"
                                         data-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->nginap : $tandaTerima->nginap) ? '1' : '0' }}"
                                         data-tidak-lembur-nginap="{{ ($tandaTerima->approval_pelabuhan_status === 'pending' ? $tandaTerima->suratJalan?->tidak_lembur_nginap : $tandaTerima->tidak_lembur_nginap) ? '1' : '0' }}"
@@ -100,11 +100,11 @@
     </div>
 
     @can('approval-tanda-terima-pelabuhan-approve')
-        <dialog id="approval-pelabuhan-modal" class="m-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 p-0 shadow-2xl backdrop:bg-black/50"
+        <dialog id="approval-pelabuhan-modal" class="m-auto max-h-[90vh] w-[95vw] max-w-5xl overflow-y-auto rounded-xl border border-gray-200 p-0 shadow-2xl backdrop:bg-black/50"
             aria-labelledby="approval-pelabuhan-title" data-reopen-id="{{ old('approval_tanda_terima_id') }}"
             data-old-tanggal="{{ old('tanggal') }}" data-old-checkpoint="{{ old('tanggal_checkpoint_supir') }}"
             data-old-supir-pengganti="{{ old('supir_pengganti') }}"
-            data-old-nama-barang="{{ json_encode(old('nama_barang', [])) }}"
+            data-old-dimensi="{{ json_encode(array_values(old('dimensi', []))) }}"
             data-old-lembur="{{ old('lembur') ? '1' : '0' }}" data-old-nginap="{{ old('nginap') ? '1' : '0' }}"
             data-old-tidak-lembur-nginap="{{ old('tidak_lembur_nginap') ? '1' : '0' }}"
             data-old-gudang-id="{{ old('gudang_id') }}">
@@ -136,13 +136,13 @@
                     <label for="approval-supir-pengganti" class="block text-sm font-medium text-gray-700">Supir pengganti <span class="font-normal text-gray-500">(opsional)</span>
                         <input id="approval-supir-pengganti" type="text" name="supir_pengganti" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Nama supir pengganti">
                     </label>
-                    <div>
-                        <div class="flex items-center justify-between gap-3">
-                            <label for="approval-nama-barang-0" class="text-sm font-medium text-gray-700">Nama Barang</label>
-                            <button id="approval-add-nama-barang" type="button" class="text-sm font-medium text-blue-700 hover:underline">Tambah barang</button>
+                    <section class="rounded-lg border border-purple-200 bg-purple-50 p-4" aria-labelledby="approval-dimensi-title">
+                        <div class="mb-4 flex items-center justify-between gap-3">
+                            <h3 id="approval-dimensi-title" class="text-sm font-semibold text-gray-900">Dimensi dan Volume</h3>
+                            <button id="approval-add-dimensi" type="button" class="rounded-lg bg-purple-600 px-3 py-2 text-xs font-medium text-white hover:bg-purple-700">+ Tambah Dimensi</button>
                         </div>
-                        <div id="approval-nama-barang-list" class="mt-2 space-y-2"></div>
-                    </div>
+                        <div id="approval-dimensi-list" class="space-y-4"></div>
+                    </section>
                     <fieldset class="rounded-lg border border-gray-200 p-3">
                         <legend class="px-1 text-sm font-medium text-gray-700">Lembur / Nginap</legend>
                         <div class="flex flex-wrap gap-4 text-sm text-gray-700">
@@ -183,23 +183,81 @@
         const tanggal = document.getElementById('approval-tanggal');
         const checkpoint = document.getElementById('approval-checkpoint');
         const supirPengganti = document.getElementById('approval-supir-pengganti');
-        const namaBarangList = document.getElementById('approval-nama-barang-list');
+        const dimensiList = document.getElementById('approval-dimensi-list');
         const lembur = document.getElementById('approval-lembur');
         const nginap = document.getElementById('approval-nginap');
         const tidakLemburNginap = document.getElementById('approval-tidak-lembur-nginap');
         const gudang = document.getElementById('approval-gudang');
 
-        function addNamaBarang(value = '') {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.name = 'nama_barang[]';
-            input.id = `approval-nama-barang-${namaBarangList.children.length}`;
-            input.maxLength = 5000;
-            input.value = value;
-            input.placeholder = 'Nama barang';
-            input.setAttribute('aria-label', `Nama barang ${namaBarangList.children.length + 1}`);
-            input.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm';
-            namaBarangList.appendChild(input);
+        let dimensiIndex = 0;
+
+        function updateUkuran(row) {
+            const isKeramik = row.querySelector('[data-field="nama_barang"]').value.toLowerCase().includes('keramik');
+            row.querySelector('.approval-ukuran').classList.toggle('hidden', !isKeramik);
+            row.querySelector('.approval-dimensi-info').classList.toggle('md:grid-cols-4', isKeramik);
+            row.querySelector('.approval-dimensi-info').classList.toggle('md:grid-cols-3', !isKeramik);
+        }
+
+        function calculateVolume(row) {
+            const value = field => Number(row.querySelector(`[data-field="${field}"]`).value);
+            const volume = row.querySelector('[data-field="meter_kubik"]');
+            volume.value = ['jumlah', 'panjang', 'lebar', 'tinggi'].every(field => value(field) > 0)
+                ? (value('jumlah') * value('panjang') * value('lebar') * value('tinggi')).toFixed(3)
+                : '';
+        }
+
+        function updateRemoveButtons() {
+            dimensiList.querySelectorAll('.approval-remove-dimensi').forEach(button => {
+                button.classList.toggle('hidden', dimensiList.children.length === 1);
+            });
+        }
+
+        function addDimensi(values = {}) {
+            const index = dimensiIndex++;
+            const row = document.createElement('div');
+            row.className = 'approval-dimensi-row border-b border-purple-200 pb-4 last:border-b-0 last:pb-0';
+            row.innerHTML = `
+                <div class="mb-3 flex justify-end"><button type="button" class="approval-remove-dimensi text-xs font-medium text-red-600 hover:underline">Hapus dimensi</button></div>
+                <div class="approval-dimensi-info mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <label class="text-xs font-medium text-gray-600">Nama Barang
+                        <input type="text" data-field="nama_barang" name="dimensi[${index}][nama_barang]" maxlength="5000" placeholder="Nama barang" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="approval-ukuran hidden text-xs font-medium text-gray-600">Ukuran
+                        <input type="text" data-field="ukuran" name="dimensi[${index}][ukuran]" maxlength="255" placeholder="Contoh: 40x40" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Jumlah
+                        <input type="number" data-field="jumlah" name="dimensi[${index}][jumlah]" min="0" step="1" placeholder="0" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Satuan
+                        <input type="text" data-field="satuan" name="dimensi[${index}][satuan]" maxlength="255" placeholder="Pcs, Kg, Box" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                </div>
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-5">
+                    <label class="text-xs font-medium text-gray-600">Panjang (m)
+                        <input type="number" data-field="panjang" name="dimensi[${index}][panjang]" min="0" step="0.001" placeholder="0.000" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Lebar (m)
+                        <input type="number" data-field="lebar" name="dimensi[${index}][lebar]" min="0" step="0.001" placeholder="0.000" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Tinggi (m)
+                        <input type="number" data-field="tinggi" name="dimensi[${index}][tinggi]" min="0" step="0.001" placeholder="0.000" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Volume (m³)
+                        <input type="number" data-field="meter_kubik" name="dimensi[${index}][meter_kubik]" min="0" step="0.001" placeholder="0.000" readonly class="mt-1 w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-medium text-gray-600">Tonase (Ton)
+                        <input type="number" data-field="tonase" name="dimensi[${index}][tonase]" min="0" step="0.001" placeholder="0.000" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm font-normal">
+                    </label>
+                </div>
+            `;
+            Object.entries(values).forEach(([field, value]) => {
+                const input = row.querySelector(`[data-field="${field}"]`);
+                if (input && value !== null) input.value = value;
+            });
+            if (!Object.hasOwn(values, 'tonase') && index === 0) row.querySelector('[data-field="tonase"]').value = '15';
+            dimensiList.appendChild(row);
+            updateUkuran(row);
+            updateRemoveButtons();
         }
 
         function updateLemburOptions(changed) {
@@ -221,9 +279,10 @@
             tanggal.value = useOldValues ? dialog.dataset.oldTanggal : button.dataset.tanggal;
             checkpoint.value = useOldValues ? dialog.dataset.oldCheckpoint : button.dataset.checkpoint;
             supirPengganti.value = useOldValues ? dialog.dataset.oldSupirPengganti : button.dataset.supirPengganti;
-            namaBarangList.replaceChildren();
-            const namaBarang = JSON.parse(useOldValues ? dialog.dataset.oldNamaBarang : button.dataset.namaBarang);
-            (Array.isArray(namaBarang) && namaBarang.length ? namaBarang : ['']).forEach(addNamaBarang);
+            dimensiList.replaceChildren();
+            dimensiIndex = 0;
+            const dimensi = JSON.parse(useOldValues ? dialog.dataset.oldDimensi : button.dataset.dimensi);
+            (Array.isArray(dimensi) && dimensi.length ? dimensi : [{}]).forEach(addDimensi);
             lembur.checked = (useOldValues ? dialog.dataset.oldLembur : button.dataset.lembur) === '1';
             nginap.checked = (useOldValues ? dialog.dataset.oldNginap : button.dataset.nginap) === '1';
             tidakLemburNginap.checked = (useOldValues ? dialog.dataset.oldTidakLemburNginap : button.dataset.tidakLemburNginap) === '1';
@@ -235,7 +294,19 @@
         }
 
         [lembur, nginap, tidakLemburNginap].forEach(input => input.addEventListener('change', () => updateLemburOptions(input)));
-        document.getElementById('approval-add-nama-barang').addEventListener('click', () => addNamaBarang());
+        document.getElementById('approval-add-dimensi').addEventListener('click', () => addDimensi());
+        dimensiList.addEventListener('input', event => {
+            const row = event.target.closest('.approval-dimensi-row');
+            if (!row) return;
+            if (event.target.dataset.field === 'nama_barang') updateUkuran(row);
+            if (['jumlah', 'panjang', 'lebar', 'tinggi'].includes(event.target.dataset.field)) calculateVolume(row);
+        });
+        dimensiList.addEventListener('click', event => {
+            if (event.target.closest('.approval-remove-dimensi') && dimensiList.children.length > 1) {
+                event.target.closest('.approval-dimensi-row').remove();
+                updateRemoveButtons();
+            }
+        });
         buttons.forEach(button => button.addEventListener('click', () => openApproval(button)));
         document.getElementById('approval-pelabuhan-cancel').addEventListener('click', () => dialog.close());
         dialog.addEventListener('click', event => {

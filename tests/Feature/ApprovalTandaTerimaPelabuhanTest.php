@@ -74,6 +74,14 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             $table->json('nama_barang')->nullable();
             $table->json('dimensi_details')->nullable();
             $table->json('dimensi_items')->nullable();
+            $table->unsignedInteger('jumlah')->nullable();
+            $table->string('satuan')->nullable();
+            $table->decimal('panjang', 12, 3)->nullable();
+            $table->decimal('lebar', 12, 3)->nullable();
+            $table->decimal('tinggi', 12, 3)->nullable();
+            $table->string('ukuran')->nullable();
+            $table->decimal('meter_kubik', 12, 3)->nullable();
+            $table->decimal('tonase', 12, 3)->nullable();
             $table->string('approval_pelabuhan_status')->default('pending');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
@@ -134,7 +142,7 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         (new ApprovalTandaTerimaPelabuhanController)->approve($request, TandaTerima::findOrFail($id));
     }
 
-    public function test_approval_updates_item_names_without_losing_dimensions(): void
+    public function test_approval_updates_all_dimension_fields_and_calculates_volume(): void
     {
         $gudangId = DB::table('gudangs')->insertGetId(['nama_gudang' => 'Gudang A', 'status' => 'aktif']);
         $id = DB::table('tanda_terimas')->insertGetId([
@@ -148,7 +156,10 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
             'tanggal_checkpoint_supir' => '2026-10-25',
             'tidak_lembur_nginap' => '1',
             'gudang_id' => $gudangId,
-            'nama_barang' => ['Barang baru', 'Barang tambahan'],
+            'dimensi' => [
+                ['nama_barang' => 'Barang baru', 'jumlah' => '3', 'satuan' => 'Box', 'panjang' => '2', 'lebar' => '3', 'tinggi' => '4', 'meter_kubik' => '1', 'tonase' => '6.5'],
+                ['nama_barang' => 'Barang tambahan', 'jumlah' => '2', 'satuan' => 'Pcs', 'ukuran' => '40x40', 'tonase' => '1.25'],
+            ],
         ]);
         $request->setUserResolver(fn () => (object) ['id' => 7]);
 
@@ -158,9 +169,14 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $this->assertSame(['Barang baru', 'Barang tambahan'], $saved->nama_barang);
         $this->assertSame('Barang baru', $saved->dimensi_details[0]['nama_barang']);
         $this->assertSame(3, $saved->dimensi_details[0]['jumlah']);
+        $this->assertSame('Box', $saved->dimensi_details[0]['satuan']);
+        $this->assertSame(72, $saved->dimensi_details[0]['meter_kubik']);
+        $this->assertSame(6.5, $saved->dimensi_details[0]['tonase']);
         $this->assertSame('Barang tambahan', $saved->dimensi_details[1]['nama_barang']);
+        $this->assertSame('40x40', $saved->dimensi_details[1]['ukuran']);
         $this->assertSame('Barang baru', $saved->dimensi_items[0]['nama_barang']);
         $this->assertSame(3, $saved->dimensi_items[0]['jumlah']);
+        $this->assertSame('72.000', $saved->meter_kubik);
     }
 
     public function test_approval_requires_a_lembur_or_nginap_choice(): void

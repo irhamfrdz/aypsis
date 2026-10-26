@@ -61,9 +61,14 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
                 : null;
 
             $details = $tandaTerima->dimensi_details ?: $tandaTerima->dimensi_items ?: [];
-            $tandaTerima->approval_nama_barang = $details
-                ? array_map(fn ($detail) => $detail['nama_barang'] ?? '', $details)
-                : ($tandaTerima->nama_barang ?: []);
+            if ($details === []) {
+                $details = array_map(fn ($name) => ['nama_barang' => $name], $tandaTerima->nama_barang ?: []);
+                $singleDimensi = $tandaTerima->only(['jumlah', 'satuan', 'panjang', 'lebar', 'tinggi', 'ukuran', 'meter_kubik', 'tonase']);
+                if (array_filter($singleDimensi, fn ($value) => $value !== null && $value !== '')) {
+                    $details[0] = array_merge($singleDimensi, $details[0] ?? []);
+                }
+            }
+            $tandaTerima->approval_dimensi = array_values($details);
         }
 
         return view('approval-tanda-terima-pelabuhan.index', compact('tandaTerimas', 'gudangs', 'status', 'search'));
@@ -77,8 +82,16 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             'tanggal' => ['required', 'date'],
             'tanggal_checkpoint_supir' => ['required', 'date'],
             'supir_pengganti' => ['nullable', 'string', 'max:255'],
-            'nama_barang' => ['nullable', 'array'],
-            'nama_barang.*' => ['nullable', 'string', 'max:5000'],
+            'dimensi' => ['nullable', 'array'],
+            'dimensi.*.nama_barang' => ['nullable', 'string', 'max:5000'],
+            'dimensi.*.ukuran' => ['nullable', 'string', 'max:255'],
+            'dimensi.*.jumlah' => ['nullable', 'integer', 'min:0'],
+            'dimensi.*.satuan' => ['nullable', 'string', 'max:255'],
+            'dimensi.*.panjang' => ['nullable', 'numeric', 'min:0'],
+            'dimensi.*.lebar' => ['nullable', 'numeric', 'min:0'],
+            'dimensi.*.tinggi' => ['nullable', 'numeric', 'min:0'],
+            'dimensi.*.meter_kubik' => ['nullable', 'numeric', 'min:0'],
+            'dimensi.*.tonase' => ['nullable', 'numeric', 'min:0'],
             'lembur' => ['nullable', 'boolean'],
             'nginap' => ['nullable', 'boolean'],
             'tidak_lembur_nginap' => ['nullable', 'boolean'],
@@ -111,25 +124,34 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
                 'updated_by' => $request->user()->id,
             ])->save();
 
-            if (array_key_exists('nama_barang', $validated)) {
-                $namaBarang = array_map(fn ($name) => trim((string) $name), $validated['nama_barang'] ?? []);
-                $tandaTerima->nama_barang = array_values(array_filter($namaBarang, fn ($name) => $name !== ''));
-
-                foreach (['dimensi_details', 'dimensi_items'] as $field) {
-                    $items = $tandaTerima->{$field} ?: [];
-                    foreach ($namaBarang as $index => $name) {
-                        if (! isset($items[$index]) && $name !== '') {
-                            $items[$index] = array_fill_keys(['nama_barang', 'jumlah', 'satuan', 'panjang', 'lebar', 'tinggi', 'ukuran', 'meter_kubik', 'tonase'], null);
-                        }
-                        if (isset($items[$index])) {
-                            $items[$index]['nama_barang'] = $name !== '' ? $name : null;
-                        }
+            if (array_key_exists('dimensi', $validated)) {
+                $details = [];
+                foreach ($validated['dimensi'] ?? [] as $row) {
+                    $detail = [];
+                    foreach (['nama_barang', 'satuan', 'ukuran'] as $field) {
+                        $detail[$field] = trim((string) ($row[$field] ?? '')) ?: null;
                     }
-                    if ($items !== []) {
-                        $tandaTerima->{$field} = array_values($items);
+                    $detail['jumlah'] = isset($row['jumlah']) && $row['jumlah'] !== '' ? (int) $row['jumlah'] : null;
+                    foreach (['panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'] as $field) {
+                        $detail[$field] = isset($row[$field]) && $row[$field] !== '' ? round((float) $row[$field], 3) : null;
+                    }
+                    if ($detail['panjang'] > 0 && $detail['lebar'] > 0 && $detail['tinggi'] > 0 && $detail['jumlah'] > 0) {
+                        $detail['meter_kubik'] = round($detail['panjang'] * $detail['lebar'] * $detail['tinggi'] * $detail['jumlah'], 3);
+                    } elseif ($detail['panjang'] !== null || $detail['lebar'] !== null || $detail['tinggi'] !== null || $detail['jumlah'] !== null) {
+                        $detail['meter_kubik'] = null;
+                    }
+                    if (array_filter($detail, fn ($value) => $value !== null)) {
+                        $details[] = $detail;
                     }
                 }
 
+                $tandaTerima->dimensi_details = $details;
+                $tandaTerima->dimensi_items = $details;
+                $tandaTerima->nama_barang = array_values(array_filter(array_column($details, 'nama_barang'), fn ($name) => $name !== null));
+                $first = $details[0] ?? [];
+                foreach (['jumlah', 'satuan', 'panjang', 'lebar', 'tinggi', 'ukuran', 'meter_kubik', 'tonase'] as $field) {
+                    $tandaTerima->{$field} = $first[$field] ?? null;
+                }
                 $tandaTerima->save();
             }
 
