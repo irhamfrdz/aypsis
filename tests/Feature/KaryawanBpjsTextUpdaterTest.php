@@ -18,6 +18,9 @@ class KaryawanBpjsTextUpdaterTest extends TestCase
         DB::purge('sqlite');
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
+            $table->string('nama_panggilan')->nullable();
+            $table->date('tanggal_masuk')->nullable();
+            $table->string('cabang')->nullable();
             foreach (['nik', 'nama_lengkap', 'dpp_jkn', 'group_jkn', 'dpp_bp_jamsostek', 'group_bp_jamsostek', 'cabang_bpjs'] as $column) {
                 $table->string($column)->nullable();
             }
@@ -100,6 +103,28 @@ class KaryawanBpjsTextUpdaterTest extends TestCase
         $this->assertSame([], $result['errors']);
         $this->assertSame('JKN-KIS-KANTOR', Karyawan::first()->group_jkn);
         $this->assertSame('BPU-NON KARY-PBM', Karyawan::first()->group_bp_jamsostek);
+    }
+
+    public function test_new_groups_are_saved_on_creation_and_reusable_in_dropdowns_and_bulk_updates(): void
+    {
+        $request = \Illuminate\Http\Request::create('/master/karyawan', 'POST', [
+            'nik' => '02000', 'nama_panggilan' => 'BARU', 'nama_lengkap' => 'KARYAWAN BARU',
+            'tanggal_masuk' => '2026-10-26', 'cabang' => 'JAKARTA',
+            'group_jkn' => '  jkn-group   baru  ', 'group_bp_jamsostek' => '  ppu-group baru  ',
+            'cabang_bpjs' => 'Jakarta',
+        ]);
+        $response = app(\App\Http\Controllers\KaryawanController::class)->store($request);
+        $this->assertSame(route('master.karyawan.index'), $response->getTargetUrl());
+        $employee = Karyawan::where('nik', '02000')->firstOrFail();
+        $this->assertSame('JKN-GROUP BARU', $employee->group_jkn);
+        $this->assertSame('PPU-GROUP BARU', $employee->group_bp_jamsostek);
+        $this->assertSame('JAKARTA', $employee->cabang_bpjs);
+        $options = app(\App\Services\KaryawanBpjsGroups::class)->options();
+        $this->assertContains('JKN-GROUP BARU', $options['group_jkn']);
+        $this->assertContains('PPU-GROUP BARU', $options['group_bp_jamsostek']);
+        $result = $this->updateText('nik;01593, nama;Aditya Nur Rahmat Kaya, Group JKN;JKN-GROUP BARU, Group BP Jamsostek;PPU-GROUP BARU');
+        $this->assertSame([], $result['errors']);
+        $this->assertSame('JKN-GROUP BARU', Karyawan::where('nik', '01593')->first()->group_jkn);
     }
 
     public function test_missing_or_blank_name_is_rejected_without_changing_data(): void

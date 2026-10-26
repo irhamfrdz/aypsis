@@ -1116,6 +1116,7 @@ class KaryawanController extends Controller
      */
     public function create()
     {
+        $bpjsGroupOptions = app(\App\Services\KaryawanBpjsGroups::class)->options();
         $typeGajiSubGroups = \App\Models\MasterTypeGajiKaryawan::where('status', 'active')->orderBy('nama')->pluck('nama')->all();
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
         $departemens = \App\Models\Departemen::where('is_active', true)->orderBy('nama_departemen')->get();
@@ -1143,7 +1144,7 @@ class KaryawanController extends Controller
         // Generate next NIK for auto-fill (Optional, but user want to remove automatic feature)
         $nextNik = ''; // Karyawan::generateNextNik();
 
-        return view('master-karyawan.create', compact('divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis', 'typeGajiSubGroups'));
+        return view('master-karyawan.create', compact('divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions'));
     }
 
     /**
@@ -1151,6 +1152,11 @@ class KaryawanController extends Controller
      */
     public function store(Request $request)
     {
+        foreach (['group_jkn', 'group_bp_jamsostek'] as $field) {
+            if (is_string($request->input($field))) {
+                $request->merge([$field => \App\Services\KaryawanBpjsGroups::normalize($request->input($field))]);
+            }
+        }
         if ($request->has('grup')) {
             $grup = array_filter($request->grup ?? [], fn ($val) => $val !== null && $val !== '');
             $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
@@ -1205,8 +1211,11 @@ class KaryawanController extends Controller
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
             'dpp_jkn' => 'nullable|string|max:255',
+            'group_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
             'dpp_bp_jamsostek' => 'nullable|string|max:255',
+            'group_bp_jamsostek' => 'nullable|string|max:255',
+            'cabang_bpjs' => 'nullable|string|max:255',
             'no_sim' => 'nullable|string|max:255',
             'sim_berlaku_mulai' => 'nullable|date',
             'sim_berlaku_sampai' => 'nullable|date',
@@ -1308,6 +1317,7 @@ class KaryawanController extends Controller
      */
     public function edit(Karyawan $karyawan)
     {
+        $bpjsGroupOptions = app(\App\Services\KaryawanBpjsGroups::class)->options();
         // Jika ada parameter onboarding, gunakan view onboarding-full
         if (request()->has('onboarding') && request()->onboarding == '1') {
             // Ambil data divisis dan pekerjaans untuk dropdown
@@ -1350,7 +1360,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis', 'typeGajiSubGroups'));
+        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions'));
     }
 
     /**

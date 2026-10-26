@@ -11,6 +11,7 @@ class KaryawanBpjsTextUpdater
     public function update(string $text): array
     {
         $result = ['updated' => 0, 'unchanged' => 0, 'errors' => [], 'failed_text' => []];
+        $groups = app(KaryawanBpjsGroups::class)->options();
 
         foreach (preg_split('/\R/u', $text) as $index => $line) {
             if (trim($line) === '') {
@@ -18,7 +19,7 @@ class KaryawanBpjsTextUpdater
             }
 
             try {
-                $data = $this->parse($line);
+                $data = $this->parse($line, $groups);
                 $changed = DB::transaction(function () use ($data) {
                     $employees = Karyawan::where('nik', $data['nik'])->lockForUpdate()->get();
                     if ($employees->count() !== 1) {
@@ -52,7 +53,7 @@ class KaryawanBpjsTextUpdater
         return $result;
     }
 
-    private function parse(string $line): array
+    private function parse(string $line, array $groups): array
     {
         $fields = ['nik', 'nama', 'dpp_jkn', 'group_jkn', 'dpp_bp_jamsostek', 'group_bp_jamsostek', 'cabang_bpjs'];
         $data = [];
@@ -83,18 +84,6 @@ class KaryawanBpjsTextUpdater
             $this->invalid('Nama karyawan wajib diisi.');
         }
         $data = array_filter($data, fn ($value) => $value !== '');
-        $groups = [
-            'group_jkn' => [
-                'JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN',
-                'JKN-KIS-NON KARY', 'JKN-KIS-NON KARY-UMKM KIS',
-                'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI', 'JKN-REIMBURSEMENT-CREW',
-            ],
-            'group_bp_jamsostek' => [
-                'BPU-CREW', 'BPU-HARIAN', 'BPU-LAPANGAN', 'BPU-NON KARY-PBM',
-                'BPU-NON KARY-UMKM', 'BPU-NON KARY-UMKM NO PP', 'BPU-TUNAI',
-                'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI',
-            ],
-        ];
         foreach ($groups as $key => $allowed) {
             if (! isset($data[$key])) {
                 continue;
