@@ -222,14 +222,23 @@ class MeratusBillingService
                         ['start' => 'required|date_format:Y-m-d', 'end' => 'required|date_format:Y-m-d|after_or_equal:start']
                     )->validate();
                     $days = (new \DateTimeImmutable($storageStart))->diff(new \DateTimeImmutable($storageEnd))->days + 1;
-                    $massa = (int) ceil($days / 3);
-                    if ($massa > 2 || ! $master || ! preg_match('/^storage\s+massa\s+'.preg_quote((string) $massa, '/').'$/i', trim($master->jenis_biaya))
+                    $paidDays = max(0, $days - 5);
+                    $massa = $paidDays > 3 ? 2 : 1;
+                    if (! $master || ! preg_match('/^storage\s+massa\s+'.preg_quote((string) $massa, '/').'$/i', trim($master->jenis_biaya))
                         || strcasecmp((string) $master->status, 'aktif') !== 0
                         || strcasecmp(trim((string) $master->lokasi), trim((string) ($section['lokasi_items'][$i] ?? ''))) !== 0
                         || preg_replace('/\D/', '', (string) $master->size) !== preg_replace('/\D/', '', (string) ($section['size_items'][$i] ?? ''))) {
                         throw ValidationException::withMessages(["meratus.$index.types.$i" => 'Tarif Storage untuk massa, lokasi, dan ukuran kontainer tersebut tidak tersedia.']);
                     }
-                    $section['custom_prices'][$i] = $this->cents($master->harga) * $days / 100;
+                    $tarifMassa1 = $massa === 1 ? $master : PricelistMeratus::where('jenis_biaya', 'storage massa 1')
+                        ->where('lokasi', $master->lokasi)->where('size', $master->size)->first();
+                    if (! $tarifMassa1 || strcasecmp((string) $tarifMassa1->status, 'aktif') !== 0) {
+                        throw ValidationException::withMessages(["meratus.$index.types.$i" => 'Tarif Storage massa 1 untuk lokasi dan ukuran kontainer tersebut tidak tersedia.']);
+                    }
+                    $section['custom_prices'][$i] = (
+                        $this->cents($tarifMassa1->harga) * min($paidDays, 3)
+                        + $this->cents($master->harga) * max(0, $paidDays - 3)
+                    ) / 100;
                 }
                 $number = strtoupper(trim($section['nomor_kontainers'][$i]));
                 if ($number === '') {

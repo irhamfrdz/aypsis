@@ -2,6 +2,7 @@
         const active = row.querySelector('.meratus-storage-toggle').checked;
         const start = row.querySelector('.meratus-storage-start');
         const end = row.querySelector('.meratus-storage-end');
+        const massaInput = row.querySelector('.meratus-storage-massa');
         const select = row.querySelector('.type-select-meratus');
         const price = row.querySelector('.price-input-meratus');
         const hint = row.querySelector('.meratus-storage-hint');
@@ -14,6 +15,7 @@
         price.readOnly = active;
         price.classList.toggle('bg-gray-50', active);
         if (!active) {
+            massaInput.value = '';
             if (row.dataset.storageWasActive === '1') {
                 const selected = pricelistMeratusData.find(item => String(item.id) === select.value);
                 price.value = selected ? Number(selected.harga) || 0 : '';
@@ -28,26 +30,37 @@
         const days = start.value && end.value
             ? Math.round((Date.parse(end.value + 'T00:00:00Z') - Date.parse(start.value + 'T00:00:00Z')) / 86400000) + 1
             : 0;
-        const massa = days > 0 ? Math.ceil(days / 3) : 0;
+        const freeDays = Math.min(Math.max(days, 0), 5);
+        const paidDays = Math.max(0, days - 5);
+        const massa = paidDays > 3 ? 2 : paidDays > 0 ? 1 : 0;
+        massaInput.value = days > 0 ? (massa ? 'Massa ' + massa : 'Gratis (5 hari)') : '';
         const location = row.querySelector('.lokasi-select-meratus').value.trim().toLocaleLowerCase('id-ID');
         const size = meratusSize(row.querySelector('.meratus-row-size').value || row.closest('.meratus-container-card').querySelector('.meratus-container-size').value);
-        const tariff = pricelistMeratusData.find(item =>
-            String(item.jenis_biaya || '').trim().toLocaleLowerCase('id-ID') === 'storage massa ' + massa &&
+        const findTariff = tier => pricelistMeratusData.find(item =>
+            String(item.jenis_biaya || '').trim().toLocaleLowerCase('id-ID') === 'storage massa ' + tier &&
             String(item.status || '').toLocaleLowerCase('id-ID') === 'aktif' &&
             String(item.lokasi || '').trim().toLocaleLowerCase('id-ID') === location &&
             meratusSize(item.size) === size
         );
-        if (tariff && [...select.options].some(option => option.value === String(tariff.id))) {
+        const tariff1 = findTariff(1);
+        const tariff2 = massa === 2 ? findTariff(2) : null;
+        const tariff = massa === 2 ? tariff2 : tariff1;
+        if (tariff1 && tariff && [...select.options].some(option => option.value === String(tariff.id))) {
             select.value = String(tariff.id);
-            price.value = Math.round(Number(tariff.harga) * days * 100) / 100;
-            hint.textContent = days + ' hari (massa ' + massa + ') × ' + meratusMoney(tariff.harga) + ' = ' + meratusMoney(price.value);
+            const firstDays = Math.min(paidDays, 3);
+            const secondDays = Math.max(0, paidDays - 3);
+            price.value = (Math.round(Number(tariff1.harga) * 100) * firstDays +
+                Math.round(Number(tariff2?.harga || 0) * 100) * secondDays) / 100;
+            hint.textContent = freeDays + ' hari gratis' +
+                (firstDays ? ' + ' + firstDays + ' hari massa 1 × ' + meratusMoney(tariff1.harga) : '') +
+                (secondDays ? ' + ' + secondDays + ' hari massa 2 × ' + meratusMoney(tariff2.harga) : '') +
+                ' = ' + meratusMoney(price.value);
             return '';
         }
         select.value = '';
         price.value = '';
         const error = days < 1 ? 'Isi rentang tanggal Storage yang valid.'
-            : massa > 2 ? 'Pricelist Storage massa ' + massa + ' belum tersedia.'
-            : 'Tarif Storage massa ' + massa + ' untuk lokasi dan ukuran kontainer ini belum tersedia.';
+            : 'Tarif Storage massa ' + (!tariff1 ? 1 : massa || 1) + ' untuk lokasi dan ukuran kontainer ini belum tersedia.';
         hint.textContent = error;
         return error;
     }

@@ -541,6 +541,9 @@
                     <label class="text-sm text-gray-700">Sampai tanggal
                         <input type="date" name="${field('tanggal_selesai_storage')}" class="meratus-storage-end ${meratusInputClass} mt-1">
                     </label>
+                    <label class="text-sm text-gray-700">Massa tarif
+                        <input type="text" class="meratus-storage-massa ${meratusInputClass} mt-1 bg-gray-50" readonly placeholder="Otomatis dari tanggal">
+                    </label>
                 </div>
                 <p class="meratus-storage-hint text-xs text-blue-700 mt-1 hidden"></p>
             </div>
