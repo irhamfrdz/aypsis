@@ -198,6 +198,9 @@ class MeratusBillingService
                 'nomor_bls' => 'required|array', 'nomor_bls.*' => 'required|string|max:255',
                 'size_items' => 'required|array', 'size_items.*' => 'required|in:20ft,40ft,45ft',
                 'per_containers' => 'sometimes|array', 'per_containers.*' => 'boolean',
+                'storage_items' => 'sometimes|array', 'storage_items.*' => 'boolean',
+                'tanggal_mulai_storage' => 'sometimes|array',
+                'tanggal_selesai_storage' => 'sometimes|array',
             ])->validate();
             foreach ($section['types'] as $i => $type) {
                 foreach (['custom_prices', 'quantities', 'nomor_kontainers', 'nomor_bls', 'size_items'] as $field) {
@@ -209,6 +212,24 @@ class MeratusBillingService
                 $label = $master?->jenis_biaya ?? trim($section['manual_names'][$i] ?? '');
                 if (($type !== 'MANUAL' && ! $master) || $label === '') {
                     throw ValidationException::withMessages(["meratus.$index.types" => 'Pilih jenis biaya yang valid atau isi nama biaya manual.']);
+                }
+                $isStorage = (bool) ($section['storage_items'][$i] ?? false);
+                $storageStart = $isStorage ? ($section['tanggal_mulai_storage'][$i] ?? null) : null;
+                $storageEnd = $isStorage ? ($section['tanggal_selesai_storage'][$i] ?? null) : null;
+                if ($isStorage) {
+                    Validator::make(
+                        ['start' => $storageStart, 'end' => $storageEnd],
+                        ['start' => 'required|date_format:Y-m-d', 'end' => 'required|date_format:Y-m-d|after_or_equal:start']
+                    )->validate();
+                    $days = (new \DateTimeImmutable($storageStart))->diff(new \DateTimeImmutable($storageEnd))->days + 1;
+                    $massa = (int) ceil($days / 3);
+                    if ($massa > 2 || ! $master || ! preg_match('/^storage\s+massa\s+'.preg_quote((string) $massa, '/').'$/i', trim($master->jenis_biaya))
+                        || strcasecmp((string) $master->status, 'aktif') !== 0
+                        || strcasecmp(trim((string) $master->lokasi), trim((string) ($section['lokasi_items'][$i] ?? ''))) !== 0
+                        || preg_replace('/\D/', '', (string) $master->size) !== preg_replace('/\D/', '', (string) ($section['size_items'][$i] ?? ''))) {
+                        throw ValidationException::withMessages(["meratus.$index.types.$i" => 'Tarif Storage untuk massa, lokasi, dan ukuran kontainer tersebut tidak tersedia.']);
+                    }
+                    $section['custom_prices'][$i] = $this->cents($master->harga) * $days / 100;
                 }
                 $number = strtoupper(trim($section['nomor_kontainers'][$i]));
                 if ($number === '') {
@@ -231,6 +252,9 @@ class MeratusBillingService
                     'is_muat' => ($section['is_muat'][$i] ?? 0) == 1,
                     'is_bongkar' => ($section['is_bongkar'][$i] ?? 0) == 1,
                     'is_per_container' => $isPerContainer,
+                    'is_storage' => $isStorage,
+                    'tanggal_mulai_storage' => $storageStart,
+                    'tanggal_selesai_storage' => $storageEnd,
                     'pph_active' => false, 'ppn_active' => false,
                 ]);
             }

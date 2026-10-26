@@ -422,7 +422,10 @@
                                  'kuantitas' => $i->kuantitas,
                                  'is_muat' => $i->is_muat,
                                  'is_bongkar' => $i->is_bongkar,
-                                  'is_per_container' => $i->is_per_container,
+                                 'is_per_container' => $i->is_per_container,
+                                 'is_storage' => $i->is_storage,
+                                 'tanggal_mulai_storage' => $i->tanggal_mulai_storage?->format('Y-m-d'),
+                                 'tanggal_selesai_storage' => $i->tanggal_selesai_storage?->format('Y-m-d'),
                                   'nomor_kontainer' => $i->nomor_kontainer,
                                   'nomor_bl' => $i->nomor_bl ?: ($legacyMeratusBls[$i->bl_id] ?? null),
                                   'bl_id' => $i->bl_id

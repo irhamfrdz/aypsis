@@ -1,3 +1,57 @@
+    function updateMeratusStorageRow(row) {
+        const active = row.querySelector('.meratus-storage-toggle').checked;
+        const start = row.querySelector('.meratus-storage-start');
+        const end = row.querySelector('.meratus-storage-end');
+        const select = row.querySelector('.type-select-meratus');
+        const price = row.querySelector('.price-input-meratus');
+        const hint = row.querySelector('.meratus-storage-hint');
+        row.querySelector('.meratus-storage-value').value = active ? '1' : '0';
+        row.querySelector('.meratus-storage-dates').classList.toggle('hidden', !active);
+        hint.classList.toggle('hidden', !active);
+        [start, end].forEach(input => {
+            input.required = active;
+        });
+        price.readOnly = active;
+        price.classList.toggle('bg-gray-50', active);
+        if (!active) {
+            if (row.dataset.storageWasActive === '1') {
+                const selected = pricelistMeratusData.find(item => String(item.id) === select.value);
+                price.value = selected ? Number(selected.harga) || 0 : '';
+                start.value = '';
+                end.value = '';
+            }
+            row.dataset.storageWasActive = '0';
+            return '';
+        }
+        row.dataset.storageWasActive = '1';
+        end.min = start.value || '';
+        const days = start.value && end.value
+            ? Math.round((Date.parse(end.value + 'T00:00:00Z') - Date.parse(start.value + 'T00:00:00Z')) / 86400000) + 1
+            : 0;
+        const massa = days > 0 ? Math.ceil(days / 3) : 0;
+        const location = row.querySelector('.lokasi-select-meratus').value.trim().toLocaleLowerCase('id-ID');
+        const size = meratusSize(row.querySelector('.meratus-row-size').value || row.closest('.meratus-container-card').querySelector('.meratus-container-size').value);
+        const tariff = pricelistMeratusData.find(item =>
+            String(item.jenis_biaya || '').trim().toLocaleLowerCase('id-ID') === 'storage massa ' + massa &&
+            String(item.status || '').toLocaleLowerCase('id-ID') === 'aktif' &&
+            String(item.lokasi || '').trim().toLocaleLowerCase('id-ID') === location &&
+            meratusSize(item.size) === size
+        );
+        if (tariff && [...select.options].some(option => option.value === String(tariff.id))) {
+            select.value = String(tariff.id);
+            price.value = Math.round(Number(tariff.harga) * days * 100) / 100;
+            hint.textContent = days + ' hari (massa ' + massa + ') × ' + meratusMoney(tariff.harga) + ' = ' + meratusMoney(price.value);
+            return '';
+        }
+        select.value = '';
+        price.value = '';
+        const error = days < 1 ? 'Isi rentang tanggal Storage yang valid.'
+            : massa > 2 ? 'Pricelist Storage massa ' + massa + ' belum tersedia.'
+            : 'Tarif Storage massa ' + massa + ' untuk lokasi dan ukuran kontainer ini belum tersedia.';
+        hint.textContent = error;
+        return error;
+    }
+
     function updateMeratusDpSelection(section) {
         const select = section.querySelector('.meratus-dp-reference');
         const selected = [...select.selectedOptions].filter(option => option.value);
@@ -200,6 +254,9 @@
                 ])].join(', ');
                 refreshMeratusCostContainers(section, card, row);
                 row.querySelector('.price-input-meratus').value = item.harga;
+                row.querySelector('.meratus-storage-toggle').checked = Boolean(item.is_storage);
+                row.querySelector('.meratus-storage-start').value = item.tanggal_mulai_storage || '';
+                row.querySelector('.meratus-storage-end').value = item.tanggal_selesai_storage || '';
                 row.querySelector('.quantity-input-meratus').value = item.kuantitas || 1;
                 row.querySelectorAll('.meratus-activity').forEach((box, i) => box.checked = Boolean(i ? item.is_bongkar : item.is_muat));
             });

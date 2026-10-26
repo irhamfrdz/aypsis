@@ -528,6 +528,22 @@
                 <label class="meratus-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="${field('manual_names')}" class="type-manual-input-meratus ${meratusInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
                 <label class="text-sm text-gray-700">Tarif biaya (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-meratus ${meratusInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
             </div>
+            <div class="mt-3">
+                <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input type="checkbox" class="meratus-storage-toggle w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
+                    Storage
+                </label>
+                <input type="hidden" name="${field('storage_items')}" class="meratus-storage-value" value="0">
+                <div class="meratus-storage-dates hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <label class="text-sm text-gray-700">Dari tanggal
+                        <input type="date" name="${field('tanggal_mulai_storage')}" class="meratus-storage-start ${meratusInputClass} mt-1">
+                    </label>
+                    <label class="text-sm text-gray-700">Sampai tanggal
+                        <input type="date" name="${field('tanggal_selesai_storage')}" class="meratus-storage-end ${meratusInputClass} mt-1">
+                    </label>
+                </div>
+                <p class="meratus-storage-hint text-xs text-blue-700 mt-1 hidden"></p>
+            </div>
             <input type="hidden" name="${field('nomor_kontainers')}" class="meratus-row-number">
             <input type="hidden" name="${field('nomor_bls')}" class="meratus-row-nomor-bl">
             <input type="hidden" name="${field('bl_ids')}" class="meratus-row-bl">
@@ -634,10 +650,11 @@
                 row.querySelector('.meratus-row-nomor-bl').value = nomorBl;
                 row.querySelector('.meratus-row-bl').value = manifest?.id || (selectedContainer && row.dataset.savedBlId) || card.dataset.blId || '';
                 row.querySelector('.meratus-row-size').value = rowSize;
+                const storageError = updateMeratusStorageRow(row);
                 row.querySelectorAll('.meratus-activity').forEach(box => box.previousElementSibling.value = box.checked ? '1' : '0');
                 const select = row.querySelector('.type-select-meratus');
                 const tariff = pricelistMeratusData.find(item => String(item.id) === select.value);
-                select.setCustomValidity(tariff && tariff.size && rowSize && meratusSize(tariff.size) !== rowSize ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
+                select.setCustomValidity(storageError || (tariff && tariff.size && rowSize && meratusSize(tariff.size) !== rowSize ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : ''));
                 const quantity = isPerContainer && !selectedContainer ? containerCount : 1;
                 row.querySelector('.quantity-input-meratus').value = quantity;
                 row.querySelector('.meratus-row-per-container').value = isPerContainer ? '1' : '0';
