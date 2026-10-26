@@ -232,6 +232,7 @@
                     cards.set(nomorBl, card);
                     card.dataset.nomorBl = item.nomor_bl || '';
                     card.dataset.containerNumbers = number;
+                    card.dataset.selectionInitialized = '1';
                     card.querySelector('.meratus-container-size').value = meratusSize(item.size);
                     card.dataset.blId = item.bl_id || '';
                     refreshMeratusOptions(section, card);

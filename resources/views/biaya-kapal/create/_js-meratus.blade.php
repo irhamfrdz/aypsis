@@ -409,17 +409,22 @@
         blSelect.disabled = !section.meratusContainers.length && !currentBl;
 
         const matches = currentBl ? section.meratusContainers.filter(c => String(c.nomor_bl) === currentBl) : [];
-        containerSelect.innerHTML = matches.map(c => '<option selected value="' + meratusEscape(c.nomor_kontainer) + '">' +
+        const selectedNumbers = card.dataset.selectionInitialized === '1'
+            ? new Set((card.dataset.containerNumbers || '').split(',').map(value => value.trim()).filter(Boolean))
+            : new Set(matches.map(c => c.nomor_kontainer));
+        containerSelect.innerHTML = matches.map(c => '<option' + (selectedNumbers.has(c.nomor_kontainer) ? ' selected' : '') + ' value="' + meratusEscape(c.nomor_kontainer) + '">' +
             meratusEscape(c.nomor_kontainer) + ' (' + meratusEscape(meratusSize(c.size)) + ')</option>').join('');
         containerSelect.disabled = !matches.length;
         card.dataset.nomorBl = currentBl;
-        card.dataset.blId = matches[0]?.id || card.dataset.blId || '';
-        card.dataset.containerNumbers = matches.length
-            ? matches.map(c => c.nomor_kontainer).join(', ')
-            : (card.dataset.containerNumbers || '');
-        if (matches[0]) card.querySelector('.meratus-container-size').value = meratusSize(matches[0].size);
+        const selectedMatches = matches.filter(c => selectedNumbers.has(c.nomor_kontainer));
+        card.dataset.blId = selectedMatches[0]?.id || '';
+        if (matches.length) {
+            card.dataset.containerNumbers = selectedMatches.map(c => c.nomor_kontainer).join(', ');
+            card.dataset.selectionInitialized = '1';
+        }
+        if (selectedMatches[0]) card.querySelector('.meratus-container-size').value = meratusSize(selectedMatches[0].size);
         card.querySelector('.meratus-container-summary').textContent = matches.length
-            ? matches.length + ' kontainer otomatis terpilih untuk BL ini.'
+            ? selectedMatches.length + ' dari ' + matches.length + ' kontainer dipilih untuk BL ini.'
             : (currentBl ? 'Kontainer dari data tersimpan: ' + (card.dataset.containerNumbers || '-') : 'Pilih nomor BL terlebih dahulu.');
         card.querySelectorAll('.meratus-type-item').forEach(row => refreshMeratusCostContainers(section, card, row));
     }
@@ -448,7 +453,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                 <label class="text-sm text-gray-700">Nomor BL<select class="meratus-bl-select ${meratusInputClass} mt-1" required></select></label>
-                <label class="text-sm text-gray-700">Kontainer pada BL<select class="meratus-manifest-select ${meratusInputClass} mt-1 h-24" multiple disabled></select></label>
+                <label class="text-sm text-gray-700">Kontainer pada BL<select class="meratus-manifest-select ${meratusInputClass} mt-1 h-24" multiple disabled></select><span class="block text-xs text-gray-500 mt-1">Gunakan Ctrl/Cmd untuk memilih beberapa kontainer.</span></label>
                 <label class="text-sm text-gray-700">Ukuran tarif<select class="meratus-container-size ${meratusInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
             </div>
             <p class="meratus-container-summary text-xs text-blue-700 mb-3"></p>
@@ -464,12 +469,24 @@
             card.dataset.nomorBl = event.target.value;
             card.dataset.blId = '';
             card.dataset.containerNumbers = '';
+            card.dataset.selectionInitialized = '';
             card.querySelectorAll('.meratus-type-item').forEach(row => {
                 row.dataset.selectedContainer = '';
                 row.dataset.savedBlId = '';
                 row.dataset.savedSize = '';
             });
             refreshMeratusOptions(section, card);
+        });
+        card.querySelector('.meratus-manifest-select').addEventListener('change', event => {
+            const selected = [...event.target.selectedOptions].map(option => option.value);
+            card.dataset.containerNumbers = selected.join(', ');
+            card.dataset.selectionInitialized = '1';
+            const matches = section.meratusContainers.filter(item => String(item.nomor_bl) === card.dataset.nomorBl);
+            const firstSelected = matches.find(item => selected.includes(item.nomor_kontainer));
+            card.dataset.blId = firstSelected?.id || '';
+            if (firstSelected) card.querySelector('.meratus-container-size').value = meratusSize(firstSelected.size);
+            card.querySelector('.meratus-container-summary').textContent = selected.length + ' dari ' + matches.length + ' kontainer dipilih untuk BL ini.';
+            card.querySelectorAll('.meratus-type-item').forEach(row => refreshMeratusCostContainers(section, card, row));
         });
         card.querySelector('.add-cost-meratus').addEventListener('click', () => addMeratusCost(section, card));
         card.querySelector('.remove-container-meratus').addEventListener('click', () => {
@@ -638,8 +655,12 @@
         cards.forEach((card, index) => {
             const nomorBl = numbers[index];
             const number = card.dataset.containerNumbers || '';
-            const containerCount = Math.max(1, [...new Set(number.split(',').map(value => value.trim().toUpperCase()).filter(Boolean))].length);
-            card.querySelector('.meratus-bl-select').setCustomValidity(nomorBl && numbers.filter(n => n === nomorBl).length > 1 ? 'Nomor BL ini sudah ditambahkan. Tambahkan biaya pada kartu BL yang sama.' : '');
+            const containerCount = [...new Set(number.split(',').map(value => value.trim().toUpperCase()).filter(Boolean))].length;
+            const duplicateBl = nomorBl && numbers.filter(n => n === nomorBl).length > 1;
+            card.querySelector('.meratus-bl-select').setCustomValidity(duplicateBl
+                ? 'Nomor BL ini sudah ditambahkan. Tambahkan biaya pada kartu BL yang sama.'
+                : (nomorBl && !containerCount ? 'Pilih minimal satu kontainer untuk BL ini.' : ''));
+            card.querySelector('.meratus-manifest-select').setCustomValidity(nomorBl && !containerCount ? 'Pilih minimal satu kontainer untuk BL ini.' : '');
             const size = card.querySelector('.meratus-container-size').value;
             card.querySelector('.meratus-container-title').textContent = 'BL ' + (index + 1) + (nomorBl ? ' · ' + nomorBl : '');
             let total = 0;

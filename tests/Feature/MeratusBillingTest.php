@@ -56,6 +56,9 @@ class MeratusBillingTest extends TestCase
             $table->boolean('ppn_active')->default(false);
             $table->boolean('is_muat')->default(false);
             $table->boolean('is_bongkar')->default(false);
+            $table->boolean('is_storage')->default(false);
+            $table->date('tanggal_mulai_storage')->nullable();
+            $table->date('tanggal_selesai_storage')->nullable();
             $table->string('penerima')->nullable();
             $table->string('nomor_rekening')->nullable();
             $table->date('tanggal_invoice_vendor')->nullable();
