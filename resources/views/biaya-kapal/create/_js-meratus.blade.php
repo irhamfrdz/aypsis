@@ -98,8 +98,8 @@
                 </div>
             </div>
             <fieldset class="meratus-billing-details">
-            <h5 class="font-semibold text-gray-800">2. Isi biaya per nomor BL</h5>
-            <p class="text-sm text-gray-500 mt-1 mb-3">Pilih nomor BL. Seluruh kontainer pada BL tersebut akan otomatis terpilih dan biaya hanya dihitung satu kali untuk BL.</p>
+            <h5 class="font-semibold text-gray-800">2. Isi biaya per nomor BL atau kontainer</h5>
+            <p class="text-sm text-gray-500 mt-1 mb-3">Pilih nomor BL, lalu tentukan setiap biaya berlaku sekali per BL, sama untuk semua kontainer, atau untuk satu kontainer tertentu. Tambahkan rincian biaya lagi jika nominal tiap kontainer berbeda.</p>
             <p class="meratus-status text-sm text-blue-800 bg-blue-50 rounded-lg p-3 mb-3" role="status" aria-live="polite">Pilih kapal dan voyage untuk memuat nomor BL dan kontainer dari manifest.</p>
             <div class="meratus-container-cards space-y-4"></div>
             <button type="button" class="add-container-meratus mt-3 mb-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">+ Tambah nomor BL</button>
@@ -108,7 +108,7 @@
             <p class="meratus-count text-sm text-blue-700 mb-3"></p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total biaya semua BL</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total biaya semua BL dan kontainer</label>
                     <input type="text" class="sub-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="meratus[${sectionIndex}][sub_total]" class="sub-total-value-meratus" value="0">
                 </div>
@@ -153,7 +153,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Total tagihan kapal ini</label>
                     <input type="text" class="grand-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="meratus[${sectionIndex}][grand_total]" class="grand-total-value-meratus" value="0">
-                    <p class="text-xs text-gray-500 mt-2">Biaya BL + PPN − PPH + materai + admin + penyesuaian.</p>
+                    <p class="text-xs text-gray-500 mt-2">Biaya BL dan kontainer + PPN − PPH + materai + admin + penyesuaian.</p>
                 </div>
             </div>
             </fieldset>
@@ -421,6 +421,22 @@
         card.querySelector('.meratus-container-summary').textContent = matches.length
             ? matches.length + ' kontainer otomatis terpilih untuk BL ini.'
             : (currentBl ? 'Kontainer dari data tersimpan: ' + (card.dataset.containerNumbers || '-') : 'Pilih nomor BL terlebih dahulu.');
+        card.querySelectorAll('.meratus-type-item').forEach(row => refreshMeratusCostContainers(section, card, row));
+    }
+    function refreshMeratusCostContainers(section, card, row) {
+        const select = row.querySelector('.meratus-cost-container');
+        const numbers = [...new Set((card.dataset.containerNumbers || '').split(',').map(value => value.trim()).filter(Boolean))];
+        const selected = row.dataset.selectedContainer || select.value;
+        select.innerHTML = '<option value="">Semua kontainer (tarif sama)</option>' + numbers.map(number => {
+            const manifest = section.meratusContainers.find(item => String(item.nomor_bl) === card.dataset.nomorBl && item.nomor_kontainer === number);
+            return '<option value="' + meratusEscape(number) + '">' + meratusEscape(number) +
+                (manifest ? ' (' + meratusEscape(meratusSize(manifest.size)) + ')' : '') + '</option>';
+        }).join('');
+        select.value = numbers.includes(selected) ? selected : '';
+        row.dataset.selectedContainer = select.value;
+        const perContainer = row.querySelector('.meratus-per-container').checked;
+        select.disabled = !perContainer;
+        select.parentElement.classList.toggle('hidden', !perContainer);
     }
     function addMeratusContainer(section) {
         const card = document.createElement('div');
@@ -448,6 +464,11 @@
             card.dataset.nomorBl = event.target.value;
             card.dataset.blId = '';
             card.dataset.containerNumbers = '';
+            card.querySelectorAll('.meratus-type-item').forEach(row => {
+                row.dataset.selectedContainer = '';
+                row.dataset.savedBlId = '';
+                row.dataset.savedSize = '';
+            });
             refreshMeratusOptions(section, card);
         });
         card.querySelector('.add-cost-meratus').addEventListener('click', () => addMeratusCost(section, card));
@@ -505,7 +526,7 @@
                     </select>
                 </label>
                 <label class="meratus-manual-label hidden text-sm text-gray-700">Nama biaya manual<input name="${field('manual_names')}" class="type-manual-input-meratus ${meratusInputClass} mt-1" maxlength="255" placeholder="Contoh: Biaya penanganan"></label>
-                <label class="text-sm text-gray-700">Biaya BL ini (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-meratus ${meratusInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
+                <label class="text-sm text-gray-700">Tarif biaya (Rp)<input type="number" name="${field('custom_prices')}" class="price-input-meratus ${meratusInputClass} mt-1" min="0" step="0.01" placeholder="0" required></label>
             </div>
             <input type="hidden" name="${field('nomor_kontainers')}" class="meratus-row-number">
             <input type="hidden" name="${field('nomor_bls')}" class="meratus-row-nomor-bl">
@@ -517,7 +538,10 @@
                 <span class="meratus-cost-calculation text-blue-700 font-medium">Dihitung setelah nomor BL dipilih</span>
                 <label class="flex items-center gap-2 font-medium text-gray-700">
                     <input type="checkbox" class="meratus-per-container w-4 h-4 rounded text-blue-600 focus:ring-blue-500" checked>
-                    Kalikan per kontainer
+                    Biaya per kontainer
+                </label>
+                <label class="meratus-cost-container-wrap text-gray-700">Berlaku untuk
+                    <select class="meratus-cost-container ${meratusInputClass} mt-1"></select>
                 </label>
                 <span class="text-gray-500">Kegiatan:</span>
                 ${[['is_muat', 'Muat'], ['is_bongkar', 'Bongkar']].map(([key, label]) => '<label class="flex items-center gap-2"><input type="hidden" name="' + field(key) + '" value="0"><input type="checkbox" class="meratus-activity"> ' + label + '</label>').join('')}
@@ -526,13 +550,21 @@
         `;
         card.querySelector('.meratus-cost-list').appendChild(row);
         const perContainerCheckbox = row.querySelector('.meratus-per-container');
-        perContainerCheckbox.addEventListener('change', () => { row.dataset.perContainerTouched = 'true'; });
+        perContainerCheckbox.addEventListener('change', () => {
+            row.dataset.perContainerTouched = 'true';
+            refreshMeratusCostContainers(section, card, row);
+        });
+        row.querySelector('.meratus-cost-container').addEventListener('change', event => {
+            row.dataset.selectedContainer = event.target.value;
+        });
+        refreshMeratusCostContainers(section, card, row);
         refreshMeratusCostTypes(row);
         row.querySelector('.lokasi-select-meratus').addEventListener('change', () => {
             refreshMeratusCostTypes(row);
             if (!row.querySelector('.type-select-meratus').value) {
                 row.dataset.perContainerTouched = '';
                 perContainerCheckbox.checked = true;
+                refreshMeratusCostContainers(section, card, row);
             }
         });
         row.querySelector('.type-select-meratus').addEventListener('change', event => {
@@ -543,9 +575,13 @@
             row.querySelector('.price-input-meratus').value = item ? Number(item.harga) || 0 : '';
             row.dataset.perContainerTouched = '';
             perContainerCheckbox.checked = !meratusIsSingleCharge(item?.jenis_biaya || row.querySelector('.type-manual-input-meratus').value);
+            refreshMeratusCostContainers(section, card, row);
         });
         row.querySelector('.type-manual-input-meratus').addEventListener('input', event => {
-            if (!row.dataset.perContainerTouched) perContainerCheckbox.checked = !meratusIsSingleCharge(event.target.value);
+            if (!row.dataset.perContainerTouched) {
+                perContainerCheckbox.checked = !meratusIsSingleCharge(event.target.value);
+                refreshMeratusCostContainers(section, card, row);
+            }
         });
         row.querySelector('.remove-cost-meratus').addEventListener('click', () => {
             if (card.querySelectorAll('.meratus-type-item').length === 1) {
@@ -589,20 +625,24 @@
             card.querySelector('.meratus-container-title').textContent = 'BL ' + (index + 1) + (nomorBl ? ' · ' + nomorBl : '');
             let total = 0;
             card.querySelectorAll('.meratus-type-item').forEach(row => {
-                row.querySelector('.meratus-row-number').value = number;
+                const isPerContainer = row.querySelector('.meratus-per-container').checked;
+                const selectedContainer = isPerContainer ? row.querySelector('.meratus-cost-container').value : '';
+                const rowNumber = selectedContainer || number;
+                const manifest = selectedContainer && section.meratusContainers.find(item => String(item.nomor_bl) === nomorBl && item.nomor_kontainer === selectedContainer);
+                const rowSize = manifest ? meratusSize(manifest.size) : (selectedContainer && row.dataset.savedSize || size);
+                row.querySelector('.meratus-row-number').value = rowNumber;
                 row.querySelector('.meratus-row-nomor-bl').value = nomorBl;
-                row.querySelector('.meratus-row-bl').value = card.dataset.blId || '';
-                row.querySelector('.meratus-row-size').value = size;
+                row.querySelector('.meratus-row-bl').value = manifest?.id || (selectedContainer && row.dataset.savedBlId) || card.dataset.blId || '';
+                row.querySelector('.meratus-row-size').value = rowSize;
                 row.querySelectorAll('.meratus-activity').forEach(box => box.previousElementSibling.value = box.checked ? '1' : '0');
                 const select = row.querySelector('.type-select-meratus');
                 const tariff = pricelistMeratusData.find(item => String(item.id) === select.value);
-                select.setCustomValidity(tariff && tariff.size && size && meratusSize(tariff.size) !== size ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
-                const isPerContainer = row.querySelector('.meratus-per-container').checked;
-                const quantity = isPerContainer ? containerCount : 1;
+                select.setCustomValidity(tariff && tariff.size && rowSize && meratusSize(tariff.size) !== rowSize ? 'Ukuran tarif berbeda dengan kontainer. Pilih tarif sesuai ukuran atau tulis biaya manual.' : '');
+                const quantity = isPerContainer && !selectedContainer ? containerCount : 1;
                 row.querySelector('.quantity-input-meratus').value = quantity;
                 row.querySelector('.meratus-row-per-container').value = isPerContainer ? '1' : '0';
                 row.querySelector('.meratus-cost-calculation').textContent = isPerContainer
-                    ? 'Tarif × ' + containerCount + ' kontainer'
+                    ? (selectedContainer ? 'Tarif untuk ' + selectedContainer : 'Tarif × ' + containerCount + ' kontainer')
                     : 'Dihitung 1× per BL';
                 total += (Number(row.querySelector('.price-input-meratus').value) || 0) * quantity;
             });

@@ -188,9 +188,21 @@
                     ? !meratusIsSingleCharge(item.manual_name)
                     : Boolean(savedPerContainer);
                 row.dataset.perContainerTouched = 'true';
+                const savedNumbers = String(item.nomor_kontainer || '').split(',').map(value => value.trim()).filter(Boolean);
+                if (savedNumbers.length === 1 && row.querySelector('.meratus-per-container').checked) {
+                    row.dataset.selectedContainer = savedNumbers[0];
+                }
+                row.dataset.savedBlId = item.bl_id || '';
+                row.dataset.savedSize = meratusSize(item.size);
+                card.dataset.containerNumbers = [...new Set([
+                    ...(card.dataset.containerNumbers || '').split(',').map(value => value.trim()).filter(Boolean),
+                    ...savedNumbers
+                ])].join(', ');
+                refreshMeratusCostContainers(section, card, row);
                 row.querySelector('.price-input-meratus').value = item.harga;
                 row.querySelector('.quantity-input-meratus').value = item.kuantitas || 1;
                 row.querySelectorAll('.meratus-activity').forEach((box, i) => box.checked = Boolean(i ? item.is_bongkar : item.is_muat));
             });
+            cards.forEach(card => card.querySelectorAll('.meratus-type-item').forEach(row => refreshMeratusCostContainers(section, card, row)));
         }
     }

@@ -106,6 +106,27 @@ class MeratusBillingTest extends TestCase
         $this->assertEquals(225, (float) BiayaKapalMeratusStage::first()->nilai_tagihan);
     }
 
+    public function test_one_bl_can_have_different_charges_for_each_container(): void
+    {
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        $section = $this->rows();
+        $section['types'] = ['MANUAL', 'MANUAL', 'MANUAL'];
+        $section['manual_names'] = ['Handling', 'Handling', 'ADM DO'];
+        $section['custom_prices'] = [100, 150, 25];
+        $section['quantities'] = [1, 1, 1];
+        $section['nomor_kontainers'] = ['A123', 'B456', 'A123,B456'];
+        $section['nomor_bls'] = ['BL001', 'BL001', 'BL001'];
+        $section['size_items'] = ['20ft', '40ft', '20ft'];
+        $section['per_containers'] = [1, 1, 0];
+
+        app(MeratusBillingService::class)->replace($invoice, [$section]);
+
+        $details = BiayaKapalMeratus::orderBy('id')->get();
+        $this->assertSame(['A123', 'B456', 'A123,B456'], $details->pluck('nomor_kontainer')->all());
+        $this->assertSame([100.0, 150.0, 25.0], $details->pluck('sub_total')->map(fn ($amount) => (float) $amount)->all());
+        $this->assertEquals(275, (float) $invoice->fresh()->nominal);
+    }
+
     public function test_dp_settlement_preserves_remaining_balance(): void
     {
         $dpInvoice = BiayaKapal::create(['tanggal' => '2026-10-20']);
