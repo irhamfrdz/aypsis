@@ -6778,28 +6778,13 @@ class BiayaKapalController extends Controller
 
             $bls = $blsQuery->get();
 
-            // Count FCL Booking containers created from LCL stuffing/sealing.
-            // The booking checkbox in tanda-terima-lcl/stuffing creates a Prospek
-            // record with tipe "FCL Booking".
-            $fclBookingQuery = DB::table('prospek')
-                ->whereRaw("UPPER(TRIM(COALESCE(tipe, ''))) = 'FCL BOOKING'")
-                ->whereRaw('TRIM(COALESCE(no_voyage, \'\')) = ?', [trim($voyage)])
+            // Count FCL Booking containers only from the matching manifest rows.
+            $fclBookingCounts = $bls
+                ->filter(fn ($item) => strtolower(trim((string) $item->tipe_kontainer)) === 'fcl booking')
                 ->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
-                ->where('nomor_kontainer', '!=', '-');
-
-            $fclBookingQuery->where(function ($q) use ($keywords) {
-                foreach ($keywords as $keyword) {
-                    $q->where('nama_kapal', 'like', "%{$keyword}%");
-                }
-            });
-
-            $fclBookingCounts = $fclBookingQuery
-                ->select('nomor_kontainer', 'ukuran')
-                ->get()
-                ->groupBy(function ($booking) {
-                    return str_contains(strtolower((string) $booking->ukuran), '40') ? '40' : '20';
-                })
+                ->where('nomor_kontainer', '!=', '-')
+                ->groupBy(fn ($item) => str_contains(strtolower((string) $item->size_kontainer), '40') ? '40' : '20')
                 ->map(fn ($bookings) => $bookings->pluck('nomor_kontainer')->unique()->count())
                 ->all();
 
