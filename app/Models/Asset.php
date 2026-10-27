@@ -21,8 +21,12 @@ class Asset extends Model
         'kode_asset',
         'nama_asset',
         'nama_merk',
+        'spesifikasi',
         'kategori',
         'tanggal_perolehan',
+        'kuantitas',
+        'satuan',
+        'tanggal_kadaluarsa',
         'kondisi',
         'status',
         'karyawan_id',
@@ -42,6 +46,7 @@ class Asset extends Model
 
     protected $casts = [
         'tanggal_perolehan' => 'date',
+        'tanggal_kadaluarsa' => 'date',
         'tanggal_tanda_terima' => 'date',
     ];
 
