@@ -28,12 +28,22 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg" role="alert">
+            <ul class="list-disc list-inside text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @php
         $groupRows = function($collection) {
             return $collection->groupBy(function($item) {
                 $cabang = trim(strtoupper($item->cabang_bpjs ?? ''));
                 if ($cabang !== '') {
-                    return 'cabang_' . $cabang;
+                    return 'cabang_' . json_encode([$cabang, $item->tipe]);
                 }
                 return 'single_' . $item->id;
             });
@@ -63,6 +73,7 @@
                     <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
                         <th class="px-4 py-3 w-10 text-center font-semibold">No</th>
                         <th class="px-4 py-3 font-semibold">Group Name</th>
+                        <th class="px-4 py-3 font-semibold">Tipe</th>
                         <th class="px-4 py-3 font-semibold">Cabang BPJS</th>
                         <th class="px-4 py-3 font-semibold text-center">Tunjangan (%)</th>
                         <th class="px-4 py-3 font-semibold text-center">Hutang (%)</th>
@@ -89,6 +100,7 @@
                                     @endforeach
                                 </div>
                             </td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
                             <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
@@ -130,7 +142,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="9" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group JKN.
                             </td>
@@ -155,6 +167,7 @@
                     <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
                         <th class="px-4 py-3 w-10 text-center font-semibold">No</th>
                         <th class="px-4 py-3 font-semibold">Group Name</th>
+                        <th class="px-4 py-3 font-semibold">Tipe</th>
                         <th class="px-4 py-3 font-semibold">Cabang BPJS</th>
                         <th class="px-4 py-3 font-semibold text-center">Tunjangan JKK 1%</th>
                         <th class="px-4 py-3 font-semibold text-center">Hutang (Rp) — Tabel DPP</th>
@@ -187,6 +200,7 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
                             <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
@@ -260,7 +274,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek BPU-CREW.
                             </td>
@@ -285,6 +299,7 @@
                     <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
                         <th class="px-3 py-3 w-10 text-center font-semibold">No</th>
                         <th class="px-3 py-3 font-semibold">Group Name</th>
+                        <th class="px-3 py-3 font-semibold">Tipe</th>
                         <th class="px-3 py-3 font-semibold">Cabang</th>
                         <th class="px-3 py-3 font-semibold text-center">JHT 2% Biaya</th>
                         <th class="px-3 py-3 font-semibold text-center">JHT 2% Hutang (Rp) — Tabel DPP</th>
@@ -318,6 +333,7 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
                             <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-3 py-3 text-center">
                                 @if($item->jht_biaya)
@@ -398,7 +414,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="11" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek Non BPU-CREW.
                             </td>
@@ -423,6 +439,7 @@
                     <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
                         <th class="px-3 py-3 w-10 text-center font-semibold">No</th>
                         <th class="px-3 py-3 font-semibold">Group Name</th>
+                        <th class="px-3 py-3 font-semibold">Tipe</th>
                         <th class="px-3 py-3 font-semibold">Cabang</th>
                         <th class="px-3 py-3 font-semibold text-center">JHT 3.7% Biaya</th>
                         <th class="px-3 py-3 font-semibold text-center">JHT 2% Hutang</th>
@@ -458,6 +475,7 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
                             <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             @foreach(['jht_biaya','jht_hutang','jkk_tunjangan','jkm_tunjangan','jp_biaya','jp_hutang'] as $field)
                             <td class="px-3 py-3 text-center">
@@ -508,7 +526,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="13" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek PPU.
                             </td>
@@ -562,8 +580,8 @@
                             <i class="fas fa-times-circle"></i>
                         </button>
 
-                        {{-- Row 1: Jenis, Nama, Cabang --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {{-- Jenis, Nama, Tipe, Cabang --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Jenis BPJS</label>
                                 <select name="jenis[]" class="form-select w-full border-gray-300 rounded-lg shadow-sm text-sm" required
@@ -579,6 +597,12 @@
                                 <select name="group_name[0][]" multiple class="group-name-select form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
                                         required onchange="toggleJamsostekFields(this)">
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
+                                <input type="text" name="tipe[]" required maxlength="255"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       placeholder="Masukkan tipe">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
@@ -915,6 +939,12 @@
                             </select>
                         </div>
                         <div>
+                            <label for="edit_tipe" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
+                            <input type="text" id="edit_tipe" name="tipe" required maxlength="255"
+                                   class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                   placeholder="Masukkan tipe">
+                        </div>
+                        <div>
                             <label for="edit_cabang_bpjs" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Cabang BPJS</label>
                             <input type="text" id="edit_cabang_bpjs" name="cabang_bpjs"
                                    class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
@@ -1234,6 +1264,7 @@
         groupSelect.name = 'group_name[0][]';
         populateGroupOptions(groupSelect, 'jkn', []);
 
+        firstRow.querySelector('input[name="tipe[]"]').value = '';
         firstRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         firstRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -1296,6 +1327,7 @@
         const groupSelect = newRow.querySelector('.group-name-select');
         groupSelect.name = `group_name[${rowIndex}][]`;
 
+        newRow.querySelector('input[name="tipe[]"]').value = '';
         newRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
         newRow.querySelector('input[name="biaya_persen[]"]').value = '';
@@ -1366,6 +1398,7 @@
 
         populateGroupOptions(editGroupSelect, data.jenis, selectedGroups);
 
+        document.getElementById('edit_tipe').value = data.tipe || '';
         document.getElementById('edit_cabang_bpjs').value = data.cabang_bpjs || '';
         document.getElementById('edit_tunjangan_persen').value = data.tunjangan_persen || '';
         document.getElementById('edit_biaya_persen').value = data.biaya_persen || '';

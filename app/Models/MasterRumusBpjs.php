@@ -16,6 +16,7 @@ class MasterRumusBpjs extends Model
     protected $fillable = [
         'jenis',
         'group_name',
+        'tipe',
         'cabang_bpjs',
         'tipe_rumus',
         'nilai',

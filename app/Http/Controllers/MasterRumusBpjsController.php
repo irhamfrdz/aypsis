@@ -60,10 +60,17 @@ class MasterRumusBpjsController extends Controller
 
     public function store(Request $request)
     {
+        $tipeRules = [];
+        foreach (array_keys((array) $request->input('jenis', [])) as $key) {
+            $tipeRules["tipe.$key"] = 'required|string|max:255';
+        }
+
         $request->validate([
             'jenis' => 'required|array',
             'jenis.*' => 'required|in:jkn,jamsostek',
             'group_name' => 'required|array',
+            'tipe' => 'required|array',
+            'tipe.*' => 'required|string|max:255',
             'cabang_bpjs' => 'nullable|array',
             'cabang_bpjs.*' => 'nullable|string|max:255',
             'tunjangan_persen' => 'nullable|array',
@@ -98,7 +105,7 @@ class MasterRumusBpjsController extends Controller
             'jp_max_dpp.*' => 'nullable|numeric|min:0',
             'jp_max_age' => 'nullable|array',
             'jp_max_age.*' => 'nullable|integer|min:0',
-        ]);
+        ] + $tipeRules);
 
         foreach ($request->jenis as $key => $jenis) {
             $rawGroupNames = $request->group_name[$key] ?? [];
@@ -124,6 +131,7 @@ class MasterRumusBpjsController extends Controller
                     MasterRumusBpjs::create([
                         'jenis' => $jenis,
                         'group_name' => $gName,
+                        'tipe' => $request->tipe[$key],
                         'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
                         'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
                         'hutang_persen' => $request->hutang_persen[$key] ?? null,
@@ -155,6 +163,7 @@ class MasterRumusBpjsController extends Controller
             'jenis' => 'sometimes|required|in:jkn,jamsostek',
             'group_name' => 'sometimes|required',
             'existing_ids' => 'nullable|string',
+            'tipe' => 'required_with:group_name|string|max:255',
             'cabang_bpjs' => 'nullable|string|max:255',
             'tipe_rumus' => 'nullable|in:nominal,persentase',
             'nilai' => 'nullable|numeric|min:0',
@@ -179,6 +188,9 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
 
         $dataToUpdate = [];
+        if ($request->has('tipe')) {
+            $dataToUpdate['tipe'] = $request->tipe;
+        }
         if ($request->has('cabang_bpjs')) {
             $dataToUpdate['cabang_bpjs'] = $request->cabang_bpjs;
         }
