@@ -107,17 +107,15 @@ class DashboardController extends Controller
             ->pluck('surat_jalans.supir')
             ->toArray();
 
-        // Data Surat Jalan yang belum ada tanda terimanya (hanya yang sudah bayar uang jalan)
+        // Surat jalan yang belum selesai approval tanda terima pelabuhan (hanya yang sudah bayar uang jalan)
         $perPage = request('per_page', 10);
         $suratJalanBelumTandaTerima = \App\Models\SuratJalan::with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function ($q) use ($hariIni) {
-                $q->doesntHave('tandaTerima')
-                    ->orWhereHas('tandaTerima', function ($q2) use ($hariIni) {
-                        $q2->whereDate('created_at', '>', $hariIni);
-                    });
+            ->whereDoesntHave('tandaTerima', function ($q) use ($hariIni) {
+                $q->where('approval_pelabuhan_status', 'approved')
+                    ->whereDate('created_at', '<=', $hariIni);
             })
             ->when(request('supir'), function ($q) use ($supirNonAypNames) {
                 if (request('supir') === 'NON_AYP') {
@@ -130,16 +128,14 @@ class DashboardController extends Controller
             ->paginate($perPage)
             ->appends(request()->all());
 
-        // Rekap jumlah surat jalan per supir yang belum ada tanda terima
+        // Rekap jumlah surat jalan per supir yang belum selesai approval pelabuhan
         $pendingTandaTerima = \App\Models\SuratJalan::leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('surat_jalans.tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function ($q) use ($hariIni) {
-                $q->doesntHave('tandaTerima')
-                    ->orWhereHas('tandaTerima', function ($q2) use ($hariIni) {
-                        $q2->whereDate('created_at', '>', $hariIni);
-                    });
+            ->whereDoesntHave('tandaTerima', function ($q) use ($hariIni) {
+                $q->where('approval_pelabuhan_status', 'approved')
+                    ->whereDate('created_at', '<=', $hariIni);
             })
             ->select('surat_jalans.supir', DB::raw('count(surat_jalans.id) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
             ->groupBy('surat_jalans.supir')
@@ -173,12 +169,12 @@ class DashboardController extends Controller
             ->whereNotIn('sj.status', ['cancelled', 'draft'])
             ->where('sj.status_pembayaran_uang_jalan', 'dibayar')
             ->whereDate('sj.tanggal_surat_jalan', '<=', $hariIni)
-            ->where(function ($q) use ($hariIni) {
-                $q->whereNotExists(function ($q2) {
-                    $q2->select(DB::raw(1))->from('tanda_terimas as tt')->whereColumn('tt.surat_jalan_id', 'sj.id');
-                })->orWhereExists(function ($q2) use ($hariIni) {
-                    $q2->select(DB::raw(1))->from('tanda_terimas as tt')->whereColumn('tt.surat_jalan_id', 'sj.id')->whereDate('tt.created_at', '>', $hariIni);
-                });
+            ->whereNotExists(function ($q) use ($hariIni) {
+                $q->select(DB::raw(1))
+                    ->from('tanda_terimas as tt')
+                    ->whereColumn('tt.surat_jalan_id', 'sj.id')
+                    ->where('tt.approval_pelabuhan_status', 'approved')
+                    ->whereDate('tt.created_at', '<=', $hariIni);
             })
             ->select('sj.supir', DB::raw('MIN(DATE(uj.tanggal_uang_jalan)) as oldest_date'))
             ->groupBy('sj.supir');
@@ -196,8 +192,8 @@ class DashboardController extends Controller
                 'surat_jalans.supir',
                 DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as total_debit"),
                 DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' THEN uang_jalans.jumlah_total ELSE 0 END) as debit_sebelumnya"),
-                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND DATE(tanda_terimas.created_at) <= '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as total_kredit"),
-                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND DATE(tanda_terimas.created_at) < '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as kredit_sebelumnya")
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) <= '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND tanda_terimas.approval_pelabuhan_status = 'approved' AND DATE(tanda_terimas.created_at) <= '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as total_kredit"),
+                DB::raw("SUM(CASE WHEN DATE(uang_jalans.tanggal_uang_jalan) < '{$hariIni->format('Y-m-d')}' AND EXISTS (SELECT 1 FROM tanda_terimas WHERE tanda_terimas.surat_jalan_id = surat_jalans.id AND tanda_terimas.approval_pelabuhan_status = 'approved' AND DATE(tanda_terimas.created_at) < '{$hariIni->format('Y-m-d')}') THEN uang_jalans.jumlah_total ELSE 0 END) as kredit_sebelumnya")
             )
             ->groupBy('surat_jalans.supir')
             ->get()

@@ -355,16 +355,16 @@
     </div>
     @endif
 
-    <!-- Rekap Supir Tanpa Tanda Terima & Rekap Kerja -->
+    <!-- Rekap Supir Menunggu Approval Tanda Terima & Rekap Kerja -->
     @if($rekapSupirBelumTandaTerima->count() > 0)
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
         <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-200 flex justify-between items-center">
             <div>
                 <h3 class="text-base font-semibold text-indigo-800 flex items-center">
                     <i class="fas fa-users mr-2 text-indigo-600"></i>
-                    Rekap Supir Tanpa Tanda Terima & Status Kerja
+                    Rekap Supir Menunggu Approval Tanda Terima & Status Kerja
                 </h3>
-                <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima. Status warna juga menandakan berapa lama supir tidak mendapat Surat Jalan.</p>
+                <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum disetujui di pelabuhan. Status warna juga menandakan berapa lama supir tidak mendapat Surat Jalan.</p>
             </div>
             @if(request('supir'))
                 <a href="{{ route('dashboard', request()->except(['supir', 'page'])) }}" class="text-xs bg-white text-indigo-600 px-2 py-1 rounded border border-indigo-200 hover:bg-indigo-50 transition-colors">
@@ -487,15 +487,15 @@
     </div>
     @endif
 
-    <!-- Data Surat Jalan Tanpa Tanda Terima -->
+    <!-- Data Surat Jalan Menunggu Approval Tanda Terima -->
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
         <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h3 class="text-base font-semibold text-red-800 flex items-center">
                     <i class="fas fa-exclamation-circle mr-1 text-red-600"></i>
-                    Surat Jalan Tanpa Tanda Terima
+                    Surat Jalan Menunggu Approval Tanda Terima
                 </h3>
-                <p class="text-xs text-red-600">Daftar surat jalan yang belum dibuatkan tanda terimanya (Sudah Bayar Uang Jalan)</p>
+                <p class="text-xs text-red-600">Daftar surat jalan yang tanda terimanya belum disetujui di pelabuhan (Sudah Bayar Uang Jalan)</p>
             </div>
             
             <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2">
@@ -567,7 +567,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-3 py-4 text-center text-gray-500 italic">
-                                Semua surat jalan sudah memiliki tanda terima.
+                                Semua surat jalan sudah disetujui di pelabuhan.
                             </td>
                         </tr>
                     @endforelse
@@ -610,10 +610,10 @@
                     <span class="text-lg font-bold text-red-700">Rp {{ number_format($mutasiUangJalan->saldo_akhir <= 0 ? 0 : $mutasiUangJalan->total_debit, 0, ',', '.') }}</span>
                 </div>
                 
-                {{-- Total Kredit (Sudah Tanda Terima) --}}
+                {{-- Total Kredit (Tanda Terima Disetujui Pelabuhan) --}}
                 <div class="bg-green-50 rounded-lg p-4 border border-green-200 text-center">
                     <span class="text-xs text-green-500 font-medium uppercase tracking-wider block mb-1">
-                        <i class="fas fa-arrow-down mr-1"></i> Kredit (Selesai TT)
+                        <i class="fas fa-arrow-down mr-1"></i> Kredit (TT Disetujui)
                     </span>
                     <span class="text-lg font-bold text-green-700">Rp {{ number_format($mutasiUangJalan->saldo_akhir <= 0 ? 0 : $mutasiUangJalan->total_kredit, 0, ',', '.') }}</span>
                 </div>
