@@ -45,4 +45,22 @@ class AssetKapalImportTest extends TestCase
         $this->assertSame('Bagus', $row['kondisi']);
         $this->assertTrue(Validator::make($row, $import->rules())->errors()->has('kategori'));
     }
+
+    public function test_dash_quantity_is_treated_as_missing_without_accepting_other_text(): void
+    {
+        $import = new AssetKapalImport;
+        $row = [
+            'nama_asset' => 'Contoh',
+            'nama_kapal' => 'KM. ALEXINDO 8',
+            'kategori' => 'KESELAMATAN',
+            'kondisi' => 'BAGUS',
+        ];
+
+        $dashRow = $import->prepareForValidation($row + ['kuantitas' => ' - '], 52);
+        $this->assertNull($dashRow['kuantitas']);
+        $this->assertTrue(Validator::make($dashRow, $import->rules())->passes());
+
+        $invalidRow = $import->prepareForValidation($row + ['kuantitas' => 'banyak'], 53);
+        $this->assertTrue(Validator::make($invalidRow, $import->rules())->errors()->has('kuantitas'));
+    }
 }

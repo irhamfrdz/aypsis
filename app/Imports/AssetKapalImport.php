@@ -38,7 +38,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
                 'kapal_id' => $kapal->id,
                 'tanggal_perolehan' => $this->parseDate($row['tanggal_beli'] ?? null),
                 'tanggal_kadaluarsa' => $this->parseDate($row['tanggal_kadaluarsa'] ?? null),
-                'kuantitas' => $row['kuantitas'] ?? null,
+                'kuantitas' => $this->normalizeQuantity($row['kuantitas'] ?? null),
                 'satuan' => $row['satuan'] ?? null,
                 'kondisi' => $this->canonicalCondition($row['kondisi'] ?? null),
                 'status' => ! empty($row['status']) ? $row['status'] : 'Tersedia',
@@ -73,6 +73,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
         $data['kategori'] = $this->canonicalOption($data['kategori'] ?? null, Asset::KATEGORI_KAPAL_OPTIONS);
         $data['lokasi_asset'] = $this->canonicalOption($data['lokasi_asset'] ?? null, Asset::LOKASI_ASSET_KAPAL_OPTIONS);
         $data['kondisi'] = $this->canonicalCondition($data['kondisi'] ?? null);
+        $data['kuantitas'] = $this->normalizeQuantity($data['kuantitas'] ?? null);
 
         return $data;
     }
@@ -154,6 +155,11 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
         }
 
         return $this->canonicalOption($value, Asset::KONDISI_KAPAL_OPTIONS);
+    }
+
+    private function normalizeQuantity(mixed $value): mixed
+    {
+        return trim((string) $value) === '-' ? null : $value;
     }
 
     private function canonicalOption(mixed $value, array $options): ?string
