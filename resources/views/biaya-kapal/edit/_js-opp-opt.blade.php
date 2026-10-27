@@ -220,6 +220,15 @@
     function getOppOptTarif(namaBarang, isBongkaran) {
         if (!namaBarang) return null;
         namaBarang = namaBarang.toLowerCase();
+
+        const fixedOpslagTarifs = {
+            'fcl booking 20ft -ahwat': 15000,
+            'fcl booking 40ft -ahwat': 30000,
+        };
+        if (Object.prototype.hasOwnProperty.call(fixedOpslagTarifs, namaBarang)) {
+            return fixedOpslagTarifs[namaBarang];
+        }
+
         const requiredStatus = isBongkaran ? 'bongkar' : 'muat';
         
         let matched = oppOptTarifsFull.find(t => 
@@ -282,7 +291,7 @@
                     // Hanya perlu membangun tampilan khusus untuk Opslag. Untuk mode
                     // biasa, biarkan baris tersimpan tetap utuh saat halaman dibuka.
                     if (klasifikasiSel.value === 'opslag') {
-                        toggleOpslagMode(sectionIndex, klasifikasiSel.value);
+                        toggleOpslagMode(sectionIndex, klasifikasiSel.value, true);
                     }
                 }
 
@@ -516,7 +525,7 @@
         }
     };
 
-    window.toggleOpslagMode = function(sectionIndex, klasifikasi) {
+    window.toggleOpslagMode = function(sectionIndex, klasifikasi, restoringSavedRows = false) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         if (!section) return;
         
@@ -543,6 +552,8 @@
                     </table>
                 </div>
             `;
+            if (restoringSavedRows) return;
+
             const kapalSelect = section.querySelector('.opp-opt-kapal-select');
             const voyageSelect = section.querySelector('.opp-opt-voyage-select');
             const voyageInput = section.querySelector('.opp-opt-voyage-input');
