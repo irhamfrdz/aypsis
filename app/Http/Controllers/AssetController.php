@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AssetExport;
+use App\Exports\AssetKapalTemplateExport;
 use App\Exports\AssetTemplateExport;
+use App\Imports\AssetKapalImport;
 use App\Imports\AssetImport;
 use App\Models\Asset;
 use App\Models\Karyawan;
@@ -287,6 +289,11 @@ class AssetController extends Controller
         return Excel::download(new AssetTemplateExport, 'template_import_asset.xlsx');
     }
 
+    public function downloadKapalTemplate()
+    {
+        return Excel::download(new AssetKapalTemplateExport, 'template_import_asset_kapal.xlsx');
+    }
+
     /**
      * Import assets from Excel.
      */
@@ -310,6 +317,28 @@ class AssetController extends Controller
             return redirect()->route('asset.index')->withErrors($messages);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
+        }
+    }
+
+    public function importKapal(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            DB::transaction(fn () => Excel::import(new AssetKapalImport, $request->file('file')));
+
+            return redirect()->route('asset.index')->with('success', 'Data Asset kapal berhasil diimport');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $messages = [];
+            foreach ($e->failures() as $failure) {
+                $messages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
+            }
+
+            return redirect()->route('asset.index')->withErrors($messages);
+        } catch (\Throwable $e) {
+            return redirect()->route('asset.index')->with('error', 'Terjadi kesalahan saat import aset kapal: '.$e->getMessage());
         }
     }
 

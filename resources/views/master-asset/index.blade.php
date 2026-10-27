@@ -29,6 +29,9 @@
                 </svg>
                 Import Excel
             </button>
+            <button type="button" onclick="openImportKapalModal()" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold rounded-xl border border-cyan-200 text-cyan-800 bg-cyan-50 hover:bg-cyan-100 shadow-sm transition-all duration-150">
+                Import Asset Kapal
+            </button>
             @if(Auth::user() && (Auth::user()->hasRole('admin') || Auth::user()->can('asset-create') || Auth::user()->can('master-asset-create')))
             <a href="{{ route('asset.create') }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,6 +370,42 @@
     </div>
 </div>
 
+<!-- Import Kapal Modal -->
+<div id="importKapalModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="import-kapal-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeImportKapalModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form action="{{ route('asset.kapal.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-6 pt-5 pb-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800" id="import-kapal-modal-title">Import Asset Kapal</h3>
+                        <button type="button" onclick="closeImportKapalModal()" class="text-gray-400 hover:text-gray-500" aria-label="Tutup">&times;</button>
+                    </div>
+                    <div class="mt-4 space-y-4">
+                        <div class="p-3 bg-cyan-50 rounded-xl border border-cyan-100 text-xs text-cyan-800">
+                            Unduh template khusus kapal. Isi <span class="font-semibold">nama_kapal</span> sesuai nama di master kapal, serta pilih kategori dan lokasi kapal dari daftar yang tersedia. Kolom <span class="font-semibold">kode_asset</span> boleh dikosongkan agar dibuat otomatis.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih File Excel</label>
+                            <input type="file" name="file" required accept=".xlsx,.xls" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-50 file:text-cyan-800 hover:file:bg-cyan-100 border border-gray-300 rounded-xl cursor-pointer">
+                        </div>
+                        <a href="{{ route('asset.kapal.template') }}" class="inline-flex items-center text-xs font-semibold text-cyan-700 hover:text-cyan-900 gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Unduh Template Asset Kapal
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex flex-row-reverse gap-2">
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-cyan-700 hover:bg-cyan-800 shadow-sm">Upload & Import</button>
+                    <button type="button" onclick="closeImportKapalModal()" class="px-4 py-2 text-xs font-semibold rounded-xl text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Form Tanda Terima Asset -->
 <div id="tandaTerimaModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-tanda-terima-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -468,6 +507,14 @@
 
     function closeImportModal() {
         document.getElementById('importModal').classList.add('hidden');
+    }
+
+    function openImportKapalModal() {
+        document.getElementById('importKapalModal').classList.remove('hidden');
+    }
+
+    function closeImportKapalModal() {
+        document.getElementById('importKapalModal').classList.add('hidden');
     }
 
     function openTandaTerimaModal(id, kode, nama, karyawanId, tanggal, status, keterangan, fotoUrl = '') {

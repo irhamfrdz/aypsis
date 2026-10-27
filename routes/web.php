@@ -3275,6 +3275,8 @@ Route::middleware([
         Route::get('master-asset/export', [\App\Http\Controllers\AssetController::class, 'export'])->name('asset.export');
         Route::get('master-asset/template', [\App\Http\Controllers\AssetController::class, 'downloadTemplate'])->name('asset.template');
         Route::post('master-asset/import', [\App\Http\Controllers\AssetController::class, 'import'])->name('asset.import');
+        Route::get('master-asset/template-kapal', [\App\Http\Controllers\AssetController::class, 'downloadKapalTemplate'])->name('asset.kapal.template');
+        Route::post('master-asset/import-kapal', [\App\Http\Controllers\AssetController::class, 'importKapal'])->name('asset.kapal.import');
         Route::get('master-asset/{asset}/print-tanda-terima', [\App\Http\Controllers\AssetController::class, 'printTandaTerima'])->name('asset.print-tanda-terima');
         Route::get('master-asset/{asset}/download-tanda-terima', [\App\Http\Controllers\AssetController::class, 'downloadTandaTerima'])->name('asset.download-tanda-terima');
         Route::get('master-asset/{asset}/foto-tanda-terima', [\App\Http\Controllers\AssetController::class, 'fotoTandaTerima'])->name('asset.foto-tanda-terima');
