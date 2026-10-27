@@ -49,7 +49,7 @@ class PranotaBpjsController extends Controller
             ->orderBy('nama_lengkap')
             ->get([
                 'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
-                'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
+                'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
                 'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup',
             ])
             ->map(function ($k) {

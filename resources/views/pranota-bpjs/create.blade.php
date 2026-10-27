@@ -217,7 +217,7 @@
                             <span>Filter Cabang:</span>
                         </label>
                         <select id="filter-cabang-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium cursor-pointer min-w-[180px]">
-                            <option value="all">Semua Cabang BPJS</option>
+                            <option value="all">Semua Tipe BPJS</option>
                         </select>
                     </div>
 
@@ -411,6 +411,7 @@
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
@@ -465,16 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
      * Update column visibility based on selected BPJS group
      */
     function updateColumnVisibility(selectedGroup) {
-        const showAll = (selectedGroup === 'all' || !selectedGroup);
-        const showJkn = showAll || (selectedGroup === 'JKN-KIS');
-        const showPpu = showAll || (selectedGroup === 'PPU');
-        const showBpuCrew = showAll || (selectedGroup === 'BPU-CREW');
-        const showBpuNonCrew = showAll || (selectedGroup === 'BPU-NON-CREW');
-        const showJp = showAll || (selectedGroup === 'PPU'); // JP is part of PPU
-
-        // Tipe selector visibility
-        const showTipeJkn = showAll || (selectedGroup === 'JKN-KIS');
-        const showTipeJam = showAll || (selectedGroup !== 'JKN-KIS');
+        const categories = BpjsMasterFilters.categories(rumusBpjs, selectedGroup, filterCabangSelect?.value || 'all');
+        const showJkn = categories.has('jkn');
+        const showPpu = categories.has('ppu');
+        const showBpuCrew = categories.has('bpu_crew');
+        const showBpuNonCrew = categories.has('bpu_non_crew');
+        const showJp = showPpu;
+        const showTipeJkn = showJkn;
+        const showTipeJam = showPpu || showBpuCrew || showBpuNonCrew;
 
         toggleElements('.col-group-jkn', showJkn);
         toggleElements('.col-group-ppu', showPpu);
@@ -511,43 +510,20 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Populate options for the Group BPJS filter dropdown
      */
-    function populateGroupFilterOptions() {
-        if (!filterGroupSelect) return;
-
-        filterGroupSelect.innerHTML = `
-            <option value="all">Semua Group BPJS</option>
-            <option value="JKN-KIS">Group JKN-KIS</option>
-            <option value="PPU">Group PPU</option>
-            <option value="BPU-CREW">Group BPU-CREW</option>
-            <option value="BPU-NON-CREW">Group BPU-NON-CREW</option>
-        `;
+    function populateMasterFilter(select, column, placeholder) {
+        if (!select) return;
+        const selected = select.value;
+        select.replaceChildren(new Option(placeholder, 'all'));
+        BpjsMasterFilters.options(rumusBpjs, column).forEach(value => select.add(new Option(value, value)));
+        select.value = Array.from(select.options).some(option => option.value === selected) ? selected : 'all';
     }
 
-    /**
-     * Populate options for the Cabang BPJS filter dropdown
-     */
+    function populateGroupFilterOptions() {
+        populateMasterFilter(filterGroupSelect, 'group_name', 'Semua Group BPJS');
+    }
+
     function populateCabangFilterOptions() {
-        if (!filterCabangSelect) return;
-
-        const cabangs = new Set();
-        karyawans.forEach(k => {
-            if (k.cabang_bpjs && k.cabang_bpjs.trim() !== '') {
-                cabangs.add(k.cabang_bpjs.trim());
-            }
-        });
-        rumusBpjs.forEach(r => {
-            if (r.cabang_bpjs && r.cabang_bpjs.trim() !== '') {
-                cabangs.add(r.cabang_bpjs.trim());
-            }
-        });
-
-        const sortedCabangs = Array.from(cabangs).sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
-
-        let html = '<option value="all">Semua Cabang BPJS</option>';
-        sortedCabangs.forEach(c => {
-            html += `<option value="${c}">${c}</option>`;
-        });
-        filterCabangSelect.innerHTML = html;
+        populateMasterFilter(filterCabangSelect, 'tipe', 'Semua Tipe BPJS');
     }
 
     /**
@@ -569,30 +545,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const gJknUpper = (tr.dataset.groupJkn || '').toUpperCase().trim();
             const gJamUpper = (tr.dataset.groupJamsostek || '').toUpperCase().trim();
             const cab = (tr.dataset.cabang || '').trim();
-            const dppJkn = parseFloat(tr.dataset.dppJkn || 0);
-            const dppJam = parseFloat(tr.dataset.dppJamsostek || 0);
 
-            // Check group match
-            let matchGroup = false;
-            if (selectedGroup === 'all' || !selectedGroup) {
-                matchGroup = true;
-            } else if (selectedGroup === 'JKN-KIS') {
-                matchGroup = (gJknUpper !== '' || gJknUpper.includes('JKN') || gJknUpper.includes('KIS') || dppJkn > 0);
-            } else if (selectedGroup === 'PPU') {
-                matchGroup = gJamUpper.includes('PPU');
-            } else if (selectedGroup === 'BPU-CREW') {
-                matchGroup = (!gJamUpper.includes('PPU') && gJamUpper.includes('BPU-CREW'));
-            } else if (selectedGroup === 'BPU-NON-CREW') {
-                matchGroup = ((gJamUpper !== '' || cab !== '' || dppJam > 0) && !gJamUpper.includes('PPU') && !gJamUpper.includes('BPU-CREW'));
-            }
-
-            // Check cabang match
-            let matchCabang = false;
-            if (selectedCabang === 'all' || !selectedCabang) {
-                matchCabang = true;
-            } else {
-                matchCabang = cab.toLowerCase() === selectedCabang.toLowerCase();
-            }
+            const matchGroup = BpjsMasterFilters.matches({
+                group_jkn: tr.dataset.groupJkn,
+                group_bp_jamsostek: tr.dataset.groupJamsostek,
+                tipe_jkn: tr.dataset.tipeJkn,
+                tipe_bp_jamsostek: tr.dataset.tipeJamsostek
+            }, rumusBpjs, selectedGroup, selectedCabang);
 
             // Check search match
             let matchSearch = true;
@@ -604,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
                               cab.toLowerCase().includes(query);
             }
 
-            if (matchGroup && matchCabang && matchSearch) {
+            if (matchGroup && matchSearch) {
                 tr.classList.remove('hidden');
                 visibleRows++;
                 const rowNumEl = tr.querySelector('.row-number');
@@ -693,18 +652,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const valJpH   = parseIdNumber(tr.querySelector('.input-jp-hutang')?.value);
 
             // Update row subtotal based on active group
-            let rowSubtotal = 0;
-            if (selectedGroup === 'JKN-KIS') {
-                rowSubtotal = valKes + valKet;
-            } else if (selectedGroup === 'PPU') {
-                rowSubtotal = valJhtB + valJhtH + valJkk + valJkm + valJpB + valJpH;
-            } else if (selectedGroup === 'BPU-CREW') {
-                rowSubtotal = valBpuJht + valBpuJkk + valBpuJkm;
-            } else if (selectedGroup === 'BPU-NON-CREW') {
-                rowSubtotal = valNcJhtB + valNcJhtH + valNcJkk + valNcJkm;
-            } else {
-                rowSubtotal = valKes + valKet + valJhtB + valJhtH + valJkk + valJkm + valBpuJht + valBpuJkk + valBpuJkm + valNcJhtB + valNcJhtH + valNcJkk + valNcJkm + valJpB + valJpH;
-            }
+            const rowSubtotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
+                jkn: valKes + valKet,
+                ppu: valJhtB + valJhtH + valJkk + valJkm + valJpB + valJpH,
+                bpu_crew: valBpuJht + valBpuJkk + valBpuJkm,
+                bpu_non_crew: valNcJhtB + valNcJhtH + valNcJkk + valNcJkm
+            });
             const rowSubtotalEl = tr.querySelector('.subtotal-text');
             if (rowSubtotalEl) {
                 rowSubtotalEl.innerText = 'Rp ' + formatNumber(rowSubtotal);
@@ -766,18 +719,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total_jp_biaya').innerText            = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').innerText           = 'Rp ' + formatNumber(sumJpH);
         
-        let visibleGrandTotal = 0;
-        if (selectedGroup === 'JKN-KIS') {
-            visibleGrandTotal = sumKes + sumKet;
-        } else if (selectedGroup === 'PPU') {
-            visibleGrandTotal = sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
-        } else if (selectedGroup === 'BPU-CREW') {
-            visibleGrandTotal = sumBpuJht + sumBpuJkk + sumBpuJkm;
-        } else if (selectedGroup === 'BPU-NON-CREW') {
-            visibleGrandTotal = sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm;
-        } else {
-            visibleGrandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumBpuJht + sumBpuJkk + sumBpuJkm + sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm + sumJpB + sumJpH;
-        }
+        const visibleGrandTotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
+            jkn: sumKes + sumKet,
+            ppu: sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH,
+            bpu_crew: sumBpuJht + sumBpuJkk + sumBpuJkm,
+            bpu_non_crew: sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm
+        });
         
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(visibleGrandTotal);
 
@@ -859,6 +806,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 tr.dataset.lokasi = k.lokasi || 'JKT';
                 tr.dataset.groupJkn = k.group_jkn || '';
                 tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
+                tr.dataset.tipeJkn = k.tipe_jkn || '';
+                tr.dataset.tipeJamsostek = k.tipe_bp_jamsostek || '';
                 tr.dataset.cabang = k.cabang_bpjs || '';
                 tr.dataset.dppJkn = k.dpp_jkn || 0;
                 tr.dataset.dppJamsostek = k.dpp_bp_jamsostek || 0;
@@ -991,18 +940,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const jpB       = parseIdNumber(inputJpBiaya.value);
             const jpH       = parseIdNumber(inputJpHutang.value);
 
-            let rowTotal = 0;
-            if (currentSelectedGroup === 'JKN-KIS') {
-                rowTotal = kes + ket;
-            } else if (currentSelectedGroup === 'PPU') {
-                rowTotal = jhtB + jhtH + jkk + jkm + jpB + jpH;
-            } else if (currentSelectedGroup === 'BPU-CREW') {
-                rowTotal = bpuJht + bpuJkk + bpuJkm;
-            } else if (currentSelectedGroup === 'BPU-NON-CREW') {
-                rowTotal = ncJhtB + ncJhtH + ncJkk + ncJkm;
-            } else {
-                rowTotal = kes + ket + jhtB + jhtH + jkk + jkm + bpuJht + bpuJkk + bpuJkm + ncJhtB + ncJhtH + ncJkk + ncJkm + jpB + jpH;
-            }
+            const rowTotal = BpjsMasterFilters.total(rumusBpjs, currentSelectedGroup, filterCabangSelect?.value || 'all', {
+                jkn: kes + ket,
+                ppu: jhtB + jhtH + jkk + jkm + jpB + jpH,
+                bpu_crew: bpuJht + bpuJkk + bpuJkm,
+                bpu_non_crew: ncJhtB + ncJhtH + ncJkk + ncJkm
+            });
 
             subtotalText.innerText = 'Rp ' + formatNumber(rowTotal);
             applyFilter();
@@ -1424,6 +1367,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 tr.dataset.lokasi = k.lokasi || 'JKT';
                 tr.dataset.groupJkn = k.group_jkn || '';
                 tr.dataset.groupJamsostek = k.group_bp_jamsostek || '';
+                tr.dataset.tipeJkn = k.tipe_jkn || '';
+                tr.dataset.tipeJamsostek = k.tipe_bp_jamsostek || '';
                 tr.dataset.cabang = k.cabang_bpjs || '';
                 tr.dataset.dppJkn = k.dpp_jkn || 0;
                 tr.dataset.dppJamsostek = k.dpp_bp_jamsostek || 0;
@@ -1441,6 +1386,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 tr.dataset.lokasi = '';
                 tr.dataset.groupJkn = '';
                 tr.dataset.groupJamsostek = '';
+                tr.dataset.tipeJkn = '';
+                tr.dataset.tipeJamsostek = '';
                 tr.dataset.cabang = '';
                 tr.dataset.dppJkn = 0;
                 tr.dataset.dppJamsostek = 0;
@@ -1586,14 +1533,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         select.value = selected;
                         if (typeof jQuery !== 'undefined' && jQuery.fn.select2) jQuery(select).trigger('change.select2');
                     });
-                    const branch = filterCabangSelect?.value;
+                    populateGroupFilterOptions();
                     populateCabangFilterOptions();
-                    if (filterCabangSelect && branch) {
-                        if (!Array.from(filterCabangSelect.options).some(option => option.value === branch)) {
-                            filterCabangSelect.add(new Option(branch, branch));
-                        }
-                        filterCabangSelect.value = branch;
-                    }
                 }
             });
             status.textContent = result.updated + ' baris diperbarui menggunakan data terbaru.'
