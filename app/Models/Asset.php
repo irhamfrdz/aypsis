@@ -54,6 +54,19 @@ class Asset extends Model
         'Furniture & Fixture',
         'Bangunan & Properti',
         'Lain-lain',
+        'Keselamatan',
+        'Navigasi',
+        'Buku',
+        'Perlengkapan',
+        'Peta',
+    ];
+
+    public const KATEGORI_KAPAL_OPTIONS = [
+        'Keselamatan',
+        'Navigasi',
+        'Buku',
+        'Perlengkapan',
+        'Peta',
     ];
 
     public const KONDISI_OPTIONS = [
@@ -83,6 +96,35 @@ class Asset extends Model
         'JKT',
         'BTM',
         'PNG',
+    ];
+
+    public const LOKASI_ASSET_KAPAL_OPTIONS = [
+        '2 deck',
+        'acomodation',
+        'anjungan',
+        'bath and after',
+        'bridge',
+        'cabin',
+        'cabin f/p palka',
+        'co2 room',
+        'dapur',
+        'deck',
+        'deck bawah',
+        'deck kanan',
+        'deck kiri',
+        'emergency room',
+        'engine room',
+        'galery kabin',
+        'haluan',
+        'kapal',
+        'lambung kanan',
+        'lambung kiri',
+        'main deck',
+        'peta room',
+        'ralling',
+        'ship',
+        'third deck',
+        'tween deck kiri',
     ];
 
     /**

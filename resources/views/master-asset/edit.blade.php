@@ -120,7 +120,10 @@
                     <select name="lokasi_asset" id="lokasi_asset" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Lokasi Asset</option>
                         @foreach(\App\Models\Asset::LOKASI_ASSET_OPTIONS as $lokasiAsset)
-                            <option value="{{ $lokasiAsset }}" @selected(old('lokasi_asset', $asset->lokasi_asset) === $lokasiAsset)>{{ $lokasiAsset }}</option>
+                            <option value="{{ $lokasiAsset }}" data-kapal="0" @selected(old('lokasi_asset', $asset->lokasi_asset) === $lokasiAsset)>{{ $lokasiAsset }}</option>
+                        @endforeach
+                        @foreach(\App\Models\Asset::LOKASI_ASSET_KAPAL_OPTIONS as $lokasiAsset)
+                            <option value="{{ $lokasiAsset }}" data-kapal="1" @selected(old('lokasi_asset', $asset->lokasi_asset) === $lokasiAsset)>{{ $lokasiAsset }}</option>
                         @endforeach
                     </select>
                     @error('lokasi_asset')
@@ -268,9 +271,20 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const lokasi = document.getElementById('lokasi');
+        const lokasiAsset = document.getElementById('lokasi_asset');
         const toggleLocationFields = function() {
             const showKapal = lokasi.value === 'Di kapal';
             const showKaryawan = lokasi.value === 'Di bawa oleh karyawan';
+            Array.from(lokasiAsset.options).forEach(function(option) {
+                if (option.value) {
+                    const available = (option.dataset.kapal === '1') === showKapal;
+                    option.hidden = !available;
+                    option.disabled = !available;
+                }
+            });
+            if (lokasiAsset.selectedOptions[0]?.disabled) {
+                lokasiAsset.value = '';
+            }
             document.getElementById('kapal-field').classList.toggle('hidden', !showKapal);
             document.getElementById('kapal_id').required = showKapal;
             document.getElementById('karyawan-field').classList.toggle('hidden', !showKaryawan);

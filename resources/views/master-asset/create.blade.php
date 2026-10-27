@@ -109,12 +109,15 @@
                     </select>
                 </div>
 
-                <div>
+                <div id="lokasi-asset-field">
                     <label for="lokasi_asset" class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Asset</label>
                     <select name="lokasi_asset" id="lokasi_asset" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Lokasi Asset</option>
                         @foreach(\App\Models\Asset::LOKASI_ASSET_OPTIONS as $lokasiAsset)
-                            <option value="{{ $lokasiAsset }}" @selected(old('lokasi_asset') === $lokasiAsset)>{{ $lokasiAsset }}</option>
+                            <option value="{{ $lokasiAsset }}" data-kapal="0" @selected(old('lokasi_asset') === $lokasiAsset)>{{ $lokasiAsset }}</option>
+                        @endforeach
+                        @foreach(\App\Models\Asset::LOKASI_ASSET_KAPAL_OPTIONS as $lokasiAsset)
+                            <option value="{{ $lokasiAsset }}" data-kapal="1" @selected(old('lokasi_asset') === $lokasiAsset)>{{ $lokasiAsset }}</option>
                         @endforeach
                     </select>
                     @error('lokasi_asset')
@@ -134,10 +137,10 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori Asset <span class="text-rose-500">*</span></label>
-                    <select name="kategori" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select name="kategori" id="kategori" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Kategori</option>
                         @foreach($kategoris as $kat)
-                            <option value="{{ $kat }}" {{ old('kategori') == $kat ? 'selected' : '' }}>{{ $kat }}</option>
+                            <option value="{{ $kat }}" data-kapal="{{ in_array($kat, \App\Models\Asset::KATEGORI_KAPAL_OPTIONS, true) ? '1' : '0' }}" {{ old('kategori') == $kat ? 'selected' : '' }}>{{ $kat }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -251,9 +254,31 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const lokasi = document.getElementById('lokasi');
+        const lokasiAsset = document.getElementById('lokasi_asset');
+        const kategori = document.getElementById('kategori');
         const toggleLocationFields = function() {
             const showKapal = lokasi.value === 'Di kapal';
             const showKaryawan = lokasi.value === 'Di bawa oleh karyawan';
+            Array.from(kategori.options).forEach(function(option) {
+                if (option.value) {
+                    const available = (option.dataset.kapal === '1') === showKapal;
+                    option.hidden = !available;
+                    option.disabled = !available;
+                }
+            });
+            if (kategori.selectedOptions[0]?.disabled) {
+                kategori.value = '';
+            }
+            Array.from(lokasiAsset.options).forEach(function(option) {
+                if (option.value) {
+                    const available = (option.dataset.kapal === '1') === showKapal;
+                    option.hidden = !available;
+                    option.disabled = !available;
+                }
+            });
+            if (lokasiAsset.selectedOptions[0]?.disabled) {
+                lokasiAsset.value = '';
+            }
             document.getElementById('kapal-field').classList.toggle('hidden', !showKapal);
             document.getElementById('kapal_id').required = showKapal;
             document.getElementById('karyawan-field').classList.toggle('hidden', !showKaryawan);
