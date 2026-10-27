@@ -14,6 +14,7 @@
         && (isAll(tipe) || normalize(record.tipe) === normalize(tipe)));
 
     root.BpjsMasterFilters = {
+        category,
         options(records, column) {
             const values = new Map();
             records.forEach(record => {
