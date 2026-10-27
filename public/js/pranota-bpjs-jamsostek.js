@@ -10,6 +10,16 @@
 
     root.BpjsJamsostek = {
         parseAmount,
+        findDppTier(tiers, dppValue) {
+            if (typeof tiers === 'string') {
+                try { tiers = JSON.parse(tiers); } catch (_) { return null; }
+            }
+            if (!Array.isArray(tiers)) return null;
+            const dpp = parseAmount(dppValue);
+            // Non-crew DPP entries are lower bounds; use the greatest bound not exceeding the employee DPP.
+            return tiers.filter(tier => parseAmount(tier.dpp) <= dpp)
+                .sort((a, b) => parseAmount(b.dpp) - parseAmount(a.dpp))[0] || null;
+        },
         findFormula(records, employee) {
             const group = compact(employee.group_bp_jamsostek);
             const type = normalize(employee.tipe_bp_jamsostek);

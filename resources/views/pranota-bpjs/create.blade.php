@@ -1140,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
                         }
                         if (Array.isArray(tiers) && tiers.length > 0) {
-                            const matchedTier = tiers.find(t => parseIdNumber(t.dpp) === dppJamsostek);
+                            const matchedTier = BpjsJamsostek.findDppTier(tiers, dppJamsostek);
                             if (matchedTier) {
                                 ncJhtHutangVal = parseIdNumber(matchedTier.potongan);
                             } else {

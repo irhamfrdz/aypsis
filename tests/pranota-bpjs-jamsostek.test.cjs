@@ -47,6 +47,40 @@ test('crew calculation applies matching DPP tiers and the existing discount form
     });
 });
 
+test('non-crew DPP between tiers uses the lower tier without depending on table order', () => {
+    const tiers = [{ dpp: 4450000, potongan: 70000 }, { dpp: 2200000, potongan: 36000 }];
+    assert.equal(calculator.findDppTier(tiers, '3.450.000,00').potongan, 36000);
+    assert.equal(calculator.findDppTier(tiers, 2200000).potongan, 36000);
+    assert.equal(calculator.findDppTier(tiers, 4450000).potongan, 70000);
+    assert.equal(calculator.findDppTier(JSON.stringify(tiers), 5000000).potongan, 70000);
+    assert.equal(calculator.findDppTier(tiers, 1000000), null);
+    assert.equal(calculator.findDppTier([], 3450000), null);
+});
+
+test('SARIPUDIN non-crew row assigns 36000 to debt and 33000 to company cost', () => {
+    const view = fs.readFileSync('resources/views/pranota-bpjs/create.blade.php', 'utf8');
+    const start = view.indexOf('        function calculateBpjsForKaryawan(');
+    const end = view.indexOf('        const handleKaryawanChange', start);
+    const saripudin = { ...employee, id: 1824, unique_id: 'Karyawan_1824',
+        group_bp_jamsostek: 'BPU-SUPIR JKT PLUIT', tipe_bp_jamsostek: 'Harian',
+        cabang_bpjs: 'SUPIR JKT PLUIT', dpp_bp_jamsostek: ' 3.450.000,00 ' };
+    const formula = { ...crew, group_name: saripudin.group_bp_jamsostek, tipe: 'HARIAN',
+        jht_biaya: '2.00', jkk_tunjangan: '1.00', jkm_tunjangan: '6800.00',
+        hutang_tiers: [{ dpp: 2200000, potongan: 36000 }, { dpp: 4450000, potongan: 70000 }] };
+    const names = ['inputKes', 'inputKet', 'inputJhtBiaya', 'inputJhtHutang', 'inputJkk', 'inputJkm',
+        'inputBpuJht', 'inputBpuJkk', 'inputBpuJkm', 'inputNcJhtBiaya', 'inputNcJhtHutang',
+        'inputNcJkk', 'inputNcJkm', 'inputJpBiaya', 'inputJpHutang'];
+    const inputs = Object.fromEntries(names.map(name => [name, { value: '0' }]));
+    const load = new Function('karyawans', 'rumusBpjs', 'parseIdNumber', 'formatNumber', 'document',
+        'updateSubtotal', ...names, view.slice(start, end) + '; return calculateBpjsForKaryawan;');
+    load([saripudin], [formula], calculator.parseAmount, String, { getElementById: () => null },
+        () => {}, ...Object.values(inputs))(saripudin.unique_id, 'tunjangan_hutang');
+    assert.equal(inputs.inputNcJhtHutang.value, '36000');
+    assert.equal(inputs.inputNcJhtBiaya.value, '33000');
+    assert.equal(inputs.inputNcJkk.value, '17250');
+    assert.equal(inputs.inputNcJkm.value, '3400');
+});
+
 test('the actual pranota row calculation fills crew inputs for a custom group with type CREW', () => {
     const view = fs.readFileSync('resources/views/pranota-bpjs/create.blade.php', 'utf8');
     const start = view.indexOf('        function calculateBpjsForKaryawan(');
