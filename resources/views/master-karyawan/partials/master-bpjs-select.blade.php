@@ -1,5 +1,5 @@
 @php
-    $masterOptions = $jknRumusOptions->pluck($masterColumn)
+    $masterOptions = $rumusOptions->pluck($masterColumn)
         ->map(fn ($value) => trim((string) $value))
         ->filter(fn ($value) => $value !== '')
         ->unique(fn ($value) => mb_strtoupper($value))

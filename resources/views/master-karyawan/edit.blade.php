@@ -517,13 +517,15 @@
                         <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan) }}">
                     </div>
                     <div>
-                        @include('master-karyawan.partials.master-jkn-select', [
+                        @include('master-karyawan.partials.master-bpjs-select', [
+                            'rumusOptions' => $jknRumusOptions,
                             'field' => 'group_jkn', 'fieldLabel' => 'Group JKN',
                             'masterColumn' => 'group_name', 'currentValue' => old('group_jkn', $karyawan->group_jkn),
                         ])
                     </div>
                     <div>
-                        @include('master-karyawan.partials.master-jkn-select', [
+                        @include('master-karyawan.partials.master-bpjs-select', [
+                            'rumusOptions' => $jknRumusOptions,
                             'field' => 'tipe_jkn', 'fieldLabel' => 'Tipe JKN',
                             'masterColumn' => 'tipe', 'currentValue' => old('tipe_jkn', $karyawan->tipe_jkn),
                         ])
@@ -533,21 +535,17 @@
                         <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn', $karyawan->dpp_jkn) }}">
                     </div>
                     <div>
-                        <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
-                        @include('master-karyawan.partials.add-bpjs-group', ['field' => 'group_bp_jamsostek', 'groupLabel' => 'Group BP Jamsostek'])
-                        <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
-                                <option value="">-- Pilih Group BP Jamsostek --</option>
-                                @foreach(collect($bpjsGroupOptions['group_bp_jamsostek'])->push(old('group_bp_jamsostek', $karyawan->group_bp_jamsostek))->filter()->unique() as $group)
-                                    <option value="{{ $group }}" @selected(old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) === $group)>{{ $group }}</option>
-                                @endforeach
-                            </select>
+                        @include('master-karyawan.partials.master-bpjs-select', [
+                            'rumusOptions' => $jamsostekRumusOptions,
+                            'field' => 'group_bp_jamsostek', 'fieldLabel' => 'Group BP Jamsostek',
+                            'masterColumn' => 'group_name', 'currentValue' => old('group_bp_jamsostek', $karyawan->group_bp_jamsostek),
+                        ])
                     </div>
                     <div>
-                        <label for="tipe_bp_jamsostek" class="{{ $labelClasses }}">Tipe BP Jamsostek</label>
-                        <input type="text" name="tipe_bp_jamsostek" id="tipe_bp_jamsostek" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe BP Jamsostek" value="{{ old('tipe_bp_jamsostek', $karyawan->tipe_bp_jamsostek) }}">
-                        @error('tipe_bp_jamsostek')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @include('master-karyawan.partials.jamsostek-type-select', [
+                            'currentGroup' => old('group_bp_jamsostek', $karyawan->group_bp_jamsostek),
+                            'currentType' => old('tipe_bp_jamsostek', $karyawan->tipe_bp_jamsostek),
+                        ])
                     </div>
                     <div>
                         <label for="dpp_bp_jamsostek" class="{{ $labelClasses }}">DPP BP Jamsostek</label>

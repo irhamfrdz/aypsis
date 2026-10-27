@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Rules;
+
+use App\Models\MasterRumusBpjs;
+use App\Services\KaryawanBpjsGroups;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
+
+class JamsostekTypeMatchesGroup implements ValidationRule
+{
+    public function __construct(private mixed $group) {}
+
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! is_string($this->group) || ! is_string($value)) {
+            $fail('Tipe BP Jamsostek harus sesuai dengan Group BP Jamsostek yang dipilih.');
+
+            return;
+        }
+
+        $group = KaryawanBpjsGroups::normalize($this->group);
+        $tipe = KaryawanBpjsGroups::normalize($value);
+        $matches = MasterRumusBpjs::where('jenis', 'jamsostek')->get(['group_name', 'tipe'])
+            ->contains(fn ($rumus) => KaryawanBpjsGroups::normalize((string) $rumus->group_name) === $group
+                && KaryawanBpjsGroups::normalize((string) $rumus->tipe) === $tipe);
+
+        if (! $matches) {
+            $fail('Tipe BP Jamsostek harus sesuai dengan Group BP Jamsostek yang dipilih.');
+        }
+    }
+}
