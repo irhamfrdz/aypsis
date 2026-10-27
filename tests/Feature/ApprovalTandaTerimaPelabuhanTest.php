@@ -251,4 +251,18 @@ class ApprovalTandaTerimaPelabuhanTest extends TestCase
         $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-NO-CHECKPOINT', 'approval_pelabuhan_status' => 'pending']);
         $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-NO-RECEIPT-DATE', 'approval_pelabuhan_status' => 'pending']);
     }
+
+    public function test_existing_receipts_with_checkpoint_are_approved_even_without_receipt_date(): void
+    {
+        DB::table('tanda_terimas')->insert([
+            ['no_surat_jalan' => 'SJ-CHECKPOINT-ONLY', 'tanggal' => null, 'tanggal_checkpoint_supir' => '2026-10-25'],
+            ['no_surat_jalan' => 'SJ-WITHOUT-CHECKPOINT', 'tanggal' => '2026-10-25', 'tanggal_checkpoint_supir' => null],
+        ]);
+
+        $migration = require database_path('migrations/2026_10_27_101000_approve_existing_tanda_terimas_with_checkpoint.php');
+        $migration->up();
+
+        $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-CHECKPOINT-ONLY', 'approval_pelabuhan_status' => 'approved']);
+        $this->assertDatabaseHas('tanda_terimas', ['no_surat_jalan' => 'SJ-WITHOUT-CHECKPOINT', 'approval_pelabuhan_status' => 'pending']);
+    }
 }
