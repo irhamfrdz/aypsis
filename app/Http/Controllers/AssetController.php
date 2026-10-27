@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\HeadingRowImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
@@ -305,6 +306,11 @@ class AssetController extends Controller
         ]);
 
         try {
+            $headings = (new HeadingRowImport)->toArray($request->file('file'))[0][0] ?? [];
+            if (in_array('nama_kapal', $headings, true)) {
+                return $this->importKapal($request);
+            }
+
             Excel::import(new AssetImport, $request->file('file'));
 
             return redirect()->route('asset.index')->with('success', 'Data Asset berhasil diimport');

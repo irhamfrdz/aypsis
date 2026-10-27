@@ -340,7 +340,7 @@
                             <div>
                                 Pastikan format file sesuai dengan template. Format yang didukung: <span class="font-semibold">.xlsx, .xls</span>
                                 <p class="mt-1">Kolom <span class="font-semibold">nomor_seri (No Seri/No Mesin)</span> boleh dikosongkan. Jika diisi, maksimal 100 karakter. Gunakan format sel Text agar angka nol di awal tetap tersimpan.</p>
-                                <p class="mt-1">Kolom <span class="font-semibold">nik_pemegang</span> dan <span class="font-semibold">nama_pemegang</span> wajib diisi dengan NIK dan nama lengkap pemegang asset sesuai master karyawan. Ganti contoh ISI_NIK_KARYAWAN dan ISI_NAMA_LENGKAP_KARYAWAN dengan data yang sesuai. Gunakan format sel Text untuk NIK agar angka nol di awal tetap tersimpan.</p>
+                                <p class="mt-1">Pada <span class="font-semibold">template aset karyawan</span>, kolom <span class="font-semibold">nik_pemegang</span> dan <span class="font-semibold">nama_pemegang</span> wajib sesuai master karyawan. Untuk aset di kapal, gunakan template khusus kapal; NIK dan nama karyawan tidak diperlukan. File template kapal juga dapat diunggah di sini.</p>
                             </div>
                         </div>
 
@@ -352,7 +352,7 @@
                         <div class="pt-2">
                             <a href="{{ route('asset.template') }}" class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Unduh Template Format Excel
+                                Unduh Template Asset Karyawan
                             </a>
                         </div>
                     </div>
