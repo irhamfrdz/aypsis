@@ -339,7 +339,7 @@
                             <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <div>
                                 Pastikan format file sesuai dengan template. Format yang didukung: <span class="font-semibold">.xlsx, .xls</span>
-                                <p class="mt-1">Kolom <span class="font-semibold">nomor_seri (No Seri/No Mesin)</span> wajib diisi untuk setiap asset, maksimal 100 karakter. Gunakan format sel Text agar angka nol di awal tetap tersimpan.</p>
+                                <p class="mt-1">Kolom <span class="font-semibold">nomor_seri (No Seri/No Mesin)</span> boleh dikosongkan. Jika diisi, maksimal 100 karakter. Gunakan format sel Text agar angka nol di awal tetap tersimpan.</p>
                                 <p class="mt-1">Kolom <span class="font-semibold">nik_pemegang</span> dan <span class="font-semibold">nama_pemegang</span> wajib diisi dengan NIK dan nama lengkap pemegang asset sesuai master karyawan. Ganti contoh ISI_NIK_KARYAWAN dan ISI_NAMA_LENGKAP_KARYAWAN dengan data yang sesuai. Gunakan format sel Text untuk NIK agar angka nol di awal tetap tersimpan.</p>
                             </div>
                         </div>
@@ -385,7 +385,7 @@
                     </div>
                     <div class="mt-4 space-y-4">
                         <div class="p-3 bg-cyan-50 rounded-xl border border-cyan-100 text-xs text-cyan-800">
-                            Unduh template khusus kapal. Isi <span class="font-semibold">nama_kapal</span> sesuai nama di master kapal, serta isi kategori, lokasi kapal, dan kondisi fisik sesuai pilihan yang tersedia. Kolom <span class="font-semibold">kode_asset</span> boleh dikosongkan agar dibuat otomatis. Jika ada nilai yang tidak cocok, seluruh upload ditolak dan halaman menampilkan baris serta kolom yang perlu diperbaiki.
+                            Unduh template khusus kapal. Isi <span class="font-semibold">nama_kapal</span> sesuai nama di master kapal, serta isi kategori, lokasi kapal, dan kondisi fisik sesuai pilihan yang tersedia. Kolom <span class="font-semibold">kode_asset</span> dan <span class="font-semibold">nomor_seri</span> boleh dikosongkan. Jika ada nilai yang tidak cocok, seluruh upload ditolak dan halaman menampilkan baris serta kolom yang perlu diperbaiki.
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih File Excel</label>

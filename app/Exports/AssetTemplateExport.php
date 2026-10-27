@@ -51,7 +51,7 @@ class AssetTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, Wi
                 '(Kosongkan = Auto)',
                 'Forklift TCM 3 Ton Diesel',
                 'TCM',
-                'MESIN-TCM-0001',
+                '',
                 'ISI_NIK_KARYAWAN',
                 'ISI_NAMA_LENGKAP_KARYAWAN',
                 'Alat Berat',

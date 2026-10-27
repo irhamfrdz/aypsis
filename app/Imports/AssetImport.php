@@ -19,6 +19,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
 
         foreach ($rows as $row) {
             $kodeAsset = trim((string) ($row['kode_asset'] ?? ''));
+            $nomorSeri = trim((string) ($row['nomor_seri'] ?? ''));
 
             if (empty($kodeAsset) || str_contains(strtolower($kodeAsset), 'kosongkan') || str_contains(strtolower($kodeAsset), 'auto')) {
                 $kodeAsset = Asset::generateNextKode();
@@ -54,7 +55,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
                 'kode_asset' => $kodeAsset,
                 'nama_asset' => $row['nama_asset'],
                 'nama_merk' => $row['nama_merk'] ?? null,
-                'nomor_seri' => $row['nomor_seri'],
+                'nomor_seri' => $nomorSeri !== '' ? $nomorSeri : null,
                 'karyawan_id' => Karyawan::where('nik', $row['nik_pemegang'])->firstOrFail()->id,
                 'kategori' => $kategori,
                 'tanggal_perolehan' => $tanggalPerolehan,
@@ -82,7 +83,7 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
         return [
             'nama_asset' => 'required|string',
             'nama_merk' => 'nullable|string|max:150',
-            'nomor_seri' => 'required|string|max:100',
+            'nomor_seri' => 'nullable|string|max:100',
             'nik_pemegang' => 'bail|required|string|exists:karyawans,nik',
             'nama_pemegang' => 'required|string|max:255',
         ];
@@ -108,7 +109,6 @@ class AssetImport implements ToCollection, WithHeadingRow, WithValidation
     public function customValidationMessages(): array
     {
         return [
-            'nomor_seri.required' => 'No Seri/No Mesin wajib diisi.',
             'nomor_seri.max' => 'No Seri/No Mesin maksimal 100 karakter.',
             'nik_pemegang.required' => 'NIK pemegang asset wajib diisi.',
             'nik_pemegang.exists' => 'NIK pemegang asset tidak ditemukan pada data karyawan.',
