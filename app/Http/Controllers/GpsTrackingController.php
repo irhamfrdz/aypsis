@@ -58,11 +58,11 @@ class GpsTrackingController extends Controller
             ->select('sj.*', \DB::raw("'Muatan' as tipe_sj"))
             ->whereIn('sj.no_plat', $nopols)
             ->whereIn('sj.status', ['draft', 'belum masuk checkpoint', 'sudah_checkpoint'])
-            ->whereNull('sj.tanggal_tanda_terima') // Sudah tanda terima berarti selesai
             ->whereNotExists(function ($query) {
                 $query->select(\DB::raw(1))
                     ->from('tanda_terimas')
-                    ->whereColumn('tanda_terimas.surat_jalan_id', 'sj.id');
+                    ->whereColumn('tanda_terimas.surat_jalan_id', 'sj.id')
+                    ->where('tanda_terimas.approval_pelabuhan_status', 'approved');
             })
             ->orderBy('sj.created_at', 'desc')
             ->get()
