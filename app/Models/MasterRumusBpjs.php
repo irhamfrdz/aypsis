@@ -45,4 +45,19 @@ class MasterRumusBpjs extends Model
         'jp_max_dpp' => 'decimal:2',
         'jp_max_age' => 'integer',
     ];
+
+    public function jamsostekCategory(): string
+    {
+        $groupName = strtoupper($this->group_name ?? '');
+        $tipe = strtoupper(trim($this->tipe ?? ''));
+
+        if (str_contains($groupName, 'PPU')) {
+            return 'ppu';
+        }
+
+        $isCrew = in_array($tipe, ['CREW', 'BPU-CREW'], true)
+            || ($tipe === '' && str_contains($groupName, 'BPU-CREW'));
+
+        return $isCrew ? 'bpu_crew' : 'bpu_non_crew';
+    }
 }

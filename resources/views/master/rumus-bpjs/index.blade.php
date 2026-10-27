@@ -50,9 +50,9 @@
         };
 
         $groupedJkn = $groupRows($rumusJkn);
-        $rumusJamsostekBpuCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && str_contains(strtoupper($item->group_name), 'BPU-CREW'));
-        $rumusJamsostekBpuNonCrew = $rumusJamsostek->filter(fn($item) => !str_contains(strtoupper($item->group_name), 'PPU') && !str_contains(strtoupper($item->group_name), 'BPU-CREW'));
-        $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => str_contains(strtoupper($item->group_name), 'PPU'));
+        $rumusJamsostekBpuCrew = $rumusJamsostek->filter(fn($item) => $item->jamsostekCategory() === 'bpu_crew');
+        $rumusJamsostekBpuNonCrew = $rumusJamsostek->filter(fn($item) => $item->jamsostekCategory() === 'bpu_non_crew');
+        $rumusJamsostekPpu = $rumusJamsostek->filter(fn($item) => $item->jamsostekCategory() === 'ppu');
 
         $groupedBpuCrew = $groupRows($rumusJamsostekBpuCrew);
         $groupedBpuNonCrew = $groupRows($rumusJamsostekBpuNonCrew);
@@ -600,6 +600,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
                                 <input type="text" name="tipe[]" required maxlength="255"
+                                       oninput="toggleJamsostekFields(this.closest('.bpjs-row').querySelector('.group-name-input'))"
                                        class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
                                        placeholder="Masukkan tipe">
                             </div>
@@ -643,7 +644,7 @@
                             </div>
                         </div>
 
-                        {{-- BPU-CREW Fields (hanya muncul saat jenis = jamsostek dan nama group = BPU-CREW) --}}
+                        {{-- BPU-CREW Fields (hanya muncul saat jenis = jamsostek dan tipe = CREW; nama group untuk data lama) --}}
                         <div class="bpu-crew-fields hidden">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
@@ -939,6 +940,7 @@
                         <div>
                             <label for="edit_tipe" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
                             <input type="text" id="edit_tipe" name="tipe" required maxlength="255"
+                                   oninput="toggleEditJamsostekFields(document.getElementById('edit_group_name'))"
                                    class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
                                    placeholder="Masukkan tipe">
                         </div>
@@ -1138,6 +1140,15 @@
         } catch (e) {
             console.error('Error opening edit modal:', e);
         }
+    }
+
+    function getJamsostekCategory(names, tipe) {
+        const groupName = names.join(' ').toUpperCase();
+        const normalizedTipe = (tipe || '').trim().toUpperCase();
+        if (groupName.includes('PPU')) return 'ppu';
+        const isCrew = ['CREW', 'BPU-CREW'].includes(normalizedTipe)
+            || (normalizedTipe === '' && groupName.includes('BPU-CREW'));
+        return isCrew ? 'bpu_crew' : 'bpu_non_crew';
     }
 
     function getSelectedGroupNames(input) {
@@ -1371,10 +1382,9 @@
         const diskonSection = row.querySelector('.diskon-section');
         
         const names = getSelectedGroupNames(input);
-        const nameString = names.join(' ');
-
-        const isPpu = nameString.includes('PPU');
-        const isBpuCrew = nameString.includes('BPU-CREW');
+        const category = getJamsostekCategory(names, row.querySelector('input[name="tipe[]"]')?.value);
+        const isPpu = category === 'ppu';
+        const isBpuCrew = category === 'bpu_crew';
 
         if (isBpuCrew) {
             bpuCrewFields?.classList.remove('hidden');
@@ -1461,10 +1471,9 @@
         const diskonSection = document.getElementById('edit_diskon_section');
         
         const names = getSelectedGroupNames(input);
-        const nameString = names.join(' ');
-
-        const isPpu = nameString.includes('PPU');
-        const isBpuCrew = nameString.includes('BPU-CREW');
+        const category = getJamsostekCategory(names, document.getElementById('edit_tipe')?.value);
+        const isPpu = category === 'ppu';
+        const isBpuCrew = category === 'bpu_crew';
 
         if (isBpuCrew) {
             bpuCrewFields?.classList.remove('hidden');
@@ -1676,7 +1685,7 @@
         var bpjsRow = el.closest('.bpjs-row');
         if (!bpjsRow) return;
         var names = getSelectedGroupNames(bpjsRow.querySelector('.group-name-input'));
-        var isBpuCrew = names.some(n => n.includes('BPU-CREW'));
+        var isBpuCrew = getJamsostekCategory(names, bpjsRow.querySelector('input[name="tipe[]"]')?.value) === 'bpu_crew';
         var activeContainer = isBpuCrew
             ? bpjsRow.querySelector('.bpu-crew-fields .hutang-tiers-container')
             : bpjsRow.querySelector('.noncrew-tier-section .hutang-tiers-container');
@@ -1750,7 +1759,7 @@
 
     function syncEditTiersJson() {
         var names = getSelectedGroupNames(document.getElementById('edit_group_name'));
-        var isBpuCrew = names.some(n => n.includes('BPU-CREW'));
+        var isBpuCrew = getJamsostekCategory(names, document.getElementById('edit_tipe')?.value) === 'bpu_crew';
         var activeContainer = isBpuCrew
             ? document.getElementById('edit-hutang-tiers-container')
             : document.getElementById('edit-noncrew-hutang-tiers-container');
