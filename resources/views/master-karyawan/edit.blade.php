@@ -519,21 +519,16 @@
                     <input type="text" name="dpp_jkn" id="dpp_jkn" class="{{ $inputClasses }}" placeholder="DPP JKN" value="{{ old('dpp_jkn', $karyawan->dpp_jkn) }}">
                 </div>
                 <div>
-                    <label for="group_jkn" class="{{ $labelClasses }}">Group JKN</label>
-                    @include('master-karyawan.partials.add-bpjs-group', ['field' => 'group_jkn', 'groupLabel' => 'Group JKN'])
-                    <select name="group_jkn" id="group_jkn" class="{{ $selectClasses }}">
-                            <option value="">-- Pilih Group JKN --</option>
-                            @foreach(collect($bpjsGroupOptions['group_jkn'])->push(old('group_jkn', $karyawan->group_jkn))->filter()->unique() as $group)
-                                <option value="{{ $group }}" @selected(old('group_jkn', $karyawan->group_jkn) === $group)>{{ $group }}</option>
-                            @endforeach
-                        </select>
+                    @include('master-karyawan.partials.master-jkn-select', [
+                        'field' => 'tipe_jkn', 'fieldLabel' => 'Tipe JKN',
+                        'masterColumn' => 'tipe', 'currentValue' => old('tipe_jkn', $karyawan->tipe_jkn),
+                    ])
                 </div>
                 <div>
-                    <label for="tipe_jkn" class="{{ $labelClasses }}">Tipe JKN</label>
-                    <input type="text" name="tipe_jkn" id="tipe_jkn" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe JKN" value="{{ old('tipe_jkn', $karyawan->tipe_jkn) }}">
-                    @error('tipe_jkn')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    @include('master-karyawan.partials.master-jkn-select', [
+                        'field' => 'group_jkn', 'fieldLabel' => 'Group JKN',
+                        'masterColumn' => 'group_name', 'currentValue' => old('group_jkn', $karyawan->group_jkn),
+                    ])
                 </div>
                 <div>
                     <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
@@ -545,6 +540,13 @@
                     <input type="text" name="dpp_bp_jamsostek" id="dpp_bp_jamsostek" class="{{ $inputClasses }}" placeholder="DPP BP Jamsostek" value="{{ old('dpp_bp_jamsostek', $karyawan->dpp_bp_jamsostek) }}">
                 </div>
                 <div>
+                    <label for="tipe_bp_jamsostek" class="{{ $labelClasses }}">Tipe BP Jamsostek</label>
+                    <input type="text" name="tipe_bp_jamsostek" id="tipe_bp_jamsostek" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe BP Jamsostek" value="{{ old('tipe_bp_jamsostek', $karyawan->tipe_bp_jamsostek) }}">
+                    @error('tipe_bp_jamsostek')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
                     <label for="group_bp_jamsostek" class="{{ $labelClasses }}">Group BP Jamsostek</label>
                     @include('master-karyawan.partials.add-bpjs-group', ['field' => 'group_bp_jamsostek', 'groupLabel' => 'Group BP Jamsostek'])
                     <select name="group_bp_jamsostek" id="group_bp_jamsostek" class="{{ $selectClasses }}">
@@ -553,13 +555,6 @@
                                 <option value="{{ $group }}" @selected(old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) === $group)>{{ $group }}</option>
                             @endforeach
                         </select>
-                </div>
-                <div>
-                    <label for="tipe_bp_jamsostek" class="{{ $labelClasses }}">Tipe BP Jamsostek</label>
-                    <input type="text" name="tipe_bp_jamsostek" id="tipe_bp_jamsostek" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe BP Jamsostek" value="{{ old('tipe_bp_jamsostek', $karyawan->tipe_bp_jamsostek) }}">
-                    @error('tipe_bp_jamsostek')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
                 <div>
                     <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>

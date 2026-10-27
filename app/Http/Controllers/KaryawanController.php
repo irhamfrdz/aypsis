@@ -9,6 +9,7 @@ use App\Models\Departemen;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\KaryawanApprovalRequest;
+use App\Models\MasterRumusBpjs;
 use App\Models\Pajak;
 use App\Models\Pekerjaan;
 use App\Models\User;
@@ -1117,6 +1118,7 @@ class KaryawanController extends Controller
     public function create()
     {
         $bpjsGroupOptions = app(\App\Services\KaryawanBpjsGroups::class)->options();
+        $jknRumusOptions = MasterRumusBpjs::where('jenis', 'jkn')->get(['group_name', 'tipe']);
         $typeGajiSubGroups = \App\Models\MasterTypeGajiKaryawan::where('status', 'active')->orderBy('nama')->pluck('nama')->all();
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
         $departemens = \App\Models\Departemen::where('is_active', true)->orderBy('nama_departemen')->get();
@@ -1144,7 +1146,7 @@ class KaryawanController extends Controller
         // Generate next NIK for auto-fill (Optional, but user want to remove automatic feature)
         $nextNik = ''; // Karyawan::generateNextNik();
 
-        return view('master-karyawan.create', compact('divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions'));
+        return view('master-karyawan.create', compact('divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions', 'jknRumusOptions'));
     }
 
     /**
@@ -1320,6 +1322,7 @@ class KaryawanController extends Controller
     public function edit(Karyawan $karyawan)
     {
         $bpjsGroupOptions = app(\App\Services\KaryawanBpjsGroups::class)->options();
+        $jknRumusOptions = MasterRumusBpjs::where('jenis', 'jkn')->get(['group_name', 'tipe']);
         // Jika ada parameter onboarding, gunakan view onboarding-full
         if (request()->has('onboarding') && request()->onboarding == '1') {
             // Ambil data divisis dan pekerjaans untuk dropdown
@@ -1362,7 +1365,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions'));
+        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'departemens', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'posisis', 'typeGajiSubGroups', 'bpjsGroupOptions', 'jknRumusOptions'));
     }
 
     /**
