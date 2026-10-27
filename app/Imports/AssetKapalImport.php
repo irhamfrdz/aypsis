@@ -40,7 +40,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
                 'tanggal_kadaluarsa' => $this->parseDate($row['tanggal_kadaluarsa'] ?? null),
                 'kuantitas' => $row['kuantitas'] ?? null,
                 'satuan' => $row['satuan'] ?? null,
-                'kondisi' => ! empty($row['kondisi']) ? $row['kondisi'] : 'Baik',
+                'kondisi' => trim((string) $row['kondisi']),
                 'status' => ! empty($row['status']) ? $row['status'] : 'Tersedia',
                 'vendor' => $row['vendor'] ?? null,
                 'nomor_faktur' => $row['nomor_faktur'] ?? null,
@@ -64,7 +64,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
             }
         }
 
-        foreach (['kode_asset', 'nama_asset', 'nama_kapal', 'kategori', 'lokasi_asset'] as $column) {
+        foreach (['kode_asset', 'nama_asset', 'nama_kapal', 'kategori', 'lokasi_asset', 'kondisi'] as $column) {
             if (isset($data[$column])) {
                 $data[$column] = trim((string) $data[$column]);
             }
@@ -88,7 +88,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
             'tanggal_kadaluarsa' => 'nullable|date',
             'kuantitas' => 'nullable|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
-            'kondisi' => ['nullable', Rule::in(Asset::KONDISI_OPTIONS)],
+            'kondisi' => ['required', Rule::in(Asset::KONDISI_KAPAL_OPTIONS)],
             'status' => ['nullable', Rule::in(Asset::STATUS_OPTIONS)],
             'vendor' => 'nullable|string|max:150',
             'nomor_faktur' => 'nullable|string|max:100',
@@ -126,7 +126,8 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
             'tanggal_beli.date' => 'Tanggal beli tidak valid. Gunakan format tanggal Excel atau YYYY-MM-DD.',
             'tanggal_kadaluarsa.date' => 'Tanggal kadaluwarsa tidak valid. Gunakan format tanggal Excel atau YYYY-MM-DD.',
             'kode_asset.unique' => 'Kode aset sudah digunakan.',
-            'kondisi.in' => 'Kondisi tidak sesuai dengan pilihan yang tersedia.',
+            'kondisi.required' => 'Kondisi fisik aset kapal wajib diisi.',
+            'kondisi.in' => 'Kondisi tidak sesuai dengan pilihan kondisi fisik untuk aset kapal.',
             'status.in' => 'Status tidak sesuai dengan pilihan yang tersedia.',
         ];
     }

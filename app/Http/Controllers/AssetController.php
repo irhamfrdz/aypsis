@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
@@ -73,7 +74,7 @@ class AssetController extends Controller
 
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
-        $kondisis = Asset::KONDISI_OPTIONS;
+        $kondisis = array_merge(Asset::KONDISI_OPTIONS, Asset::KONDISI_KAPAL_OPTIONS);
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nik']);
@@ -89,7 +90,7 @@ class AssetController extends Controller
         $nextKode = Asset::generateNextKode();
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
-        $kondisis = Asset::KONDISI_OPTIONS;
+        $kondisis = array_merge(Asset::KONDISI_OPTIONS, Asset::KONDISI_KAPAL_OPTIONS);
         $lokasis = Asset::LOKASI_OPTIONS;
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
@@ -114,7 +115,7 @@ class AssetController extends Controller
             'kuantitas' => 'nullable|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
             'tanggal_kadaluarsa' => 'nullable|date',
-            'kondisi' => 'required|string|max:50',
+            'kondisi' => ['required', 'string', 'max:50', Rule::in($request->input('lokasi') === 'Di kapal' ? Asset::KONDISI_KAPAL_OPTIONS : Asset::KONDISI_OPTIONS)],
             'status' => 'required|string|max:50',
             'karyawan_id' => 'nullable|required_if:lokasi,Di bawa oleh karyawan|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',
@@ -180,7 +181,7 @@ class AssetController extends Controller
     {
         $kategoris = Asset::KATEGORI_OPTIONS;
         $statuses = Asset::STATUS_OPTIONS;
-        $kondisis = Asset::KONDISI_OPTIONS;
+        $kondisis = array_merge(Asset::KONDISI_OPTIONS, Asset::KONDISI_KAPAL_OPTIONS);
         $lokasis = Asset::LOKASI_OPTIONS;
         $karyawans = Karyawan::whereNull('tanggal_berhenti')
             ->orWhere('id', $asset->karyawan_id)
@@ -206,7 +207,7 @@ class AssetController extends Controller
             'kuantitas' => 'nullable|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
             'tanggal_kadaluarsa' => 'nullable|date',
-            'kondisi' => 'required|string|max:50',
+            'kondisi' => ['required', 'string', 'max:50', Rule::in($request->input('lokasi') === 'Di kapal' ? Asset::KONDISI_KAPAL_OPTIONS : Asset::KONDISI_OPTIONS)],
             'status' => 'required|string|max:50',
             'karyawan_id' => 'nullable|required_if:lokasi,Di bawa oleh karyawan|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',

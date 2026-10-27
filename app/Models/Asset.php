@@ -81,6 +81,19 @@ class Asset extends Model
         'Afkir',
     ];
 
+    public const KONDISI_KAPAL_OPTIONS = [
+        'Bagus',
+        'Baru',
+        'Bekas',
+        'Bekas/Bagus',
+        'Expired Batrai',
+        'Kurang',
+        'Kurang Bagus',
+        'Perlu Servis',
+        'Rusak',
+        'SPC/Rusak',
+    ];
+
     public const STATUS_OPTIONS = [
         'Tersedia',
         'Digunakan',

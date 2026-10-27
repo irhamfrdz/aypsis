@@ -161,9 +161,10 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Kondisi Fisik <span class="text-rose-500">*</span></label>
-                    <select name="kondisi" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select name="kondisi" id="kondisi" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Kondisi Fisik</option>
                         @foreach($kondisis as $kd)
-                            <option value="{{ $kd }}" {{ old('kondisi', $asset->kondisi) == $kd ? 'selected' : '' }}>{{ $kd }}</option>
+                            <option value="{{ $kd }}" data-kapal="{{ in_array($kd, \App\Models\Asset::KONDISI_KAPAL_OPTIONS, true) ? '1' : '0' }}" {{ old('kondisi', $asset->kondisi) == $kd ? 'selected' : '' }}>{{ $kd }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -291,6 +292,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const lokasi = document.getElementById('lokasi');
         const lokasiAsset = document.getElementById('lokasi_asset');
+        const kondisi = document.getElementById('kondisi');
         const toggleLocationFields = function() {
             const showKapal = lokasi.value === 'Di kapal';
             const showKaryawan = lokasi.value === 'Di bawa oleh karyawan';
@@ -309,6 +311,16 @@
             });
             if (lokasiAsset.selectedOptions[0]?.disabled) {
                 lokasiAsset.value = '';
+            }
+            Array.from(kondisi.options).forEach(function(option) {
+                if (option.value) {
+                    const available = (option.dataset.kapal === '1') === showKapal;
+                    option.hidden = !available;
+                    option.disabled = !available;
+                }
+            });
+            if (kondisi.selectedOptions[0]?.disabled) {
+                kondisi.value = '';
             }
             document.getElementById('kapal-field').classList.toggle('hidden', !showKapal);
             document.getElementById('kapal_id').required = showKapal;

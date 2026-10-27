@@ -48,7 +48,7 @@ class AssetKapalTemplateExport implements FromArray, ShouldAutoSize, WithHeading
             '2027-01-15',
             'Nama merk',
             'NOMOR-SERI-001',
-            'Baik',
+            'Bagus',
             'Tersedia',
             'Nama vendor',
             'NOMOR-INVOICE',
