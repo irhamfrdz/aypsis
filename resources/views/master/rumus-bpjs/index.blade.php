@@ -592,11 +592,10 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                                    Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(bisa pilih > 1)</span>
+                                    Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(pisahkan dengan koma jika lebih dari satu)</span>
                                 </label>
-                                <select name="group_name[0][]" multiple class="group-name-select form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                        required onchange="toggleJamsostekFields(this)">
-                                </select>
+                                <input type="text" name="group_name[]" class="group-name-input form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                       required placeholder="Masukkan nama group" oninput="toggleJamsostekFields(this)">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
@@ -932,11 +931,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="edit_group_name" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                                Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(bisa pilih > 1)</span>
+                                Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(pisahkan dengan koma jika lebih dari satu)</span>
                             </label>
-                            <select id="edit_group_name" name="group_name[]" multiple class="group-name-select form-select w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                    required onchange="toggleEditJamsostekFields(this)">
-                            </select>
+                            <input type="text" id="edit_group_name" name="group_name" class="group-name-input form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
+                                   required placeholder="Masukkan nama group" oninput="toggleEditJamsostekFields(this)">
                         </div>
                         <div>
                             <label for="edit_tipe" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
@@ -1130,46 +1128,7 @@
     </div>
 </div>
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<style>
-.select2-container--default .select2-selection--multiple {
-    border-color: #d1d5db !important;
-    border-radius: 0.5rem !important;
-    min-height: 38px !important;
-    padding: 2px 6px !important;
-}
-.select2-container--default.select2-container--focus .select2-selection--multiple {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 1px #6366f1 !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-    background-color: #e0e7ff !important;
-    border-color: #c7d2fe !important;
-    color: #3730a3 !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    border-radius: 0.375rem !important;
-    padding: 2px 8px !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    color: #4338ca !important;
-    margin-right: 4px !important;
-}
-.select2-dropdown {
-    border-color: #e5e7eb !important;
-    border-radius: 0.5rem !important;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-    z-index: 99999 !important;
-}
-</style>
-
 <script>
-    const groupsJkn = @json($groupsJkn ?? []);
-    const groupsJamsostek = @json($groupsJamsostek ?? []);
-
     function handleEditClick(btn) {
         try {
             const data = JSON.parse(btn.getAttribute('data-rumus'));
@@ -1181,72 +1140,8 @@
         }
     }
 
-    function initSelect2ForGroup(selectEl) {
-        if (!selectEl) return;
-        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-            const $sel = jQuery(selectEl);
-            if ($sel.data('select2')) {
-                $sel.select2('destroy');
-            }
-            $sel.select2({
-                placeholder: "-- Pilih 1 atau Lebih Group --",
-                width: '100%',
-                tags: true,
-                dropdownParent: $sel.closest('.fixed, #createModal, #editModal')
-            });
-            $sel.off('change.bpjs').on('change.bpjs', function() {
-                if (selectEl.id === 'edit_group_name') {
-                    toggleEditJamsostekFields(selectEl);
-                } else {
-                    toggleJamsostekFields(selectEl);
-                }
-            });
-        }
-    }
-
-    function populateGroupOptions(selectEl, jenis, selectedValues = []) {
-        if (!selectEl) return;
-        const options = jenis === 'jkn' ? (groupsJkn || []) : (groupsJamsostek || []);
-        
-        let currentSelected = Array.isArray(selectedValues) 
-            ? selectedValues 
-            : (selectedValues ? [selectedValues] : []);
-
-        currentSelected = currentSelected.map(s => String(s).trim()).filter(Boolean);
-
-        selectEl.innerHTML = '';
-        const allOpts = Array.from(new Set([...options, ...currentSelected]));
-        
-        allOpts.forEach(opt => {
-            const optEl = document.createElement('option');
-            optEl.value = opt;
-            optEl.textContent = opt;
-            if (currentSelected.includes(opt)) {
-                optEl.selected = true;
-            }
-            selectEl.appendChild(optEl);
-        });
-
-        initSelect2ForGroup(selectEl);
-        if (typeof jQuery !== 'undefined') {
-            jQuery(selectEl).val(currentSelected).trigger('change.select2');
-        }
-    }
-
     function getSelectedGroupNames(input) {
-        if (!input) return [];
-        if (typeof jQuery !== 'undefined') {
-            const val = jQuery(input).val();
-            if (Array.isArray(val) && val.length > 0) {
-                return val.map(s => String(s).trim().toUpperCase()).filter(Boolean);
-            } else if (typeof val === 'string' && val.trim() !== '') {
-                return [val.trim().toUpperCase()];
-            }
-        }
-        if (input.tagName === 'SELECT') {
-            return Array.from(input.selectedOptions).map(o => o.value.trim().toUpperCase()).filter(Boolean);
-        }
-        return (input.value || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+        return (input?.value || '').split(',').map(name => name.trim().toUpperCase()).filter(Boolean);
     }
 
     // ── Modal Open/Close ──────────────────────────────────────────────────────
@@ -1260,9 +1155,8 @@
         const jenisSelect = firstRow.querySelector('select[name="jenis[]"]');
         jenisSelect.value = 'jkn';
 
-        const groupSelect = firstRow.querySelector('.group-name-select');
-        groupSelect.name = 'group_name[0][]';
-        populateGroupOptions(groupSelect, 'jkn', []);
+        const groupSelect = firstRow.querySelector('.group-name-input');
+        groupSelect.value = '';
 
         firstRow.querySelector('input[name="tipe[]"]').value = '';
         firstRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
@@ -1314,18 +1208,13 @@
     function addRow() {
         const container = document.getElementById('dynamic-rows-container');
         const rows = container.querySelectorAll('.bpjs-row');
-        const rowIndex = rows.length;
         const firstRow = rows[0];
         const newRow = firstRow.cloneNode(true);
 
         const jenisSelect = newRow.querySelector('select[name="jenis[]"]');
         jenisSelect.value = 'jkn';
 
-        // Remove cloned select2 container if any
-        newRow.querySelectorAll('.select2-container').forEach(el => el.remove());
-
-        const groupSelect = newRow.querySelector('.group-name-select');
-        groupSelect.name = `group_name[${rowIndex}][]`;
+        const groupSelect = newRow.querySelector('.group-name-input');
 
         newRow.querySelector('input[name="tipe[]"]').value = '';
         newRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
@@ -1360,7 +1249,7 @@
         }
 
         container.appendChild(newRow);
-        populateGroupOptions(groupSelect, 'jkn', []);
+        groupSelect.value = '';
         toggleJenisFields(jenisSelect);
         toggleJamsostekFields(groupSelect);
         updateRemoveButtons();
@@ -1396,7 +1285,7 @@
             ? groupNames
             : (data.group_name ? [data.group_name] : []);
 
-        populateGroupOptions(editGroupSelect, data.jenis, selectedGroups);
+        editGroupSelect.value = selectedGroups.join(', ');
 
         document.getElementById('edit_tipe').value = data.tipe || '';
         document.getElementById('edit_cabang_bpjs').value = data.cabang_bpjs || '';
@@ -1666,11 +1555,7 @@
         const diskonSection = row.querySelector('.diskon-section');
         const isJamsostek = select.value === 'jamsostek';
 
-        const groupSelect = row.querySelector('.group-name-select');
-        if (groupSelect) {
-            populateGroupOptions(groupSelect, select.value, []);
-        }
-
+        const groupSelect = row.querySelector('.group-name-input');
         jknFields?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
             bpuCrewFields?.classList.add('hidden');
@@ -1685,8 +1570,6 @@
     function toggleEditJenisFields(select) {
         const isJamsostek = select.value === 'jamsostek';
         const editGroupSelect = document.getElementById('edit_group_name');
-        
-        populateGroupOptions(editGroupSelect, select.value, []);
 
         document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {
@@ -1792,7 +1675,7 @@
     function syncTiersJson(el) {
         var bpjsRow = el.closest('.bpjs-row');
         if (!bpjsRow) return;
-        var names = getSelectedGroupNames(bpjsRow.querySelector('.group-name-select'));
+        var names = getSelectedGroupNames(bpjsRow.querySelector('.group-name-input'));
         var isBpuCrew = names.some(n => n.includes('BPU-CREW'));
         var activeContainer = isBpuCrew
             ? bpjsRow.querySelector('.bpu-crew-fields .hutang-tiers-container')

@@ -57,7 +57,7 @@ class MasterRumusBpjsTipeTest extends TestCase
             $controller = new MasterRumusBpjsController;
             $controller->store(Request::create('/', 'POST', [
                 'jenis' => ['jkn'],
-                'group_name' => [['JKN-KIS-TUNAI', 'JKN-KIS-KANTOR']],
+                'group_name' => ['JKN-KIS-TUNAI, JKN-KIS-KANTOR'],
                 'tipe' => ['Karyawan'],
             ]));
 
@@ -66,7 +66,7 @@ class MasterRumusBpjsTipeTest extends TestCase
             $this->assertSame(['Karyawan', 'Karyawan'], $records->pluck('tipe')->all());
 
             $controller->update(Request::create('/', 'PUT', [
-                'group_name' => ['JKN-KIS-TUNAI', 'JKN-KIS-KANTOR'],
+                'group_name' => 'JKN-KIS-TUNAI, JKN-KIS-KANTOR',
                 'existing_ids' => $records->pluck('id')->implode(','),
                 'tipe' => 'Non Karyawan',
             ]), $records->first()->id);

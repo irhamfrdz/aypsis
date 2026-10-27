@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Karyawan;
 use App\Models\MasterRumusBpjs;
 use Illuminate\Http\Request;
 
@@ -22,40 +21,7 @@ class MasterRumusBpjsController extends Controller
         $rumusJkn = MasterRumusBpjs::where('jenis', 'jkn')->get();
         $rumusJamsostek = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
 
-        // Ambil data grup unik dari database Karyawan
-        $groupsJkn = Karyawan::whereNotNull('group_jkn')
-            ->where('group_jkn', '!=', '')
-            ->distinct()
-            ->pluck('group_jkn')
-            ->filter()
-            ->values()
-            ->toArray();
-
-        $defaultJkn = [
-            'JKN-KIS-HARIAN', 'JKN-KIS-KANTOR', 'JKN-KIS-LAPANGAN',
-            'JKN-KIS-NON KARY', 'JKN-KIS-NON KARY-UMKM KIS', 'JKN-KIS-TRANSFER', 'JKN-KIS-TUNAI',
-            'JKN-REIMBURSEMENT-CREW',
-        ];
-        $groupsJkn = array_values(array_unique(array_merge($groupsJkn, $defaultJkn)));
-        sort($groupsJkn);
-
-        $groupsJamsostek = Karyawan::whereNotNull('group_bp_jamsostek')
-            ->where('group_bp_jamsostek', '!=', '')
-            ->distinct()
-            ->pluck('group_bp_jamsostek')
-            ->filter()
-            ->values()
-            ->toArray();
-
-        $defaultJamsostek = [
-            'BPU-CREW', 'BPU-HARIAN', 'BPU-LAPANGAN', 'BPU-NON KARY-PBM',
-            'BPU-NON KARY-UMKM', 'BPU-NON KARY-UMKM NO PP', 'BPU-TUNAI',
-            'PPU-HARIAN', 'PPU-KANTOR', 'PPU-LAPANGAN', 'PPU-TRANSFER', 'PPU-TUNAI',
-        ];
-        $groupsJamsostek = array_values(array_unique(array_merge($groupsJamsostek, $defaultJamsostek)));
-        sort($groupsJamsostek);
-
-        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'groupsJkn', 'groupsJamsostek'));
+        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek'));
     }
 
     public function store(Request $request)
@@ -63,6 +29,7 @@ class MasterRumusBpjsController extends Controller
         $tipeRules = [];
         foreach (array_keys((array) $request->input('jenis', [])) as $key) {
             $tipeRules["tipe.$key"] = 'required|string|max:255';
+            $tipeRules["group_name.$key"] = 'required';
         }
 
         $request->validate([
