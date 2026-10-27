@@ -370,6 +370,52 @@
         </div>
     </div>
 
+    <details open class="mb-6 border border-gray-200 rounded-lg bg-white shadow-sm">
+        <summary class="px-6 py-4 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
+            <span>Asset Kapal</span>
+            <span class="text-sm text-gray-500">{{ $masterKapal->assets->count() }} asset</span>
+        </summary>
+        <div class="p-4">
+            @if($masterKapal->assets->isNotEmpty())
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kategori</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kode Asset</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Nama Asset</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Lokasi di Kapal</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Spesifikasi</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kuantitas</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Kondisi Fisik</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($masterKapal->assets as $asset)
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->kategori ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $asset->kode_asset ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->nama_asset ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->lokasi_asset ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->spesifikasi ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $asset->kuantitas ?? '-' }} {{ $asset->satuan }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->kondisi ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $asset->status ?: '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-box-open text-2xl mb-2" aria-hidden="true"></i>
+                    <p>Belum ada asset yang tercatat untuk kapal ini.</p>
+                </div>
+            @endif
+        </div>
+    </details>
+
     <!-- Danger Zone -->
     @can('master-kapal.delete')
     <div class="bg-white rounded-lg shadow-sm border-2 border-red-200 overflow-hidden">

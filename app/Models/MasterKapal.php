@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MasterKapal extends Model
@@ -94,5 +95,10 @@ class MasterKapal extends Model
     public function spkbms()
     {
         return $this->hasMany(KapalSpkbm::class, 'kapal_id');
+    }
+
+    public function assets(): HasMany
+    {
+        return $this->hasMany(Asset::class, 'kapal_id');
     }
 }

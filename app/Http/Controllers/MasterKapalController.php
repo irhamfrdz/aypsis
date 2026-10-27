@@ -116,6 +116,8 @@ class MasterKapalController extends Controller
      */
     public function show(MasterKapal $masterKapal)
     {
+        $masterKapal->load(['assets' => fn ($query) => $query->orderBy('kode_asset')]);
+
         return view('master-kapal.show', compact('masterKapal'));
     }
 
