@@ -529,6 +529,13 @@
                         </select>
                 </div>
                 <div>
+                    <label for="tipe_jkn" class="{{ $labelClasses }}">Tipe JKN</label>
+                    <input type="text" name="tipe_jkn" id="tipe_jkn" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe JKN" value="{{ old('tipe_jkn', $karyawan->tipe_jkn) }}">
+                    @error('tipe_jkn')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
                     <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
                     <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan) }}">
                 </div>
@@ -546,6 +553,13 @@
                                 <option value="{{ $group }}" @selected(old('group_bp_jamsostek', $karyawan->group_bp_jamsostek) === $group)>{{ $group }}</option>
                             @endforeach
                         </select>
+                </div>
+                <div>
+                    <label for="tipe_bp_jamsostek" class="{{ $labelClasses }}">Tipe BP Jamsostek</label>
+                    <input type="text" name="tipe_bp_jamsostek" id="tipe_bp_jamsostek" class="{{ $inputClasses }}" maxlength="255" placeholder="Masukkan Tipe BP Jamsostek" value="{{ old('tipe_bp_jamsostek', $karyawan->tipe_bp_jamsostek) }}">
+                    @error('tipe_bp_jamsostek')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>
