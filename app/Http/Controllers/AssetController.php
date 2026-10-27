@@ -24,7 +24,7 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Asset::with(['creator', 'karyawan', 'tandaTerima']);
+        $query = Asset::with(['creator', 'karyawan', 'kapal', 'tandaTerima']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -35,6 +35,9 @@ class AssetController extends Controller
                         $kq->where('nama_lengkap', 'like', "%{$search}%")
                             ->orWhere('nama_panggilan', 'like', "%{$search}%")
                             ->orWhere('nik', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('kapal', function ($kapalQuery) use ($search) {
+                        $kapalQuery->where('nama_kapal', 'like', "%{$search}%");
                     });
             });
         }

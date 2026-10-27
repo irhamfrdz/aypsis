@@ -239,7 +239,10 @@
                                 </span>
                             </td>
                             <td class="py-3 px-4">
-                                @if($asset->karyawan)
+                                @if($asset->lokasi === 'Di kapal' && $asset->kapal)
+                                    <span class="font-semibold text-gray-800 block">{{ $asset->kapal->nama_kapal }}</span>
+                                    <span class="text-[11px] text-gray-500 block">Kapal</span>
+                                @elseif($asset->karyawan)
                                     <span class="font-semibold text-gray-800 block">{{ $asset->karyawan->nama_lengkap }}</span>
                                     <span class="text-[11px] text-gray-500 block">{{ $asset->karyawan->nik ? 'NIK: ' . $asset->karyawan->nik : ($asset->karyawan->divisi ?? '-') }}</span>
                                     @if($asset->tanggal_tanda_terima)
