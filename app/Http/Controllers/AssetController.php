@@ -332,8 +332,31 @@ class AssetController extends Controller
             return redirect()->route('asset.index')->with('success', 'Data Asset kapal berhasil diimport');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $messages = [];
+            $columnLabels = [
+                'kode_asset' => 'Kode aset',
+                'nama_asset' => 'Nama aset',
+                'nama_kapal' => 'Nama kapal',
+                'nama_merk' => 'Nama merk',
+                'spesifikasi' => 'Spesifikasi',
+                'nomor_seri' => 'Nomor seri',
+                'kategori' => 'Kategori',
+                'lokasi_asset' => 'Lokasi asset',
+                'tanggal_beli' => 'Tanggal beli',
+                'tanggal_kadaluarsa' => 'Tanggal kadaluwarsa',
+                'kuantitas' => 'Kuantitas',
+                'satuan' => 'Satuan',
+                'kondisi' => 'Kondisi',
+                'status' => 'Status',
+                'vendor' => 'Vendor',
+                'nomor_faktur' => 'Nomor faktur',
+                'keterangan' => 'Keterangan',
+            ];
             foreach ($e->failures() as $failure) {
-                $messages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
+                $attribute = $failure->attribute();
+                $column = $columnLabels[$attribute] ?? $attribute;
+                $value = $failure->values()[$attribute] ?? null;
+                $valueDescription = $value !== null && $value !== '' ? ' (isi: "'.mb_substr((string) $value, 0, 80).'")' : '';
+                $messages[] = 'Baris '.$failure->row().', kolom '.$column.$valueDescription.': '.implode(', ', $failure->errors());
             }
 
             return redirect()->route('asset.index')->withErrors($messages);

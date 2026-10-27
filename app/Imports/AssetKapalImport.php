@@ -116,9 +116,18 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
         return [
             'nama_asset.required' => 'Nama aset wajib diisi.',
             'nama_kapal.required' => 'Nama kapal wajib diisi.',
+            'nama_kapal.max' => 'Nama kapal tidak boleh lebih dari 255 karakter.',
             'kategori.required' => 'Kategori aset kapal wajib diisi.',
+            'kategori.in' => 'Kategori tidak cocok dengan pilihan kategori untuk aset kapal.',
             'lokasi_asset.required' => 'Lokasi aset di kapal wajib diisi.',
+            'lokasi_asset.in' => 'Lokasi asset tidak cocok dengan pilihan lokasi kapal pada template.',
             'kuantitas.numeric' => 'Kuantitas harus berupa angka.',
+            'kuantitas.min' => 'Kuantitas tidak boleh kurang dari 0.',
+            'tanggal_beli.date' => 'Tanggal beli tidak valid. Gunakan format tanggal Excel atau YYYY-MM-DD.',
+            'tanggal_kadaluarsa.date' => 'Tanggal kadaluwarsa tidak valid. Gunakan format tanggal Excel atau YYYY-MM-DD.',
+            'kode_asset.unique' => 'Kode aset sudah digunakan.',
+            'kondisi.in' => 'Kondisi tidak sesuai dengan pilihan yang tersedia.',
+            'status.in' => 'Status tidak sesuai dengan pilihan yang tersedia.',
         ];
     }
 
