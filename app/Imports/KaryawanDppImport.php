@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Karyawan;
 use App\Rules\JamsostekTypeMatchesGroup;
+use App\Services\KaryawanBpjsGroups;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -76,7 +77,9 @@ class KaryawanDppImport implements ToCollection, WithHeadingRow
                     'tipe_bp_jamsostek' => ['nullable', 'string', 'max:255'],
                 ];
                 if (isset($row['group_bp_jamsostek']) || isset($row['tipe_bp_jamsostek'])) {
-                    $rules['tipe_bp_jamsostek'][] = new JamsostekTypeMatchesGroup($karyawan->group_bp_jamsostek);
+                    $category = KaryawanBpjsGroups::normalize((string) $karyawan->tipe_bp_jamsostek) === 'CREW'
+                        ? 'bpu_crew' : 'bpu_non_crew';
+                    $rules['tipe_bp_jamsostek'][] = new JamsostekTypeMatchesGroup($karyawan->group_bp_jamsostek, $category);
                 }
                 Validator::make($karyawan->only(['tipe_jkn', 'tipe_bp_jamsostek']), $rules)->validate();
 

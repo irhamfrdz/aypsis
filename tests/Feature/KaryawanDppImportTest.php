@@ -88,4 +88,42 @@ class KaryawanDppImportTest extends TestCase
         $this->assertSame('KARYAWAN', Karyawan::first()->tipe_jkn);
         $this->assertSame('CREW', Karyawan::first()->tipe_bp_jamsostek);
     }
+
+    public function test_import_matches_the_type_category_even_when_group_names_are_shared(): void
+    {
+        DB::table('master_rumus_bpjs')->insert([
+            ['jenis' => 'jamsostek', 'group_name' => 'BPU-ALEXINDO PLUIT', 'tipe' => 'LAPANGAN'],
+            ['jenis' => 'jamsostek', 'group_name' => 'PPU-CREW', 'tipe' => 'CREW'],
+            ['jenis' => 'jamsostek', 'group_name' => 'PPU-KANTOR', 'tipe' => 'KANTOR'],
+        ]);
+
+        $cases = [
+            ['BPU-ALEXINDO PLUIT', ' crew ', true, 'BPU-CREW'],
+            ['BPU-ALEXINDO PLUIT', 'LAPANGAN', true, 'Non BPU-CREW'],
+            ['PPU-CREW', 'CREW', false, 'BPU-CREW'],
+            ['PPU-KANTOR', 'KANTOR', false, 'Non BPU-CREW'],
+        ];
+
+        foreach ($cases as [$group, $type, $accepted, $categoryLabel]) {
+            DB::table('karyawans')->update([
+                'group_bp_jamsostek' => null, 'tipe_bp_jamsostek' => null, 'dpp_jkn' => '1000000',
+            ]);
+            $import = new KaryawanDppImport;
+            Karyawan::withoutEvents(fn () => $import->collection(collect([[
+                'nik' => '01593', 'group_bp_jamsostek' => $group,
+                'tipe_bp_jamsostek' => $type, 'dpp_jkn' => '3200000',
+            ]])));
+
+            $this->assertSame($accepted ? 1 : 0, $import->successCount, "$group / $type");
+            if ($accepted) {
+                $this->assertSame([], $import->failedRows);
+                $this->assertSame(trim($type), Karyawan::first()->tipe_bp_jamsostek);
+            } else {
+                $this->assertCount(1, $import->failedRows);
+                $this->assertStringContainsString('kategori '.$categoryLabel, $import->failedRows[0]['reason']);
+                $this->assertSame('1000000', Karyawan::first()->dpp_jkn);
+                $this->assertNull(Karyawan::first()->group_bp_jamsostek);
+            }
+        }
+    }
 }

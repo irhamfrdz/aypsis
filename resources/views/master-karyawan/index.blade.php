@@ -1041,7 +1041,7 @@
                                 Update Massal DPP & Group BPJS (JKN & Jamsostek)
                             </h3>
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
-                                <p>Silakan unggah file Excel dengan urutan kolom: nik, nama, Group JKN, Tipe JKN, DPP JKN, Group BP Jamsostek, Tipe BP Jamsostek, DPP BP Jamsostek, Cabang BPJS. Tipe BP Jamsostek harus sesuai dengan grupnya.</p>
+                                <p>Silakan unggah file Excel dengan urutan kolom: nik, nama, Group JKN, Tipe JKN, DPP JKN, Group BP Jamsostek, Tipe BP Jamsostek, DPP BP Jamsostek, Cabang BPJS. Tipe BP Jamsostek CREW dicocokkan dengan kategori BPU-CREW; tipe lainnya dengan kategori Non BPU-CREW. Group dan tipe harus sesuai dengan data master kategori tersebut.</p>
                                 <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div>
