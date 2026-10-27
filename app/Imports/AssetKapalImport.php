@@ -32,15 +32,15 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
                 'nama_merk' => $row['nama_merk'] ?? null,
                 'spesifikasi' => $row['spesifikasi'] ?? null,
                 'nomor_seri' => $row['nomor_seri'] ?? null,
-                'kategori' => trim((string) $row['kategori']),
+                'kategori' => $this->canonicalOption($row['kategori'] ?? null, Asset::KATEGORI_KAPAL_OPTIONS),
                 'lokasi' => 'Di kapal',
-                'lokasi_asset' => trim((string) $row['lokasi_asset']),
+                'lokasi_asset' => $this->canonicalOption($row['lokasi_asset'] ?? null, Asset::LOKASI_ASSET_KAPAL_OPTIONS),
                 'kapal_id' => $kapal->id,
                 'tanggal_perolehan' => $this->parseDate($row['tanggal_beli'] ?? null),
                 'tanggal_kadaluarsa' => $this->parseDate($row['tanggal_kadaluarsa'] ?? null),
                 'kuantitas' => $row['kuantitas'] ?? null,
                 'satuan' => $row['satuan'] ?? null,
-                'kondisi' => trim((string) $row['kondisi']),
+                'kondisi' => $this->canonicalCondition($row['kondisi'] ?? null),
                 'status' => ! empty($row['status']) ? $row['status'] : 'Tersedia',
                 'vendor' => $row['vendor'] ?? null,
                 'nomor_faktur' => $row['nomor_faktur'] ?? null,
@@ -70,6 +70,10 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
             }
         }
 
+        $data['kategori'] = $this->canonicalOption($data['kategori'] ?? null, Asset::KATEGORI_KAPAL_OPTIONS);
+        $data['lokasi_asset'] = $this->canonicalOption($data['lokasi_asset'] ?? null, Asset::LOKASI_ASSET_KAPAL_OPTIONS);
+        $data['kondisi'] = $this->canonicalCondition($data['kondisi'] ?? null);
+
         return $data;
     }
 
@@ -83,7 +87,7 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
             'spesifikasi' => 'nullable|string|max:2000',
             'nomor_seri' => 'nullable|string|max:100',
             'kategori' => ['required', Rule::in(Asset::KATEGORI_KAPAL_OPTIONS)],
-            'lokasi_asset' => ['required', Rule::in(Asset::LOKASI_ASSET_KAPAL_OPTIONS)],
+            'lokasi_asset' => ['nullable', Rule::in(Asset::LOKASI_ASSET_KAPAL_OPTIONS)],
             'tanggal_beli' => 'nullable|date',
             'tanggal_kadaluarsa' => 'nullable|date',
             'kuantitas' => 'nullable|numeric|min:0',
@@ -141,5 +145,30 @@ class AssetKapalImport implements ToCollection, WithHeadingRow, WithValidation
         return is_numeric($value)
             ? ExcelDate::excelToDateTimeObject($value)->format('Y-m-d')
             : Carbon::parse($value)->format('Y-m-d');
+    }
+
+    private function canonicalCondition(mixed $value): string
+    {
+        if ($value === null || trim((string) $value) === '' || trim((string) $value) === '-') {
+            return 'Belum diketahui';
+        }
+
+        return $this->canonicalOption($value, Asset::KONDISI_KAPAL_OPTIONS);
+    }
+
+    private function canonicalOption(mixed $value, array $options): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        foreach ($options as $option) {
+            if (mb_strtolower($value) === mb_strtolower($option)) {
+                return $option;
+            }
+        }
+
+        return $value;
     }
 }

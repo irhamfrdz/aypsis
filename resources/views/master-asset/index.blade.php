@@ -385,7 +385,7 @@
                     </div>
                     <div class="mt-4 space-y-4">
                         <div class="p-3 bg-cyan-50 rounded-xl border border-cyan-100 text-xs text-cyan-800">
-                            Unduh template khusus kapal. Isi <span class="font-semibold">nama_kapal</span> sesuai nama di master kapal, serta isi kategori, lokasi kapal, dan kondisi fisik sesuai pilihan yang tersedia. Kolom <span class="font-semibold">kode_asset</span> dan <span class="font-semibold">nomor_seri</span> boleh dikosongkan. Jika ada nilai yang tidak cocok, seluruh upload ditolak dan halaman menampilkan baris serta kolom yang perlu diperbaiki.
+                            Unduh template khusus kapal. Isi <span class="font-semibold">nama_kapal</span> sesuai nama di master kapal dan kategori sesuai pilihan yang tersedia. Kategori dan kondisi fisik boleh ditulis dengan huruf besar. Kolom <span class="font-semibold">kode_asset</span>, <span class="font-semibold">nomor_seri</span>, dan <span class="font-semibold">lokasi_asset</span> boleh dikosongkan. Kondisi kosong atau <span class="font-semibold">-</span> dicatat sebagai Belum diketahui. Jika ada nilai yang tidak cocok, seluruh upload ditolak dan halaman menampilkan baris serta kolom yang perlu diperbaiki.
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih File Excel</label>

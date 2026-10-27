@@ -82,6 +82,7 @@ class Asset extends Model
     ];
 
     public const KONDISI_KAPAL_OPTIONS = [
+        'Belum diketahui',
         'Bagus',
         'Baru',
         'Bekas',
