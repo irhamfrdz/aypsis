@@ -841,7 +841,7 @@ class KaryawanController extends Controller
      */
     public function downloadDppTemplate()
     {
-        $columns = ['nik', 'nama_karyawan', 'dpp_jkn', 'dpp_bp_jamsostek', 'group_jkn', 'group_bp_jamsostek', 'cabang_bpjs'];
+        $columns = ['nik', 'nama', 'Group JKN', 'Tipe JKN', 'DPP JKN', 'Group BP Jamsostek', 'Tipe BP Jamsostek', 'DPP BP Jamsostek', 'Cabang BPJS'];
         $fileName = 'template_dpp_bpjs_karyawan.csv';
 
         $callback = function () use ($columns) {

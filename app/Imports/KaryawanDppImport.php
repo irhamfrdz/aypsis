@@ -3,7 +3,9 @@
 namespace App\Imports;
 
 use App\Models\Karyawan;
+use App\Rules\JamsostekTypeMatchesGroup;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -55,9 +57,28 @@ class KaryawanDppImport implements ToCollection, WithHeadingRow
                     $karyawan->group_jkn = $row['group_jkn'] === '' || $row['group_jkn'] === null ? null : trim((string) $row['group_jkn']);
                 }
 
+                if (isset($row['tipe_jkn'])) {
+                    $tipe = trim((string) $row['tipe_jkn']);
+                    $karyawan->tipe_jkn = $tipe === '' ? null : $tipe;
+                }
+
                 if (isset($row['group_bp_jamsostek'])) {
                     $karyawan->group_bp_jamsostek = $row['group_bp_jamsostek'] === '' || $row['group_bp_jamsostek'] === null ? null : trim((string) $row['group_bp_jamsostek']);
                 }
+
+                if (isset($row['tipe_bp_jamsostek'])) {
+                    $tipe = trim((string) $row['tipe_bp_jamsostek']);
+                    $karyawan->tipe_bp_jamsostek = $tipe === '' ? null : $tipe;
+                }
+
+                $rules = [
+                    'tipe_jkn' => 'nullable|string|max:255',
+                    'tipe_bp_jamsostek' => ['nullable', 'string', 'max:255'],
+                ];
+                if (isset($row['group_bp_jamsostek']) || isset($row['tipe_bp_jamsostek'])) {
+                    $rules['tipe_bp_jamsostek'][] = new JamsostekTypeMatchesGroup($karyawan->group_bp_jamsostek);
+                }
+                Validator::make($karyawan->only(['tipe_jkn', 'tipe_bp_jamsostek']), $rules)->validate();
 
                 if (isset($row['cabang_bpjs'])) {
                     $karyawan->cabang_bpjs = $row['cabang_bpjs'] === '' || $row['cabang_bpjs'] === null ? null : trim((string) $row['cabang_bpjs']);

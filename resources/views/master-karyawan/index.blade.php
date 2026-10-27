@@ -1041,19 +1041,21 @@
                                 Update Massal DPP & Group BPJS (JKN & Jamsostek)
                             </h3>
                             <div class="mt-2 text-sm text-gray-500 space-y-2">
-                                <p>Silakan unggah file Excel yang berisi data NIK, Nama Karyawan, DPP JKN, DPP BP Jamsostek, Group JKN, Group BP Jamsostek, dan Cabang BPJS.</p>
+                                <p>Silakan unggah file Excel dengan urutan kolom: nik, nama, Group JKN, Tipe JKN, DPP JKN, Group BP Jamsostek, Tipe BP Jamsostek, DPP BP Jamsostek, Cabang BPJS. Tipe BP Jamsostek harus sesuai dengan grupnya.</p>
                                 <div class="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div>
                                             <p class="font-semibold text-blue-800 text-xs mb-1"><i class="fas fa-info-circle mr-1"></i> Format Kolom Excel:</p>
                                             <ul class="list-disc list-inside text-xs text-blue-700 ml-1 space-y-0.5">
                                                 <li><strong>nik</strong> (Wajib)</li>
-                                                <li><strong>nama_karyawan</strong> (Opsional, sebagai referensi nama karyawan; pembaruan data tetap berdasarkan NIK)</li>
-                                                <li><strong>dpp_jkn</strong> (Opsional)</li>
-                                                <li><strong>dpp_bp_jamsostek</strong> (Opsional)</li>
-                                                <li><strong>group_jkn</strong> (Opsional)</li>
-                                                <li><strong>group_bp_jamsostek</strong> (Opsional)</li>
-                                                <li><strong>cabang_bpjs</strong> (Opsional)</li>
+                                                <li><strong>nama</strong> (Opsional, sebagai referensi nama karyawan; pembaruan data tetap berdasarkan NIK)</li>
+                                                <li><strong>Group JKN</strong> (Opsional)</li>
+                                                <li><strong>Tipe JKN</strong> (Opsional)</li>
+                                                <li><strong>DPP JKN</strong> (Opsional)</li>
+                                                <li><strong>Group BP Jamsostek</strong> (Opsional)</li>
+                                                <li><strong>Tipe BP Jamsostek</strong> (Opsional)</li>
+                                                <li><strong>DPP BP Jamsostek</strong> (Opsional)</li>
+                                                <li><strong>Cabang BPJS</strong> (Opsional)</li>
                                             </ul>
                                         </div>
                                         <div>
