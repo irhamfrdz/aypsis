@@ -213,7 +213,10 @@
                                     <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4">
                                         <div>
                                             <h2 id="approval-goods-title-{{ $type }}-{{ $item->id }}" class="text-lg font-semibold text-gray-900">Detail Barang</h2>
-                                            <p class="mt-1 text-sm text-gray-500">Tanda terima: {{ $number ?: 'Tanpa nomor' }}</p>
+                                            <p class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                                                <span>Tanda terima: {{ $number ?: 'Tanpa nomor' }}</span>
+                                                <span>Nomor kontainer: {{ $containerNumber ?: '-' }}</span>
+                                            </p>
                                         </div>
                                         <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
                                     </div>
