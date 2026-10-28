@@ -158,6 +158,7 @@
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
                             $goodsOverride = $goodsOverrides->get($item->id);
+                            $isIncomplete = $incompleteMarks->has($item->id);
                             $goods = $goodsOverride ? collect($goodsOverride->goods) : match ($type) {
                                 'fcl' => collect($item->dimensi_items ?: $item->dimensi_details ?: $item->nama_barang ?: []),
                                 'lcl' => $item->items,
@@ -176,7 +177,7 @@
                             }
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
-                        <tr class="hover:bg-gray-50/70">
+                        <tr class="{{ $isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70' }}">
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
@@ -189,7 +190,20 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-5 py-4 text-right">
+                            <td class="whitespace-nowrap px-5 py-4 text-right {{ $isIncomplete ? 'bg-yellow-200' : '' }}">
+                                @if($isIncomplete)
+                                    <span class="mr-2 inline-flex rounded bg-yellow-300 px-2 py-1 text-xs font-semibold text-yellow-950">Belum lengkap</span>
+                                @endif
+                                @can('approval-tanda-terima-2-approve')
+                                    <form method="POST" action="{{ route('approval-tanda-terima-2.set-incomplete', ['sourceType' => $type, 'id' => $item->id]) }}" class="mr-2 inline-block">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="incomplete" value="{{ $isIncomplete ? '0' : '1' }}">
+                                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-100 px-3 py-2 text-xs font-semibold text-yellow-900 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                            <i class="fas fa-highlighter" aria-hidden="true"></i>{{ $isIncomplete ? 'Batalkan Tanda' : 'Tandai Belum Lengkap' }}
+                                        </button>
+                                    </form>
+                                @endcan
                                 <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
                                     <i class="fas fa-box-open" aria-hidden="true"></i>Detail Barang

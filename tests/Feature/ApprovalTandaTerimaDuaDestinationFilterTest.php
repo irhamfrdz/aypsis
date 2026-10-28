@@ -63,6 +63,13 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
         });
+        Schema::create('approval_tanda_terima_2_incomplete_marks', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_type', 4);
+            $table->unsignedBigInteger('source_id');
+            $table->timestamps();
+            $table->unique(['source_type', 'source_id']);
+        });
         Schema::create('prospek', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanda_terima_id')->nullable();
@@ -109,6 +116,20 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
                 : $items->first()->tujuan_pengiriman;
             $this->assertSame($expected, $actual);
         }
+    }
+
+    public function test_index_includes_incomplete_marks_for_visible_receipts(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId(['tujuan_pengiriman' => 'Batam']);
+        DB::table('approval_tanda_terima_2_incomplete_marks')->insert([
+            'source_type' => 'fcl', 'source_id' => $id,
+        ]);
+
+        $data = (new ApprovalTandaTerimaDuaController)->index(
+            Request::create('/', 'GET', ['type' => 'fcl', 'destination' => 'batam'])
+        )->getData();
+
+        $this->assertTrue($data['incompleteMarks']->has($id));
     }
 
     public function test_receipts_already_used_in_a_manifest_are_hidden(): void

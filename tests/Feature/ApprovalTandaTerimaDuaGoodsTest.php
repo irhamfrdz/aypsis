@@ -93,6 +93,32 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
             $table->timestamps();
             $table->unique(['source_type', 'source_id']);
         });
+        Schema::create('approval_tanda_terima_2_incomplete_marks', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_type', 4);
+            $table->unsignedBigInteger('source_id');
+            $table->timestamps();
+            $table->unique(['source_type', 'source_id']);
+        });
+    }
+
+    public function test_incomplete_mark_can_be_added_and_removed_without_creating_goods_override(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId([]);
+        $controller = app(ApprovalTandaTerimaDuaController::class);
+
+        $controller->setIncomplete(Request::create('/', 'PUT', ['incomplete' => '1']), 'fcl', $id);
+        $controller->setIncomplete(Request::create('/', 'PUT', ['incomplete' => '1']), 'fcl', $id);
+
+        $this->assertDatabaseHas('approval_tanda_terima_2_incomplete_marks', [
+            'source_type' => 'fcl', 'source_id' => $id,
+        ]);
+        $this->assertDatabaseCount('approval_tanda_terima_2_incomplete_marks', 1);
+        $this->assertDatabaseCount('approval_tanda_terima_2_goods', 0);
+
+        $controller->setIncomplete(Request::create('/', 'PUT', ['incomplete' => '0']), 'fcl', $id);
+
+        $this->assertDatabaseCount('approval_tanda_terima_2_incomplete_marks', 0);
     }
 
     public function test_fcl_goods_update_is_saved_separately_without_changing_original_json(): void

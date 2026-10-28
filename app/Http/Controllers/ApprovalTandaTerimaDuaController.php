@@ -148,13 +148,40 @@ class ApprovalTandaTerimaDuaController extends Controller
             ->whereIn('source_id', $items->pluck('id'))
             ->get()
             ->keyBy('source_id');
+        $incompleteMarks = DB::table('approval_tanda_terima_2_incomplete_marks')
+            ->where('source_type', $type)
+            ->whereIn('source_id', $items->pluck('id'))
+            ->pluck('source_id')
+            ->flip();
 
         return view('approval-tanda-terima-2.index', [
             'type' => $type,
             'destination' => $destination,
             'items' => $items,
             'goodsOverrides' => $goodsOverrides,
+            'incompleteMarks' => $incompleteMarks,
         ]);
+    }
+
+    public function setIncomplete(Request $request, string $sourceType, int $id): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        self::SOURCES[$sourceType]::findOrFail($id);
+        $validated = $request->validate(['incomplete' => 'required|boolean']);
+
+        $key = ['source_type' => $sourceType, 'source_id' => $id];
+        if ($validated['incomplete']) {
+            DB::table('approval_tanda_terima_2_incomplete_marks')->insertOrIgnore($key + [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
+            DB::table('approval_tanda_terima_2_incomplete_marks')->where($key)->delete();
+        }
+
+        return back()->with('success', $validated['incomplete']
+            ? 'Tanda terima ditandai belum lengkap.'
+            : 'Tanda belum lengkap berhasil dihapus.');
     }
 
     public function update(Request $request, string $sourceType, int $id): RedirectResponse
