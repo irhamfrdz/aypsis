@@ -6,10 +6,11 @@
     {{-- Page Header --}}
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Pranota BPJS</h1>
-            <p class="text-sm text-gray-500 mt-1">Kelola daftar pranota pembayaran BPJS karyawan</p>
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">{{ $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS' }}</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ $isHistory ? 'Telusuri pranota yang telah dibuat, lihat rincian, dan cetak kembali.' : 'Kelola daftar pranota pembayaran BPJS karyawan' }}</p>
         </div>
         <div class="flex items-center gap-2">
+            <a href="{{ route($isHistory ? 'pranota-bpjs.index' : 'pranota-bpjs.history') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ $isHistory ? 'Kembali ke Daftar' : 'Riwayat Pranota' }}</a>
             @can('pranota-bpjs-create')
             <a href="{{ route('pranota-bpjs.create') }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors duration-150">
@@ -53,9 +54,9 @@
                 <i class="fas fa-money-bill-wave text-indigo-600 text-lg"></i>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Total Nominal (Halaman Ini)</p>
+                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Total Nominal (Hasil Filter)</p>
                 <p class="text-xl font-bold text-gray-800">
-                    Rp {{ number_format($pranotas->sum('grand_total'), 0, ',', '.') }}
+                    Rp {{ number_format($totalNominal, 0, ',', '.') }}
                 </p>
             </div>
         </div>
@@ -67,14 +68,14 @@
             </div>
             <div>
                 <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Status Draft</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $pranotas->where('status', 'draft')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $draftCount }}</p>
             </div>
         </div>
     </div>
 
     {{-- Filter Bar --}}
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-4 overflow-hidden">
-        <form method="GET" action="{{ route('pranota-bpjs.index') }}">
+        <form method="GET" action="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}">
             <div class="flex flex-wrap items-center divide-x divide-gray-100">
 
                 {{-- Label Filter --}}
@@ -83,6 +84,14 @@
                     <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Filter</span>
                 </div>
 
+                <div class="px-4 py-3 flex-1 min-w-[220px]">
+                    <label for="history-search" class="block text-xs font-semibold text-gray-500 mb-1">Cari pranota</label>
+                    <input id="history-search" type="search" name="search" value="{{ request('search') }}" placeholder="Nomor, pembuat, atau keterangan..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                </div>
+                <div class="px-4 py-3 min-w-[160px]">
+                    <label for="history-status" class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+                    <select id="history-status" name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">Semua status</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select>
+                </div>
                 {{-- Bulan --}}
                 <div class="px-4 py-3 flex-1 min-w-[160px]">
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1 tracking-wider">
@@ -111,12 +120,12 @@
 
                 {{-- Tombol Aksi --}}
                 <div class="px-4 py-3 ml-auto flex items-center gap-2 flex-shrink-0">
-                    @if(request('bulan') || request('tahun'))
+                    @if(request('bulan') || request('tahun') || request('search') || request('status'))
                         <span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 text-xs font-semibold px-2 py-0.5 rounded-full">
                             <i class="fas fa-circle text-indigo-400" style="font-size:6px"></i>
                             Filter aktif
                         </span>
-                        <a href="{{ route('pranota-bpjs.index') }}"
+                        <a href="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}"
                            class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-500 border border-gray-200 hover:border-red-300 bg-white hover:bg-red-50 rounded-lg px-3 py-2 transition-all">
                             <i class="fas fa-times text-xs"></i>
                             Reset
@@ -148,6 +157,7 @@
                         <th class="px-4 py-3 text-right">JKN</th>
                         <th class="px-4 py-3 text-right">BP Jamsostek</th>
                         <th class="px-4 py-3 text-right">Grand Total</th>
+                        <th class="px-4 py-3 text-left">Dibuat Oleh</th>
                         <th class="px-4 py-3 text-center">Status</th>
                         <th class="px-4 py-3 text-center">Aksi</th>
                     </tr>
@@ -210,6 +220,7 @@
                                 </span>
                             </td>
 
+                            <td class="px-4 py-3 text-gray-700"><div>{{ $pranota->createdBy?->name ?? '-' }}</div><div class="mt-1 text-xs text-gray-500">{{ $pranota->created_at?->format('d/m/Y H:i') }}</div></td>
                             {{-- Status --}}
                             <td class="px-4 py-3 text-center">
                                 @if($pranota->status == 'draft')
@@ -270,7 +281,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-16 text-center">
+                            <td colspan="11" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-3 text-gray-400">
                                     <i class="fas fa-file-invoice text-5xl opacity-30"></i>
                                     <p class="font-medium text-gray-500">Belum ada data Pranota BPJS</p>

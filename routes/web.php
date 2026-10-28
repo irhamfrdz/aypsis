@@ -363,6 +363,7 @@ Route::middleware([
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
 
 
+    Route::get('pranota-bpjs/riwayat', [PranotaBpjsController::class, 'index'])->name('pranota-bpjs.history');
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
 
     Route::get('master-customer-buruh/download-template', [\App\Http\Controllers\MasterCustomerBuruhController::class, 'downloadTemplate'])->name('master-customer-buruh.download-template');

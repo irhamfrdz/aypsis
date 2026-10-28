@@ -18,6 +18,9 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            @can('pranota-bpjs-view')
+            <a href="{{ route('pranota-bpjs.history') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>Riwayat Pranota</a>
+            @endcan
             <a href="{{ route('pranota-bpjs.index') }}"
                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-2xs transition-all">
                 <i class="fas fa-arrow-left text-xs text-gray-500"></i>

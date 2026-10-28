@@ -25,6 +25,12 @@ class PranotaBpjsController extends Controller
     {
         $query = PranotaBpjsHeader::with(['createdBy']);
 
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(fn ($q) => $q->where('nomor_pranota', 'like', '%'.$search.'%')
+                ->orWhere('keterangan', 'like', '%'.$search.'%')
+                ->orWhereHas('createdBy', fn ($user) => $user->where('name', 'like', '%'.$search.'%')));
+        }
         if ($request->filled('bulan')) {
             $query->where('periode_bulan', $request->bulan);
         }
@@ -35,11 +41,16 @@ class PranotaBpjsController extends Controller
             $query->where('status', $request->status);
         }
 
+        $totalNominal = (clone $query)->sum('grand_total');
+        $draftCount = (clone $query)->where('status', 'draft')->count();
+        $statuses = PranotaBpjsHeader::query()->distinct()->orderBy('status')->pluck('status');
+        $isHistory = $request->routeIs('pranota-bpjs.history');
+
         $pranotas = $query->orderBy('tanggal_pranota', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->paginate(10)->withQueryString();
 
-        return view('pranota-bpjs.index', compact('pranotas'));
+        return view('pranota-bpjs.index', compact('pranotas', 'totalNominal', 'draftCount', 'statuses', 'isHistory'));
     }
 
     public function create(Request $request)

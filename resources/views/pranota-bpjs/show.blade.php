@@ -7,6 +7,9 @@
             <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Detail Pranota BPJS</h1>
         </div>
         <div class="flex items-center space-x-2">
+            @can('pranota-bpjs-view')
+            <a href="{{ route('pranota-bpjs.history') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>Riwayat Pranota</a>
+            @endcan
             <a href="{{ route('pranota-bpjs.index') }}" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>

@@ -90,5 +90,24 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertStringContainsString('Jamsostek Gabungan', $legacyHtml);
             $this->assertStringContainsString('data lama tanpa rincian PPU/BPU terpisah', $legacyHtml);
         }
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
+        DB::table('users')->insert(['id' => 1, 'name' => 'Pembuat Pranota Uji']);
+        $header->update(['created_by' => 1]);
+        $historyRequest = Request::create('/pranota-bpjs/riwayat', 'GET', [
+            'search' => 'Pembuat Pranota Uji', 'bulan' => 10, 'tahun' => 2026, 'status' => 'draft',
+        ]);
+        $route = app('router')->getRoutes()->match($historyRequest);
+        $historyRequest->setRouteResolver(fn () => $route);
+        $history = $controller->index($historyRequest)->getData();
+        $this->assertSame('pranota-bpjs.history', $route->getName());
+        $this->assertTrue($history['isHistory']);
+        $this->assertSame(1, $history['pranotas']->total());
+        $this->assertEqualsWithDelta((float) $header->grand_total, (float) $history['totalNominal'], 0.01);
+        $this->assertSame(1, $history['draftCount']);
+        $historyRequest->merge(['status' => 'approved']);
+        $this->assertSame(0, $controller->index($historyRequest)->getData()['pranotas']->total());
     }
 }
