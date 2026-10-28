@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PermohonanAmprahan;
 use App\Models\PurchaseOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,9 +31,28 @@ class PurchaseOrderController extends Controller
         return view('purchase-orders.index', compact('orders'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('purchase-orders.create');
+        $prefillItems = null;
+        $permohonanAmprahan = null;
+
+        if ($request->filled('permohonan_amprahan')) {
+            $request->validate(['permohonan_amprahan' => ['integer', 'exists:permohonan_amprahans,id']]);
+            $permohonanAmprahan = PermohonanAmprahan::with('items')->findOrFail($request->integer('permohonan_amprahan'));
+            abort_unless(in_array($permohonanAmprahan->status, ['approved', 'partially_approved'], true), 404);
+
+            $prefillItems = $permohonanAmprahan->items
+                ->filter(fn ($item) => (float) $item->jumlah_disetujui > 0)
+                ->map(fn ($item) => [
+                    'deskripsi' => $item->nama_barang,
+                    'kuantitas' => rtrim(rtrim(number_format((float) $item->jumlah_disetujui, 3, '.', ''), '0'), '.'),
+                    'satuan' => $item->satuan,
+                    'harga_satuan' => 0,
+                ])->values()->all();
+            abort_if(empty($prefillItems), 404);
+        }
+
+        return view('purchase-orders.create', compact('prefillItems', 'permohonanAmprahan'));
     }
 
     public function store(Request $request): RedirectResponse

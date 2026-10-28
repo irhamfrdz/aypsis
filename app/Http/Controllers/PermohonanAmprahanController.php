@@ -191,8 +191,17 @@ class PermohonanAmprahanController extends Controller
             $permohonan->save();
         });
 
+        if ($permohonan->status !== 'rejected' && Auth::user()?->can('purchase-order-create')) {
+            return redirect()->route('purchase-orders.create', ['permohonan_amprahan' => $permohonan->id])
+                ->with('success', 'Persetujuan disimpan. Lengkapi Purchase Order untuk barang yang disetujui.');
+        }
+
+        $message = $permohonan->status !== 'rejected'
+            ? 'Persetujuan disimpan. Anda tidak memiliki izin membuat Purchase Order.'
+            : 'Persetujuan permohonan amprahan berhasil diproses.';
+
         return redirect()->route('approval-permohonan-amprahan.index', ['status' => 'all'])
-            ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
+            ->with('success', $message);
     }
 
     public function reject($id)

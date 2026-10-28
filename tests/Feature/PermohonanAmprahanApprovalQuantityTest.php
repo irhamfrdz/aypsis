@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\PermohonanAmprahanController;
+use App\Http\Controllers\PurchaseOrderController;
 use App\Models\PermohonanAmprahan;
 use App\Models\PermohonanAmprahanItem;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -28,6 +30,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             $table->foreignId('permohonan_id');
             $table->string('nama_barang');
             $table->decimal('jumlah', 10, 2);
+            $table->string('satuan')->nullable();
             $table->decimal('jumlah_disetujui', 10, 2)->nullable();
             $table->string('status')->default('pending');
         });
@@ -147,6 +150,59 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             ]);
         }
         $this->assertSame('rejected', $permohonan->fresh()->status);
+    }
+
+    public function test_saving_approval_opens_purchase_order_with_only_approved_quantities(): void
+    {
+        $permohonan = PermohonanAmprahan::create(['status' => 'pending']);
+        $approvedItem = PermohonanAmprahanItem::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_barang' => 'Oli',
+            'jumlah' => 5,
+            'satuan' => 'liter',
+        ]);
+        $rejectedItem = PermohonanAmprahanItem::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_barang' => 'Filter',
+            'jumlah' => 2,
+            'satuan' => 'pcs',
+        ]);
+
+        Auth::shouldReceive('user')->andReturn(new class
+        {
+            public function can(string $permission): bool
+            {
+                return $permission === 'purchase-order-create';
+            }
+        });
+
+        $request = Request::create('/approval-permohonan-amprahan/'.$permohonan->id.'/process', 'POST', [
+            'items' => [$approvedItem->id => '3.50', $rejectedItem->id => '0'],
+        ]);
+        $this->app->instance('request', $request);
+        $response = (new PermohonanAmprahanController)->process($request, $permohonan->id);
+
+        $this->assertSame(
+            route('purchase-orders.create', ['permohonan_amprahan' => $permohonan->id]),
+            $response->getTargetUrl()
+        );
+
+        $createRequest = Request::create('/purchase-orders/create', 'GET', [
+            'permohonan_amprahan' => $permohonan->id,
+        ]);
+        $view = (new PurchaseOrderController)->create($createRequest);
+        $this->assertSame([
+            ['deskripsi' => 'Oli', 'kuantitas' => '3.5', 'satuan' => 'liter', 'harga_satuan' => 0],
+        ], $view->getData()['prefillItems']);
+
+        $html = view('purchase-orders._form', [
+            'submitLabel' => 'Simpan Purchase Order',
+            'prefillItems' => $view->getData()['prefillItems'],
+            'errors' => new \Illuminate\Support\ViewErrorBag,
+        ])->render();
+        $this->assertStringContainsString('value="Oli"', $html);
+        $this->assertStringContainsString('value="3.5"', $html);
+        $this->assertStringNotContainsString('value="Filter"', $html);
     }
 
     private function process(int $permohonanId, array $items): void

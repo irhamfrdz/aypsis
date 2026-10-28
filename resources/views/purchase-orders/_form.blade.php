@@ -5,7 +5,7 @@
         'kuantitas' => $item->kuantitas,
         'satuan' => $item->satuan,
         'harga_satuan' => $item->harga_satuan,
-    ])->all() ?? [['deskripsi' => '', 'kuantitas' => 1, 'satuan' => '', 'harga_satuan' => 0]]);
+    ])->all() ?? $prefillItems ?? [['deskripsi' => '', 'kuantitas' => 1, 'satuan' => '', 'harga_satuan' => 0]]);
     if (empty($items)) {
         $items = [['deskripsi' => '', 'kuantitas' => 1, 'satuan' => '', 'harga_satuan' => 0]];
     }
