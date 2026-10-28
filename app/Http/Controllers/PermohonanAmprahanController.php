@@ -195,6 +195,25 @@ class PermohonanAmprahanController extends Controller
             ->with('success', 'Persetujuan permohonan amprahan berhasil diproses.');
     }
 
+    public function reject($id)
+    {
+        DB::transaction(function () use ($id) {
+            $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+
+            foreach ($permohonan->items as $item) {
+                $item->jumlah_disetujui = 0;
+                $item->status = 'rejected';
+                $item->save();
+            }
+
+            $permohonan->status = 'rejected';
+            $permohonan->save();
+        });
+
+        return redirect()->route('approval-permohonan-amprahan.index', ['status' => 'all'])
+            ->with('success', 'Permohonan amprahan berhasil ditolak.');
+    }
+
     public function resetApproval($id)
     {
         DB::transaction(function () use ($id) {

@@ -162,6 +162,12 @@
                     </button>
                 </div>
             </form>
+            <form action="{{ route('approval-permohonan-amprahan.reject', $permohonan->id) }}" method="POST" class="mt-3 text-right" onsubmit="return confirm('Tolak seluruh barang dalam permohonan ini?')">
+                @csrf
+                <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium shadow-sm transition-colors">
+                    <i class="fas fa-times mr-2"></i> Tolak Permohonan
+                </button>
+            </form>
             @if($permohonan->status != 'pending')
                 <form action="{{ route('approval-permohonan-amprahan.reset', $permohonan->id) }}" method="POST" class="mt-4 text-right" onsubmit="return confirm('Kembalikan seluruh barang dalam permohonan ini ke pending?')">
                     @csrf

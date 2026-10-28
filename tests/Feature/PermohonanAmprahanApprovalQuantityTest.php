@@ -119,6 +119,36 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $this->assertSame('pending', $permohonan->fresh()->status);
     }
 
+    public function test_reject_action_rejects_every_item_without_quantity_input(): void
+    {
+        $permohonan = PermohonanAmprahan::create(['status' => 'partially_approved']);
+        $firstItem = PermohonanAmprahanItem::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_barang' => 'Oli',
+            'jumlah' => 5,
+            'jumlah_disetujui' => 3,
+            'status' => 'partially_approved',
+        ]);
+        $secondItem = PermohonanAmprahanItem::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_barang' => 'Filter',
+            'jumlah' => 2,
+            'jumlah_disetujui' => 2,
+            'status' => 'approved',
+        ]);
+
+        (new PermohonanAmprahanController)->reject($permohonan->id);
+
+        foreach ([$firstItem, $secondItem] as $item) {
+            $this->assertDatabaseHas('permohonan_amprahan_items', [
+                'id' => $item->id,
+                'jumlah_disetujui' => 0,
+                'status' => 'rejected',
+            ]);
+        }
+        $this->assertSame('rejected', $permohonan->fresh()->status);
+    }
+
     private function process(int $permohonanId, array $items): void
     {
         $request = Request::create('/approval-permohonan-amprahan/'.$permohonanId.'/process', 'POST', [
