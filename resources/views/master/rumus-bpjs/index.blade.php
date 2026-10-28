@@ -1136,9 +1136,10 @@
             const data = JSON.parse(btn.getAttribute('data-rumus'));
             const groupNames = JSON.parse(btn.getAttribute('data-groups') || '[]');
             const allIds = btn.getAttribute('data-ids');
-            editModal(data, groupNames, allIds);
+            openRumusEditModal(data, groupNames, allIds);
         } catch (e) {
             console.error('Error opening edit modal:', e);
+            alert('Form edit gagal dibuka. Silakan muat ulang halaman lalu coba kembali.');
         }
     }
 
@@ -1286,7 +1287,7 @@
 
     // ── Edit Modal ────────────────────────────────────────────────────────────
 
-    function editModal(data, groupNames, allIds) {
+    function openRumusEditModal(data, groupNames, allIds) {
         document.getElementById('editForm').action = `/master-rumus-bpjs/${data.id}`;
         document.getElementById('edit_existing_ids').value = allIds || data.id;
         document.getElementById('edit_jenis').value = data.jenis;
@@ -1349,7 +1350,21 @@
             toggleEditJamsostekFields(editGroupSelect);
         }
 
+        syncEditFormulaFields();
         document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    // Hidden formula sections share field names; exclude inactive sections from submission.
+    function syncEditFormulaFields() {
+        ['edit_jkn_fields', 'edit_bpu_crew_fields', 'edit_jamsostek_rate_fields'].forEach(id => {
+            const section = document.getElementById(id);
+            if (!section) return;
+            const inactive = section.classList.contains('hidden');
+            section.querySelectorAll('input, select, textarea').forEach(field => {
+                field.disabled = inactive;
+            });
+        });
+        document.getElementById('edit_hutang_tiers').disabled = document.getElementById('edit_jenis').value !== 'jamsostek';
     }
 
     function closeEditModal() {
@@ -1549,6 +1564,7 @@
                 diskonSection?.classList.remove('hidden');
             }
         }
+        syncEditFormulaFields();
     }
 
     // Aliases for compatibility
@@ -1588,6 +1604,7 @@
         } else {
             toggleEditJamsostekFields(editGroupSelect);
         }
+        syncEditFormulaFields();
     }
 
     // ── Table Diskon AJAX ─────────────────────────────────────────────────────
