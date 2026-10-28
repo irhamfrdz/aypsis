@@ -6,6 +6,25 @@
         if (!dialog) return;
         const rows = dialog.querySelector('.approval-goods-rows');
         const form = dialog.querySelector('form');
+        const labels = { nama_barang: 'Nama barang *', hs_code: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
+            ukuran: 'Ukuran', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m?)',
+            tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
+        const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
+            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 20 ft', keterangan_barang: 'Catatan tambahan (opsional)' };
+        function labelRow(row) {
+            const headings = Array.from(dialog.querySelectorAll('thead th'));
+            Array.from(row.children).forEach((cell, index) => {
+                const input = cell.querySelector('input');
+                const field = input?.name.match(/\[([^\]]+)\]$/)?.[1];
+                cell.dataset.label = field ? labels[field] : (cell.querySelector('button') ? '' : headings[index]?.textContent.trim() || '');
+                if (!field) return;
+                cell.dataset.field = field;
+                input.setAttribute('aria-label', labels[field]);
+                input.placeholder = placeholders[field] || (input.type === 'number' ? '0' : 'Opsional');
+            });
+        }
+        rows.querySelectorAll('tr').forEach(labelRow);
+
 
         button.addEventListener('click', () => dialog.showModal());
         dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
@@ -53,6 +72,7 @@
             remove.textContent = 'Hapus';
             action.append(remove);
             row.append(action);
+            labelRow(row);
             rows.append(row);
             dialog.querySelector('.approval-goods-empty')?.remove();
             row.querySelector('input').focus();

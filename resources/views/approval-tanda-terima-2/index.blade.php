@@ -25,6 +25,30 @@
     .approval-shipper-option-detail { display: block; margin-top: 2px; font-size: 12px; color: #64748b; }
     .approval-goods-dialog { width: min(1000px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     .approval-goods-dialog::backdrop { background: rgb(15 23 42 / 60%); }
+    .approval-goods-dialog { width: min(1040px, calc(100vw - 32px)); background: #f8fafc; color: #0f172a; }
+    .approval-goods-dialog > div:first-child { position: sticky; top: 0; z-index: 2; background: #fff; padding: 20px 24px; }
+    .approval-goods-dialog form > div:last-child { position: sticky; bottom: 0; z-index: 2; background: #fff; padding: 16px 24px; box-shadow: 0 -4px 16px rgb(15 23 42 / 4%); }
+    .approval-goods-dialog .overflow-x-auto { overflow: visible; padding: 20px 24px; }
+    .approval-goods-dialog table, .approval-goods-rows { display: block; width: 100%; }
+    .approval-goods-dialog thead { display: none; }
+    .approval-goods-rows { counter-reset: goods; border: 0; }
+    .approval-goods-rows > tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgb(15 23 42 / 3%); }
+    .approval-goods-rows > tr::before { counter-increment: goods; content: 'Barang ' counter(goods); grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: #334155; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+    .approval-goods-rows td { display: block; min-width: 0; padding: 0; white-space: normal; overflow-wrap: anywhere; }
+    .approval-goods-rows td::before { content: attr(data-label); display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; color: #475569; }
+    .approval-goods-rows td:first-child, .approval-goods-rows td[data-field="keterangan_barang"] { grid-column: span 2; }
+    .approval-goods-dialog input:not([type="hidden"]), .approval-goods-dialog textarea { display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 14px; line-height: 20px; }
+    .approval-goods-dialog input::placeholder, .approval-goods-dialog textarea::placeholder { color: #94a3b8; }
+    .approval-goods-dialog input:focus, .approval-goods-dialog textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
+    .approval-goods-dialog .approval-goods-remove { min-height: 40px; padding: 8px 12px; border: 1px solid #fecaca; background: #fff; }
+    .approval-goods-rows td:last-child:has(.approval-goods-remove) { grid-column: 1 / -1; text-align: right; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+    .approval-goods-dialog .approval-goods-add { min-height: 42px; padding: 10px 16px; }
+    @media (max-width: 640px) {
+        .approval-goods-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+        .approval-goods-dialog .overflow-x-auto { padding: 16px; }
+        .approval-goods-rows > tr { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 14px; }
+        .approval-goods-dialog form > div:last-child { flex-wrap: wrap; padding: 14px 16px; }
+    }
 </style>
 @endpush
 
@@ -193,8 +217,8 @@
                                         <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
                                     </div>
                                     <p class="mx-5 mt-4 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
-                                        {{ $goodsOverride ? 'Menampilkan detail barang versi approval.' : 'Menampilkan detail barang asli sebelum versi approval disimpan.' }}
-                                        Perubahan di sini tidak mengubah data FCL, LCL, atau TTSJ asli.
+                                        {{ $goodsOverride ? 'Periksa atau perbarui rincian barang untuk approval.' : 'Lengkapi rincian barang untuk approval.' }}
+                                        Kolom bertanda * wajib diisi. Perubahan hanya berlaku pada versi approval.
                                     </p>
                                     @can('approval-tanda-terima-2-approve')
                                         <form method="POST" action="{{ route('approval-tanda-terima-2.update-goods', ['sourceType' => $type, 'id' => $item->id]) }}">
