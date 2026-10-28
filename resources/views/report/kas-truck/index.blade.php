@@ -100,7 +100,7 @@
             </div>
 
             <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-[1120px] w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -112,7 +112,7 @@
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Keterangan
                             </th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="min-w-[320px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Akun
                             </th>
                             <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -151,10 +151,10 @@
 
                         @forelse($transactions as $trx)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-4 py-3 align-top whitespace-nowrap text-sm text-gray-900">
                                     {{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d/M/Y') }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                <td class="px-4 py-3 align-top whitespace-nowrap text-sm font-medium">
                                     @if($trx->nomor_accurate)
                                         <span class="text-blue-600">{{ $trx->nomor_accurate }}</span>
                                     @elseif($trx->nomor_referensi && $trx->nomor_referensi !== '-')
@@ -163,42 +163,52 @@
                                         <span class="text-gray-300">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-700">
+                                <td class="px-4 py-3 align-top text-sm text-gray-700">
                                     {{ $trx->keterangan ?? '-' }}
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-700">
+                                <td class="px-4 py-3 align-top text-sm text-gray-700">
                                     @if(!empty($trx->rincian_akun_pembayaran))
-                                        <div class="space-y-1">
-                                            @foreach($trx->rincian_akun_pembayaran as $rincian)
-                                                <div>
-                                                    @if(!empty($rincian['nomor_akun'])){{ $rincian['nomor_akun'] }} - @endif{{ $rincian['nama_akun'] }} — Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}
-                                                    @if(!empty($rincian['memo']))<div class="text-xs text-gray-500">Memo: {{ $rincian['memo'] }}</div>@endif
-                                                </div>
-                                            @endforeach
-                                        </div>
+                                        <details class="group">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md px-2 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                <span class="min-w-0 truncate">{{ $trx->rincian_akun_pembayaran[0]['nama_akun'] ?? 'Rincian akun' }}</span>
+                                                <span class="flex-none rounded bg-indigo-100 px-1.5 py-0.5 text-xs">{{ count($trx->rincian_akun_pembayaran) }} akun</span>
+                                                <svg class="h-4 w-4 flex-none transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg>
+                                            </summary>
+                                            <div class="mt-2 divide-y divide-gray-100 rounded-md border border-gray-200 bg-gray-50 px-3">
+                                                @foreach($trx->rincian_akun_pembayaran as $rincian)
+                                                    <div class="py-2">
+                                                        <div class="flex items-start justify-between gap-3">
+                                                            <span class="min-w-0 break-words font-medium text-gray-800">@if(!empty($rincian['nomor_akun'])){{ $rincian['nomor_akun'] }} - @endif{{ $rincian['nama_akun'] }}</span>
+                                                            <span class="flex-none whitespace-nowrap font-semibold text-gray-900">Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}</span>
+                                                        </div>
+                                                        @if(!empty($rincian['memo']))<p class="mt-1 break-words text-xs leading-5 text-gray-500">{{ $rincian['memo'] }}</p>@endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </details>
                                     @else
                                         {{ $trx->akun_pembayaran ?: '-' }}
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right font-medium text-green-600">
+                                <td class="px-4 py-3 align-top text-sm text-right font-medium text-green-600">
                                     @if($trx->debit > 0)
                                         Rp {{ number_format($trx->debit, 0, ',', '.') }}
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right font-medium text-red-600">
+                                <td class="px-4 py-3 align-top text-sm text-right font-medium text-red-600">
                                     @if($trx->kredit > 0)
                                         Rp {{ number_format($trx->kredit, 0, ',', '.') }}
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                                <td class="px-4 py-3 align-top text-sm text-right font-semibold text-gray-900">
                                     Rp {{ number_format($trx->running_balance, 0, ',', '.') }}
                                 </td>
                                 @if(Auth::user()->username == 'kiky')
-                                <td class="px-4 py-3 text-sm text-center">
+                                <td class="px-4 py-3 align-top text-sm text-center">
                                     <form action="{{ route('report.kas-truck.swap', $trx->id) }}" method="POST" onsubmit="return confirm('Tukar posisi Pemasukan/Pengeluaran transaksi ini?')">
                                         @csrf
                                         <button type="submit" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors duration-200" title="Tukar Pemasukan/Pengeluaran">
