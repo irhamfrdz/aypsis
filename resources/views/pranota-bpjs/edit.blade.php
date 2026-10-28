@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let groupHtml = '';
 
             if (karyawan.group_jkn) {
-                const rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
+                const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
                 if (rumus) {
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
@@ -443,34 +443,12 @@ document.addEventListener('DOMContentLoaded', function() {
             let nominalKet = 0;
 
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
-                const normalizedKaryawanGroup = (karyawan.group_jkn || '').replace(/[\s\-_]+/g, '').toUpperCase();
-                let rumus = rumusBpjs.find(r => r.jenis === 'jkn' && r.group_name === karyawan.group_jkn);
-                if (!rumus) {
-                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase() === normalizedKaryawanGroup);
-                }
-                if (!rumus && (normalizedKaryawanGroup.includes('NONKARY') || normalizedKaryawanGroup.includes('NONKARYAWAN'))) {
-                    rumus = rumusBpjs.find(r => r.jenis === 'jkn' && (r.group_name || '').replace(/[\s\-_]+/g, '').toUpperCase().includes('NONKARY'));
-                }
+                const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
 
-                if (rumus) {
-                    const dpp          = parseIdNumber(karyawan.dpp_jkn);
-                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    const biayaPersen  = parseFloat(rumus.biaya_persen     || 0);
-
-                    const groupUpper = (karyawan.group_jkn || '').toUpperCase();
-                    if (groupUpper.includes('NON KARY') || groupUpper.includes('NON-KARY') || groupUpper.includes('NONKARY')) {
-                        const totalPersen = tunjPersen > 0 ? tunjPersen : (biayaPersen > 0 ? biayaPersen : (hutangPersen > 0 ? hutangPersen : 0));
-                        nominalKes = (totalPersen / 100) * dpp;
-                        nominalKet = (hutangPersen > 0 && tunjPersen > 0) ? (hutangPersen / 100) * dpp : 0;
-                    } else {
-                        let persen = 0;
-                        if (tipeJkn === 'tunjangan_hutang') { 
-                            persen = tunjPersen; 
-                            nominalKet += (hutangPersen / 100) * dpp; 
-                        }
-                        nominalKes = (persen / 100) * dpp;
-                    }
+                if (rumus && tipeJkn === 'tunjangan_hutang') {
+                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn));
+                    nominalKes = amounts.contribution;
+                    nominalKet = amounts.debt;
                 }
             } else if (tipeJkn === 'manual') {
                 nominalKes = parseIdNumber(inputKes.value);

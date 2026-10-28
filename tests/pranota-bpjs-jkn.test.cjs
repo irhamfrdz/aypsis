@@ -3,6 +3,22 @@ const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 const { split, syncRow } = globalThis.BpjsJknColumns;
 
+test('JKN-KIS NON KARY uses its own percentage with no debt from another type', () => {
+    const { findFormula, calculate } = globalThis.BpjsJknColumns;
+    const records = [
+        { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'KARYAWAN', tunjangan_persen: 4, hutang_persen: 1 },
+        { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'NON KARY', tunjangan_persen: 5, hutang_persen: null },
+    ];
+    const employee = { group_jkn: 'JKN-KIS', tipe_jkn: ' non kary ' };
+    const formula = findFormula(records, employee);
+    assert.equal(formula, records[1]);
+    assert.deepEqual(calculate(formula, 5729880), { contribution: 286494, debt: 0 });
+    assert.deepEqual(calculate(records[0], 5729880), { contribution: 229195.2, debt: 57298.8 });
+    assert.equal(findFormula(records, { ...employee, tipe_jkn: 'UNKNOWN' }), null);
+    assert.equal(findFormula(records, { group_jkn: 'JKN-KIS' }), null);
+    assert.deepEqual(calculate(null, 5729880), { contribution: 0, debt: 0 });
+});
+
 test('mixed employee types split the 4% share without changing JKN debt or total', () => {
     const permanent = split(214319, 'App\\Models\\Karyawan');
     const temporary = split(229195, 'App\\Models\\KaryawanTidakTetap', true);

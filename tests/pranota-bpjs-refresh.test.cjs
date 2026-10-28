@@ -2,6 +2,26 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-refresh.js');
 
+test('refresh adds eligible new employees once without rebuilding existing rows', async () => {
+    const added = [];
+    const row = { dataset: { uniqueId: 'Karyawan_1' }, refreshBpjs() { return true; } };
+    const result = await refreshBpjsData({
+        url: '/', rows: [row], applyData() {},
+        addEmployee(employee) { added.push(employee.unique_id); },
+        fetchData: async () => ({ ok: true, json: async () => ({
+            karyawans: [
+                { unique_id: 'Karyawan_1', group_jkn: 'JKN-KIS' },
+                { unique_id: 'KaryawanTidakTetap_1', group_jkn: 'JKN-KIS' },
+                { unique_id: 'KaryawanTidakTetap_1', group_jkn: 'JKN-KIS' },
+                { unique_id: 'Karyawan_2' },
+            ], rumusBpjs: [],
+        }) }),
+    });
+    assert.deepEqual(added, ['KaryawanTidakTetap_1']);
+    assert.deepEqual(result, { updated: 1, skipped: 0, added: 1 });
+    assert.equal(row.dataset.uniqueId, 'Karyawan_1');
+});
+
 test('refresh recalculates existing rows with fresh data while preserving row identity and skipped rows', async () => {
     let employees = [];
     const row = { value: 7991, refreshBpjs() { this.value = employees[0].amount; return true; } };

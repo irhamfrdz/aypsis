@@ -48,7 +48,7 @@ class PranotaBpjsRefreshTest extends TestCase
         $this->assertSame(['Karyawan_1', 'KaryawanTidakTetap_1'], array_column($before['karyawans'], 'unique_id'));
 
         DB::table('karyawans')->where('id', 1)->update(['dpp_bp_jamsostek' => '2000000', 'cabang_bpjs' => 'CILANDAK-HL']);
-        DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => true]);
+        DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => true, 'tipe_jkn' => 'HARIAN', 'tipe_bp_jamsostek' => 'CREW']);
         DB::table('master_rumus_bpjs')->update(['nilai' => '8000']);
         $response = $controller->create($request);
         $after = $response->getData(true);
@@ -56,6 +56,8 @@ class PranotaBpjsRefreshTest extends TestCase
         $this->assertSame('2000000', $after['karyawans'][0]['dpp_bp_jamsostek']);
         $this->assertSame('CILANDAK-HL', $after['karyawans'][0]['cabang_bpjs']);
         $this->assertTrue($after['karyawans'][1]['is_special_case']);
+        $this->assertSame('HARIAN', $after['karyawans'][1]['tipe_jkn']);
+        $this->assertSame('CREW', $after['karyawans'][1]['tipe_bp_jamsostek']);
         $this->assertSame('8000', $after['rumusBpjs'][0]['nilai']);
         $this->assertSame('pranota-bpjs.create', $controller->create(Request::create('/'))->name());
     }

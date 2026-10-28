@@ -1,4 +1,29 @@
 (function (root) {
+    const compact = value => String(value || '').trim().toUpperCase().replace(/[\s_-]+/g, '');
+
+    function findFormula(records, employee) {
+        const group = compact(employee.group_jkn);
+        const type = compact(employee.tipe_jkn);
+        if (!group) return null;
+        let candidates = records.filter(record => record.jenis === 'jkn' && compact(record.group_name) === group);
+        if (type) {
+            candidates = candidates.filter(record => compact(record.tipe) === type);
+        }
+        // Never choose another type just because it appears first in the master.
+        return candidates.length === 1 ? candidates[0] : null;
+    }
+
+    function calculate(record, dpp) {
+        if (!record) return { contribution: 0, debt: 0 };
+        const tunjangan = parseFloat(record.tunjangan_persen) || 0;
+        const biaya = parseFloat(record.biaya_persen) || 0;
+        const hutang = parseFloat(record.hutang_persen) || 0;
+        return {
+            contribution: dpp * (tunjangan || biaya) / 100,
+            debt: dpp * hutang / 100,
+        };
+    }
+
     function split(amount, employeeType, isSpecialCase = false) {
         const special = isSpecialCase === true || isSpecialCase === 1 || isSpecialCase === '1';
         const biaya = String(employeeType || '').split('\\').pop() === 'KaryawanTidakTetap' && special;
@@ -22,5 +47,5 @@
         input.setAttribute('aria-label', useBiaya ? 'KIS 4% (BIAY)' : 'KIS 4% (TUNJ)');
     }
 
-    root.BpjsJknColumns = { split, syncRow };
+    root.BpjsJknColumns = { split, syncRow, findFormula, calculate };
 })(globalThis);
