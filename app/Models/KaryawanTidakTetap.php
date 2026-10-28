@@ -27,6 +27,7 @@ class KaryawanTidakTetap extends Model
         'kode_pos',
         'email',
         'tanggal_masuk',
+        'tanggal_berhenti',
         'status_pajak',
         'is_special_case',
         'jkn',
@@ -46,6 +47,7 @@ class KaryawanTidakTetap extends Model
     protected $casts = [
         'is_special_case' => 'boolean',
         'tanggal_masuk' => 'date',
+        'tanggal_berhenti' => 'date',
         'group' => 'array',
         'sub_group' => 'array',
     ];

@@ -1395,6 +1395,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             status.textContent = result.updated + ' baris diperbarui menggunakan data terbaru.'
+                + (result.removed ? ' ' + result.removed + ' baris karyawan yang tidak lagi memenuhi syarat BPJS dihapus.' : '')
                 + (result.added ? ' ' + result.added + ' karyawan baru ditambahkan dan dihitung.' : '')
                 + (result.skipped ? ' ' + result.skipped + ' baris dilewati (belum dipilih atau karyawan tidak tersedia).' : '');
         } catch (error) {

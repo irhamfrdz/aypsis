@@ -50,6 +50,7 @@ test('changing employee type moves the same editable input and preserves its sub
     syncRow(row);
     assert.equal(biaya.child, input);
     type.value = 'App\\Models\\Karyawan';
+    row.dataset.isSpecialCase = '0';
     syncRow(row);
     assert.equal(tunjangan.child, input);
     assert.equal(biaya.child, zero);
@@ -65,4 +66,9 @@ test('only enabled special case routes temporary JKN to biaya', () => {
     for (const status of [false, 0, '0', null, undefined]) {
         assert.deepEqual(split(214319, type, status), { tunjangan: 214319, biaya: 0 });
     }
+});
+
+test('permanent employee special case uses biaya only while enabled', () => {
+    assert.deepEqual(split(229195, 'App\\Models\\Karyawan', true), { tunjangan: 0, biaya: 229195 });
+    assert.deepEqual(split(229195, 'App\\Models\\Karyawan', false), { tunjangan: 229195, biaya: 0 });
 });

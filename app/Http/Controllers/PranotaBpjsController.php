@@ -45,12 +45,12 @@ class PranotaBpjsController extends Controller
     public function create(Request $request)
     {
         // Get active Karyawan that might have BPJS
-        $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
+        $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
             ->get([
                 'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
-                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup',
+                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup', 'is_special_case',
             ])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_'.$k->id;
@@ -64,7 +64,8 @@ class PranotaBpjsController extends Controller
                 return $k;
             });
 
-        $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
+        $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
+            ->orderBy('nama_lengkap')
             ->get([
                 'id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
@@ -223,7 +224,7 @@ class PranotaBpjsController extends Controller
 
         $pranota_bpj->load('details');
 
-        $karyawanTetap = Karyawan::whereNull('tanggal_berhenti')
+        $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
             ->get()
             ->map(function ($k) {
@@ -234,7 +235,8 @@ class PranotaBpjsController extends Controller
                 return $k;
             });
 
-        $karyawanTidakTetap = KaryawanTidakTetap::orderBy('nama_lengkap')
+        $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
+            ->orderBy('nama_lengkap')
             ->get()
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_'.$k->id;

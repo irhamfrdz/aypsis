@@ -47,18 +47,31 @@ class PranotaBpjsRefreshTest extends TestCase
         $this->assertSame('CREW', $before['karyawans'][0]['tipe_bp_jamsostek']);
         $this->assertSame(['Karyawan_1', 'KaryawanTidakTetap_1'], array_column($before['karyawans'], 'unique_id'));
 
-        DB::table('karyawans')->where('id', 1)->update(['dpp_bp_jamsostek' => '2000000', 'cabang_bpjs' => 'CILANDAK-HL']);
+        DB::table('karyawans')->where('id', 1)->update(['dpp_bp_jamsostek' => '2000000', 'cabang_bpjs' => 'CILANDAK-HL', 'is_special_case' => true]);
         DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => true, 'tipe_jkn' => 'HARIAN', 'tipe_bp_jamsostek' => 'CREW']);
         DB::table('master_rumus_bpjs')->update(['nilai' => '8000']);
         $response = $controller->create($request);
         $after = $response->getData(true);
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
         $this->assertSame('2000000', $after['karyawans'][0]['dpp_bp_jamsostek']);
+        $this->assertTrue($after['karyawans'][0]['is_special_case']);
         $this->assertSame('CILANDAK-HL', $after['karyawans'][0]['cabang_bpjs']);
         $this->assertTrue($after['karyawans'][1]['is_special_case']);
         $this->assertSame('HARIAN', $after['karyawans'][1]['tipe_jkn']);
         $this->assertSame('CREW', $after['karyawans'][1]['tipe_bp_jamsostek']);
         $this->assertSame('8000', $after['rumusBpjs'][0]['nilai']);
+        // Special Case keeps terminated employees of either type eligible.
+        DB::table('karyawans')->where('id', 2)->update(['is_special_case' => true]);
+        DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['tanggal_berhenti' => '2026-01-01']);
+        $eligible = array_column($controller->create($request)->getData(true)['karyawans'], 'unique_id');
+        $this->assertContains('Karyawan_2', $eligible);
+        $this->assertContains('KaryawanTidakTetap_1', $eligible);
+        DB::table('karyawans')->where('id', 2)->update(['is_special_case' => false]);
+        DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => false]);
+        $eligible = array_column($controller->create($request)->getData(true)['karyawans'], 'unique_id');
+        $this->assertNotContains('Karyawan_2', $eligible);
+        $this->assertNotContains('KaryawanTidakTetap_1', $eligible);
+        $this->assertContains('Karyawan_1', $eligible);
         $this->assertSame('pranota-bpjs.create', $controller->create(Request::create('/'))->name());
     }
 }

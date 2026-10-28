@@ -9,6 +9,19 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsJknTest extends TestCase
 {
+    public function test_permanent_employee_special_case_uses_biaya(): void
+    {
+        $employee = new Karyawan(['is_special_case' => true]);
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['tipe_karyawan' => Karyawan::class, 'bpjs_kesehatan' => 229195], true);
+        $detail->setRelation('karyawan', $employee);
+        $this->assertSame(229195.0, $detail->kis_biaya);
+        $this->assertSame(0.0, $detail->kis_tunjangan);
+        $employee->is_special_case = false;
+        $this->assertSame(0.0, $detail->kis_biaya);
+        $this->assertSame(229195.0, $detail->kis_tunjangan);
+    }
+
     public function test_existing_saved_amount_is_classified_by_employee_type_without_changing_total(): void
     {
         foreach ([Karyawan::class, KaryawanTidakTetap::class] as $type) {

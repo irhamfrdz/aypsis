@@ -26,7 +26,7 @@
 
     function split(amount, employeeType, isSpecialCase = false) {
         const special = isSpecialCase === true || isSpecialCase === 1 || isSpecialCase === '1';
-        const biaya = String(employeeType || '').split('\\').pop() === 'KaryawanTidakTetap' && special;
+        const biaya = ['Karyawan', 'KaryawanTidakTetap'].includes(String(employeeType || '').split('\\').pop()) && special;
         return { tunjangan: biaya ? 0 : amount, biaya: biaya ? amount : 0 };
     }
 

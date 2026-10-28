@@ -11,12 +11,18 @@
             throw new Error('Respons data tidak sesuai. Silakan muat ulang setelah menyimpan pekerjaan Anda.');
         }
         applyData(data);
-        let updated = 0, skipped = 0;
+        let updated = 0, skipped = 0, removed = 0;
+        const availableIds = new Set(data.karyawans.map(employee => employee.unique_id));
         rows.forEach(row => {
+            if (row.dataset?.uniqueId && !availableIds.has(row.dataset.uniqueId)) {
+                row.remove();
+                removed++;
+                return;
+            }
             if (row.refreshBpjs?.()) updated++;
             else skipped++;
         });
-        if (!addEmployee) return { updated, skipped };
+        if (!addEmployee) return { updated, skipped, removed };
         const existingIds = new Set(rows.map(row => row.dataset?.uniqueId).filter(Boolean));
         let added = 0;
         data.karyawans.forEach(employee => {
@@ -26,6 +32,6 @@
             existingIds.add(employee.unique_id);
             added++;
         });
-        return { updated, skipped, added };
+        return { updated, skipped, added, removed };
     };
 })(globalThis);

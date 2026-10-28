@@ -21,7 +21,7 @@ class Karyawan extends Model
         'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'dpp_jkn', 'status_jkn', 'group_jkn', 'tipe_jkn', 'no_ketenagakerjaan', 'dpp_bp_jamsostek', 'status_bp_jamsostek', 'group_bp_jamsostek', 'tipe_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
         'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at', 'nominal_uang_makan', 'tunjangan', 'grup', 'grup_bpjs',
-        'has_fingerprint', 'has_photo',
+        'has_fingerprint', 'has_photo', 'is_special_case',
     ];
 
     protected $dates = [
@@ -30,6 +30,7 @@ class Karyawan extends Model
     ];
 
     protected $casts = [
+        'is_special_case' => 'boolean',
         'tanggal_lahir' => 'date',
         'tanggal_masuk' => 'date',
         'tanggal_berhenti' => 'date',

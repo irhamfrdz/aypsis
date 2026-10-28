@@ -18,7 +18,7 @@ test('refresh adds eligible new employees once without rebuilding existing rows'
         }) }),
     });
     assert.deepEqual(added, ['KaryawanTidakTetap_1']);
-    assert.deepEqual(result, { updated: 1, skipped: 0, added: 1 });
+    assert.deepEqual(result, { updated: 1, skipped: 0, added: 1, removed: 0 });
     assert.equal(row.dataset.uniqueId, 'Karyawan_1');
 });
 
@@ -36,7 +36,7 @@ test('refresh recalculates existing rows with fresh data while preserving row id
             return { ok: true, async json() { return { karyawans: [{ amount: 8000 }], rumusBpjs: [] }; } };
         }
     });
-    assert.deepEqual(result, { updated: 1, skipped: 1 });
+    assert.deepEqual(result, { updated: 1, skipped: 1, removed: 0 });
     assert.equal(rows[0], row);
     assert.equal(row.value, 8000);
     assert.equal(empty.value, 123);
@@ -52,4 +52,15 @@ test('failed or invalid responses leave current data and calculations intact', a
         }));
         assert.equal(changed, false);
     }
+});
+
+test('refresh removes an employee no longer eligible while keeping unselected rows', async () => {
+    let removed = false;
+    const row = { dataset: { uniqueId: 'Karyawan_2' }, remove() { removed = true; } };
+    const result = await refreshBpjsData({
+        url: '/', rows: [row, { dataset: {}, refreshBpjs() { return false; } }], applyData() {},
+        fetchData: async () => ({ ok: true, json: async () => ({ karyawans: [], rumusBpjs: [] }) }),
+    });
+    assert.equal(removed, true);
+    assert.deepEqual(result, { updated: 0, skipped: 1, removed: 1 });
 });

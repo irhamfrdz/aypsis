@@ -152,6 +152,10 @@
                         <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk Kerja</label>
                         <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawanTidakTetap->tanggal_masuk ? $karyawanTidakTetap->tanggal_masuk->format('Y-m-d') : '') }}">
                     </div>
+                    <div>
+                        <label for="tanggal_berhenti" class="{{ $labelClasses }}">Tanggal Berhenti</label>
+                        <input type="date" name="tanggal_berhenti" id="tanggal_berhenti" class="{{ $inputClasses }}" value="{{ old('tanggal_berhenti', $karyawanTidakTetap->tanggal_berhenti?->format('Y-m-d')) }}">
+                    </div>
 
                     <div>
                         <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
