@@ -146,7 +146,7 @@
                         <div class="flex items-center gap-2 mt-1">
                             <p id="jumlah-display" class="text-lg font-bold text-blue-600">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</p>
                             @can('pembayaran-aktivitas-lain-update')
-                                @if($pembayaranAktivitasLain->status != 'paid' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
+                                @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
                                 <button onclick="toggleEditJumlah()" class="text-gray-400 hover:text-blue-600 transition" title="Edit Jumlah">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -157,7 +157,7 @@
                         </div>
 
                         @can('pembayaran-aktivitas-lain-update')
-                            @if($pembayaranAktivitasLain->status != 'paid' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
+                            @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
                             <form id="edit-jumlah-form" action="{{ route('pembayaran-aktivitas-lain.update-jumlah', $pembayaranAktivitasLain) }}" method="POST" class="hidden mt-2 flex items-center gap-2">
                                 @csrf
                                 @method('PATCH')
@@ -219,6 +219,14 @@
                         @php
                             $akunCoa = $pembayaranAktivitasLain->akun_coa_id ? DB::table('akun_coa')->find($pembayaranAktivitasLain->akun_coa_id) : null;
                         @endphp
+                        @if($pembayaranAktivitasLain->akun_details)
+                            @php $detailAccounts = DB::table('akun_coa')->whereIn('id', array_column($pembayaranAktivitasLain->akun_details, 'akun_coa_id'))->get()->keyBy('id'); @endphp
+                            <div class="mt-1 space-y-1">
+                                @foreach($pembayaranAktivitasLain->akun_details as $detail)
+                                    <div class="flex justify-between gap-3 text-sm"><span>{{ $detailAccounts[$detail['akun_coa_id']]->kode_nomor ?? '-' }} - {{ $detailAccounts[$detail['akun_coa_id']]->nama_akun ?? 'Akun dihapus' }}</span><strong>Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</strong></div>
+                                @endforeach
+                            </div>
+                        @else
                         <p class="mt-1 text-base text-gray-900">
                             @if($akunCoa)
                                 {{ $akunCoa->kode_nomor }} - {{ $akunCoa->nama_akun }}
@@ -226,6 +234,7 @@
                                 -
                             @endif
                         </p>
+                        @endif
                     </div>
                     @else
                     <p class="text-sm text-gray-600">Double book tidak diperlukan untuk pembayaran kendaraan Batam.</p>

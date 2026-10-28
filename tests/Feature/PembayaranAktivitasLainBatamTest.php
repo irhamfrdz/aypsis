@@ -8,6 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class PembayaranAktivitasLainBatamTest extends TestCase
@@ -22,6 +23,13 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         Schema::dropIfExists('akun_coa');
         Schema::dropIfExists('audit_logs');
         Schema::dropIfExists('pembayaran_aktivitas_lains');
+        Schema::dropIfExists('mobils');
+
+        Schema::create('mobils', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_polisi')->nullable();
+            $table->string('no_kir')->nullable();
+        });
 
         Schema::create('pembayaran_aktivitas_lains', function (Blueprint $table) {
             $table->id();
@@ -36,11 +44,13 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             $table->string('sub_jenis_kendaraan')->nullable();
             $table->string('nomor_polisi')->nullable();
             $table->json('nomor_polisi_list')->nullable();
+            $table->json('kendaraan_details')->nullable();
             $table->string('penerima')->nullable();
             $table->text('keterangan')->nullable();
             $table->decimal('jumlah', 15, 2);
             $table->enum('debit_kredit', ['debit', 'kredit']);
             $table->unsignedBigInteger('akun_coa_id')->nullable();
+            $table->json('akun_details')->nullable();
             $table->unsignedBigInteger('akun_bank_id')->nullable();
             $table->unsignedBigInteger('akun_pph_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
@@ -146,6 +156,99 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(0, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
         $this->assertEquals(1000, DB::table('akun_coa')->find($bankId)->saldo);
         $this->assertEquals(0, DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('saldo'));
+    }
+
+    public function test_other_payment_splits_amount_across_accounts_and_updates_journal(): void
+    {
+        $this->withoutMiddleware();
+
+        $first = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $second = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $bank = DB::table('akun_coa')->insertGetId(['saldo' => 1000]);
+        $payload = [
+            'tanggal' => '2026-10-28',
+            'jenis_aktivitas' => 'Pembayaran Lain Lain',
+            'penerima' => 'Penerima',
+            'keterangan' => 'Biaya lain',
+            'jumlah' => 999,
+            'debit_kredit' => 'kredit',
+            'akun_bank_id' => $bank,
+            'akun_details' => [
+                ['akun_coa_id' => $first, 'nominal' => 100],
+                ['akun_coa_id' => $second, 'nominal' => 250],
+            ],
+        ];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(350, $payment->jumlah);
+        $this->assertCount(2, $payment->akun_details);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'debit' => 100]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'debit' => 250]);
+        $this->assertEquals(650, DB::table('akun_coa')->find($bank)->saldo);
+
+        $payload['akun_details'] = [['akun_coa_id' => $second, 'nominal' => 400]];
+        $response = app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment
+        );
+        $this->assertSame(route('pembayaran-aktivitas-lain.show', $payment), $response->getTargetUrl());
+        $this->assertSame(400, $payment->fresh()->jumlah);
+        $this->assertEquals(0, DB::table('akun_coa')->find($first)->saldo);
+        $this->assertEquals(400, DB::table('akun_coa')->find($second)->saldo);
+        $this->assertEquals(600, DB::table('akun_coa')->find($bank)->saldo);
+
+        $payload['akun_details'][] = ['akun_coa_id' => $second, 'nominal' => 50];
+        try {
+            app(PembayaranAktivitasLainController::class)->update(
+                Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+                $payment->fresh()
+            );
+            $this->fail('Akun yang sama tidak boleh dipilih dua kali.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('akun_details.1.akun_coa_id', $exception->errors());
+        }
+
+        $payload['akun_details'] = [['akun_coa_id' => $bank, 'nominal' => 100]];
+        try {
+            app(PembayaranAktivitasLainController::class)->update(
+                Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+                $payment->fresh()
+            );
+            $this->fail('Akun bank tidak boleh digunakan sebagai akun biaya.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('akun_details.0.akun_coa_id', $exception->errors());
+        }
+    }
+
+    public function test_other_payment_debit_creates_one_credit_per_account(): void
+    {
+        $this->withoutMiddleware();
+
+        $first = DB::table('akun_coa')->insertGetId(['saldo' => 500]);
+        $second = DB::table('akun_coa')->insertGetId(['saldo' => 500]);
+        $bank = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), [
+            'tanggal' => '2026-10-28',
+            'jenis_aktivitas' => 'Pembayaran Lain Lain',
+            'penerima' => 'Penerima',
+            'keterangan' => 'Pengembalian biaya',
+            'debit_kredit' => 'debit',
+            'akun_bank_id' => $bank,
+            'akun_details' => [
+                ['akun_coa_id' => $first, 'nominal' => 100],
+                ['akun_coa_id' => $second, 'nominal' => 200],
+            ],
+        ])->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(300, $payment->jumlah);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'kredit' => 100]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'kredit' => 200]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'debit' => 300]);
     }
 
     public function test_changing_vehicle_payment_to_batam_reverses_existing_journal(): void

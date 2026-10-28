@@ -383,6 +383,7 @@ class PembayaranAktivitasLainController extends Controller
     public function store(Request $request)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
+        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain';
         $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
             && $request->input('sub_jenis_kendaraan') === 'KIR';
         if ($isKirPayment) {
@@ -421,9 +422,12 @@ class PembayaranAktivitasLainController extends Controller
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
-            'jumlah' => 'required|integer|min:0',
+            'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
             'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
-            'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
+            'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'distinct', 'different:akun_bank_id'],
+            'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
@@ -443,6 +447,13 @@ class PembayaranAktivitasLainController extends Controller
             $validated['debit_kredit'] = null;
             $validated['akun_coa_id'] = null;
             $validated['akun_bank_id'] = null;
+        }
+        if ($hasAkunDetails) {
+            $validated['akun_details'] = array_values($validated['akun_details']);
+            $validated['jumlah'] = array_sum(array_column($validated['akun_details'], 'nominal'));
+            $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
+        } else {
+            $validated['akun_details'] = null;
         }
         $validated['kendaraan_details'] = $isKirPayment
             ? array_values($validated['kendaraan_details'])
@@ -601,7 +612,6 @@ class PembayaranAktivitasLainController extends Controller
     private function createDoubleBookJournal($pembayaran, $validated)
     {
         // Get account information
-        $akunCoa = Coa::find($validated['akun_coa_id']);
         $akunBank = Coa::find($validated['akun_bank_id']);
         $pphNominal = (int) $pembayaran->pph_nominal;
         $jumlahBank = (int) $pembayaran->grand_total;
@@ -613,25 +623,16 @@ class PembayaranAktivitasLainController extends Controller
         $nomorReferensi = $pembayaran->nomor;
         $keterangan = "Pembayaran Aktivitas Lain - {$validated['jenis_aktivitas']}";
         $jenisTransaksiDesc = 'Pembayaran Aktivitas Lain';
+        $akunDetails = $validated['akun_details'] ?? [[
+            'akun_coa_id' => $validated['akun_coa_id'],
+            'nominal' => $jumlah,
+        ]];
 
         // Create journal entries based on debit/credit selection
         if ($jenisTransaksi === 'kredit') {
             // KREDIT: Increase expense/cost account, decrease bank account
             // Dr. Expense Account (+)
-            $this->createCoaTransaction([
-                'coa_id' => $akunCoa->id,
-                'tanggal_transaksi' => $tanggal,
-                'nomor_referensi' => $nomorReferensi,
-                'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan.' - '.$validated['keterangan'],
-                'debit' => $jumlah,
-                'kredit' => 0,
-                'saldo' => $akunCoa->saldo + $jumlah,
-                'created_by' => Auth::id(),
-            ]);
-
-            // Update account balance
-            $akunCoa->update(['saldo' => $akunCoa->saldo + $jumlah]);
+            $this->createExpenseJournalLines($akunDetails, $tanggal, $nomorReferensi, $jenisTransaksiDesc, $keterangan.' - '.$validated['keterangan'], true);
 
             // Cr. Bank Account (-)
             $this->createCoaTransaction([
@@ -681,20 +682,7 @@ class PembayaranAktivitasLainController extends Controller
             $akunBank->update(['saldo' => $akunBank->saldo + $jumlahBank]);
 
             // Cr. Expense Account (-)
-            $this->createCoaTransaction([
-                'coa_id' => $akunCoa->id,
-                'tanggal_transaksi' => $tanggal,
-                'nomor_referensi' => $nomorReferensi,
-                'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan.' - '.$validated['keterangan'],
-                'debit' => 0,
-                'kredit' => $jumlah,
-                'saldo' => $akunCoa->saldo - $jumlah,
-                'created_by' => Auth::id(),
-            ]);
-
-            // Update account balance
-            $akunCoa->update(['saldo' => $akunCoa->saldo - $jumlah]);
+            $this->createExpenseJournalLines($akunDetails, $tanggal, $nomorReferensi, $jenisTransaksiDesc, $keterangan.' - '.$validated['keterangan'], false);
             if ($akunPph) {
                 $this->createCoaTransaction([
                     'coa_id' => $akunPph->id,
@@ -709,6 +697,27 @@ class PembayaranAktivitasLainController extends Controller
                 ]);
                 $akunPph->update(['saldo' => $akunPph->saldo + $pphNominal]);
             }
+        }
+    }
+
+    private function createExpenseJournalLines(array $details, $tanggal, string $nomorReferensi, string $jenisTransaksi, string $keterangan, bool $isDebit): void
+    {
+        foreach ($details as $detail) {
+            $akun = Coa::findOrFail($detail['akun_coa_id']);
+            $nominal = (int) $detail['nominal'];
+            $saldo = $akun->saldo + ($isDebit ? $nominal : -$nominal);
+            $this->createCoaTransaction([
+                'coa_id' => $akun->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksi,
+                'keterangan' => $keterangan,
+                'debit' => $isDebit ? $nominal : 0,
+                'kredit' => $isDebit ? 0 : $nominal,
+                'saldo' => $saldo,
+                'created_by' => Auth::id(),
+            ]);
+            $akun->update(['saldo' => $saldo]);
         }
     }
 
@@ -845,6 +854,7 @@ class PembayaranAktivitasLainController extends Controller
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
+        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain';
         $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
             && $request->input('sub_jenis_kendaraan') === 'KIR';
         if ($isKirPayment) {
@@ -883,9 +893,12 @@ class PembayaranAktivitasLainController extends Controller
             'no_surat_jalan' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
-            'jumlah' => 'required|integer|min:0',
+            'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
             'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
-            'akun_coa_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
+            'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
+            'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'distinct', 'different:akun_bank_id'],
+            'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
@@ -905,6 +918,13 @@ class PembayaranAktivitasLainController extends Controller
             $validated['debit_kredit'] = null;
             $validated['akun_coa_id'] = null;
             $validated['akun_bank_id'] = null;
+        }
+        if ($hasAkunDetails) {
+            $validated['akun_details'] = array_values($validated['akun_details']);
+            $validated['jumlah'] = array_sum(array_column($validated['akun_details'], 'nominal'));
+            $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
+        } else {
+            $validated['akun_details'] = null;
         }
         $validated['kendaraan_details'] = $isKirPayment
             ? array_values($validated['kendaraan_details'])
@@ -992,6 +1012,9 @@ class PembayaranAktivitasLainController extends Controller
 
         if ($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details) {
             return redirect()->back()->with('error', 'Jumlah pembayaran KIR harus diubah melalui rincian nominal setiap kendaraan.');
+        }
+        if ($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Lain Lain') {
+            return redirect()->back()->with('error', 'Ubah nominal melalui rincian akun pada halaman edit pembayaran.');
         }
 
         $request->validate([

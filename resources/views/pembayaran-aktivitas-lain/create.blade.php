@@ -393,6 +393,9 @@
                     @enderror
                 </div>
 
+                <!-- Rincian akun untuk Pembayaran Lain Lain -->
+                @include('pembayaran-aktivitas-lain._akun-details')
+
                 <!-- Akun Bank -->
                 <div id="akun_bank_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bank/Kas <span class="text-red-500">*</span></label>
@@ -1219,6 +1222,10 @@ function initializeSelect2() {
         const jumlahValue = document.getElementById('jumlah_input_value');
         
         if (!jumlahDisplay) return;
+        if (jenisAktivitas === 'Pembayaran Lain Lain') {
+            window.updateAkunDetails?.();
+            return;
+        }
 
         if (jenisAktivitas === 'Pembayaran Kendaraan' && subJenisSelect.value === 'KIR') {
             calculateKirTotal();
@@ -1375,14 +1382,16 @@ function initializeSelect2() {
     function toggleDoubleBookFields() {
         const isBatamVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan'
             && document.getElementById('lokasi_kendaraan_select').value === 'batam';
+        const isMultiAccount = jenisAktivitas.value === 'Pembayaran Lain Lain';
         [
             ['debit_kredit_field', debitKreditSelect],
             ['akun_coa_field', akunBiayaSelect],
             ['akun_bank_field', akunBankSelect]
         ].forEach(([fieldId, select]) => {
-            document.getElementById(fieldId).classList.toggle('hidden', isBatamVehicle);
-            select.required = !isBatamVehicle;
-            select.disabled = isBatamVehicle;
+            const hidden = isBatamVehicle || (fieldId === 'akun_coa_field' && isMultiAccount);
+            document.getElementById(fieldId).classList.toggle('hidden', hidden);
+            select.required = !hidden;
+            select.disabled = hidden;
             if (isBatamVehicle) $(select).val('').trigger('change');
         });
         if (isBatamVehicle) journalPreview.classList.add('hidden');
@@ -1393,6 +1402,10 @@ function initializeSelect2() {
     toggleDoubleBookFields();
     
     function updateJournalPreview() {
+        if (jenisAktivitas.value === 'Pembayaran Lain Lain') {
+            journalPreview.classList.add('hidden');
+            return;
+        }
         if (jenisAktivitas.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam') {
             journalPreview.classList.add('hidden');
             return;
@@ -1523,8 +1536,12 @@ function initializeSelect2() {
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
         if (jenisAktivitas !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
             requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
-            requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
+            if (jenisAktivitas !== 'Pembayaran Lain Lain') requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
+        }
+        if (jenisAktivitas === 'Pembayaran Lain Lain' && !window.validateAkunDetails()) {
+            showErrorMessage('Pilih akun berbeda dan isi jumlah rupiah positif untuk setiap baris.');
+            return false;
         }
         
         // Add conditional required fields
