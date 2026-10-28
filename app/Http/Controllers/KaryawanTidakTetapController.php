@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KaryawanTidakTetap;
+use App\Models\MasterRumusBpjs;
 use App\Services\KaryawanBpjsGroups;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,8 @@ class KaryawanTidakTetapController extends Controller
      */
     public function create()
     {
-        $bpjsGroupOptions = app(KaryawanBpjsGroups::class)->options(KaryawanTidakTetap::class);
+        $jamsostekRumusOptions = MasterRumusBpjs::where('jenis', 'jamsostek')->get(['group_name', 'tipe']);
+        $jknRumusOptions = MasterRumusBpjs::where('jenis', 'jkn')->get(['group_name', 'tipe']);
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $nextNik = $this->generateNextNik();
@@ -43,7 +45,7 @@ class KaryawanTidakTetapController extends Controller
 
         [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroupsByGroup', 'bpjsGroupOptions'));
+        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroupsByGroup', 'jamsostekRumusOptions', 'jknRumusOptions'));
     }
 
     /**
@@ -76,9 +78,11 @@ class KaryawanTidakTetapController extends Controller
             'jkn' => 'nullable|string|max:100',
             'dpp_jkn' => 'nullable|string|max:100',
             'group_jkn' => 'nullable|string|max:100',
+            'tipe_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:100',
             'dpp_bp_jamsostek' => 'nullable|string|max:100',
             'group_bp_jamsostek' => 'nullable|string|max:100',
+            'tipe_bp_jamsostek' => ['nullable', 'string', 'max:255', new \App\Rules\JamsostekTypeMatchesGroup($request->input('group_bp_jamsostek'))],
             'cabang_bpjs' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:100',
             'group' => 'nullable|array',
@@ -129,14 +133,15 @@ class KaryawanTidakTetapController extends Controller
      */
     public function edit(KaryawanTidakTetap $karyawanTidakTetap)
     {
-        $bpjsGroupOptions = app(KaryawanBpjsGroups::class)->options(KaryawanTidakTetap::class);
+        $jamsostekRumusOptions = MasterRumusBpjs::where('jenis', 'jamsostek')->get(['group_name', 'tipe']);
+        $jknRumusOptions = MasterRumusBpjs::where('jenis', 'jkn')->get(['group_name', 'tipe']);
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
 
         [$groups, $subGroupsByGroup] = $this->groupOptions();
 
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroupsByGroup', 'bpjsGroupOptions'));
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroupsByGroup', 'jamsostekRumusOptions', 'jknRumusOptions'));
     }
 
     private function normalizeBpjsGroups(Request $request): void
@@ -206,9 +211,11 @@ class KaryawanTidakTetapController extends Controller
             'jkn' => 'nullable|string|max:100',
             'dpp_jkn' => 'nullable|string|max:100',
             'group_jkn' => 'nullable|string|max:100',
+            'tipe_jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:100',
             'dpp_bp_jamsostek' => 'nullable|string|max:100',
             'group_bp_jamsostek' => 'nullable|string|max:100',
+            'tipe_bp_jamsostek' => ['nullable', 'string', 'max:255', new \App\Rules\JamsostekTypeMatchesGroup($request->input('group_bp_jamsostek'))],
             'cabang_bpjs' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:100',
             'group' => 'nullable|array',
