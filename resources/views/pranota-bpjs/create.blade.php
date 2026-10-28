@@ -419,6 +419,7 @@
 </div>
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
@@ -1346,15 +1347,8 @@ document.addEventListener('DOMContentLoaded', function() {
     btnAdd.addEventListener('click', () => addRow(null));
 
     // Bersihkan format angka Indonesia sebelum submit
-    document.getElementById('pranota-form').addEventListener('submit', function(e) {
-        document.querySelectorAll(
-            '.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, ' +
-            '.input-jkk, .input-jkk-hutang, .input-jkm, .input-bpu-jkk, .input-bpu-jkm, ' +
-            '.input-noncrew-jht-biaya, .input-noncrew-jht-hutang, .input-noncrew-jkk, .input-noncrew-jkm, ' +
-            '.input-jp-biaya, .input-jp-hutang'
-        ).forEach(function(input) {
-            input.value = parseIdNumber(input.value);
-        });
+    document.getElementById('pranota-form').addEventListener('submit', function() {
+        prepareBpjsSubmission(this, parseIdNumber);
     });
     
     document.getElementById('btn-generate-all').addEventListener('click', () => {

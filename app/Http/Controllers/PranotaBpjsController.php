@@ -98,6 +98,7 @@ class PranotaBpjsController extends Controller
 
     public function store(Request $request)
     {
+        $this->decodeDetails($request);
         $request->validate([
             'tanggal_pranota' => 'required|date',
             'periode_bulan' => 'required|integer|min:1|max:12',
@@ -260,6 +261,7 @@ class PranotaBpjsController extends Controller
             return redirect()->route('pranota-bpjs.index')->with('error', 'Hanya pranota berstatus Draft yang dapat diedit.');
         }
 
+        $this->decodeDetails($request);
         $request->validate([
             'tanggal_pranota' => 'required|date',
             'periode_bulan' => 'required|integer|min:1|max:12',
@@ -399,6 +401,21 @@ class PranotaBpjsController extends Controller
      *         "5.200.000,50" → 5200000.5
      *         5200000        → 5200000.0  (sudah number)
      */
+    private function decodeDetails(Request $request): void
+    {
+        if (! $request->has('details_json')) {
+            return;
+        }
+        $request->validate(['details_json' => ['required', 'string', 'json']]);
+        $details = json_decode($request->input('details_json'), true);
+        if (! is_array($details) || ! array_is_list($details)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'details_json' => 'Rincian BPJS tidak valid. Silakan muat ulang dan coba kembali.',
+            ]);
+        }
+        $request->merge(['details' => $details]);
+    }
+
     private function parseIndonesianNumber($value): float
     {
         if (is_numeric($value)) {

@@ -169,6 +169,7 @@
 
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('detail-container');
@@ -587,9 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('pranota-form').addEventListener('submit', function() {
-        document.querySelectorAll('.input-kes, .input-ket, .input-jht-biaya, .input-jht-hutang, .input-jkk, .input-jkm, .input-jp-biaya, .input-jp-hutang').forEach(input => {
-            input.value = parseIdNumber(input.value);
-        });
+        prepareBpjsSubmission(this, parseIdNumber);
     });
 
     function updateRowNumbers() {
