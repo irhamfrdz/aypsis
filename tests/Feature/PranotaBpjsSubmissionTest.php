@@ -42,7 +42,7 @@ class PranotaBpjsSubmissionTest extends TestCase
         foreach (range(1, 264) as $id) {
             $details[] = [
                 'karyawan_id' => $id, 'tipe_karyawan' => 'App\\Models\\Karyawan',
-                'bpjs_kesehatan' => 229195, 'bpjs_ketenagakerjaan' => 57299,
+                'bpjs_kesehatan' => 229195.20, 'bpjs_ketenagakerjaan' => 57298.80,
                 'jht_biaya' => 100000.80, 'jht_hutang' => 20000,
                 'jkk_tunjangan' => 1000, 'jkm_tunjangan' => 2000,
                 'jkk_hutang' => 3000, 'bpu_jkk_tunjangan' => 4000, 'bpu_jkm' => 5000,
@@ -63,6 +63,8 @@ class PranotaBpjsSubmissionTest extends TestCase
             }
             $this->assertEquals(264, $header->total_karyawan);
             $this->assertSame(264, $header->details()->count());
+            $this->assertSame('229195.20', $header->details()->firstOrFail()->bpjs_kesehatan);
+            $this->assertSame('57298.80', $header->details()->firstOrFail()->bpjs_ketenagakerjaan);
             $breakdown = $header->details()->firstOrFail()->rincian_bpjs;
             $this->assertSame(4000.0, (float) $breakdown['bpu_jkk_tunjangan']);
             $this->assertSame(8000.0, (float) $breakdown['noncrew_jkk_tunjangan']);

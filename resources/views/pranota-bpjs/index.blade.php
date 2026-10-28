@@ -56,7 +56,7 @@
             <div>
                 <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Total Nominal (Hasil Filter)</p>
                 <p class="text-xl font-bold text-gray-800">
-                    Rp {{ number_format($totalNominal, 0, ',', '.') }}
+                    Rp {{ number_format($totalNominal, 2, ',', '.') }}
                 </p>
             </div>
         </div>
@@ -205,18 +205,18 @@
 
                             {{-- JKN --}}
                             <td class="px-4 py-3 text-right text-gray-700 font-medium whitespace-nowrap">
-                                Rp {{ number_format($pranota->total_bpjs_kesehatan, 0, ',', '.') }}
+                                Rp {{ number_format($pranota->total_bpjs_kesehatan, 2, ',', '.') }}
                             </td>
 
                             {{-- Jamsostek --}}
                             <td class="px-4 py-3 text-right text-gray-700 font-medium whitespace-nowrap">
-                                Rp {{ number_format($pranota->total_bpjs_ketenagakerjaan, 0, ',', '.') }}
+                                Rp {{ number_format($pranota->total_bpjs_ketenagakerjaan, 2, ',', '.') }}
                             </td>
 
                             {{-- Grand Total --}}
                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                 <span class="font-bold text-gray-800">
-                                    Rp {{ number_format($pranota->grand_total, 0, ',', '.') }}
+                                    Rp {{ number_format($pranota->grand_total, 2, ',', '.') }}
                                 </span>
                             </td>
 

@@ -169,6 +169,7 @@
 
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -181,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let rowCount = 0;
 
     function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID').format(num || 0);
+        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
     }
 
     /**
@@ -190,10 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
      *         5200000        → 5200000 (sudah number, langsung return)
      */
     function parseIdNumber(val) {
-        if (val === null || val === undefined || val === '') return 0;
-        if (typeof val === 'number') return val;
-        const cleaned = String(val).replace(/\./g, '').replace(',', '.');
-        return parseFloat(cleaned) || 0;
+        return BpjsJamsostek.parseAmount(val);
     }
 
     function calculateTotals() {
@@ -316,11 +314,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             <td class="px-4 py-3 align-middle" data-jkn-tunjangan>
-                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKes}" autocomplete="off">
+                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKes)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle" data-jkn-biaya></td>
             <td class="px-4 py-3 align-middle">
-                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${valKet}" autocomplete="off">
+                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKet)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtB)}" autocomplete="off">
@@ -544,10 +542,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (tipeJkn !== 'manual') { 
-                inputKes.value = formatNumber(Math.round(nominalKes)); 
+                inputKes.value = formatNumber(nominalKes);
             }
             
-            inputKet.value = formatNumber(Math.round(nominalKet));
+            inputKet.value = formatNumber(nominalKet);
             updateSubtotal();
         }
 

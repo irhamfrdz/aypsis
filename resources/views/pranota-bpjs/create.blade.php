@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isRefreshing = false;
 
     function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID').format(num || 0);
+        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
     }
 
     /**
@@ -1183,13 +1183,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     inputJhtHutang.value    = formatNumber(jhtHutang);
                     inputJkk.value          = formatNumber(jkkTunj);
                     inputJkm.value          = formatNumber(jkmTunj);
-                    inputBpuJht.value       = formatNumber(Math.round(bpuJhtVal));
-                    inputBpuJkk.value       = formatNumber(Math.round(bpuJkkTunjVal));
-                    inputBpuJkm.value       = formatNumber(Math.round(bpuJkmVal));
-                    inputNcJhtBiaya.value   = formatNumber(Math.round(ncJhtBiayaVal));
-                    inputNcJhtHutang.value  = formatNumber(Math.round(ncJhtHutangVal));
-                    inputNcJkk.value        = formatNumber(Math.round(ncJkkTunjVal));
-                    inputNcJkm.value        = formatNumber(Math.round(ncJkmTunjVal));
+                    inputBpuJht.value       = formatNumber(bpuJhtVal);
+                    inputBpuJkk.value       = formatNumber(bpuJkkTunjVal);
+                    inputBpuJkm.value       = formatNumber(bpuJkmVal);
+                    inputNcJhtBiaya.value   = formatNumber(ncJhtBiayaVal);
+                    inputNcJhtHutang.value  = formatNumber(ncJhtHutangVal);
+                    inputNcJkk.value        = formatNumber(ncJkkTunjVal);
+                    inputNcJkm.value        = formatNumber(ncJkmTunjVal);
                     inputJpBiaya.value      = formatNumber(jpBiaya);
                     inputJpHutang.value     = formatNumber(jpHutang);
                 }
@@ -1210,10 +1210,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (tipeJkn !== 'manual') {
-                inputKes.value = formatNumber(Math.round(nominalKes));
+                inputKes.value = formatNumber(nominalKes);
             }
             
-            inputKet.value = formatNumber(Math.round(nominalKet));
+            inputKet.value = formatNumber(nominalKet);
             updateSubtotal();
         }
 
