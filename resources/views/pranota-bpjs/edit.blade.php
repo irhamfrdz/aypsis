@@ -361,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             </td>
         `;
 
+        tr.allowanceOverrides = { ...(detail?.tunjangan_manual || {}) };
         if (detail?.rincian_bpjs) {
             const snapshot = document.createElement('input');
             snapshot.type = 'hidden';

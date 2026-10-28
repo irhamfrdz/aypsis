@@ -2,6 +2,16 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('manual allowances persist across recalculation, including zero, and reset to automatic when removed', () => {
+    const automatic = { ppu: 28080, bpu: 5000, jkn: 229195.2 };
+    const manual = { ppu: 30000.75, bpu: 0 };
+    assert.deepEqual(BpjsAllowances.effective(automatic, manual), { ppu: 30000.75, bpu: 0, jkn: 229195.2 });
+    assert.equal(BpjsAllowances.effective({ ...automatic, ppu: 29000 }, manual).ppu, 30000.75);
+    delete manual.ppu;
+    assert.equal(BpjsAllowances.effective(automatic, manual).ppu, 28080);
+    assert.equal(automatic.ppu, 28080);
+});
+
 test('allowances group employer components without debt, JHT, or JP and preserve decimals', () => {
     const values = { group_bp_jamsostek: 'PPU', jkk_tunjangan: 13751.71, jkm_tunjangan: 17189.64,
         bpu_jkk_tunjangan: 22000, bpu_jkm: 3400, noncrew_jkk_tunjangan: 17250,

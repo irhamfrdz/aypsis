@@ -1,6 +1,6 @@
 <section class="my-5 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
     <h3 class="font-semibold text-gray-800">Ringkasan Tunjangan</h3>
-    <p class="mt-1 mb-3 text-xs text-gray-500">Ringkasan komponen yang sudah dihitung. Nominal tidak ditambahkan kembali ke Grand Total.</p>
+    <p class="mt-1 mb-3 text-xs text-gray-500">Nominal per karyawan dapat diubah pada kolom Ringkasan Tunjangan di form. Pilih Auto untuk kembali ke rumus. Perubahan ringkasan tidak mengubah komponen iuran atau Grand Total.</p>
     <table class="w-full text-sm">
         <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
         <tbody>

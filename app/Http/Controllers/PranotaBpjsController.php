@@ -132,6 +132,9 @@ class PranotaBpjsController extends Controller
             'details.*.noncrew_jkm_tunjangan' => 'nullable',
             'details.*.jp_biaya' => 'nullable',
             'details.*.jp_hutang' => 'nullable',
+            'details.*.allowance_ppu' => 'nullable|numeric|min:0',
+            'details.*.allowance_bpu' => 'nullable|numeric|min:0',
+            'details.*.allowance_jkn' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -194,6 +197,7 @@ class PranotaBpjsController extends Controller
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
+                            'tunjangan_manual' => $this->manualAllowances($detail),
                         ]);
 
                         $totalKes += $jknTotal;
@@ -296,6 +300,9 @@ class PranotaBpjsController extends Controller
             'details.*.noncrew_jkm_tunjangan' => 'nullable',
             'details.*.jp_biaya' => 'nullable',
             'details.*.jp_hutang' => 'nullable',
+            'details.*.allowance_ppu' => 'nullable|numeric|min:0',
+            'details.*.allowance_bpu' => 'nullable|numeric|min:0',
+            'details.*.allowance_jkn' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -357,6 +364,7 @@ class PranotaBpjsController extends Controller
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
+                            'tunjangan_manual' => $this->manualAllowances($detail),
                         ]);
 
                         $totalKes += $jknTotal;
@@ -414,6 +422,19 @@ class PranotaBpjsController extends Controller
      *         "5.200.000,50" → 5200000.5
      *         5200000        → 5200000.0  (sudah number)
      */
+    private function manualAllowances(array $detail): ?array
+    {
+        $values = [];
+        foreach (['ppu', 'bpu', 'jkn'] as $key) {
+            $field = 'allowance_'.$key;
+            if (isset($detail[$field]) && $detail[$field] !== '') {
+                $values[$key] = (float) $detail[$field];
+            }
+        }
+
+        return $values ?: null;
+    }
+
     private function componentBreakdown(array $detail): ?array
     {
         // The edit form contains legacy aggregate columns. Reuse the saved breakdown

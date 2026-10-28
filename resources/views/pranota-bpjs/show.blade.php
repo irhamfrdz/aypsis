@@ -13,6 +13,11 @@
             <a href="{{ route('pranota-bpjs.index') }}" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
+            @can('pranota-bpjs-update')
+                @if($pranota_bpj->status === 'draft')
+                    <a href="{{ route('pranota-bpjs.edit', $pranota_bpj->id) }}" class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">Ubah Nominal</a>
+                @endif
+            @endcan
             <button onclick="window.print()" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
                 <i class="fas fa-print mr-2"></i> Cetak
             </button>
@@ -80,6 +85,7 @@
             $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
             $amount = function ($detail, $field) {
+                if (str_starts_with($field, 'allowance_') && isset($detail->tunjangan_manual[substr($field, 10)])) return (float) $detail->tunjangan_manual[substr($field, 10)];
                 if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if ($field === 'allowance_jkn') return (float) $detail->kis_tunjangan;
                 if (in_array($field, ['allowance_ppu', 'allowance_bpu'])) {

@@ -12,6 +12,7 @@ class PranotaBpjsDetail extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
+        'tunjangan_manual' => 'array',
         'rincian_bpjs' => 'array',
         'bpjs_kesehatan' => 'decimal:2',
         'bpjs_ketenagakerjaan' => 'decimal:2',
@@ -42,6 +43,9 @@ class PranotaBpjsDetail extends Model
 
     public function getTunjanganPpuAttribute(): float
     {
+        if (isset($this->tunjangan_manual['ppu'])) {
+            return (float) $this->tunjangan_manual['ppu'];
+        }
         if (! str_contains(strtoupper((string) $this->karyawan?->group_bp_jamsostek), 'PPU')) {
             return 0;
         }

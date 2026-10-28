@@ -38,6 +38,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $table->timestamps();
         });
         (require database_path('migrations/2026_10_28_160000_add_rincian_bpjs_to_pranota_bpjs_details_table.php'))->up();
+        (require database_path('migrations/2026_10_28_170000_add_tunjangan_manual_to_pranota_bpjs_details_table.php'))->up();
         $details = [];
         foreach (range(1, 264) as $id) {
             $details[] = [
@@ -49,6 +50,7 @@ class PranotaBpjsSubmissionTest extends TestCase
                 'noncrew_jht_biaya' => 6000, 'noncrew_jht_hutang' => 7000,
                 'noncrew_jkk_tunjangan' => 8000, 'noncrew_jkm_tunjangan' => 9000,
                 'jp_biaya' => 10000, 'jp_hutang' => 11000,
+                'allowance_ppu' => 12345.67, 'allowance_bpu' => 0, 'allowance_jkn' => 200000.50,
             ];
         }
         $data = ['tanggal_pranota' => '2026-10-28', 'periode_bulan' => 10, 'periode_tahun' => 2026,
@@ -66,10 +68,12 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertSame('229195.20', $header->details()->firstOrFail()->bpjs_kesehatan);
             $this->assertSame('57298.80', $header->details()->firstOrFail()->bpjs_ketenagakerjaan);
             $breakdown = $header->details()->firstOrFail()->rincian_bpjs;
+            $this->assertSame(12345.67, $header->details()->firstOrFail()->tunjangan_manual['ppu']);
+            $this->assertSame(0, $header->details()->firstOrFail()->tunjangan_manual['bpu']);
             $this->assertSame(4000.0, (float) $breakdown['bpu_jkk_tunjangan']);
             $this->assertSame(8000.0, (float) $breakdown['noncrew_jkk_tunjangan']);
             $this->assertSame(100000.8, (float) $breakdown['jht_biaya']);
-            $expected = array_sum(array_diff_key($details[0], array_flip(['karyawan_id', 'tipe_karyawan']))) * 264;
+            $expected = array_sum(array_diff_key($details[0], array_flip(['karyawan_id', 'tipe_karyawan', 'allowance_ppu', 'allowance_bpu', 'allowance_jkn']))) * 264;
             $this->assertEqualsWithDelta($expected, (float) $header->grand_total, 0.01);
             $this->assertEqualsWithDelta($expected, $header->details()->sum('total'), 0.01);
             $header->load('details');
@@ -84,7 +88,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $end = strpos($source, '        <div class="flex justify-end mt-16', $start);
             $template = substr($source, $start, $end - $start);
             $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
-            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80'] as $label) {
+            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50'] as $label) {
                 $this->assertStringContainsString($label, $html);
             }
             $header->details->first()->rincian_bpjs = null;
